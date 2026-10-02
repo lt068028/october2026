@@ -76,55 +76,55 @@ document.head.appendChild(styleElement);
 
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
+recordBtn.textContent = 'Record';
+stopBtn.textContent = 'Stop';
 
-// --- 2. ふりがな切り替えスイッチの構築 ---
+// --- 2. ふりがな切り替えスイッチの構築（左：Withふりがな、右：Noふりがな） ---
 const controlPanel = document.createElement('div');
 controlPanel.className = 'mode-container';
 
 const labelOn = document.createElement('span');
-labelOn.className = 'mode-label active-mode';
-labelOn.textContent = 'With Furigana';
+labelOn.className = 'mode-label active-mode'; // checked=trueのときアクティブ
+labelOn.textContent = 'Withふりがな';
 
 const switchLabel = document.createElement('label');
 switchLabel.className = 'switch';
 const rubyToggleInput = document.createElement('input');
 rubyToggleInput.type = 'checkbox';
 rubyToggleInput.id = 'rubyToggleInput';
-rubyToggleInput.checked = true;
+rubyToggleInput.checked = true; // デフォルトON
 const sliderSpan = document.createElement('span');
 sliderSpan.className = 'slider';
 switchLabel.appendChild(rubyToggleInput);
 switchLabel.appendChild(sliderSpan);
 
 const labelOff = document.createElement('span');
-labelOff.className = 'mode-label inactive-mode';
-labelOff.textContent = 'No Furigana';
+labelOff.className = 'mode-label inactive-mode'; // checked=falseのときアクティブ
+labelOff.textContent = 'Noふりがな';
 
 controlPanel.appendChild(labelOn);
 controlPanel.appendChild(switchLabel);
 controlPanel.appendChild(labelOff);
 document.body.insertBefore(controlPanel, recordBtn);
 
-// --- 3. 録音・停止ボタンの右側に「自動／手動停止スイッチ」を配置 ---
+// --- 3. 録音・停止ボタンの右側に「Auto Stop / Manual Stop」スイッチを配置 ---
 const recordingControlRow = document.createElement('div');
 recordingControlRow.className = 'control-row';
 
-// 既存の recordBtn と stopBtn を一度親から外し、新しいコンテナにまとめる
 const parentElement = recordBtn.parentNode;
 parentElement.insertBefore(recordingControlRow, recordBtn);
 
 recordingControlRow.appendChild(recordBtn);
 recordingControlRow.appendChild(stopBtn);
 
-// 自動／手動停止のスイッチエリア
 const modeContainer = document.createElement('div');
 modeContainer.style.display = 'flex';
-modeContainer.style.alignItems = 'center';
+modeContainer.style.alignItems: 'center';
 modeContainer.style.gap = '8px';
 modeContainer.style.marginLeft = '10px';
 
 const autoLabel = document.createElement('span');
-autoLabel.className = 'mode-label active-mode';
+autoLabel.className = 'mode-label active-mode'; // checked=falseのときアクティブ（左側）
 autoLabel.style.fontSize = '13px';
 autoLabel.textContent = 'Auto Stop';
 
@@ -136,6 +136,7 @@ stopSwitchLabel.style.height = '22px';
 const stopModeToggle = document.createElement('input');
 stopModeToggle.type = 'checkbox';
 stopModeToggle.id = 'stopModeToggle';
+stopModeToggle.checked = false; // デフォルトOFF（Auto）
 
 const stopSliderSpan = document.createElement('span');
 stopSliderSpan.className = 'slider';
@@ -143,7 +144,7 @@ stopSwitchLabel.appendChild(stopModeToggle);
 stopSwitchLabel.appendChild(stopSliderSpan);
 
 const manualLabel = document.createElement('span');
-manualLabel.className = 'mode-label inactive-mode';
+manualLabel.className = 'mode-label inactive-mode'; // checked=trueのときアクティブ（右側）
 manualLabel.style.fontSize = '13px';
 manualLabel.textContent = 'Manual Stop';
 
@@ -167,27 +168,42 @@ listContainer.style.marginTop = '20px';
 document.body.appendChild(listContainer);
 
 let isRubyEnabled = true;
-let isManualStop = false; // デフォルトは Auto Stop (false)
+let isManualStop = false;
 
+// ふりがなスイッチ（左=With, 右=No）の連動設定
 rubyToggleInput.addEventListener('change', (e) => {
     isRubyEnabled = e.target.checked;
     if (isRubyEnabled) {
+        // 丸が左（checked=falseの表現だが、今回は左=With、右=No）
+        // 仕様に合わせて直感的に同期させる
+    }
+});
+
+// スイッチの見た目とラベルの明るさ（アクティブ/グレー）の整合性を統一
+rubyToggleInput.addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    if (checked) {
+        // ON (Withふりがな がアクティブ)
         labelOn.className = 'mode-label active-mode';
         labelOff.className = 'mode-label inactive-mode';
     } else {
+        // OFF (Noふりがな がアクティブ)
         labelOff.className = 'mode-label active-mode';
         labelOn.className = 'mode-label inactive-mode';
     }
 });
 
 stopModeToggle.addEventListener('change', (e) => {
-    isManualStop = e.target.checked;
-    if (isManualStop) {
-        manualLabel.className = 'mode-label active-mode';
-        autoLabel.className = 'mode-label inactive-mode';
-    } else {
+    const checked = e.target.checked;
+    isManualStop = checked;
+    if (!checked) {
+        // 左側 (Auto Stop がアクティブ)
         autoLabel.className = 'mode-label active-mode';
         manualLabel.className = 'mode-label inactive-mode';
+    } else {
+        // 右側 (Manual Stop がアクティブ)
+        manualLabel.className = 'mode-label active-mode';
+        autoLabel.className = 'mode-label inactive-mode';
     }
 });
 
@@ -287,8 +303,6 @@ async function startRecording() {
             recognition = new SpeechRecognition();
             recognition.lang = 'ja-JP';
             recognition.interimResults = false;
-
-            // Auto Stop の場合は一文で自動終了、Manual Stop の場合はユーザーが止めるまで継続
             recognition.continuous = isManualStop;
 
             recognition.onresult = (event) => {
@@ -304,7 +318,6 @@ async function startRecording() {
             };
 
             recognition.onend = () => {
-                // 自動停止モード（Auto Stop）のときは、認識終了時にそのままファイナライズ
                 if (!isManualStop) {
                     finalizeRecording();
                 }
@@ -316,11 +329,10 @@ async function startRecording() {
         statusDisplay.textContent = "Recording...";
         recordBtn.disabled = true;
 
-        // 手動停止（Manual Stop）が有効なときだけストップボタンを有効化する
         if (isManualStop) {
             stopBtn.disabled = false;
         } else {
-            stopBtn.disabled = true; // Auto Stop のときはグレーアウトのまま
+            stopBtn.disabled = true;
         }
 
     } catch (error) {
