@@ -1,5 +1,6 @@
 let mediaRecorder;
 let audioChunks = [];
+let audioStream = null;
 
 // --- 1. スタイル設定 ---
 const styleElement = document.createElement('style');
@@ -97,14 +98,14 @@ const labelKanji = document.createElement('span');
 labelKanji.className = 'mode-label inactive-mode';
 labelKanji.textContent = 'With漢字';
 
-// With漢字がONのときに出現する「ふりがな ON/OFF」コントロール
+// With漢字がONのときに出現する「Withふりがな / Noふりがな」コントロール
 const rubyControlContainer = document.createElement('div');
 rubyControlContainer.className = 'ruby-control-container';
 
-const rubyLabel = document.createElement('span');
-rubyLabel.style.fontSize = '13px';
-rubyLabel.style.fontWeight = 'bold';
-rubyLabel.textContent = 'ふりがな';
+const rubyLabelOff = document.createElement('span');
+rubyLabelOff.className = 'mode-label active-mode';
+rubyLabelOff.style.fontSize = '13px';
+rubyLabelOff.textContent = 'Noふりがな';
 
 const rubySwitchLabel = document.createElement('label');
 rubySwitchLabel.className = 'switch';
@@ -114,15 +115,20 @@ rubySwitchLabel.style.height = '22px';
 const rubyToggleInput = document.createElement('input');
 rubyToggleInput.type = 'checkbox';
 rubyToggleInput.id = 'rubyToggleInput';
-rubyToggleInput.checked = true; // デフォルトON
 
 const rubySliderSpan = document.createElement('span');
 rubySliderSpan.className = 'slider';
 rubySwitchLabel.appendChild(rubyToggleInput);
 rubySwitchLabel.appendChild(rubySliderSpan);
 
-rubyControlContainer.appendChild(rubyLabel);
+const rubyLabelOn = document.createElement('span');
+rubyLabelOn.className = 'mode-label inactive-mode';
+rubyLabelOn.style.fontSize = '13px';
+rubyLabelOn.textContent = 'Withふりがな';
+
+rubyControlContainer.appendChild(rubyLabelOff);
 rubyControlContainer.appendChild(rubySwitchLabel);
+rubyControlContainer.appendChild(rubyLabelOn);
 
 controlPanel.appendChild(labelHiragana);
 controlPanel.appendChild(switchLabel);
@@ -130,7 +136,6 @@ controlPanel.appendChild(labelKanji);
 controlPanel.appendChild(rubyControlContainer);
 document.body.insertBefore(controlPanel, recordBtn);
 
-// ステータス表示エリア（ライブ表示は廃止し状態のみ表示）
 const statusDisplay = document.createElement('p');
 statusDisplay.id = 'statusDisplay';
 statusDisplay.style.fontWeight = 'bold';
@@ -144,7 +149,7 @@ listContainer.style.marginTop = '20px';
 document.body.appendChild(listContainer);
 
 let isKanjiEnabled = false;
-let isRubyEnabled = true;
+let isRubyEnabled = false; // デフォルトはNoふりがな（オフ）
 
 modeToggleInput.addEventListener('change', (e) => {
     isKanjiEnabled = e.target.checked;
@@ -161,6 +166,13 @@ modeToggleInput.addEventListener('change', (e) => {
 
 rubyToggleInput.addEventListener('change', (e) => {
     isRubyEnabled = e.target.checked;
+    if (isRubyEnabled) {
+        rubyLabelOn.className = 'mode-label active-mode';
+        rubyLabelOff.className = 'mode-label inactive-mode';
+    } else {
+        rubyLabelOff.className = 'mode-label active-mode';
+        rubyLabelOn.className = 'mode-label inactive-mode';
+    }
 });
 
 // --- 3. 変換辞書（漢字 -> ひらがな・ルビ用） ---
@@ -199,47 +211,32 @@ function processText(text, kanjiOn, rubyOn) {
             const regex = new RegExp(kanji, 'g');
             processed = processed.replace(regex, hira);
         }
-        return `[ひらがな] ${processed}`;
+        return processed; // [ひらがな] などの不要なラベルを排除
     } else {
         if (rubyOn) {
             for (const [kanji, hira] of Object.entries(kanjiMap)) {
                 const regex = new RegExp(kanji, 'g');
                 processed = processed.replace(regex, `<ruby>${kanji}<rt>${hira}</rt></ruby>`);
             }
-            return `[漢字+ルビ] ${processed}`;
+            return processed;
         } else {
-            return `[漢字] ${processed}`;
+            return processed;
         }
     }
 }
 
-// --- 4. 音声認識のセットアップ（確定結果のみ） ---
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// --- 4. 録音および音声認識の実行（必要なときだけマイクを有効化） ---
 let recognition;
-let finalTranscript = "";
+let currentTranscript = "";
 
-if (SpeechRecognition) {
-    recognition = new SpeechRecognition();
-    recognition.lang = 'ja-JP';
-    recognition.interimResults = false;
-    recognition.continuous = false;
-
-    recognition.onresult = (event) => {
-        finalTranscript = event.results[0][0].transcript;
-    };
-
-    recognition.onerror = (event) => {
-        console.error("音声認識エラー:", event.error);
-    };
-} else {
-    statusDisplay.textContent = "このブラウザは音声認識に対応していない。";
-}
-
-// --- 5. 録音機能のセットアップ ---
-async function initRecorder() {
+async function startRecording() {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        currentTranscript = "";
+        
+        // 録音開始時のみマイクストリームを取得（タブの赤い丸を点灯）
+        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(audioStream);
 
         mediaRecorder.ondataavailable = (event) => {
             audioChunks.push(event.data);
@@ -264,44 +261,66 @@ async function initRecorder() {
             audioElement.controls = true;
 
             const textSpan = document.createElement('span');
-            const formattedHTML = processText(finalTranscript, isKanjiEnabled, isRubyEnabled);
+            const formattedHTML = processText(currentTranscript, isKanjiEnabled, isRubyEnabled);
             textSpan.innerHTML = formattedHTML;
 
             itemDiv.appendChild(audioElement);
             itemDiv.appendChild(textSpan);
             
             listContainer.appendChild(itemDiv);
-            
-            audioChunks = [];
-            finalTranscript = "";
             statusDisplay.textContent = '待機中...';
         };
 
-        console.log("マイクの準備が完了した。");
+        mediaRecorder.start();
+
+        // 音声認識の開始
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.continuous = false;
+
+            recognition.onresult = (event) => {
+                currentTranscript = event.results[0][0].transcript;
+            };
+
+            recognition.onerror = (event) => {
+                console.error("音声認識エラー:", event.error);
+            };
+
+            recognition.start();
+        }
+
+        statusDisplay.textContent = "録音中...";
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
+
     } catch (error) {
-        console.error("マイクの初期化に失敗した。", error);
+        console.error("マイクの取得に失敗した。", error);
+        statusDisplay.textContent = "マイクへのアクセスが拒否されたか、エラーが発生した。";
     }
 }
 
-recordBtn.addEventListener('click', () => {
-    if (!mediaRecorder) return;
-    audioChunks = [];
-    finalTranscript = "";
-    statusDisplay.textContent = "録音中...";
-    mediaRecorder.start();
-    if (recognition) {
-        recognition.start();
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
     }
-    recordBtn.disabled = true;
-    stopBtn.disabled = false;
-});
+    if (recognition) {
+        recognition.stop();
+    }
 
-stopBtn.addEventListener('click', () => {
-    if (!mediaRecorder) return;
-    mediaRecorder.stop();
+    // 録音停止時にマイクのストリームを完全に停止（タブの赤い丸を消灯）
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
+
     recordBtn.disabled = false;
     stopBtn.disabled = true;
     statusDisplay.textContent = "処理中...";
-});
+}
 
-initRecorder();
+recordBtn.addEventListener('click', startRecording);
+stopBtn.addEventListener('click', stopRecording);
+stopBtn.disabled = true;
