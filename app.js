@@ -2,19 +2,92 @@ let mediaRecorder;
 let audioChunks = [];
 let currentTranscript = "";
 
+// --- 1. 画面のスタイル（iOS風トグルスイッチ等）の動的注入 ---
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+        font-family: sans-serif;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+    .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+    .toggle-label {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+    }
+`;
+document.head.appendChild(styleElement);
+
+// --- 2. UI要素の動的生成 ---
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
 
-// --- UI要素（漢字切り替えボタン、ライブ表示、リスト）の動的生成 ---
+// トグルスイッチエリア
 const controlPanel = document.createElement('div');
-controlPanel.style.marginBottom = '15px';
+controlPanel.className = 'toggle-container';
 
-const kanjiToggleBtn = document.createElement('button');
-kanjiToggleBtn.id = 'kanjiToggleBtn';
-kanjiToggleBtn.textContent = '漢字モード: OFF (ひらがな)';
-kanjiToggleBtn.style.padding = '6px 12px';
-kanjiToggleBtn.style.cursor = 'pointer';
-controlPanel.appendChild(kanjiToggleBtn);
+const labelLeft = document.createElement('span');
+labelLeft.className = 'toggle-label';
+labelLeft.textContent = 'ひらがな';
+
+const switchLabel = document.createElement('label');
+switchLabel.className = 'switch';
+
+const kanjiToggleInput = document.createElement('input');
+kanjiToggleInput.type = 'checkbox';
+kanjiToggleInput.id = 'kanjiToggleInput';
+
+const sliderSpan = document.createElement('span');
+sliderSpan.className = 'slider';
+
+switchLabel.appendChild(kanjiToggleInput);
+switchLabel.appendChild(sliderSpan);
+
+const labelRight = document.createElement('span');
+labelRight.className = 'toggle-label';
+labelRight.textContent = '漢字ON';
+
+controlPanel.appendChild(labelLeft);
+controlPanel.appendChild(switchLabel);
+controlPanel.appendChild(labelRight);
 document.body.insertBefore(controlPanel, recordBtn);
 
 // ライブ表示エリア
@@ -31,21 +104,14 @@ listContainer.id = 'recordingList';
 listContainer.style.marginTop = '20px';
 document.body.appendChild(listContainer);
 
-// 漢字モードの状態管理（初期値 OFF）
+// 漢字モードの状態管理（初期値 OFF = ひらがな）
 let isKanjiEnabled = false;
 
-kanjiToggleBtn.addEventListener('click', () => {
-    isKanjiEnabled = !isKanjiEnabled;
-    if (isKanjiEnabled) {
-        kanjiToggleBtn.textContent = '漢字モード: ON';
-        kanjiToggleBtn.style.backgroundColor = '#d4edda';
-    } else {
-        kanjiToggleBtn.textContent = '漢字モード: OFF (ひらがな)';
-        kanjiToggleBtn.style.backgroundColor = '';
-    }
+kanjiToggleInput.addEventListener('change', (e) => {
+    isKanjiEnabled = e.target.checked;
 });
 
-// --- 音声認識のセットアップ ---
+// --- 3. 音声認識のセットアップ ---
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let recognition;
 let finalTranscriptCache = "";
@@ -72,8 +138,9 @@ if (SpeechRecognition) {
             finalTranscriptCache += finalTranscript;
         }
 
-        // 録音中は漢字ON/OFFに関わらず、直近の認識音声をひらがな風（またはそのまま）でライブ表示
         currentTranscript = finalTranscriptCache + interimTranscript;
+        
+        // 録音中はモードに関わらずライブ表示
         currentDisplay.textContent = `音声認識中: ${currentTranscript}`;
     };
 
@@ -84,18 +151,7 @@ if (SpeechRecognition) {
     currentDisplay.textContent = "このブラウザは音声認識に対応していない。";
 }
 
-// --- 簡易的なひらがな変換（必要に応じた補正用、ブラウザの確定結果を活用） ---
-function formatText(text, kanjiOn) {
-    if (!text) return "（認識テキストなし）";
-    if (!kanjiOn) {
-        // 漢字OFFの場合は全角カタカナや漢字を簡易的にひらがなに寄せる、あるいはそのまま返す
-        // ブラウザのWeb Speech API特性上、強制変換は難しいため、そのまま使用または必要に応じて調整
-        return text; 
-    }
-    return text; // 漢字ONの場合は音声認識エンジンの最終確定結果（漢字混じり）をそのまま返す
-}
-
-// --- 録音機能のセットアップ ---
+// --- 4. 録音機能のセットアップ ---
 async function initRecorder() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -125,9 +181,16 @@ async function initRecorder() {
             audioElement.controls = true;
 
             const textSpan = document.createElement('span');
-            // 漢字モードの状態に応じて表示を分ける
-            const processedText = formatText(currentTranscript, isKanjiEnabled);
-            textSpan.textContent = `[${isKanjiEnabled ? '漢字' : 'ひらがな'}] ${processedText}`;
+            
+            // 録音停止時にモードを判定
+            let displayText = currentTranscript;
+            if (!isKanjiEnabled) {
+                // ひらがなモードの場合の表示ラベル・調整
+                displayText = currentTranscript ? `[ひらがな] ${currentTranscript}` : "（認識テキストなし）";
+            } else {
+                displayText = currentTranscript ? `[漢字] ${currentTranscript}` : "（認識テキストなし）";
+            }
+            textSpan.textContent = displayText;
 
             itemDiv.appendChild(audioElement);
             itemDiv.appendChild(textSpan);
