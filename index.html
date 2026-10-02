@@ -2,15 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>German Drill</title>
+    <title>Japanese Learning Drill</title>
     <link rel="stylesheet" href="style.css">
+    <!-- kuromoji.js のCDN読み込みを追加 -->
+    <script src="https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/build/kuromoji.js"></script>
 </head>
 <body>
-    <h1>ドイツ語発音ドリル</h1>
-    <p>音声を録音してテストする。</p>
+    <h1>日本語発音・ふりがなドリル</h1>
+    <p>音声を録音してテキストとふりがなを確認する。</p>
     
-    <button id="recordBtn">録音開始</button>
-    <button id="stopBtn" disabled>録音停止</button>
+    <button id="recordBtn">Record</button>
+    <button id="stopBtn" disabled>Stop</button>
 
     <script src="app.js"></script>
 </body>
