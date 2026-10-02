@@ -4,10 +4,10 @@ let audioStream = null;
 let recognition = null;
 let currentTranscript = "";
 
-// --- 1. スタイル設定（スイッチのサイズを完全に統一） ---
+// --- 1. スタイル設定 ---
 const styleElement = document.createElement('style');
 styleElement.textContent = `
-    .controls-wrapper {
+    .controls-panel {
         display: flex;
         align-items: center;
         gap: 20px;
@@ -15,7 +15,7 @@ styleElement.textContent = `
         font-family: sans-serif;
         flex-wrap: wrap;
     }
-    .control-group {
+    .control-item {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -68,91 +68,76 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 
-// 既存のボタン要素を取得
+// 既存ボタンのテキストを英語に変更
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
 
-if (recordBtn && stopBtn) {
-    recordBtn.textContent = 'Record';
-    stopBtn.textContent = 'Stop';
-}
+if (recordBtn) recordBtn.textContent = 'Record';
+if (stopBtn) stopBtn.textContent = 'Stop';
 
-// --- 2. 全体のコントロール配置用ラッパー ---
-const controlsWrapper = document.createElement('div');
-controlsWrapper.className = 'controls-wrapper';
+// --- 2. コントロールパネルの構築（Record/Stopの右側に並べる） ---
+const panel = document.createElement('div');
+panel.className = 'controls-panel';
 
-// 録音・停止ボタンをグループ化
-const recStopGroup = document.createElement('div');
-recStopGroup.style.display = 'flex';
-recStopGroup.style.gap = '8px';
-if (recordBtn) recStopGroup.appendChild(recordBtn);
-if (stopBtn) recStopGroup.appendChild(stopBtn);
-controlsWrapper.appendChild(recStopGroup);
-
-// --- 3. ふりがな切り替えスイッチ（左：Withふりがな / 右：Noふりがな） ---
-const rubyGroup = document.createElement('div');
-rubyGroup.className = 'control-group';
+// ふりがな切り替え (左: Withふりがな, 右: Noふりがな)
+const rubyItem = document.createElement('div');
+rubyItem.className = 'control-item';
 
 const labelWithRuby = document.createElement('span');
-labelWithRuby.className = 'mode-label active-mode'; // デフォルト左なのでアクティブ
+labelWithRuby.className = 'mode-label active-mode';
 labelWithRuby.textContent = 'Withふりがな';
 
-const rubySwitchLabel = document.createElement('label');
-rubySwitchLabel.className = 'switch';
+const rubySwitch = document.createElement('label');
+rubySwitch.className = 'switch';
 const rubyToggleInput = document.createElement('input');
 rubyToggleInput.type = 'checkbox';
-rubyToggleInput.id = 'rubyToggleInput';
-rubyToggleInput.checked = false; // デフォルト左 (Withふりがな)
+rubyToggleInput.checked = false; // 左がデフォルト(With)
 const rubySlider = document.createElement('span');
 rubySlider.className = 'slider';
-rubySwitchLabel.appendChild(rubyToggleInput);
-rubySwitchLabel.appendChild(rubySlider);
+rubySwitch.appendChild(rubyToggleInput);
+rubySwitch.appendChild(rubySlider);
 
 const labelNoRuby = document.createElement('span');
 labelNoRuby.className = 'mode-label inactive-mode';
 labelNoRuby.textContent = 'Noふりがな';
 
-rubyGroup.appendChild(labelWithRuby);
-rubyGroup.appendChild(rubySwitchLabel);
-rubyGroup.appendChild(labelNoRuby);
-controlsWrapper.appendChild(rubyGroup);
+rubyItem.appendChild(labelWithRuby);
+rubyItem.appendChild(rubySwitch);
+rubyItem.appendChild(labelNoRuby);
 
-// --- 4. 自動／手動停止スイッチ（左：Auto Stop / 右：Manual Stop） ---
-const stopGroup = document.createElement('div');
-stopGroup.className = 'control-group';
+// 停止モード切り替え (左: Auto Stop, 右: Manual Stop)
+const stopItem = document.createElement('div');
+stopItem.className = 'control-item';
 
 const labelAuto = document.createElement('span');
-labelAuto.className = 'mode-label active-mode'; // デフォルト左なのでアクティブ
+labelAuto.className = 'mode-label active-mode';
 labelAuto.textContent = 'Auto Stop';
 
-const stopSwitchLabel = document.createElement('label');
-stopSwitchLabel.className = 'switch';
+const stopSwitch = document.createElement('label');
+stopSwitch.className = 'switch';
 const stopModeToggle = document.createElement('input');
 stopModeToggle.type = 'checkbox';
-stopModeToggle.id = 'stopModeToggle';
-stopModeToggle.checked = false; // デフォルト左 (Auto Stop)
+stopModeToggle.checked = false; // 左がデフォルト(Auto)
 const stopSlider = document.createElement('span');
 stopSlider.className = 'slider';
-stopSwitchLabel.appendChild(stopModeToggle);
-stopSwitchLabel.appendChild(stopSlider);
+stopSwitch.appendChild(stopModeToggle);
+stopSwitch.appendChild(stopSlider);
 
 const labelManual = document.createElement('span');
 labelManual.className = 'mode-label inactive-mode';
 labelManual.textContent = 'Manual Stop';
 
-stopGroup.appendChild(labelAuto);
-stopGroup.appendChild(stopSwitchLabel);
-stopGroup.appendChild(labelManual);
-controlsWrapper.appendChild(stopGroup);
+stopItem.appendChild(labelAuto);
+stopItem.appendChild(stopSwitch);
+stopItem.appendChild(labelManual);
 
-// 画面に配置
-if (recStopGroup.parentNode === null) {
-    document.body.insertBefore(controlsWrapper, document.body.firstChild);
-} else {
-    // 既存の親要素の先頭付近に挿入
-    const refNode = recStopGroup.nextSibling || document.body.firstChild;
-    document.body.insertBefore(controlsWrapper, refNode);
-}
+// パネルに要素を追加
+if (recordBtn) panel.appendChild(recordBtn);
+if (stopBtn) panel.appendChild(stopBtn);
+panel.appendChild(rubyItem);
+panel.appendChild(stopItem);
+
+document.body.insertBefore(panel, document.body.firstChild);
 
 // ステータス表示
 const statusDisplay = document.createElement('p');
@@ -160,19 +145,19 @@ statusDisplay.id = 'statusDisplay';
 statusDisplay.style.fontWeight = 'bold';
 statusDisplay.style.color = '#2c3e50';
 statusDisplay.textContent = 'Ready...';
-document.body.insertBefore(statusDisplay, controlsWrapper);
+document.body.insertBefore(statusDisplay, panel);
 
+// リストコンテナ
 const listContainer = document.createElement('div');
 listContainer.id = 'recordingList';
 listContainer.style.marginTop = '20px';
 document.body.appendChild(listContainer);
 
-let isRubyEnabled = true; // 左側がデフォルトなのでON
-let isManualStop = false; // 左側がデフォルトなのでAuto (false)
+let isRubyEnabled = true;
+let isManualStop = false;
 
-// イベント連動
 rubyToggleInput.addEventListener('change', (e) => {
-    isRubyEnabled = !e.target.checked; // 左(false)=With, 右(true)=No
+    isRubyEnabled = !e.target.checked; 
     if (isRubyEnabled) {
         labelWithRuby.className = 'mode-label active-mode';
         labelNoRuby.className = 'mode-label inactive-mode';
@@ -183,7 +168,7 @@ rubyToggleInput.addEventListener('change', (e) => {
 });
 
 stopModeToggle.addEventListener('change', (e) => {
-    isManualStop = e.target.checked; // 左(false)=Auto, 右(true)=Manual
+    isManualStop = e.target.checked; 
     if (!isManualStop) {
         labelAuto.className = 'mode-label active-mode';
         labelManual.className = 'mode-label inactive-mode';
@@ -193,7 +178,7 @@ stopModeToggle.addEventListener('change', (e) => {
     }
 });
 
-// --- 5. 変換辞書（漢字 -> ルビ用） ---
+// --- 3. 変換辞書（漢字 -> ルビ用） ---
 const kanjiMap = {
     "私": "わたし",
     "学生": "がくせい",
@@ -226,7 +211,7 @@ function processText(text, rubyOn) {
     return processed;
 }
 
-// --- 6. 録音および音声認識の制御 ---
+// --- 4. 録音および音声認識の制御 ---
 function finalizeRecording() {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
         mediaRecorder.stop();
