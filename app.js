@@ -57,6 +57,13 @@ styleElement.textContent = `
     input:checked + .slider:before {
         transform: translateX(22px);
     }
+    .control-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        font-family: sans-serif;
+    }
     ruby {
         ruby-align: center;
     }
@@ -70,47 +77,97 @@ document.head.appendChild(styleElement);
 const recordBtn = document.getElementById('recordBtn');
 const stopBtn = document.getElementById('stopBtn');
 
-// --- 2. UI要素の構築（標準：Withふりがな、右側：Noふりがな） ---
+// --- 2. ふりがな切り替えスイッチの構築 ---
 const controlPanel = document.createElement('div');
 controlPanel.className = 'mode-container';
 
 const labelOn = document.createElement('span');
-labelOn.className = 'mode-label active-mode'; // 初期値ONなのでアクティブ
-labelOn.textContent = 'Withふりがな';
+labelOn.className = 'mode-label active-mode';
+labelOn.textContent = 'With Furigana';
 
 const switchLabel = document.createElement('label');
 switchLabel.className = 'switch';
 const rubyToggleInput = document.createElement('input');
 rubyToggleInput.type = 'checkbox';
 rubyToggleInput.id = 'rubyToggleInput';
-rubyToggleInput.checked = true; // 標準でON
+rubyToggleInput.checked = true;
 const sliderSpan = document.createElement('span');
 sliderSpan.className = 'slider';
 switchLabel.appendChild(rubyToggleInput);
 switchLabel.appendChild(sliderSpan);
 
 const labelOff = document.createElement('span');
-labelOff.className = 'mode-label inactive-mode'; // 初期値OFFなのでグレーアウト
-labelOff.textContent = 'Noふりがな';
+labelOff.className = 'mode-label inactive-mode';
+labelOff.textContent = 'No Furigana';
 
 controlPanel.appendChild(labelOn);
 controlPanel.appendChild(switchLabel);
 controlPanel.appendChild(labelOff);
 document.body.insertBefore(controlPanel, recordBtn);
 
+// --- 3. 録音・停止ボタンの右側に「自動／手動停止スイッチ」を配置 ---
+const recordingControlRow = document.createElement('div');
+recordingControlRow.className = 'control-row';
+
+// 既存の recordBtn と stopBtn を一度親から外し、新しいコンテナにまとめる
+const parentElement = recordBtn.parentNode;
+parentElement.insertBefore(recordingControlRow, recordBtn);
+
+recordingControlRow.appendChild(recordBtn);
+recordingControlRow.appendChild(stopBtn);
+
+// 自動／手動停止のスイッチエリア
+const modeContainer = document.createElement('div');
+modeContainer.style.display = 'flex';
+modeContainer.style.alignItems = 'center';
+modeContainer.style.gap = '8px';
+modeContainer.style.marginLeft = '10px';
+
+const autoLabel = document.createElement('span');
+autoLabel.className = 'mode-label active-mode';
+autoLabel.style.fontSize = '13px';
+autoLabel.textContent = 'Auto Stop';
+
+const stopSwitchLabel = document.createElement('label');
+stopSwitchLabel.className = 'switch';
+stopSwitchLabel.style.width = '40px';
+stopSwitchLabel.style.height = '22px';
+
+const stopModeToggle = document.createElement('input');
+stopModeToggle.type = 'checkbox';
+stopModeToggle.id = 'stopModeToggle';
+
+const stopSliderSpan = document.createElement('span');
+stopSliderSpan.className = 'slider';
+stopSwitchLabel.appendChild(stopModeToggle);
+stopSwitchLabel.appendChild(stopSliderSpan);
+
+const manualLabel = document.createElement('span');
+manualLabel.className = 'mode-label inactive-mode';
+manualLabel.style.fontSize = '13px';
+manualLabel.textContent = 'Manual Stop';
+
+modeContainer.appendChild(autoLabel);
+modeContainer.appendChild(stopSwitchLabel);
+modeContainer.appendChild(manualLabel);
+
+recordingControlRow.appendChild(modeContainer);
+
+// ステータス表示
 const statusDisplay = document.createElement('p');
 statusDisplay.id = 'statusDisplay';
 statusDisplay.style.fontWeight = 'bold';
 statusDisplay.style.color = '#2c3e50';
-statusDisplay.textContent = '待機中...';
-document.body.insertBefore(statusDisplay, recordBtn);
+statusDisplay.textContent = 'Ready...';
+document.body.insertBefore(statusDisplay, recordingControlRow);
 
 const listContainer = document.createElement('div');
 listContainer.id = 'recordingList';
 listContainer.style.marginTop = '20px';
 document.body.appendChild(listContainer);
 
-let isRubyEnabled = true; // 標準で有効
+let isRubyEnabled = true;
+let isManualStop = false; // デフォルトは Auto Stop (false)
 
 rubyToggleInput.addEventListener('change', (e) => {
     isRubyEnabled = e.target.checked;
@@ -123,7 +180,18 @@ rubyToggleInput.addEventListener('change', (e) => {
     }
 });
 
-// --- 3. 変換辞書（漢字 -> ルビ用） ---
+stopModeToggle.addEventListener('change', (e) => {
+    isManualStop = e.target.checked;
+    if (isManualStop) {
+        manualLabel.className = 'mode-label active-mode';
+        autoLabel.className = 'mode-label inactive-mode';
+    } else {
+        autoLabel.className = 'mode-label active-mode';
+        manualLabel.className = 'mode-label inactive-mode';
+    }
+});
+
+// --- 4. 変換辞書（漢字 -> ルビ用） ---
 const kanjiMap = {
     "私": "わたし",
     "学生": "がくせい",
@@ -145,7 +213,7 @@ const kanjiMap = {
 };
 
 function processText(text, rubyOn) {
-    if (!text) return "（認識テキストなし）";
+    if (!text) return "（No transcription）";
 
     let processed = text;
 
@@ -158,7 +226,48 @@ function processText(text, rubyOn) {
     return processed;
 }
 
-// --- 4. 録音および音声認識の制御 ---
+// --- 5. 録音および音声認識の制御 ---
+function finalizeRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+    
+    const itemDiv = document.createElement('div');
+    itemDiv.style.display = 'flex';
+    itemDiv.style.alignItems = 'center';
+    itemDiv.style.gap = '15px';
+    itemDiv.style.marginBottom = '10px';
+    itemDiv.style.padding = '8px';
+    itemDiv.style.backgroundColor = '#fff';
+    itemDiv.style.border = '1px solid #ddd';
+    itemDiv.style.borderRadius = '4px';
+
+    const audioElement = document.createElement('audio');
+    audioElement.src = audioUrl;
+    audioElement.controls = true;
+
+    const textSpan = document.createElement('span');
+    const formattedHTML = processText(currentTranscript, isRubyEnabled);
+    textSpan.innerHTML = formattedHTML;
+
+    itemDiv.appendChild(audioElement);
+    itemDiv.appendChild(textSpan);
+    
+    listContainer.appendChild(itemDiv);
+    statusDisplay.textContent = 'Ready...';
+
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
+
+    recordBtn.disabled = false;
+    stopBtn.disabled = true;
+}
+
 async function startRecording() {
     try {
         audioChunks = [];
@@ -178,67 +287,45 @@ async function startRecording() {
             recognition = new SpeechRecognition();
             recognition.lang = 'ja-JP';
             recognition.interimResults = false;
-            recognition.continuous = false;
+
+            // Auto Stop の場合は一文で自動終了、Manual Stop の場合はユーザーが止めるまで継続
+            recognition.continuous = isManualStop;
 
             recognition.onresult = (event) => {
-                currentTranscript = event.results[0][0].transcript;
+                let transcript = "";
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+                currentTranscript = transcript;
             };
 
             recognition.onerror = (event) => {
-                console.error("音声認識エラー:", event.error);
+                console.error("Speech recognition error:", event.error);
             };
 
             recognition.onend = () => {
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                    mediaRecorder.stop();
+                // 自動停止モード（Auto Stop）のときは、認識終了時にそのままファイナライズ
+                if (!isManualStop) {
+                    finalizeRecording();
                 }
-
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const audioUrl = URL.createObjectURL(audioBlob);
-                
-                const itemDiv = document.createElement('div');
-                itemDiv.style.display = 'flex';
-                itemDiv.style.alignItems = 'center';
-                itemDiv.style.gap = '15px';
-                itemDiv.style.marginBottom = '10px';
-                itemDiv.style.padding = '8px';
-                itemDiv.style.backgroundColor = '#fff';
-                itemDiv.style.border = '1px solid #ddd';
-                itemDiv.style.borderRadius = '4px';
-
-                const audioElement = document.createElement('audio');
-                audioElement.src = audioUrl;
-                audioElement.controls = true;
-
-                const textSpan = document.createElement('span');
-                const formattedHTML = processText(currentTranscript, isRubyEnabled);
-                textSpan.innerHTML = formattedHTML;
-
-                itemDiv.appendChild(audioElement);
-                itemDiv.appendChild(textSpan);
-                
-                listContainer.appendChild(itemDiv);
-                statusDisplay.textContent = '待機中...';
-
-                if (audioStream) {
-                    audioStream.getTracks().forEach(track => track.stop());
-                    audioStream = null;
-                }
-
-                recordBtn.disabled = false;
-                stopBtn.disabled = true;
             };
 
             recognition.start();
         }
 
-        statusDisplay.textContent = "録音中...";
+        statusDisplay.textContent = "Recording...";
         recordBtn.disabled = true;
-        stopBtn.disabled = false;
+
+        // 手動停止（Manual Stop）が有効なときだけストップボタンを有効化する
+        if (isManualStop) {
+            stopBtn.disabled = false;
+        } else {
+            stopBtn.disabled = true; // Auto Stop のときはグレーアウトのまま
+        }
 
     } catch (error) {
-        console.error("マイクの取得に失敗した。", error);
-        statusDisplay.textContent = "マイクへのアクセスエラー。";
+        console.error("Microphone access error:", error);
+        statusDisplay.textContent = "Microphone access error.";
     }
 }
 
@@ -246,7 +333,8 @@ function stopRecording() {
     if (recognition) {
         recognition.stop();
     }
-    statusDisplay.textContent = "処理中...";
+    statusDisplay.textContent = "Processing...";
+    finalizeRecording();
 }
 
 recordBtn.addEventListener('click', startRecording);
