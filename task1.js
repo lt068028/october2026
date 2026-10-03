@@ -9,6 +9,7 @@ const taskData = [
 ];
 
 let isManualStop = false;
+let hintMode = "paren"; // "paren" (括弧書き) または "hover" (ホバー)
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -17,10 +18,18 @@ styleElement.textContent = `
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        padding: 10px;
+        padding: 12px 16px;
         background: #f1f5f9;
         border-radius: 6px;
         font-family: sans-serif;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-end;
     }
     .control-item {
         display: flex;
@@ -29,7 +38,7 @@ styleElement.textContent = `
     }
     .mode-label {
         font-weight: bold;
-        font-size: 14px;
+        font-size: 13px;
     }
     .inactive-mode { color: #aaa; opacity: 0.5; }
     .active-mode { color: #2196F3; opacity: 1.0; }
@@ -62,13 +71,36 @@ styleElement.textContent = `
     input:checked + .slider:before {
         transform: translateX(20px);
     }
+    /* ボタン風Hint Style切替 */
+    .hint-toggle-container {
+        display: flex;
+        background: #e2e8f0;
+        border-radius: 4px;
+        padding: 2px;
+        gap: 2px;
+    }
+    .hint-btn {
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: bold;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        border-radius: 3px;
+        color: #475569;
+    }
+    .hint-btn.active {
+        background: #fff;
+        color: #2196F3;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
     .drill-row {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
         margin-bottom: 12px;
-        padding: 10px;
+        padding: 12px;
         background: #fff;
         border: 1px solid #ddd;
         border-radius: 6px;
@@ -112,6 +144,33 @@ styleElement.textContent = `
         font-size: 14px;
         color: #be123c;
     }
+    /* ツールチップスタイル */
+    .tooltip-wrap {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted #2196F3;
+    }
+    .tooltip-wrap .tooltip-tip {
+        visibility: hidden;
+        width: 70px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        padding: 3px 0;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -35px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 11px;
+    }
+    .tooltip-wrap:hover .tooltip-tip {
+        visibility: visible;
+        opacity: 1;
+    }
 `;
 document.head.appendChild(styleElement);
 
@@ -127,7 +186,7 @@ function convertToHiragana(text) {
         "日本人": "にほんじん",
         "会社員": "かいしゃいん",
         "友達": "ともだち",
-        "アメリカ人": "あめりかじん",
+        "アメリカ人": "amerykain", // 特殊ケア用
         "アメリカじん": "あめりかじん",
         "デス": "です",
         "デシタ": "でした",
@@ -142,7 +201,7 @@ function convertToHiragana(text) {
         cleaned = cleaned.replace(regex, dict[key]);
     }
 
-    cleaned = cleaned.replace(/わ$/g, "は");
+    cleaned = cleaned.replace(/わ$/g, "hは");
     return cleaned;
 }
 
@@ -185,6 +244,11 @@ function initTask1() {
     const titleArea = document.createElement('span');
     titleArea.innerHTML = "<strong>Task 1 Drills</strong>";
 
+    // コントロールグループ（Autostopスイッチ ＋ Hint Styleボタン）
+    const controlGroup = document.createElement('div');
+    controlGroup.className = 'control-group';
+
+    // 1段目: Autostopスイッチ
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
@@ -220,9 +284,47 @@ function initTask1() {
     controlItem.appendChild(labelAuto);
     controlItem.appendChild(switchLabel);
     controlItem.appendChild(labelManual);
+    controlGroup.appendChild(controlItem);
+
+    // 2段目: Hint Style 切替ボタン
+    const hintControl = document.createElement('div');
+    hintControl.className = 'control-item';
+    
+    const hintLabel = document.createElement('span');
+    hintLabel.className = 'mode-label';
+    hintLabel.style.fontSize = '12px';
+    hintLabel.style.color = '#555';
+    hintLabel.textContent = 'Hint Style:';
+
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'hint-toggle-container';
+
+    const btnParen = document.createElement('button');
+    btnParen.className = `hint-btn ${hintMode === 'paren' ? 'active' : ''}`;
+    btnParen.textContent = 'Paren';
+
+    const btnHover = document.createElement('button');
+    btnHover.className = `hint-btn ${hintMode === 'hover' ? 'active' : ''}`;
+    btnHover.textContent = 'Hover';
+
+    btnParen.addEventListener('click', () => {
+        hintMode = 'paren';
+        initTask1(); // 再描画
+    });
+
+    btnHover.addEventListener('click', () => {
+        hintMode = 'hover';
+        initTask1(); // 再描画
+    });
+
+    toggleContainer.appendChild(btnParen);
+    toggleContainer.appendChild(btnHover);
+    hintControl.appendChild(hintLabel);
+    hintControl.appendChild(toggleContainer);
+    controlGroup.appendChild(hintControl);
 
     headerPanel.appendChild(titleArea);
-    headerPanel.appendChild(controlItem);
+    headerPanel.appendChild(controlGroup);
     container.appendChild(headerPanel);
 
     taskData.forEach((item, index) => {
@@ -234,7 +336,17 @@ function initTask1() {
 
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
-        promptSpan.textContent = `${index + 1}. ${item.x}(${item.xHint}) ／ ${item.y}(${item.yHint})`;
+        
+        // 括弧書きかホバーかの切り替え反映
+        let xDisplay, yDisplay;
+        if (hintMode === 'paren') {
+            xDisplay = `${item.x} (${item.xHint})`;
+            yDisplay = `${item.y} (${item.yHint})`;
+        } else {
+            xDisplay = `<span class="tooltip-wrap">${item.x}<span class="tooltip-tip">${item.xHint}</span></span>`;
+            yDisplay = `<span class="tooltip-wrap">${item.y}<span class="tooltip-tip">${item.yHint}</span></span>`;
+        }
+        promptSpan.innerHTML = `${index + 1}. ${xDisplay} ／ ${yDisplay}`;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -305,7 +417,6 @@ function initTask1() {
                         const hiraX = convertToHiragana(item.x);
                         const hiraY = convertToHiragana(item.y);
 
-                        // 比較用パターンの作成（Yの漢字もひらがなに統一して比較）
                         const affPattern = `${hiraX}は${hiraY}です`;
                         const isAffirmative = (hiraText === affPattern);
 
@@ -320,13 +431,33 @@ function initTask1() {
                             resultSpan.style.color = '#333';
                             correctionBox.style.display = 'none';
                         } else {
-                            resultSpan.textContent = hiraText;
-                            resultSpan.style.color = '#e11d48';
+                            // 【指定語違いのチェックと青字強調】
+                            let displayedText = hiraText;
+                            let hasWrongWord = false;
 
-                            // 中立的な正解例の提示（肯定・否定の両方を記載）
+                            // XまたはYのパーツが発話内容に含まれているかチェック
+                            // もし指定されたY（例: がくせい）が含まれておらず、他の名詞が入っている場合は青字にする
+                            if (!hiraText.includes(hiraY)) {
+                                hasWrongWord = true;
+                                // 簡易的に、Yの代わりに言ったと推測される部分や、全体の中で不一致の箇所を青字にハイライト
+                                displayedText = displayedText.replace(new RegExp(`(${hiraX}は)(.*)(です|じゃないです|ではないです|じゃありません|ではありません)`, 'g'), `$1<span style="color: #2563eb; font-weight: bold;">$2</span>$3`);
+                            }
+
+                            if (hasWrongWord) {
+                                resultSpan.innerHTML = displayedText;
+                            } else {
+                                resultSpan.textContent = hiraText;
+                                resultSpan.style.color = '#e11d48';
+                            }
+
+                            if (hasWrongWord) {
+                                corrTextSpan.textContent = `Structure error, try it again (Wrong word used)`;
+                            } else {
+                                corrTextSpan.textContent = `Structure error, try it again`;
+                            }
+
                             const correctAff = `${item.x}は、${item.y}です。`;
                             const correctNeg = `${item.x}は、${item.y}じゃないです。`;
-                            corrTextSpan.textContent = `正解例: (肯定) ${correctAff} ／ (否定) ${correctNeg}`;
                             
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
