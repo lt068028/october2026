@@ -1,4 +1,3 @@
-// 英語プロンプトと期待される日本語のデータセット
 const drillData = [
     { en: "It's a nice day.", jp: "てんきがいいです" },
     { en: "I want a watch.", jp: "とけいがほしいです" },
@@ -10,9 +9,8 @@ const drillData = [
     { en: "I want an umbrella.", jp: "かさがほしいです" }
 ];
 
-let isManualStop = false; // 初期値は Auto Stop
+let isManualStop = false;
 
-// スタイル設定
 const styleElement = document.createElement('style');
 styleElement.textContent = `
     .header-panel {
@@ -100,13 +98,11 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 
-// 画面の構築
 function initCompositionDrill() {
     const container = document.getElementById('compositionList');
     if (!container) return;
     container.innerHTML = "";
 
-    // ページ上部右端にコントロールパネルを配置
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
@@ -116,9 +112,14 @@ function initCompositionDrill() {
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
+    const modeTitle = document.createElement('span');
+    modeTitle.style.fontSize = '13px';
+    modeTitle.style.fontWeight = 'bold';
+    modeTitle.textContent = 'とめる:';
+
     const labelAuto = document.createElement('span');
     labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = 'Auto';
+    labelAuto.textContent = 'Autostop';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -132,7 +133,7 @@ function initCompositionDrill() {
 
     const labelManual = document.createElement('span');
     labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = 'Manual';
+    labelManual.textContent = 'Manual stop';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
@@ -145,6 +146,7 @@ function initCompositionDrill() {
         }
     });
 
+    controlItem.appendChild(modeTitle);
     controlItem.appendChild(labelAuto);
     controlItem.appendChild(switchLabel);
     controlItem.appendChild(labelManual);
@@ -153,7 +155,6 @@ function initCompositionDrill() {
     headerPanel.appendChild(controlItem);
     container.appendChild(headerPanel);
 
-    // 各ドリル行の生成
     drillData.forEach((item) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
@@ -163,10 +164,10 @@ function initCompositionDrill() {
         promptSpan.textContent = item.en;
 
         const recordBtn = document.createElement('button');
-        recordBtn.textContent = 'Record';
+        recordBtn.textContent = '🔴 とる';
 
         const stopBtn = document.createElement('button');
-        stopBtn.textContent = 'Stop';
+        stopBtn.textContent = '⏹️ とめる';
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement('span');
@@ -193,7 +194,6 @@ function initCompositionDrill() {
                     recognition = new SpeechRecognition();
                     recognition.lang = 'ja-JP';
                     recognition.interimResults = false;
-                    // Manualモードのときは連続認識（手動停止まで継続）
                     recognition.continuous = isManualStop;
 
                     recognition.onresult = (e) => {
@@ -226,7 +226,6 @@ function initCompositionDrill() {
                 }
 
                 recordBtn.disabled = true;
-                // ManualモードのときのみStopボタンを有効化
                 stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = '#2196F3';
@@ -261,7 +260,6 @@ function initCompositionDrill() {
     });
 }
 
-// 即時実行
 document.addEventListener('DOMContentLoaded', initCompositionDrill);
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     initCompositionDrill();
