@@ -64,7 +64,8 @@ styleElement.textContent = `
     }
     .drill-row {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 12px;
         margin-bottom: 12px;
         padding: 10px;
@@ -72,6 +73,12 @@ styleElement.textContent = `
         border: 1px solid #ddd;
         border-radius: 6px;
         font-family: sans-serif;
+    }
+    .top-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
         flex-wrap: wrap;
     }
     .prompt-label {
@@ -107,6 +114,40 @@ styleElement.textContent = `
     }
 `;
 document.head.appendChild(styleElement);
+
+// 簡易的なひらがな変換（正規化）関数
+function convertToHiragana(text) {
+    if (!text) return "";
+    let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+    
+    // よく使われる漢字や表現をひらがなに置換
+    const dict = {
+        "私": "わたし",
+        "私わ": "わたしは",
+        "学生": "がくせい",
+        "先生": "せんせい",
+        "日本人": "にほんじん",
+        "会社員": "かいしゃいん",
+        "友達": "ともだち",
+        "アメリカ人": "あめりかじん",
+        "アメリカじん": "あめりかじん",
+        "デス": "です",
+        "デシタ": "でした",
+        "じゃ無い": "じゃない",
+        "ヂャナイ": "じゃない"
+    };
+
+    for (let key in dict) {
+        const regex = new RegExp(key, "g");
+        cleaned = cleaned.replace(regex, dict[key]);
+    }
+
+    // 助詞の「は」が「わ」と認識されるケースを吸収
+    // 例: 「わたしわ」→「わたしは」に統一して判定しやすくする
+    cleaned = cleaned.replace(/わ$/g, "は");
+
+    return cleaned;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const setupExampleListen = (btnId, text) => {
@@ -190,18 +231,13 @@ function initTask1() {
     taskData.forEach((item, index) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
-        rowDiv.style.flexDirection = 'column';
-        rowDiv.style.alignItems = 'flex-start';
 
         const topRow = document.createElement('div');
-        topRow.style.display = 'flex';
-        topRow.style.alignItems = 'center';
-        topRow.style.gap = '12px';
-        topRow.style.width = '100%';
+        topRow.className = 'top-row';
 
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
-        promptSpan.textContent = `${index + 1}. ${item.x} ／${item.y}`;
+        promptSpan.textContent = `${index + 1}. ${item.x} ／ ${item.y}`;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -220,7 +256,6 @@ function initTask1() {
         topRow.appendChild(stopBtn);
         topRow.appendChild(resultSpan);
 
-        // 誤答時の訂正ボックス（「きく」ボタン＋正しいテキスト）
         const correctionBox = document.createElement('div');
         correctionBox.className = 'correction-box';
         
@@ -258,47 +293,40 @@ function initTask1() {
                     recognition.continuous = isManualStop;
 
                     recognition.onresult = (e) => {
-                        let transcript = "";
+                        let rawTranscript = "";
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
-                            transcript += e.results[i][0].transcript;
+                            rawTranscript += e.results[i][0].transcript;
                         }
 
-                        // 極端に短い雑音や無音を排除
-                        if (transcript.replace(/[\s.,]/g, "").length < 2) {
-                            resultSpan.textContent = transcript + " (Too short)";
+                        // 無音や極端な短音の排除
+                        if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+                            resultSpan.textContent = rawTranscript + " (Too short)";
                             resultSpan.style.color = '#666';
                             return;
                         }
 
-                        // ひらがな正規化の簡易処理
-                        let clean = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "")
-                                              .replace(/私/g, "わたし")
-                                              .replace(/学生/g, "がくせい")
-                                              .replace(/先生/g, "せんせい")
-                                              .replace(/会社員/g, "かいしゃいん")
-                                              .replace(/友達/g, "ともだち");
+                        // 内部でひらがなに変換・正規化
+                        const hiraText = convertToHiragana(rawTranscript);
 
                         const targetX = item.x;
                         const targetY = item.y;
 
-                        // 許容パターンの判定（肯定 または 否定）
-                        const isAffirmative = clean.includes(targetX) && clean.includes(targetY) && clean.includes("です") && !clean.includes("ない");
-                        const isNegative = clean.includes(targetX) && clean.includes(targetY) && (clean.includes("じゃない") || clean.includes("ではありません"));
+                        // 文法パターンの判定（肯定 または 否定）
+                        const isAffirmative = hiraText.includes(targetX) && hiraText.includes(targetY) && hiraText.includes("です") && !hiraText.includes("ない");
+                        const isNegative = hiraText.includes(targetX) && hiraText.includes(targetY) && (hiraText.includes("じゃない") || hiraText.includes("ではありません"));
 
+                        // 画面上には漢字を挟まず、最終的なひらがな文字列を表示
                         if (isAffirmative || isNegative) {
-                            // 正解の場合：✅表示のみ、他は出さない
-                            resultSpan.textContent = transcript + " ✅";
+                            resultSpan.textContent = hiraText + " ✅";
                             resultSpan.style.color = '#333';
                             correctionBox.style.display = 'none';
                         } else {
-                            // 間違いの場合：テキスト表示 ＋ 訂正ボックス出現
-                            resultSpan.textContent = transcript;
+                            resultSpan.textContent = hiraText;
                             resultSpan.style.color = '#e11d48';
 
                             const correctSentence = `${targetX}は、${targetY}です。`;
                             corrTextSpan.textContent = `正解例: ${correctSentence}`;
                             
-                            // 訂正ボックス内の「きく」ボタン設定
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
                                 corrListenBtn.textContent = '🔊 再生中...';
