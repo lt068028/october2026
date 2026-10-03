@@ -1,56 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>Custom Practice</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 40px;
-            background-color: #f9f9f9;
-        }
-        .practice-container {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 600px;
-        }
-        .select-group {
-            margin-bottom: 25px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        select {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .translation-display {
-            margin-top: 8px;
-            font-size: 15px;
-        }
-        .translation-display span {
-            font-weight: bold;
-            color: #333;
-        }
-    </style>
-</head>
-<body>
-
-<div class="practice-container">
-    <h2>Custom Practice</h2>
-
+<!-- Custom Practice 区画 -->
+<div class="custom-practice-section">
     <!-- Xの選択 -->
     <div class="select-group">
-        <label for="select-x">Select X (Person):</label>
         <select id="select-x" onchange="updateTranslation('x')">
-            <option value="" disabled selected>-- Choose an option --</option>
+            <option value="" disabled selected>-- Select X (Person) --</option>
             <option value="ともだち">Friend</option>
             <option value="かぞく">Family</option>
             <option value="どうりょう">Colleague</option>
@@ -63,15 +16,14 @@
             <option value="きょうだい">Sibling</option>
         </select>
         <div class="translation-display">
-            Meaning: <span id="trans-x">&rarr; (Not selected)</span>
+            <span id="trans-x">&rarr; <strong>(Not selected)</strong></span>
         </div>
     </div>
 
     <!-- Yの選択 -->
     <div class="select-group">
-        <label for="select-y">Select Y (Occupation / Attribute):</label>
         <select id="select-y" onchange="updateTranslation('y')">
-            <option value="" disabled selected>-- Choose an option --</option>
+            <option value="" disabled selected>-- Select Y (Occupation) --</option>
             <option value="いしゃ">Doctor</option>
             <option value="エンジニア">Engineer</option>
             <option value="けんきゅうしゃ">Researcher</option>
@@ -83,24 +35,7 @@
             <option value="アルバイト">Part-time worker</option>
         </select>
         <div class="translation-display">
-            Meaning: <span id="trans-y">&rarr; (Not selected)</span>
+            <span id="trans-y">&rarr; <strong>(Not selected)</strong></span>
         </div>
     </div>
 </div>
-
-<script>
-    function updateTranslation(type) {
-        const select = document.getElementById(`select-${type}`);
-        const display = document.getElementById(`trans-${type}`);
-        const selectedValue = select.value;
-        
-        if (selectedValue) {
-            display.innerHTML = `&rarr; <strong>${selectedValue}</strong>`;
-        } else {
-            display.innerHTML = `&rarr; (Not selected)`;
-        }
-    }
-</script>
-
-</body>
-</html>
