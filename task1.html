@@ -5,31 +5,30 @@
     <title>Task 1: XはYです</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ツールチップ（ポップアップ）用のスタイル */
-        .tooltip-container {
+        /* ツールチップスタイル */
+        .tooltip-wrap {
             position: relative;
             display: inline-block;
-            cursor: pointer;
-            border-bottom: 1px dotted #666;
+            border-bottom: 1px dotted #2196F3;
         }
-        .tooltip-container .tooltip-text {
+        .tooltip-wrap .tooltip-tip {
             visibility: hidden;
-            width: 80px;
+            width: 70px;
             background-color: #333;
             color: #fff;
             text-align: center;
             border-radius: 4px;
-            padding: 4px 0;
+            padding: 3px 0;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -40px;
+            margin-left: -35px;
             opacity: 0;
             transition: opacity 0.3s;
-            font-size: 12px;
+            font-size: 11px;
         }
-        .tooltip-container:hover .tooltip-text {
+        .tooltip-wrap:hover .tooltip-tip {
             visibility: visible;
             opacity: 1;
         }
@@ -41,29 +40,11 @@
     </div>
     <h1>XはYです</h1>
     
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-        <p style="color: #555; font-size: 14px; margin: 0;">Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
-        
-        <!-- 英語意味の表示切替コントロール -->
-        <div style="font-size: 13px; font-family: sans-serif; background: #f1f5f9; padding: 6px 10px; border-radius: 4px;">
-            Hint style: 
-            <label style="margin-left: 5px;"><input type="radio" name="hintMode" value="paren" checked> 括弧書き</label>
-            <label style="margin-left: 5px;"><input type="radio" name="hintMode" value="hover"> ホバー</label>
-        </div>
-    </div>
+    <!-- フォントサイズを拡大 -->
+    <p style="color: #555; font-size: 16px; margin-bottom: 15px;">Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
 
-    <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-top: 15px; margin-bottom: 20px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px;">
-        <div>
-            <strong>Affirmative:</strong> わたし(I) ／ がくせい(student) 
-            <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-            <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
-        </div>
-        <div>
-            <strong>Negative:</strong> わたし(I) ／ せんせい(teacher) 
-            <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-            <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
-        </div>
-    </div>
+    <!-- 例文セクション（JS連動） -->
+    <div id="exampleSection"></div>
 
     <div id="task1List" style="margin-top: 20px;"></div>
 
