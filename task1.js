@@ -146,20 +146,12 @@ styleElement.textContent = `
         color: #0f172a;
         font-size: 16px;
     }
-    .custom-input {
+    .custom-select {
         padding: 6px 10px;
         font-size: 15px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        width: 110px;
-    }
-    .translation-preview {
-        font-size: 15px;
-        color: #1e293b;
-        font-weight: bold;
-        margin-left: 6px;
-        margin-right: 12px;
-        display: inline-block;
+        background-color: #fff;
     }
     button {
         padding: 6px 12px;
@@ -322,7 +314,7 @@ function initTask1() {
     if (!container) return;
     container.innerHTML = "";
 
-    // 1つ目のパネル：Task 1；Drills（タイトルとインストラクションを縦に配置）
+    // 1つ目のパネル：Task 1；Drills
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
@@ -334,7 +326,7 @@ function initTask1() {
 
     const descArea1 = document.createElement('span');
     descArea1.style.color = '#333';
-    descArea1.style.fontSize = '14px';
+    descArea1.style.fontSize = '15px'; // フォントサイズを拡大
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup1.appendChild(titleArea1);
@@ -387,7 +379,7 @@ function initTask1() {
 
     const labelHover = document.createElement('span');
     labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelHover.innerHTML = '🏷️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.innerHTML = '🏷️️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
@@ -422,7 +414,7 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // 2つ目のパネル：Task 2；Custom Practice（タイトルとインストラクションを縦に配置）
+    // 2つ目のパネル：Task 2；Custom Practice
     const customHeaderPanel = document.createElement('div');
     customHeaderPanel.className = 'header-panel';
     customHeaderPanel.style.marginTop = "30px";
@@ -435,7 +427,7 @@ function initTask1() {
 
     const descArea2 = document.createElement('span');
     descArea2.style.color = '#333';
-    descArea2.style.fontSize = '14px';
+    descArea2.style.fontSize = '15px'; // フォントサイズを拡大
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
@@ -444,8 +436,18 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    const placeholdersX = ["child", "best friend", "colleague"];
-    const placeholdersY = ["British", "nurse", "engineer"];
+    // プルダウン用のサンプル候補（3つずつ）
+    const optionsX = [
+        { label: "わたし (I)", value: "わたし" },
+        { label: "ともだち (friend)", value: "ともだち" },
+        { label: "こども (child)", value: "こども" }
+    ];
+
+    const optionsY = [
+        { label: "がくせい (student)", value: "がくせい" },
+        { label: "せんせい (teacher)", value: "せんせい" },
+        { label: "エンジニア (engineer)", value: "エンジニア" }
+    ];
 
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement('div');
@@ -456,12 +458,25 @@ function initTask1() {
 
         const promptLabel = document.createElement('span');
         promptLabel.className = 'prompt-label';
+        
+        // X用プルダウンの生成
+        let selectXHtml = `<select id="customX_${i}" class="custom-select">`;
+        optionsX.forEach(opt => {
+            selectXHtml += `<option value="${opt.value}">${opt.label}</option>`;
+        });
+        selectXHtml += `</select>`;
+
+        // Y用プルダウンの生成
+        let selectYHtml = `<select id="customY_${i}" class="custom-select">`;
+        optionsY.forEach(opt => {
+            selectYHtml += `<option value="${opt.value}">${opt.label}</option>`;
+        });
+        selectYHtml += `</select>`;
+
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
-            <input type="text" id="customX_${i}" class="custom-input" placeholder="e.g. ${placeholdersX[i-1]}">
-            <span id="previewX_${i}" class="translation-preview"></span> は 
-            <input type="text" id="customY_${i}" class="custom-input" placeholder="e.g. ${placeholdersY[i-1]}">
-            <span id="previewY_${i}" class="translation-preview"></span>
+            ${selectXHtml} は 
+            ${selectYHtml}
         `;
 
         const recordBtn = document.createElement('button');
@@ -496,38 +511,11 @@ function initTask1() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        const inputX = promptLabel.querySelector(`#customX_${i}`);
-        const previewX = promptLabel.querySelector(`#previewX_${i}`);
-        const inputY = promptLabel.querySelector(`#customY_${i}`);
-        const previewY = promptLabel.querySelector(`#previewY_${i}`);
+        const selectX = promptLabel.querySelector(`#customX_${i}`);
+        const selectY = promptLabel.querySelector(`#customY_${i}`);
 
-        const updatePreview = (input, preview) => {
-            const val = input.value.trim().toLowerCase();
-            if (!val) {
-                preview.innerHTML = "";
-                return;
-            }
-            if (customDict[val]) {
-                preview.textContent = `→ ${customDict[val].hira}`;
-            } else {
-                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706; font-weight:bold;">→ *${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
-            }
-        };
-
-        inputX.addEventListener('input', () => updatePreview(inputX, previewX));
-        inputY.addEventListener('input', () => updatePreview(inputY, previewY));
-
-        const getXValue = () => {
-            const val = inputX.value.trim().toLowerCase();
-            if (!val) return "わたし";
-            return customDict[val] ? customDict[val].hira : inputX.value.trim();
-        };
-
-        const getYValue = () => {
-            const val = inputY.value.trim().toLowerCase();
-            if (!val) return "がくせい";
-            return customDict[val] ? customDict[val].hira : inputY.value.trim();
-        };
+        const getXValue = () => selectX.value;
+        const getYValue = () => selectY.value;
 
         bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue);
 
