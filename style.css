@@ -14,15 +14,16 @@
     --button-disabled-bg: #e2e8f0;
     --button-disabled-text: #a0aec0;
     
+    /* ツールチップ・ポップアップ関連 */
     --tooltip-bg: #333333;
     --tooltip-text: #ffffff;
     
+    /* エラー・警告ボックス関連 */
     --error-bg: #fff1f2;
     --error-border: #fda4af;
     --error-text: #be123c;
 }
 
-/* OSがダークモードのときだけ上書きする */
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-main: #0f172a;
@@ -53,7 +54,7 @@ body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     font-family: sans-serif;
-    max-width: 600px;
+    max-width: 900px; /* 900pxに拡大・統一 */
     margin: 40px auto;
     padding: 20px;
     transition: background-color 0.3s, color 0.3s;
