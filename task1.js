@@ -1,11 +1,11 @@
 const taskData = [
-    { x: "わたし", y: "がくせい", hint: "student" },
-    { x: "わたし", y: "せんせい", hint: "teacher" },
-    { x: "わたし", y: "日本人", hint: "Japanese" },
-    { x: "わたし", y: "かいしゃいん", hint: "office worker" },
-    { x: "ともだち", y: "がくせい", hint: "student" },
-    { x: "ともだち", y: "かいしゃいん", hint: "office worker" },
-    { x: "ともだち", y: "アメリカ人", hint: "American" }
+    { x: "わたし", y: "がくせい", xHint: "I", yHint: "student" },
+    { x: "わたし", y: "せんせい", xHint: "I", yHint: "teacher" },
+    { x: "わたし", y: "日本人", xHint: "I", yHint: "Japanese" },
+    { x: "わたし", y: "かいしゃいん", xHint: "I", yHint: "office worker" },
+    { x: "ともだち", y: "がくせい", xHint: "friend", yHint: "student" },
+    { x: "ともだち", y: "かいしゃいん", xHint: "friend", yHint: "office worker" },
+    { x: "ともだち", y: "アメリカ人", xHint: "friend", yHint: "American" }
 ];
 
 let isManualStop = false;
@@ -83,7 +83,7 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 220px;
+        min-width: 250px;
         font-size: 16px;
         color: #333;
     }
@@ -234,7 +234,7 @@ function initTask1() {
 
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
-        promptSpan.textContent = `${index + 1}. ${item.x} ／ ${item.y}`;
+        promptSpan.textContent = `${index + 1}. ${item.x}(${item.xHint}) ／ ${item.y}(${item.yHint})`;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -302,19 +302,17 @@ function initTask1() {
                         }
 
                         const hiraText = convertToHiragana(rawTranscript);
-                        const targetX = item.x;
-                        const targetY = item.y;
+                        const hiraX = convertToHiragana(item.x);
+                        const hiraY = convertToHiragana(item.y);
 
-                        // 【厳格な判定】
-                        // 肯定: XとY以外の構成語が「は」と「です」のみで成り立っている（完全一致）
-                        const affPattern = `${targetX}は${targetY}です`;
+                        // 比較用パターンの作成（Yの漢字もひらがなに統一して比較）
+                        const affPattern = `${hiraX}は${hiraY}です`;
                         const isAffirmative = (hiraText === affPattern);
 
-                        // 否定: 4つのバリエーションのいずれかに完全一致
-                        const negPattern1 = `${targetX}は${targetY}じゃないです`;
-                        const negPattern2 = `${targetX}は${targetY}ではないです`;
-                        const negPattern3 = `${targetX}は${targetY}じゃありません`;
-                        const negPattern4 = `${targetX}は${targetY}ではありません`;
+                        const negPattern1 = `${hiraX}は${hiraY}じゃないです`;
+                        const negPattern2 = `${hiraX}は${hiraY}ではないです`;
+                        const negPattern3 = `${hiraX}は${hiraY}じゃありません`;
+                        const negPattern4 = `${hiraX}は${hiraY}ではありません`;
                         const isNegative = (hiraText === negPattern1 || hiraText === negPattern2 || hiraText === negPattern3 || hiraText === negPattern4);
 
                         if (isAffirmative || isNegative) {
@@ -325,14 +323,16 @@ function initTask1() {
                             resultSpan.textContent = hiraText;
                             resultSpan.style.color = '#e11d48';
 
-                            const correctSentence = `${targetX}は、${targetY}です。`;
-                            corrTextSpan.textContent = `正解例: ${correctSentence} (または否定形)`;
+                            // 中立的な正解例の提示（肯定・否定の両方を記載）
+                            const correctAff = `${item.x}は、${item.y}です。`;
+                            const correctNeg = `${item.x}は、${item.y}じゃないです。`;
+                            corrTextSpan.textContent = `正解例: (肯定) ${correctAff} ／ (否定) ${correctNeg}`;
                             
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
                                 corrListenBtn.textContent = '🔊 再生中...';
                                 setTimeout(() => {
-                                    const utterance = new SpeechSynthesisUtterance(correctSentence);
+                                    const utterance = new SpeechSynthesisUtterance(correctAff);
                                     utterance.lang = 'ja-JP';
                                     speechSynthesis.speak(utterance);
                                     utterance.onend = () => {
