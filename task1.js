@@ -472,9 +472,8 @@ function initTask1() {
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
             <select id="customX_${i}" class="custom-select">${optionsXHtml}</select>
-            <span id="previewX_${i}" class="translation-preview"></span> は 
+            <span id="labelHa_${i}">は</span> 
             <select id="customY_${i}" class="custom-select">${optionsYHtml}</select>
-            <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
         const recordBtn = document.createElement('button');
@@ -510,21 +509,23 @@ function initTask1() {
         rowDiv.appendChild(correctionBox);
 
         const selectX = promptLabel.querySelector(`#customX_${i}`);
-        const previewX = promptLabel.querySelector(`#previewX_${i}`);
+        const labelHa = promptLabel.querySelector(`#labelHa_${i}`);
         const selectY = promptLabel.querySelector(`#customY_${i}`);
-        const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
-        const updatePreview = (select, preview) => {
-            const val = select.value;
-            if (!val) {
-                preview.textContent = "";
-                return;
+        const updateDisplay = () => {
+            const valX = selectX.value;
+            const valY = selectY.value;
+
+            // 両方選択されたら「は」の表示を非表示にする
+            if (valX && valY) {
+                labelHa.style.display = 'none';
+            } else {
+                labelHa.style.display = 'inline';
             }
-            preview.textContent = `→ ${val}`;
         };
 
-        selectX.addEventListener('change', () => updatePreview(selectX, previewX));
-        selectY.addEventListener('change', () => updatePreview(selectY, previewY));
+        selectX.addEventListener('change', updateDisplay);
+        selectY.addEventListener('change', updateDisplay);
 
         const getXValue = () => selectX.value || "ともだち";
         const getYValue = () => selectY.value || "いしゃ";
