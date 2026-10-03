@@ -85,9 +85,10 @@ function addRuby(text) {
 // 画面の構築
 function initDrill() {
     const drillList = document.getElementById('drillList');
+    if (!drillList) return;
     drillList.innerHTML = "";
 
-    modelSentences.forEach((sentence, index) => {
+    modelSentences.forEach((sentence) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
