@@ -9,7 +9,7 @@ const taskData = [
 ];
 
 let isManualStop = false;
-let hintMode = "paren"; // "paren" (括弧書き) または "hover" (ホバー)
+let hintMode = "hover"; // デフォルトを hover に設定
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -261,36 +261,36 @@ function initTask1() {
     controlItem.appendChild(labelManual);
     controlGroup.appendChild(controlItem);
 
-    // 2段目: Vocab Hover / Vocab Paren スイッチ（Autostopと同一デザイン）
+    // 2段目: 🏷️ Vocab スイッチ（左: Hover, 右: Paren）
     const vocabControl = document.createElement('div');
     vocabControl.className = 'control-item';
 
-    const labelParen = document.createElement('span');
-    labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'}`;
-    labelParen.textContent = '📖 Vocab Paren';
+    const labelHover = document.createElement('span');
+    labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'}`;
+    labelHover.textContent = '🏷️ Vocab Hover';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
     const vocabSwitchInput = document.createElement('input');
     vocabSwitchInput.type = 'checkbox';
-    vocabSwitchInput.checked = (hintMode === 'hover');
+    vocabSwitchInput.checked = (hintMode === 'paren');
     const vocabSlider = document.createElement('span');
     vocabSlider.className = 'slider';
     vocabSwitchLabel.appendChild(vocabSwitchInput);
     vocabSwitchLabel.appendChild(vocabSlider);
 
-    const labelHover = document.createElement('span');
-    labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'}`;
-    labelHover.textContent = '📖 Vocab Hover';
+    const labelParen = document.createElement('span');
+    labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'}`;
+    labelParen.textContent = '🏷️ Vocab Paren';
 
     vocabSwitchInput.addEventListener('change', (e) => {
-        hintMode = e.target.checked ? 'hover' : 'paren';
+        hintMode = e.target.checked ? 'paren' : 'hover';
         initTask1(); // 再描画
     });
 
-    vocabControl.appendChild(labelParen);
-    vocabControl.appendChild(vocabSwitchLabel);
     vocabControl.appendChild(labelHover);
+    vocabControl.appendChild(vocabSwitchLabel);
+    vocabControl.appendChild(labelParen);
     controlGroup.appendChild(vocabControl);
 
     headerPanel.appendChild(titleArea);
@@ -340,6 +340,7 @@ function initTask1() {
         const corrListenBtn = document.createElement('button');
         corrListenBtn.textContent = '🔊 きく';
         corrListenBtn.style.marginRight = '8px';
+        corrListenBtn.style.display = 'inline-block';
 
         const corrTextSpan = document.createElement('span');
         
@@ -400,38 +401,46 @@ function initTask1() {
                             resultSpan.style.color = '#333';
                             correctionBox.style.display = 'none';
                         } else {
-                            let displayedText = hiraText;
-                            let hasWrongWord = false;
+                            // 指定語（Y）が含まれているかチェック
+                            const hasCorrectY = hiraText.includes(hiraY);
 
-                            if (!hiraText.includes(hiraY)) {
-                                hasWrongWord = true;
-                                displayedText = displayedText.replace(new RegExp(`(${hiraX}は)(.*)(です|じゃないです|ではないです|じゃありません|ではありません)`, 'g'), `$1<span style="color: #2563eb; font-weight: bold;">$2</span>$3`);
-                            }
+                            if (!hasCorrectY) {
+                                // 【指定語違いの場合】
+                                // 発話されたテキストの中で、Yの位置に相当する部分を青字にする、あるいは間違った単語部分のみ青字にする
+                                // 簡易的に、文中のY以外の部分や不一致部分を特定して青字にする
+                                let highlightedText = hiraText;
+                                // 例として、期待されたY以外の名詞部分を青字にするため、hiraY以外の主要な名詞が含まれている場合そこを青字に
+                                highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*)(です|じゃないです|ではないです|じゃありません|ではありません)`, 'g'), `$1<span style="color: #2563eb;">$2</span>$3`);
+                                
+                                resultSpan.innerHTML = highlightedText;
+                                resultSpan.style.color = '#333'; // 文自体は黒字
 
-                            if (hasWrongWord) {
-                                resultSpan.innerHTML = displayedText;
-                                corrTextSpan.textContent = `Structure error, try it again (Wrong word used)`;
+                                // メッセージのみ表示、正答例やきくボタンは出さない
+                                corrTextSpan.textContent = `Wrong word used.`;
+                                corrListenBtn.style.display = 'none'; // きくボタン非表示
                             } else {
+                                // 【文法構造エラーの場合】
                                 resultSpan.textContent = hiraText;
                                 resultSpan.style.color = '#e11d48';
-                                corrTextSpan.textContent = `Structure error, try it again`;
-                            }
 
-                            const correctAff = `${item.x}は、${item.y}です。`;
-                            
-                            corrListenBtn.onclick = () => {
-                                corrListenBtn.disabled = true;
-                                corrListenBtn.textContent = '🔊 再生中...';
-                                setTimeout(() => {
-                                    const utterance = new SpeechSynthesisUtterance(correctAff);
-                                    utterance.lang = 'ja-JP';
-                                    speechSynthesis.speak(utterance);
-                                    utterance.onend = () => {
-                                        corrListenBtn.disabled = false;
-                                        corrListenBtn.textContent = '🔊 きく';
-                                    };
-                                }, 1000);
-                            };
+                                corrTextSpan.textContent = `Structure error, try it again`;
+                                corrListenBtn.style.display = 'inline-block'; // きくボタン表示
+
+                                const correctAff = `${item.x}は、${item.y}です。`;
+                                corrListenBtn.onclick = () => {
+                                    corrListenBtn.disabled = true;
+                                    corrListenBtn.textContent = '🔊 再生中...';
+                                    setTimeout(() => {
+                                        const utterance = new SpeechSynthesisUtterance(correctAff);
+                                        utterance.lang = 'ja-JP';
+                                        speechSynthesis.speak(utterance);
+                                        utterance.onend = () => {
+                                            corrListenBtn.disabled = false;
+                                            corrListenBtn.textContent = '🔊 きく';
+                                        };
+                                    }, 1000);
+                                };
+                            }
 
                             correctionBox.style.display = 'block';
                         }
