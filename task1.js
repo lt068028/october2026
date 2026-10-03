@@ -121,33 +121,6 @@ styleElement.textContent = `
         font-size: 14px;
         color: #be123c;
     }
-    /* ツールチップスタイル */
-    .tooltip-wrap {
-        position: relative;
-        display: inline-block;
-        border-bottom: 1px dotted #2196F3;
-    }
-    .tooltip-wrap .tooltip-tip {
-        visibility: hidden;
-        width: 70px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 3px 0;
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -35px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        font-size: 11px;
-    }
-    .tooltip-wrap:hover .tooltip-tip {
-        visibility: visible;
-        opacity: 1;
-    }
 `;
 document.head.appendChild(styleElement);
 
@@ -182,34 +155,45 @@ function convertToHiragana(text) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const setupExampleListen = (btnId, text) => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', () => {
-                btn.disabled = true;
-                btn.textContent = '🔊 再生中...';
-
-                setTimeout(() => {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'ja-JP';
-                    speechSynthesis.speak(utterance);
-
-                    utterance.onend = () => {
-                        btn.disabled = false;
-                        btn.textContent = '🔊 きく';
-                    };
-                }, 1000);
-            });
-        }
-    };
-
-    setupExampleListen('ex1Listen', "わたしは、がくせいです。");
-    setupExampleListen('ex2Listen', "わたしは、せんせいじゃないです。");
-
     initTask1();
 });
 
+function formatWord(word, hint) {
+    if (hintMode === 'paren') {
+        return `${word} (${hint})`;
+    } else {
+        return `<span class="tooltip-wrap">${word}<span class="tooltip-tip">${hint}</span></span>`;
+    }
+}
+
 function initTask1() {
+    // 例文セクションの動的描画（Paren / Hover 対応）
+    const exampleSection = document.getElementById('exampleSection');
+    if (exampleSection) {
+        const ex1X = formatWord("わたし", "I");
+        const ex1Y = formatWord("がくせい", "student");
+        const ex2X = formatWord("わたし", "I");
+        const ex2Y = formatWord("せんせい", "teacher");
+
+        exampleSection.innerHTML = `
+            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                    <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
+                    <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+                    <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
+                </div>
+                <div>
+                    <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
+                    <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+                    <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
+                </div>
+            </div>
+        `;
+
+        setupExampleListen('ex1Listen', "わたしは、がくせいです。");
+        setupExampleListen('ex2Listen', "わたしは、せんせいじゃないです。");
+    }
+
     const container = document.getElementById('task1List');
     if (!container) return;
     container.innerHTML = "";
@@ -306,16 +290,7 @@ function initTask1() {
 
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
-        
-        let xDisplay, yDisplay;
-        if (hintMode === 'paren') {
-            xDisplay = `${item.x} (${item.xHint})`;
-            yDisplay = `${item.y} (${item.yHint})`;
-        } else {
-            xDisplay = `<span class="tooltip-wrap">${item.x}<span class="tooltip-tip">${item.xHint}</span></span>`;
-            yDisplay = `<span class="tooltip-wrap">${item.y}<span class="tooltip-tip">${item.yHint}</span></span>`;
-        }
-        promptSpan.innerHTML = `${index + 1}. ${xDisplay} ／ ${yDisplay}`;
+        promptSpan.innerHTML = `${index + 1}. ${formatWord(item.x, item.xHint)} ／ ${formatWord(item.y, item.yHint)}`;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -340,7 +315,6 @@ function initTask1() {
         const corrListenBtn = document.createElement('button');
         corrListenBtn.textContent = '🔊 きく';
         corrListenBtn.style.marginRight = '8px';
-        corrListenBtn.style.display = 'inline-block';
 
         const corrTextSpan = document.createElement('span');
         
@@ -401,30 +375,27 @@ function initTask1() {
                             resultSpan.style.color = '#333';
                             correctionBox.style.display = 'none';
                         } else {
-                            // 指定語（Y）が含まれているかチェック
                             const hasCorrectY = hiraText.includes(hiraY);
 
                             if (!hasCorrectY) {
                                 // 【指定語違いの場合】
-                                // 発話されたテキストの中で、Yの位置に相当する部分を青字にする、あるいは間違った単語部分のみ青字にする
-                                // 簡易的に、文中のY以外の部分や不一致部分を特定して青字にする
+                                // 非貪欲マッチ（.*?）を使用して、間違っている名詞部分のみをピンポイントで青字にする
                                 let highlightedText = hiraText;
-                                // 例として、期待されたY以外の名詞部分を青字にするため、hiraY以外の主要な名詞が含まれている場合そこを青字に
-                                highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*)(です|じゃないです|ではないです|じゃありません|ではありません)`, 'g'), `$1<span style="color: #2563eb;">$2</span>$3`);
+                                highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: #2563eb;">$2</span>$3`);
                                 
                                 resultSpan.innerHTML = highlightedText;
-                                resultSpan.style.color = '#333'; // 文自体は黒字
+                                resultSpan.style.color = '#333';
 
-                                // メッセージのみ表示、正答例やきくボタンは出さない
+                                // 指定語間違いのときは正答例やきくボタンは不要
                                 corrTextSpan.textContent = `Wrong word used.`;
-                                corrListenBtn.style.display = 'none'; // きくボタン非表示
+                                corrListenBtn.style.display = 'none';
                             } else {
                                 // 【文法構造エラーの場合】
                                 resultSpan.textContent = hiraText;
                                 resultSpan.style.color = '#e11d48';
 
                                 corrTextSpan.textContent = `Structure error, try it again`;
-                                corrListenBtn.style.display = 'inline-block'; // きくボタン表示
+                                corrListenBtn.style.display = 'inline-block';
 
                                 const correctAff = `${item.x}は、${item.y}です。`;
                                 corrListenBtn.onclick = () => {
@@ -495,4 +466,25 @@ function initTask1() {
 
         container.appendChild(rowDiv);
     });
+}
+
+function setupExampleListen(btnId, text) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.textContent = '🔊 再生中...';
+
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                speechSynthesis.speak(utterance);
+
+                utterance.onend = () => {
+                    btn.disabled = false;
+                    btn.textContent = '🔊 きく';
+                };
+            }, 1000);
+        });
+    }
 }
