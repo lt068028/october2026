@@ -472,8 +472,10 @@ function initTask1() {
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
             <select id="customX_${i}" class="custom-select">${optionsXHtml}</select>
+            <span id="previewX_${i}" class="translation-preview"></span>
             <span id="labelHa_${i}">は</span> 
             <select id="customY_${i}" class="custom-select">${optionsYHtml}</select>
+            <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
         const recordBtn = document.createElement('button');
@@ -509,14 +511,30 @@ function initTask1() {
         rowDiv.appendChild(correctionBox);
 
         const selectX = promptLabel.querySelector(`#customX_${i}`);
+        const previewX = promptLabel.querySelector(`#previewX_${i}`);
         const labelHa = promptLabel.querySelector(`#labelHa_${i}`);
         const selectY = promptLabel.querySelector(`#customY_${i}`);
+        const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
         const updateDisplay = () => {
             const valX = selectX.value;
             const valY = selectY.value;
 
-            // 両方選択されたら「は」の表示を非表示にする
+            // Xのプレビュー表示・非表示
+            if (valX) {
+                previewX.textContent = valX;
+            } else {
+                previewX.textContent = "";
+            }
+
+            // Yのプレビュー表示・非表示
+            if (valY) {
+                previewY.textContent = valY;
+            } else {
+                previewY.textContent = "";
+            }
+
+            // 両方選択されたら「は」の表示を隠し、未選択なら表示する
             if (valX && valY) {
                 labelHa.style.display = 'none';
             } else {
