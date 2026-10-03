@@ -37,65 +37,6 @@ let hintMode = "hover";
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
-    /* デイモード（デフォルト）のカラー変数定義 */
-    :root {
-        --bg-main: #ffffff;
-        --bg-panel: #f1f5f9;
-        --bg-row: #ffffff;
-        --border-color: #cccccc;
-        --text-primary: #333333;
-        --text-secondary: #64748b;
-        --accent-color: #2196F3;
-        --button-bg: #f8f9fa;
-        --button-hover: #e9ecef;
-        --button-disabled-bg: #e2e8f0;
-        --button-disabled-text: #a0aec0;
-        
-        /* ツールチップ・ポップアップ関連 */
-        --tooltip-bg: #333333;
-        --tooltip-text: #ffffff;
-        
-        /* エラー・警告ボックス関連 */
-        --error-bg: #fff1f2;
-        --error-border: #fda4af;
-        --error-text: #be123c;
-    }
-
-    /* ナイトモード（OS設定自動追従） */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --bg-main: #0f172a;
-            --bg-panel: #1e293b;
-            --bg-row: #1e293b;
-            --border-color: #334155;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-color: #38bdf8;
-            --button-bg: #334155;
-            --button-hover: #475569;
-            --button-disabled-bg: #1e293b;
-            --button-disabled-text: #64748b;
-            
-            /* ナイトモード時：視認性確保のためツールチップは反転 */
-            --tooltip-bg: #f8fafc;
-            --tooltip-text: #0f172a;
-            
-            /* ナイトモード時：暗色ベースのエラーボックス */
-            --error-bg: #4c0519;
-            --error-border: #9f1239;
-            --error-text: #fecdd3;
-        }
-    }
-
-    body {
-        background-color: var(--bg-main);
-        color: var(--text-primary);
-        font-family: sans-serif;
-        margin: 0;
-        padding: 20px;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
     .header-panel {
         display: flex;
         justify-content: space-between;
