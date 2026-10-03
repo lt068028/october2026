@@ -20,6 +20,7 @@ const customDict = {
     "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
     "grandchild": { hira: "まご", romaji: "mago", meaning: "grandchild" },
     "sibling": { hira: "きょうだい", romaji: "kyoudai", meaning: "sibling" },
+    "foreigner": { hira: "がいこくじん", romaji: "gaikokujin", meaning: "foreigner" },
     "doctor": { hira: "いしゃ", romaji: "isha", meaning: "doctor" },
     "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
     "researcher": { hira: "けんきゅうしゃ", romaji: "kenkyuusha", meaning: "researcher" },
@@ -235,7 +236,6 @@ function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
-    // 漢字や表現ゆれをひらがなに正規化する辞書
     const dict = {
         "私": "わたし",
         "学生": "がくせい",
@@ -253,6 +253,7 @@ function convertToHiragana(text) {
         "子ども": "こども",
         "孫": "まご",
         "兄弟": "きょうだい",
+        "外国人": "がいこくじん",
         "医師": "いしゃ",
         "医者": "いしゃ",
         "エンジニア": "エンジニア",
@@ -393,7 +394,7 @@ function initTask1() {
 
     const labelHover = document.createElement('span');
     labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelHover.innerHTML = '🏷️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.innerHTML = '🏷️️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
@@ -424,7 +425,15 @@ function initTask1() {
     container.appendChild(headerPanel);
 
     taskData.forEach((item, index) => {
-        createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
+        // 4番目までは「わたし」、5番目以降は「ともだち」に設定
+        const currentXWord = index < 4 ? "わたし" : "ともだち";
+        const currentXRomaji = index < 4 ? "watashi" : "tomodachi";
+        const currentXMeaning = index < 4 ? "I" : "friend";
+
+        const formattedX = formatWord(currentXWord, currentXRomaji, currentXMeaning);
+        const formattedY = formatWord(item.y, item.yRomaji, item.yMeaning);
+
+        createDrillRow(container, `${index + 1}. ${formattedX} ／ ${formattedY}`, currentXWord, item.y);
     });
 
     const customHeaderPanel = document.createElement('div');
@@ -460,6 +469,7 @@ function initTask1() {
         <option value="こども" data-eng="child">Child</option>
         <option value="まご" data-eng="grandchild">Grandchild</option>
         <option value="きょうだい" data-eng="sibling">Sibling</option>
+        <option value="がいこくじん" data-eng="foreigner">Foreigner</option>
     `;
 
     const optionsYHtml = `
@@ -660,14 +670,17 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     const hiraX = convertToHiragana(currentX);
                     const hiraY = convertToHiragana(currentY);
 
-                    const affPattern = `${hiraX}は${hiraY}です`;
-                    const isAffirmative = (hiraText === affPattern);
+                    // 末尾の終助詞（ね、よ、よね等）や句読点をオプションとして許容する正規表現パターンを構築
+                    const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
+                    
+                    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+                    const isAffirmative = affRegex.test(hiraText);
 
-                    const negPattern1 = `${hiraX}は${hiraY}じゃないです`;
-                    const negPattern2 = `${hiraX}は${hiraY}ではないです`;
-                    const negPattern3 = `${hiraX}は${hiraY}じゃありません`;
-                    const negPattern4 = `${hiraX}は${hiraY}ではありません`;
-                    const isNegative = (hiraText === negPattern1 || hiraText === negPattern2 || hiraText === negPattern3 || hiraText === negPattern4);
+                    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+                    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+                    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+                    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
+                    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
                     if (isAffirmative || isNegative) {
                         resultSpan.textContent = hiraText + " ✅";
