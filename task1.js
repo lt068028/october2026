@@ -153,6 +153,7 @@ styleElement.textContent = `
         font-weight: normal;
         margin-left: 4px;
         margin-right: 8px;
+        display: inline-block;
     }
     button {
         padding: 6px 12px;
@@ -409,12 +410,12 @@ function initTask1() {
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
-    // トーンを合わせた説明文に変更
+    // ご要望の短い説明文（絵文字・トーン統一）
     const customDesc = document.createElement('p');
     customDesc.style.color = "#555";
     customDesc.style.fontSize = "16px";
     customDesc.style.marginBottom = "15px";
-    customDesc.textContent = "💡 Make your own sentences using \"XはYです\" (affirmative) or \"XはYじゃないです\" (negative) by entering words in English or Japanese.";
+    customDesc.textContent = "💡 Make your own sentences using this grammar point by entering words in English or Japanese.";
     container.appendChild(customDesc);
 
     const placeholdersX = ["child", "best friend", "colleague"];
@@ -474,6 +475,7 @@ function initTask1() {
         const inputY = promptLabel.querySelector(`#customY_${i}`);
         const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
+        // 枠外プレビューを確実に更新する関数
         const updatePreview = (input, preview) => {
             const val = input.value.trim().toLowerCase();
             if (!val) {
