@@ -136,7 +136,6 @@ styleElement.textContent = `
         gap: 8px;
         flex-wrap: wrap;
     }
-    /* 右側ターゲット語およびプレビューを大きく・濃く・太字に強制適用 */
     .target-word {
         font-weight: 700;
         color: #0f172a;
@@ -237,6 +236,18 @@ styleElement.textContent = `
         visibility: visible;
         opacity: 1;
     }
+    /* 水色背景のセクション共通スタイル（Custom Practice用） */
+    .section-header-box {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196F3;
+        padding: 10px 15px;
+        margin: 30px 0 15px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 `;
 document.head.appendChild(styleElement);
 
@@ -322,7 +333,7 @@ function initTask1() {
     headerPanel.className = 'header-panel';
 
     const titleArea = document.createElement('span');
-    titleArea.innerHTML = "<strong>Task 1 Drills</strong>";
+    titleArea.innerHTML = "<strong>Task 1；Drills</strong>";
 
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
@@ -406,20 +417,24 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // カスタム練習セクション
-    const customHeader = document.createElement('h3');
-    customHeader.textContent = "Custom Practice (XはYです、XはYじゃないです)";
-    customHeader.style.marginTop = "30px";
-    container.appendChild(customHeader);
+    // Custom Practice セクション（Task 2；Custom Practiceに変更し、右側にインストラクションを配置）
+    const customHeaderBox = document.createElement('div');
+    customHeaderBox.className = 'section-header-box';
 
-    // ご要望の絵文字付き説明文
-    const customDesc = document.createElement('p');
-    customDesc.style.color = "#334155";
-    customDesc.style.fontSize = "15px";
-    customDesc.style.marginBottom = "15px";
-    customDesc.style.fontWeight = "bold";
-    customDesc.textContent = "💡 Make a sentence using \"XはYです\" (affirmative) or \"XはYじゃないです\" (negative) based on the given words.";
-    container.appendChild(customDesc);
+    const customTitleArea = document.createElement('div');
+    customTitleArea.style.fontWeight = 'bold';
+    customTitleArea.style.fontSize = '16px';
+    customTitleArea.style.color = '#0d47a1';
+    customTitleArea.textContent = "Task 2；Custom Practice";
+
+    const customDescArea = document.createElement('div');
+    customDescArea.style.color = '#333';
+    customDescArea.style.fontSize = '14px';
+    customDescArea.textContent = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+
+    customHeaderBox.appendChild(customTitleArea);
+    customHeaderBox.appendChild(customDescArea);
+    container.appendChild(customHeaderBox);
 
     const placeholdersX = ["child", "best friend", "colleague"];
     const placeholdersY = ["British", "nurse", "engineer"];
@@ -478,7 +493,6 @@ function initTask1() {
         const inputY = promptLabel.querySelector(`#customY_${i}`);
         const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
-        // 矢印（→）を用いた見やすい枠外表示ロジック
         const updatePreview = (input, preview) => {
             const val = input.value.trim().toLowerCase();
             if (!val) {
