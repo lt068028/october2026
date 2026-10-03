@@ -8,11 +8,13 @@ const taskData = [
     { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
-// Genki初級の頻出語彙を網羅した大規模内蔵辞書（数百語レベル）
 const customDict = {
     // 代名詞・人物
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
+    "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
+    "best friend": { hira: "しんゆう", romaji: "shinyuu", meaning: "best friend" },
+    "colleague": { hira: "同僚", romaji: "douryou", meaning: "colleague" },
     "father": { hira: "ちち", romaji: "chichi", meaning: "father" },
     "mother": { hira: "はは", romaji: "haha", meaning: "mother" },
     "husband": { hira: "おっと", romaji: "otto", meaning: "husband" },
@@ -29,7 +31,6 @@ const customDict = {
     "nurse": { hira: "ナース", romaji: "naasu", meaning: "nurse" },
     "lawyer": { hira: "べんごし", romaji: "bengoshi", meaning: "lawyer" },
     "banker": { hira: "ぎんこういん", romaji: "ginkouin", meaning: "banker" },
-    "manager": { hira: "ぶちょう", romaji: "buchou", meaning: "manager" },
     
     // 国籍・人
     "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
@@ -46,11 +47,8 @@ const customDict = {
     "dog": { hira: "いぬ", romaji: "inu", meaning: "dog" },
     "cat": { hira: "ねこ", romaji: "neko", meaning: "cat" },
     "coffee": { hira: "コーヒー", romaji: "koohii", meaning: "coffee" },
-    "tea": { hira: "おちゃ", romaji: "ocha", meaning: "green tea" },
     "water": { hira: "みず", romaji: "mizu", meaning: "water" },
-    "house": { hira: "いえ", romaji: "ie", meaning: "house" },
-    "money": { hira: "かね", romaji: "kane", meaning: "money" },
-    "time": { hira: "じかん", romaji: "jikan", meaning: "time" }
+    "house": { hira: "いえ", romaji: "ie", meaning: "house" }
 };
 
 let isManualStop = false;
@@ -137,14 +135,14 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 320px;
+        min-width: 340px;
         font-size: 16px;
         color: #333;
         display: flex;
         align-items: center;
         gap: 6px;
     }
-    /* 画面上の日本語は濃い太字で明確に表示 */
+    /* 画面上の日本語は濃い太字で明確に表示（カッコなし） */
     .target-word {
         font-weight: bold;
         color: #0f172a;
@@ -154,7 +152,7 @@ styleElement.textContent = `
         font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        width: 100px;
+        width: 110px;
     }
     .translation-preview {
         font-size: 12px;
@@ -186,7 +184,6 @@ styleElement.textContent = `
         font-size: 14px;
         color: #be123c;
     }
-    /* カスタムCSSツールチップ（「？」マークなし） */
     .custom-tip-wrap {
         position: relative;
         display: inline-block;
@@ -216,7 +213,6 @@ styleElement.textContent = `
         visibility: visible;
         opacity: 1;
     }
-    /* 語彙用ツールチップ（余計なカッコを排除した形式） */
     .tooltip-wrap {
         position: relative;
         display: inline-block;
@@ -258,6 +254,8 @@ function convertToHiragana(text) {
         "日本人": "にほんじん",
         "会社員": "かいしゃいん",
         "友達": "ともだち",
+        "同僚": "どうりょう",
+        "しんゆう": "しんゆう",
         "アメリカじん": "あめりかじん",
         "イギリスじん": "いぎりすじん",
         "エンジニア": "えんじにあ",
@@ -282,7 +280,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initTask1();
 });
 
-// コメント：余計なカッコの乱用をなくし、(watashi, I) の形式ですっきりと表現
 function formatWord(word, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
     if (hintMode === 'paren') {
@@ -411,11 +408,22 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // カスタム練習セクション（タイトルを「XはYです、XはYじゃないです」に変更）
+    // カスタム練習セクション
     const customHeader = document.createElement('h3');
-    customHeader.textContent = "XはYです、XはYじゃないです";
+    customHeader.textContent = "Custom Practice (XはYです、XはYじゃないです)";
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
+
+    const customDesc = document.createElement('p');
+    customDesc.style.color = "#555";
+    customDesc.style.fontSize = "14px";
+    customDesc.style.marginBottom = "15px";
+    customDesc.textContent = "Please enter your own word either in English or Japanese, so that you can practice your original statement.";
+    container.appendChild(customDesc);
+
+    // 各行ごとの具体的な e.g. プレースホルダーリスト
+    const placeholdersX = ["child", "best friend", "colleague"];
+    const placeholdersY = ["British", "nurse", "engineer"];
 
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement('div');
@@ -428,9 +436,9 @@ function initTask1() {
         promptLabel.className = 'prompt-label';
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
-            <input type="text" id="customX_${i}" class="custom-input" placeholder="husband">
+            <input type="text" id="customX_${i}" class="custom-input" placeholder="e.g. ${placeholdersX[i-1]}">
             <span id="previewX_${i}" class="translation-preview"></span> は 
-            <input type="text" id="customY_${i}" class="custom-input" placeholder="doctor">
+            <input type="text" id="customY_${i}" class="custom-input" placeholder="e.g. ${placeholdersY[i-1]}">
             <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
@@ -466,7 +474,6 @@ function initTask1() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        // 辞書引きおよびプレビュー更新ロジック
         const inputX = promptLabel.querySelector(`#customX_${i}`);
         const previewX = promptLabel.querySelector(`#previewX_${i}`);
         const inputY = promptLabel.querySelector(`#customY_${i}`);
