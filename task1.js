@@ -115,12 +115,10 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 
-// 簡易的なひらがな変換（正規化）関数
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
-    // よく使われる漢字や表現をひらがなに置換
     const dict = {
         "私": "わたし",
         "私わ": "わたしは",
@@ -134,7 +132,9 @@ function convertToHiragana(text) {
         "デス": "です",
         "デシタ": "でした",
         "じゃ無い": "じゃない",
-        "ヂャナイ": "じゃない"
+        "ヂャナイ": "じゃない",
+        "では": "では",
+        "じゃ": "じゃ"
     };
 
     for (let key in dict) {
@@ -142,10 +142,7 @@ function convertToHiragana(text) {
         cleaned = cleaned.replace(regex, dict[key]);
     }
 
-    // 助詞の「は」が「わ」と認識されるケースを吸収
-    // 例: 「わたしわ」→「わたしは」に統一して判定しやすくする
     cleaned = cleaned.replace(/わ$/g, "は");
-
     return cleaned;
 }
 
@@ -298,24 +295,28 @@ function initTask1() {
                             rawTranscript += e.results[i][0].transcript;
                         }
 
-                        // 無音や極端な短音の排除
                         if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
                             resultSpan.textContent = rawTranscript + " (Too short)";
                             resultSpan.style.color = '#666';
                             return;
                         }
 
-                        // 内部でひらがなに変換・正規化
                         const hiraText = convertToHiragana(rawTranscript);
-
                         const targetX = item.x;
                         const targetY = item.y;
 
-                        // 文法パターンの判定（肯定 または 否定）
-                        const isAffirmative = hiraText.includes(targetX) && hiraText.includes(targetY) && hiraText.includes("です") && !hiraText.includes("ない");
-                        const isNegative = hiraText.includes(targetX) && hiraText.includes(targetY) && (hiraText.includes("じゃない") || hiraText.includes("ではありません"));
+                        // 【厳格な判定】
+                        // 肯定: XとY以外の構成語が「は」と「です」のみで成り立っている（完全一致）
+                        const affPattern = `${targetX}は${targetY}です`;
+                        const isAffirmative = (hiraText === affPattern);
 
-                        // 画面上には漢字を挟まず、最終的なひらがな文字列を表示
+                        // 否定: 4つのバリエーションのいずれかに完全一致
+                        const negPattern1 = `${targetX}は${targetY}じゃないです`;
+                        const negPattern2 = `${targetX}は${targetY}ではないです`;
+                        const negPattern3 = `${targetX}は${targetY}じゃありません`;
+                        const negPattern4 = `${targetX}は${targetY}ではありません`;
+                        const isNegative = (hiraText === negPattern1 || hiraText === negPattern2 || hiraText === negPattern3 || hiraText === negPattern4);
+
                         if (isAffirmative || isNegative) {
                             resultSpan.textContent = hiraText + " ✅";
                             resultSpan.style.color = '#333';
@@ -325,7 +326,7 @@ function initTask1() {
                             resultSpan.style.color = '#e11d48';
 
                             const correctSentence = `${targetX}は、${targetY}です。`;
-                            corrTextSpan.textContent = `正解例: ${correctSentence}`;
+                            corrTextSpan.textContent = `正解例: ${correctSentence} (または否定形)`;
                             
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
