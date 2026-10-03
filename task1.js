@@ -61,6 +61,11 @@ styleElement.textContent = `
         flex-wrap: wrap;
         gap: 12px;
     }
+    .title-instruction-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
     .control-group {
         display: flex;
         flex-direction: column;
@@ -317,12 +322,23 @@ function initTask1() {
     if (!container) return;
     container.innerHTML = "";
 
-    // 1つ目のパネル：Task 1；Drills
+    // 1つ目のパネル：Task 1；Drills（タイトルとインストラクションを縦に配置）
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
-    const titleArea = document.createElement('span');
-    titleArea.innerHTML = "<strong>Task 1；Drills</strong>";
+    const titleInstructionGroup1 = document.createElement('div');
+    titleInstructionGroup1.className = 'title-instruction-group';
+
+    const titleArea1 = document.createElement('span');
+    titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
+
+    const descArea1 = document.createElement('span');
+    descArea1.style.color = '#333';
+    descArea1.style.fontSize = '14px';
+    descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+
+    titleInstructionGroup1.appendChild(titleArea1);
+    titleInstructionGroup1.appendChild(descArea1);
 
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
@@ -397,7 +413,7 @@ function initTask1() {
     vocabControl.appendChild(labelParen);
     controlGroup.appendChild(vocabControl);
 
-    headerPanel.appendChild(titleArea);
+    headerPanel.appendChild(titleInstructionGroup1);
     headerPanel.appendChild(controlGroup);
     container.appendChild(headerPanel);
 
@@ -406,21 +422,26 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // 2つ目のパネル：Task 2；Custom Practice（上部パネルと同じ `.header-panel` スタイルを使用し、右側にインストラクションを配置）
+    // 2つ目のパネル：Task 2；Custom Practice（タイトルとインストラクションを縦に配置）
     const customHeaderPanel = document.createElement('div');
     customHeaderPanel.className = 'header-panel';
     customHeaderPanel.style.marginTop = "30px";
 
-    const customTitleArea = document.createElement('span');
-    customTitleArea.innerHTML = "<strong>Task 2；Custom Practice</strong>";
+    const titleInstructionGroup2 = document.createElement('div');
+    titleInstructionGroup2.className = 'title-instruction-group';
 
-    const customDescArea = document.createElement('span');
-    customDescArea.style.color = '#333';
-    customDescArea.style.fontSize = '14px';
-    customDescArea.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+    const titleArea2 = document.createElement('span');
+    titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
 
-    customHeaderPanel.appendChild(customTitleArea);
-    customHeaderPanel.appendChild(customDescArea);
+    const descArea2 = document.createElement('span');
+    descArea2.style.color = '#333';
+    descArea2.style.fontSize = '14px';
+    descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+
+    titleInstructionGroup2.appendChild(titleArea2);
+    titleInstructionGroup2.appendChild(descArea2);
+
+    customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
     const placeholdersX = ["child", "best friend", "colleague"];
