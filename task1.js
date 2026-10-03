@@ -11,37 +11,24 @@ const taskData = [
 const customDict = {
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
-    "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
+    "family": { hira: "かぞく", romaji: "kazoku", meaning: "family" },
+    "colleague": { hira: "どうりょう", romaji: "douryou", meaning: "colleague" },
+    "boss": { hira: "じょうし", romaji: "joushi", meaning: "boss" },
+    "partner": { hira: "パートナー", romaji: "paatanaa", meaning: "partner" },
+    "boyfriend/girlfriend": { hira: "こいびと", romaji: "koibito", meaning: "boyfriend/girlfriend" },
     "best friend": { hira: "しんゆう", romaji: "shinyuu", meaning: "best friend" },
-    "colleague": { hira: "同僚", romaji: "douryou", meaning: "colleague" },
-    "father": { hira: "ちち", romaji: "chichi", meaning: "father" },
-    "mother": { hira: "はは", romaji: "haha", meaning: "mother" },
-    "husband": { hira: "おっと", romaji: "otto", meaning: "husband" },
-    "wife": { hira: "つま", romaji: "tsuma", meaning: "wife" },
-    "daughter": { hira: "むすめ", romaji: "musume", meaning: "daughter" },
-    "son": { hira: "むすこ", romaji: "musuko", meaning: "son" },
-    "student": { hira: "がくせい", romaji: "gakusei", meaning: "student" },
-    "teacher": { hira: "せんせい", romaji: "sensei", meaning: "teacher" },
-    "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
-    "company employee": { hira: "かいしゃいん", romaji: "kaishain", meaning: "company employee" },
+    "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
+    "grandchild": { hira: "まご", romaji: "mago", meaning: "grandchild" },
+    "sibling": { hira: "きょうだい", romaji: "kyoudai", meaning: "sibling" },
     "doctor": { hira: "いしゃ", romaji: "isha", meaning: "doctor" },
-    "nurse": { hira: "ナース", romaji: "naasu", meaning: "nurse" },
-    "lawyer": { hira: "べんごし", romaji: "bengoshi", meaning: "lawyer" },
-    "banker": { hira: "ぎんこういん", romaji: "ginkouin", meaning: "banker" },
-    "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
-    "american": { hira: "アメリカじん", romaji: "amerikajin", meaning: "American" },
-    "british": { hira: "イギリスじん", romaji: "igirisujin", meaning: "British" },
-    "chinese": { hira: "ちゅうごくじん", romaji: "chuugokujin", meaning: "Chinese" },
-    "korean": { hira: "かんこくじん", romaji: "kankokujin", meaning: "Korean" },
-    "french": { hira: "フランスじん", romaji: "furansujin", meaning: "French" },
-    "german": { hira: "ドイツじん", romaji: "doitsujin", meaning: "German" },
-    "car": { hira: "くるま", romaji: "kuruma", meaning: "car" },
-    "book": { hira: "ほん", romaji: "hon", meaning: "book" },
-    "dog": { hira: "いぬ", romaji: "inu", meaning: "dog" },
-    "cat": { hira: "ねこ", romaji: "neko", meaning: "cat" },
-    "coffee": { hira: "コーヒー", romaji: "koohii", meaning: "coffee" },
-    "water": { hira: "みず", romaji: "mizu", meaning: "water" },
-    "house": { hira: "いえ", romaji: "ie", meaning: "house" }
+    "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
+    "researcher": { hira: "けんきゅうしゃ", romaji: "kenkyuusha", meaning: "researcher" },
+    "designer": { hira: "デザイナー", romaji: "dezainaa", meaning: "designer" },
+    "store staff": { hira: "てんいん", romaji: "tenin", meaning: "store staff" },
+    "self-employed": { hira: "じえいぎょう", romaji: "jiei-gyou", meaning: "self-employed" },
+    "civil servant": { hira: "こうむいん", romaji: "koumuin", meaning: "civil servant" },
+    "nurse": { hira: "かんごし", romaji: "kangoshi", meaning: "nurse" },
+    "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
 let isManualStop = false;
@@ -152,6 +139,14 @@ styleElement.textContent = `
         border: 1px solid #ccc;
         border-radius: 4px;
         background-color: #fff;
+    }
+    .translation-preview {
+        font-size: 15px;
+        color: #1e293b;
+        font-weight: bold;
+        margin-left: 6px;
+        margin-right: 12px;
+        display: inline-block;
     }
     button {
         padding: 6px 12px;
@@ -326,7 +321,7 @@ function initTask1() {
 
     const descArea1 = document.createElement('span');
     descArea1.style.color = '#333';
-    descArea1.style.fontSize = '15px'; // フォントサイズを拡大
+    descArea1.style.fontSize = '15px';
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup1.appendChild(titleArea1);
@@ -379,7 +374,7 @@ function initTask1() {
 
     const labelHover = document.createElement('span');
     labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelHover.innerHTML = '🏷️️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.innerHTML = '🏷️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
@@ -427,7 +422,7 @@ function initTask1() {
 
     const descArea2 = document.createElement('span');
     descArea2.style.color = '#333';
-    descArea2.style.fontSize = '15px'; // フォントサイズを拡大
+    descArea2.style.fontSize = '15px';
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
@@ -436,18 +431,29 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    // プルダウン用のサンプル候補（3つずつ）
-    const optionsX = [
-        { label: "わたし (I)", value: "わたし" },
-        { label: "ともだち (friend)", value: "ともだち" },
-        { label: "こども (child)", value: "こども" }
-    ];
-
-    const optionsY = [
-        { label: "がくせい (student)", value: "がくせい" },
-        { label: "せんせい (teacher)", value: "せんせい" },
-        { label: "エンジニア (engineer)", value: "エンジニア" }
-    ];
+    // プルダウンの選択肢定義（指定された語群）
+    const optionsHtml = `
+        <option value="" disabled selected>-- Choose an option --</option>
+        <option value="ともだち">Friend</option>
+        <option value="かぞく">Family</option>
+        <option value="どうりょう">Colleague</option>
+        <option value="じょうし">Boss</option>
+        <option value="パートナー">Partner</option>
+        <option value="こいびと">boyfriend/girlfriend</option>
+        <option value="しんゆう">Best friend</option>
+        <option value="こども">Child</option>
+        <option value="まご">Grandchild</option>
+        <option value="きょうだい">Sibling</option>
+        <option value="いしゃ">Doctor</option>
+        <option value="エンジニア">Engineer</option>
+        <option value="けんきゅうしゃ">Researcher</option>
+        <option value="デザイナー">Designer</option>
+        <option value="てんいん">Store staff</option>
+        <option value="じえいぎょう">Self-employed</option>
+        <option value="こうむいん">Civil servant</option>
+        <option value="かんごし">Nurse</option>
+        <option value="アルバイト">Part-time worker</option>
+    `;
 
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement('div');
@@ -458,25 +464,12 @@ function initTask1() {
 
         const promptLabel = document.createElement('span');
         promptLabel.className = 'prompt-label';
-        
-        // X用プルダウンの生成
-        let selectXHtml = `<select id="customX_${i}" class="custom-select">`;
-        optionsX.forEach(opt => {
-            selectXHtml += `<option value="${opt.value}">${opt.label}</option>`;
-        });
-        selectXHtml += `</select>`;
-
-        // Y用プルダウンの生成
-        let selectYHtml = `<select id="customY_${i}" class="custom-select">`;
-        optionsY.forEach(opt => {
-            selectYHtml += `<option value="${opt.value}">${opt.label}</option>`;
-        });
-        selectYHtml += `</select>`;
-
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
-            ${selectXHtml} は 
-            ${selectYHtml}
+            <select id="customX_${i}" class="custom-select">${optionsHtml}</select>
+            <span id="previewX_${i}" class="translation-preview"></span> は 
+            <select id="customY_${i}" class="custom-select">${optionsHtml}</select>
+            <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
         const recordBtn = document.createElement('button');
@@ -512,10 +505,24 @@ function initTask1() {
         rowDiv.appendChild(correctionBox);
 
         const selectX = promptLabel.querySelector(`#customX_${i}`);
+        const previewX = promptLabel.querySelector(`#previewX_${i}`);
         const selectY = promptLabel.querySelector(`#customY_${i}`);
+        const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
-        const getXValue = () => selectX.value;
-        const getYValue = () => selectY.value;
+        const updatePreview = (select, preview) => {
+            const val = select.value;
+            if (!val) {
+                preview.textContent = "";
+                return;
+            }
+            preview.textContent = `→ ${val}`;
+        };
+
+        selectX.addEventListener('change', () => updatePreview(selectX, previewX));
+        selectY.addEventListener('change', () => updatePreview(selectY, previewY));
+
+        const getXValue = () => selectX.value || "ともだち";
+        const getYValue = () => selectY.value || "いしゃ";
 
         bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue);
 
