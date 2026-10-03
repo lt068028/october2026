@@ -394,7 +394,7 @@ function initTask1() {
 
     const labelHover = document.createElement('span');
     labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelHover.innerHTML = '🏷️️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.innerHTML = '🏷️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
@@ -425,7 +425,6 @@ function initTask1() {
     container.appendChild(headerPanel);
 
     taskData.forEach((item, index) => {
-        // 4番目までは「わたし」、5番目以降は「ともだち」に設定
         const currentXWord = index < 4 ? "わたし" : "ともだち";
         const currentXRomaji = index < 4 ? "watashi" : "tomodachi";
         const currentXMeaning = index < 4 ? "I" : "friend";
@@ -457,6 +456,7 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
+    // X（主語）のオプション（外国人を除外）
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち" data-eng="friend">Friend</option>
@@ -469,11 +469,12 @@ function initTask1() {
         <option value="こども" data-eng="child">Child</option>
         <option value="まご" data-eng="grandchild">Grandchild</option>
         <option value="きょうだい" data-eng="sibling">Sibling</option>
-        <option value="がいこくじん" data-eng="foreigner">Foreigner</option>
     `;
 
+    // Y（述語）のオプション（先頭に foreigner / がいこくじん を追加）
     const optionsYHtml = `
         <option value="" disabled selected>-- Choose Y --</option>
+        <option value="がいこくじん" data-eng="foreigner">Foreigner</option>
         <option value="いしゃ" data-eng="doctor">Doctor</option>
         <option value="エンジニア" data-eng="engineer">Engineer</option>
         <option value="けんきゅうしゃ" data-eng="researcher">Researcher</option>
@@ -505,6 +506,7 @@ function initTask1() {
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
+        recordBtn.disabled = true; // 初期状態では両方未選択のため無効化
 
         const stopBtn = document.createElement('button');
         stopBtn.textContent = '⏹とめる';
@@ -566,6 +568,13 @@ function initTask1() {
                 labelHa.style.display = 'none';
             } else {
                 labelHa.style.display = 'inline';
+            }
+
+            // XとYの両方が選択された場合のみ「とる」ボタンを有効化する
+            if (valX && valY) {
+                recordBtn.disabled = false;
+            } else {
+                recordBtn.disabled = true;
             }
         };
 
@@ -670,7 +679,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     const hiraX = convertToHiragana(currentX);
                     const hiraY = convertToHiragana(currentY);
 
-                    // 末尾の終助詞（ね、よ、よね等）や句読点をオプションとして許容する正規表現パターンを構築
                     const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
                     
                     const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
@@ -778,7 +786,7 @@ function setupExampleListen(btnId, text) {
     if (btn) {
         btn.addEventListener('click', () => {
             btn.disabled = true;
-            btn.textContent = '🔊 再生中...';
+            btn.textContent = '🔊 Saisai...'; // プレースホルダーのままでなくともよいが既存踏襲
 
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(text);
