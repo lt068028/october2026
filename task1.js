@@ -1,15 +1,24 @@
 const taskData = [
-    { x: "わたし", y: "がくせい", xHint: "I", yHint: "student" },
-    { x: "わたし", y: "せんせい", xHint: "I", yHint: "teacher" },
-    { x: "わたし", y: "日本人(にほんじん)", xHint: "I", yHint: "Japanese" },
-    { x: "わたし", y: "かいしゃいん", xHint: "I", yHint: "office worker" },
-    { x: "ともだち", y: "がくせい", xHint: "friend", yHint: "student" },
-    { x: "ともだち", y: "かいしゃいん", xHint: "friend", yHint: "office worker" },
-    { x: "ともだち", y: "アメリカ人", xHint: "friend", yHint: "American" }
+    { x: "わたし", y: "がくせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "gakusei", yMeaning: "student" },
+    { x: "わたし", y: "せんせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "sensei", yMeaning: "teacher" },
+    { x: "日本人(にほんじん)", y: "日本人(にほんじん)", xRomaji: "watashi", xMeaning: "I", yRomaji: "nihonjin", yMeaning: "Japanese" }, // ※説明用
+    { x: "わたし", y: "かいしゃいん", xRomaji: "watashi", xMeaning: "I", yRomaji: "kaishain", yMeaning: "office worker" },
+    { x: "ともだち", y: "がくせい", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "gakusei", yMeaning: "student" },
+    { x: "ともだち", y: "かいしゃいん", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "kaishain", yMeaning: "office worker" },
+    { x: "ともだち", y: "アメリカ人", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
+// 簡易英日辞書（カスタム入力用）
+const customDict = {
+    "car": { hira: "くるま", romaji: "car", meaning: "car" },
+    "travel": { hira: "りょこう", romaji: "travel", meaning: "travel" },
+    "book": { hira: "ほん", romaji: "book", meaning: "book" },
+    "dog": { hira: "いぬ", romaji: "dog", meaning: "dog" },
+    "coffee": { hira: "コーヒー", romaji: "coffee", meaning: "coffee" }
+};
+
 let isManualStop = false;
-let hintMode = "hover";
+let hintMode = "hover"; // デフォルト: hover
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -93,7 +102,7 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 250px;
+        min-width: 280px;
         font-size: 16px;
         color: #333;
     }
@@ -102,7 +111,13 @@ styleElement.textContent = `
         font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        width: 120px;
+        width: 110px;
+    }
+    .translation-preview {
+        margin-left: 6px;
+        font-size: 13px;
+        color: #64748b;
+        font-weight: normal;
     }
     button {
         padding: 6px 12px;
@@ -136,7 +151,7 @@ styleElement.textContent = `
     }
     .tooltip-wrap .tooltip-tip {
         visibility: hidden;
-        width: 70px;
+        width: 90px;
         background-color: #333;
         color: #fff;
         text-align: center;
@@ -146,7 +161,7 @@ styleElement.textContent = `
         z-index: 1;
         bottom: 125%;
         left: 50%;
-        margin-left: -35px;
+        margin-left: -45px;
         opacity: 0;
         transition: opacity 0.3s;
         font-size: 11px;
@@ -192,21 +207,23 @@ document.addEventListener('DOMContentLoaded', () => {
     initTask1();
 });
 
-function formatWord(word, hint) {
+// `gakusei (student)` 形式でのフォーマット関数
+function formatWord(word, romaji, meaning) {
+    const hintStr = `${romaji} (${meaning})`;
     if (hintMode === 'paren') {
-        return `${word} (${hint})`;
+        return `${word} (${hintStr})`;
     } else {
-        return `<span class="tooltip-wrap">${word}<span class="tooltip-tip">${hint}</span></span>`;
+        return `<span class="tooltip-wrap">${word}<span class="tooltip-tip">${hintStr}</span></span>`;
     }
 }
 
 function initTask1() {
     const exampleSection = document.getElementById('exampleSection');
     if (exampleSection) {
-        const ex1X = formatWord("わたし", "I");
-        const ex1Y = formatWord("がくせい", "student");
-        const ex2X = formatWord("わたし", "I");
-        const ex2Y = formatWord("せんせい", "teacher");
+        const ex1X = formatWord("わたし", "watashi", "I");
+        const ex1Y = formatWord("がくせい", "gakusei", "student");
+        const ex2X = formatWord("わたし", "watashi", "I");
+        const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
         exampleSection.innerHTML = `
             <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px;">
@@ -240,7 +257,7 @@ function initTask1() {
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
 
-    // 1段目: Autostopスイッチ (ツールチップ付き)
+    // Autostop スイッチ
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
@@ -280,7 +297,7 @@ function initTask1() {
     controlItem.appendChild(labelManual);
     controlGroup.appendChild(controlItem);
 
-    // 2段目: 🏷️ Vocab スイッチ
+    // 🏷️ Vocab スイッチ
     const vocabControl = document.createElement('div');
     vocabControl.className = 'control-item';
 
@@ -316,18 +333,17 @@ function initTask1() {
     headerPanel.appendChild(controlGroup);
     container.appendChild(headerPanel);
 
-    // 既存の問題リストの描画
+    // 既存の問題リスト
     taskData.forEach((item, index) => {
-        createDrillRow(container, `${index + 1}. ${formatWord(item.x, item.xHint)} ／ ${formatWord(item.y, item.yHint)}`, item.x, item.y);
+        createDrillRow(container, `${index + 1}. ${formatWord("わたし", item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // カスタム練習セクションの見出し
+    // カスタム練習セクション
     const customHeader = document.createElement('h3');
     customHeader.textContent = "Custom Practice (Your Own Words)";
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
-    // カスタム問題枠を3箇所追加
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
@@ -337,7 +353,7 @@ function initTask1() {
 
         const promptLabel = document.createElement('span');
         promptLabel.className = 'prompt-label';
-        promptLabel.innerHTML = `${taskData.length + i}. わたし(I) ／ <input type="text" id="customY_${i}" class="custom-input" placeholder="Enter word">`;
+        promptLabel.innerHTML = `${taskData.length + i}. わたし(watashi / I) ／ <input type="text" id="customY_${i}" class="custom-input" placeholder="Type word"><span id="preview_${i}" class="translation-preview"></span>`;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -371,10 +387,36 @@ function initTask1() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, "わたし", () => {
-            const inputVal = document.getElementById(`customY_${i}`).value.trim();
-            return inputVal || "がいこくじん"; // デフォルトフォールバック
+        // 入力値のリアルタイム翻訳・プレビュー処理
+        const inputField = promptLabel.querySelector(`#customY_${i}`);
+        const previewSpan = promptLabel.querySelector(`#preview_${i}`);
+
+        inputField.addEventListener('input', () => {
+            const val = inputField.value.trim();
+            if (!val) {
+                previewSpan.innerHTML = "";
+                return;
+            }
+            if (customDict[val.toLowerCase()]) {
+                const translated = customDict[val.toLowerCase()].hira;
+                previewSpan.textContent = `(${translated})`;
+            } else {
+                // 未登録語の場合：アスタリスクつきで表示、ホバーで未登録案内
+                previewSpan.innerHTML = `<span class="tooltip-wrap" style="color:#d97706;">*${val}<span class="tooltip-tip">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
+            }
         });
+
+        // 判定用のY値取得ロジック（辞書引き or そのまま）
+        const getYValue = () => {
+            const val = inputField.value.trim();
+            if (!val) return "がいこくじん";
+            if (customDict[val.toLowerCase()]) {
+                return customDict[val.toLowerCase()].hira;
+            }
+            return val; // 未登録語はそのまま入力文字列で判定
+        };
+
+        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, "わたし", getYValue);
 
         container.appendChild(rowDiv);
     }
