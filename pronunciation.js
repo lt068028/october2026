@@ -1,16 +1,16 @@
-// 指定された8つのモデル文
-const modelSentences = [
-    "てんきがいいです",
-    "とけいがほしいです",
-    "しごとはたのしいです",
-    "べんきょうはおもしろいです",
-    "時間がないですか",
-    "てんきがわるいですか",
-    "てんきがよくないです",
-    "かさがほしいです"
+// 8つのモデル文と、それぞれに対応する簡易ピッチパターン（高低の相対値: 1=低, 3=高）
+const modelData = [
+    { text: "てんきがいいです", pitch: [1, 3, 3, 1, 3, 1, 1] },
+    { text: "とけいがほしいです", pitch: [1, 3, 1, 1, 3, 1, 1, 1] },
+    { text: "しごとはたのしいです", pitch: [1, 3, 3, 1, 1, 3, 3, 3, 1] },
+    { text: "べんきょうはおもしろいです", pitch: [1, 3, 3, 3, 1, 1, 3, 3, 3, 1, 1] },
+    { text: "時間がないですか", pitch: [1, 3, 3, 1, 3, 1, 1, 3] },
+    { text: "てんきがわるいですか", pitch: [1, 3, 3, 1, 1, 3, 1, 1, 3] },
+    { text: "てんきがよくないです", pitch: [1, 3, 3, 1, 1, 3, 3, 1, 1] },
+    { text: "かさがほしいです", pitch: [3, 1, 1, 3, 1, 1, 1] }
 ];
 
-let isManualStop = false; // 初期値は Auto Stop
+let isManualStop = false;
 
 // スタイル設定
 const styleElement = document.createElement('style');
@@ -77,10 +77,18 @@ styleElement.textContent = `
         font-family: sans-serif;
         flex-wrap: wrap;
     }
+    .sentence-container {
+        display: flex;
+        flex-direction: column;
+        min-width: 180px;
+    }
     .sentence-label {
         font-weight: bold;
-        min-width: 180px;
         font-size: 16px;
+    }
+    .pitch-graph {
+        height: 14px;
+        margin-top: 4px;
     }
     button {
         padding: 6px 12px;
@@ -99,13 +107,31 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 
+// ピッチライン（SVG）を生成する関数
+function createPitchSVG(pitchArray) {
+    const width = 160;
+    const height = 14;
+    const step = width / Math.max(pitchArray.length - 1, 1);
+    
+    let points = "";
+    pitchArray.forEach((val, i) => {
+        const x = i * step;
+        // val=3が上(2px)、val=1が下(12px)
+        const y = val === 3 ? 2 : 12;
+        points += `${x},${y} `;
+    });
+
+    return `<svg class="pitch-graph" width="${width}" height="${height}">
+        <polyline fill="none" stroke="#2196F3" stroke-width="2" points="${points.trim()}" />
+    </svg>`;
+}
+
 // 画面の構築
 function initDrill() {
     const drillList = document.getElementById('drillList');
     if (!drillList) return;
     drillList.innerHTML = "";
 
-    // ページ上部右端にコントロールパネルを配置
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
@@ -115,9 +141,14 @@ function initDrill() {
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
+    const modeTitle = document.createElement('span');
+    modeTitle.style.fontSize = '13px';
+    modeTitle.style.fontWeight = 'bold';
+    modeTitle.textContent = 'Recording:';
+
     const labelAuto = document.createElement('span');
     labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = 'Auto';
+    labelAuto.textContent = 'Autostop';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -131,7 +162,7 @@ function initDrill() {
 
     const labelManual = document.createElement('span');
     labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = 'Manual';
+    labelManual.textContent = 'Manual stop';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
@@ -144,6 +175,7 @@ function initDrill() {
         }
     });
 
+    controlItem.appendChild(modeTitle);
     controlItem.appendChild(labelAuto);
     controlItem.appendChild(switchLabel);
     controlItem.appendChild(labelManual);
@@ -152,19 +184,29 @@ function initDrill() {
     headerPanel.appendChild(controlItem);
     drillList.appendChild(headerPanel);
 
-    // 各行の生成
-    modelSentences.forEach((sentence) => {
+    modelData.forEach((item) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
+        const sentenceContainer = document.createElement('div');
+        sentenceContainer.className = 'sentence-container';
+
         const sentenceSpan = document.createElement('span');
         sentenceSpan.className = 'sentence-label';
-        sentenceSpan.textContent = sentence;
+        sentenceSpan.textContent = item.text;
+
+        const pitchContainer = document.createElement('div');
+        pitchContainer.style.display = 'none'; // 初期状態は非表示
+        pitchContainer.innerHTML = createPitchSVG(item.pitch);
+
+        sentenceContainer.appendChild(sentenceSpan);
+        sentenceContainer.appendChild(pitchContainer);
 
         const listenBtn = document.createElement('button');
-        listenBtn.textContent = '🔊 Listen';
+        listenBtn.textContent = 'きく';
         listenBtn.addEventListener('click', () => {
-            const utterance = new SpeechSynthesisUtterance(sentence);
+            pitchContainer.style.display = 'block'; // 再生時に高低ラインを表示
+            const utterance = new SpeechSynthesisUtterance(item.text);
             utterance.lang = 'ja-JP';
             speechSynthesis.speak(utterance);
         });
@@ -234,7 +276,7 @@ function initDrill() {
                 recordBtn.disabled = true;
                 stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
-                resultSpan.style.color = '#2196F3';
+                resultStrColor = '#2196F3';
 
             } catch (err) {
                 console.error("Mic error:", err);
@@ -257,7 +299,7 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
-        rowDiv.appendChild(sentenceSpan);
+        rowDiv.appendChild(sentenceContainer);
         rowDiv.appendChild(listenBtn);
         rowDiv.appendChild(recordBtn);
         rowDiv.appendChild(stopBtn);
@@ -267,7 +309,6 @@ function initDrill() {
     });
 }
 
-// 即時実行
 document.addEventListener('DOMContentLoaded', initDrill);
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     initDrill();
