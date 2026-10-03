@@ -8,7 +8,6 @@ const taskData = [
     { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
-// カスタム単語の辞書（romaji と meaning を追加してヒントに対応）
 const customDict = {
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
@@ -16,7 +15,7 @@ const customDict = {
     "colleague": { hira: "どうりょう", romaji: "douryou", meaning: "colleague" },
     "boss": { hira: "じょうし", romaji: "joushi", meaning: "boss" },
     "partner": { hira: "パートナー", romaji: "paatanaa", meaning: "partner" },
-    "bf/gf": { hira: "こいびと", romaji: "koibito", meaning: "bf/gf" },
+    "Bf/Gf": { hira: "こいびと", romaji: "koibito", meaning: "Bf/Gf" },
     "best friend": { hira: "しんゆう", romaji: "shinyuu", meaning: "best friend" },
     "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
     "grandchild": { hira: "まご", romaji: "mago", meaning: "grandchild" },
@@ -236,25 +235,41 @@ function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
+    // 漢字や表現ゆれをひらがなに正規化する辞書
     const dict = {
         "私": "わたし",
-        "私わ": "わたしは",
         "学生": "がくせい",
         "先生": "せんせい",
         "日本人": "にほんじん",
         "会社員": "かいしゃいん",
         "友達": "ともだち",
+        "家族": "かぞく",
         "同僚": "どうりょう",
-        "しんゆう": "しんゆう",
-        "アメリカじん": "あめりかじん",
-        "イギリスじん": "いぎりすじん",
-        "エンジニア": "えんじにあ",
-        "デス": "です",
-        "デシタ": "でした",
-        "じゃ無い": "じゃない",
-        "ヂャナイ": "じゃない",
-        "では": "では",
-        "じゃ": "じゃ"
+        "上司": "じょうし",
+        "パートナー": "パートナー",
+        "恋人": "こいびと",
+        "親友": "しんゆう",
+        "子供": "こども",
+        "子ども": "こども",
+        "孫": "まご",
+        "兄弟": "きょうだい",
+        "医師": "いしゃ",
+        "医者": "いしゃ",
+        "エンジニア": "エンジニア",
+        "研究者": "けんきゅうしゃ",
+        "デザイナー": "デザイナー",
+        "店員": "てんいん",
+        "自営業": "じえいぎょう",
+        "公務員": "こうむいん",
+        "看護師": "かんごし",
+        "看護婦": "かんごし",
+        "アルバイト": "アルバイト",
+        "です": "です",
+        "でした": "でした",
+        "じゃないです": "じゃないです",
+        "ではないです": "ではないです",
+        "じゃありません": "じゃありません",
+        "ではありません": "ではありません"
     };
 
     for (let key in dict) {
@@ -279,7 +294,6 @@ function formatWord(word, romaji, meaning) {
     }
 }
 
-// 選択された日本語に対してVocabモードを適用してフォーマットする関数
 function formatCustomWord(hira, engKey) {
     const entry = customDict[engKey];
     if (!entry) return hira;
@@ -317,7 +331,6 @@ function initTask1() {
     if (!container) return;
     container.innerHTML = "";
 
-    // 1つ目のパネル：Task 1；Drills
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
@@ -338,7 +351,6 @@ function initTask1() {
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
 
-    // Autostop スイッチ
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
@@ -376,7 +388,6 @@ function initTask1() {
     controlItem.appendChild(labelManual);
     controlGroup.appendChild(controlItem);
 
-    // 🏷️ Vocab スイッチ
     const vocabControl = document.createElement('div');
     vocabControl.className = 'control-item';
 
@@ -412,12 +423,10 @@ function initTask1() {
     headerPanel.appendChild(controlGroup);
     container.appendChild(headerPanel);
 
-    // 既存の問題リスト
     taskData.forEach((item, index) => {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // 2つ目のパネル：Task 2；Custom Practice
     const customHeaderPanel = document.createElement('div');
     customHeaderPanel.className = 'header-panel';
     customHeaderPanel.style.marginTop = "30px";
@@ -439,7 +448,6 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    // X（主語）用のオプション（Siblingまで、bf/gfに更新）
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち" data-eng="friend">Friend</option>
@@ -447,14 +455,13 @@ function initTask1() {
         <option value="どうりょう" data-eng="colleague">Colleague</option>
         <option value="じょうし" data-eng="boss">Boss</option>
         <option value="パートナー" data-eng="partner">Partner</option>
-        <option value="こいびと" data-eng="bf/gf">bf/gf</option>
+        <option value="こいびと" data-eng="Bf/Gf">Bf/Gf</option>
         <option value="しんゆう" data-eng="best friend">Best friend</option>
         <option value="こども" data-eng="child">Child</option>
         <option value="まご" data-eng="grandchild">Grandchild</option>
         <option value="きょうだい" data-eng="sibling">Sibling</option>
     `;
 
-    // Y（述語）用のオプション（Doctor以降）
     const optionsYHtml = `
         <option value="" disabled selected>-- Choose Y --</option>
         <option value="いしゃ" data-eng="doctor">Doctor</option>
@@ -531,7 +538,6 @@ function initTask1() {
             const valX = selectX.value;
             const valY = selectY.value;
 
-            // Xのプレビュー（Vocab ホバー・Paren対応）
             if (valX && selectedOptX) {
                 const engKey = selectedOptX.getAttribute('data-eng');
                 previewX.innerHTML = formatCustomWord(valX, engKey);
@@ -539,7 +545,6 @@ function initTask1() {
                 previewX.innerHTML = "";
             }
 
-            // Yのプレビュー（Vocab ホバー・Paren対応）
             if (valY && selectedOptY) {
                 const engKey = selectedOptY.getAttribute('data-eng');
                 previewY.innerHTML = formatCustomWord(valY, engKey);
@@ -547,7 +552,6 @@ function initTask1() {
                 previewY.innerHTML = "";
             }
 
-            // X側が選ばれた時点で「は」を非表示にする
             if (valX) {
                 labelHa.style.display = 'none';
             } else {
