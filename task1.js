@@ -1,24 +1,34 @@
 const taskData = [
     { x: "わたし", y: "がくせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "gakusei", yMeaning: "student" },
     { x: "わたし", y: "せんせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "sensei", yMeaning: "teacher" },
-    { x: "日本人(にほんじん)", y: "日本人(にほんじん)", xRomaji: "watashi", xMeaning: "I", yRomaji: "nihonjin", yMeaning: "Japanese" }, // ※説明用
-    { x: "わたし", y: "かいしゃいん", xRomaji: "watashi", xMeaning: "I", yRomaji: "kaishain", yMeaning: "office worker" },
+    { x: "日本人(にほんじん)", y: "日本人(にほんじん)", xRomaji: "watashi", xMeaning: "I", yRomaji: "nihonjin", yMeaning: "Japanese" },
+    { x: "わたし", y: "かいしゃいん", xRomaji: "watashi", xMeaning: "I", yRomaji: "kaishain", yMeaning: "company employee" },
     { x: "ともだち", y: "がくせい", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "gakusei", yMeaning: "student" },
-    { x: "ともだち", y: "かいしゃいん", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "kaishain", yMeaning: "office worker" },
+    { x: "ともだち", y: "かいしゃいん", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "kaishain", yMeaning: "company employee" },
     { x: "ともだち", y: "アメリカ人", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
-// 簡易英日辞書（カスタム入力用）
+// 大幅拡充した英日辞書
 const customDict = {
-    "car": { hira: "くるま", romaji: "car", meaning: "car" },
-    "travel": { hira: "りょこう", romaji: "travel", meaning: "travel" },
-    "book": { hira: "ほん", romaji: "book", meaning: "book" },
-    "dog": { hira: "いぬ", romaji: "dog", meaning: "dog" },
-    "coffee": { hira: "コーヒー", romaji: "coffee", meaning: "coffee" }
+    "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
+    "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
+    "student": { hira: "がくせい", romaji: "gakusei", meaning: "student" },
+    "teacher": { hira: "せんせい", romaji: "sensei", meaning: "teacher" },
+    "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
+    "british": { hira: "イギリスじん", romaji: "igirisujin", meaning: "British" },
+    "american": { hira: "アメリカじん", romaji: "amerikajin", meaning: "American" },
+    "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
+    "chinese": { hira: "ちゅうごくじん", romaji: "chuugokujin", meaning: "Chinese" },
+    "company employee": { hira: "かいしゃいん", romaji: "kaishain", meaning: "company employee" },
+    "doctor": { hira: "いしゃ", romaji: "isha", meaning: "doctor" },
+    "car": { hira: "くるま", romaji: "kuruma", meaning: "car" },
+    "book": { hira: "ほん", romaji: "hon", meaning: "book" },
+    "dog": { hira: "いぬ", romaji: "inu", meaning: "dog" },
+    "coffee": { hira: "コーヒー", romaji: "koohii", meaning: "coffee" }
 };
 
 let isManualStop = false;
-let hintMode = "hover"; // デフォルト: hover
+let hintMode = "hover";
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -48,7 +58,6 @@ styleElement.textContent = `
     .mode-label {
         font-weight: bold;
         font-size: 13px;
-        cursor: help;
     }
     .inactive-mode { color: #aaa; opacity: 0.5; }
     .active-mode { color: #2196F3; opacity: 1.0; }
@@ -102,20 +111,22 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 280px;
+        min-width: 320px;
         font-size: 16px;
         color: #333;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
     .custom-input {
         padding: 4px 8px;
         font-size: 14px;
         border: 1px solid #ccc;
         border-radius: 4px;
-        width: 110px;
+        width: 100px;
     }
     .translation-preview {
-        margin-left: 6px;
-        font-size: 13px;
+        font-size: 12px;
         color: #64748b;
         font-weight: normal;
     }
@@ -144,6 +155,37 @@ styleElement.textContent = `
         font-size: 14px;
         color: #be123c;
     }
+    /* カスタムツールチップ（「？」マークなし） */
+    .custom-tip-wrap {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted #2196F3;
+        cursor: help;
+    }
+    .custom-tip-wrap .custom-tip-box {
+        visibility: hidden;
+        width: 220px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        padding: 6px;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -110px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 12px;
+        font-weight: normal;
+        line-height: 1.4;
+    }
+    .custom-tip-wrap:hover .custom-tip-box {
+        visibility: visible;
+        opacity: 1;
+    }
+    /* 語彙用ツールチップ */
     .tooltip-wrap {
         position: relative;
         display: inline-block;
@@ -186,6 +228,8 @@ function convertToHiragana(text) {
         "会社員": "かいしゃいん",
         "友達": "ともだち",
         "アメリカじん": "あめりかじん",
+        "イギリスじん": "いぎりすじん",
+        "エンジニア": "えんじにあ",
         "デス": "です",
         "デシタ": "でした",
         "じゃ無い": "じゃない",
@@ -207,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initTask1();
 });
 
-// `gakusei (student)` 形式でのフォーマット関数
 function formatWord(word, romaji, meaning) {
     const hintStr = `${romaji} (${meaning})`;
     if (hintMode === 'paren') {
@@ -257,14 +300,13 @@ function initTask1() {
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
 
-    // Autostop スイッチ
+    // Autostop スイッチ（カスタムCSSツールチップ付き）
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
     const labelAuto = document.createElement('span');
-    labelAuto.className = 'mode-label active-mode';
-    labelAuto.title = "Stops recording automatically when you finish speaking.";
-    labelAuto.textContent = '⏹Autostop';
+    labelAuto.className = 'mode-label active-mode custom-tip-wrap';
+    labelAuto.innerHTML = '⏹Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -277,18 +319,17 @@ function initTask1() {
     switchLabel.appendChild(slider);
 
     const labelManual = document.createElement('span');
-    labelManual.className = 'mode-label inactive-mode';
-    labelManual.title = "Records continuously until you click stop.";
-    labelManual.textContent = '⏹Manual stop';
+    labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
+    labelManual.innerHTML = '⏹Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
         if (isManualStop) {
-            labelManual.className = 'mode-label active-mode';
-            labelAuto.className = 'mode-label inactive-mode';
+            labelManual.className = 'mode-label active-mode custom-tip-wrap';
+            labelAuto.className = 'mode-label inactive-mode custom-tip-wrap';
         } else {
-            labelAuto.className = 'mode-label active-mode';
-            labelManual.className = 'mode-label inactive-mode';
+            labelAuto.className = 'mode-label active-mode custom-tip-wrap';
+            labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
         }
     });
 
@@ -297,13 +338,13 @@ function initTask1() {
     controlItem.appendChild(labelManual);
     controlGroup.appendChild(controlItem);
 
-    // 🏷️ Vocab スイッチ
+    // 🏷️ Vocab スイッチ（カスタムCSSツールチップ付き）
     const vocabControl = document.createElement('div');
     vocabControl.className = 'control-item';
 
     const labelHover = document.createElement('span');
-    labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'}`;
-    labelHover.textContent = '🏷️ Vocab Hover';
+    labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
+    labelHover.innerHTML = '🏷️ Vocab Hover<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
@@ -316,8 +357,8 @@ function initTask1() {
     vocabSwitchLabel.appendChild(vocabSlider);
 
     const labelParen = document.createElement('span');
-    labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'}`;
-    labelParen.textContent = '🏷️ Vocab Paren';
+    labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
+    labelParen.innerHTML = '🏷️ Vocab Paren<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
 
     vocabSwitchInput.addEventListener('change', (e) => {
         hintMode = e.target.checked ? 'paren' : 'hover';
@@ -335,12 +376,12 @@ function initTask1() {
 
     // 既存の問題リスト
     taskData.forEach((item, index) => {
-        createDrillRow(container, `${index + 1}. ${formatWord("わたし", item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
+        createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // カスタム練習セクション
+    // カスタム練習セクション（2つの入力欄形式）
     const customHeader = document.createElement('h3');
-    customHeader.textContent = "Custom Practice (Your Own Words)";
+    customHeader.textContent = "Custom Practice ([ X element ] は [ Y element ] です)";
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
@@ -353,7 +394,13 @@ function initTask1() {
 
         const promptLabel = document.createElement('span');
         promptLabel.className = 'prompt-label';
-        promptLabel.innerHTML = `${taskData.length + i}. わたし(watashi / I) ／ <input type="text" id="customY_${i}" class="custom-input" placeholder="Type word"><span id="preview_${i}" class="translation-preview"></span>`;
+        promptLabel.innerHTML = `
+            ${taskData.length + i}. 
+            <input type="text" id="customX_${i}" class="custom-input" placeholder="X (e.g. I)">
+            <span id="previewX_${i}" class="translation-preview"></span> は 
+            <input type="text" id="customY_${i}" class="custom-input" placeholder="Y (e.g. engineer)">
+            <span id="previewY_${i}" class="translation-preview"></span>
+        `;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -387,36 +434,41 @@ function initTask1() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        // 入力値のリアルタイム翻訳・プレビュー処理
-        const inputField = promptLabel.querySelector(`#customY_${i}`);
-        const previewSpan = promptLabel.querySelector(`#preview_${i}`);
+        // 辞書引きおよびプレビュー更新ロジック
+        const inputX = promptLabel.querySelector(`#customX_${i}`);
+        const previewX = promptLabel.querySelector(`#previewX_${i}`);
+        const inputY = promptLabel.querySelector(`#customY_${i}`);
+        const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
-        inputField.addEventListener('input', () => {
-            const val = inputField.value.trim();
+        const updatePreview = (input, preview) => {
+            const val = input.value.trim().toLowerCase();
             if (!val) {
-                previewSpan.innerHTML = "";
+                preview.innerHTML = "";
                 return;
             }
-            if (customDict[val.toLowerCase()]) {
-                const translated = customDict[val.toLowerCase()].hira;
-                previewSpan.textContent = `(${translated})`;
+            if (customDict[val]) {
+                preview.textContent = `(${customDict[val].hira})`;
             } else {
-                // 未登録語の場合：アスタリスクつきで表示、ホバーで未登録案内
-                previewSpan.innerHTML = `<span class="tooltip-wrap" style="color:#d97706;">*${val}<span class="tooltip-tip">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
+                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706;">*${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
             }
-        });
-
-        // 判定用のY値取得ロジック（辞書引き or そのまま）
-        const getYValue = () => {
-            const val = inputField.value.trim();
-            if (!val) return "がいこくじん";
-            if (customDict[val.toLowerCase()]) {
-                return customDict[val.toLowerCase()].hira;
-            }
-            return val; // 未登録語はそのまま入力文字列で判定
         };
 
-        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, "わたし", getYValue);
+        inputX.addEventListener('input', () => updatePreview(inputX, previewX));
+        inputY.addEventListener('input', () => updatePreview(inputY, previewY));
+
+        const getXValue = () => {
+            const val = inputX.value.trim().toLowerCase();
+            if (!val) return "わたし";
+            return customDict[val] ? customDict[val].hira : inputX.value.trim();
+        };
+
+        const getYValue = () => {
+            const val = inputY.value.trim().toLowerCase();
+            if (!val) return "がくせい";
+            return customDict[val] ? customDict[val].hira : inputY.value.trim();
+        };
+
+        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue);
 
         container.appendChild(rowDiv);
     }
@@ -465,19 +517,19 @@ function createDrillRow(container, promptHtml, targetX, targetY) {
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
-    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, targetX, () => targetY);
+    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => targetX, () => targetY);
 
     container.appendChild(rowDiv);
 }
 
-function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getX, getYFn) {
+function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXFn, getYFn) {
     let mediaRecorder;
     let audioChunks = [];
     let audioStream = null;
     let recognition = null;
 
     recordBtn.addEventListener('click', async () => {
-        const currentX = getX;
+        const currentX = getXFn();
         const currentY = getYFn();
 
         try {
