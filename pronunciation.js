@@ -1,16 +1,5 @@
 let tokenizer = null;
 
-// kuromoji の初期化
-kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/" }).build((err, t) => {
-    if (err) {
-        console.error("Kuromoji initialization failed:", err);
-        return;
-    }
-    tokenizer = t;
-    console.log("Kuromoji initialized for Pronunciation Drill.");
-    initDrill();
-});
-
 // 指定された8つのモデル文
 const modelSentences = [
     "てんきがいいです",
@@ -62,27 +51,33 @@ styleElement.textContent = `
 `;
 document.head.appendChild(styleElement);
 
-// テキストにふりがなを付与する関数
+// テキストにふりがなを付与する関数（tokenizer未読込時はそのまま返す）
 function addRuby(text) {
-    if (!text || !tokenizer) return text;
-    const tokens = tokenizer.tokenize(text);
-    let resultHTML = "";
+    if (!text) return "";
+    if (!tokenizer) return text;
+    
+    try {
+        const tokens = tokenizer.tokenize(text);
+        let resultHTML = "";
 
-    for (const token of tokens) {
-        const surface = token.surface_form;
-        const reading = token.reading;
+        for (const token of tokens) {
+            const surface = token.surface_form;
+            const reading = token.reading;
 
-        if (reading && /[一-龯]/.test(surface)) {
-            const hiraReading = reading.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
-            resultHTML += `<ruby>${surface}<rt>${hiraReading}</rt></ruby>`;
-        } else {
-            resultHTML += surface;
+            if (reading && /[一-龯]/.test(surface)) {
+                const hiraReading = reading.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
+                resultHTML += `<ruby>${surface}<rt>${hiraReading}</rt></ruby>`;
+            } else {
+                resultHTML += surface;
+            }
         }
+        return resultHTML;
+    } catch (e) {
+        return text;
     }
-    return resultHTML;
 }
 
-// 画面の構築
+// 画面の構築（初期化を待たずに即時実行）
 function initDrill() {
     const drillList = document.getElementById('drillList');
     if (!drillList) return;
@@ -92,12 +87,10 @@ function initDrill() {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
-        // モデル文表示（初期状態でふりがな付与）
         const sentenceSpan = document.createElement('span');
         sentenceSpan.className = 'sentence-label';
         sentenceSpan.innerHTML = addRuby(sentence);
 
-        // モデル音声再生ボタン (Listen)
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 Listen';
         listenBtn.addEventListener('click', () => {
@@ -106,16 +99,13 @@ function initDrill() {
             speechSynthesis.speak(utterance);
         });
 
-        // 録音開始ボタン (Record)
         const recordBtn = document.createElement('button');
         recordBtn.textContent = 'Record';
 
-        // 録音停止ボタン (Stop)
         const stopBtn = document.createElement('button');
         stopBtn.textContent = 'Stop';
         stopBtn.disabled = true;
 
-        // 結果表示エリア
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.innerHTML = '<span style="color: #888;">(Not recorded yet)</span>';
@@ -195,5 +185,24 @@ function initDrill() {
         rowDiv.appendChild(resultSpan);
 
         drillList.appendChild(rowDiv);
+    });
+}
+
+// ページ読み込み時にUIを即時生成
+document.addEventListener('DOMContentLoaded', initDrill);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initDrill();
+}
+
+// kuromoji の初期化（バックグラウンドで実行）
+if (typeof kuromoji !== 'undefined') {
+    kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/" }).build((err, t) => {
+        if (!err) {
+            tokenizer = t;
+            console.log("Kuromoji initialized successfully.");
+            initDrill(); // 辞書読込完了後に再描画してルビを反映
+        } else {
+            console.warn("Kuromoji dict load failed, falling back to plain text:", err);
+        }
     });
 }
