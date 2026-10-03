@@ -11,6 +11,13 @@ const drillData = [
 
 let isManualStop = false;
 
+// ひらがな変換ユーティリティ
+function convertToHiragana(str) {
+    return str.replace(/[\u30a1-\u30f6]/g, match => {
+        return String.fromCharCode(match.charCodeAt(0) - 0x60);
+    });
+}
+
 const styleElement = document.createElement('style');
 styleElement.textContent = `
     .header-panel {
@@ -100,6 +107,20 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
     }
+    .correction-box {
+        width: 100%;
+        margin-top: 8px;
+        padding: 10px 12px;
+        background-color: var(--error-bg);
+        border: 1px solid var(--error-border);
+        border-radius: 6px;
+        color: var(--error-text);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 14px;
+    }
 `;
 document.head.appendChild(styleElement);
 
@@ -156,8 +177,14 @@ function initCompositionDrill() {
     container.appendChild(headerPanel);
 
     drillData.forEach((item) => {
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.style.display = 'flex';
+        wrapperDiv.style.flexDirection = 'column';
+        wrapperDiv.style.marginBottom = '12px';
+
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
+        rowDiv.style.marginBottom = '0';
 
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
@@ -180,9 +207,17 @@ function initCompositionDrill() {
         let audioStream = null;
         let recognition = null;
 
+        const correctionContainer = document.createElement('div');
+        correctionContainer.style.display = 'none';
+        wrapperDiv.appendChild(rowDiv);
+        wrapperDiv.appendChild(correctionContainer);
+
         recordBtn.addEventListener('click', async () => {
             try {
                 audioChunks = [];
+                correctionContainer.style.display = 'none';
+                correctionContainer.innerHTML = '';
+
                 audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(audioStream);
 
@@ -202,15 +237,46 @@ function initCompositionDrill() {
                             transcript += e.results[i][0].transcript;
                         }
                         
-                        const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
-                        const cleanTarget = item.jp.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+                        // 正規化とひらがな変換
+                        let cleanTranscript = convertToHiragana(transcript.toLowerCase());
+                        cleanTranscript = cleanTranscript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
 
-                        if (cleanTranscript === cleanTarget) {
+                        let cleanTarget = convertToHiragana(item.jp.toLowerCase());
+                        cleanTarget = cleanTarget.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+
+                        // 文末の揺れ（ね、よ、ですか、です、等）の許容処理
+                        const endParticleRegex = /(ね|よ|ですか|ですよ|です|ます)?$/;
+                        const baseTarget = cleanTarget.replace(endParticleRegex, "");
+                        const baseTranscript = cleanTranscript.replace(endParticleRegex, "");
+
+                        if (cleanTranscript === cleanTarget || (baseTarget.length > 0 && baseTranscript.includes(baseTarget))) {
                             resultSpan.textContent = transcript + " ✅";
                             resultSpan.style.color = 'var(--text-primary)';
+                            correctionContainer.style.display = 'none';
                         } else {
                             resultSpan.textContent = transcript;
                             resultSpan.style.color = 'var(--error-text)';
+
+                            // 構造エラー・不一致時の訂正ボックスと「きく」ボタン生成
+                            correctionContainer.innerHTML = '';
+                            const box = document.createElement('div');
+                            box.className = 'correction-box';
+
+                            const msgSpan = document.createElement('span');
+                            msgSpan.textContent = `⚠️ 正解は: 「${item.jp}」`;
+
+                            const listenCorrectBtn = document.createElement('button');
+                            listenCorrectBtn.textContent = '🔊 正答をきく';
+                            listenCorrectBtn.addEventListener('click', () => {
+                                const utterance = new SpeechSynthesisUtterance(item.jp);
+                                utterance.lang = 'ja-JP';
+                                speechSynthesis.speak(utterance);
+                            });
+
+                            box.appendChild(msgSpan);
+                            box.appendChild(listenCorrectBtn);
+                            correctionContainer.appendChild(box);
+                            correctionContainer.style.display = 'block';
                         }
                     };
 
@@ -265,7 +331,7 @@ function initCompositionDrill() {
         rowDiv.appendChild(stopBtn);
         rowDiv.appendChild(resultSpan);
 
-        container.appendChild(rowDiv);
+        container.appendChild(wrapperDiv);
     });
 }
 
