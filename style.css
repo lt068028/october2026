@@ -1,9 +1,25 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 2rem;
-    background-color: #f9f9f9;
-    color: #333;
+.header-panel {
+    display: flex;
+    justify-content: space-between; /* 左右に離して配置 */
+    align-items: center;
+    padding: 12px 16px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    gap: 12px;
 }
-h1 {
-    color: #2c3e50;
+
+/* 左側のタイトルとインストラクションをまとめるボックス */
+.title-instruction-group {
+    display: flex;
+    flex-direction: column; /* 縦に並べる */
+    gap: 4px;
+    max-width: 60%; /* 必要に応じて幅を制限し、長文は自然改行させる */
+}
+
+/* 右側のスイッチ群 */
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end; /* 右寄せにする */
 }
