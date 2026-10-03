@@ -18,10 +18,13 @@ styleElement.textContent = `
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
-        padding: 10px;
-        background: #f1f5f9;
+        padding: 12px 16px;
+        background: var(--bg-panel);
         border-radius: 6px;
         font-family: sans-serif;
+        border: 1px solid var(--border-color);
+        flex-wrap: wrap;
+        gap: 12px;
     }
     .control-item {
         display: flex;
@@ -32,8 +35,8 @@ styleElement.textContent = `
         font-weight: bold;
         font-size: 14px;
     }
-    .inactive-mode { color: #aaa; opacity: 0.5; }
-    .active-mode { color: #2196F3; opacity: 1.0; }
+    .inactive-mode { color: var(--text-secondary); opacity: 0.5; }
+    .active-mode { color: var(--accent-color); opacity: 1.0; }
     .switch {
         position: relative;
         display: inline-block;
@@ -45,7 +48,7 @@ styleElement.textContent = `
         position: absolute;
         cursor: pointer;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #2196F3;
+        background-color: var(--accent-color);
         transition: .4s;
         border-radius: 24px;
     }
@@ -68,9 +71,9 @@ styleElement.textContent = `
         align-items: center;
         gap: 12px;
         margin-bottom: 12px;
-        padding: 10px;
-        background: #fff;
-        border: 1px solid #ddd;
+        padding: 12px;
+        background: var(--bg-row);
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         font-family: sans-serif;
         flex-wrap: wrap;
@@ -79,20 +82,23 @@ styleElement.textContent = `
         font-weight: bold;
         min-width: 180px;
         font-size: 16px;
+        color: var(--text-primary);
     }
     button {
         padding: 6px 12px;
         cursor: pointer;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
-        background: #f8f9fa;
+        background: var(--button-bg);
+        color: var(--text-primary);
         font-size: 14px;
     }
-    button:hover { background: #e9ecef; }
-    button:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
+    button:hover { background: var(--button-hover); }
+    button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
     .result-text {
         margin-left: 10px;
         font-size: 15px;
+        color: var(--text-primary);
     }
 `;
 document.head.appendChild(styleElement);
@@ -107,6 +113,7 @@ function initDrill() {
 
     const titleArea = document.createElement('span');
     titleArea.innerHTML = "<strong>Pronunciation Drills</strong>";
+    titleArea.style.color = "var(--text-primary)";
 
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
@@ -152,7 +159,6 @@ function initDrill() {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
-        // 「きく」ボタンを文の左側に配置するための要素生成
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
         
@@ -186,7 +192,7 @@ function initDrill() {
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
-        resultSpan.style.color = '#888';
+        resultSpan.style.color = 'var(--text-secondary)';
 
         let mediaRecorder;
         let audioChunks = [];
@@ -215,7 +221,7 @@ function initDrill() {
                             transcript += e.results[i][0].transcript;
                         }
                         resultSpan.textContent = transcript;
-                        resultSpan.style.color = '#333';
+                        resultSpan.style.color = 'var(--text-primary)';
                     };
 
                     recognition.onerror = (err) => {
@@ -241,12 +247,12 @@ function initDrill() {
                 recordBtn.disabled = true;
                 stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
-                resultSpan.style.color = '#2196F3';
+                resultSpan.style.color = 'var(--accent-color)';
 
             } catch (err) {
                 console.error("Mic error:", err);
                 resultSpan.textContent = 'Mic error';
-                resultSpan.style.color = 'red';
+                resultSpan.style.color = 'var(--error-text)';
             }
         });
 
@@ -264,7 +270,7 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
-        rowDiv.appendChild(listenBtn); // 左側に配置
+        rowDiv.appendChild(listenBtn);
         rowDiv.appendChild(sentenceSpan);
         rowDiv.appendChild(recordBtn);
         rowDiv.appendChild(stopBtn);
