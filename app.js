@@ -1,325 +1,190 @@
-let mediaRecorder;
-let audioChunks = [];
-let audioStream = null;
-let recognition = null;
-let currentTranscript = "";
+let tokenizer = null;
 
-// --- 1. スタイル設定 ---
+// kuromoji の初期化
+kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/" }).build((err, t) => {
+    if (err) {
+        console.error("Kuromoji initialization failed:", err);
+        return;
+    }
+    tokenizer = t;
+    console.log("Kuromoji initialized for Composition Drill.");
+    initCompositionDrill();
+});
+
+// 英語プロンプトと期待される日本語のデータセット
+const drillData = [
+    { en: "It's a nice day.", jp: "てんきがいいです" },
+    { en: "I want a watch.", jp: "とけいがほしいです" },
+    { en: "Work is fun.", jp: "しごとはたのしいです" },
+    { en: "Studying is interesting.", jp: "べんきょうはおもしろいです" },
+    { en: "Don't you have time?", jp: "時間がないですか" },
+    { en: "Is the weather bad?", jp: "てんきがわるいですか" },
+    { en: "The weather is not good.", jp: "てんきがよくないです" },
+    { en: "I want an umbrella.", jp: "かさがほしいです" }
+];
+
+// スタイル設定
 const styleElement = document.createElement('style');
 styleElement.textContent = `
-    .controls-panel {
+    .drill-row {
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 12px;
         margin-bottom: 15px;
+        padding: 10px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 6px;
         font-family: sans-serif;
         flex-wrap: wrap;
     }
-    .control-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .mode-label {
+    .prompt-label {
         font-weight: bold;
+        min-width: 220px;
+        font-size: 16px;
+        color: #333;
+    }
+    button {
+        padding: 6px 12px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #f8f9fa;
         font-size: 14px;
-        cursor: pointer;
-        transition: color 0.3s, opacity 0.3s;
     }
-    .inactive-mode {
-        color: #aaa;
-        opacity: 0.4;
-    }
-    .active-mode {
-        color: #2196F3;
-        opacity: 1.0;
-    }
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 50px;
-        height: 28px;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #2196F3;
-        transition: .4s;
-        border-radius: 28px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 20px;
-        width: 20px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    input:checked + .slider:before {
-        transform: translateX(22px);
-    }
+    button:hover { background: #e9ecef; }
+    button:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
     ruby { ruby-align: center; }
     rt { font-size: 0.7em; color: #666; }
+    .result-text {
+        margin-left: 10px;
+        font-size: 15px;
+    }
 `;
 document.head.appendChild(styleElement);
 
-// 既存ボタンのテキストを英語に変更
-const recordBtn = document.getElementById('recordBtn');
-const stopBtn = document.getElementById('stopBtn');
+// テキストにkuromojiで自動ルビを付与する関数
+function addRuby(text) {
+    if (!text || !tokenizer) return text;
+    const tokens = tokenizer.tokenize(text);
+    let resultHTML = "";
 
-if (recordBtn) recordBtn.textContent = 'Record';
-if (stopBtn) stopBtn.textContent = 'Stop';
+    for (const token of tokens) {
+        const surface = token.surface_form;
+        const reading = token.reading;
 
-// --- 2. コントロールパネルの構築（Record/Stopの右側に並べる） ---
-const panel = document.createElement('div');
-panel.className = 'controls-panel';
-
-// ふりがな切り替え (左: Withふりがな, 右: Noふりがな)
-const rubyItem = document.createElement('div');
-rubyItem.className = 'control-item';
-
-const labelWithRuby = document.createElement('span');
-labelWithRuby.className = 'mode-label active-mode';
-labelWithRuby.textContent = 'Withふりがな';
-
-const rubySwitch = document.createElement('label');
-rubySwitch.className = 'switch';
-const rubyToggleInput = document.createElement('input');
-rubyToggleInput.type = 'checkbox';
-rubyToggleInput.checked = false; // 左がデフォルト(With)
-const rubySlider = document.createElement('span');
-rubySlider.className = 'slider';
-rubySwitch.appendChild(rubyToggleInput);
-rubySwitch.appendChild(rubySlider);
-
-const labelNoRuby = document.createElement('span');
-labelNoRuby.className = 'mode-label inactive-mode';
-labelNoRuby.textContent = 'Noふりがな';
-
-rubyItem.appendChild(labelWithRuby);
-rubyItem.appendChild(rubySwitch);
-rubyItem.appendChild(labelNoRuby);
-
-// 停止モード切り替え (左: Auto Stop, 右: Manual Stop)
-const stopItem = document.createElement('div');
-stopItem.className = 'control-item';
-
-const labelAuto = document.createElement('span');
-labelAuto.className = 'mode-label active-mode';
-labelAuto.textContent = 'Auto Stop';
-
-const stopSwitch = document.createElement('label');
-stopSwitch.className = 'switch';
-const stopModeToggle = document.createElement('input');
-stopModeToggle.type = 'checkbox';
-stopModeToggle.checked = false; // 左がデフォルト(Auto)
-const stopSlider = document.createElement('span');
-stopSlider.className = 'slider';
-stopSwitch.appendChild(stopModeToggle);
-stopSwitch.appendChild(stopSlider);
-
-const labelManual = document.createElement('span');
-labelManual.className = 'mode-label inactive-mode';
-labelManual.textContent = 'Manual Stop';
-
-stopItem.appendChild(labelAuto);
-stopItem.appendChild(stopSwitch);
-stopItem.appendChild(labelManual);
-
-// パネルに要素を追加
-if (recordBtn) panel.appendChild(recordBtn);
-if (stopBtn) panel.appendChild(stopBtn);
-panel.appendChild(rubyItem);
-panel.appendChild(stopItem);
-
-document.body.insertBefore(panel, document.body.firstChild);
-
-// ステータス表示
-const statusDisplay = document.createElement('p');
-statusDisplay.id = 'statusDisplay';
-statusDisplay.style.fontWeight = 'bold';
-statusDisplay.style.color = '#2c3e50';
-statusDisplay.textContent = 'Ready...';
-document.body.insertBefore(statusDisplay, panel);
-
-// リストコンテナ
-const listContainer = document.createElement('div');
-listContainer.id = 'recordingList';
-listContainer.style.marginTop = '20px';
-document.body.appendChild(listContainer);
-
-let isRubyEnabled = true;
-let isManualStop = false;
-
-rubyToggleInput.addEventListener('change', (e) => {
-    isRubyEnabled = !e.target.checked; 
-    if (isRubyEnabled) {
-        labelWithRuby.className = 'mode-label active-mode';
-        labelNoRuby.className = 'mode-label inactive-mode';
-    } else {
-        labelNoRuby.className = 'mode-label active-mode';
-        labelWithRuby.className = 'mode-label inactive-mode';
-    }
-});
-
-stopModeToggle.addEventListener('change', (e) => {
-    isManualStop = e.target.checked; 
-    if (!isManualStop) {
-        labelAuto.className = 'mode-label active-mode';
-        labelManual.className = 'mode-label inactive-mode';
-    } else {
-        labelManual.className = 'mode-label active-mode';
-        labelAuto.className = 'mode-label inactive-mode';
-    }
-});
-
-// --- 3. 変換辞書（漢字 -> ルビ用） ---
-const kanjiMap = {
-    "私": "わたし",
-    "学生": "がくせい",
-    "先生": "せんせい",
-    "本": "ほん",
-    "机": "つくえ",
-    "椅子": "いす",
-    "車": "くるま",
-    "部屋": "へや",
-    "猫": "ねこ",
-    "犬": "いぬ",
-    "私達": "わたしたち",
-    "今日": "きょう",
-    "明日": "あした",
-    "昨日": "きのう",
-    "日本語": "にほんご",
-    "英語": "えいご",
-    "友達": "ともだち"
-};
-
-function processText(text, rubyOn) {
-    if (!text) return "（No transcription）";
-    let processed = text;
-    if (rubyOn) {
-        for (const [kanji, hira] of Object.entries(kanjiMap)) {
-            const regex = new RegExp(kanji, 'g');
-            processed = processed.replace(regex, `<ruby>${kanji}<rt>${hira}</rt></ruby>`);
-        }
-    }
-    return processed;
-}
-
-// --- 4. 録音および音声認識の制御 ---
-function finalizeRecording() {
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-    }
-
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-    const audioUrl = URL.createObjectURL(audioBlob);
-    
-    const itemDiv = document.createElement('div');
-    itemDiv.style.display = 'flex';
-    itemDiv.style.alignItems = 'center';
-    itemDiv.style.gap = '15px';
-    itemDiv.style.marginBottom = '10px';
-    itemDiv.style.padding = '8px';
-    itemDiv.style.backgroundColor = '#fff';
-    itemDiv.style.border = '1px solid #ddd';
-    itemDiv.style.borderRadius = '4px';
-
-    const audioElement = document.createElement('audio');
-    audioElement.src = audioUrl;
-    audioElement.controls = true;
-
-    const textSpan = document.createElement('span');
-    const formattedHTML = processText(currentTranscript, isRubyEnabled);
-    textSpan.innerHTML = formattedHTML;
-
-    itemDiv.appendChild(audioElement);
-    itemDiv.appendChild(textSpan);
-    
-    listContainer.appendChild(itemDiv);
-    statusDisplay.textContent = 'Ready...';
-
-    if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-    }
-
-    if (recordBtn) recordBtn.disabled = false;
-    if (stopBtn) stopBtn.disabled = true;
-}
-
-async function startRecording() {
-    try {
-        audioChunks = [];
-        currentTranscript = "";
-        
-        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(audioStream);
-
-        mediaRecorder.ondataavailable = (event) => {
-            audioChunks.push(event.data);
-        };
-
-        mediaRecorder.start();
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.lang = 'ja-JP';
-            recognition.interimResults = false;
-            recognition.continuous = isManualStop;
-
-            recognition.onresult = (event) => {
-                let transcript = "";
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    transcript += event.results[i][0].transcript;
-                }
-                currentTranscript = transcript;
-            };
-
-            recognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-            };
-
-            recognition.onend = () => {
-                if (!isManualStop) {
-                    finalizeRecording();
-                }
-            };
-
-            recognition.start();
-        }
-
-        statusDisplay.textContent = "Recording...";
-        if (recordBtn) recordBtn.disabled = true;
-
-        if (isManualStop) {
-            if (stopBtn) stopBtn.disabled = false;
+        if (reading && /[一-龯]/.test(surface)) {
+            const hiraReading = reading.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
+            resultHTML += `<ruby>${surface}<rt>${hiraReading}</rt></ruby>`;
         } else {
-            if (stopBtn) stopBtn.disabled = true;
+            resultHTML += surface;
         }
-
-    } catch (error) {
-        console.error("Microphone access error:", error);
-        statusDisplay.textContent = "Microphone access error.";
     }
+    return resultHTML;
 }
 
-function stopRecording() {
-    if (recognition) {
-        recognition.stop();
-    }
-    statusDisplay.textContent = "Processing...";
-    finalizeRecording();
-}
+// 画面の構築
+function initCompositionDrill() {
+    const container = document.getElementById('compositionList');
+    if (!container) return;
+    container.innerHTML = "";
 
-if (recordBtn) recordBtn.addEventListener('click', startRecording);
-if (stopBtn) {
-    stopBtn.addEventListener('click', stopRecording);
-    stopBtn.disabled = true;
+    drillData.forEach((item) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'drill-row';
+
+        // 英語プロンプト表示
+        const promptSpan = document.createElement('span');
+        promptSpan.className = 'prompt-label';
+        promptSpan.textContent = item.en;
+
+        // 録音開始ボタン
+        const recordBtn = document.createElement('button');
+        recordBtn.textContent = 'Record';
+
+        // 録音停止ボタン
+        const stopBtn = document.createElement('button');
+        stopBtn.textContent = 'Stop';
+        stopBtn.disabled = true;
+
+        // 結果表示エリア
+        const resultSpan = document.createElement('span');
+        resultSpan.className = 'result-text';
+        resultSpan.innerHTML = '<span style="color: #888;">(Not recorded yet)</span>';
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let audioStream = null;
+        let recognition = null;
+
+        recordBtn.addEventListener('click', async () => {
+            try {
+                audioChunks = [];
+                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(audioStream);
+
+                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                mediaRecorder.start();
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'ja-JP';
+                    recognition.interimResults = false;
+                    recognition.continuous = false;
+
+                    recognition.onresult = (e) => {
+                        const transcript = e.results[0][0].transcript;
+                        resultSpan.innerHTML = addRuby(transcript);
+                    };
+
+                    recognition.onerror = (err) => {
+                        console.error("Speech recognition error:", err);
+                    };
+
+                    recognition.onend = () => {
+                        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                            mediaRecorder.stop();
+                        }
+                        if (audioStream) {
+                            audioStream.getTracks().forEach(track => track.stop());
+                        }
+                        recordBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    };
+
+                    recognition.start();
+                }
+
+                recordBtn.disabled = true;
+                stopBtn.disabled = false;
+                resultSpan.innerHTML = '<span style="color: #2196F3;">Recording...</span>';
+
+            } catch (err) {
+                console.error("Mic error:", err);
+                resultSpan.innerHTML = '<span style="color: red;">Mic error</span>';
+            }
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (recognition) {
+                recognition.stop();
+            }
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+            }
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+        });
+
+        rowDiv.appendChild(promptSpan);
+        rowDiv.appendChild(recordBtn);
+        rowDiv.appendChild(stopBtn);
+        rowDiv.appendChild(resultSpan);
+
+        container.appendChild(rowDiv);
+    });
 }
