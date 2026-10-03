@@ -37,17 +37,76 @@ let hintMode = "hover";
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
+    /* デイモード（デフォルト）のカラー変数定義 */
+    :root {
+        --bg-main: #ffffff;
+        --bg-panel: #f1f5f9;
+        --bg-row: #ffffff;
+        --border-color: #cccccc;
+        --text-primary: #333333;
+        --text-secondary: #64748b;
+        --accent-color: #2196F3;
+        --button-bg: #f8f9fa;
+        --button-hover: #e9ecef;
+        --button-disabled-bg: #e2e8f0;
+        --button-disabled-text: #a0aec0;
+        
+        /* ツールチップ・ポップアップ関連 */
+        --tooltip-bg: #333333;
+        --tooltip-text: #ffffff;
+        
+        /* エラー・警告ボックス関連 */
+        --error-bg: #fff1f2;
+        --error-border: #fda4af;
+        --error-text: #be123c;
+    }
+
+    /* ナイトモード（OS設定自動追従） */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-row: #1e293b;
+            --border-color: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #38bdf8;
+            --button-bg: #334155;
+            --button-hover: #475569;
+            --button-disabled-bg: #1e293b;
+            --button-disabled-text: #64748b;
+            
+            /* ナイトモード時：視認性確保のためツールチップは反転 */
+            --tooltip-bg: #f8fafc;
+            --tooltip-text: #0f172a;
+            
+            /* ナイトモード時：暗色ベースのエラーボックス */
+            --error-bg: #4c0519;
+            --error-border: #9f1239;
+            --error-text: #fecdd3;
+        }
+    }
+
+    body {
+        background-color: var(--bg-main);
+        color: var(--text-primary);
+        font-family: sans-serif;
+        margin: 0;
+        padding: 20px;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
     .header-panel {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
         padding: 12px 16px;
-        background: #f1f5f9;
+        background: var(--bg-panel);
         border-radius: 6px;
-        font-family: sans-serif;
         flex-wrap: wrap;
         gap: 12px;
+        border: 1px solid var(--border-color);
     }
     .title-instruction-group {
         display: flex;
@@ -69,8 +128,8 @@ styleElement.textContent = `
         font-weight: bold;
         font-size: 13px;
     }
-    .inactive-mode { color: #aaa; opacity: 0.5; }
-    .active-mode { color: #2196F3; opacity: 1.0; }
+    .inactive-mode { color: var(--text-secondary); opacity: 0.5; }
+    .active-mode { color: var(--accent-color); opacity: 1.0; }
     .switch {
         position: relative;
         display: inline-block;
@@ -82,7 +141,7 @@ styleElement.textContent = `
         position: absolute;
         cursor: pointer;
         top: 0; left: 0; right: 0; bottom: 0;
-        background-color: #2196F3;
+        background-color: var(--accent-color);
         transition: .4s;
         border-radius: 24px;
     }
@@ -107,10 +166,9 @@ styleElement.textContent = `
         gap: 12px;
         margin-bottom: 12px;
         padding: 12px;
-        background: #fff;
-        border: 1px solid #ddd;
+        background: var(--bg-row);
+        border: 1px solid var(--border-color);
         border-radius: 6px;
-        font-family: sans-serif;
     }
     .top-row {
         display: flex;
@@ -123,7 +181,7 @@ styleElement.textContent = `
         font-weight: bold;
         min-width: 400px;
         font-size: 16px;
-        color: #333;
+        color: var(--text-primary);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -131,19 +189,20 @@ styleElement.textContent = `
     }
     .target-word {
         font-weight: 700;
-        color: #0f172a;
+        color: var(--text-primary);
         font-size: 16px;
     }
     .custom-select {
         padding: 6px 10px;
         font-size: 15px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
-        background-color: #fff;
+        background-color: var(--bg-main);
+        color: var(--text-primary);
     }
     .translation-preview {
         font-size: 15px;
-        color: #1e293b;
+        color: var(--text-primary);
         font-weight: bold;
         margin-left: 6px;
         margin-right: 12px;
@@ -152,39 +211,41 @@ styleElement.textContent = `
     button {
         padding: 6px 12px;
         cursor: pointer;
-        border: 1px solid #ccc;
+        border: 1px solid var(--border-color);
         border-radius: 4px;
-        background: #f8f9fa;
+        background: var(--button-bg);
+        color: var(--text-primary);
         font-size: 14px;
     }
-    button:hover { background: #e9ecef; }
-    button:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
+    button:hover { background: var(--button-hover); }
+    button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
     .result-text {
         margin-left: 10px;
         font-size: 15px;
+        color: var(--text-primary);
     }
     .correction-box {
         display: none;
         margin-top: 6px;
         width: 100%;
         padding: 8px;
-        background: #fff1f2;
-        border: 1px solid #fda4af;
+        background: var(--error-bg);
+        border: 1px solid var(--error-border);
         border-radius: 4px;
         font-size: 14px;
-        color: #be123c;
+        color: var(--error-text);
     }
     .custom-tip-wrap {
         position: relative;
         display: inline-block;
-        border-bottom: 1px dotted #2196F3;
+        border-bottom: 1px dotted var(--accent-color);
         cursor: help;
     }
     .custom-tip-wrap .custom-tip-box {
         visibility: hidden;
         width: 220px;
-        background-color: #333;
-        color: #fff;
+        background-color: var(--tooltip-bg);
+        color: var(--tooltip-text);
         text-align: center;
         border-radius: 4px;
         padding: 6px;
@@ -198,6 +259,7 @@ styleElement.textContent = `
         font-size: 12px;
         font-weight: normal;
         line-height: 1.4;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     .custom-tip-wrap:hover .custom-tip-box {
         visibility: visible;
@@ -206,13 +268,13 @@ styleElement.textContent = `
     .tooltip-wrap {
         position: relative;
         display: inline-block;
-        border-bottom: 1px dotted #2196F3;
+        border-bottom: 1px dotted var(--accent-color);
     }
     .tooltip-wrap .tooltip-tip {
         visibility: hidden;
         width: 90px;
-        background-color: #333;
-        color: #fff;
+        background-color: var(--tooltip-bg);
+        color: var(--tooltip-text);
         text-align: center;
         border-radius: 4px;
         padding: 3px 0;
@@ -224,6 +286,7 @@ styleElement.textContent = `
         opacity: 0;
         transition: opacity 0.3s;
         font-size: 11px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     .tooltip-wrap:hover .tooltip-tip {
         visibility: visible;
@@ -310,16 +373,16 @@ function initTask1() {
         const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
         exampleSection.innerHTML = `
-            <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px;">
+            <div style="background: var(--bg-panel); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
                 <div>
                     <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
                     <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                    <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
+                    <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
                 </div>
                 <div>
                     <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
                     <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                    <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
+                    <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
                 </div>
             </div>
         `;
@@ -342,7 +405,7 @@ function initTask1() {
     titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
 
     const descArea1 = document.createElement('span');
-    descArea1.style.color = '#333';
+    descArea1.style.color = 'var(--text-primary)';
     descArea1.style.fontSize = '15px';
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
@@ -446,7 +509,7 @@ function initTask1() {
     titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
 
     const descArea2 = document.createElement('span');
-    descArea2.style.color = '#333';
+    descArea2.style.color = 'var(--text-primary)';
     descArea2.style.fontSize = '15px';
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
@@ -456,7 +519,6 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    // X（主語）のオプション（外国人を除外）
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち" data-eng="friend">Friend</option>
@@ -471,7 +533,6 @@ function initTask1() {
         <option value="きょうだい" data-eng="sibling">Sibling</option>
     `;
 
-    // Y（述語）のオプション（先頭に foreigner / がいこくじん を追加）
     const optionsYHtml = `
         <option value="" disabled selected>-- Choose Y --</option>
         <option value="がいこくじん" data-eng="foreigner">Foreigner</option>
@@ -506,7 +567,7 @@ function initTask1() {
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
-        recordBtn.disabled = true; // 初期状態では両方未選択のため無効化
+        recordBtn.disabled = true;
 
         const stopBtn = document.createElement('button');
         stopBtn.textContent = '⏹とめる';
@@ -515,7 +576,7 @@ function initTask1() {
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
-        resultSpan.style.color = '#888';
+        resultSpan.style.color = 'var(--text-secondary)';
 
         topRow.appendChild(promptLabel);
         topRow.appendChild(recordBtn);
@@ -570,7 +631,6 @@ function initTask1() {
                 labelHa.style.display = 'inline';
             }
 
-            // XとYの両方が選択された場合のみ「とる」ボタンを有効化する
             if (valX && valY) {
                 recordBtn.disabled = false;
             } else {
@@ -611,7 +671,7 @@ function createDrillRow(container, promptHtml, targetX, targetY) {
     const resultSpan = document.createElement('span');
     resultSpan.className = 'result-text';
     resultSpan.textContent = '(Not recorded yet)';
-    resultSpan.style.color = '#888';
+    resultSpan.style.color = 'var(--text-secondary)';
 
     topRow.appendChild(promptSpan);
     topRow.appendChild(recordBtn);
@@ -671,7 +731,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
                     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
                         resultSpan.textContent = rawTranscript + " (Too short)";
-                        resultSpan.style.color = '#666';
+                        resultSpan.style.color = 'var(--text-secondary)';
                         return;
                     }
 
@@ -692,23 +752,23 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
                     if (isAffirmative || isNegative) {
                         resultSpan.textContent = hiraText + " ✅";
-                        resultSpan.style.color = '#333';
+                        resultSpan.style.color = 'var(--text-primary)';
                         correctionBox.style.display = 'none';
                     } else {
                         const hasCorrectY = hiraText.includes(hiraY);
 
                         if (!hasCorrectY) {
                             let highlightedText = hiraText;
-                            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: #2563eb;">$2</span>$3`);
+                            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
                             
                             resultSpan.innerHTML = highlightedText;
-                            resultSpan.style.color = '#333';
+                            resultSpan.style.color = 'var(--text-primary)';
 
                             corrTextSpan.textContent = `Wrong word used.`;
                             corrListenBtn.style.display = 'none';
                         } else {
                             resultSpan.textContent = hiraText;
-                            resultSpan.style.color = '#e11d48';
+                            resultSpan.style.color = 'var(--error-text)';
 
                             corrTextSpan.textContent = `Structure error, try it again`;
                             corrListenBtn.style.display = 'inline-block';
@@ -756,13 +816,13 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             recordBtn.disabled = true;
             stopBtn.disabled = !isManualStop;
             resultSpan.textContent = 'Recording...';
-            resultSpan.style.color = '#2196F3';
+            resultSpan.style.color = 'var(--accent-color)';
             correctionBox.style.display = 'none';
 
         } catch (err) {
             console.error("Mic error:", err);
             resultSpan.textContent = 'Mic error';
-            resultSpan.style.color = 'red';
+            resultSpan.style.color = 'var(--error-text)';
         }
     });
 
@@ -786,7 +846,7 @@ function setupExampleListen(btnId, text) {
     if (btn) {
         btn.addEventListener('click', () => {
             btn.disabled = true;
-            btn.textContent = '🔊 Saisai...'; // プレースホルダーのままでなくともよいが既存踏襲
+            btn.textContent = '🔊 再生中...';
 
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(text);
