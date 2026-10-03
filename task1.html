@@ -1,41 +1,164 @@
-<!-- Custom Practice 区画 -->
-<div class="custom-practice-section">
-    <!-- Xの選択 -->
-    <div class="select-group">
-        <select id="select-x" onchange="updateTranslation('x')">
-            <option value="" disabled selected>-- Select X (Person) --</option>
-            <option value="ともだち">Friend</option>
-            <option value="かぞく">Family</option>
-            <option value="どうりょう">Colleague</option>
-            <option value="じょうし">Boss</option>
-            <option value="パートナー">Partner</option>
-            <option value="こいびと">Boyfriend/Girlfriend</option>
-            <option value="しんゆう">Best friend</option>
-            <option value="こども">Child</option>
-            <option value="まご">Grandchild</option>
-            <option value="きょうだい">Sibling</option>
-        </select>
-        <div class="translation-display">
-            <span id="trans-x">&rarr; <strong>(Not selected)</strong></span>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Task 1: XはYです</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ツールチップ（ポップアップ）用のスタイル */
+        .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            border-bottom: 1px dotted #2196F3;
+        }
+        .tooltip-wrap .tooltip-tip {
+            visibility: hidden;
+            width: 70px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -35px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+        }
+        .tooltip-wrap:hover .tooltip-tip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Custom Practice用スタイル */
+        .custom-practice-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .select-group {
+            margin-bottom: 15px;
+        }
+        .select-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 14px;
+        }
+        .select-group select {
+            width: 100%;
+            padding: 8px;
+            font-size: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .translation-display {
+            margin-top: 5px;
+            font-size: 14px;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>XはYです</h1>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <!-- フォントサイズを拡大 -->
+        <p style="color: #555; font-size: 16px; margin: 0;">Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
+        
+        <!-- 英語意味の表示切替コントロール -->
+        <div style="font-size: 13px; font-family: sans-serif; background: #f1f5f9; padding: 6px 10px; border-radius: 4px;">
+            Hint style: 
+            <label style="margin-left: 5px;"><input type="radio" name="hintMode" value="paren" checked> 括弧書き</label>
+            <label style="margin-left: 5px;"><input type="radio" name="hintMode" value="hover"> ホバー</label>
         </div>
     </div>
 
-    <!-- Yの選択 -->
-    <div class="select-group">
-        <select id="select-y" onchange="updateTranslation('y')">
-            <option value="" disabled selected>-- Select Y (Occupation) --</option>
-            <option value="いしゃ">Doctor</option>
-            <option value="エンジニア">Engineer</option>
-            <option value="けんきゅうしゃ">Researcher</option>
-            <option value="デザイナー">Designer</option>
-            <option value="てんいん">Store staff</option>
-            <option value="じえいぎょう">Self-employed</option>
-            <option value="こうむいん">Civil servant</option>
-            <option value="かんごし">Nurse</option>
-            <option value="アルバイト">Part-time worker</option>
-        </select>
-        <div class="translation-display">
-            <span id="trans-y">&rarr; <strong>(Not selected)</strong></span>
+    <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; margin-top: 15px; margin-bottom: 20px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px;">
+        <div>
+            <strong>Affirmative:</strong> わたし(I) ／ がくせい(student) 
+            <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+            <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
+        </div>
+        <div>
+            <strong>Negative:</strong> わたし(I) ／ せんせい(teacher) 
+            <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+            <span style="font-size: 14px; color: #334155; margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
         </div>
     </div>
-</div>
+
+    <!-- 例文セクション（JS連動） -->
+    <div id="exampleSection"></div>
+
+    <!-- Custom Practice エリア -->
+    <div class="custom-practice-box">
+        <h3>Custom Practice</h3>
+        
+        <!-- Xの選択 -->
+        <div class="select-group">
+            <label for="select-x">Select X (Person):</label>
+            <select id="select-x" onchange="updateTranslation('x')">
+                <option value="" disabled selected>-- Choose an option --</option>
+                <option value="ともだち">Friend</option>
+                <option value="かぞく">Family</option>
+                <option value="どうりょう">Colleague</option>
+                <option value="じょうし">Boss</option>
+                <option value="パートナー">Partner</option>
+                <option value="こいびと">Boyfriend/Girlfriend</option>
+                <option value="しんゆう">Best friend</option>
+                <option value="こども">Child</option>
+                <option value="まご">Grandchild</option>
+                <option value="きょうだい">Sibling</option>
+            </select>
+            <div class="translation-display">
+                <span id="trans-x">&rarr; <strong>(Not selected)</span></strong>
+            </div>
+        </div>
+
+        <!-- Yの選択 -->
+        <div class="select-group">
+            <label for="select-y">Select Y (Occupation / Attribute):</label>
+            <select id="select-y" onchange="updateTranslation('y')">
+                <option value="" disabled selected>-- Choose an option --</option>
+                <option value="いしゃ">Doctor</option>
+                <option value="エンジニア">Engineer</option>
+                <option value="けんきゅうしゃ">Researcher</option>
+                <option value="デザイナー">Designer</option>
+                <option value="てんいん">Store staff</option>
+                <option value="じえいぎょう">Self-employed</option>
+                <option value="こうむいん">Civil servant</option>
+                <option value="かんごし">Nurse</option>
+                <option value="アルバイト">Part-time worker</option>
+            </select>
+            <div class="translation-display">
+                <span id="trans-y">&rarr; <strong>(Not selected)</span></strong>
+            </div>
+        </div>
+    </div>
+
+    <div id="task1List" style="margin-top: 20px;"></div>
+
+    <script>
+        function updateTranslation(type) {
+            const select = document.getElementById(`select-${type}`);
+            const display = document.getElementById(`trans-${type}`);
+            const selectedValue = select.value;
+            
+            if (selectedValue) {
+                display.innerHTML = `&rarr; <strong>${selectedValue}</strong>`;
+            } else {
+                display.innerHTML = `&rarr; <strong>(Not selected)</strong>`;
+            }
+        }
+    </script>
+</body>
+</html>
