@@ -156,6 +156,7 @@ function initDrill() {
         sentenceSpan.className = 'sentence-label';
         sentenceSpan.textContent = sentence;
 
+        // 「きく」ボタンを文の直後（一番左）に配置
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
         
@@ -176,7 +177,7 @@ function initDrill() {
         });
 
         const recordBtn = document.createElement('button');
-        recordBtn.textContent = '⏺とる'; // 修正完了
+        recordBtn.textContent = '⏺とる';
 
         const stopBtn = document.createElement('button');
         stopBtn.textContent = '⏹とめる';
@@ -264,7 +265,7 @@ function initDrill() {
         });
 
         rowDiv.appendChild(sentenceSpan);
-        rowDiv.appendChild(listenBtn);
+        rowDiv.appendChild(listenBtn); // 左側に配置
         rowDiv.appendChild(recordBtn);
         rowDiv.appendChild(stopBtn);
         rowDiv.appendChild(resultSpan);
