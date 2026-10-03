@@ -1,60 +1,53 @@
-<!-- Custom Practice セクション（プルダウン＆日本語右側表示） -->
-    <div style="background: #ffffff; border: 1px solid #cbd5e1; padding: 20px; border-radius: 8px; margin-top: 30px; font-family: sans-serif;">
-        <h3 style="margin-top: 0; color: #1e293b;">Custom Practice (XはYです、XはYじゃないです)</h3>
-        <p style="color: #555; font-size: 14px; margin-bottom: 20px;">Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
-
-        <!-- Xの選択 -->
-        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <label for="select-x" style="font-weight: bold; font-size: 14px; min-width: 120px;">Select X (Person):</label>
-            <select id="select-x" onchange="updateTranslation('x')" style="flex: 1; min-width: 220px; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px;">
-                <option value="" disabled selected>-- Choose an option --</option>
-                <option value="ともだち">Friend</option>
-                <option value="かぞく">Family</option>
-                <option value="どうりょう">Colleague</option>
-                <option value="じょうし">Boss</option>
-                <option value="パートナー">Partner</option>
-                <option value="こいびと">boyfriend/girlfriend</option>
-                <option value="しんゆう">Best friend</option>
-                <option value="こども">Child</option>
-                <option value="まご">Grandchild</option>
-                <option value="きょうだい">Sibling</option>
-            </select>
-            <div style="font-size: 15px; min-width: 150px;">
-                <span id="trans-x">&rarr; <strong>(Not selected)</strong></span>
-            </div>
-        </div>
-
-        <!-- Yの選択 -->
-        <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
-            <label for="select-y" style="font-weight: bold; font-size: 14px; min-width: 120px;">Select Y (Occupation):</label>
-            <select id="select-y" onchange="updateTranslation('y')" style="flex: 1; min-width: 220px; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 4px;">
-                <option value="" disabled selected>-- Choose an option --</option>
-                <option value="いしゃ">Doctor</option>
-                <option value="エンジニア">Engineer</option>
-                <option value="けんきゅうしゃ">Researcher</option>
-                <option value="デザイナー">Designer</option>
-                <option value="てんいん">Store staff</option>
-                <option value="じえいぎょう">Self-employed</option>
-                <option value="こうむいん">Civil servant</option>
-                <option value="かんごし">Nurse</option>
-                <option value="アルバイト">Part-time worker</option>
-            </select>
-            <div style="font-size: 15px; min-width: 150px;">
-                <span id="trans-y">&rarr; <strong>(Not selected)</strong></span>
-            </div>
-        </div>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Practice 1: XはYです</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ツールチップスタイル */
+        .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted #2196F3;
+        }
+        .tooltip-wrap .tooltip-tip {
+            visibility: hidden;
+            width: 70px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -35px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+        }
+        .tooltip-wrap:hover .tooltip-tip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩もどる</a>
     </div>
 
-    <script>
-        function updateTranslation(type) {
-            const select = document.getElementById(`select-${type}`);
-            const display = document.getElementById(`trans-${type}`);
-            const selectedValue = select.value;
-            
-            if (selectedValue) {
-                display.innerHTML = `&rarr; <strong>${selectedValue}</strong>`;
-            } else {
-                display.innerHTML = `&rarr; <strong>(Not selected)</strong>`;
-            }
-        }
-    </script>
+    <!-- 正しいタイトル -->
+    <h1>Practice 1：XはYです</h1>
+
+    <!-- 例文セクション（JS連動） -->
+    <div id="exampleSection"></div>
+
+    <!-- ドリルおよびカスタム練習はすべて task1.js 側で動的生成するため、ここにあった重複ボックスは削除した -->
+    <div id="task1List" style="margin-top: 20px;"></div>
+
+    <script src="task1.js"></script>
+</body>
+</html>
