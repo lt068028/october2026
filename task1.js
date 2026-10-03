@@ -128,31 +128,33 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 360px;
+        min-width: 400px;
         font-size: 16px;
         color: #333;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
         flex-wrap: wrap;
     }
+    /* 右側ターゲット語およびプレビューを大きく・濃く・太字に強制適用 */
     .target-word {
-        font-weight: bold;
+        font-weight: 700;
         color: #0f172a;
+        font-size: 16px;
     }
     .custom-input {
-        padding: 4px 8px;
-        font-size: 14px;
+        padding: 6px 10px;
+        font-size: 15px;
         border: 1px solid #ccc;
         border-radius: 4px;
         width: 110px;
     }
     .translation-preview {
-        font-size: 13px;
-        color: #64748b;
-        font-weight: normal;
-        margin-left: 4px;
-        margin-right: 8px;
+        font-size: 15px;
+        color: #1e293b;
+        font-weight: bold;
+        margin-left: 6px;
+        margin-right: 12px;
         display: inline-block;
     }
     button {
@@ -410,12 +412,13 @@ function initTask1() {
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
-    // ご要望の短い説明文（絵文字・トーン統一）
+    // ご要望の絵文字付き説明文
     const customDesc = document.createElement('p');
-    customDesc.style.color = "#555";
-    customDesc.style.fontSize = "16px";
+    customDesc.style.color = "#334155";
+    customDesc.style.fontSize = "15px";
     customDesc.style.marginBottom = "15px";
-    customDesc.textContent = "💡 Make your own sentences using this grammar point by entering words in English or Japanese.";
+    customDesc.style.fontWeight = "bold";
+    customDesc.textContent = "💡 Make a sentence using \"XはYです\" (affirmative) or \"XはYじゃないです\" (negative) based on the given words.";
     container.appendChild(customDesc);
 
     const placeholdersX = ["child", "best friend", "colleague"];
@@ -475,7 +478,7 @@ function initTask1() {
         const inputY = promptLabel.querySelector(`#customY_${i}`);
         const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
-        // 枠外プレビューを確実に更新する関数
+        // 矢印（→）を用いた見やすい枠外表示ロジック
         const updatePreview = (input, preview) => {
             const val = input.value.trim().toLowerCase();
             if (!val) {
@@ -483,9 +486,9 @@ function initTask1() {
                 return;
             }
             if (customDict[val]) {
-                preview.textContent = `(${customDict[val].hira})`;
+                preview.textContent = `→ ${customDict[val].hira}`;
             } else {
-                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706; font-weight:bold;">*${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
+                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706; font-weight:bold;">→ *${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
             }
         };
 
