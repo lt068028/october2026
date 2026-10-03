@@ -10,14 +10,66 @@ const drillData = [
     { en: "I want an umbrella.", jp: "かさがほしいです" }
 ];
 
+let isManualStop = false; // 初期値は Auto Stop
+
 // スタイル設定
 const styleElement = document.createElement('style');
 styleElement.textContent = `
+    .header-panel {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding: 10px;
+        background: #f1f5f9;
+        border-radius: 6px;
+        font-family: sans-serif;
+    }
+    .control-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .mode-label {
+        font-weight: bold;
+        font-size: 14px;
+    }
+    .inactive-mode { color: #aaa; opacity: 0.5; }
+    .active-mode { color: #2196F3; opacity: 1.0; }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #2196F3;
+        transition: .4s;
+        border-radius: 24px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
     .drill-row {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 15px;
+        margin-bottom: 12px;
         padding: 10px;
         background: #fff;
         border: 1px solid #ddd;
@@ -54,25 +106,69 @@ function initCompositionDrill() {
     if (!container) return;
     container.innerHTML = "";
 
+    // ページ上部右端にコントロールパネルを配置
+    const headerPanel = document.createElement('div');
+    headerPanel.className = 'header-panel';
+
+    const titleArea = document.createElement('span');
+    titleArea.innerHTML = "<strong>Composition Drills</strong>";
+
+    const controlItem = document.createElement('div');
+    controlItem.className = 'control-item';
+
+    const labelAuto = document.createElement('span');
+    labelAuto.className = 'mode-label active-mode';
+    labelAuto.textContent = 'Auto';
+
+    const switchLabel = document.createElement('label');
+    switchLabel.className = 'switch';
+    const switchInput = document.createElement('input');
+    switchInput.type = 'checkbox';
+    switchInput.checked = isManualStop;
+    const slider = document.createElement('span');
+    slider.className = 'slider';
+    switchLabel.appendChild(switchInput);
+    switchLabel.appendChild(slider);
+
+    const labelManual = document.createElement('span');
+    labelManual.className = 'mode-label inactive-mode';
+    labelManual.textContent = 'Manual';
+
+    switchInput.addEventListener('change', (e) => {
+        isManualStop = e.target.checked;
+        if (isManualStop) {
+            labelManual.className = 'mode-label active-mode';
+            labelAuto.className = 'mode-label inactive-mode';
+        } else {
+            labelAuto.className = 'mode-label active-mode';
+            labelManual.className = 'mode-label inactive-mode';
+        }
+    });
+
+    controlItem.appendChild(labelAuto);
+    controlItem.appendChild(switchLabel);
+    controlItem.appendChild(labelManual);
+
+    headerPanel.appendChild(titleArea);
+    headerPanel.appendChild(controlItem);
+    container.appendChild(headerPanel);
+
+    // 各ドリル行の生成
     drillData.forEach((item) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
-        // 英語プロンプト表示
         const promptSpan = document.createElement('span');
         promptSpan.className = 'prompt-label';
         promptSpan.textContent = item.en;
 
-        // 録音開始ボタン
         const recordBtn = document.createElement('button');
         recordBtn.textContent = 'Record';
 
-        // 録音停止ボタン
         const stopBtn = document.createElement('button');
         stopBtn.textContent = 'Stop';
         stopBtn.disabled = true;
 
-        // 結果表示エリア
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
@@ -97,10 +193,14 @@ function initCompositionDrill() {
                     recognition = new SpeechRecognition();
                     recognition.lang = 'ja-JP';
                     recognition.interimResults = false;
-                    recognition.continuous = false;
+                    // Manualモードのときは連続認識（手動停止まで継続）
+                    recognition.continuous = isManualStop;
 
                     recognition.onresult = (e) => {
-                        const transcript = e.results[0][0].transcript;
+                        let transcript = "";
+                        for (let i = e.resultIndex; i < e.results.length; ++i) {
+                            transcript += e.results[i][0].transcript;
+                        }
                         resultSpan.textContent = transcript;
                         resultSpan.style.color = '#333';
                     };
@@ -110,21 +210,24 @@ function initCompositionDrill() {
                     };
 
                     recognition.onend = () => {
-                        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                            mediaRecorder.stop();
+                        if (!isManualStop) {
+                            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                                mediaRecorder.stop();
+                            }
+                            if (audioStream) {
+                                audioStream.getTracks().forEach(track => track.stop());
+                            }
+                            recordBtn.disabled = false;
+                            stopBtn.disabled = true;
                         }
-                        if (audioStream) {
-                            audioStream.getTracks().forEach(track => track.stop());
-                        }
-                        recordBtn.disabled = false;
-                        stopBtn.disabled = true;
                     };
 
                     recognition.start();
                 }
 
                 recordBtn.disabled = true;
-                stopBtn.disabled = false;
+                // ManualモードのときのみStopボタンを有効化
+                stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = '#2196F3';
 
