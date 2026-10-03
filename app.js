@@ -112,14 +112,9 @@ function initCompositionDrill() {
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
-    const modeTitle = document.createElement('span');
-    modeTitle.style.fontSize = '13px';
-    modeTitle.style.fontWeight = 'bold';
-    modeTitle.textContent = 'とめる:';
-
     const labelAuto = document.createElement('span');
     labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = 'Autostop';
+    labelAuto.textContent = '⏹Autostop';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -133,7 +128,7 @@ function initCompositionDrill() {
 
     const labelManual = document.createElement('span');
     labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = 'Manual stop';
+    labelManual.textContent = '⏹Manual stop';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
@@ -146,7 +141,6 @@ function initCompositionDrill() {
         }
     });
 
-    controlItem.appendChild(modeTitle);
     controlItem.appendChild(labelAuto);
     controlItem.appendChild(switchLabel);
     controlItem.appendChild(labelManual);
@@ -164,10 +158,10 @@ function initCompositionDrill() {
         promptSpan.textContent = item.en;
 
         const recordBtn = document.createElement('button');
-        recordBtn.textContent = '🔴 とる';
+        recordBtn.textContent = '⏺とる';
 
         const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹️ とめる';
+        stopBtn.textContent = '⏹とめる';
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement('span');
@@ -201,8 +195,19 @@ function initCompositionDrill() {
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
                             transcript += e.results[i][0].transcript;
                         }
-                        resultSpan.textContent = transcript;
-                        resultSpan.style.color = '#333';
+                        
+                        // 簡易的な一致判定とフィードバック（正答の場合は黒字＋✅、不一致の場合は色変更）
+                        // 句読点や空白を除去して比較
+                        const cleanTranscript = transcript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+                        const cleanTarget = item.jp.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+
+                        if (cleanTranscript === cleanTarget) {
+                            resultSpan.textContent = transcript + " ✅";
+                            resultSpan.style.color = '#333';
+                        } else {
+                            resultSpan.textContent = transcript;
+                            resultSpan.style.color = '#e11d48'; // 不一致の場合は赤系で警告
+                        }
                     };
 
                     recognition.onerror = (err) => {
