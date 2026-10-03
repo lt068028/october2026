@@ -2,52 +2,105 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Task 1: XはYです</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Custom Practice</title>
     <style>
-        /* ツールチップスタイル */
-        .tooltip-wrap {
-            position: relative;
-            display: inline-block;
-            border-bottom: 1px dotted #2196F3;
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
         }
-        .tooltip-wrap .tooltip-tip {
-            visibility: hidden;
-            width: 70px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
+        .practice-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+        }
+        .select-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            padding: 3px 0;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -35px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 11px;
         }
-        .tooltip-wrap:hover .tooltip-tip {
-            visibility: visible;
-            opacity: 1;
+        .translation-display {
+            margin-top: 8px;
+            font-size: 15px;
+        }
+        .translation-display span {
+            font-weight: bold;
+            color: #333;
         }
     </style>
 </head>
 <body>
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️もどる</a>
+
+<div class="practice-container">
+    <h2>Custom Practice</h2>
+
+    <!-- Xの選択 -->
+    <div class="select-group">
+        <label for="select-x">Select X (Person):</label>
+        <select id="select-x" onchange="updateTranslation('x')">
+            <option value="" disabled selected>-- Choose an option --</option>
+            <option value="ともだち">Friend</option>
+            <option value="かぞく">Family</option>
+            <option value="どうりょう">Colleague</option>
+            <option value="じょうし">Boss</option>
+            <option value="パートナー">Partner</option>
+            <option value="こいびと">Boyfriend/Girlfriend</option>
+            <option value="しんゆう">Best friend</option>
+            <option value="こども">Child</option>
+            <option value="まご">Grandchild</option>
+            <option value="きょうだい">Sibling</option>
+        </select>
+        <div class="translation-display">
+            Meaning: <span id="trans-x">&rarr; (Not selected)</span>
+        </div>
     </div>
-    <h1>XはYです</h1>
-    
-    <!-- フォントサイズを拡大 -->
-    <p style="color: #555; font-size: 16px; margin-bottom: 15px;">Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
 
-    <!-- 例文セクション（JS連動） -->
-    <div id="exampleSection"></div>
+    <!-- Yの選択 -->
+    <div class="select-group">
+        <label for="select-y">Select Y (Occupation / Attribute):</label>
+        <select id="select-y" onchange="updateTranslation('y')">
+            <option value="" disabled selected>-- Choose an option --</option>
+            <option value="いしゃ">Doctor</option>
+            <option value="エンジニア">Engineer</option>
+            <option value="けんきゅうしゃ">Researcher</option>
+            <option value="デザイナー">Designer</option>
+            <option value="てんいん">Store staff</option>
+            <option value="じえいぎょう">Self-employed</option>
+            <option value="こうむいん">Civil servant</option>
+            <option value="かんごし">Nurse</option>
+            <option value="アルバイト">Part-time worker</option>
+        </select>
+        <div class="translation-display">
+            Meaning: <span id="trans-y">&rarr; (Not selected)</span>
+        </div>
+    </div>
+</div>
 
-    <div id="task1List" style="margin-top: 20px;"></div>
+<script>
+    function updateTranslation(type) {
+        const select = document.getElementById(`select-${type}`);
+        const display = document.getElementById(`trans-${type}`);
+        const selectedValue = select.value;
+        
+        if (selectedValue) {
+            display.innerHTML = `&rarr; <strong>${selectedValue}</strong>`;
+        } else {
+            display.innerHTML = `&rarr; (Not selected)`;
+        }
+    }
+</script>
 
-    <script src="task1.js"></script>
 </body>
 </html>
