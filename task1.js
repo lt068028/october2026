@@ -8,6 +8,7 @@ const taskData = [
     { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
+// カスタム単語の辞書（romaji と meaning を追加してヒントに対応）
 const customDict = {
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
@@ -15,7 +16,7 @@ const customDict = {
     "colleague": { hira: "どうりょう", romaji: "douryou", meaning: "colleague" },
     "boss": { hira: "じょうし", romaji: "joushi", meaning: "boss" },
     "partner": { hira: "パートナー", romaji: "paatanaa", meaning: "partner" },
-    "boyfriend/girlfriend": { hira: "こいびと", romaji: "koibito", meaning: "boyfriend/girlfriend" },
+    "bf/gf": { hira: "こいびと", romaji: "koibito", meaning: "bf/gf" },
     "best friend": { hira: "しんゆう", romaji: "shinyuu", meaning: "best friend" },
     "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
     "grandchild": { hira: "まご", romaji: "mago", meaning: "grandchild" },
@@ -278,6 +279,13 @@ function formatWord(word, romaji, meaning) {
     }
 }
 
+// 選択された日本語に対してVocabモードを適用してフォーマットする関数
+function formatCustomWord(hira, engKey) {
+    const entry = customDict[engKey];
+    if (!entry) return hira;
+    return formatWord(hira, entry.romaji, entry.meaning);
+}
+
 function initTask1() {
     const exampleSection = document.getElementById('exampleSection');
     if (exampleSection) {
@@ -431,33 +439,33 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    // X（主語）用のオプション（Siblingまで）
+    // X（主語）用のオプション（Siblingまで、bf/gfに更新）
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
-        <option value="ともだち">Friend</option>
-        <option value="かぞく">Family</option>
-        <option value="どうりょう">Colleague</option>
-        <option value="じょうし">Boss</option>
-        <option value="パートナー">Partner</option>
-        <option value="こいびと">boyfriend/girlfriend</option>
-        <option value="しんゆう">Best friend</option>
-        <option value="こども">Child</option>
-        <option value="まご">Grandchild</option>
-        <option value="きょうだい">Sibling</option>
+        <option value="ともだち" data-eng="friend">Friend</option>
+        <option value="かぞく" data-eng="family">Family</option>
+        <option value="どうりょう" data-eng="colleague">Colleague</option>
+        <option value="じょうし" data-eng="boss">Boss</option>
+        <option value="パートナー" data-eng="partner">Partner</option>
+        <option value="こいびと" data-eng="bf/gf">bf/gf</option>
+        <option value="しんゆう" data-eng="best friend">Best friend</option>
+        <option value="こども" data-eng="child">Child</option>
+        <option value="まご" data-eng="grandchild">Grandchild</option>
+        <option value="きょうだい" data-eng="sibling">Sibling</option>
     `;
 
     // Y（述語）用のオプション（Doctor以降）
     const optionsYHtml = `
         <option value="" disabled selected>-- Choose Y --</option>
-        <option value="いしゃ">Doctor</option>
-        <option value="エンジニア">Engineer</option>
-        <option value="けんきゅうしゃ">Researcher</option>
-        <option value="デザイナー">Designer</option>
-        <option value="てんいん">Store staff</option>
-        <option value="じえいぎょう">Self-employed</option>
-        <option value="こうむいん">Civil servant</option>
-        <option value="かんごし">Nurse</option>
-        <option value="アルバイト">Part-time worker</option>
+        <option value="いしゃ" data-eng="doctor">Doctor</option>
+        <option value="エンジニア" data-eng="engineer">Engineer</option>
+        <option value="けんきゅうしゃ" data-eng="researcher">Researcher</option>
+        <option value="デザイナー" data-eng="designer">Designer</option>
+        <option value="てんいん" data-eng="store staff">Store staff</option>
+        <option value="じえいぎょう" data-eng="self-employed">Self-employed</option>
+        <option value="こうむいん" data-eng="civil servant">Civil servant</option>
+        <option value="かんごし" data-eng="nurse">Nurse</option>
+        <option value="アルバイト" data-eng="part-time worker">Part-time worker</option>
     `;
 
     for (let i = 1; i <= 3; i++) {
@@ -517,25 +525,30 @@ function initTask1() {
         const previewY = promptLabel.querySelector(`#previewY_${i}`);
 
         const updateDisplay = () => {
+            const selectedOptX = selectX.options[selectX.selectedIndex];
+            const selectedOptY = selectY.options[selectY.selectedIndex];
+
             const valX = selectX.value;
             const valY = selectY.value;
 
-            // Xのプレビュー表示・非表示
+            // Xのプレビュー（Vocab ホバー・Paren対応）
+            if (valX && selectedOptX) {
+                const engKey = selectedOptX.getAttribute('data-eng');
+                previewX.innerHTML = formatCustomWord(valX, engKey);
+            } else {
+                previewX.innerHTML = "";
+            }
+
+            // Yのプレビュー（Vocab ホバー・Paren対応）
+            if (valY && selectedOptY) {
+                const engKey = selectedOptY.getAttribute('data-eng');
+                previewY.innerHTML = formatCustomWord(valY, engKey);
+            } else {
+                previewY.innerHTML = "";
+            }
+
+            // X側が選ばれた時点で「は」を非表示にする
             if (valX) {
-                previewX.textContent = valX;
-            } else {
-                previewX.textContent = "";
-            }
-
-            // Yのプレビュー表示・非表示
-            if (valY) {
-                previewY.textContent = valY;
-            } else {
-                previewY.textContent = "";
-            }
-
-            // 両方選択されたら「は」の表示を隠し、未選択なら表示する
-            if (valX && valY) {
                 labelHa.style.display = 'none';
             } else {
                 labelHa.style.display = 'inline';
