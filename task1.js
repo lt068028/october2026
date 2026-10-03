@@ -409,12 +409,12 @@ function initTask1() {
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
-    // 絵文字とトーンを合わせた説明文
+    // トーンを合わせた説明文に変更
     const customDesc = document.createElement('p');
     customDesc.style.color = "#555";
     customDesc.style.fontSize = "16px";
     customDesc.style.marginBottom = "15px";
-    customDesc.textContent = "💡Please enter your own word either in English or Japanese, so that you can practice your original statement.";
+    customDesc.textContent = "💡 Make your own sentences using \"XはYです\" (affirmative) or \"XはYじゃないです\" (negative) by entering words in English or Japanese.";
     container.appendChild(customDesc);
 
     const placeholdersX = ["child", "best friend", "colleague"];
