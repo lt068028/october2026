@@ -152,11 +152,7 @@ function initDrill() {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
-        const sentenceSpan = document.createElement('span');
-        sentenceSpan.className = 'sentence-label';
-        sentenceSpan.textContent = sentence;
-
-        // 「きく」ボタンを文の直後（一番左）に配置
+        // 「きく」ボタンを文の左側に配置するための要素生成
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
         
@@ -175,6 +171,10 @@ function initDrill() {
                 };
             }, 1000);
         });
+
+        const sentenceSpan = document.createElement('span');
+        sentenceSpan.className = 'sentence-label';
+        sentenceSpan.textContent = sentence;
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -264,8 +264,8 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
-        rowDiv.appendChild(sentenceSpan);
         rowDiv.appendChild(listenBtn); // 左側に配置
+        rowDiv.appendChild(sentenceSpan);
         rowDiv.appendChild(recordBtn);
         rowDiv.appendChild(stopBtn);
         rowDiv.appendChild(resultSpan);
