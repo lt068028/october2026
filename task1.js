@@ -431,9 +431,9 @@ function initTask1() {
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
-    // プルダウンの選択肢定義（指定された語群）
-    const optionsHtml = `
-        <option value="" disabled selected>-- Choose an option --</option>
+    // X（主語）用のオプション（Siblingまで）
+    const optionsXHtml = `
+        <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち">Friend</option>
         <option value="かぞく">Family</option>
         <option value="どうりょう">Colleague</option>
@@ -444,6 +444,11 @@ function initTask1() {
         <option value="こども">Child</option>
         <option value="まご">Grandchild</option>
         <option value="きょうだい">Sibling</option>
+    `;
+
+    // Y（述語）用のオプション（Doctor以降）
+    const optionsYHtml = `
+        <option value="" disabled selected>-- Choose Y --</option>
         <option value="いしゃ">Doctor</option>
         <option value="エンジニア">Engineer</option>
         <option value="けんきゅうしゃ">Researcher</option>
@@ -466,9 +471,9 @@ function initTask1() {
         promptLabel.className = 'prompt-label';
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
-            <select id="customX_${i}" class="custom-select">${optionsHtml}</select>
+            <select id="customX_${i}" class="custom-select">${optionsXHtml}</select>
             <span id="previewX_${i}" class="translation-preview"></span> は 
-            <select id="customY_${i}" class="custom-select">${optionsHtml}</select>
+            <select id="customY_${i}" class="custom-select">${optionsYHtml}</select>
             <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
