@@ -9,7 +9,6 @@ const taskData = [
 ];
 
 const customDict = {
-    // 代名詞・人物
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
     "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
@@ -21,8 +20,6 @@ const customDict = {
     "wife": { hira: "つま", romaji: "tsuma", meaning: "wife" },
     "daughter": { hira: "むすめ", romaji: "musume", meaning: "daughter" },
     "son": { hira: "むすこ", romaji: "musuko", meaning: "son" },
-    
-    // 職業
     "student": { hira: "がくせい", romaji: "gakusei", meaning: "student" },
     "teacher": { hira: "せんせい", romaji: "sensei", meaning: "teacher" },
     "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
@@ -31,8 +28,6 @@ const customDict = {
     "nurse": { hira: "ナース", romaji: "naasu", meaning: "nurse" },
     "lawyer": { hira: "べんごし", romaji: "bengoshi", meaning: "lawyer" },
     "banker": { hira: "ぎんこういん", romaji: "ginkouin", meaning: "banker" },
-    
-    // 国籍・人
     "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
     "american": { hira: "アメリカじん", romaji: "amerikajin", meaning: "American" },
     "british": { hira: "イギリスじん", romaji: "igirisujin", meaning: "British" },
@@ -40,8 +35,6 @@ const customDict = {
     "korean": { hira: "かんこくじん", romaji: "kankokujin", meaning: "Korean" },
     "french": { hira: "フランスじん", romaji: "furansujin", meaning: "French" },
     "german": { hira: "ドイツじん", romaji: "doitsujin", meaning: "German" },
-    
-    // 一般名詞
     "car": { hira: "くるま", romaji: "kuruma", meaning: "car" },
     "book": { hira: "ほん", romaji: "hon", meaning: "book" },
     "dog": { hira: "いぬ", romaji: "inu", meaning: "dog" },
@@ -135,14 +128,14 @@ styleElement.textContent = `
     }
     .prompt-label {
         font-weight: bold;
-        min-width: 340px;
+        min-width: 360px;
         font-size: 16px;
         color: #333;
         display: flex;
         align-items: center;
         gap: 6px;
+        flex-wrap: wrap;
     }
-    /* 画面上の日本語は濃い太字で明確に表示（カッコなし） */
     .target-word {
         font-weight: bold;
         color: #0f172a;
@@ -155,9 +148,11 @@ styleElement.textContent = `
         width: 110px;
     }
     .translation-preview {
-        font-size: 12px;
+        font-size: 13px;
         color: #64748b;
         font-weight: normal;
+        margin-left: 4px;
+        margin-right: 8px;
     }
     button {
         padding: 6px 12px;
@@ -414,14 +409,14 @@ function initTask1() {
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
+    // 絵文字とトーンを合わせた説明文
     const customDesc = document.createElement('p');
     customDesc.style.color = "#555";
-    customDesc.style.fontSize = "14px";
+    customDesc.style.fontSize = "16px";
     customDesc.style.marginBottom = "15px";
-    customDesc.textContent = "Please enter your own word either in English or Japanese, so that you can practice your original statement.";
+    customDesc.textContent = "💡Please enter your own word either in English or Japanese, so that you can practice your original statement.";
     container.appendChild(customDesc);
 
-    // 各行ごとの具体的な e.g. プレースホルダーリスト
     const placeholdersX = ["child", "best friend", "colleague"];
     const placeholdersY = ["British", "nurse", "engineer"];
 
@@ -488,7 +483,7 @@ function initTask1() {
             if (customDict[val]) {
                 preview.textContent = `(${customDict[val].hira})`;
             } else {
-                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706;">*${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
+                preview.innerHTML = `<span class="custom-tip-wrap" style="color:#d97706; font-weight:bold;">*${input.value.trim()}<span class="custom-tip-box">該当語がみつからないためそのままの語で文を作成せよ</span></span>`;
             }
         };
 
