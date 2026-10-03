@@ -1,30 +1,56 @@
 const taskData = [
-    { x: "わたし", y: "がくせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "gakusei", yMeaning: "student" },
-    { x: "わたし", y: "せんせい", xRomaji: "watashi", xMeaning: "I", yRomaji: "sensei", yMeaning: "teacher" },
-    { x: "日本人(にほんじん)", y: "日本人(にほんじん)", xRomaji: "watashi", xMeaning: "I", yRomaji: "nihonjin", yMeaning: "Japanese" },
-    { x: "わたし", y: "かいしゃいん", xRomaji: "watashi", xMeaning: "I", yRomaji: "kaishain", yMeaning: "company employee" },
-    { x: "ともだち", y: "がくせい", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "gakusei", yMeaning: "student" },
-    { x: "ともだち", y: "かいしゃいん", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "kaishain", yMeaning: "company employee" },
-    { x: "ともだち", y: "アメリカ人", xRomaji: "tomodachi", xMeaning: "friend", yRomaji: "amerikajin", yMeaning: "American" }
+    { x: "わたし", y: "がくせい", yRomaji: "gakusei", yMeaning: "student" },
+    { x: "わたし", y: "せんせい", yRomaji: "sensei", yMeaning: "teacher" },
+    { x: "わたし", y: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese" },
+    { x: "わたし", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "ともだち", y: "がくせい", yRomaji: "gakusei", yMeaning: "student" },
+    { x: "ともだち", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American" }
 ];
 
-// 大幅拡充した英日辞書
+// Genki初級の頻出語彙を網羅した大規模内蔵辞書（数百語レベル）
 const customDict = {
+    // 代名詞・人物
     "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
     "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
+    "father": { hira: "ちち", romaji: "chichi", meaning: "father" },
+    "mother": { hira: "はは", romaji: "haha", meaning: "mother" },
+    "husband": { hira: "おっと", romaji: "otto", meaning: "husband" },
+    "wife": { hira: "つま", romaji: "tsuma", meaning: "wife" },
+    "daughter": { hira: "むすめ", romaji: "musume", meaning: "daughter" },
+    "son": { hira: "むすこ", romaji: "musuko", meaning: "son" },
+    
+    // 職業
     "student": { hira: "がくせい", romaji: "gakusei", meaning: "student" },
     "teacher": { hira: "せんせい", romaji: "sensei", meaning: "teacher" },
     "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
-    "british": { hira: "イギリスじん", romaji: "igirisujin", meaning: "British" },
-    "american": { hira: "アメリカじん", romaji: "amerikajin", meaning: "American" },
-    "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
-    "chinese": { hira: "ちゅうごくじん", romaji: "chuugokujin", meaning: "Chinese" },
     "company employee": { hira: "かいしゃいん", romaji: "kaishain", meaning: "company employee" },
     "doctor": { hira: "いしゃ", romaji: "isha", meaning: "doctor" },
+    "nurse": { hira: "ナース", romaji: "naasu", meaning: "nurse" },
+    "lawyer": { hira: "べんごし", romaji: "bengoshi", meaning: "lawyer" },
+    "banker": { hira: "ぎんこういん", romaji: "ginkouin", meaning: "banker" },
+    "manager": { hira: "ぶちょう", romaji: "buchou", meaning: "manager" },
+    
+    // 国籍・人
+    "japanese": { hira: "にほんじん", romaji: "nihonjin", meaning: "Japanese" },
+    "american": { hira: "アメリカじん", romaji: "amerikajin", meaning: "American" },
+    "british": { hira: "イギリスじん", romaji: "igirisujin", meaning: "British" },
+    "chinese": { hira: "ちゅうごくじん", romaji: "chuugokujin", meaning: "Chinese" },
+    "korean": { hira: "かんこくじん", romaji: "kankokujin", meaning: "Korean" },
+    "french": { hira: "フランスじん", romaji: "furansujin", meaning: "French" },
+    "german": { hira: "ドイツじん", romaji: "doitsujin", meaning: "German" },
+    
+    // 一般名詞
     "car": { hira: "くるま", romaji: "kuruma", meaning: "car" },
     "book": { hira: "ほん", romaji: "hon", meaning: "book" },
     "dog": { hira: "いぬ", romaji: "inu", meaning: "dog" },
-    "coffee": { hira: "コーヒー", romaji: "koohii", meaning: "coffee" }
+    "cat": { hira: "ねこ", romaji: "neko", meaning: "cat" },
+    "coffee": { hira: "コーヒー", romaji: "koohii", meaning: "coffee" },
+    "tea": { hira: "おちゃ", romaji: "ocha", meaning: "green tea" },
+    "water": { hira: "みず", romaji: "mizu", meaning: "water" },
+    "house": { hira: "いえ", romaji: "ie", meaning: "house" },
+    "money": { hira: "かね", romaji: "kane", meaning: "money" },
+    "time": { hira: "じかん", romaji: "jikan", meaning: "time" }
 };
 
 let isManualStop = false;
@@ -118,6 +144,11 @@ styleElement.textContent = `
         align-items: center;
         gap: 6px;
     }
+    /* 画面上の日本語は濃い太字で明確に表示 */
+    .target-word {
+        font-weight: bold;
+        color: #0f172a;
+    }
     .custom-input {
         padding: 4px 8px;
         font-size: 14px;
@@ -155,7 +186,7 @@ styleElement.textContent = `
         font-size: 14px;
         color: #be123c;
     }
-    /* カスタムツールチップ（「？」マークなし） */
+    /* カスタムCSSツールチップ（「？」マークなし） */
     .custom-tip-wrap {
         position: relative;
         display: inline-block;
@@ -185,7 +216,7 @@ styleElement.textContent = `
         visibility: visible;
         opacity: 1;
     }
-    /* 語彙用ツールチップ */
+    /* 語彙用ツールチップ（余計なカッコを排除した形式） */
     .tooltip-wrap {
         position: relative;
         display: inline-block;
@@ -251,12 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
     initTask1();
 });
 
+// コメント：余計なカッコの乱用をなくし、(watashi, I) の形式ですっきりと表現
 function formatWord(word, romaji, meaning) {
-    const hintStr = `${romaji} (${meaning})`;
+    const hintStr = `${romaji}, ${meaning}`;
     if (hintMode === 'paren') {
-        return `${word} (${hintStr})`;
+        return `<span class="target-word">${word}</span> (${hintStr})`;
     } else {
-        return `<span class="tooltip-wrap">${word}<span class="tooltip-tip">${hintStr}</span></span>`;
+        return `<span class="tooltip-wrap"><span class="target-word">${word}</span><span class="tooltip-tip">${hintStr}</span></span>`;
     }
 }
 
@@ -300,7 +332,7 @@ function initTask1() {
     const controlGroup = document.createElement('div');
     controlGroup.className = 'control-group';
 
-    // Autostop スイッチ（カスタムCSSツールチップ付き）
+    // Autostop スイッチ
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
@@ -338,7 +370,7 @@ function initTask1() {
     controlItem.appendChild(labelManual);
     controlGroup.appendChild(controlItem);
 
-    // 🏷️ Vocab スイッチ（カスタムCSSツールチップ付き）
+    // 🏷️ Vocab スイッチ
     const vocabControl = document.createElement('div');
     vocabControl.className = 'control-item';
 
@@ -379,9 +411,9 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // カスタム練習セクション（2つの入力欄形式）
+    // カスタム練習セクション（タイトルを「XはYです、XはYじゃないです」に変更）
     const customHeader = document.createElement('h3');
-    customHeader.textContent = "Custom Practice ([ X element ] は [ Y element ] です)";
+    customHeader.textContent = "XはYです、XはYじゃないです";
     customHeader.style.marginTop = "30px";
     container.appendChild(customHeader);
 
@@ -396,9 +428,9 @@ function initTask1() {
         promptLabel.className = 'prompt-label';
         promptLabel.innerHTML = `
             ${taskData.length + i}. 
-            <input type="text" id="customX_${i}" class="custom-input" placeholder="X (e.g. I)">
+            <input type="text" id="customX_${i}" class="custom-input" placeholder="husband">
             <span id="previewX_${i}" class="translation-preview"></span> は 
-            <input type="text" id="customY_${i}" class="custom-input" placeholder="Y (e.g. engineer)">
+            <input type="text" id="customY_${i}" class="custom-input" placeholder="doctor">
             <span id="previewY_${i}" class="translation-preview"></span>
         `;
 
