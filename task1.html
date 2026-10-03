@@ -32,24 +32,11 @@
             visibility: visible;
             opacity: 1;
         }
-
-        /* 水色背景セクションの共通スタイル */
-        .section-header-box {
-            background-color: #e3f2fd; /* 水色の背景 */
-            border-left: 4px solid #2196F3;
-            padding: 10px 15px;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
     </style>
 </head>
 <body>
     <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️️もどる</a>
+        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩もどる</a>
     </div>
 
     <!-- 正しいタイトル -->
@@ -58,12 +45,7 @@
     <!-- 例文セクション（JS連動） -->
     <div id="exampleSection"></div>
 
-    <!-- 水色背景のヘッダーエリア（Affirmative / Negative等の見出しの下） -->
-    <div class="section-header-box">
-        <div style="font-weight: bold; font-size: 16px; color: #0d47a1;">Task 1；Drills</div>
-        <div style="color: #333; font-size: 14px;">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</div>
-    </div>
-
+    <!-- ドリルおよびカスタム練習はすべて task1.js 側で動的生成するため、ここにあった重複ボックスは削除した -->
     <div id="task1List" style="margin-top: 20px;"></div>
 
     <script src="task1.js"></script>
