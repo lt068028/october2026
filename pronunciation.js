@@ -111,14 +111,9 @@ function initDrill() {
     const controlItem = document.createElement('div');
     controlItem.className = 'control-item';
 
-    const modeTitle = document.createElement('span');
-    modeTitle.style.fontSize = '13px';
-    modeTitle.style.fontWeight = 'bold';
-    modeTitle.textContent = 'とめる:';
-
     const labelAuto = document.createElement('span');
     labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = 'Autostop';
+    labelAuto.textContent = '⏹Autostop';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -132,7 +127,7 @@ function initDrill() {
 
     const labelManual = document.createElement('span');
     labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = 'Manual stop';
+    labelManual.textContent = '⏹Manual stop';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
@@ -145,7 +140,6 @@ function initDrill() {
         }
     });
 
-    controlItem.appendChild(modeTitle);
     controlItem.appendChild(labelAuto);
     controlItem.appendChild(switchLabel);
     controlItem.appendChild(labelManual);
@@ -182,10 +176,10 @@ function initDrill() {
         });
 
         const recordBtn = document.createElement('button');
-        recordBtn.textContent = '🔴 とる';
+        recordBtn.textContent = '⏺とる'; // 修正完了
 
         const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹️ とめる';
+        stopBtn.textContent = '⏹とめる';
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement('span');
