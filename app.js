@@ -1,16 +1,3 @@
-let tokenizer = null;
-
-// kuromoji の初期化
-kuromoji.builder({ dicPath: "https://cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict/" }).build((err, t) => {
-    if (err) {
-        console.error("Kuromoji initialization failed:", err);
-        return;
-    }
-    tokenizer = t;
-    console.log("Kuromoji initialized for Composition Drill.");
-    initCompositionDrill();
-});
-
 // 英語プロンプトと期待される日本語のデータセット
 const drillData = [
     { en: "It's a nice day.", jp: "てんきがいいです" },
@@ -54,34 +41,12 @@ styleElement.textContent = `
     }
     button:hover { background: #e9ecef; }
     button:disabled { background: #e2e8f0; color: #a0aec0; cursor: not-allowed; }
-    ruby { ruby-align: center; }
-    rt { font-size: 0.7em; color: #666; }
     .result-text {
         margin-left: 10px;
         font-size: 15px;
     }
 `;
 document.head.appendChild(styleElement);
-
-// テキストにkuromojiで自動ルビを付与する関数
-function addRuby(text) {
-    if (!text || !tokenizer) return text;
-    const tokens = tokenizer.tokenize(text);
-    let resultHTML = "";
-
-    for (const token of tokens) {
-        const surface = token.surface_form;
-        const reading = token.reading;
-
-        if (reading && /[一-龯]/.test(surface)) {
-            const hiraReading = reading.replace(/[\u30a1-\u30f6]/g, m => String.fromCharCode(m.charCodeAt(0) - 0x60));
-            resultHTML += `<ruby>${surface}<rt>${hiraReading}</rt></ruby>`;
-        } else {
-            resultHTML += surface;
-        }
-    }
-    return resultHTML;
-}
 
 // 画面の構築
 function initCompositionDrill() {
@@ -110,7 +75,8 @@ function initCompositionDrill() {
         // 結果表示エリア
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
-        resultSpan.innerHTML = '<span style="color: #888;">(Not recorded yet)</span>';
+        resultSpan.textContent = '(Not recorded yet)';
+        resultSpan.style.color = '#888';
 
         let mediaRecorder;
         let audioChunks = [];
@@ -135,7 +101,8 @@ function initCompositionDrill() {
 
                     recognition.onresult = (e) => {
                         const transcript = e.results[0][0].transcript;
-                        resultSpan.innerHTML = addRuby(transcript);
+                        resultSpan.textContent = transcript;
+                        resultSpan.style.color = '#333';
                     };
 
                     recognition.onerror = (err) => {
@@ -158,11 +125,13 @@ function initCompositionDrill() {
 
                 recordBtn.disabled = true;
                 stopBtn.disabled = false;
-                resultSpan.innerHTML = '<span style="color: #2196F3;">Recording...</span>';
+                resultSpan.textContent = 'Recording...';
+                resultSpan.style.color = '#2196F3';
 
             } catch (err) {
                 console.error("Mic error:", err);
-                resultSpan.innerHTML = '<span style="color: red;">Mic error</span>';
+                resultSpan.textContent = 'Mic error';
+                resultSpan.style.color = 'red';
             }
         });
 
@@ -187,4 +156,10 @@ function initCompositionDrill() {
 
         container.appendChild(rowDiv);
     });
+}
+
+// 即時実行
+document.addEventListener('DOMContentLoaded', initCompositionDrill);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initCompositionDrill();
 }
