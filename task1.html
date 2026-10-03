@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Task 1: Drills</title>
+    <title>Task 1: XはYです</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* ツールチップスタイル */
@@ -38,9 +38,23 @@
     <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
         <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️もどる</a>
     </div>
-    
-    <h1>Task 1: Drills</h1>
-    <p style="color: #555; font-size: 16px; margin-bottom: 15px;">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</p>
+
+    <!-- 元のタイトル構造 -->
+    <h1>Task 1: XはYです</h1>
+
+    <!-- Task 1 Drills と指示文、Autostopの配置コンテナ -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+        <!-- 左側：Task 1 Drills -->
+        <div style="font-size: 20px; font-weight: bold;">Task 1 Drills</div>
+
+        <!-- 中央〜右側：💡の指示文（Autostopの左側に位置する） -->
+        <div style="color: #555; font-size: 14px; flex-grow: 1; text-align: right; margin-right: 15px;">
+            💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.
+        </div>
+
+        <!-- 右端：Autostopボタン（例） -->
+        <button id="autostopBtn" style="padding: 5px 10px;">Autostop</button>
+    </div>
 
     <!-- 例文セクション（JS連動） -->
     <div id="exampleSection"></div>
