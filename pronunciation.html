@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <title>Pronunciation Drill</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .back-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            text-decoration: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+    </style>
 </head>
 <body>
-    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️もどる</a>
+    <div class="back-link-container">
+        <a href="index.html" class="back-link">↩️もどる</a>
     </div>
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
