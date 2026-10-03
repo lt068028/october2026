@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Task 1: XはYです</title>
+    <title>Practice 1: XはYです</title>
     <link rel="stylesheet" href="style.css">
     <style>
         /* ツールチップスタイル */
@@ -32,32 +32,37 @@
             visibility: visible;
             opacity: 1;
         }
+
+        /* 水色背景セクションの共通スタイル */
+        .section-header-box {
+            background-color: #e3f2fd; /* 水色の背景 */
+            border-left: 4px solid #2196F3;
+            padding: 10px 15px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
-        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️もどる</a>
+        <a href="index.html" style="text-decoration: none; color: #2196F3; font-weight: bold; font-family: sans-serif;">↩️️もどる</a>
     </div>
 
-    <!-- 元のタイトル構造 -->
-    <h1>Task 1: XはYです</h1>
-
-    <!-- Task 1 Drills と指示文、Autostopの配置コンテナ -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
-        <!-- 左側：Task 1 Drills -->
-        <div style="font-size: 20px; font-weight: bold;">Task 1 Drills</div>
-
-        <!-- 中央〜右側：💡の指示文（Autostopの左側に位置する） -->
-        <div style="color: #555; font-size: 14px; flex-grow: 1; text-align: right; margin-right: 15px;">
-            💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.
-        </div>
-
-        <!-- 右端：Autostopボタン（例） -->
-        <button id="autostopBtn" style="padding: 5px 10px;">Autostop</button>
-    </div>
+    <!-- 正しいタイトル -->
+    <h1>Practice 1：XはYです</h1>
 
     <!-- 例文セクション（JS連動） -->
     <div id="exampleSection"></div>
+
+    <!-- 水色背景のヘッダーエリア（Affirmative / Negative等の見出しの下） -->
+    <div class="section-header-box">
+        <div style="font-weight: bold; font-size: 16px; color: #0d47a1;">Task 1；Drills</div>
+        <div style="color: #333; font-size: 14px;">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</div>
+    </div>
 
     <div id="task1List" style="margin-top: 20px;"></div>
 
