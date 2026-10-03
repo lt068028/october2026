@@ -236,18 +236,6 @@ styleElement.textContent = `
         visibility: visible;
         opacity: 1;
     }
-    /* 水色背景のセクション共通スタイル（Custom Practice用） */
-    .section-header-box {
-        background-color: #e3f2fd;
-        border-left: 4px solid #2196F3;
-        padding: 10px 15px;
-        margin: 30px 0 15px 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
 `;
 document.head.appendChild(styleElement);
 
@@ -329,6 +317,7 @@ function initTask1() {
     if (!container) return;
     container.innerHTML = "";
 
+    // 1つ目のパネル：Task 1；Drills
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
@@ -417,24 +406,22 @@ function initTask1() {
         createDrillRow(container, `${index + 1}. ${formatWord("わたし", "watashi", "I")} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`, "わたし", item.y);
     });
 
-    // Custom Practice セクション（Task 2；Custom Practiceに変更し、右側にインストラクションを配置）
-    const customHeaderBox = document.createElement('div');
-    customHeaderBox.className = 'section-header-box';
+    // 2つ目のパネル：Task 2；Custom Practice（上部パネルと同じ `.header-panel` スタイルを使用し、右側にインストラクションを配置）
+    const customHeaderPanel = document.createElement('div');
+    customHeaderPanel.className = 'header-panel';
+    customHeaderPanel.style.marginTop = "30px";
 
-    const customTitleArea = document.createElement('div');
-    customTitleArea.style.fontWeight = 'bold';
-    customTitleArea.style.fontSize = '16px';
-    customTitleArea.style.color = '#0d47a1';
-    customTitleArea.textContent = "Task 2；Custom Practice";
+    const customTitleArea = document.createElement('span');
+    customTitleArea.innerHTML = "<strong>Task 2；Custom Practice</strong>";
 
-    const customDescArea = document.createElement('div');
+    const customDescArea = document.createElement('span');
     customDescArea.style.color = '#333';
     customDescArea.style.fontSize = '14px';
-    customDescArea.textContent = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+    customDescArea.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
-    customHeaderBox.appendChild(customTitleArea);
-    customHeaderBox.appendChild(customDescArea);
-    container.appendChild(customHeaderBox);
+    customHeaderPanel.appendChild(customTitleArea);
+    customHeaderPanel.appendChild(customDescArea);
+    container.appendChild(customHeaderPanel);
 
     const placeholdersX = ["child", "best friend", "colleague"];
     const placeholdersY = ["British", "nurse", "engineer"];
