@@ -87,13 +87,12 @@
 
     <script src="pronunciation.js"></script>
     <script>
-        // 貴殿が提示したテキスト（記号付き）をそのまま一字一句変えずに定義
         const targetSentences = [
             "い↘いてんきですね",
             "し↗ごとは｜た↗のし↘いです",
             "べ↗んきょうは｜お↗もしろ↘いです",
             "じ↗かんが｜ないですか｜⤴",
-            "て↘んきが｜わ↗る↘いですか｜⤴",
+            "て↘んきが｜わ↗る↘いですか⤴",
             "て↘んきが｜よ↘くないです"
         ];
 
@@ -145,7 +144,7 @@
                     if (!rawSeg || rawSeg.trim() === "") return;
 
                     const parsed = parseSegment(rawSeg);
-                    if (parsed.chars.length === 0) return;
+                    if (parsed.chars.length === 0 && !parsed.hasEndRise) return;
 
                     const wrapper = document.createElement("div");
                     wrapper.className = "pitch-wrapper";
@@ -153,84 +152,75 @@
                     const moraLine = document.createElement("div");
                     moraLine.className = "mora-line";
 
-                    parsed.chars.forEach((char, idx) => {
+                    // 通常の文字を描画
+                    parsed.chars.forEach((char) => {
                         const moraItem = document.createElement("div");
                         moraItem.className = "mora-item";
                         const span = document.createElement("span");
                         span.textContent = char;
-                        
                         moraItem.appendChild(span);
                         moraLine.appendChild(moraItem);
                     });
 
-                    // 記号のみ（⤴など）の独立セグメントの場合の処理
-                    if (parsed.hasEndRise && parsed.chars.length === 0) {
-                        const moraItem = document.createElement("div");
-                        moraItem.className = "mora-item";
+                    // ⤴ がある場合、SVGの文字数に含まれない独立した mora-item として安全に配置
+                    if (parsed.hasEndRise) {
+                        const riseItem = document.createElement("div");
+                        riseItem.className = "mora-item";
                         const span = document.createElement("span");
                         span.textContent = '⤴';
                         span.style.fontSize = "18px";
-                        moraItem.appendChild(span);
-                        moraLine.appendChild(moraItem);
-                    } else if (parsed.hasEndRise && parsed.chars.length > 0) {
-                        // 文字列の末尾に⤴が紐付いている場合、別要素として隣に置くことでサイズ崩れを防ぐ
-                        const moraItem = document.createElement("div");
-                        moraItem.className = "mora-item";
-                        const span = document.createElement("span");
-                        span.textContent = '⤴';
-                        span.style.fontSize = "18px";
-                        moraItem.appendChild(span);
-                        moraLine.appendChild(moraItem);
+                        riseItem.appendChild(span);
+                        moraLine.appendChild(riseItem);
                     }
 
                     wrapper.appendChild(moraLine);
 
-                    // パス計算用の文字数（⤴は幅に含めない、または独立セグメントとして処理）
+                    // SVGのパス計算は純粋な文字数（parsed.chars.length）のみで行う（⤴は含まない）
                     const charCount = parsed.chars.length;
-                    if (charCount === 0) return; // 描画対象文字がない場合はSVGをスキップ
+                    if (charCount > 0) {
+                        const unitWidth = 24.5;
+                        const svgWidth = charCount * unitWidth;
 
-                    const unitWidth = 24.5;
-                    const svgWidth = charCount * unitWidth;
+                        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        svg.setAttribute("class", "pitch-svg");
+                        svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
+                        svg.setAttribute("preserveAspectRatio", "none");
 
-                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                    svg.setAttribute("class", "pitch-svg");
-                    svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
-                    svg.setAttribute("preserveAspectRatio", "none");
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("class", "pitch-line-path");
 
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    path.setAttribute("class", "pitch-line-path");
+                        let pathD = "";
+                        const startY = parsed.startLow ? 46 : 18;
 
-                    let pathD = "";
-                    const startY = parsed.startLow ? 46 : 18;
-
-                    if (parsed.startLow && parsed.riseIndex !== -1) {
-                        const riseX = parsed.riseIndex * unitWidth;
-                        if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount - 1) {
-                            const dropX = (parsed.dropIndex + 1) * unitWidth;
-                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
-                        } else if (parsed.dropIndex === charCount - 1) {
-                            const dropX = (parsed.dropIndex + 1) * unitWidth;
-                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18`;
-                        } else {
-                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
-                        }
-                    } else {
-                        if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount - 1) {
-                            if (parsed.dropIndex === charCount - 1) {
+                        if (parsed.startLow && parsed.riseIndex !== -1) {
+                            const riseX = parsed.riseIndex * unitWidth;
+                            if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount - 1) {
                                 const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                            } else if (parsed.dropIndex === charCount - 1) {
+                                const dropX = (parsed.dropIndex + 1) * unitWidth;
+                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18`;
                             } else {
-                                pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
+                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
                             }
                         } else {
-                            const dropX = (parsed.dropIndex + 1) * unitWidth;
-                            pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                            if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount - 1) {
+                                if (parsed.dropIndex === charCount - 1) {
+                                    const dropX = (parsed.dropIndex + 1) * unitWidth;
+                                    pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                                } else {
+                                    pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
+                                }
+                            } else {
+                                const dropX = (parsed.dropIndex + 1) * unitWidth;
+                                pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                            }
                         }
-                    }
 
-                    path.setAttribute("d", pathD);
-                    svg.appendChild(path);
-                    wrapper.appendChild(svg);
+                        path.setAttribute("d", pathD);
+                        svg.appendChild(path);
+                        wrapper.appendChild(svg);
+                    }
 
                     rowDiv.appendChild(wrapper);
                 });
