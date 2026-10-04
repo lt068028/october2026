@@ -1,39 +1,61 @@
-:root {
-    --accent-color: #2563eb;
-    --bg-panel: #f8fafc;
-    --border-color: #e2e8f0;
-    --text-primary: #1e293b;
-    --text-secondary: #64748b;
-    --tooltip-bg: #1e293b;
-    --tooltip-text: #ffffff;
-    --bg-row: #ffffff;
-    --button-bg: #f1f5f9;
-    --button-hover: #e2e8f0;
-    --button-disabled-bg: #f8fafc;
-    --button-disabled-text: #cbd5e1;
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Practice 1: XはYです</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .tooltip-wrap {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted var(--accent-color);
+        }
+        .tooltip-wrap .tooltip-tip {
+            visibility: hidden;
+            width: 70px;
+            background-color: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            text-align: center;
+            border-radius: 4px;
+            padding: 3px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -35px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 11px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .tooltip-wrap:hover .tooltip-tip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .back-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            text-decoration: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link-container">
+        <a href="index.html" class="back-link">↩もどる</a>
+    </div>
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-panel: #1e293b;
-        --border-color: #334155;
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --tooltip-bg: #f8fafc;
-        --tooltip-text: #1e293b;
-        --bg-row: #0f172a;
-        --button-bg: #1e293b;
-        --button-hover: #334155;
-        --button-disabled-bg: #0f172a;
-        --button-disabled-text: #475569;
-    }
-}
+    <h1>Practice 1：XはYです</h1>
 
-body {
-    font-family: sans-serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    color: var(--text-primary);
-    background-color: var(--bg-row);
-}
+    <div id="exampleSection"></div>
+    <!-- 修正点: task1List から drillList に変更 -->
+    <div id="drillList" style="margin-top: 20px;"></div>
+
+    <script src="task1.js"></script>
+</body>
+</html>
