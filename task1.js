@@ -315,18 +315,22 @@ function initTask1() {
         const ex2X = formatWord("わたし", "watashi", "I");
         const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
+        exampleSection.className = "example-box";
+        exampleSection.style.display = "flex";
+        exampleSection.style.flexDirection = "column";
+        exampleSection.style.gap = "8px";
+        exampleSection.style.marginBottom = "20px";
+
         exampleSection.innerHTML = `
-            <div style="background: var(--bg-panel); border: 1px solid var(--border-color); padding: 12px; border-radius: 6px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
-                <div>
-                    <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
-                    <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                    <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
-                </div>
-                <div>
-                    <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
-                    <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                    <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
-                </div>
+            <div>
+                <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
+                <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+                <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
+            </div>
+            <div>
+                <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
+                <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
+                <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
             </div>
         `;
 
