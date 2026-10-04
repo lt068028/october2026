@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Pronunciation Drill</title>
+    <title>Pronunciation Drill - Accent Symbol Render Test</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .back-link-container {
@@ -16,25 +16,18 @@
             font-weight: bold;
             font-family: sans-serif;
         }
-
-        /* ピッチライン（SVGステップ表示）共通スタイル */
-        .test-section {
+        .test-panel {
             margin: 20px 0;
             padding: 20px;
             background: var(--bg-panel, #f8fafc);
             border: 1px solid var(--border-color, #cbd5e1);
             border-radius: 8px;
         }
-        .test-section h2 {
-            font-size: 16px;
-            color: #64748b;
-            margin-bottom: 12px;
-        }
         .pitch-wrapper {
             position: relative;
             display: inline-block;
             padding-top: 10px;
-            margin-bottom: 16px;
+            margin-top: 10px;
         }
         .mora-line {
             display: flex;
@@ -65,10 +58,21 @@
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
-        .drill-rows-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            font-size: 14px;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            padding: 6px 10px;
+            font-size: 16px;
+            width: 300px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -79,98 +83,83 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 元々のドリルリスト表示エリア（既存のシステム用） -->
-    <div id="drillList" style="margin-top: 20px;"></div>
-
-    <!-- 追加検証エリア：基準テスト表示 -->
-    <div class="test-section">
-        <h2>基準テスト（いいてんきですね）</h2>
-        <div class="pitch-wrapper">
-            <div class="mora-line">
-                <div class="mora-item"><span>い</span></div>
-                <div class="mora-item"><span>い</span></div>
-                <div class="mora-item"><span>て</span></div>
-                <div class="mora-item"><span>ん</span></div>
-                <div class="mora-item"><span>き</span></div>
-                <div class="mora-item"><span>で</span></div>
-                <div class="mora-item"><span>す</span></div>
-                <div class="mora-item"><span>ね</span></div>
-            </div>
-            <svg class="pitch-svg" viewBox="0 0 196 50" preserveAspectRatio="none">
-                <path class="pitch-line-path" d="M 2,18 L 26,18 L 26,46 L 194,46" />
-            </svg>
+    <div class="test-panel">
+        <h2>アクセント記号連動描画テスト</h2>
+        <div class="input-group">
+            <label for="accentInput">アクセント記号付きテキスト（例: い＼いてんきですね）:</label>
+            <input type="text" id="accentInput" value="い＼いてんきですね" oninput="updatePitchRender()">
         </div>
+
+        <div id="renderArea"></div>
     </div>
 
-    <!-- 追加検証エリア：複数行の個別検証 -->
-    <div class="test-section">
-        <h2>複数行の個別検証エリア</h2>
-        <div class="drill-rows-container" id="isolatedDrillList"></div>
-    </div>
-
-    <!-- 既存のスクリプトと検証用スクリプトの共存 -->
-    <script src="pronunciation.js"></script>
     <script>
-        // 個別検証用の複数文データ
-        const testSentences = [
-            { text: "いいてんきですね", dropIndex: 1 },
-            { text: "わたしはがくせいです", dropIndex: 3 },
-            { text: "きょうはにほんごをべんきょうします", dropIndex: 4 }
-        ];
+        function updatePitchRender() {
+            const rawText = document.getElementById("accentInput").value;
+            const renderArea = document.getElementById("renderArea");
+            renderArea.innerHTML = "";
 
-        function renderIsolatedDrills() {
-            const container = document.getElementById("isolatedDrillList");
-            if (!container) return;
-            container.innerHTML = "";
-
-            testSentences.forEach(item => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "pitch-wrapper";
-
-                const moraLine = document.createElement("div");
-                moraLine.className = "mora-line";
-
-                const chars = item.text.split("");
-                chars.forEach(char => {
-                    const moraItem = document.createElement("div");
-                    moraItem.className = "mora-item";
-                    const span = document.createElement("span");
-                    span.textContent = char;
-                    moraItem.appendChild(span);
-                    moraLine.appendChild(moraItem);
-                });
-                wrapper.appendChild(moraLine);
-
-                const charCount = chars.length;
-                const unitWidth = 24.5;
-                const svgWidth = charCount * unitWidth;
-
-                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svg.setAttribute("class", "pitch-svg");
-                svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
-                svg.setAttribute("preserveAspectRatio", "none");
-
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("class", "pitch-line-path");
-
-                const dropIdx = item.dropIndex;
-                let pathD = "";
-                if (dropIdx === -1 || dropIdx >= charCount - 1) {
-                    pathD = `M 2,18 L ${svgWidth - 2},18`;
+            // 記号（＼など）を除外した純粋な文字配列と、下がり目インデックスの特定
+            let chars = [];
+            let dropIndex = -1;
+            
+            let charIndex = 0;
+            for (let i = 0; i < rawText.length; i++) {
+                const char = rawText[i];
+                if (char === '＼') {
+                    // 直前の文字の後ろで下がる
+                    dropIndex = charIndex - 1;
                 } else {
-                    const dropX = (dropIdx + 1) * unitWidth;
-                    pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                    chars.push(char);
+                    charIndex++;
                 }
-                path.setAttribute("d", pathD);
-                svg.appendChild(path);
-                wrapper.appendChild(svg);
+            }
 
-                container.appendChild(wrapper);
+            const wrapper = document.createElement("div");
+            wrapper.className = "pitch-wrapper";
+
+            const moraLine = document.createElement("div");
+            moraLine.className = "mora-line";
+
+            chars.forEach(char => {
+                const moraItem = document.createElement("div");
+                moraItem.className = "mora-item";
+                const span = document.createElement("span");
+                span.textContent = char;
+                moraItem.appendChild(span);
+                moraLine.appendChild(moraItem);
             });
+            wrapper.appendChild(moraLine);
+
+            const charCount = chars.length;
+            const unitWidth = 24.5;
+            const svgWidth = charCount * unitWidth;
+
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("class", "pitch-svg");
+            svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
+            svg.setAttribute("preserveAspectRatio", "none");
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("class", "pitch-line-path");
+
+            let pathD = "";
+            if (dropIndex === -1 || dropIndex >= charCount - 1) {
+                pathD = `M 2,18 L ${svgWidth - 2},18`;
+            } else {
+                const dropX = (dropIndex + 1) * unitWidth;
+                pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+            }
+            path.setAttribute("d", pathD);
+            svg.appendChild(path);
+            wrapper.appendChild(svg);
+
+            renderArea.appendChild(wrapper);
         }
 
+        // 初期実行
         document.addEventListener("DOMContentLoaded", () => {
-            renderIsolatedDrills();
+            updatePitchRender();
         });
     </script>
 </body>
