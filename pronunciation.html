@@ -16,31 +16,6 @@
             font-weight: bold;
             font-family: sans-serif;
         }
-
-        /* シンボル（矢印・区切り線）は青字 */
-        .symbol {
-            color: #2563eb;
-        }
-
-        /* 低ピッチ部分の下線 */
-        .low-pitch {
-            text-decoration: underline;
-            text-decoration-color: #2563eb;
-            text-decoration-thickness: 1px;
-        }
-
-        /* ドリル文表示用スタイル */
-        .drill-sentence-container {
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--bg-panel, #f8fafc);
-            border-radius: 8px;
-            border: 1px solid var(--border-color, #cbd5e1);
-            font-size: 20px;
-            font-weight: bold;
-            font-family: sans-serif;
-            color: #0f172a;
-        }
     </style>
 </head>
 <body>
@@ -50,13 +25,8 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- ドリルリスト表示エリア -->
-    <div id="drillList" style="margin-top: 20px;">
-        <!-- 1つ目の文: て＼んきが｜い＼いです -->
-        <div class="drill-sentence-container">
-            <span>て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span>い</span><span class="symbol">↘</span><span class="low-pitch">です</span>
-        </div>
-    </div>
+    <!-- ドリルリスト表示エリア（JSで動的生成） -->
+    <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js"></script>
 </body>
