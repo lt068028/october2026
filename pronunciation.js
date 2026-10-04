@@ -5,10 +5,10 @@ const modelSentences = [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
             { text: "い", low: false }, { type: "symbol", val: "↘" },
-            { text: "いです", low: true }
+            { text: "です", low: true }
         ],
         meaning: "The weather is fine.",
-        btnColor: "#1e3a8a" // 1. 濃いネイビー（深みのある青）
+        btnColor: "#dbeafe" // 1. ベリーライト・ブルー（非常に淡い青）
     },
     {
         // 2. じ↗かんが｜な↘いです
@@ -19,7 +19,7 @@ const modelSentences = [
             { text: "いです", low: true }
         ],
         meaning: "I don't have time.",
-        btnColor: "#1d4ed8" // 2. ロイヤルブルー（標準的で鮮やかな青）
+        btnColor: "#bfdbfe" // 2. ライト・スカイブルー（柔らかい薄い青）
     },
     {
         // 3. し↗ごとが｜ほ↗し↘いです
@@ -31,7 +31,7 @@ const modelSentences = [
             { text: "いです", low: true }
         ],
         meaning: "I want a job.",
-        btnColor: "#2563eb" // 3. コバルトブルー（やや明るい青）
+        btnColor: "#93c5fd" // 3. パステルブルー（明るめの青）
     },
     {
         // 4. せ↗んせ↘いは｜お↗もしろ↘いです
@@ -44,7 +44,7 @@ const modelSentences = [
             { text: "いです", low: true }
         ],
         meaning: "The teacher is interesting.",
-        btnColor: "#0284c7" // 4. スカイブルー系（シアンがかった明るい青）
+        btnColor: "#e0f2fe" // 4. アイスブルー（白に近い極めて淡いシアン系の青）
     },
     {
         // 5. が↗っこうは｜た↗のし↘いです
@@ -56,7 +56,7 @@ const modelSentences = [
             { text: "いです", low: true }
         ],
         meaning: "School is fun.",
-        btnColor: "#3b82f6" // 5. ブライトブルー（鮮やかで軽やかな青）
+        btnColor: "#bae6fd" // 5. ライト・シアンブルー（爽やかな薄い水色系）
     }
 ];
 
@@ -172,15 +172,15 @@ styleElement.textContent = `
         margin-left: auto;
     }
     .meaning-btn {
-        color: white;
-        border: none;
-        padding: 6px 12px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 6px 10px;
         border-radius: 4px;
-        font-size: 13px;
-        font-weight: 500;
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
     }
     .meaning-btn:hover {
-        opacity: 0.9;
+        opacity: 0.8;
     }
     .meaning-popup {
         display: none;
@@ -316,13 +316,13 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 意味確認用ポップアップ要素の生成（右端配置・行ごとに異なる青色）
+        // 🌐アイコンのみのボタン＆薄い青色の比較設定
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
-        meaningBtn.textContent = '🌐 Translate';
+        meaningBtn.textContent = '🌐';
         meaningBtn.style.backgroundColor = itemObj.btnColor;
 
         const meaningPopup = document.createElement('div');
