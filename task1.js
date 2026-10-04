@@ -57,11 +57,16 @@ const modelSentences = [
 
 let isManualStop = false;
 
-// Task1を参考にしたひらがな変換ユーティリティ
+// カタカナをひらがなに変換しつつ、主要な漢字を置換するユーティリティ
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
+    // カタカナをひらがなに変換
+    cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
+        return String.fromCharCode(match.charCodeAt(0) - 0x60);
+    });
+
     const dict = {
         "天気": "てんき",
         "時間": "じかん",
@@ -156,7 +161,7 @@ styleElement.textContent = `
         color: var(--text-secondary);
     }
     .sentence-label {
-        font-weight: normal; /* 太字を解除して標準にする */
+        font-weight: normal !important; /* 強制的に太字を解除 */
         min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
@@ -177,9 +182,11 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
         flex-grow: 1;
+        font-weight: normal !important; /* 結果表示の太字も解除 */
     }
     .pitch-symbol {
         color: #2563eb;
+        font-weight: normal !important;
     }
     .low-pitch {
         text-decoration: underline;
@@ -197,7 +204,7 @@ styleElement.textContent = `
         font-size: 16px;
         cursor: pointer;
         line-height: 1;
-        background-color: #e0f2fe; /* 4番目の薄い青色に統一 */
+        background-color: #e0f2fe;
     }
     .meaning-btn:hover {
         opacity: 0.8;
@@ -217,6 +224,7 @@ styleElement.textContent = `
         font-size: 14px;
         color: var(--text-primary);
         z-index: 10;
+        font-weight: normal !important;
     }
     .meaning-popup.show {
         display: block;
@@ -314,7 +322,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7; // スピード70%
+                utterance.rate = 0.7; // 70%
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -336,7 +344,6 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 🌐アイコンのみのボタン（#e0f2fe に統一）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
@@ -390,7 +397,6 @@ function initDrill() {
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
                             rawTranscript += e.results[i][0].transcript;
                         }
-                        // ひらがな変換を適用
                         const hiraganaTranscript = convertToHiragana(rawTranscript);
                         resultSpan.textContent = hiraganaTranscript;
                         resultSpan.style.color = 'var(--text-primary)';
