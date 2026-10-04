@@ -1,6 +1,44 @@
 const modelSentences = [
-    // 1つ目の文はHTMLタグを含めた形式で直接定義
-    'て<span class="pitch-symbol">↘</span><span class="low-pitch">んきが</span><span class="pitch-symbol">｜</span>い<span class="pitch-symbol">↘</span><span class="low-pitch">です</span>',
+    // 1. て↘んきが｜い↘いです
+    [
+        { text: "て", low: false }, { type: "symbol", val: "↘" },
+        { text: "んきが", low: true }, { type: "symbol", val: "｜" },
+        { text: "い", low: false }, { type: "symbol", val: "↘" },
+        { text: "です", low: true }
+    ],
+    // 2. じ↗かんが｜な↘いです
+    [
+        { text: "じ", low: false }, { type: "symbol", val: "↗" },
+        { text: "かんが", low: false }, { type: "symbol", val: "｜" },
+        { text: "な", low: false }, { type: "symbol", val: "↘" },
+        { text: "いです", low: true }
+    ],
+    // 3. し↗ごとが｜ほ↗し↘いです
+    [
+        { text: "し", low: false }, { type: "symbol", val: "↗" },
+        { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
+        { text: "ほ", low: false }, { type: "symbol", val: "↗" },
+        { text: "し", low: false }, { type: "symbol", val: "↘" },
+        { text: "いです", low: true }
+    ],
+    // 4. せ↗んせ↘いは｜お↗もしろ↘いです
+    [
+        { text: "せ", low: false }, { type: "symbol", val: "↗" },
+        { text: "んせ", low: false }, { type: "symbol", val: "↘" },
+        { text: "いは", low: true }, { type: "symbol", val: "｜" },
+        { text: "お", low: false }, { type: "symbol", val: "↗" },
+        { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
+        { text: "いです", low: true }
+    ],
+    // 5. が↗っこうは｜た↗のし↘いです
+    [
+        { text: "が", low: false }, { type: "symbol", val: "↗" },
+        { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
+        { text: "た", low: false }, { type: "symbol", val: "↗" },
+        { text: "のし", low: false }, { type: "symbol", val: "↘" },
+        { text: "いです", low: true }
+    ],
+    // 6以降（従来型テキスト）
     "とけいがほしいです",
     "しごとはたのしいです",
     "べんきょうはおもしろいです",
@@ -79,9 +117,15 @@ styleElement.textContent = `
         font-family: sans-serif;
         flex-wrap: wrap;
     }
+    .sentence-number {
+        font-weight: bold;
+        min-width: 30px;
+        font-size: 16px;
+        color: var(--text-secondary);
+    }
     .sentence-label {
         font-weight: bold;
-        min-width: 180px;
+        min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
     }
@@ -164,15 +208,43 @@ function initDrill() {
     headerPanel.appendChild(controlItem);
     drillList.appendChild(headerPanel);
 
-    modelSentences.forEach((sentence, index) => {
+    modelSentences.forEach((item, index) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'sentence-number';
+        numberSpan.textContent = `${index + 1}.`;
+
+        const sentenceSpan = document.createElement('span');
+        sentenceSpan.className = 'sentence-label';
+
+        let speechText = "";
+
+        if (Array.isArray(item)) {
+            // 構造化データ（1〜5番目のピッチアクセント文）の描画
+            item.forEach(part => {
+                const span = document.createElement('span');
+                if (part.type === 'symbol') {
+                    span.className = 'pitch-symbol';
+                    span.textContent = part.val;
+                } else {
+                    span.textContent = part.text;
+                    speechText += part.text;
+                    if (part.low) {
+                        span.className = 'low-pitch';
+                    }
+                }
+                sentenceSpan.appendChild(span);
+            });
+        } else {
+            // 6番目以降の通常文字列
+            sentenceSpan.textContent = item;
+            speechText = item;
+        }
+
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
-        
-        // 読み上げ用テキスト（1つ目はHTMLタグを除いた平文を指定）
-        const speechText = (index === 0) ? "てんきがいいです" : sentence;
 
         listenBtn.addEventListener('click', () => {
             listenBtn.disabled = true;
@@ -189,16 +261,6 @@ function initDrill() {
                 };
             }, 1000);
         });
-
-        const sentenceSpan = document.createElement('span');
-        sentenceSpan.className = 'sentence-label';
-
-        // 1つ目はinnerHTMLでHTMLタグを反映、それ以外はtextContentで安全に出力
-        if (index === 0) {
-            sentenceSpan.innerHTML = sentence;
-        } else {
-            sentenceSpan.textContent = sentence;
-        }
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
@@ -288,6 +350,7 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
+        rowDiv.appendChild(numberSpan);
         rowDiv.appendChild(listenBtn);
         rowDiv.appendChild(sentenceSpan);
         rowDiv.appendChild(recordBtn);
