@@ -46,6 +46,13 @@
             text-decoration-thickness: 1px;
             font-weight: normal !important;
         }
+        /* 高ピッチ部分に上線を適用するスタイル */
+        .temp-high {
+            text-decoration: overline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
+        }
     </style>
 </head>
 <body>
@@ -55,15 +62,15 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area: 画像のテキストを一時表示 -->
+    <!-- Temporary Area: 上線と下線を適用したテキスト表示 -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area</div>
         <div class="temp-sentence">
-            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
     </div>
 
-    <!-- ドリルリスト表示エリア（JSで動的生成：下のコンテンツはそのまま維持） -->
+    <!-- ドリルリスト表示エリア（下のコンテンツはそのまま維持） -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <!-- キャッシュを強制クリアするためのバージョンクエリ付きスクリプト -->
