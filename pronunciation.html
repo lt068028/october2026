@@ -35,7 +35,7 @@
         .temp-sentence {
             font-size: 18px;
             color: var(--text-primary);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
         }
         .temp-sentence:last-child {
             margin-bottom: 0;
@@ -44,46 +44,34 @@
             color: #fb7185;
             font-weight: normal !important;
         }
-        
-        /* 標準の上下線スタイル */
-        .temp-high {
-            text-decoration: overline;
-            text-decoration-color: #fb7185;
-            text-decoration-thickness: 1px;
-            font-weight: normal !important;
-        }
         .temp-low {
             text-decoration: underline;
             text-decoration-color: #fb7185;
             text-decoration-thickness: 1px;
             font-weight: normal !important;
         }
-
-        /* 擬似要素（::before / ::after）を用いたカスタム上線・下線スタイル */
-        .custom-high {
-            position: relative;
+        .temp-high {
+            text-decoration: overline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
         }
-        .custom-high::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: -2px; /* 文字のすぐ上へ配置 */
-            height: 1px;
-            background-color: #fb7185;
+        .label-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            display: block;
         }
 
-        .custom-low {
-            position: relative;
+        /* Ruby構造を利用した上線描画テスト用スタイル */
+        ruby.ruby-overline {
+            ruby-position: over;
         }
-        .custom-low::after {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: 1px; /* 文字のすぐ下へ配置 */
-            height: 1px;
-            background-color: #fb7185;
+        ruby.ruby-overline rt {
+            font-size: 100%;
+            color: #fb7185;
+            text-decoration: overline;
+            text-decoration-thickness: 1px;
         }
     </style>
 </head>
@@ -94,23 +82,26 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area: 3行の比較 -->
+    <!-- Temporary Area: 追加の3行を含む比較表示 -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
-        <!-- パターン1：標準の text-decoration による上下線 -->
+        <!-- 追加1行目：text-decoration: overline 適用がわかる表示 -->
         <div class="temp-sentence">
+            <span class="label-text">【1】text-decoration: overline 適用（標準）</span>
             <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン2：CSS擬似要素によるカスタム上下線 -->
+        <!-- 追加2行目：同様に overline を適用したことを追記した表示 -->
         <div class="temp-sentence">
-            <span class="custom-high">て</span><span class="temp-symbol">↘</span><span class="custom-low">んきが</span><span class="temp-symbol">｜</span><span class="custom-high">い</span><span class="temp-symbol">↘</span><span class="custom-low">いです</span>
+            <span class="label-text">【2】同様に overline を適用</span>
+            <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン3：追加のテキスト確認用行 -->
+        <!-- 追加3行目：Ruby構造を流用した上線描画テスト -->
         <div class="temp-sentence">
-            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <span class="label-text">【3】Ruby構造（rtタグ）による上線描画テスト</span>
+            <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
     </div>
 
