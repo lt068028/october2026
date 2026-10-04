@@ -28,7 +28,7 @@
         .pitch-wrapper {
             position: relative;
             display: inline-block;
-            padding-top: 22px; /* 上部の線の描画スペース */
+            padding-top: 28px; /* 上部の線の描画スペースを確保し、文字との被りを防ぐ */
         }
         .mora-line {
             display: flex;
@@ -42,7 +42,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 32px; /* 1文字あたりの固定幅でSVGと同期 */
+            width: 32px; /* 1文字あたりの固定幅 */
         }
         /* SVGを文字の真上に重ねる */
         .pitch-svg {
@@ -56,7 +56,7 @@
         .pitch-line-path {
             fill: none;
             stroke: #e11d48; /* 赤色のステップ線 */
-            stroke-width: 2.5;
+            stroke-width: 1; /* 限界まで細く設定 */
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
@@ -84,13 +84,13 @@
                 <div class="mora-item"><span>ね</span></div>
             </div>
 
-            <!-- SVGによるステップ赤線（1文字目「い」の直後で下がり、以降は文字の直上スレスレを底線として走る） -->
+            <!-- SVGによるステップ赤線（縦線をやや右にずらし、横線をより下方に配置） -->
             <svg class="pitch-svg" viewBox="0 0 352 50" preserveAspectRatio="none">
                 <path class="pitch-line-path" d="
-                    M 4,2 
-                    L 32,2 
-                    L 32,38 
-                    L 348,38
+                    M 4,8 
+                    L 36,8 
+                    L 36,42 
+                    L 348,42
                 " />
             </svg>
         </div>
