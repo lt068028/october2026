@@ -44,17 +44,32 @@
             color: #fb7185;
             font-weight: normal !important;
         }
+        /* 1行目：通常のtext-decoration */
+        .temp-high {
+            text-decoration: overline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
+        }
         .temp-low {
             text-decoration: underline;
             text-decoration-color: #fb7185;
             text-decoration-thickness: 1px;
             font-weight: normal !important;
         }
-        .temp-high {
-            text-decoration: overline;
-            text-decoration-color: #fb7185;
-            text-decoration-thickness: 1px;
-            font-weight: normal !important;
+
+        /* 2行目：擬似要素（::after）によるカスタム下線 */
+        .custom-low {
+            position: relative;
+        }
+        .custom-low::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 1px; /* 文字との距離を微調整 */
+            height: 1px;
+            background-color: #fb7185;
         }
     </style>
 </head>
@@ -65,7 +80,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area: 2つのパターンを表示 -->
+    <!-- Temporary Area -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
@@ -74,9 +89,9 @@
             <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン2：標準（下線のみ） -->
+        <!-- パターン2：擬似要素によるカスタム下線 -->
         <div class="temp-sentence">
-            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <span>て</span><span class="temp-symbol">↘</span><span class="custom-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="custom-low">いです</span>
         </div>
     </div>
 
