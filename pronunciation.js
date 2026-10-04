@@ -177,7 +177,8 @@ styleElement.textContent = `
         font-size: 16px;
         color: var(--text-primary);
     }
-    button {
+    /* すべてのボタンのサイズ感・枠線を完全に統一 */
+    button, .play-record-btn, .meaning-btn {
         padding: 6px 12px;
         cursor: pointer;
         border: 1px solid var(--border-color);
@@ -185,9 +186,28 @@ styleElement.textContent = `
         background: var(--button-bg);
         color: var(--text-primary);
         font-size: 14px;
+        line-height: 1.4;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
-    button:hover { background: var(--button-hover); }
-    button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
+    button:hover, .play-record-btn:hover, .meaning-btn:hover { 
+        background: var(--button-hover); 
+    }
+    button:disabled { 
+        background: var(--button-disabled-bg); 
+        color: var(--button-disabled-text); 
+        cursor: not-allowed; 
+        border-color: var(--border-color); 
+    }
+    /* 特別色のボタン（🌐意味ボタン）も共通の枠線とサイズを維持しつつ背景色のみ指定 */
+    .meaning-btn {
+        background-color: #e0f2fe;
+    }
+    .play-record-btn {
+        display: none;
+        background-color: var(--button-bg);
+    }
     .result-container {
         display: flex;
         align-items: center;
@@ -199,18 +219,6 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
         font-weight: normal !important;
-    }
-    .play-record-btn {
-        display: none;
-        padding: 2px 6px;
-        font-size: 14px;
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-    .play-record-btn:hover {
-        background: #dcfce7;
     }
     .correction-box {
         display: none;
@@ -236,18 +244,6 @@ styleElement.textContent = `
     .meaning-container {
         position: relative;
         margin-left: auto;
-    }
-    .meaning-btn {
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        padding: 6px 10px;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
-        line-height: 1;
-        background-color: #e0f2fe;
-    }
-    .meaning-btn:hover {
-        opacity: 0.8;
     }
     .meaning-popup {
         display: none;
@@ -382,7 +378,7 @@ function initDrill() {
             sentenceSpan.appendChild(span);
         });
 
-        // 🔊 聞くボタン（ホバー用英文付き）
+        // 🔊 聞くボタン
         const listenWrapper = document.createElement('span');
         listenWrapper.className = 'tooltip-wrap';
         const listenBtn = document.createElement('button');
@@ -425,7 +421,7 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // ▶️ 自分の声を再生するボタン（ホバー用英文付き）
+        // ▶️ 自分の声再生ボタン
         const playRecordWrapper = document.createElement('span');
         playRecordWrapper.className = 'tooltip-wrap';
         const playRecordBtn = document.createElement('button');
@@ -440,7 +436,7 @@ function initDrill() {
         resultContainer.appendChild(resultSpan);
         resultContainer.appendChild(playRecordWrapper);
 
-        // 🌐 意味確認ボタン（ホバー用英文付き）
+        // 🌐 意味確認ボタン
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
@@ -507,7 +503,7 @@ function initDrill() {
                         URL.revokeObjectURL(recordedAudioUrl);
                     }
                     recordedAudioUrl = URL.createObjectURL(audioBlob);
-                    playRecordBtn.style.display = 'inline-block';
+                    playRecordBtn.style.display = 'inline-flex';
                 };
 
                 mediaRecorder.start();
@@ -552,7 +548,7 @@ function initDrill() {
                             }
 
                             corrTextSpan.textContent = `Try Again`;
-                            corrListenBtn.style.display = 'inline-block';
+                            corrListenBtn.style.display = 'inline-flex';
 
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
