@@ -1,5 +1,5 @@
 const modelSentences = [
-    "てんきがいいです",
+    "てんきがいいです", // 1つ目は描画時に専用の構造化パーツに置き換えて表示
     "とけいがほしいです",
     "しごとはたのしいです",
     "べんきょうはおもしろいです",
@@ -100,6 +100,14 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
     }
+    .pitch-symbol {
+        color: #2563eb;
+    }
+    .low-pitch {
+        text-decoration: underline;
+        text-decoration-color: #2563eb;
+        text-decoration-thickness: 1px;
+    }
 `;
 document.head.appendChild(styleElement);
 
@@ -155,19 +163,22 @@ function initDrill() {
     headerPanel.appendChild(controlItem);
     drillList.appendChild(headerPanel);
 
-    modelSentences.forEach((sentence) => {
+    modelSentences.forEach((sentence, index) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
         
+        // 音声合成用のテキスト（1つ目は記号を除いた読み上げ用テキストを指定）
+        const speechText = (index === 0) ? "てんきがいいです" : sentence;
+
         listenBtn.addEventListener('click', () => {
             listenBtn.disabled = true;
             listenBtn.textContent = '🔊 再生中...';
 
             setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(sentence);
+                const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
                 speechSynthesis.speak(utterance);
 
@@ -180,7 +191,31 @@ function initDrill() {
 
         const sentenceSpan = document.createElement('span');
         sentenceSpan.className = 'sentence-label';
-        sentenceSpan.textContent = sentence;
+
+        // 1つ目の文のみ、指定されたピッチ表記ルール（て↘んきが｜い↘いです）で構築
+        if (index === 0) {
+            const parts = [
+                { type: 'char', text: 'て', low: false },
+                { type: 'symbol', text: '↘' },
+                { type: 'char', text: 'んきが', low: true },
+                { type: 'symbol', text: '｜' },
+                { type: 'char', text: 'い', low: false },
+                { type: 'symbol', text: '↘' },
+                { type: 'char', text: 'です', low: true }
+            ];
+            parts.forEach(p => {
+                const span = document.createElement('span');
+                span.textContent = p.text;
+                if (p.type === 'symbol') {
+                    span.className = 'pitch-symbol';
+                } else if (p.low) {
+                    span.className = 'low-pitch';
+                }
+                sentenceSpan.appendChild(span);
+            });
+        } else {
+            sentenceSpan.textContent = sentence;
+        }
 
         const recordBtn = document.createElement('button');
         recordBtn.textContent = '⏺とる';
