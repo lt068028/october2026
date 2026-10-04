@@ -4,7 +4,7 @@ const modelSentences = [
         { text: "て", low: false }, { type: "symbol", val: "↘" },
         { text: "んきが", low: true }, { type: "symbol", val: "｜" },
         { text: "い", low: false }, { type: "symbol", val: "↘" },
-        { text: "です", low: true }
+        { text: "いです", low: true }
     ],
     // 2. じ↗かんが｜な↘いです
     [
