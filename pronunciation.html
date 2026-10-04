@@ -17,9 +17,21 @@
             font-family: sans-serif;
         }
 
-        /* 臨時テストエリア用スタイル */
-        .temp-test-area {
-            margin-bottom: 30px;
+        /* シンボル（矢印・区切り線）は青字 */
+        .symbol {
+            color: #2563eb;
+        }
+
+        /* 低ピッチ部分の下線 */
+        .low-pitch {
+            text-decoration: underline;
+            text-decoration-color: #2563eb;
+            text-decoration-thickness: 1px;
+        }
+
+        /* ドリル文表示用スタイル */
+        .drill-sentence-container {
+            margin-bottom: 20px;
             padding: 16px;
             background: var(--bg-panel, #f8fafc);
             border-radius: 8px;
@@ -27,38 +39,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.2;
             color: #0f172a;
-        }
-        
-        /* シンボル（矢印・区切り線）は青字 */
-        .symbol {
-            color: #2563eb;
-        }
-
-        /* 採用された上線: border-top（余白0pxで極限まで文字に密着） */
-        .high-pitch {
-            border-top: 1px solid #2563eb;
-            padding-top: 0px;
-            margin-top: 0px;
-            display: inline-block;
-            color: #0f172a;
-        }
-
-        /* 下線: 標準の text-decoration を利用 */
-        .low-pitch {
-            text-decoration: underline;
-            text-decoration-color: #2563eb;
-            text-decoration-thickness: 1px;
-        }
-
-        /* 既存ドリルリスト用スタイル */
-        .drill-item {
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--bg-panel, #f8fafc);
-            border-radius: 8px;
-            border: 1px solid var(--border-color, #cbd5e1);
         }
     </style>
 </head>
@@ -69,15 +50,13 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 正式採用の border-top (0px) によるピッチ表現 -->
-    <div class="temp-test-area">
-        <div><span class="high-pitch">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="high-pitch">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
-        <div><span class="high-pitch">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="high-pitch">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
-        <div><span class="high-pitch">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="high-pitch">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+    <!-- ドリルリスト表示エリア -->
+    <div id="drillList" style="margin-top: 20px;">
+        <!-- 1つ目の文: て＼んきが｜い＼いです -->
+        <div class="drill-sentence-container">
+            <span>て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span>い</span><span class="symbol">↘</span><span class="low-pitch">です</span>
+        </div>
     </div>
-
-    <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
-    <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js"></script>
 </body>
