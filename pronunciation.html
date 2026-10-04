@@ -17,36 +17,18 @@
             font-family: sans-serif;
         }
 
-        /* 1行表示テストエリア用スタイル */
-        .comparison-container {
+        /* 臨時テストエリア用スタイル（既存コンテンツには影響を与えない） */
+        .temp-test-area {
             margin-bottom: 30px;
             padding: 16px;
             background: var(--bg-panel, #f8fafc);
             border-radius: 8px;
             border: 1px solid var(--border-color, #cbd5e1);
-        }
-        .comparison-row {
-            margin-bottom: 16px;
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-        }
-        .comparison-row:last-child {
-            margin-bottom: 0;
-        }
-        /* 文字は黒色 */
-        .char-text {
-            color: #0f172a;
-        }
-        /* 矢印・記号はすべて赤色 */
-        .arrow-text {
-            color: #e11d48;
-            margin-left: -2px; /* 記号と文字の間の余白を調整 */
-            margin-right: -2px;
-        }
-        .separator-text {
-            color: #e11d48;
-            margin: 0 4px;
+            color: #e11d48; /* すべて赤色 */
+            line-height: 1.8;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -66,27 +48,14 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- テスト表示エリア（完全な1行表示） -->
-    <div class="comparison-container">
-        
-        <!-- 1行目: 太い矢印 (➚ / ➘ / ⤴) -->
-        <div class="comparison-row">
-            <span class="char-text">て</span><span class="arrow-text">➘</span><span class="char-text">んきが</span><span class="separator-text">｜</span><span class="char-text">わ</span><span class="arrow-text">➚</span><span class="char-text">る</span><span class="arrow-text">➘</span><span class="char-text">くないですか</span><span class="arrow-text">⤴</span>
-        </div>
-
-        <!-- 2行目: 二重矢印 (⇗ / ⇘ / ⤴) -->
-        <div class="comparison-row">
-            <span class="char-text">て</span><span class="arrow-text">⇘</span><span class="char-text">んきが</span><span class="separator-text">｜</span><span class="char-text">わ</span><span class="arrow-text">⇗</span><span class="char-text">る</span><span class="arrow-text">⇘</span><span class="char-text">くないですか</span><span class="arrow-text">⤴</span>
-        </div>
-
-        <!-- 3行目: ふつうの矢印 (↗ / ↘ / ⤴) -->
-        <div class="comparison-row">
-            <span class="char-text">て</span><span class="arrow-text">↘</span><span class="char-text">んきが</span><span class="separator-text">｜</span><span class="char-text">わ</span><span class="arrow-text">↗</span><span class="char-text">る</span><span class="arrow-text">↘</span><span class="char-text">くないですか</span><span class="arrow-text">⤴</span>
-        </div>
-
+    <!-- 臨時テストエリア: 3行の矢印テキスト表示 -->
+    <div class="temp-test-area">
+        <div>て➘んきが｜わ➚る➘くないですか⤴</div>
+        <div>て⇘んきが｜わ⇗る⇘くないですか⤴</div>
+        <div>て↘んきが｜わ↗る↘くないですか⤴</div>
     </div>
 
-    <!-- これまでに作成された元のドリルリスト表示エリア（保持） -->
+    <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js"></script>
