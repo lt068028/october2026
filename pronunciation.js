@@ -1,5 +1,6 @@
 const modelSentences = [
-    "てんきがいいです", // 1つ目は描画時に専用の構造化パーツに置き換えて表示
+    // 1つ目の文はHTMLタグを含めた形式で直接定義
+    'て<span class="pitch-symbol">↘</span><span class="low-pitch">んきが</span><span class="pitch-symbol">｜</span>い<span class="pitch-symbol">↘</span><span class="low-pitch">です</span>',
     "とけいがほしいです",
     "しごとはたのしいです",
     "べんきょうはおもしろいです",
@@ -170,7 +171,7 @@ function initDrill() {
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
         
-        // 音声合成用のテキスト（1つ目は記号を除いた読み上げ用テキストを指定）
+        // 読み上げ用テキスト（1つ目はHTMLタグを除いた平文を指定）
         const speechText = (index === 0) ? "てんきがいいです" : sentence;
 
         listenBtn.addEventListener('click', () => {
@@ -192,27 +193,9 @@ function initDrill() {
         const sentenceSpan = document.createElement('span');
         sentenceSpan.className = 'sentence-label';
 
-        // 1つ目の文のみ、指定されたピッチ表記ルール（て↘んきが｜い↘いです）で構築
+        // 1つ目はinnerHTMLでHTMLタグを反映、それ以外はtextContentで安全に出力
         if (index === 0) {
-            const parts = [
-                { type: 'char', text: 'て', low: false },
-                { type: 'symbol', text: '↘' },
-                { type: 'char', text: 'んきが', low: true },
-                { type: 'symbol', text: '｜' },
-                { type: 'char', text: 'い', low: false },
-                { type: 'symbol', text: '↘' },
-                { type: 'char', text: 'です', low: true }
-            ];
-            parts.forEach(p => {
-                const span = document.createElement('span');
-                span.textContent = p.text;
-                if (p.type === 'symbol') {
-                    span.className = 'pitch-symbol';
-                } else if (p.low) {
-                    span.className = 'low-pitch';
-                }
-                sentenceSpan.appendChild(span);
-            });
+            sentenceSpan.innerHTML = sentence;
         } else {
             sentenceSpan.textContent = sentence;
         }
