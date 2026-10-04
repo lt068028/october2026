@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.2; /* 上線スペース確保のため行間を広げる */
+            line-height: 2.5; /* 上下の線のスペース確保のため行間を広げる */
             color: #0f172a;
         }
         
@@ -36,10 +36,16 @@
             color: #2563eb;
         }
 
-        /* 高ピッチの文字に上線（オーバーライン）を引くクラス */
+        /* 高ピッチ（上線） */
         .high-pitch {
             border-top: 2px solid #2563eb;
             padding-top: 2px;
+        }
+
+        /* 低ピッチ（下線） */
+        .low-pitch {
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 2px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -59,11 +65,11 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 上線と青色シンボルによるピッチ表現 -->
+    <!-- 臨時テストエリア: 上線・下線・青色シンボルによるピッチ表現 -->
     <div class="temp-test-area">
-        <div><span class="high-pitch">て</span><span class="symbol">➘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">➚</span>る<span class="symbol">➘</span>くないですか<span class="symbol">⤴</span></div>
-        <div><span class="high-pitch">て</span><span class="symbol">⇘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">⇗</span>る<span class="symbol">⇘</span>くないですか<span class="symbol">⤴</span></div>
-        <div><span class="high-pitch">て</span><span class="symbol">↘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">↗</span>る<span class="symbol">↘</span>くないですか<span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="high-pitch">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="high-pitch">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="high-pitch">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
