@@ -91,13 +91,7 @@
             width: 100%;
             height: 4px;
             pointer-events: none;
-        }
-
-        /* 6行目：box-shadow による上線表現 */
-        .method-box-shadow {
-            /* inset box-shadow を利用して上部にラインを描画 */
-            box-shadow: inset 0 2px 0 #fb7185;
-            padding-top: 2px;
+            overflow: visible;
         }
 
         /* Ruby構造を利用した上線描画テスト用スタイル */
@@ -155,19 +149,19 @@
             </div>
         </div>
 
-        <!-- 5行目：Canvas -->
+        <!-- 5行目：通常（プレーン） -->
         <div class="temp-sentence">
-            <span class="label-text">【5】Canvasによる上線描画</span>
+            <span class="label-text">【5】通常（プレーン）</span>
             <div>
-                <canvas id="canvasTe" width="18" height="24" style="vertical-align: middle;"></canvas><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><canvas id="canvasIi" width="18" height="24" style="vertical-align: middle;"></canvas><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+                <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
             </div>
         </div>
 
-        <!-- 6行目：Box-shadow -->
+        <!-- 6行目：通常（プレーン） -->
         <div class="temp-sentence">
-            <span class="label-text">【6】box-shadow による上線表現</span>
+            <span class="label-text">【6】通常（プレーン）</span>
             <div>
-                <span class="method-box-shadow">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="method-box-shadow">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+                <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
             </div>
         </div>
     </div>
@@ -176,33 +170,5 @@
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js?v=20261004"></script>
-    <script>
-        // 5行目のCanvasに上線を描画する処理
-        function drawCanvasLine(canvasId, charText) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 文字を描画
-            ctx.font = '18px sans-serif';
-            ctx.fillStyle = getComputedStyle(document.body).color;
-            ctx.textBaseline = 'middle';
-            ctx.fillText(charText, 0, canvas.height / 2 + 2);
-
-            // 上線を描画
-            ctx.strokeStyle = '#fb7185';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(0, 3);
-            ctx.lineTo(canvas.width, 3);
-            ctx.stroke();
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            drawCanvasLine('canvasTe', 'て');
-            drawCanvasLine('canvasIi', 'い');
-        });
-    </script>
 </body>
 </html>
