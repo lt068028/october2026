@@ -16,6 +16,42 @@
             font-weight: bold;
             font-family: sans-serif;
         }
+
+        /* 簡易ピッチライン（高低表示）のテスト用スタイル */
+        .pitch-container {
+            margin: 15px 0;
+            padding: 12px;
+            background: var(--bg-panel);
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .mora-line {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            font-size: 18px;
+            text-align: center;
+        }
+        .mora-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        /* 高低のドット位置制御 (high または low) */
+        .mora-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            margin-bottom: 6px;
+        }
+        .mora-item.high .mora-dot {
+            transform: translateY(-12px);
+        }
+        .mora-item.low .mora-dot {
+            transform: translateY(0px);
+        }
     </style>
 </head>
 <body>
@@ -24,6 +60,24 @@
     </div>
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
+
+    <!-- ピッチパターンのテスト表示エリア -->
+    <div class="pitch-container">
+        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px;">Pitch Accent Pattern (Test)</div>
+        <div class="mora-line">
+            <!-- 例: わ(L) た(H) し(H) は(H) が(L) く(L) せ(L) い(L) で(L) す(L) -->
+            <div class="mora-item low"><div class="mora-dot"></div><span>わ</span></div>
+            <div class="mora-item high"><div class="mora-dot"></div><span>た</span></div>
+            <div class="mora-item high"><div class="mora-dot"></div><span>し</span></div>
+            <div class="mora-item high"><div class="mora-dot"></div><span>は</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>が</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>く</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>せ</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>い</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>で</span></div>
+            <div class="mora-item low"><div class="mora-dot"></div><span>す</span></div>
+        </div>
+    </div>
 
     <div id="drillList" style="margin-top: 20px;"></div>
 
