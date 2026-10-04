@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Pronunciation Drill - Isolation Test</title>
+    <title>Pronunciation Drill</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .back-link-container {
@@ -17,7 +17,7 @@
             font-family: sans-serif;
         }
 
-        /* 独立したテスト用コンテナのスタイル */
+        /* ピッチライン（SVGステップ表示）共通スタイル */
         .test-section {
             margin: 20px 0;
             padding: 20px;
@@ -30,8 +30,6 @@
             color: #64748b;
             margin-bottom: 12px;
         }
-
-        /* ピッチライン（SVGステップ表示）共通スタイル */
         .pitch-wrapper {
             position: relative;
             display: inline-block;
@@ -67,8 +65,6 @@
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
-        
-        /* 複数行を縦に並べるためのスタイル */
         .drill-rows-container {
             display: flex;
             flex-direction: column;
@@ -83,7 +79,10 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 1. 動作確認済みの基準テスト表示 -->
+    <!-- 元々のドリルリスト表示エリア（既存のシステム用） -->
+    <div id="drillList" style="margin-top: 20px;"></div>
+
+    <!-- 追加検証エリア：基準テスト表示 -->
     <div class="test-section">
         <h2>基準テスト（いいてんきですね）</h2>
         <div class="pitch-wrapper">
@@ -103,16 +102,16 @@
         </div>
     </div>
 
-    <!-- 2. 複数行での独立描画テストエリア -->
+    <!-- 追加検証エリア：複数行の個別検証 -->
     <div class="test-section">
-        <h2>複数行の個別検証エリア（各文の独立表示）</h2>
-        <div class="drill-rows-container" id="isolatedDrillList">
-            <!-- JavaScriptでここに1行ずつ安全に生成して挿入する -->
-        </div>
+        <h2>複数行の個別検証エリア</h2>
+        <div class="drill-rows-container" id="isolatedDrillList"></div>
     </div>
 
+    <!-- 既存のスクリプトと検証用スクリプトの共存 -->
+    <script src="pronunciation.js"></script>
     <script>
-        // 検証用の複数文データ（テキストと下がり目インデックス）
+        // 個別検証用の複数文データ
         const testSentences = [
             { text: "いいてんきですね", dropIndex: 1 },
             { text: "わたしはがくせいです", dropIndex: 3 },
@@ -142,9 +141,8 @@
                 });
                 wrapper.appendChild(moraLine);
 
-                // 文字数に応じたSVG動的生成
                 const charCount = chars.length;
-                const unitWidth = 24.5; // 1文字あたりの概算幅
+                const unitWidth = 24.5;
                 const svgWidth = charCount * unitWidth;
 
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
