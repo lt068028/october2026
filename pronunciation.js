@@ -1,43 +1,58 @@
 const modelSentences = [
-    // 1. て↘んきが｜い↘いです
-    [
-        { text: "て", low: false }, { type: "symbol", val: "↘" },
-        { text: "んきが", low: true }, { type: "symbol", val: "｜" },
-        { text: "い", low: false }, { type: "symbol", val: "↘" },
-        { text: "いです", low: true }
-    ],
-    // 2. じ↗かんが｜な↘いです
-    [
-        { text: "じ", low: false }, { type: "symbol", val: "↗" },
-        { text: "かんが", low: false }, { type: "symbol", val: "｜" },
-        { text: "な", low: false }, { type: "symbol", val: "↘" },
-        { text: "いです", low: true }
-    ],
-    // 3. し↗ごとが｜ほ↗し↘いです
-    [
-        { text: "し", low: false }, { type: "symbol", val: "↗" },
-        { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
-        { text: "ほ", low: false }, { type: "symbol", val: "↗" },
-        { text: "し", low: false }, { type: "symbol", val: "↘" },
-        { text: "いです", low: true }
-    ],
-    // 4. せ↗んせ↘いは｜お↗もしろ↘いです
-    [
-        { text: "せ", low: false }, { type: "symbol", val: "↗" },
-        { text: "んせ", low: false }, { type: "symbol", val: "↘" },
-        { text: "いは", low: true }, { type: "symbol", val: "｜" },
-        { text: "お", low: false }, { type: "symbol", val: "↗" },
-        { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
-        { text: "いです", low: true }
-    ],
-    // 5. が↗っこうは｜た↗のし↘いです
-    [
-        { text: "が", low: false }, { type: "symbol", val: "↗" },
-        { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
-        { text: "た", low: false }, { type: "symbol", val: "↗" },
-        { text: "のし", low: false }, { type: "symbol", val: "↘" },
-        { text: "いです", low: true }
-    ]
+    {
+        // 1. て↘んきが｜い↘いです
+        sentence: [
+            { text: "て", low: false }, { type: "symbol", val: "↘" },
+            { text: "んきが", low: true }, { type: "symbol", val: "｜" },
+            { text: "い", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "天気がいいです (The weather is fine.)"
+    },
+    {
+        // 2. じ↗かんが｜な↘いです
+        sentence: [
+            { text: "じ", low: false }, { type: "symbol", val: "↗" },
+            { text: "かんが", low: false }, { type: "symbol", val: "｜" },
+            { text: "な", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "時間がないです (I don't have time.)"
+    },
+    {
+        // 3. し↗ごとが｜ほ↗し↘いです
+        sentence: [
+            { text: "し", low: false }, { type: "symbol", val: "↗" },
+            { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
+            { text: "ほ", low: false }, { type: "symbol", val: "↗" },
+            { text: "し", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "仕事がほしいです (I want a job.)"
+    },
+    {
+        // 4. せ↗んせ↘いは｜お↗もしろ↘いです
+        sentence: [
+            { text: "せ", low: false }, { type: "symbol", val: "↗" },
+            { text: "んせ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いは", low: true }, { type: "symbol", val: "｜" },
+            { text: "お", low: false }, { type: "symbol", val: "↗" },
+            { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "先生はおもしろいです (The teacher is interesting.)"
+    },
+    {
+        // 5. が↗っこうは｜た↗のし↘いです
+        sentence: [
+            { text: "が", low: false }, { type: "symbol", val: "↗" },
+            { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
+            { text: "た", low: false }, { type: "symbol", val: "↗" },
+            { text: "のし", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "学校は楽しいです (School is fun.)"
+    }
 ];
 
 let isManualStop = false;
@@ -108,6 +123,7 @@ styleElement.textContent = `
         border-radius: 6px;
         font-family: sans-serif;
         flex-wrap: wrap;
+        position: relative;
     }
     .sentence-number {
         font-weight: bold;
@@ -136,6 +152,7 @@ styleElement.textContent = `
         margin-left: 10px;
         font-size: 15px;
         color: var(--text-primary);
+        flex-grow: 1;
     }
     .pitch-symbol {
         color: #2563eb;
@@ -144,6 +161,40 @@ styleElement.textContent = `
         text-decoration: underline;
         text-decoration-color: #2563eb;
         text-decoration-thickness: 1px;
+    }
+    .meaning-container {
+        position: relative;
+        margin-left: auto;
+    }
+    .meaning-btn {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+    .meaning-btn:hover {
+        background: #1d4ed8;
+    }
+    .meaning-popup {
+        display: none;
+        position: absolute;
+        right: 0;
+        bottom: 100%;
+        margin-bottom: 6px;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        white-space: nowrap;
+        font-size: 14px;
+        color: var(--text-primary);
+        z-index: 10;
+    }
+    .meaning-popup.show {
+        display: block;
     }
 `;
 document.head.appendChild(styleElement);
@@ -200,7 +251,7 @@ function initDrill() {
     headerPanel.appendChild(controlItem);
     drillList.appendChild(headerPanel);
 
-    modelSentences.forEach((item, index) => {
+    modelSentences.forEach((itemObj, index) => {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
@@ -213,7 +264,7 @@ function initDrill() {
 
         let speechText = "";
 
-        item.forEach(part => {
+        itemObj.sentence.forEach(part => {
             const span = document.createElement('span');
             if (part.type === 'symbol') {
                 span.className = 'pitch-symbol';
@@ -259,6 +310,35 @@ function initDrill() {
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
+
+        // 意味確認用ポップアップ要素の生成（右端配置）
+        const meaningContainer = document.createElement('div');
+        meaningContainer.className = 'meaning-container';
+
+        const meaningBtn = document.createElement('button');
+        meaningBtn.className = 'meaning-btn';
+        meaningBtn.textContent = '💡 意味';
+
+        const meaningPopup = document.createElement('div');
+        meaningPopup.className = 'meaning-popup';
+        meaningPopup.textContent = itemObj.meaning;
+
+        meaningBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            meaningPopup.classList.toggle('show');
+        });
+
+        // 画面の他の場所をクリックしたときにポップアップを閉じる
+        document.addEventListener('click', () => {
+            meaningPopup.classList.remove('show');
+        });
+
+        meaningContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        meaningContainer.appendChild(meaningBtn);
+        meaningContainer.appendChild(meaningPopup);
 
         let mediaRecorder;
         let audioChunks = [];
@@ -318,7 +398,7 @@ function initDrill() {
             } catch (err) {
                 console.error("Mic error:", err);
                 resultSpan.textContent = 'Mic error';
-                resultSpan.style.color = 'var(--error-text)';
+                resultSpan.style.errorText = 'red';
             }
         });
 
@@ -342,6 +422,7 @@ function initDrill() {
         rowDiv.appendChild(recordBtn);
         rowDiv.appendChild(stopBtn);
         rowDiv.appendChild(resultSpan);
+        rowDiv.appendChild(meaningContainer);
 
         drillList.appendChild(rowDiv);
     });
