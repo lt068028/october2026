@@ -27,13 +27,19 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 1.8;
-            color: #0f172a; /* 文字情報のデフォルト色 */
+            line-height: 2.2; /* 上線スペース確保のため行間を広げる */
+            color: #0f172a;
         }
         
-        /* シンボル（矢印・区切り線）のみを青字に指定 */
+        /* シンボル（矢印・区切り線）は青字 */
         .symbol {
             color: #2563eb;
+        }
+
+        /* 高ピッチの文字に上線（オーバーライン）を引くクラス */
+        .high-pitch {
+            border-top: 2px solid #2563eb;
+            padding-top: 2px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -53,11 +59,11 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: シンボルのみ青字 -->
+    <!-- 臨時テストエリア: 上線と青色シンボルによるピッチ表現 -->
     <div class="temp-test-area">
-        <div>て<span class="symbol">➘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">➚</span>る<span class="symbol">➘</span>くないですか<span class="symbol">⤴</span></div>
-        <div>て<span class="symbol">⇘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">⇗</span>る<span class="symbol">⇘</span>くないですか<span class="symbol">⤴</span></div>
-        <div>て<span class="symbol">↘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">↗</span>る<span class="symbol">↘</span>くないですか<span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">➘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">➚</span>る<span class="symbol">➘</span>くないですか<span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">⇘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">⇗</span>る<span class="symbol">⇘</span>くないですか<span class="symbol">⤴</span></div>
+        <div><span class="high-pitch">て</span><span class="symbol">↘</span>んきが<span class="symbol">｜</span><span class="high-pitch">わ</span><span class="symbol">↗</span>る<span class="symbol">↘</span>くないですか<span class="symbol">⤴</span></div>
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
