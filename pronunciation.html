@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.8; /* 上に離れた線が上の行に干渉しないよう行間を確保 */
+            line-height: 3.0; /* 上に離れた線が干渉しないよう行間を確保 */
             color: #0f172a;
         }
         
@@ -43,22 +43,32 @@
             text-decoration-thickness: 1px;
         }
 
-        /* 1行目: Yオフセット -2px（太さは変えず位置のみ上に2px） */
-        .shadow-high-1 {
-            box-shadow: 0 -2px 0 0 #2563eb;
+        /* 共通の高ピッチベース（border-topを使用） */
+        .border-high-base {
+            border-top: 1px solid #2563eb;
             color: #0f172a;
+            display: inline-block;
         }
 
-        /* 2行目: Yオフセット -4px（太さは変えず位置のみ上に4px） */
-        .shadow-high-2 {
-            box-shadow: 0 -4px 0 0 #2563eb;
-            color: #0f172a;
+        /* 1行目: 密着（パディング0） */
+        .border-high-1 {
+            border-top: 1px solid #2563eb;
+            padding-top: 0px;
+            margin-top: 0px;
         }
 
-        /* 3行目: Yオフセット -6px（太さは変えず位置のみ上に6px） */
-        .shadow-high-3 {
-            box-shadow: 0 -6px 0 0 #2563eb;
-            color: #0f172a;
+        /* 2行目: 少し上に離す（padding-topで微調整） */
+        .border-high-2 {
+            border-top: 1px solid #2563eb;
+            padding-top: 2px;
+            margin-top: -2px;
+        }
+
+        /* 3行目: さらに上に離す */
+        .border-high-3 {
+            border-top: 1px solid #2563eb;
+            padding-top: 4px;
+            margin-top: -4px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -78,16 +88,16 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: box-shadowの縦位置調整 (-2px, -4px, -6px) -->
+    <!-- 臨時テストエリア: border-topによる位置調整比較 -->
     <div class="temp-test-area">
-        <!-- 1行目: -2px -->
-        <div><span class="shadow-high-1">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="shadow-high-1">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 1行目 -->
+        <div><span class="border-high-1">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="border-high-1">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
 
-        <!-- 2行目: -4px -->
-        <div><span class="shadow-high-2">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="shadow-high-2">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 2行目 -->
+        <div><span class="border-high-2">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="border-high-2">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
 
-        <!-- 3行目: -6px -->
-        <div><span class="shadow-high-3">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="shadow-high-3">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 3行目 -->
+        <div><span class="border-high-3">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="border-high-3">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
