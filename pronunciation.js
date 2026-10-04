@@ -112,18 +112,20 @@ styleElement.textContent = `
     input:checked + .slider:before {
         transform: translateX(20px);
     }
+    .drill-wrapper {
+        margin-bottom: 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--bg-row);
+        overflow: hidden;
+    }
     .drill-row {
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-bottom: 12px;
         padding: 12px;
-        background: var(--bg-row);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
         font-family: sans-serif;
         flex-wrap: wrap;
-        position: relative;
     }
     .sentence-number {
         font-weight: bold;
@@ -163,7 +165,6 @@ styleElement.textContent = `
         text-decoration-thickness: 1px;
     }
     .meaning-container {
-        position: relative;
         margin-left: auto;
     }
     .meaning-btn {
@@ -177,23 +178,15 @@ styleElement.textContent = `
     .meaning-btn:hover {
         background: #1d4ed8;
     }
-    .meaning-popup {
+    .meaning-accordion {
         display: none;
-        position: absolute;
-        right: 0;
-        bottom: 100%;
-        margin-bottom: 6px;
+        padding: 10px 16px;
         background: var(--bg-panel);
-        border: 1px solid var(--border-color);
-        padding: 8px 12px;
-        border-radius: 6px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        white-space: nowrap;
+        border-top: 1px solid var(--border-color);
         font-size: 14px;
         color: var(--text-primary);
-        z-index: 10;
     }
-    .meaning-popup.show {
+    .meaning-accordion.show {
         display: block;
     }
 `;
@@ -252,6 +245,9 @@ function initDrill() {
     drillList.appendChild(headerPanel);
 
     modelSentences.forEach((itemObj, index) => {
+        const wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'drill-wrapper';
+
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
@@ -311,7 +307,7 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 意味確認用ポップアップ要素の生成（右端配置）
+        // 意味確認用アコーディオン要素の生成（右端配置）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
@@ -319,26 +315,15 @@ function initDrill() {
         meaningBtn.className = 'meaning-btn';
         meaningBtn.textContent = '💡 意味';
 
-        const meaningPopup = document.createElement('div');
-        meaningPopup.className = 'meaning-popup';
-        meaningPopup.textContent = itemObj.meaning;
+        const meaningAccordion = document.createElement('div');
+        meaningAccordion.className = 'meaning-accordion';
+        meaningAccordion.textContent = itemObj.meaning;
 
-        meaningBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            meaningPopup.classList.toggle('show');
-        });
-
-        // 画面の他の場所をクリックしたときにポップアップを閉じる
-        document.addEventListener('click', () => {
-            meaningPopup.classList.remove('show');
-        });
-
-        meaningContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
+        meaningBtn.addEventListener('click', () => {
+            meaningAccordion.classList.toggle('show');
         });
 
         meaningContainer.appendChild(meaningBtn);
-        meaningContainer.appendChild(meaningPopup);
 
         let mediaRecorder;
         let audioChunks = [];
@@ -398,7 +383,6 @@ function initDrill() {
             } catch (err) {
                 console.error("Mic error:", err);
                 resultSpan.textContent = 'Mic error';
-                resultSpan.style.errorText = 'red';
             }
         });
 
@@ -424,7 +408,10 @@ function initDrill() {
         rowDiv.appendChild(resultSpan);
         rowDiv.appendChild(meaningContainer);
 
-        drillList.appendChild(rowDiv);
+        wrapperDiv.appendChild(rowDiv);
+        wrapperDiv.appendChild(meaningAccordion);
+
+        drillList.appendChild(wrapperDiv);
     });
 }
 
