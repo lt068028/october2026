@@ -346,7 +346,7 @@ function initDrill() {
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
-        // 要求された文言の適用
+        // 修正点: 要望の文言 (🔠 Show Vocab または 💬 Hover Vocab)
         meaningBtn.textContent = '🔠 Show Vocab';
 
         const meaningPopup = document.createElement('div');
