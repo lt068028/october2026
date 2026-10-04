@@ -30,7 +30,7 @@
         .pitch-wrapper {
             position: relative;
             display: inline-block;
-            padding-top: 10px;
+            padding-top: 15px;
         }
         .mora-line {
             display: flex;
@@ -87,58 +87,78 @@
 
     <script src="pronunciation.js"></script>
     <script>
-        // 提供されたすべての文を網羅したデータ定義
+        // 貴殿が提示したテキスト（記号付き）をそのまま一字一句変えずに定義
         const targetSentences = [
-            {
-                segments: [
-                    { text: "いいてんきですね", startLow: false, dropIndex: 1 }
-                ]
-            },
-            {
-                segments: [
-                    { text: "しごとは", startLow: true, riseIndex: 1, dropIndex: -1 },
-                    { text: "たのしです", startLow: true, riseIndex: 1, dropIndex: 2 }
-                ]
-            },
-            {
-                segments: [
-                    { text: "べんきょうは", startLow: true, riseIndex: 1, dropIndex: -1 },
-                    { text: "おもしろです", startLow: true, riseIndex: 1, dropIndex: 3 }
-                ]
-            },
-            {
-                segments: [
-                    { text: "じかんが", startLow: true, riseIndex: 1, dropIndex: -1 },
-                    { text: "ないですか⤴", startLow: true, riseIndex: 1, dropIndex: 0 }
-                ]
-            }
+            "いいてんきですね",
+            "し↗ごとは｜た↗のし↘いです",
+            "べ↗んきょうは｜お↗もしろ↘いです",
+            "じ↗かんが｜ないですか⤴",
+            "て↘んきが｜わ↗る↘いですか",
+            "て↘んきが｜よ↘くないです"
         ];
+
+        // 記号付き文字列を解析して、純粋な文字配列とアクセント構造を抽出するパーサー
+        function parseSegment(rawSegment) {
+            let chars = [];
+            let startLow = false;
+            let riseIndex = -1;
+            let dropIndex = -1;
+            let hasEndRise = false;
+
+            let i = 0;
+            while (i < rawSegment.length) {
+                let char = rawSegment[i];
+                if (char === '↘') {
+                    dropIndex = chars.length - 1; // 直前の文字の後ろで下がる
+                    i++;
+                } else if (char === '↗') {
+                    riseIndex = chars.length; // この位置で上がる
+                    startLow = true;
+                    i++;
+                } else if (char === '⤴') {
+                    hasEndRise = true;
+                    i++;
+                } else {
+                    chars.push(char);
+                    i++;
+                }
+            }
+
+            // 最初の文字の前に記号がなくても、途中（riseIndex > 0）で上がっていれば先頭は低いはず
+            if (riseIndex > 0) {
+                startLow = true;
+            }
+
+            return { chars, startLow, riseIndex, dropIndex, hasEndRise };
+        }
 
         function renderCustomPitchRows() {
             const container = document.getElementById("customPitchArea");
             if (!container) return;
             container.innerHTML = "";
 
-            targetSentences.forEach(sentence => {
+            targetSentences.forEach(fullText => {
                 const rowDiv = document.createElement("div");
                 rowDiv.className = "pitch-row";
 
-                sentence.segments.forEach(seg => {
+                // 「｜」でセグメントに分割
+                const rawSegments = fullText.split("｜");
+
+                rawSegments.forEach(rawSeg => {
+                    const parsed = parseSegment(rawSeg);
                     const wrapper = document.createElement("div");
                     wrapper.className = "pitch-wrapper";
 
                     const moraLine = document.createElement("div");
                     moraLine.className = "mora-line";
 
-                    const cleanText = seg.text.replace('⤴', '');
-                    const chars = cleanText.split("");
-                    
-                    chars.forEach((char, idx) => {
+                    parsed.chars.forEach((char, idx) => {
                         const moraItem = document.createElement("div");
                         moraItem.className = "mora-item";
                         const span = document.createElement("span");
                         
-                        if (idx === chars.length - 1 && seg.text.includes('⤴')) {
+                        // 文末の ⤴ などの処理
+                        if (idx === parsed.chars.length - 1 && parsed.hasEndRise) {
                             span.textContent = char + '⤴';
                             span.style.fontSize = "16px";
                         } else {
@@ -150,7 +170,7 @@
                     });
                     wrapper.appendChild(moraLine);
 
-                    const charCount = chars.length;
+                    const charCount = parsed.chars.length;
                     const unitWidth = 24.5;
                     const svgWidth = charCount * unitWidth;
 
@@ -163,21 +183,30 @@
                     path.setAttribute("class", "pitch-line-path");
 
                     let pathD = "";
-                    const startY = seg.startLow ? 46 : 18;
+                    const startY = parsed.startLow ? 46 : 18;
 
-                    if (seg.startLow && seg.riseIndex !== undefined && seg.riseIndex !== -1) {
-                        const riseX = seg.riseIndex * unitWidth;
-                        if (seg.dropIndex !== -1 && seg.dropIndex < charCount - 1) {
-                            const dropX = (seg.dropIndex + 1) * unitWidth;
+                    // パス生成ロジック（上昇・下降・平坦の組み合わせ）
+                    if (parsed.startLow && parsed.riseIndex !== -1) {
+                        const riseX = parsed.riseIndex * unitWidth;
+                        if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount - 1) {
+                            const dropX = (parsed.dropIndex + 1) * unitWidth;
                             pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                        } else if (parsed.dropIndex === charCount - 1) {
+                            const dropX = (parsed.dropIndex + 1) * unitWidth;
+                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18`;
                         } else {
                             pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
                         }
                     } else {
-                        if (seg.dropIndex === -1 || seg.dropIndex >= charCount - 1) {
-                            pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
+                        if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount - 1) {
+                            if (parsed.dropIndex === charCount - 1) {
+                                const dropX = (parsed.dropIndex + 1) * unitWidth;
+                                pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                            } else {
+                                pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
+                            }
                         } else {
-                            const dropX = (seg.dropIndex + 1) * unitWidth;
+                            const dropX = (parsed.dropIndex + 1) * unitWidth;
                             pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
                         }
                     }
