@@ -2,7 +2,7 @@ const modelSentences = [
     {
         targetText: "てんきがいいです",
         targetWord: "てんきが",
-        symbolColor: "#38bdf8", // 1. スカイブルー
+        symbolColor: "#fb7185", // 1. 蛍光感のあるローズピンク
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -14,7 +14,7 @@ const modelSentences = [
     {
         targetText: "じかんがないです",
         targetWord: "じかんが",
-        symbolColor: "#60a5fa", // 2. ブライトブルー
+        symbolColor: "#f43f5e", // 2. ビビッドなコーラルレッド
         displayHtml: [
             { text: "じ", low: false }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -26,7 +26,7 @@ const modelSentences = [
     {
         targetText: "しごとがほしいです",
         targetWord: "しごとが",
-        symbolColor: "#93c5fd", // 3. パステルブルー
+        symbolColor: "#fda4af", // 3. 明るいパステルピンク
         displayHtml: [
             { text: "し", low: false }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -39,7 +39,7 @@ const modelSentences = [
     {
         targetText: "せんせいはおもしろいです",
         targetWord: "せんせいは",
-        symbolColor: "#818cf8", // 4. インディゴ
+        symbolColor: "#e879f9", // 4. 蛍光感のあるマゼンタ・パープルピンク
         displayHtml: [
             { text: "せ", low: false }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -53,7 +53,7 @@ const modelSentences = [
     {
         targetText: "がっこうはたのしいです",
         targetWord: "がっこうは",
-        symbolColor: "#34d399", // 5. エメラルドグリーン
+        symbolColor: "#34d399", // 5. エメラルドグリーン（維持）
         displayHtml: [
             { text: "が", low: false }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
@@ -234,7 +234,6 @@ styleElement.textContent = `
         font-size: 14px;
         color: var(--error-text);
     }
-    /* 低ピッチ部分の下線（テキスト色は親の通常色に追従） */
     .low-pitch {
         text-decoration: underline;
         text-decoration-thickness: 1px;
@@ -364,14 +363,14 @@ function initDrill() {
         itemObj.displayHtml.forEach(part => {
             const span = document.createElement('span');
             if (part.type === 'symbol') {
-                span.style.color = itemObj.symbolColor; // 各行固有のカラーを適用
+                span.style.color = itemObj.symbolColor;
                 span.textContent = part.val;
             } else {
                 span.textContent = part.text;
                 speechText += part.text;
                 if (part.low) {
                     span.className = 'low-pitch';
-                    span.style.textDecorationColor = itemObj.symbolColor; // 下線色も揃える
+                    span.style.textDecorationColor = itemObj.symbolColor;
                 }
             }
             sentenceSpan.appendChild(span);
@@ -394,7 +393,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7; // お手本音声は70%
+                utterance.rate = 0.7;
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -526,7 +525,6 @@ function initDrill() {
                         const hiraText = convertToHiragana(rawTranscript);
                         const target = itemObj.targetText;
 
-                        // 揺れを吸収するための判定（空白や句読点を除外して比較）
                         const cleanHira = hiraText.replace(/[\s、。]/g, "");
                         const cleanTarget = target.replace(/[\s、。]/g, "");
                         const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
@@ -537,7 +535,6 @@ function initDrill() {
                             resultSpan.style.color = 'var(--text-primary)';
                             correctionBox.style.display = 'none';
                         } else {
-                            // 不一致時は青字を一切出さずエラーカラーでシンプルに表示
                             resultSpan.textContent = hiraText;
                             resultSpan.style.color = 'var(--error-text)';
 
@@ -613,7 +610,7 @@ function initDrill() {
         playRecordBtn.addEventListener('click', () => {
             if (recordedAudioUrl) {
                 const audio = new Audio(recordedAudioUrl);
-                audio.playbackRate = 1.0; // 自分の声は100%（等倍）で再生
+                audio.playbackRate = 1.0;
                 playRecordBtn.disabled = true;
                 playRecordBtn.textContent = '▶️ 再生中...';
                 audio.play();
