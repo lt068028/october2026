@@ -29,7 +29,8 @@
         }
         .pitch-wrapper {
             position: relative;
-            display: inline-block;
+            display: inline-flex; /* インラインflexにして幅を子要素（SVGと文字）に完全に一致させる */
+            align-items: flex-end;
             padding-top: 15px;
         }
         .mora-line {
@@ -39,20 +40,23 @@
             font-size: 20px;
             font-weight: bold;
             text-align: center;
+            z-index: 2; /* 文字をSVGの前面に配置 */
+            position: relative;
         }
         .mora-item {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 0 2px;
+            width: 24.5px; /* 各モラの幅を固定してズレを防ぐ */
+            box-sizing: border-box;
         }
         .pitch-svg {
             position: absolute;
-            top: 0;
+            top: 15px; /* 縦のパディング位置に合わせる */
             left: 0;
-            width: 100%;
-            height: 100%;
             pointer-events: none;
+            z-index: 1;
         }
         .pitch-line-path {
             fill: none;
@@ -92,7 +96,7 @@
             "し↗ごとは｜た↗のし↘いです",
             "べ↗んきょうは｜お↗もしろ↘いです",
             "じ↗かんが｜ないですか｜⤴",
-            "て↘んきが｜わ↗る↘いですか⤴",
+            "て↘んきが｜わ↗る↘いですか｜⤴",
             "て↘んきが｜よ↘くないです"
         ];
 
@@ -152,6 +156,10 @@
                     const moraLine = document.createElement("div");
                     moraLine.className = "mora-line";
 
+                    const unitWidth = 24.5;
+                    const charCount = parsed.chars.length;
+                    const svgWidth = charCount * unitWidth;
+
                     // 通常の文字を描画
                     parsed.chars.forEach((char) => {
                         const moraItem = document.createElement("div");
@@ -162,7 +170,7 @@
                         moraLine.appendChild(moraItem);
                     });
 
-                    // ⤴ がある場合、SVGの文字数に含まれない独立した mora-item として安全に配置
+                    // ⤴ がある場合、SVG領域の外側（右側）の独立したアイテムとして配置
                     if (parsed.hasEndRise) {
                         const riseItem = document.createElement("div");
                         riseItem.className = "mora-item";
@@ -175,14 +183,12 @@
 
                     wrapper.appendChild(moraLine);
 
-                    // SVGのパス計算は純粋な文字数（parsed.chars.length）のみで行う（⤴は含まない）
-                    const charCount = parsed.chars.length;
+                    // SVGの幅を文字数分（svgWidth）に厳格に固定し、⤴の影響を受けないようにする
                     if (charCount > 0) {
-                        const unitWidth = 24.5;
-                        const svgWidth = charCount * unitWidth;
-
                         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                         svg.setAttribute("class", "pitch-svg");
+                        svg.setAttribute("width", svgWidth);
+                        svg.setAttribute("height", "50");
                         svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
                         svg.setAttribute("preserveAspectRatio", "none");
 
@@ -194,26 +200,18 @@
 
                         if (parsed.startLow && parsed.riseIndex !== -1) {
                             const riseX = parsed.riseIndex * unitWidth;
-                            if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount - 1) {
+                            if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount) {
                                 const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
-                            } else if (parsed.dropIndex === charCount - 1) {
-                                const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18`;
+                                pathD = `M 0,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth},46`;
                             } else {
-                                pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
+                                pathD = `M 0,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth},18`;
                             }
                         } else {
-                            if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount - 1) {
-                                if (parsed.dropIndex === charCount - 1) {
-                                    const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                    pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
-                                } else {
-                                    pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
-                                }
+                            if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount) {
+                                pathD = `M 0,${startY} L ${svgWidth},${startY}`;
                             } else {
                                 const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                                pathD = `M 0,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth},46`;
                             }
                         }
 
