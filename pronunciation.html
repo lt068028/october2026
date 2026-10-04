@@ -17,53 +17,49 @@
             font-family: sans-serif;
         }
 
-        /* ピッチライン（SVGステップ表示）用スタイル */
-        .custom-pitch-container {
+        /* 矢印セット比較エリア用スタイル */
+        .comparison-container {
             margin-bottom: 30px;
+            padding: 16px;
+            background: var(--bg-panel, #f8fafc);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #cbd5e1);
         }
-        .pitch-row {
-            display: flex;
-            gap: 2px;
-            align-items: flex-end;
+        .comparison-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .comparison-row {
             margin-bottom: 16px;
         }
-        .pitch-wrapper {
-            position: relative;
-            display: inline-flex; /* インラインflexにして幅を子要素（SVGと文字）に完全に一致させる */
-            align-items: flex-end;
-            padding-top: 15px;
+        .comparison-row:last-child {
+            margin-bottom: 0;
         }
-        .mora-line {
+        .mora-flex {
             display: flex;
-            gap: 0;
+            gap: 4px;
             align-items: flex-end;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 2; /* 文字をSVGの前面に配置 */
-            position: relative;
         }
-        .mora-item {
+        .mora-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 0 2px;
-            width: 24.5px; /* 各モラの幅を固定してズレを防ぐ */
-            box-sizing: border-box;
+            width: 28px;
+            text-align: center;
         }
-        .pitch-svg {
-            position: absolute;
-            top: 15px; /* 縦のパディング位置に合わせる */
-            left: 0;
-            pointer-events: none;
-            z-index: 1;
+        .arrow-slot {
+            height: 24px;
+            font-size: 18px;
+            line-height: 24px;
+            color: #e11d48; /* すべて赤色に指定 */
+            font-weight: bold;
         }
-        .pitch-line-path {
-            fill: none;
-            stroke: #e11d48;
-            stroke-width: 1;
-            stroke-linecap: square;
-            stroke-linejoin: miter;
+        .char-slot {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0f172a;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -83,153 +79,56 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 指定された全文の表示エリア -->
-    <div class="custom-pitch-container" id="customPitchArea"></div>
+    <!-- 3種類の矢印セット比較表示エリア（テスト領域） -->
+    <div class="comparison-container">
+        <h2>「い↘いてんきですね」の矢印セット比較</h2>
+        
+        <!-- パターン1: 太い北東／南東矢印 (➚ / ➘) -->
+        <div class="comparison-row">
+            <div class="comparison-title">パターン1: 太い矢印 (➚ / ➘)</div>
+            <div class="mora-flex">
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
+                <div class="mora-box"><span class="arrow-slot">➘</span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+            </div>
+        </div>
 
-    <!-- これまでに作成された元のドリルリスト表示エリア -->
+        <!-- パターン2: 二重の北東／南東矢印 (⇗ / ⇘) -->
+        <div class="comparison-row" style="margin-top: 12px;">
+            <div class="comparison-title">パターン2: 二重矢印 (⇗ / ⇘)</div>
+            <div class="mora-flex">
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
+                <div class="mora-box"><span class="arrow-slot">⇘</span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+            </div>
+        </div>
+
+        <!-- パターン3: ふつうの北東／南東矢印 (↗ / ↘) -->
+        <div class="comparison-row" style="margin-top: 12px;">
+            <div class="comparison-title">パターン3: ふつうの矢印 (↗ / ↘)</div>
+            <div class="mora-flex">
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
+                <div class="mora-box"><span class="arrow-slot">↘</span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- これまでに作成された元のドリルリスト表示エリア（保持） -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js"></script>
-    <script>
-        const targetSentences = [
-            "い↘いてんきですね",
-            "し↗ごとは｜た↗のし↘いです",
-            "べ↗んきょうは｜お↗もしろ↘いです",
-            "じ↗かんが｜ないですか｜⤴",
-            "て↘んきが｜わ↗る↘いですか｜⤴",
-            "て↘んきが｜よ↘くないです"
-        ];
-
-        function parseSegment(rawSegment) {
-            let chars = [];
-            let startLow = false;
-            let riseIndex = -1;
-            let dropIndex = -1;
-            let hasEndRise = false;
-
-            let i = 0;
-            while (i < rawSegment.length) {
-                let char = rawSegment[i];
-                if (char === '↘') {
-                    dropIndex = chars.length - 1;
-                    i++;
-                } else if (char === '↗') {
-                    riseIndex = chars.length;
-                    startLow = true;
-                    i++;
-                } else if (char === '⤴') {
-                    hasEndRise = true;
-                    i++;
-                } else {
-                    chars.push(char);
-                    i++;
-                }
-            }
-
-            if (riseIndex === -1) {
-                startLow = false;
-            }
-
-            return { chars, startLow, riseIndex, dropIndex, hasEndRise };
-        }
-
-        function renderCustomPitchRows() {
-            const container = document.getElementById("customPitchArea");
-            if (!container) return;
-            container.innerHTML = "";
-
-            targetSentences.forEach(fullText => {
-                const rowDiv = document.createElement("div");
-                rowDiv.className = "pitch-row";
-
-                const rawSegments = fullText.split("｜");
-
-                rawSegments.forEach(rawSeg => {
-                    if (!rawSeg || rawSeg.trim() === "") return;
-
-                    const parsed = parseSegment(rawSeg);
-                    if (parsed.chars.length === 0 && !parsed.hasEndRise) return;
-
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "pitch-wrapper";
-
-                    const moraLine = document.createElement("div");
-                    moraLine.className = "mora-line";
-
-                    const unitWidth = 24.5;
-                    const charCount = parsed.chars.length;
-                    const svgWidth = charCount * unitWidth;
-
-                    // 通常の文字を描画
-                    parsed.chars.forEach((char) => {
-                        const moraItem = document.createElement("div");
-                        moraItem.className = "mora-item";
-                        const span = document.createElement("span");
-                        span.textContent = char;
-                        moraItem.appendChild(span);
-                        moraLine.appendChild(moraItem);
-                    });
-
-                    // ⤴ がある場合、SVG領域の外側（右側）の独立したアイテムとして配置
-                    if (parsed.hasEndRise) {
-                        const riseItem = document.createElement("div");
-                        riseItem.className = "mora-item";
-                        const span = document.createElement("span");
-                        span.textContent = '⤴';
-                        span.style.fontSize = "18px";
-                        riseItem.appendChild(span);
-                        moraLine.appendChild(riseItem);
-                    }
-
-                    wrapper.appendChild(moraLine);
-
-                    // SVGの幅を文字数分（svgWidth）に厳格に固定し、⤴の影響を受けないようにする
-                    if (charCount > 0) {
-                        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                        svg.setAttribute("class", "pitch-svg");
-                        svg.setAttribute("width", svgWidth);
-                        svg.setAttribute("height", "50");
-                        svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
-                        svg.setAttribute("preserveAspectRatio", "none");
-
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        path.setAttribute("class", "pitch-line-path");
-
-                        let pathD = "";
-                        const startY = parsed.startLow ? 46 : 18;
-
-                        if (parsed.startLow && parsed.riseIndex !== -1) {
-                            const riseX = parsed.riseIndex * unitWidth;
-                            if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount) {
-                                const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 0,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth},46`;
-                            } else {
-                                pathD = `M 0,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth},18`;
-                            }
-                        } else {
-                            if (parsed.dropIndex === -1 || parsed.dropIndex >= charCount) {
-                                pathD = `M 0,${startY} L ${svgWidth},${startY}`;
-                            } else {
-                                const dropX = (parsed.dropIndex + 1) * unitWidth;
-                                pathD = `M 0,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth},46`;
-                            }
-                        }
-
-                        path.setAttribute("d", pathD);
-                        svg.appendChild(path);
-                        wrapper.appendChild(svg);
-                    }
-
-                    rowDiv.appendChild(wrapper);
-                });
-
-                container.appendChild(rowDiv);
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            renderCustomPitchRows();
-        });
-    </script>
 </body>
 </html>
