@@ -114,21 +114,17 @@ function initTask1() {
         const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
         exampleSection.className = "example-box";
-        exampleSection.style.display = "flex";
-        exampleSection.style.flexDirection = "column";
-        exampleSection.style.gap = "8px";
-        exampleSection.style.marginBottom = "20px";
 
         exampleSection.innerHTML = `
-            <div>
+            <div class="example-row">
                 <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
-                <button id="ex1Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、がくせいです。(I am a student)</span>
+                <button id="ex1Listen" class="example-button">🔊 きく</button>
+                <span class="example-desc">わたしは、がくせいです。(I am a student)</span>
             </div>
-            <div>
+            <div class="example-row">
                 <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
-                <button id="ex2Listen" style="padding: 4px 8px; font-size: 13px; margin-left: 8px;">🔊 きく</button>
-                <span style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">わたしは、せんせいじゃないです。(I am not a teacher)</span>
+                <button id="ex2Listen" class="example-button">🔊 きく</button>
+                <span class="example-desc">わたしは、せんせいじゃないです。(I am not a teacher)</span>
             </div>
         `;
 
