@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.5; /* 上下の線のスペース確保のため行間を広げる */
+            line-height: 1.8; /* 行間を標準に近く戻す */
             color: #0f172a;
         }
         
@@ -36,16 +36,16 @@
             color: #2563eb;
         }
 
-        /* 高ピッチ（上線） */
+        /* 高ピッチ（文字の直上に極細の1px上線） */
         .high-pitch {
-            border-top: 2px solid #2563eb;
-            padding-top: 2px;
+            border-top: 1px solid #2563eb;
+            padding-top: 0px;
         }
 
-        /* 低ピッチ（下線） */
+        /* 低ピッチ（文字の直下に極細の1px下線） */
         .low-pitch {
-            border-bottom: 2px solid #2563eb;
-            padding-bottom: 2px;
+            border-bottom: 1px solid #2563eb;
+            padding-bottom: 0px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -65,7 +65,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 上線・下線・青色シンボルによるピッチ表現 -->
+    <!-- 臨時テストエリア: 文字の直近に極細(1px)の上線・下線 -->
     <div class="temp-test-area">
         <div><span class="high-pitch">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="high-pitch">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
         <div><span class="high-pitch">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="high-pitch">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
