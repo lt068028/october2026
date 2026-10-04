@@ -23,7 +23,7 @@
         }
         .pitch-row {
             display: flex;
-            gap: 2px; /* ｜前後のスペースを最小限に設定 */
+            gap: 2px;
             align-items: flex-end;
             margin-bottom: 16px;
         }
@@ -92,12 +92,12 @@
             "いいてんきですね",
             "し↗ごとは｜た↗のし↘いです",
             "べ↗んきょうは｜お↗もしろ↘いです",
-            "じ↗かんが｜ないですか⤴",
+            "じ↗かんが｜ないですか｜⤴",
             "て↘んきが｜わ↗る↘いですか",
             "て↘んきが｜よ↘くないです"
         ];
 
-        // 記号付き文字列を解析して、純粋な文字配列とアクセント構造を抽出するパーサー
+        // 記号付き文字列を正確に解析するパーサー
         function parseSegment(rawSegment) {
             let chars = [];
             let startLow = false;
@@ -109,10 +109,10 @@
             while (i < rawSegment.length) {
                 let char = rawSegment[i];
                 if (char === '↘') {
-                    dropIndex = chars.length - 1; // 直前の文字の後ろで下がる
+                    dropIndex = chars.length - 1;
                     i++;
                 } else if (char === '↗') {
-                    riseIndex = chars.length; // この位置で上がる
+                    riseIndex = chars.length;
                     startLow = true;
                     i++;
                 } else if (char === '⤴') {
@@ -124,9 +124,9 @@
                 }
             }
 
-            // 最初の文字の前に記号がなくても、途中（riseIndex > 0）で上がっていれば先頭は低いはず
-            if (riseIndex > 0) {
-                startLow = true;
+            // 昇順インデックスが存在する場合のみ startLow を true に確定する（「いいてんきですね」等の誤判定を防止）
+            if (riseIndex === -1) {
+                startLow = false;
             }
 
             return { chars, startLow, riseIndex, dropIndex, hasEndRise };
@@ -141,11 +141,16 @@
                 const rowDiv = document.createElement("div");
                 rowDiv.className = "pitch-row";
 
-                // 「｜」でセグメントに分割
                 const rawSegments = fullText.split("｜");
 
                 rawSegments.forEach(rawSeg => {
+                    // 空のセグメント（記号のみ等）はスキップ
+                    if (!rawSeg || rawSeg.trim() === "") return;
+
                     const parsed = parseSegment(rawSeg);
+                    // 文字が空の場合は描画しない
+                    if (parsed.chars.length === 0) return;
+
                     const wrapper = document.createElement("div");
                     wrapper.className = "pitch-wrapper";
 
@@ -157,7 +162,6 @@
                         moraItem.className = "mora-item";
                         const span = document.createElement("span");
                         
-                        // 文末の ⤴ などの処理
                         if (idx === parsed.chars.length - 1 && parsed.hasEndRise) {
                             span.textContent = char + '⤴';
                             span.style.fontSize = "16px";
@@ -185,7 +189,6 @@
                     let pathD = "";
                     const startY = parsed.startLow ? 46 : 18;
 
-                    // パス生成ロジック（上昇・下降・平坦の組み合わせ）
                     if (parsed.startLow && parsed.riseIndex !== -1) {
                         const riseX = parsed.riseIndex * unitWidth;
                         if (parsed.dropIndex !== -1 && parsed.dropIndex < charCount - 1) {
