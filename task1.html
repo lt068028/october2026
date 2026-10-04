@@ -2,59 +2,15 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Practice 1: XはYです</title>
+    <title>Drills</title>
+    <!-- 1. 外部CSSファイルを読み込む -->
     <link rel="stylesheet" href="style.css">
-    <style>
-        .tooltip-wrap {
-            position: relative;
-            display: inline-block;
-            border-bottom: 1px dotted var(--accent-color);
-        }
-        .tooltip-wrap .tooltip-tip {
-            visibility: hidden;
-            width: 70px;
-            background-color: var(--tooltip-bg);
-            color: var(--tooltip-text);
-            text-align: center;
-            border-radius: 4px;
-            padding: 3px 0;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            margin-left: -35px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 11px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-        }
-        .tooltip-wrap:hover .tooltip-tip {
-            visibility: visible;
-            opacity: 1;
-        }
-        .back-link-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            text-decoration: none;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-    </style>
 </head>
 <body>
-    <div class="back-link-container">
-        <a href="index.html" class="back-link">↩もどる</a>
-    </div>
-
-    <h1>Practice 1：XはYです</h1>
-
     <div id="exampleSection"></div>
-    <div id="task1List" style="margin-top: 20px;"></div>
+    <div id="task1List"></div>
 
+    <!-- 2. 修正済みのJavaScriptファイルを読み込む -->
     <script src="task1.js"></script>
 </body>
 </html>
