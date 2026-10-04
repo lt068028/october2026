@@ -1,4 +1,71 @@
-<!-- Temporary Area: 3つのパターンを表示 -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Pronunciation Drill</title>
+    <link rel="stylesheet" href="style.css?v=20261004">
+    <style>
+        .back-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .back-link {
+            text-decoration: none;
+            color: var(--accent-color);
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+        /* Temporary Area 用のスタイル */
+        .temporary-area {
+            background: var(--bg-panel);
+            border: 1px dashed var(--accent-color);
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 6px;
+            font-family: sans-serif;
+        }
+        .temporary-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .temp-sentence {
+            font-size: 18px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+        .temp-sentence:last-child {
+            margin-bottom: 0;
+        }
+        .temp-symbol {
+            color: #fb7185;
+            font-weight: normal !important;
+        }
+        .temp-low {
+            text-decoration: underline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
+        }
+        .temp-high {
+            text-decoration: overline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link-container">
+        <a href="index.html" class="back-link">↩️もどる</a>
+    </div>
+    <h1>音声を聞いて、とるを押して、文を読もう</h1>
+    <p>Listen to the model audio, press record, and read the sentence.</p>
+
+    <!-- Temporary Area: 2つのパターンを表示 -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
@@ -11,9 +78,11 @@
         <div class="temp-sentence">
             <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
-
-        <!-- パターン3：2行目と同じ構造（記号と下線を正しく適用） -->
-        <div class="temp-sentence">
-            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-        </div>
     </div>
+
+    <!-- ドリルリスト表示エリア -->
+    <div id="drillList" style="margin-top: 20px;"></div>
+
+    <script src="pronunciation.js?v=20261004"></script>
+</body>
+</html>
