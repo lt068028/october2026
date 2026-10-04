@@ -79,21 +79,6 @@
             border-top: 1px solid #fb7185;
         }
 
-        /* 4行目：SVG描画用スタイル */
-        .svg-container {
-            position: relative;
-            display: inline-block;
-        }
-        .svg-line {
-            position: absolute;
-            top: -4px;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            pointer-events: none;
-            overflow: visible;
-        }
-
         /* Ruby構造を利用した上線描画テスト用スタイル */
         ruby.ruby-overline {
             ruby-position: over;
@@ -138,30 +123,6 @@
             <span class="label-text">【3】Ruby構造（rtタグ）による上線</span>
             <div>
                 <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- 4行目：SVG -->
-        <div class="temp-sentence">
-            <span class="label-text">【4】SVGによる上線描画</span>
-            <div>
-                <span class="svg-container">て<svg class="svg-line"><line x1="0" y1="0" x2="100%" y2="0" stroke="#fb7185" stroke-width="1.5"/></svg></span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="svg-container">い<svg class="svg-line"><line x1="0" y1="0" x2="100%" y2="0" stroke="#fb7185" stroke-width="1.5"/></svg></span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- 5行目：通常（プレーン） -->
-        <div class="temp-sentence">
-            <span class="label-text">【5】通常（プレーン）</span>
-            <div>
-                <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- 6行目：通常（プレーン） -->
-        <div class="temp-sentence">
-            <span class="label-text">【6】通常（プレーン）</span>
-            <div>
-                <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
             </div>
         </div>
     </div>
