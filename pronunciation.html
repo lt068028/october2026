@@ -7,27 +7,44 @@
         body {
             font-family: sans-serif;
             margin: 40px;
+            background-color: #ffffff;
+            color: #333333;
         }
         .accent-display-box {
             display: inline-block;
-            background: #ffffff;
-            border: 1px solid #cccccc;
-            padding: 20px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 24px;
             border-radius: 8px;
         }
+        .title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #64748b;
+            margin-bottom: 16px;
+        }
+        
+        /* 1文字ずつのレイアウト構造 */
         .accent-row {
+            display: flex;
+            align-items: flex-end;
             position: relative;
-            display: inline-flex;
+            padding-top: 24px; /* 上の線のスペース */
+        }
+        .mora-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 36px; /* 1文字あたりの幅を固定してSVGと一致させる */
+            position: relative;
+        }
+        .char {
             font-size: 24px;
-            letter-spacing: 4px;
-            padding-top: 25px; /* 上の線の描画スペース確保 */
+            font-weight: bold;
+            margin-top: 4px;
         }
-        /* 各文字のスタイル */
-        .char-item {
-            position: relative;
-            padding: 0 4px;
-        }
-        /* 赤いピッチラインを描画するSVGのスタイル */
+
+        /* SVGを文字の直上に重ねるオーバーレイ */
         .pitch-svg {
             position: absolute;
             top: 0;
@@ -38,8 +55,8 @@
         }
         .pitch-line {
             fill: none;
-            stroke: #e11d48; /* 赤色のライン */
-            stroke-width: 2;
+            stroke: #e11d48; /* 赤色のアクセントライン */
+            stroke-width: 2.5;
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
@@ -48,33 +65,27 @@
 <body>
 
     <div class="accent-display-box">
-        <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;">SVGによるピッチライン表示テスト</div>
+        <div class="title">ピッチアクセント表示テスト（1文字目の後ろで下がるパターン）</div>
         
         <div class="accent-row">
-            <!-- 文字列 -->
-            <span class="char-item">い</span>
-            <span class="char-item">い</span>
-            <span class="char-item">て</span>
-            <span class="char-item">ん</span>
-            <span class="char-item">き</span>
-            <span class="char-item">で</span>
-            <span class="char-item">す</span>
-            <span class="char-item">ね</span>
+            <!-- 各文字の要素 -->
+            <div class="mora-group"><span class="char">い</span></div>
+            <div class="mora-group"><span class="char">い</span></div>
+            <div class="mora-group"><span class="char">て</span></div>
+            <div class="mora-group"><span class="char">ん</span></div>
+            <div class="mora-group"><span class="char">き</span></div>
+            <div class="mora-group"><span class="char">で</span></div>
+            <div class="mora-group"><span class="char">す</span></div>
+            <div class="mora-group"><span class="char">ね</span></div>
 
-            <!-- 赤い折れ線（SVGオーバーレイ） -->
-            <!-- ※「いい」が高く、3文字目の「て」から下に落ちるパターン（頭高の例） -->
-            <svg class="pitch-svg" viewBox="0 0 280 50" preserveAspectRatio="none">
-                <!-- 
-                  座標の仕組み: 
-                  - 高い位置のY軸: 5
-                  - 低い位置のY軸: 35
-                  - 下がり目の垂直線を入れることでカクッとしたステップを表現
-                -->
+            <!-- SVGによるステップ状の赤線（1文字目の「い」と2文字目の「い」の間で下がるように調整） -->
+            <!-- viewBoxの幅（例: 288px = 8文字 × 36px） -->
+            <svg class="pitch-svg" viewBox="0 0 288 60" preserveAspectRatio="none">
                 <path class="pitch-line" d="
-                    M 5,5 
-                    L 55,5 
-                    L 55,35 
-                    L 275,35
+                    M 2,4 
+                    L 34,4 
+                    L 34,45 
+                    L 286,45
                 " />
             </svg>
         </div>
