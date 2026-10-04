@@ -1,7 +1,8 @@
 const modelSentences = [
     {
         // 1. て↘んきが｜い↘いです
-        sentence: [
+        targetText: "てんきがいです",
+        displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
             { text: "い", low: false }, { type: "symbol", val: "↘" },
@@ -11,7 +12,8 @@ const modelSentences = [
     },
     {
         // 2. じ↗かんが｜な↘いです
-        sentence: [
+        targetText: "じかんがないです",
+        displayHtml: [
             { text: "じ", low: false }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
             { text: "な", low: false }, { type: "symbol", val: "↘" },
@@ -21,7 +23,8 @@ const modelSentences = [
     },
     {
         // 3. し↗ごとが｜ほ↗し↘いです
-        sentence: [
+        targetText: "しごとがほしいです",
+        displayHtml: [
             { text: "し", low: false }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
             { text: "ほ", low: false }, { type: "symbol", val: "↗" },
@@ -32,7 +35,8 @@ const modelSentences = [
     },
     {
         // 4. せ↗んせ↘いは｜お↗もしろ↘いです
-        sentence: [
+        targetText: "せんせいはおもしろいです",
+        displayHtml: [
             { text: "せ", low: false }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
             { text: "いは", low: true }, { type: "symbol", val: "｜" },
@@ -44,7 +48,8 @@ const modelSentences = [
     },
     {
         // 5. が↗っこうは｜た↗のし↘いです
-        sentence: [
+        targetText: "がっこうはたのしいです",
+        displayHtml: [
             { text: "が", low: false }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
             { text: "た", low: false }, { type: "symbol", val: "↗" },
@@ -57,12 +62,10 @@ const modelSentences = [
 
 let isManualStop = false;
 
-// ひらがな変換ユーティリティ（カタカナ変換および主要な漢字・表現の置換）
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
-    // カタカナをひらがなに変換
     cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
         return String.fromCharCode(match.charCodeAt(0) - 0x60);
     });
@@ -73,7 +76,9 @@ function convertToHiragana(text) {
         "仕事": "しごと",
         "欲しい": "ほしい",
         "先生": "せんせい",
+        "面白い": "おもしろい",
         "学校": "がっこう",
+        "楽しい": "たのしい",
         "です": "です",
         "でした": "でした"
     };
@@ -143,7 +148,8 @@ styleElement.textContent = `
     }
     .drill-row {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         gap: 12px;
         margin-bottom: 12px;
         padding: 12px;
@@ -151,8 +157,13 @@ styleElement.textContent = `
         border: 1px solid var(--border-color);
         border-radius: 6px;
         font-family: sans-serif;
+    }
+    .top-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
         flex-wrap: wrap;
-        position: relative;
     }
     .sentence-number {
         font-weight: bold;
@@ -162,13 +173,9 @@ styleElement.textContent = `
     }
     .sentence-label {
         font-weight: normal !important;
-        font-style: normal !important;
         min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
-    }
-    .sentence-label span {
-        font-weight: normal !important;
     }
     button {
         padding: 6px 12px;
@@ -187,6 +194,17 @@ styleElement.textContent = `
         color: var(--text-primary);
         flex-grow: 1;
         font-weight: normal !important;
+    }
+    .correction-box {
+        display: none;
+        margin-top: 6px;
+        width: 100%;
+        padding: 8px;
+        background: var(--error-bg);
+        border: 1px solid var(--error-border);
+        border-radius: 4px;
+        font-size: 14px;
+        color: var(--error-text);
     }
     .pitch-symbol {
         color: #2563eb;
@@ -209,7 +227,7 @@ styleElement.textContent = `
         font-size: 16px;
         cursor: pointer;
         line-height: 1;
-        background-color: #e0f2fe; /* 4番目の薄い青色に統一 */
+        background-color: #e0f2fe;
     }
     .meaning-btn:hover {
         opacity: 0.8;
@@ -293,6 +311,9 @@ function initDrill() {
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
+        const topRow = document.createElement('div');
+        topRow.className = 'top-row';
+
         const numberSpan = document.createElement('span');
         numberSpan.className = 'sentence-number';
         numberSpan.textContent = `${index + 1}.`;
@@ -302,7 +323,7 @@ function initDrill() {
 
         let speechText = "";
 
-        itemObj.sentence.forEach(part => {
+        itemObj.displayHtml.forEach(part => {
             const span = document.createElement('span');
             if (part.type === 'symbol') {
                 span.className = 'pitch-symbol';
@@ -327,7 +348,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7; // スピード70%
+                utterance.rate = 0.7;
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -376,6 +397,18 @@ function initDrill() {
         meaningContainer.appendChild(meaningBtn);
         meaningContainer.appendChild(meaningPopup);
 
+        const correctionBox = document.createElement('div');
+        correctionBox.className = 'correction-box';
+
+        const corrListenBtn = document.createElement('button');
+        corrListenBtn.textContent = '🔊 きく';
+        corrListenBtn.style.marginRight = '8px';
+
+        const corrTextSpan = document.createElement('span');
+
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
         let mediaRecorder;
         let audioChunks = [];
         let audioStream = null;
@@ -402,9 +435,61 @@ function initDrill() {
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
                             rawTranscript += e.results[i][0].transcript;
                         }
-                        const hiraganaTranscript = convertToHiragana(rawTranscript);
-                        resultSpan.textContent = hiraganaTranscript;
-                        resultSpan.style.color = 'var(--text-primary)';
+
+                        if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+                            resultSpan.textContent = rawTranscript + " (Too short)";
+                            resultSpan.style.color = 'var(--text-secondary)';
+                            return;
+                        }
+
+                        const hiraText = convertToHiragana(rawTranscript);
+                        const target = itemObj.targetText;
+
+                        // 1. 正しい判定 (Correct)
+                        const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
+                        const matchRegex = new RegExp(`^${target}` + endParticleRegex);
+
+                        if (matchRegex.test(hiraText)) {
+                            resultSpan.textContent = hiraText + " ✅";
+                            resultSpan.style.color = 'var(--text-primary)';
+                            correctionBox.style.display = 'none';
+                        } else {
+                            // 2. 構造エラー vs 指定語以外（Wrong word）の判定
+                            // 文末（です）が一致しているかどうか
+                            const hasValidEnding = hiraText.endsWith("です");
+
+                            if (!hasValidEnding) {
+                                resultSpan.textContent = hiraText;
+                                resultSpan.style.color = 'var(--error-text)';
+
+                                corrTextSpan.textContent = `Structure error, try it again`;
+                                corrListenBtn.style.display = 'inline-block';
+                            } else {
+                                resultSpan.textContent = hiraText;
+                                resultSpan.style.color = 'var(--error-text)';
+
+                                corrTextSpan.textContent = `Wrong word used.`;
+                                corrListenBtn.style.display = 'none';
+                            }
+
+                            // 修正音声の再生設定
+                            corrListenBtn.onclick = () => {
+                                corrListenBtn.disabled = true;
+                                corrListenBtn.textContent = '🔊 再生中...';
+                                setTimeout(() => {
+                                    const utterance = new SpeechSynthesisUtterance(speechText);
+                                    utterance.lang = 'ja-JP';
+                                    utterance.rate = 0.7;
+                                    speechSynthesis.speak(utterance);
+                                    utterance.onend = () => {
+                                        corrListenBtn.disabled = false;
+                                        corrListenBtn.textContent = '🔊 きく';
+                                    };
+                                }, 1000);
+                            };
+
+                            correctionBox.style.display = 'block';
+                        }
                     };
 
                     recognition.onerror = (err) => {
@@ -431,6 +516,7 @@ function initDrill() {
                 stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
+                correctionBox.style.display = 'none';
 
             } catch (err) {
                 console.error("Mic error:", err);
@@ -452,13 +538,16 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
-        rowDiv.appendChild(numberSpan);
-        rowDiv.appendChild(listenBtn);
-        rowDiv.appendChild(sentenceSpan);
-        rowDiv.appendChild(recordBtn);
-        rowDiv.appendChild(stopBtn);
-        rowDiv.appendChild(resultSpan);
-        rowDiv.appendChild(meaningContainer);
+        topRow.appendChild(numberSpan);
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(sentenceSpan);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+        topRow.appendChild(meaningContainer);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
 
         drillList.appendChild(rowDiv);
     });
