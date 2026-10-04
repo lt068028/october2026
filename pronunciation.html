@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.0; /* 上下の絶対配置ラインのスペースを確保 */
+            line-height: 2.0;
             color: #0f172a;
         }
         
@@ -36,7 +36,7 @@
             color: #2563eb;
         }
 
-        /* 高ピッチ（文字の直上にぎりぎり配置する上線） */
+        /* 高ピッチ（-1pxで極限まで文字に寄せる上線） */
         .high-pitch {
             position: relative;
             display: inline-block;
@@ -44,14 +44,14 @@
         .high-pitch::before {
             content: "";
             position: absolute;
-            top: -3px; /* 文字の頭頂部からぎりぎりの位置に調整 */
+            top: -1px; /* -3から-1に変更 */
             left: 0;
             right: 0;
             height: 1px;
             background-color: #2563eb;
         }
 
-        /* 低ピッチ（文字の直下にぎりぎり配置する下線） */
+        /* 低ピッチ（-1pxで極限まで文字に寄せる下線） */
         .low-pitch {
             position: relative;
             display: inline-block;
@@ -59,7 +59,7 @@
         .low-pitch::after {
             content: "";
             position: absolute;
-            bottom: -3px; /* 文字の底部からぎりぎりの位置に調整 */
+            bottom: -1px; /* -3から-1に変更 */
             left: 0;
             right: 0;
             height: 1px;
@@ -83,7 +83,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 絶対配置による極限まで文字に寄せた上線・下線 -->
+    <!-- 臨時テストエリア: -1px調整による極限の密着表示 -->
     <div class="temp-test-area">
         <div><span class="high-pitch">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="high-pitch">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
         <div><span class="high-pitch">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="high-pitch">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
