@@ -89,15 +89,14 @@
     <script>
         // 貴殿が提示したテキスト（記号付き）をそのまま一字一句変えずに定義
         const targetSentences = [
-            "いいてんきですね",
+            "い↘いてんきですね",
             "し↗ごとは｜た↗のし↘いです",
             "べ↗んきょうは｜お↗もしろ↘いです",
             "じ↗かんが｜ないですか｜⤴",
-            "て↘んきが｜わ↗る↘いですか",
+            "て↘んきが｜わ↗る↘いですか⤴",
             "て↘んきが｜よ↘くないです"
         ];
 
-        // 記号付き文字列を正確に解析するパーサー
         function parseSegment(rawSegment) {
             let chars = [];
             let startLow = false;
@@ -124,7 +123,6 @@
                 }
             }
 
-            // 昇順インデックスが存在する場合のみ startLow を true に確定する（「いいてんきですね」等の誤判定を防止）
             if (riseIndex === -1) {
                 startLow = false;
             }
@@ -144,11 +142,9 @@
                 const rawSegments = fullText.split("｜");
 
                 rawSegments.forEach(rawSeg => {
-                    // 空のセグメント（記号のみ等）はスキップ
                     if (!rawSeg || rawSeg.trim() === "") return;
 
                     const parsed = parseSegment(rawSeg);
-                    // 文字が空の場合は描画しない
                     if (parsed.chars.length === 0) return;
 
                     const wrapper = document.createElement("div");
