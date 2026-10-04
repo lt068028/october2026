@@ -57,9 +57,12 @@ const modelSentences = [
 
 let isManualStop = false;
 
+// カタカナをひらがなに変換しつつ、主要な漢字を置換するユーティリティ
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+    
+    // カタカナをひらがなに変換
     cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
         return String.fromCharCode(match.charCodeAt(0) - 0x60);
     });
@@ -158,7 +161,7 @@ styleElement.textContent = `
         color: var(--text-secondary);
     }
     .sentence-label {
-        font-weight: normal !important;
+        font-weight: normal !important; /* 強制的に太字を解除 */
         min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
@@ -179,7 +182,7 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
         flex-grow: 1;
-        font-weight: normal !important;
+        font-weight: normal !important; /* 結果表示の太字も解除 */
     }
     .pitch-symbol {
         color: #2563eb;
@@ -198,10 +201,10 @@ styleElement.textContent = `
         border: 1px solid rgba(0, 0, 0, 0.1);
         padding: 6px 10px;
         border-radius: 4px;
-        font-size: 14px;
+        font-size: 16px;
         cursor: pointer;
         line-height: 1;
-        background-color: var(--button-bg);
+        background-color: #e0f2fe;
     }
     .meaning-btn:hover {
         opacity: 0.8;
@@ -319,7 +322,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7;
+                utterance.rate = 0.7; // 70%
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -346,8 +349,7 @@ function initDrill() {
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
-        // 修正点: 要望の文言 (🔠 Show Vocab または 💬 Hover Vocab)
-        meaningBtn.textContent = '🔠 Show Vocab';
+        meaningBtn.textContent = '🌐';
 
         const meaningPopup = document.createElement('div');
         meaningPopup.className = 'meaning-popup';
