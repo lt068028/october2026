@@ -17,7 +17,7 @@
             font-family: sans-serif;
         }
 
-        /* 臨時テストエリア用スタイル（既存コンテンツには影響を与えない） */
+        /* 臨時テストエリア用スタイル */
         .temp-test-area {
             margin-bottom: 30px;
             padding: 16px;
@@ -27,8 +27,13 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            color: #e11d48; /* すべて赤色 */
             line-height: 1.8;
+            color: #0f172a; /* 文字情報のデフォルト色 */
+        }
+        
+        /* シンボル（矢印・区切り線）のみを青字に指定 */
+        .symbol {
+            color: #2563eb;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -48,11 +53,11 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 3行の矢印テキスト表示 -->
+    <!-- 臨時テストエリア: シンボルのみ青字 -->
     <div class="temp-test-area">
-        <div>て➘んきが｜わ➚る➘くないですか⤴</div>
-        <div>て⇘んきが｜わ⇗る⇘くないですか⤴</div>
-        <div>て↘んきが｜わ↗る↘くないですか⤴</div>
+        <div>て<span class="symbol">➘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">➚</span>る<span class="symbol">➘</span>くないですか<span class="symbol">⤴</span></div>
+        <div>て<span class="symbol">⇘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">⇗</span>る<span class="symbol">⇘</span>くないですか<span class="symbol">⤴</span></div>
+        <div>て<span class="symbol">↘</span>んきが<span class="symbol">｜</span>わ<span class="symbol">↗</span>る<span class="symbol">↘</span>くないですか<span class="symbol">⤴</span></div>
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
