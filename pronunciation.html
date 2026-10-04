@@ -23,7 +23,7 @@
         }
         .pitch-row {
             display: flex;
-            gap: 12px; /* ｜で分割されたセグメント間のスペース */
+            gap: 12px;
             align-items: flex-end;
             margin-bottom: 16px;
         }
@@ -87,23 +87,24 @@
 
     <script src="pronunciation.js"></script>
     <script>
-        // 文データ（segments: 各区切りのテキストと下がり目インデックスの定義）
+        // 上昇（startLow: 低く始まる）および下降（dropIndex: 下がり目）を指定可能なデータ構造
         const targetSentences = [
             {
                 segments: [
-                    { text: "いいてんきですね", dropIndex: 1 }
+                    { text: "いいてんきですね", startLow: false, dropIndex: 1 }
                 ]
             },
             {
                 segments: [
-                    { text: "わたしは", dropIndex: -1 },
-                    { text: "がくせいです", dropIndex: -1 }
+                    { text: "わたした", startLow: true, riseIndex: 1, dropIndex: -1 }, // 「わ」が低く、「た」で上がる例
+                    { text: "ちは", startLow: false, dropIndex: -1 },
+                    { text: "がくせいです", startLow: true, riseIndex: 1, dropIndex: -1 }
                 ]
             },
             {
                 segments: [
-                    { text: "とけいが", dropIndex: -1 },
-                    { text: "ほしいです", dropIndex: 1 } // 「ほ・し・い」の「し」の後ろで下がる例
+                    { text: "とけいが", startLow: true, riseIndex: 1, dropIndex: -1 },
+                    { text: "ほしいです", startLow: true, riseIndex: 1, dropIndex: 1 } // 「ほ」が低く、「し」で上がり、「い」の後ろで下がる
                 ]
             }
         ];
@@ -147,14 +148,29 @@
                     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     path.setAttribute("class", "pitch-line-path");
 
-                    const dropIdx = seg.dropIndex;
+                    // 座標計算の拡張（上昇・下降の動的判定）
                     let pathD = "";
-                    if (dropIdx === -1 || dropIdx >= charCount - 1) {
-                        pathD = `M 2,18 L ${svgWidth - 2},18`;
+                    const startY = seg.startLow ? 46 : 18;
+
+                    if (seg.startLow && seg.riseIndex !== undefined && seg.riseIndex !== -1) {
+                        // 低く始まり、riseIndexの位置で高くなるパターン
+                        const riseX = seg.riseIndex * unitWidth;
+                        if (seg.dropIndex !== -1 && seg.dropIndex < charCount - 1) {
+                            const dropX = (seg.dropIndex + 1) * unitWidth;
+                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                        } else {
+                            pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
+                        }
                     } else {
-                        const dropX = (dropIdx + 1) * unitWidth;
-                        pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                        // 高く始まる、または通常のパターン
+                        if (seg.dropIndex === -1 || seg.dropIndex >= charCount - 1) {
+                            pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
+                        } else {
+                            const dropX = (seg.dropIndex + 1) * unitWidth;
+                            pathD = `M 2,${startY} L ${dropX},${startY} L ${dropX},46 L ${svgWidth - 2},46`;
+                        }
                     }
+
                     path.setAttribute("d", pathD);
                     svg.appendChild(path);
                     wrapper.appendChild(svg);
