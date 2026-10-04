@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Pronunciation Drill</title>
+    <title>Pronunciation Drill - Isolation Test</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .back-link-container {
@@ -17,19 +17,26 @@
             font-family: sans-serif;
         }
 
-        /* ピッチライン（SVGステップ表示）共通スタイル */
-        .pitch-container {
-            margin: 15px 0;
-            padding: 16px;
+        /* 独立したテスト用コンテナのスタイル */
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
             background: var(--bg-panel, #f8fafc);
             border: 1px solid var(--border-color, #cbd5e1);
             border-radius: 8px;
-            display: inline-block;
         }
+        .test-section h2 {
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        /* ピッチライン（SVGステップ表示）共通スタイル */
         .pitch-wrapper {
             position: relative;
             display: inline-block;
             padding-top: 10px;
+            margin-bottom: 16px;
         }
         .mora-line {
             display: flex;
@@ -60,12 +67,12 @@
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
-        .drill-item {
-            margin-bottom: 20px;
-            padding: 16px;
-            background: var(--bg-panel, #f8fafc);
-            border-radius: 8px;
-            border: 1px solid var(--border-color, #cbd5e1);
+        
+        /* 複数行を縦に並べるためのスタイル */
+        .drill-rows-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
     </style>
 </head>
@@ -76,9 +83,9 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- タイトルの下に「いいてんきですね」のテスト表示を配置 -->
-    <div class="pitch-container">
-        <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Pitch Accent Pattern (Test)</div>
+    <!-- 1. 動作確認済みの基準テスト表示 -->
+    <div class="test-section">
+        <h2>基準テスト（いいてんきですね）</h2>
         <div class="pitch-wrapper">
             <div class="mora-line">
                 <div class="mora-item"><span>い</span></div>
@@ -91,19 +98,82 @@
                 <div class="mora-item"><span>ね</span></div>
             </div>
             <svg class="pitch-svg" viewBox="0 0 196 50" preserveAspectRatio="none">
-                <path class="pitch-line-path" d="
-                    M 2,18 
-                    L 26,18 
-                    L 26,46 
-                    L 194,46
-                " />
+                <path class="pitch-line-path" d="M 2,18 L 26,18 L 26,46 L 194,46" />
             </svg>
         </div>
     </div>
 
-    <!-- ドリルリストが動的に挿入されるエリア -->
-    <div id="drillList" style="margin-top: 20px;"></div>
+    <!-- 2. 複数行での独立描画テストエリア -->
+    <div class="test-section">
+        <h2>複数行の個別検証エリア（各文の独立表示）</h2>
+        <div class="drill-rows-container" id="isolatedDrillList">
+            <!-- JavaScriptでここに1行ずつ安全に生成して挿入する -->
+        </div>
+    </div>
 
-    <script src="pronunciation.js"></script>
+    <script>
+        // 検証用の複数文データ（テキストと下がり目インデックス）
+        const testSentences = [
+            { text: "いいてんきですね", dropIndex: 1 },
+            { text: "わたしはがくせいです", dropIndex: 3 },
+            { text: "きょうはにほんごをべんきょうします", dropIndex: 4 }
+        ];
+
+        function renderIsolatedDrills() {
+            const container = document.getElementById("isolatedDrillList");
+            if (!container) return;
+            container.innerHTML = "";
+
+            testSentences.forEach(item => {
+                const wrapper = document.createElement("div");
+                wrapper.className = "pitch-wrapper";
+
+                const moraLine = document.createElement("div");
+                moraLine.className = "mora-line";
+
+                const chars = item.text.split("");
+                chars.forEach(char => {
+                    const moraItem = document.createElement("div");
+                    moraItem.className = "mora-item";
+                    const span = document.createElement("span");
+                    span.textContent = char;
+                    moraItem.appendChild(span);
+                    moraLine.appendChild(moraItem);
+                });
+                wrapper.appendChild(moraLine);
+
+                // 文字数に応じたSVG動的生成
+                const charCount = chars.length;
+                const unitWidth = 24.5; // 1文字あたりの概算幅
+                const svgWidth = charCount * unitWidth;
+
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("class", "pitch-svg");
+                svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
+                svg.setAttribute("preserveAspectRatio", "none");
+
+                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                path.setAttribute("class", "pitch-line-path");
+
+                const dropIdx = item.dropIndex;
+                let pathD = "";
+                if (dropIdx === -1 || dropIdx >= charCount - 1) {
+                    pathD = `M 2,18 L ${svgWidth - 2},18`;
+                } else {
+                    const dropX = (dropIdx + 1) * unitWidth;
+                    pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                }
+                path.setAttribute("d", pathD);
+                svg.appendChild(path);
+                wrapper.appendChild(svg);
+
+                container.appendChild(wrapper);
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderIsolatedDrills();
+        });
+    </script>
 </body>
 </html>
