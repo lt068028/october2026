@@ -36,7 +36,7 @@
             color: #2563eb;
         }
 
-        /* 高ピッチ（-1pxで極限まで文字に寄せる上線） */
+        /* 高ピッチ：上線のみ絶対配置で極限まで文字に寄せる */
         .high-pitch {
             position: relative;
             display: inline-block;
@@ -44,26 +44,18 @@
         .high-pitch::before {
             content: "";
             position: absolute;
-            top: -1px; /* -3から-1に変更 */
+            top: -3px; /* 最も密着度が高かった位置 */
             left: 0;
             right: 0;
             height: 1px;
             background-color: #2563eb;
         }
 
-        /* 低ピッチ（-1pxで極限まで文字に寄せる下線） */
+        /* 低ピッチ：標準のテキスト下線（Underline）をシンプルに利用 */
         .low-pitch {
-            position: relative;
-            display: inline-block;
-        }
-        .low-pitch::after {
-            content: "";
-            position: absolute;
-            bottom: -1px; /* -3から-1に変更 */
-            left: 0;
-            right: 0;
-            height: 1px;
-            background-color: #2563eb;
+            text-decoration: underline;
+            text-decoration-color: #2563eb;
+            text-decoration-thickness: 1px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -83,7 +75,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: -1px調整による極限の密着表示 -->
+    <!-- 臨時テストエリア: 上線は絶対配置、下線は標準アンダーライン -->
     <div class="temp-test-area">
         <div><span class="high-pitch">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="high-pitch">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
         <div><span class="high-pitch">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="high-pitch">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
