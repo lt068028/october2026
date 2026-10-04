@@ -1,14 +1,14 @@
 /* ==========================================
-   Global Theme Variables (Light Mode Default)
+   Global Theme Variables (Light Mode Default - Red Theme)
    ================================---------- */
 :root {
     --bg-main: #ffffff;
-    --bg-panel: #f1f5f9;
+    --bg-panel: #fff1f2; /* 薄いピンク・赤系 */
     --bg-row: #ffffff;
-    --border-color: #cccccc;
+    --border-color: #e2e8f0;
     --text-primary: #333333;
     --text-secondary: #64748b;
-    --accent-color: #2196F3;
+    --accent-color: #e11d48; /* 鮮やかな赤系 */
     --button-bg: #f8f9fa;
     --button-hover: #e9ecef;
     --button-disabled-bg: #e2e8f0;
@@ -27,12 +27,12 @@
 @media (prefers-color-scheme: dark) {
     :root {
         --bg-main: #0f172a;
-        --bg-panel: #1e293b;
+        --bg-panel: #4c0519; /* ダークな赤系 */
         --bg-row: #1e293b;
         --border-color: #334155;
         --text-primary: #f8fafc;
         --text-secondary: #94a3b8;
-        --accent-color: #38bdf8;
+        --accent-color: #fb7185; /* 明るい赤系 */
         --button-bg: #334155;
         --button-hover: #475569;
         --button-disabled-bg: #1e293b;
@@ -84,7 +84,7 @@ a {
     padding: 12px 16px;
     background: var(--bg-panel);
     border-radius: 6px;
-    border: 1px solid var(--border-color);
+    border: none; /* タスク部分の枠線を削除 */
     flex-wrap: nowrap;
 }
 
@@ -109,13 +109,17 @@ a {
 }
 
 /* ==========================================
-   Task & Example Styles (Added)
+   Task & Example Styles
    ================================---------- */
 h1 {
     border: none;
     background: none;
     padding: 0;
     box-shadow: none;
+}
+
+.drill-row {
+    border: none; /* 各タスク項目の不要な枠線を削除 */
 }
 
 .example-box {
