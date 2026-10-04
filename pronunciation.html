@@ -17,7 +17,7 @@
             font-family: sans-serif;
         }
 
-        /* 矢印セット比較エリア用スタイル */
+        /* テスト表示エリア用スタイル */
         .comparison-container {
             margin-bottom: 30px;
             padding: 16px;
@@ -25,28 +25,22 @@
             border-radius: 8px;
             border: 1px solid var(--border-color, #cbd5e1);
         }
-        .comparison-title {
-            font-size: 14px;
-            font-weight: bold;
-            color: #475569;
-            margin-bottom: 6px;
-        }
         .comparison-row {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .comparison-row:last-child {
             margin-bottom: 0;
         }
         .mora-flex {
             display: flex;
-            gap: 4px;
+            gap: 2px;
             align-items: flex-end;
         }
         .mora-box {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 28px;
+            width: 26px;
             text-align: center;
         }
         .arrow-slot {
@@ -60,6 +54,16 @@
             font-size: 20px;
             font-weight: bold;
             color: #0f172a;
+        }
+        .separator-slot {
+            display: flex;
+            align-items: flex-end;
+            font-size: 20px;
+            font-weight: bold;
+            color: #e11d48; /* 区切り線も赤色 */
+            padding: 0 4px;
+            height: 48px;
+            line-height: 48px;
         }
 
         /* 既存ドリルリスト用スタイル */
@@ -79,51 +83,69 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 3種類の矢印セット比較表示エリア（テスト領域） -->
+    <!-- テスト表示エリア -->
     <div class="comparison-container">
-        <h2>「い↘いてんきですね」の矢印セット比較</h2>
         
-        <!-- パターン1: 太い北東／南東矢印 (➚ / ➘) -->
+        <!-- パターン1: 太い矢印 (➚ / ➘ / ⤴) -->
         <div class="comparison-row">
-            <div class="comparison-title">パターン1: 太い矢印 (➚ / ➘)</div>
             <div class="mora-flex">
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
-                <div class="mora-box"><span class="arrow-slot">➘</span><span class="char-slot">て</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot">➘</span><span class="char-slot">ん</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">が</span></div>
+                <div class="separator-slot">｜</div>
+                <div class="mora-box"><span class="arrow-slot">➚</span><span class="char-slot">わ</span></div>
+                <div class="mora-box"><span class="arrow-slot">➘</span><span class="char-slot">る</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">く</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">な</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">か</span></div>
+                <div class="mora-box"><span class="arrow-slot">⤴</span><span class="char-slot"></span></div>
             </div>
         </div>
 
-        <!-- パターン2: 二重の北東／南東矢印 (⇗ / ⇘) -->
-        <div class="comparison-row" style="margin-top: 12px;">
-            <div class="comparison-title">パターン2: 二重矢印 (⇗ / ⇘)</div>
+        <!-- パターン2: 二重矢印 (⇗ / ⇘ / ⤴) -->
+        <div class="comparison-row">
             <div class="mora-flex">
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
-                <div class="mora-box"><span class="arrow-slot">⇘</span><span class="char-slot">て</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot">⇘</span><span class="char-slot">ん</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">が</span></div>
+                <div class="separator-slot">｜</div>
+                <div class="mora-box"><span class="arrow-slot">⇗</span><span class="char-slot">わ</span></div>
+                <div class="mora-box"><span class="arrow-slot">⇘</span><span class="char-slot">る</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">く</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">な</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">か</span></div>
+                <div class="mora-box"><span class="arrow-slot">⤴</span><span class="char-slot"></span></div>
             </div>
         </div>
 
-        <!-- パターン3: ふつうの北東／南東矢印 (↗ / ↘) -->
-        <div class="comparison-row" style="margin-top: 12px;">
-            <div class="comparison-title">パターン3: ふつうの矢印 (↗ / ↘)</div>
+        <!-- パターン3: ふつうの矢印 (↗ / ↘ / ⤴) -->
+        <div class="comparison-row">
             <div class="mora-flex">
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
-                <div class="mora-box"><span class="arrow-slot">↘</span><span class="char-slot">て</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ん</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">て</span></div>
+                <div class="mora-box"><span class="arrow-slot">↘</span><span class="char-slot">ん</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">き</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">が</span></div>
+                <div class="separator-slot">｜</div>
+                <div class="mora-box"><span class="arrow-slot">↗</span><span class="char-slot">わ</span></div>
+                <div class="mora-box"><span class="arrow-slot">↘</span><span class="char-slot">る</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">く</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">な</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">い</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">で</span></div>
                 <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">す</span></div>
-                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">ね</span></div>
+                <div class="mora-box"><span class="arrow-slot"></span><span class="char-slot">か</span></div>
+                <div class="mora-box"><span class="arrow-slot">⤴</span><span class="char-slot"></span></div>
             </div>
         </div>
+
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（保持） -->
