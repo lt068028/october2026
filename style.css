@@ -83,8 +83,9 @@ a {
     margin-bottom: 20px;
     padding: 12px 16px;
     background: var(--bg-panel);
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
+    /* Taskヘッダーの枠線と丸角を廃止 */
+    border: none !important;
+    border-radius: 0 !important;
     flex-wrap: nowrap;
 }
 
@@ -109,7 +110,7 @@ a {
 }
 
 /* ==========================================
-   Example Box Style (Added)
+   Example Box Style (例文エリア専用：赤系背景 ＋ 左上Exampleラベル)
    ================================---------- */
 .example-box {
     position: relative;
