@@ -2,6 +2,7 @@ const modelSentences = [
     {
         // 1. て↘んきが｜い↘いです
         targetText: "てんきがいです",
+        targetWord: "てんきが",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -13,6 +14,7 @@ const modelSentences = [
     {
         // 2. じ↗かんが｜な↘いです
         targetText: "じかんがないです",
+        targetWord: "じかんが",
         displayHtml: [
             { text: "じ", low: false }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -24,6 +26,7 @@ const modelSentences = [
     {
         // 3. し↗ごとが｜ほ↗し↘いです
         targetText: "しごとがほしいです",
+        targetWord: "しごとが",
         displayHtml: [
             { text: "し", low: false }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -36,6 +39,7 @@ const modelSentences = [
     {
         // 4. せ↗んせ↘いは｜お↗もしろ↘いです
         targetText: "せんせいはおもしろいです",
+        targetWord: "せんせいは",
         displayHtml: [
             { text: "せ", low: false }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -49,6 +53,7 @@ const modelSentences = [
     {
         // 5. が↗っこうは｜た↗のし↘いです
         targetText: "がっこうはたのしいです",
+        targetWord: "がっこうは",
         displayHtml: [
             { text: "が", low: false }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
@@ -445,7 +450,6 @@ function initDrill() {
                         const hiraText = convertToHiragana(rawTranscript);
                         const target = itemObj.targetText;
 
-                        // 1. 正しい判定 (Correct)
                         const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
                         const matchRegex = new RegExp(`^${target}` + endParticleRegex);
 
@@ -454,25 +458,30 @@ function initDrill() {
                             resultSpan.style.color = 'var(--text-primary)';
                             correctionBox.style.display = 'none';
                         } else {
-                            // 2. 構造エラー vs 指定語以外（Wrong word）の判定
-                            // 文末（です）が一致しているかどうか
+                            // 異なる部分（間違っている場所）を赤色でハイライト
+                            const basePart = itemObj.targetWord; // 例: "てんきが"
+                            if (hiraText.includes(basePart)) {
+                                // 前半は合っているが後半（述語やです）が違う場合
+                                const highlighted = hiraText.replace(basePart, `<span style="color: var(--error-text);">${basePart}</span>`);
+                                // 代わりに、間違っている箇所を赤くする
+                                const wrongPart = hiraText.replace(basePart, "");
+                                resultSpan.innerHTML = `${basePart}<span style="color: var(--error-text);">${wrongPart}</span>`;
+                            } else {
+                                // 全体的に違う言葉が含まれている場合、全体を赤くするか特定箇所をハイライト
+                                resultSpan.innerHTML = `<span style="color: var(--error-text);">${hiraText}</span>`;
+                            }
+
+                            resultSpan.style.color = 'var(--text-primary)';
+
                             const hasValidEnding = hiraText.endsWith("です");
-
                             if (!hasValidEnding) {
-                                resultSpan.textContent = hiraText;
-                                resultSpan.style.color = 'var(--error-text)';
-
                                 corrTextSpan.textContent = `Structure error, try it again`;
                                 corrListenBtn.style.display = 'inline-block';
                             } else {
-                                resultSpan.textContent = hiraText;
-                                resultSpan.style.color = 'var(--error-text)';
-
                                 corrTextSpan.textContent = `Wrong word used.`;
                                 corrListenBtn.style.display = 'none';
                             }
 
-                            // 修正音声の再生設定
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
                                 corrListenBtn.textContent = '🔊 再生中...';
