@@ -28,7 +28,7 @@
         .pitch-wrapper {
             position: relative;
             display: inline-block;
-            padding-top: 18px; /* パディングを縮めて全体を上に詰めつつ、線の位置を下げる */
+            padding-top: 10px; /* 全体を上に詰め、2文字目以降の横線をさらに下げる */
         }
         .mora-line {
             display: flex;
@@ -84,13 +84,13 @@
                 <div class="mora-item"><span>ね</span></div>
             </div>
 
-            <!-- SVGによるステップ赤線（全体を下に配置し、高低差＝縦線の高さを短く調整） -->
+            <!-- SVGによるステップ赤線（1文字目の上は据え置き、縦線の長さを2倍に伸ばして2文字目以降の底線をさらに下げる） -->
             <svg class="pitch-svg" viewBox="0 0 352 50" preserveAspectRatio="none">
                 <path class="pitch-line-path" d="
                     M 4,14 
                     L 38,14 
-                    L 38,34 
-                    L 348,34
+                    L 38,42 
+                    L 348,42
                 " />
             </svg>
         </div>
