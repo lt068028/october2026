@@ -21,11 +21,16 @@
         .custom-pitch-container {
             margin-bottom: 30px;
         }
+        .pitch-row {
+            display: flex;
+            gap: 12px; /* ｜で分割されたセグメント間のスペース */
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
         .pitch-wrapper {
             position: relative;
             display: inline-block;
             padding-top: 10px;
-            margin-bottom: 12px;
         }
         .mora-line {
             display: flex;
@@ -74,7 +79,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 指定された2文の表示エリア -->
+    <!-- 指定された文の表示エリア -->
     <div class="custom-pitch-container" id="customPitchArea"></div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア -->
@@ -82,10 +87,25 @@
 
     <script src="pronunciation.js"></script>
     <script>
-        // 指定された2文と下がり目インデックスの定義
+        // 文データ（segments: 各区切りのテキストと下がり目インデックスの定義）
         const targetSentences = [
-            { text: "いいてんきですね", dropIndex: 1 },
-            { text: "わたしはがくせいです", dropIndex: 3 }
+            {
+                segments: [
+                    { text: "いいてんきですね", dropIndex: 1 }
+                ]
+            },
+            {
+                segments: [
+                    { text: "わたしは", dropIndex: -1 },
+                    { text: "がくせいです", dropIndex: -1 }
+                ]
+            },
+            {
+                segments: [
+                    { text: "とけいが", dropIndex: -1 },
+                    { text: "ほしいです", dropIndex: 1 } // 「ほ・し・い」の「し」の後ろで下がる例
+                ]
+            }
         ];
 
         function renderCustomPitchRows() {
@@ -93,52 +113,55 @@
             if (!container) return;
             container.innerHTML = "";
 
-            targetSentences.forEach(item => {
+            targetSentences.forEach(sentence => {
                 const rowDiv = document.createElement("div");
-                rowDiv.style.marginBottom = "12px";
+                rowDiv.className = "pitch-row";
 
-                const wrapper = document.createElement("div");
-                wrapper.className = "pitch-wrapper";
+                sentence.segments.forEach(seg => {
+                    const wrapper = document.createElement("div");
+                    wrapper.className = "pitch-wrapper";
 
-                const moraLine = document.createElement("div");
-                moraLine.className = "mora-line";
+                    const moraLine = document.createElement("div");
+                    moraLine.className = "mora-line";
 
-                const chars = item.text.split("");
-                chars.forEach(char => {
-                    const moraItem = document.createElement("div");
-                    moraItem.className = "mora-item";
-                    const span = document.createElement("span");
-                    span.textContent = char;
-                    moraItem.appendChild(span);
-                    moraLine.appendChild(moraItem);
+                    const chars = seg.text.split("");
+                    chars.forEach(char => {
+                        const moraItem = document.createElement("div");
+                        moraItem.className = "mora-item";
+                        const span = document.createElement("span");
+                        span.textContent = char;
+                        moraItem.appendChild(span);
+                        moraLine.appendChild(moraItem);
+                    });
+                    wrapper.appendChild(moraLine);
+
+                    const charCount = chars.length;
+                    const unitWidth = 24.5;
+                    const svgWidth = charCount * unitWidth;
+
+                    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svg.setAttribute("class", "pitch-svg");
+                    svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
+                    svg.setAttribute("preserveAspectRatio", "none");
+
+                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    path.setAttribute("class", "pitch-line-path");
+
+                    const dropIdx = seg.dropIndex;
+                    let pathD = "";
+                    if (dropIdx === -1 || dropIdx >= charCount - 1) {
+                        pathD = `M 2,18 L ${svgWidth - 2},18`;
+                    } else {
+                        const dropX = (dropIdx + 1) * unitWidth;
+                        pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
+                    }
+                    path.setAttribute("d", pathD);
+                    svg.appendChild(path);
+                    wrapper.appendChild(svg);
+
+                    rowDiv.appendChild(wrapper);
                 });
-                wrapper.appendChild(moraLine);
 
-                const charCount = chars.length;
-                const unitWidth = 24.5;
-                const svgWidth = charCount * unitWidth;
-
-                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svg.setAttribute("class", "pitch-svg");
-                svg.setAttribute("viewBox", `0 0 ${svgWidth} 50`);
-                svg.setAttribute("preserveAspectRatio", "none");
-
-                const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                path.setAttribute("class", "pitch-line-path");
-
-                const dropIdx = item.dropIndex;
-                let pathD = "";
-                if (dropIdx === -1 || dropIdx >= charCount - 1) {
-                    pathD = `M 2,18 L ${svgWidth - 2},18`;
-                } else {
-                    const dropX = (dropIdx + 1) * unitWidth;
-                    pathD = `M 2,18 L ${dropX},18 L ${dropX},46 L ${svgWidth - 2},46`;
-                }
-                path.setAttribute("d", pathD);
-                svg.appendChild(path);
-                wrapper.appendChild(svg);
-
-                rowDiv.appendChild(wrapper);
                 container.appendChild(rowDiv);
             });
         }
