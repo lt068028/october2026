@@ -201,7 +201,7 @@ styleElement.textContent = `
         font-size: 14px;
         cursor: pointer;
         line-height: 1;
-        background-color: #e0f2fe;
+        background-color: var(--button-bg);
     }
     .meaning-btn:hover {
         opacity: 0.8;
@@ -346,7 +346,7 @@ function initDrill() {
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
-        // 要求された文言（🔠 Show Vocab または 💬 Hover Vocab）
+        // 要求された文言の適用
         meaningBtn.textContent = '🔠 Show Vocab';
 
         const meaningPopup = document.createElement('div');
