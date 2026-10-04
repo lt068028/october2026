@@ -238,7 +238,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.8; // 再生スピードを80%（0.8）に規定
+                utterance.rate = 0.8;
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
