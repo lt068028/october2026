@@ -1,132 +1,52 @@
 /* ==========================================
-   Global Theme Variables (Light Mode Default - Red Theme)
-   ================================---------- */
-:root {
-    --bg-main: #ffffff;
-    --bg-panel: #fff1f2; /* 薄いピンク・赤系 */
-    --bg-row: #ffffff;
-    --border-color: #e2e8f0;
-    --text-primary: #333333;
-    --text-secondary: #64748b;
-    --accent-color: #e11d48; /* 鮮やかな赤系 */
-    --button-bg: #f8f9fa;
-    --button-hover: #e9ecef;
-    --button-disabled-bg: #e2e8f0;
-    --button-disabled-text: #a0aec0;
-    
-    /* ツールチップ・ポップアップ関連 */
-    --tooltip-bg: #333333;
-    --tooltip-text: #ffffff;
-    
-    /* エラー・警告ボックス関連 */
-    --error-bg: #fff1f2;
-    --error-border: #fda4af;
-    --error-text: #be123c;
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg-main: #0f172a;
-        --bg-panel: #4c0519; /* ダークな赤系 */
-        --bg-row: #1e293b;
-        --border-color: #334155;
-        --text-primary: #f8fafc;
-        --text-secondary: #94a3b8;
-        --accent-color: #fb7185; /* 明るい赤系 */
-        --button-bg: #334155;
-        --button-hover: #475569;
-        --button-disabled-bg: #1e293b;
-        --button-disabled-text: #64748b;
-        
-        --tooltip-bg: #f8fafc;
-        --tooltip-text: #0f172a;
-        
-        --error-bg: #4c0519;
-        --error-border: #9f1239;
-        --error-text: #fecdd3;
-    }
-}
-
-/* ==========================================
-   Global Layout & Typography
-   ================================---------- */
-body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    font-family: sans-serif;
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 20px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-h1, h2, h3, p, a, li {
-    color: var(--text-primary);
-}
-
-a {
-    color: var(--accent-color);
-}
-
-.menu-list {
-    line-height: 2.5;
-    font-size: 16px;
-}
-
-/* ==========================================
-   Common Component Styles (Header & Panels)
+   Task部分の罫線削除
    ================================---------- */
 .header-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: var(--bg-panel);
-    border-radius: 6px;
-    border: none; /* タスク部分の枠線を削除 */
-    flex-wrap: nowrap;
-}
-
-.control-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-}
-
-.back-link-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-.back-link {
-    text-decoration: none;
-    color: var(--accent-color);
-    font-weight: bold;
-    font-family: sans-serif;
-}
-
-/* ==========================================
-   Task & Example Styles
-   ================================---------- */
-h1 {
-    border: none;
-    background: none;
-    padding: 0;
-    box-shadow: none;
+    border: none !important;
 }
 
 .drill-row {
-    border: none; /* 各タスク項目の不要な枠線を削除 */
+    border: none !important;
 }
 
+h1 {
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================
+   例文エリアのスタイル（左上のExampleラベル付きボックス・赤系背景）
+   ================================---------- */
 .example-box {
-    background-color: var(--bg-panel);
-    border-left: 5px solid var(--accent-color);
-    padding: 12px 16px;
-    margin: 16px 0;
-    border-radius: 0 6px 6px 0;
+    position: relative;
+    background-color: #fff1f2; /* デイモード用：薄いピンク・赤系背景 */
+    border: 1px solid #fda4af; /* 赤系の枠線 */
+    padding: 20px 16px 14px 16px;
+    margin: 20px 0;
+    border-radius: 6px;
     color: var(--text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+    .example-box {
+        background-color: #4c0519; /* ナイトモード用：ダークな赤系背景 */
+        border-color: #9f1239;
+    }
+}
+
+/* 左上の「Example」ラベル */
+.example-box::before {
+    content: "Example";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background-color: #e11d48; /* ラベルの背景（赤） */
+    color: #ffffff;            /* ラベルの文字色（白） */
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
 }
