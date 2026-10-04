@@ -7,7 +7,8 @@ const modelSentences = [
             { text: "い", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "天気がいいです (The weather is fine.)"
+        meaning: "The weather is fine.",
+        btnColor: "#1e3a8a" // 1. 濃いネイビー（深みのある青）
     },
     {
         // 2. じ↗かんが｜な↘いです
@@ -17,7 +18,8 @@ const modelSentences = [
             { text: "な", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "時間がないです (I don't have time.)"
+        meaning: "I don't have time.",
+        btnColor: "#1d4ed8" // 2. ロイヤルブルー（標準的で鮮やかな青）
     },
     {
         // 3. し↗ごとが｜ほ↗し↘いです
@@ -28,7 +30,8 @@ const modelSentences = [
             { text: "し", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "仕事がほしいです (I want a job.)"
+        meaning: "I want a job.",
+        btnColor: "#2563eb" // 3. コバルトブルー（やや明るい青）
     },
     {
         // 4. せ↗んせ↘いは｜お↗もしろ↘いです
@@ -40,7 +43,8 @@ const modelSentences = [
             { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "先生はおもしろいです (The teacher is interesting.)"
+        meaning: "The teacher is interesting.",
+        btnColor: "#0284c7" // 4. スカイブルー系（シアンがかった明るい青）
     },
     {
         // 5. が↗っこうは｜た↗のし↘いです
@@ -51,7 +55,8 @@ const modelSentences = [
             { text: "のし", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "学校は楽しいです (School is fun.)"
+        meaning: "School is fun.",
+        btnColor: "#3b82f6" // 5. ブライトブルー（鮮やかで軽やかな青）
     }
 ];
 
@@ -112,20 +117,18 @@ styleElement.textContent = `
     input:checked + .slider:before {
         transform: translateX(20px);
     }
-    .drill-wrapper {
-        margin-bottom: 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        background: var(--bg-row);
-        overflow: hidden;
-    }
     .drill-row {
         display: flex;
         align-items: center;
         gap: 12px;
+        margin-bottom: 12px;
         padding: 12px;
+        background: var(--bg-row);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
         font-family: sans-serif;
         flex-wrap: wrap;
+        position: relative;
     }
     .sentence-number {
         font-weight: bold;
@@ -165,28 +168,37 @@ styleElement.textContent = `
         text-decoration-thickness: 1px;
     }
     .meaning-container {
+        position: relative;
         margin-left: auto;
     }
     .meaning-btn {
-        background: #2563eb;
         color: white;
         border: none;
-        padding: 6px 10px;
+        padding: 6px 12px;
         border-radius: 4px;
         font-size: 13px;
+        font-weight: 500;
     }
     .meaning-btn:hover {
-        background: #1d4ed8;
+        opacity: 0.9;
     }
-    .meaning-accordion {
+    .meaning-popup {
         display: none;
-        padding: 10px 16px;
+        position: absolute;
+        right: 0;
+        bottom: 100%;
+        margin-bottom: 6px;
         background: var(--bg-panel);
-        border-top: 1px solid var(--border-color);
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        border-radius: 6px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        white-space: nowrap;
         font-size: 14px;
         color: var(--text-primary);
+        z-index: 10;
     }
-    .meaning-accordion.show {
+    .meaning-popup.show {
         display: block;
     }
 `;
@@ -245,9 +257,6 @@ function initDrill() {
     drillList.appendChild(headerPanel);
 
     modelSentences.forEach((itemObj, index) => {
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.className = 'drill-wrapper';
-
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
@@ -307,23 +316,34 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 意味確認用アコーディオン要素の生成（右端配置）
+        // 意味確認用ポップアップ要素の生成（右端配置・行ごとに異なる青色）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
-        meaningBtn.textContent = '💡 意味';
+        meaningBtn.textContent = '🌐 Translate';
+        meaningBtn.style.backgroundColor = itemObj.btnColor;
 
-        const meaningAccordion = document.createElement('div');
-        meaningAccordion.className = 'meaning-accordion';
-        meaningAccordion.textContent = itemObj.meaning;
+        const meaningPopup = document.createElement('div');
+        meaningPopup.className = 'meaning-popup';
+        meaningPopup.textContent = itemObj.meaning;
 
-        meaningBtn.addEventListener('click', () => {
-            meaningAccordion.classList.toggle('show');
+        meaningBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            meaningPopup.classList.toggle('show');
+        });
+
+        document.addEventListener('click', () => {
+            meaningPopup.classList.remove('show');
+        });
+
+        meaningContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
 
         meaningContainer.appendChild(meaningBtn);
+        meaningContainer.appendChild(meaningPopup);
 
         let mediaRecorder;
         let audioChunks = [];
@@ -408,10 +428,7 @@ function initDrill() {
         rowDiv.appendChild(resultSpan);
         rowDiv.appendChild(meaningContainer);
 
-        wrapperDiv.appendChild(rowDiv);
-        wrapperDiv.appendChild(meaningAccordion);
-
-        drillList.appendChild(wrapperDiv);
+        drillList.appendChild(rowDiv);
     });
 }
 
