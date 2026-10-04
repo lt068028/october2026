@@ -233,11 +233,15 @@ input:checked + .slider:before {
    Example Box Style (例文エリア専用)
    ================================---------- */
 .example-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
     position: relative;
     background-color: #fefce8;
     border: 1px solid #fde047;
     padding: 20px 16px 14px 16px;
-    margin: 16px 0;
+    margin-top: 16px;
     border-radius: 6px;
     color: var(--text-primary);
 }
@@ -260,6 +264,29 @@ input:checked + .slider:before {
     font-weight: bold;
     padding: 2px 8px;
     border-radius: 4px;
+}
+
+.example-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.example-button {
+    padding: 4px 8px;
+    font-size: 13px;
+    margin-left: 8px;
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.example-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-left: 10px;
 }
 
 /* Tooltip Styles */
