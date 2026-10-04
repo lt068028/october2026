@@ -204,9 +204,6 @@ styleElement.textContent = `
         cursor: not-allowed; 
         border-color: var(--border-color); 
     }
-    .meaning-btn {
-        background-color: #e0f2fe;
-    }
     .play-record-btn {
         display: none;
         background-color: var(--button-bg);
