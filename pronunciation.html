@@ -17,9 +17,9 @@
             font-family: sans-serif;
         }
 
-        /* ドリル項目ごとのスタイルとピッチライン用CSS */
+        /* ドリル項目およびピッチラインのスタイル */
         .drill-item {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             padding: 16px;
             background: var(--bg-panel);
             border-radius: 8px;
@@ -29,13 +29,13 @@
             position: relative;
             display: inline-block;
             padding-top: 10px;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
         .mora-line {
             display: flex;
             gap: 0;
             align-items: flex-end;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
             text-align: center;
         }
@@ -69,6 +69,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
+    <!-- ドリルリストが動的に挿入されるエリア -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <script src="pronunciation.js"></script>
