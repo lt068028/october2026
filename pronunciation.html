@@ -23,7 +23,7 @@
         }
         .pitch-row {
             display: flex;
-            gap: 12px;
+            gap: 2px; /* ｜前後のスペースを最小限に設定 */
             align-items: flex-end;
             margin-bottom: 16px;
         }
@@ -79,7 +79,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 指定された文の表示エリア -->
+    <!-- 指定された全文の表示エリア -->
     <div class="custom-pitch-container" id="customPitchArea"></div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア -->
@@ -87,7 +87,7 @@
 
     <script src="pronunciation.js"></script>
     <script>
-        // 上昇（startLow: 低く始まる）および下降（dropIndex: 下がり目）を指定可能なデータ構造
+        // 提供されたすべての文を網羅したデータ定義
         const targetSentences = [
             {
                 segments: [
@@ -96,15 +96,20 @@
             },
             {
                 segments: [
-                    { text: "わたした", startLow: true, riseIndex: 1, dropIndex: -1 }, // 「わ」が低く、「た」で上がる例
-                    { text: "ちは", startLow: false, dropIndex: -1 },
-                    { text: "がくせいです", startLow: true, riseIndex: 1, dropIndex: -1 }
+                    { text: "しごとは", startLow: true, riseIndex: 1, dropIndex: -1 },
+                    { text: "たのしです", startLow: true, riseIndex: 1, dropIndex: 2 }
                 ]
             },
             {
                 segments: [
-                    { text: "とけいが", startLow: true, riseIndex: 1, dropIndex: -1 },
-                    { text: "ほしいです", startLow: true, riseIndex: 1, dropIndex: 1 } // 「ほ」が低く、「し」で上がり、「い」の後ろで下がる
+                    { text: "べんきょうは", startLow: true, riseIndex: 1, dropIndex: -1 },
+                    { text: "おもしろです", startLow: true, riseIndex: 1, dropIndex: 3 }
+                ]
+            },
+            {
+                segments: [
+                    { text: "じかんが", startLow: true, riseIndex: 1, dropIndex: -1 },
+                    { text: "ないですか⤴", startLow: true, riseIndex: 1, dropIndex: 0 }
                 ]
             }
         ];
@@ -125,12 +130,21 @@
                     const moraLine = document.createElement("div");
                     moraLine.className = "mora-line";
 
-                    const chars = seg.text.split("");
-                    chars.forEach(char => {
+                    const cleanText = seg.text.replace('⤴', '');
+                    const chars = cleanText.split("");
+                    
+                    chars.forEach((char, idx) => {
                         const moraItem = document.createElement("div");
                         moraItem.className = "mora-item";
                         const span = document.createElement("span");
-                        span.textContent = char;
+                        
+                        if (idx === chars.length - 1 && seg.text.includes('⤴')) {
+                            span.textContent = char + '⤴';
+                            span.style.fontSize = "16px";
+                        } else {
+                            span.textContent = char;
+                        }
+                        
                         moraItem.appendChild(span);
                         moraLine.appendChild(moraItem);
                     });
@@ -148,12 +162,10 @@
                     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                     path.setAttribute("class", "pitch-line-path");
 
-                    // 座標計算の拡張（上昇・下降の動的判定）
                     let pathD = "";
                     const startY = seg.startLow ? 46 : 18;
 
                     if (seg.startLow && seg.riseIndex !== undefined && seg.riseIndex !== -1) {
-                        // 低く始まり、riseIndexの位置で高くなるパターン
                         const riseX = seg.riseIndex * unitWidth;
                         if (seg.dropIndex !== -1 && seg.dropIndex < charCount - 1) {
                             const dropX = (seg.dropIndex + 1) * unitWidth;
@@ -162,7 +174,6 @@
                             pathD = `M 2,${startY} L ${riseX},${startY} L ${riseX},18 L ${svgWidth - 2},18`;
                         }
                     } else {
-                        // 高く始まる、または通常のパターン
                         if (seg.dropIndex === -1 || seg.dropIndex >= charCount - 1) {
                             pathD = `M 2,${startY} L ${svgWidth - 2},${startY}`;
                         } else {
