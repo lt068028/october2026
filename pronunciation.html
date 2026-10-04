@@ -33,9 +33,12 @@
             text-transform: uppercase;
         }
         .temp-sentence {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             font-size: 18px;
             color: var(--text-primary);
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         .temp-sentence:last-child {
             margin-bottom: 0;
@@ -56,11 +59,12 @@
             text-decoration-thickness: 1px;
             font-weight: normal !important;
         }
+        /* ラベルをテキストの左側に配置 */
         .label-text {
             font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 4px;
-            display: block;
+            min-width: 260px;
+            text-align: right;
         }
 
         /* Ruby構造を利用した上線描画テスト用スタイル */
@@ -77,31 +81,61 @@
 </head>
 <body>
     <div class="back-link-container">
-        <a href="index.html" class="back-link">↩️もどる</a>
+        <a href="index.html" class="back-link">↩️️もどる</a>
     </div>
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area: 追加の3行を含む比較表示 -->
+    <!-- Temporary Area -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
-        <!-- 追加1行目：text-decoration: overline 適用がわかる表示 -->
+        <!-- 1行目 -->
         <div class="temp-sentence">
-            <span class="label-text">【1】text-decoration: overline 適用（標準）</span>
-            <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <span class="label-text">【1】text-decoration: overline 適用</span>
+            <div>
+                <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
         </div>
 
-        <!-- 追加2行目：同様に overline を適用したことを追記した表示 -->
+        <!-- 2行目 -->
         <div class="temp-sentence">
             <span class="label-text">【2】同様に overline を適用</span>
-            <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <div>
+                <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
         </div>
 
-        <!-- 追加3行目：Ruby構造を流用した上線描画テスト -->
+        <!-- 3行目 -->
         <div class="temp-sentence">
-            <span class="label-text">【3】Ruby構造（rtタグ）による上線描画テスト</span>
-            <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            <span class="label-text">【3】Ruby構造（rtタグ）による上線</span>
+            <div>
+                <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
+        </div>
+
+        <!-- 追加行1 -->
+        <div class="temp-sentence">
+            <span class="label-text">【4】追加パターンA</span>
+            <div>
+                <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
+        </div>
+
+        <!-- 追加行2 -->
+        <div class="temp-sentence">
+            <span class="label-text">【5】追加パターンB</span>
+            <div>
+                <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
+        </div>
+
+        <!-- 追加行3 -->
+        <div class="temp-sentence">
+            <span class="label-text">【6】追加パターンC</span>
+            <div>
+                <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+            </div>
         </div>
     </div>
 
