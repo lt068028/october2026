@@ -17,19 +17,19 @@
             font-family: sans-serif;
         }
 
-        /* ドリル項目およびピッチラインのスタイル */
-        .drill-item {
-            margin-bottom: 20px;
+        /* ピッチライン（SVGステップ表示）共通スタイル */
+        .pitch-container {
+            margin: 15px 0;
             padding: 16px;
-            background: var(--bg-panel);
-            border-radius: 8px;
+            background: var(--bg-panel, #f8fafc);
             border: 1px solid var(--border-color, #cbd5e1);
+            border-radius: 8px;
+            display: inline-block;
         }
         .pitch-wrapper {
             position: relative;
             display: inline-block;
             padding-top: 10px;
-            margin-bottom: 8px;
         }
         .mora-line {
             display: flex;
@@ -60,6 +60,13 @@
             stroke-linecap: square;
             stroke-linejoin: miter;
         }
+        .drill-item {
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg-panel, #f8fafc);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #cbd5e1);
+        }
     </style>
 </head>
 <body>
@@ -68,6 +75,31 @@
     </div>
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
+
+    <!-- タイトルの下に「いいてんきですね」のテスト表示を配置 -->
+    <div class="pitch-container">
+        <div style="font-size: 12px; color: #64748b; margin-bottom: 8px;">Pitch Accent Pattern (Test)</div>
+        <div class="pitch-wrapper">
+            <div class="mora-line">
+                <div class="mora-item"><span>い</span></div>
+                <div class="mora-item"><span>い</span></div>
+                <div class="mora-item"><span>て</span></div>
+                <div class="mora-item"><span>ん</span></div>
+                <div class="mora-item"><span>き</span></div>
+                <div class="mora-item"><span>で</span></div>
+                <div class="mora-item"><span>す</span></div>
+                <div class="mora-item"><span>ね</span></div>
+            </div>
+            <svg class="pitch-svg" viewBox="0 0 196 50" preserveAspectRatio="none">
+                <path class="pitch-line-path" d="
+                    M 2,18 
+                    L 26,18 
+                    L 26,46 
+                    L 194,46
+                " />
+            </svg>
+        </div>
+    </div>
 
     <!-- ドリルリストが動的に挿入されるエリア -->
     <div id="drillList" style="margin-top: 20px;"></div>
