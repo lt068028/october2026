@@ -93,7 +93,7 @@
             "し↗ごとは｜た↗のし↘いです",
             "べ↗んきょうは｜お↗もしろ↘いです",
             "じ↗かんが｜ないですか｜⤴",
-            "て↘んきが｜わ↗る↘いですか⤴",
+            "て↘んきが｜わ↗る↘いですか｜⤴",
             "て↘んきが｜よ↘くないです"
         ];
 
@@ -157,20 +157,38 @@
                         const moraItem = document.createElement("div");
                         moraItem.className = "mora-item";
                         const span = document.createElement("span");
-                        
-                        if (idx === parsed.chars.length - 1 && parsed.hasEndRise) {
-                            span.textContent = char + '⤴';
-                            span.style.fontSize = "16px";
-                        } else {
-                            span.textContent = char;
-                        }
+                        span.textContent = char;
                         
                         moraItem.appendChild(span);
                         moraLine.appendChild(moraItem);
                     });
+
+                    // 記号のみ（⤴など）の独立セグメントの場合の処理
+                    if (parsed.hasEndRise && parsed.chars.length === 0) {
+                        const moraItem = document.createElement("div");
+                        moraItem.className = "mora-item";
+                        const span = document.createElement("span");
+                        span.textContent = '⤴';
+                        span.style.fontSize = "18px";
+                        moraItem.appendChild(span);
+                        moraLine.appendChild(moraItem);
+                    } else if (parsed.hasEndRise && parsed.chars.length > 0) {
+                        // 文字列の末尾に⤴が紐付いている場合、別要素として隣に置くことでサイズ崩れを防ぐ
+                        const moraItem = document.createElement("div");
+                        moraItem.className = "mora-item";
+                        const span = document.createElement("span");
+                        span.textContent = '⤴';
+                        span.style.fontSize = "18px";
+                        moraItem.appendChild(span);
+                        moraLine.appendChild(moraItem);
+                    }
+
                     wrapper.appendChild(moraLine);
 
+                    // パス計算用の文字数（⤴は幅に含めない、または独立セグメントとして処理）
                     const charCount = parsed.chars.length;
+                    if (charCount === 0) return; // 描画対象文字がない場合はSVGをスキップ
+
                     const unitWidth = 24.5;
                     const svgWidth = charCount * unitWidth;
 
