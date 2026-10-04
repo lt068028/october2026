@@ -37,15 +37,7 @@ const modelSentences = [
         { text: "た", low: false }, { type: "symbol", val: "↗" },
         { text: "のし", low: false }, { type: "symbol", val: "↘" },
         { text: "いです", low: true }
-    ],
-    // 6以降（従来型テキスト）
-    "とけいがほしいです",
-    "しごとはたのしいです",
-    "べんきょうはおもしろいです",
-    "時間がないですか",
-    "てんきがわるいですか",
-    "てんきがよくないです",
-    "かさがほしいです"
+    ]
 ];
 
 let isManualStop = false;
@@ -221,27 +213,20 @@ function initDrill() {
 
         let speechText = "";
 
-        if (Array.isArray(item)) {
-            // 構造化データ（1〜5番目のピッチアクセント文）の描画
-            item.forEach(part => {
-                const span = document.createElement('span');
-                if (part.type === 'symbol') {
-                    span.className = 'pitch-symbol';
-                    span.textContent = part.val;
-                } else {
-                    span.textContent = part.text;
-                    speechText += part.text;
-                    if (part.low) {
-                        span.className = 'low-pitch';
-                    }
+        item.forEach(part => {
+            const span = document.createElement('span');
+            if (part.type === 'symbol') {
+                span.className = 'pitch-symbol';
+                span.textContent = part.val;
+            } else {
+                span.textContent = part.text;
+                speechText += part.text;
+                if (part.low) {
+                    span.className = 'low-pitch';
                 }
-                sentenceSpan.appendChild(span);
-            });
-        } else {
-            // 6番目以降の通常文字列
-            sentenceSpan.textContent = item;
-            speechText = item;
-        }
+            }
+            sentenceSpan.appendChild(span);
+        });
 
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
@@ -253,6 +238,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
+                utterance.rate = 0.8; // 再生スピードを80%（0.8）に規定
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
