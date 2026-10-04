@@ -5,6 +5,29 @@
     <title>Practice 1: XはYです</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* 削除されたグローバル変数・レイアウトの再定義および補完 */
+        :root {
+            --accent-color: #2563eb;
+            --bg-panel: #f8fafc;
+            --border-color: #e2e8f0;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --tooltip-bg: #1e293b;
+            --tooltip-text: #ffffff;
+            --bg-row: #ffffff;
+            --button-bg: #f1f5f9;
+            --button-hover: #e2e8f0;
+            --button-disabled-bg: #f8fafc;
+            --button-disabled-text: #cbd5e1;
+        }
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: var(--text-primary);
+            background-color: #ffffff;
+        }
         .tooltip-wrap {
             position: relative;
             display: inline-block;
