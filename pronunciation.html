@@ -44,7 +44,8 @@
             color: #fb7185;
             font-weight: normal !important;
         }
-        /* 1行目：通常のtext-decoration */
+        
+        /* 標準の上下線スタイル */
         .temp-high {
             text-decoration: overline;
             text-decoration-color: #fb7185;
@@ -58,7 +59,20 @@
             font-weight: normal !important;
         }
 
-        /* 2行目：擬似要素（::after）によるカスタム下線 */
+        /* 擬似要素（::before / ::after）を用いたカスタム上線・下線スタイル */
+        .custom-high {
+            position: relative;
+        }
+        .custom-high::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: -2px; /* 文字のすぐ上へ配置 */
+            height: 1px;
+            background-color: #fb7185;
+        }
+
         .custom-low {
             position: relative;
         }
@@ -67,7 +81,7 @@
             position: absolute;
             left: 0;
             right: 0;
-            bottom: 1px; /* 文字との距離を微調整 */
+            bottom: 1px; /* 文字のすぐ下へ配置 */
             height: 1px;
             background-color: #fb7185;
         }
@@ -80,18 +94,23 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area -->
+    <!-- Temporary Area: 3行の比較 -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
-        <!-- パターン1：上線・下線併用 -->
+        <!-- パターン1：標準の text-decoration による上下線 -->
         <div class="temp-sentence">
             <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン2：擬似要素によるカスタム下線 -->
+        <!-- パターン2：CSS擬似要素によるカスタム上下線 -->
         <div class="temp-sentence">
-            <span>て</span><span class="temp-symbol">↘</span><span class="custom-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="custom-low">いです</span>
+            <span class="custom-high">て</span><span class="temp-symbol">↘</span><span class="custom-low">んきが</span><span class="temp-symbol">｜</span><span class="custom-high">い</span><span class="temp-symbol">↘</span><span class="custom-low">いです</span>
+        </div>
+
+        <!-- パターン3：追加のテキスト確認用行 -->
+        <div class="temp-sentence">
+            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
     </div>
 
