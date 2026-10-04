@@ -1,6 +1,5 @@
 const modelSentences = [
     {
-        // 1. て↘んきが｜い↘いです
         targetText: "てんきがいです",
         targetWord: "てんきが",
         displayHtml: [
@@ -12,7 +11,6 @@ const modelSentences = [
         meaning: "The weather is fine."
     },
     {
-        // 2. じ↗かんが｜な↘いです
         targetText: "じかんがないです",
         targetWord: "じかんが",
         displayHtml: [
@@ -24,7 +22,6 @@ const modelSentences = [
         meaning: "I don't have time."
     },
     {
-        // 3. し↗ごとが｜ほ↗し↘いです
         targetText: "しごとがほしいです",
         targetWord: "しごとが",
         displayHtml: [
@@ -37,7 +34,6 @@ const modelSentences = [
         meaning: "I want a job."
     },
     {
-        // 4. せ↗んせ↘いは｜お↗もしろ↘いです
         targetText: "せんせいはおもしろいです",
         targetWord: "せんせいは",
         displayHtml: [
@@ -51,7 +47,6 @@ const modelSentences = [
         meaning: "The teacher is interesting."
     },
     {
-        // 5. が↗っこうは｜た↗のし↘いです
         targetText: "がっこうはたのしいです",
         targetWord: "がっこうは",
         displayHtml: [
@@ -193,12 +188,29 @@ styleElement.textContent = `
     }
     button:hover { background: var(--button-hover); }
     button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
-    .result-text {
+    .result-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-grow: 1;
         margin-left: 10px;
+    }
+    .result-text {
         font-size: 15px;
         color: var(--text-primary);
-        flex-grow: 1;
         font-weight: normal !important;
+    }
+    .play-record-btn {
+        display: none;
+        padding: 2px 6px;
+        font-size: 14px;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .play-record-btn:hover {
+        background: #dcfce7;
     }
     .correction-box {
         display: none;
@@ -256,6 +268,33 @@ styleElement.textContent = `
     }
     .meaning-popup.show {
         display: block;
+    }
+    /* ツールチップ（ホバー用英文）スタイル */
+    .tooltip-wrap {
+        position: relative;
+        display: inline-block;
+    }
+    .tooltip-wrap .tooltip-tip {
+        visibility: hidden;
+        background-color: var(--tooltip-bg, #333);
+        color: var(--tooltip-text, #fff);
+        text-align: center;
+        border-radius: 4px;
+        padding: 4px 8px;
+        position: absolute;
+        z-index: 20;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 11px;
+        white-space: nowrap;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .tooltip-wrap:hover .tooltip-tip {
+        visibility: visible;
+        opacity: 1;
     }
 `;
 document.head.appendChild(styleElement);
@@ -343,8 +382,16 @@ function initDrill() {
             sentenceSpan.appendChild(span);
         });
 
+        // 🔊 聞くボタン（ホバー用英文付き）
+        const listenWrapper = document.createElement('span');
+        listenWrapper.className = 'tooltip-wrap';
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
+        const listenTip = document.createElement('span');
+        listenTip.className = 'tooltip-tip';
+        listenTip.textContent = 'Listen to model audio';
+        listenWrapper.appendChild(listenBtn);
+        listenWrapper.appendChild(listenTip);
 
         listenBtn.addEventListener('click', () => {
             listenBtn.disabled = true;
@@ -370,17 +417,43 @@ function initDrill() {
         stopBtn.textContent = '⏹とめる';
         stopBtn.disabled = true;
 
+        const resultContainer = document.createElement('div');
+        resultContainer.className = 'result-container';
+
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
+        // ▶️ 自分の声を再生するボタン（ホバー用英文付き）
+        const playRecordWrapper = document.createElement('span');
+        playRecordWrapper.className = 'tooltip-wrap';
+        const playRecordBtn = document.createElement('button');
+        playRecordBtn.className = 'play-record-btn';
+        playRecordBtn.textContent = '▶️';
+        const playRecordTip = document.createElement('span');
+        playRecordTip.className = 'tooltip-tip';
+        playRecordTip.textContent = 'Play your recording';
+        playRecordWrapper.appendChild(playRecordBtn);
+        playRecordWrapper.appendChild(playRecordTip);
+
+        resultContainer.appendChild(resultSpan);
+        resultContainer.appendChild(playRecordWrapper);
+
+        // 🌐 意味確認ボタン（ホバー用英文付き）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
+        const meaningWrapper = document.createElement('span');
+        meaningWrapper.className = 'tooltip-wrap';
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
         meaningBtn.textContent = '🌐';
+        const meaningTip = document.createElement('span');
+        meaningTip.className = 'tooltip-tip';
+        meaningTip.textContent = 'Translate sentence';
+        meaningWrapper.appendChild(meaningBtn);
+        meaningWrapper.appendChild(meaningTip);
 
         const meaningPopup = document.createElement('div');
         meaningPopup.className = 'meaning-popup';
@@ -399,7 +472,7 @@ function initDrill() {
             e.stopPropagation();
         });
 
-        meaningContainer.appendChild(meaningBtn);
+        meaningContainer.appendChild(meaningWrapper);
         meaningContainer.appendChild(meaningPopup);
 
         const correctionBox = document.createElement('div');
@@ -418,6 +491,7 @@ function initDrill() {
         let audioChunks = [];
         let audioStream = null;
         let recognition = null;
+        let recordedAudioUrl = null;
 
         recordBtn.addEventListener('click', async () => {
             try {
@@ -426,6 +500,16 @@ function initDrill() {
                 mediaRecorder = new MediaRecorder(audioStream);
 
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    if (recordedAudioUrl) {
+                        URL.revokeObjectURL(recordedAudioUrl);
+                    }
+                    recordedAudioUrl = URL.createObjectURL(audioBlob);
+                    playRecordBtn.style.display = 'inline-block';
+                };
+
                 mediaRecorder.start();
 
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -458,29 +542,17 @@ function initDrill() {
                             resultSpan.style.color = 'var(--text-primary)';
                             correctionBox.style.display = 'none';
                         } else {
-                            // 異なる部分（間違っている場所）を赤色でハイライト
-                            const basePart = itemObj.targetWord; // 例: "てんきが"
-                            if (hiraText.includes(basePart)) {
-                                // 前半は合っているが後半（述語やです）が違う場合
-                                const highlighted = hiraText.replace(basePart, `<span style="color: var(--error-text);">${basePart}</span>`);
-                                // 代わりに、間違っている箇所を赤くする
-                                const wrongPart = hiraText.replace(basePart, "");
-                                resultSpan.innerHTML = `${basePart}<span style="color: var(--error-text);">${wrongPart}</span>`;
+                            const targetCore = itemObj.targetWord;
+                            if (hiraText.startsWith(targetCore)) {
+                                const correctPart = targetCore;
+                                const wrongPart = hiraText.slice(targetCore.length);
+                                resultSpan.innerHTML = `${correctPart}<span style="color: var(--error-text);">${wrongPart}</span>`;
                             } else {
-                                // 全体的に違う言葉が含まれている場合、全体を赤くするか特定箇所をハイライト
                                 resultSpan.innerHTML = `<span style="color: var(--error-text);">${hiraText}</span>`;
                             }
 
-                            resultSpan.style.color = 'var(--text-primary)';
-
-                            const hasValidEnding = hiraText.endsWith("です");
-                            if (!hasValidEnding) {
-                                corrTextSpan.textContent = `Structure error, try it again`;
-                                corrListenBtn.style.display = 'inline-block';
-                            } else {
-                                corrTextSpan.textContent = `Wrong word used.`;
-                                corrListenBtn.style.display = 'none';
-                            }
+                            corrTextSpan.textContent = `Try Again`;
+                            corrListenBtn.style.display = 'inline-block';
 
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
@@ -525,6 +597,7 @@ function initDrill() {
                 stopBtn.disabled = !isManualStop;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
+                playRecordBtn.style.display = 'none';
                 correctionBox.style.display = 'none';
 
             } catch (err) {
@@ -547,12 +620,25 @@ function initDrill() {
             stopBtn.disabled = true;
         });
 
+        playRecordBtn.addEventListener('click', () => {
+            if (recordedAudioUrl) {
+                const audio = new Audio(recordedAudioUrl);
+                playRecordBtn.disabled = true;
+                playRecordBtn.textContent = '▶️ 再生中...';
+                audio.play();
+                audio.onended = () => {
+                    playRecordBtn.disabled = false;
+                    playRecordBtn.textContent = '▶️';
+                };
+            }
+        });
+
         topRow.appendChild(numberSpan);
-        topRow.appendChild(listenBtn);
+        topRow.appendChild(listenWrapper);
         topRow.appendChild(sentenceSpan);
         topRow.appendChild(recordBtn);
         topRow.appendChild(stopBtn);
-        topRow.appendChild(resultSpan);
+        topRow.appendChild(resultContainer);
         topRow.appendChild(meaningContainer);
 
         rowDiv.appendChild(topRow);
