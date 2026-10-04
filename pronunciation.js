@@ -1,6 +1,6 @@
 const modelSentences = [
     {
-        targetText: "てんきがいです",
+        targetText: "てんきがいいです",
         targetWord: "てんきが",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
@@ -177,7 +177,6 @@ styleElement.textContent = `
         font-size: 16px;
         color: var(--text-primary);
     }
-    /* すべてのボタンのサイズ感・枠線を完全に統一 */
     button, .play-record-btn, .meaning-btn {
         padding: 6px 12px;
         cursor: pointer;
@@ -200,7 +199,6 @@ styleElement.textContent = `
         cursor: not-allowed; 
         border-color: var(--border-color); 
     }
-    /* 特別色のボタン（🌐意味ボタン）も共通の枠線とサイズを維持しつつ背景色のみ指定 */
     .meaning-btn {
         background-color: #e0f2fe;
     }
@@ -265,7 +263,6 @@ styleElement.textContent = `
     .meaning-popup.show {
         display: block;
     }
-    /* ツールチップ（ホバー用英文）スタイル */
     .tooltip-wrap {
         position: relative;
         display: inline-block;
@@ -378,7 +375,6 @@ function initDrill() {
             sentenceSpan.appendChild(span);
         });
 
-        // 🔊 聞くボタン
         const listenWrapper = document.createElement('span');
         listenWrapper.className = 'tooltip-wrap';
         const listenBtn = document.createElement('button');
@@ -396,7 +392,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7;
+                utterance.rate = 0.7; // お手本音声は70%のスピード
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -421,7 +417,6 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // ▶️ 自分の声再生ボタン
         const playRecordWrapper = document.createElement('span');
         playRecordWrapper.className = 'tooltip-wrap';
         const playRecordBtn = document.createElement('button');
@@ -436,7 +431,6 @@ function initDrill() {
         resultContainer.appendChild(resultSpan);
         resultContainer.appendChild(playRecordWrapper);
 
-        // 🌐 意味確認ボタン
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
@@ -534,18 +528,14 @@ function initDrill() {
                         const matchRegex = new RegExp(`^${target}` + endParticleRegex);
 
                         if (matchRegex.test(hiraText)) {
+                            // 完全一致の場合は余計な色分けをせず正常表示
                             resultSpan.textContent = hiraText + " ✅";
                             resultSpan.style.color = 'var(--text-primary)';
                             correctionBox.style.display = 'none';
                         } else {
-                            const targetCore = itemObj.targetWord;
-                            if (hiraText.startsWith(targetCore)) {
-                                const correctPart = targetCore;
-                                const wrongPart = hiraText.slice(targetCore.length);
-                                resultSpan.innerHTML = `${correctPart}<span style="color: var(--error-text);">${wrongPart}</span>`;
-                            } else {
-                                resultSpan.innerHTML = `<span style="color: var(--error-text);">${hiraText}</span>`;
-                            }
+                            // 不一致時はテキスト全体をエラーカラーで表示し、Try Againを表示
+                            resultSpan.textContent = hiraText;
+                            resultSpan.style.color = 'var(--error-text)';
 
                             corrTextSpan.textContent = `Try Again`;
                             corrListenBtn.style.display = 'inline-flex';
@@ -556,7 +546,7 @@ function initDrill() {
                                 setTimeout(() => {
                                     const utterance = new SpeechSynthesisUtterance(speechText);
                                     utterance.lang = 'ja-JP';
-                                    utterance.rate = 0.7;
+                                    utterance.rate = 0.7; // 修正アドバイス時もお手本なので70%
                                     speechSynthesis.speak(utterance);
                                     utterance.onend = () => {
                                         corrListenBtn.disabled = false;
@@ -619,6 +609,7 @@ function initDrill() {
         playRecordBtn.addEventListener('click', () => {
             if (recordedAudioUrl) {
                 const audio = new Audio(recordedAudioUrl);
+                audio.playbackRate = 1.0; // 自分の声の再生は100%（等倍）に設定
                 playRecordBtn.disabled = true;
                 playRecordBtn.textContent = '▶️ 再生中...';
                 audio.play();
