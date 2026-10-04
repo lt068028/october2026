@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.2;
+            line-height: 2.5; /* 離れた位置の線が切れないよう行間を広げる */
             color: #0f172a;
         }
         
@@ -43,25 +43,21 @@
             text-decoration-thickness: 1px;
         }
 
-        /* 方法A（1行目用）: Unicode結合文字による上線（で̅ や る゙̅ 等）はテキストデータ自体に含まれるためCSS不要だが、色を青にするため専用クラスを用意 */
-        .combining-high {
-            color: #2563eb; /* 結合文字自体の色制御用（環境により挙動が異なります） */
-        }
-        /* ベースの文字色は黒を維持しつつ結合文字に色を適用する場合のスタイル調整 */
-        .char-base {
+        /* 1行目: box-shadow の Yオフセット -2px */
+        .shadow-high-1 {
+            box-shadow: 0 -2px 0 0 #2563eb;
             color: #0f172a;
         }
 
-        /* 方法B（2行目用）: box-shadowによる上線描画 */
-        .box-shadow-high {
-            box-shadow: 0 -1px 0 #2563eb;
+        /* 2行目: box-shadow の Yオフセット -4px */
+        .shadow-high-2 {
+            box-shadow: 0 -4px 0 0 #2563eb;
             color: #0f172a;
         }
 
-        /* 方法C（3行目用）: border-topによる上線 */
-        .border-top-high {
-            border-top: 1px solid #2563eb;
-            padding-top: 0px;
+        /* 3行目: box-shadow の Yオフセット -6px */
+        .shadow-high-3 {
+            box-shadow: 0 -6px 0 0 #2563eb;
             color: #0f172a;
         }
 
@@ -82,16 +78,16 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: 3つの異なる上線手法の比較 -->
+    <!-- 臨時テストエリア: box-shadowのオフセット (-2, -4, -6) テスト -->
     <div class="temp-test-area">
-        <!-- 1行目: Unicode結合文字方式 (U+0305 オーバーラインを結合) -->
-        <div><span class="combining-high">て̅</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="combining-high">る̅</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 1行目: -2px -->
+        <div><span class="shadow-high-1">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="shadow-high-1">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
 
-        <!-- 2行目: box-shadow方式 -->
-        <div><span class="box-shadow-high">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="box-shadow-high">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 2行目: -4px -->
+        <div><span class="shadow-high-2">て</span><span class="symbol">⇘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">⇗</span><span class="shadow-high-2">る</span><span class="symbol">⇘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
 
-        <!-- 3行目: border-top方式 -->
-        <div><span class="border-top-high">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="border-top-high">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
+        <!-- 3行目: -6px -->
+        <div><span class="shadow-high-3">て</span><span class="symbol">↘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">↗</span><span class="shadow-high-3">る</span><span class="symbol">↘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
     </div>
 
     <!-- これまでに作成された元のドリルリスト表示エリア（完全に保持） -->
