@@ -16,6 +16,36 @@
             font-weight: bold;
             font-family: sans-serif;
         }
+        /* Temporary Area 用のスタイル */
+        .temporary-area {
+            background: var(--bg-panel);
+            border: 1px dashed var(--accent-color);
+            padding: 16px;
+            margin-bottom: 24px;
+            border-radius: 6px;
+            font-family: sans-serif;
+        }
+        .temporary-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .temp-sentence {
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        .temp-symbol {
+            color: #fb7185;
+            font-weight: normal !important;
+        }
+        .temp-low {
+            text-decoration: underline;
+            text-decoration-color: #fb7185;
+            text-decoration-thickness: 1px;
+            font-weight: normal !important;
+        }
     </style>
 </head>
 <body>
@@ -25,7 +55,15 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- ドリルリスト表示エリア（JSで動的生成） -->
+    <!-- Temporary Area: 画像のテキストを一時表示 -->
+    <div class="temporary-area">
+        <div class="temporary-title">Temporary Area</div>
+        <div class="temp-sentence">
+            <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
+        </div>
+    </div>
+
+    <!-- ドリルリスト表示エリア（JSで動的生成：下のコンテンツはそのまま維持） -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
     <!-- キャッシュを強制クリアするためのバージョンクエリ付きスクリプト -->
