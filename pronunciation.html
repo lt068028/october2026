@@ -30,9 +30,10 @@
             display: inline-block;
             padding-top: 10px;
         }
+        /* 文字間隔を通常のテキストと同じにする（隙間をなくす） */
         .mora-line {
             display: flex;
-            gap: 12px;
+            gap: 0;
             align-items: flex-end;
             font-size: 20px;
             font-weight: bold;
@@ -42,9 +43,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 32px;
+            /* 固定幅を廃止し、文字幅にフィットさせる */
+            padding: 0 2px;
         }
-        /* SVGを文字の真上に重ねる */
+        /* SVGを文字の真上に重ねる（幅100%で文字コンテナ全体に同期） */
         .pitch-svg {
             position: absolute;
             top: 0;
@@ -72,8 +74,8 @@
     <!-- ピッチパターンのテスト表示エリア -->
     <div class="pitch-container">
         <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">Pitch Accent Pattern (Test)</div>
-        <div class="pitch-wrapper">
-            <div class="mora-line">
+        <div class="pitch-wrapper" id="pitchWrapper">
+            <div class="mora-line" id="moraLine">
                 <div class="mora-item"><span>い</span></div>
                 <div class="mora-item"><span>い</span></div>
                 <div class="mora-item"><span>て</span></div>
@@ -84,13 +86,13 @@
                 <div class="mora-item"><span>ね</span></div>
             </div>
 
-            <!-- SVGによるステップ赤線（全体をY軸方向にわずか1px〜2px下方にシフト） -->
-            <svg class="pitch-svg" viewBox="0 0 352 50" preserveAspectRatio="none">
+            <!-- SVGによるステップ赤線（線をさらに1単位下げ、通常の文字幅に合わせたパス座標） -->
+            <svg class="pitch-svg" viewBox="0 0 200 50" preserveAspectRatio="none">
                 <path class="pitch-line-path" d="
-                    M 4,16 
-                    L 38,16 
-                    L 38,44 
-                    L 348,44
+                    M 2,18 
+                    L 26,18 
+                    L 26,46 
+                    L 198,46
                 " />
             </svg>
         </div>
