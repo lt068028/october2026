@@ -1,106 +1,84 @@
-<style>
-.pitch-step-container {
-    display: flex;
-    align-items: flex-end;
-    font-size: 24px;
-    font-family: sans-serif;
-    margin: 20px 0;
-    padding: 10px;
-}
-.mora-unit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    padding: 0 4px;
-}
-.char {
-    position: relative;
-    z-index: 2;
-    padding-top: 12px; /* 上の線との余白 */
-}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Pitch Accent Line Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 40px;
+        }
+        .accent-display-box {
+            display: inline-block;
+            background: #ffffff;
+            border: 1px solid #cccccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .accent-row {
+            position: relative;
+            display: inline-flex;
+            font-size: 24px;
+            letter-spacing: 4px;
+            padding-top: 25px; /* 上の線の描画スペース確保 */
+        }
+        /* 各文字のスタイル */
+        .char-item {
+            position: relative;
+            padding: 0 4px;
+        }
+        /* 赤いピッチラインを描画するSVGのスタイル */
+        .pitch-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .pitch-line {
+            fill: none;
+            stroke: #e11d48; /* 赤色のライン */
+            stroke-width: 2;
+            stroke-linecap: square;
+            stroke-linejoin: miter;
+        }
+    </style>
+</head>
+<body>
 
-/* 高い拍のスタイル（上に赤い横線、必要に応じて両脇に縦線） */
-.mora-unit.high .char {
-    color: #000;
-}
-.mora-unit.high::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: #e11d48;
-}
+    <div class="accent-display-box">
+        <div style="font-size: 14px; color: #64748b; margin-bottom: 8px;">SVGによるピッチライン表示テスト</div>
+        
+        <div class="accent-row">
+            <!-- 文字列 -->
+            <span class="char-item">い</span>
+            <span class="char-item">い</span>
+            <span class="char-item">て</span>
+            <span class="char-item">ん</span>
+            <span class="char-item">き</span>
+            <span class="char-item">で</span>
+            <span class="char-item">す</span>
+            <span class="char-item">ね</span>
 
-/* 低い拍のスタイル（下に赤い底線） */
-.mora-unit.low::after {
-    content: "";
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: #e11d48;
-}
+            <!-- 赤い折れ線（SVGオーバーレイ） -->
+            <!-- ※「いい」が高く、3文字目の「て」から下に落ちるパターン（頭高の例） -->
+            <svg class="pitch-svg" viewBox="0 0 280 50" preserveAspectRatio="none">
+                <!-- 
+                  座標の仕組み: 
+                  - 高い位置のY軸: 5
+                  - 低い位置のY軸: 35
+                  - 下がり目の垂直線を入れることでカクッとしたステップを表現
+                -->
+                <path class="pitch-line" d="
+                    M 5,5 
+                    L 55,5 
+                    L 55,35 
+                    L 275,35
+                " />
+            </svg>
+        </div>
+    </div>
 
-/* 下がり目の縦線（降下） */
-.mora-unit.drop::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 2px;
-    height: 24px;
-    background-color: #e11d48;
-    z-index: 1;
-}
-
-/* 上がり目の縦線（上昇） */
-.mora-unit.rise::before {
-    content: "";
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 2px;
-    height: 24px;
-    background-color: #e11d48;
-    z-index: 1;
-}
-</style>
-
-<div class="pitch-step-container">
-    <!-- い (High) -->
-    <div class="mora-unit high">
-        <span class="char">い</span>
-    </div>
-    <!-- い (High から Lowへ下がる境界) -->
-    <div class="mora-unit high drop">
-        <span class="char">い</span>
-    </div>
-    <!-- て (Low) -->
-    <div class="mora-unit low">
-        <span class="char">て</span>
-    </div>
-    <!-- ん (Low) -->
-    <div class="mora-unit low">
-        <span class="char">ん</span>
-    </div>
-    <!-- き (Low) -->
-    <div class="mora-unit low">
-        <span class="char">き</span>
-    </div>
-    <!-- で (Low) -->
-    <div class="mora-unit low">
-        <span class="char">で</span>
-    </div>
-    <!-- す (Low) -->
-    <div class="mora-unit low">
-        <span class="char">す</span>
-    </div>
-    <!-- ね (Low) -->
-    <div class="mora-unit low">
-        <span class="char">ね</span>
-    </div>
-</div>
+</body>
+</html>
