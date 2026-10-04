@@ -57,11 +57,33 @@ const modelSentences = [
 
 let isManualStop = false;
 
-// Task1等と同様のひらがな変換ユーティリティ
+// ひらがな変換ユーティリティ（カタカナ変換および主要な漢字・表現の置換）
 function convertToHiragana(text) {
-    return text.replace(/[\u30a1-\u30f6]/g, match => {
+    if (!text) return "";
+    let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+    
+    // カタカナをひらがなに変換
+    cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
         return String.fromCharCode(match.charCodeAt(0) - 0x60);
     });
+
+    const dict = {
+        "天気": "てんき",
+        "時間": "じかん",
+        "仕事": "しごと",
+        "欲しい": "ほしい",
+        "先生": "せんせい",
+        "学校": "がっこう",
+        "です": "です",
+        "でした": "でした"
+    };
+
+    for (let key in dict) {
+        const regex = new RegExp(key, "g");
+        cleaned = cleaned.replace(regex, dict[key]);
+    }
+
+    return cleaned;
 }
 
 const styleElement = document.createElement('style');
@@ -139,10 +161,14 @@ styleElement.textContent = `
         color: var(--text-secondary);
     }
     .sentence-label {
-        font-weight: bold;
+        font-weight: normal !important;
+        font-style: normal !important;
         min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
+    }
+    .sentence-label span {
+        font-weight: normal !important;
     }
     button {
         padding: 6px 12px;
@@ -160,14 +186,17 @@ styleElement.textContent = `
         font-size: 15px;
         color: var(--text-primary);
         flex-grow: 1;
+        font-weight: normal !important;
     }
     .pitch-symbol {
         color: #2563eb;
+        font-weight: normal !important;
     }
     .low-pitch {
         text-decoration: underline;
         text-decoration-color: #2563eb;
         text-decoration-thickness: 1px;
+        font-weight: normal !important;
     }
     .meaning-container {
         position: relative;
@@ -200,6 +229,7 @@ styleElement.textContent = `
         font-size: 14px;
         color: var(--text-primary);
         z-index: 10;
+        font-weight: normal !important;
     }
     .meaning-popup.show {
         display: block;
@@ -297,7 +327,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.7; // スピードを70%（0.7）に設定
+                utterance.rate = 0.7; // スピード70%
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -319,7 +349,6 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 🌐アイコンのみのボタン（4番目の色 #e0f2fe に統一）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
@@ -369,12 +398,11 @@ function initDrill() {
                     recognition.continuous = isManualStop;
 
                     recognition.onresult = (e) => {
-                        let transcript = "";
+                        let rawTranscript = "";
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
-                            transcript += e.results[i][0].transcript;
+                            rawTranscript += e.results[i][0].transcript;
                         }
-                        // ひらがな変換ユーティリティを適用
-                        const hiraganaTranscript = convertToHiragana(transcript);
+                        const hiraganaTranscript = convertToHiragana(rawTranscript);
                         resultSpan.textContent = hiraganaTranscript;
                         resultSpan.style.color = 'var(--text-primary)';
                     };
