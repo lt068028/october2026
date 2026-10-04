@@ -50,7 +50,6 @@
             text-decoration-thickness: 1px;
             font-weight: normal !important;
         }
-        /* 高ピッチ部分に上線を適用するスタイル */
         .temp-high {
             text-decoration: overline;
             text-decoration-color: #fb7185;
@@ -61,7 +60,7 @@
 </head>
 <body>
     <div class="back-link-container">
-        <a href="index.html" class="back-link">↩️もどる</a>
+        <a href="index.html" class="back-link">↩️️もどる</a>
     </div>
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
@@ -70,36 +69,30 @@
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Comparison)</div>
         
-        <!-- パターン1：上線・下線併用 -->
         <div class="temp-sentence">
             <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン2：標準（下線のみ） -->
         <div class="temp-sentence">
             <span>て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
         </div>
 
-        <!-- パターン3：全体に下線を引いたパターンなど（試食用3） -->
         <div class="temp-sentence">
             <span class="temp-low">て↘んきが｜い↘いです</span>
         </div>
 
-        <!-- パターン4：記号のみカラー（試食用4） -->
         <div class="temp-sentence">
             <span>て</span><span class="temp-symbol">↘</span><span>んきが</span><span class="temp-symbol">｜</span><span>い</span><span class="temp-symbol">↘</span><span>いです</span>
         </div>
 
-        <!-- パターン5：カスタム試用パターン5 -->
         <div class="temp-sentence">
             <span class="temp-high">て↘んきが｜い↘いです</span>
         </div>
     </div>
 
-    <!-- ドリルリスト表示エリア（下のコンテンツはそのまま維持） -->
+    <!-- ドリルリスト表示エリア -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
-    <!-- キャッシュを強制クリアするためのバージョンクエリ付きスクリプト -->
     <script src="pronunciation.js?v=20261004"></script>
 </body>
 </html>
