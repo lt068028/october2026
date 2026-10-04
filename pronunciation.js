@@ -5,10 +5,9 @@ const modelSentences = [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
             { text: "い", low: false }, { type: "symbol", val: "↘" },
-            { text: "です", low: true }
+            { text: "いです", low: true }
         ],
-        meaning: "The weather is fine.",
-        btnColor: "#dbeafe" // 1. ベリーライト・ブルー（非常に淡い青）
+        meaning: "The weather is fine."
     },
     {
         // 2. じ↗かんが｜な↘いです
@@ -18,8 +17,7 @@ const modelSentences = [
             { text: "な", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "I don't have time.",
-        btnColor: "#bfdbfe" // 2. ライト・スカイブルー（柔らかい薄い青）
+        meaning: "I don't have time."
     },
     {
         // 3. し↗ごとが｜ほ↗し↘いです
@@ -30,8 +28,7 @@ const modelSentences = [
             { text: "し", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "I want a job.",
-        btnColor: "#93c5fd" // 3. パステルブルー（明るめの青）
+        meaning: "I want a job."
     },
     {
         // 4. せ↗んせ↘いは｜お↗もしろ↘いです
@@ -43,8 +40,7 @@ const modelSentences = [
             { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "The teacher is interesting.",
-        btnColor: "#e0f2fe" // 4. アイスブルー（白に近い極めて淡いシアン系の青）
+        meaning: "The teacher is interesting."
     },
     {
         // 5. が↗っこうは｜た↗のし↘いです
@@ -55,12 +51,18 @@ const modelSentences = [
             { text: "のし", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
-        meaning: "School is fun.",
-        btnColor: "#bae6fd" // 5. ライト・シアンブルー（爽やかな薄い水色系）
+        meaning: "School is fun."
     }
 ];
 
 let isManualStop = false;
+
+// Task1等と同様のひらがな変換ユーティリティ
+function convertToHiragana(text) {
+    return text.replace(/[\u30a1-\u30f6]/g, match => {
+        return String.fromCharCode(match.charCodeAt(0) - 0x60);
+    });
+}
 
 const styleElement = document.createElement('style');
 styleElement.textContent = `
@@ -178,6 +180,7 @@ styleElement.textContent = `
         font-size: 16px;
         cursor: pointer;
         line-height: 1;
+        background-color: #e0f2fe; /* 4番目の薄い青色に統一 */
     }
     .meaning-btn:hover {
         opacity: 0.8;
@@ -294,7 +297,7 @@ function initDrill() {
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
-                utterance.rate = 0.8;
+                utterance.rate = 0.7; // スピードを70%（0.7）に設定
                 speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
@@ -316,14 +319,13 @@ function initDrill() {
         resultSpan.textContent = '(Not recorded yet)';
         resultSpan.style.color = 'var(--text-secondary)';
 
-        // 🌐アイコンのみのボタン＆薄い青色の比較設定
+        // 🌐アイコンのみのボタン（4番目の色 #e0f2fe に統一）
         const meaningContainer = document.createElement('div');
         meaningContainer.className = 'meaning-container';
 
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
         meaningBtn.textContent = '🌐';
-        meaningBtn.style.backgroundColor = itemObj.btnColor;
 
         const meaningPopup = document.createElement('div');
         meaningPopup.className = 'meaning-popup';
@@ -371,7 +373,9 @@ function initDrill() {
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
                             transcript += e.results[i][0].transcript;
                         }
-                        resultSpan.textContent = transcript;
+                        // ひらがな変換ユーティリティを適用
+                        const hiraganaTranscript = convertToHiragana(transcript);
+                        resultSpan.textContent = hiraganaTranscript;
                         resultSpan.style.color = 'var(--text-primary)';
                     };
 
