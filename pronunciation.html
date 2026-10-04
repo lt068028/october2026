@@ -27,7 +27,7 @@
             font-size: 20px;
             font-weight: bold;
             font-family: sans-serif;
-            line-height: 2.5; /* 離れた位置の線が切れないよう行間を広げる */
+            line-height: 2.8; /* 上に離れた線が上の行に干渉しないよう行間を確保 */
             color: #0f172a;
         }
         
@@ -43,19 +43,19 @@
             text-decoration-thickness: 1px;
         }
 
-        /* 1行目: box-shadow の Yオフセット -2px */
+        /* 1行目: Yオフセット -2px（太さは変えず位置のみ上に2px） */
         .shadow-high-1 {
             box-shadow: 0 -2px 0 0 #2563eb;
             color: #0f172a;
         }
 
-        /* 2行目: box-shadow の Yオフセット -4px */
+        /* 2行目: Yオフセット -4px（太さは変えず位置のみ上に4px） */
         .shadow-high-2 {
             box-shadow: 0 -4px 0 0 #2563eb;
             color: #0f172a;
         }
 
-        /* 3行目: box-shadow の Yオフセット -6px */
+        /* 3行目: Yオフセット -6px（太さは変えず位置のみ上に6px） */
         .shadow-high-3 {
             box-shadow: 0 -6px 0 0 #2563eb;
             color: #0f172a;
@@ -78,7 +78,7 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- 臨時テストエリア: box-shadowのオフセット (-2, -4, -6) テスト -->
+    <!-- 臨時テストエリア: box-shadowの縦位置調整 (-2px, -4px, -6px) -->
     <div class="temp-test-area">
         <!-- 1行目: -2px -->
         <div><span class="shadow-high-1">て</span><span class="symbol">➘</span><span class="low-pitch">んきが</span><span class="symbol">｜</span><span class="low-pitch">わ</span><span class="symbol">➚</span><span class="shadow-high-1">る</span><span class="symbol">➘</span><span class="low-pitch">くないですか</span><span class="symbol">⤴</span></div>
