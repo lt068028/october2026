@@ -38,7 +38,7 @@ let hintMode = "hover";
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
-    
+
     const dict = {
         "私": "わたし",
         "学生": "がくせい",
@@ -104,11 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupFooterGuide() {
     const trigger = document.getElementById('guideTrigger');
     const box = document.getElementById('guideBox');
+
     if (trigger && box) {
         trigger.addEventListener('click', (e) => {
             e.stopPropagation();
             box.style.display = (box.style.display === 'none' ? 'block' : 'none');
         });
+
         document.addEventListener('click', () => {
             box.style.display = 'none';
         });
@@ -117,6 +119,7 @@ function setupFooterGuide() {
 
 function formatWord(word, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
+
     if (hintMode === 'paren') {
         return `<span class="target-word">${word}</span> (${hintStr})`;
     } else {
@@ -132,6 +135,7 @@ function formatCustomWord(hira, engKey) {
 
 function initApp() {
     const exampleSection = document.getElementById('exampleSection');
+
     if (exampleSection) {
         const ex1X = formatWord("わたし", "watashi", "I");
         const ex1Y = formatWord("がくせい", "gakusei", "student");
@@ -142,12 +146,12 @@ function initApp() {
 
         exampleSection.innerHTML = `
             <div class="example-row">
-                <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y} 
+                <strong>Affirmative:</strong> ${ex1X} ／ ${ex1Y}
                 <button id="ex1Listen" class="example-button">🔊 きく</button>
                 <span class="example-desc">わたしは、がくせいです。(I am a student)</span>
             </div>
             <div class="example-row">
-                <strong>Negative:</strong> ${ex2X} ／ ${ex2Y} 
+                <strong>Negative:</strong> ${ex2X} ／ ${ex2Y}
                 <button id="ex2Listen" class="example-button">🔊 きく</button>
                 <span class="example-desc">わたしは、せんせいじゃないです。(I am not a teacher)</span>
             </div>
@@ -159,6 +163,7 @@ function initApp() {
 
     const container = document.getElementById('task1List');
     if (!container) return;
+
     container.innerHTML = "";
 
     const headerPanel = document.createElement('div');
@@ -191,11 +196,14 @@ function initApp() {
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
+
     const switchInput = document.createElement('input');
     switchInput.type = 'checkbox';
     switchInput.checked = isManualStop;
+
     const slider = document.createElement('span');
     slider.className = 'slider';
+
     switchLabel.appendChild(switchInput);
     switchLabel.appendChild(slider);
 
@@ -206,8 +214,10 @@ function initApp() {
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
+
         const autoEl = document.getElementById('labelAuto');
         const manualEl = document.getElementById('labelManual');
+
         if (isManualStop) {
             manualEl.className = 'mode-label active-mode custom-tip-wrap';
             autoEl.className = 'mode-label inactive-mode custom-tip-wrap';
@@ -232,11 +242,14 @@ function initApp() {
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
+
     const vocabSwitchInput = document.createElement('input');
     vocabSwitchInput.type = 'checkbox';
     vocabSwitchInput.checked = (hintMode === 'paren');
+
     const vocabSlider = document.createElement('span');
     vocabSlider.className = 'slider';
+
     vocabSwitchLabel.appendChild(vocabSwitchInput);
     vocabSwitchLabel.appendChild(vocabSlider);
 
@@ -247,8 +260,10 @@ function initApp() {
 
     vocabSwitchInput.addEventListener('change', (e) => {
         hintMode = e.target.checked ? 'paren' : 'hover';
+
         const hoverEl = document.getElementById('labelHover');
         const parenEl = document.getElementById('labelParen');
+
         if (hintMode === 'paren') {
             parenEl.className = 'mode-label active-mode custom-tip-wrap';
             hoverEl.className = 'mode-label inactive-mode custom-tip-wrap';
@@ -256,6 +271,7 @@ function initApp() {
             hoverEl.className = 'mode-label active-mode custom-tip-wrap';
             parenEl.className = 'mode-label inactive-mode custom-tip-wrap';
         }
+
         updateWordsDisplay();
     });
 
@@ -276,7 +292,15 @@ function initApp() {
         const formattedX = formatWord(currentXWord, currentXRomaji, currentXMeaning);
         const formattedY = formatWord(item.y, item.yRomaji, item.yMeaning);
 
-        createDrillRow(container, `${index + 1}.`, formattedX, formattedY, currentXWord, item.y, item.isNeg);
+        createDrillRow(
+            container,
+            `${index + 1}.`,
+            formattedX,
+            formattedY,
+            currentXWord,
+            item.y,
+            item.isNeg
+        );
     });
 
     const customHeaderPanel = document.createElement('div');
@@ -339,6 +363,8 @@ function initApp() {
         const listenBtn = document.createElement('button');
         listenBtn.className = 'example-button custom-tip-wrap';
         listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+
+        // Task 2: 初期状態はdisabled
         listenBtn.disabled = true;
 
         const indexSpan = document.createElement('span');
@@ -369,11 +395,15 @@ function initApp() {
         const recordBtn = document.createElement('button');
         recordBtn.className = 'example-button custom-tip-wrap';
         recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+
+        // Task 2: 初期状態はdisabled
         recordBtn.disabled = true;
 
         const stopBtn = document.createElement('button');
         stopBtn.className = 'example-button custom-tip-wrap';
         stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+
+        // Task 2: 初期状態はdisabled
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement('span');
@@ -394,14 +424,14 @@ function initApp() {
 
         const correctionBox = document.createElement('div');
         correctionBox.className = 'correction-box';
-        
+
         const corrListenBtn = document.createElement('button');
         corrListenBtn.className = 'example-button';
         corrListenBtn.textContent = '🔊 きく';
         corrListenBtn.style.marginRight = '8px';
 
         const corrTextSpan = document.createElement('span');
-        
+
         correctionBox.appendChild(corrListenBtn);
         correctionBox.appendChild(corrTextSpan);
 
@@ -437,17 +467,27 @@ function initApp() {
                 labelHa.style.display = 'inline';
             }
 
+            // Task 2:
+            // X・Y両方選択 → ⏺️とる / 🔊きく をUnlock
             if (valX && valY) {
                 recordBtn.disabled = false;
                 listenBtn.disabled = false;
+
                 listenBtn.onclick = () => {
-                    const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
+                    const textToSpeak = isCustomNeg
+                        ? `${valX}は、${valY}じゃないです。`
+                        : `${valX}は、${valY}です。`;
+
                     playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
                 };
             } else {
+                // X・Yのどちらかが未選択なら再びdisabled
                 recordBtn.disabled = true;
                 listenBtn.disabled = true;
+
+                // ⏹️は録音中以外は常にdisabled
                 stopBtn.disabled = true;
+                stopBtn.classList.remove('stop-btn-active');
             }
         };
 
@@ -457,9 +497,22 @@ function initApp() {
         const getXValue = () => selectX.value || "ともだち";
         const getYValue = () => selectY.value || "いしゃ";
 
-        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue, isCustomNeg);
+        bindRecorderEvents(
+            recordBtn,
+            stopBtn,
+            resultSpan,
+            correctionBox,
+            corrListenBtn,
+            corrTextSpan,
+            getXValue,
+            getYValue,
+            isCustomNeg
+        );
 
         container.appendChild(rowDiv);
+
+        // 初期状態を明示的に適用
+        updateDisplay();
     }
 }
 
@@ -467,20 +520,22 @@ function setupTask3Generator() {
     const generateBtn = document.getElementById('task3GenerateBtn');
     const container = document.getElementById('task3List');
     const textarea = document.getElementById('task3Textarea');
+
     if (!generateBtn || !container || !textarea) return;
 
     generateBtn.addEventListener('click', () => {
         const text = textarea.value.trim();
+
         if (!text) {
             alert("Please paste your vocabulary list or text.");
             return;
         }
 
         container.innerHTML = "";
-        
+
         // 簡易パース：改行区切りで語句を抽出し、XとYのペアを自動判定して生成する
         const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        
+
         let samplePairs = [
             { x: "わたし", y: "がくせい", isNeg: false },
             { x: "ともだち", y: "せんせい", isNeg: true },
@@ -489,15 +544,26 @@ function setupTask3Generator() {
 
         samplePairs.forEach((pair, idx) => {
             const rowNum = taskData.length + 3 + (idx + 1);
-            createDrillRow(container, `${rowNum}.`, formatWord(pair.x, "watashi", "I"), formatWord(pair.y, "noun", "noun"), pair.x, pair.y, pair.isNeg);
+
+            createDrillRow(
+                container,
+                `${rowNum}.`,
+                formatWord(pair.x, "watashi", "I"),
+                formatWord(pair.y, "noun", "noun"),
+                pair.x,
+                pair.y,
+                pair.isNeg
+            );
         });
     });
 }
 
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll('.drill-row');
+
     drillRows.forEach(row => {
         const customIdx = row.getAttribute('data-custom-index');
+
         if (customIdx) {
             const selectX = document.getElementById(`customX_${customIdx}`);
             const selectY = document.getElementById(`customY_${customIdx}`);
@@ -506,14 +572,22 @@ function updateWordsDisplay() {
 
             if (selectX && selectX.value && selectX.selectedIndex >= 0) {
                 const optX = selectX.options[selectX.selectedIndex];
-                previewX.innerHTML = formatCustomWord(selectX.value, optX.getAttribute('data-eng'));
+                previewX.innerHTML = formatCustomWord(
+                    selectX.value,
+                    optX.getAttribute('data-eng')
+                );
             }
+
             if (selectY && selectY.value && selectY.selectedIndex >= 0) {
                 const optY = selectY.options[selectY.selectedIndex];
-                previewY.innerHTML = formatCustomWord(selectY.value, optY.getAttribute('data-eng'));
+                previewY.innerHTML = formatCustomWord(
+                    selectY.value,
+                    optY.getAttribute('data-eng')
+                );
             }
         } else {
             const promptSpan = row.querySelector('.prompt-content');
+
             if (promptSpan && promptSpan.dataset.xWord && promptSpan.dataset.yWord) {
                 const xW = promptSpan.dataset.xWord;
                 const xR = promptSpan.dataset.xRomaji;
@@ -521,13 +595,23 @@ function updateWordsDisplay() {
                 const yW = promptSpan.dataset.yWord;
                 const yR = promptSpan.dataset.yRomaji;
                 const yM = promptSpan.dataset.yMeaning;
-                promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
+
+                promptSpan.innerHTML =
+                    `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
             }
         }
     });
 }
 
-function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetY, isNeg) {
+function createDrillRow(
+    container,
+    indexLabel,
+    formattedX,
+    formattedY,
+    targetX,
+    targetY,
+    isNeg
+) {
     const rowDiv = document.createElement('div');
     rowDiv.className = 'drill-row';
 
@@ -537,9 +621,15 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     const listenBtn = document.createElement('button');
     listenBtn.className = 'example-button custom-tip-wrap';
     listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+
+    // Task 1: 🔊きく は従来どおり使用可能
     listenBtn.disabled = false;
+
     listenBtn.onclick = () => {
-        const textToSpeak = isNeg ? `${targetX}は、${targetY}じゃないです。` : `${targetX}は、${targetY}です。`;
+        const textToSpeak = isNeg
+            ? `${targetX}は、${targetY}じゃないです。`
+            : `${targetX}は、${targetY}です。`;
+
         playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
     };
 
@@ -548,14 +638,22 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     const promptSpan = document.createElement('span');
     promptSpan.className = 'prompt-label prompt-content';
+
     promptSpan.dataset.xWord = targetX;
-    promptSpan.dataset.xRomaji = (targetX === "わたし" ? "watashi" : "tomodachi");
-    promptSpan.dataset.xMeaning = (targetX === "わたし" ? "I" : "friend");
+    promptSpan.dataset.xRomaji =
+        (targetX === "わたし" ? "watashi" : "tomodachi");
+    promptSpan.dataset.xMeaning =
+        (targetX === "わたし" ? "I" : "friend");
+
     promptSpan.dataset.yWord = targetY;
-    
+
     const foundData = taskData.find(d => d.y === targetY);
-    promptSpan.dataset.yRomaji = foundData ? foundData.yRomaji : "noun";
-    promptSpan.dataset.yMeaning = foundData ? foundData.yMeaning : "noun";
+
+    promptSpan.dataset.yRomaji =
+        foundData ? foundData.yRomaji : "noun";
+
+    promptSpan.dataset.yMeaning =
+        foundData ? foundData.yMeaning : "noun";
 
     promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
 
@@ -563,10 +661,15 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     recordBtn.className = 'example-button custom-tip-wrap';
     recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
+    // Task 1: ⏺️とる は従来どおり使用可能
+    recordBtn.disabled = false;
+
     const stopBtn = document.createElement('button');
     stopBtn.className = 'example-button custom-tip-wrap';
     stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    stopBtn.disabled = true; // 録音中以外は常時グレーアウト
+
+    // Task 1: ⏹️は初期状態でdisabled
+    stopBtn.disabled = true;
 
     const resultSpan = document.createElement('span');
     resultSpan.className = 'result-text';
@@ -582,21 +685,31 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     const correctionBox = document.createElement('div');
     correctionBox.className = 'correction-box';
-    
+
     const corrListenBtn = document.createElement('button');
     corrListenBtn.className = 'example-button';
     corrListenBtn.textContent = '🔊 きく';
     corrListenBtn.style.marginRight = '8px';
 
     const corrTextSpan = document.createElement('span');
-    
+
     correctionBox.appendChild(corrListenBtn);
     correctionBox.appendChild(corrTextSpan);
 
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
-    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => targetX, () => targetY, isNeg);
+    bindRecorderEvents(
+        recordBtn,
+        stopBtn,
+        resultSpan,
+        correctionBox,
+        corrListenBtn,
+        corrTextSpan,
+        () => targetX,
+        () => targetY,
+        isNeg
+    );
 
     container.appendChild(rowDiv);
 }
@@ -604,13 +717,24 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 function playSyntheticAudio(text, btnElement, originalText) {
     btnElement.disabled = true;
     btnElement.textContent = '🔊Playing...';
+
     speakText(text, () => {
         btnElement.disabled = false;
         btnElement.textContent = originalText;
     });
 }
 
-function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXFn, getYFn, expectedIsNeg = false) {
+function bindRecorderEvents(
+    recordBtn,
+    stopBtn,
+    resultSpan,
+    correctionBox,
+    corrListenBtn,
+    corrTextSpan,
+    getXFn,
+    getYFn,
+    expectedIsNeg = false
+) {
     let mediaRecorder;
     let audioChunks = [];
     let audioStream = null;
@@ -624,21 +748,28 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             clearTimeout(timeoutTimer);
             timeoutTimer = null;
         }
+
         if (recognition) {
-            try { recognition.stop(); } catch(e){}
+            try {
+                recognition.stop();
+            } catch (e) {}
         }
+
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
         }
+
         if (audioStream) {
             audioStream.getTracks().forEach(track => track.stop());
         }
 
+        // 録音終了後、⏺️とるを再び使用可能にする
         recordBtn.disabled = false;
         recordBtn.classList.remove('stop-btn-active');
         recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
-        stopBtn.disabled = true; // 確実にグレーアウトに戻す
+        // ⏹️は必ずdisabledへ戻す
+        stopBtn.disabled = true;
         stopBtn.classList.remove('stop-btn-active');
     };
 
@@ -647,32 +778,59 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             URL.revokeObjectURL(recordedAudioUrl);
             recordedAudioUrl = null;
         }
+
         const oldPlayBtn = resultSpan.querySelector('.play-recording-btn');
-        if (oldPlayBtn) oldPlayBtn.remove();
+
+        if (oldPlayBtn) {
+            oldPlayBtn.remove();
+        }
 
         const currentX = getXFn();
         const currentY = getYFn();
+
         accumulatedTranscript = "";
 
         try {
             audioChunks = [];
-            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            audioStream = await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+
             mediaRecorder = new MediaRecorder(audioStream);
 
-            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-            
+            mediaRecorder.ondataavailable = (e) => {
+                audioChunks.push(e.data);
+            };
+
             mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const audioBlob = new Blob(audioChunks, {
+                    type: 'audio/webm'
+                });
+
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
 
                 if (accumulatedTranscript) {
-                    processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
+                    processRecognitionResult(
+                        accumulatedTranscript,
+                        currentX,
+                        currentY,
+                        expectedIsNeg,
+                        resultSpan,
+                        correctionBox,
+                        corrListenBtn,
+                        corrTextSpan,
+                        () => recordedAudioUrl
+                    );
                 }
             };
 
             mediaRecorder.start();
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const SpeechRecognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
             if (SpeechRecognition) {
                 recognition = new SpeechRecognition();
                 recognition.lang = 'ja-JP';
@@ -681,11 +839,18 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
                 recognition.onresult = (e) => {
                     let rawTranscript = "";
-                    for (let i = e.resultIndex; i < e.results.length; ++i) {
+
+                    for (
+                        let i = e.resultIndex;
+                        i < e.results.length;
+                        ++i
+                    ) {
                         rawTranscript += e.results[i][0].transcript;
                     }
+
                     accumulatedTranscript += rawTranscript;
 
+                    // AutoStop時は音声認識結果が出た時点で停止
                     if (!isManualStop) {
                         stopRecordingProcess();
                     }
@@ -703,23 +868,37 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             }, 15000);
 
             if (isManualStop) {
+                // ManualStop:
+                // ⏺️とるをdisabled
+                // ⏹️を赤色＋Unlock
                 recordBtn.disabled = true;
-                stopBtn.disabled = false; // Manual時のみ有効化
+                stopBtn.disabled = false;
                 stopBtn.classList.add('stop-btn-active');
+
                 resultSpan.textContent = 'Recording (Max 15s)...';
                 resultSpan.style.color = 'var(--accent-color)';
             } else {
+                // AutoStop:
+                // ⏺️とるをdisabled
+                // ⏹️は常にdisabled
                 recordBtn.disabled = true;
-                stopBtn.disabled = true; // Auto時は常に非活性
+                stopBtn.disabled = true;
+                stopBtn.classList.remove('stop-btn-active');
+
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
+
             correctionBox.style.display = 'none';
 
         } catch (err) {
             console.error("Mic error:", err);
             resultSpan.textContent = 'Mic error';
             resultSpan.style.color = 'var(--error-text)';
+
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            stopBtn.classList.remove('stop-btn-active');
         }
     });
 
@@ -728,7 +907,17 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
     });
 }
 
-function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn) {
+function processRecognitionResult(
+    rawTranscript,
+    currentX,
+    currentY,
+    expectedIsNeg,
+    resultSpan,
+    correctionBox,
+    corrListenBtn,
+    corrTextSpan,
+    getUrlFn
+) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
         resultSpan.style.color = 'var(--text-secondary)';
@@ -740,31 +929,58 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
     const hiraY = convertToHiragana(currentY);
 
     const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
-    
-    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+
+    const affRegex = new RegExp(
+        `^${hiraX}は${hiraY}です` + endParticleRegex
+    );
+
     const isAffirmative = affRegex.test(hiraText);
 
-    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
-    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
-    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
-    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
-    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+    const negRegex1 = new RegExp(
+        `^${hiraX}は${hiraY}じゃないです` + endParticleRegex
+    );
+
+    const negRegex2 = new RegExp(
+        `^${hiraX}は${hiraY}ではないです` + endParticleRegex
+    );
+
+    const negRegex3 = new RegExp(
+        `^${hiraX}は${hiraY}じゃありません` + endParticleRegex
+    );
+
+    const negRegex4 = new RegExp(
+        `^${hiraX}は${hiraY}ではありません` + endParticleRegex
+    );
+
+    const isNegative =
+        negRegex1.test(hiraText) ||
+        negRegex2.test(hiraText) ||
+        negRegex3.test(hiraText) ||
+        negRegex4.test(hiraText);
 
     const recordedAudioUrl = getUrlFn();
 
     const appendPlayButton = () => {
         if (recordedAudioUrl) {
-            let playBtn = resultSpan.querySelector('.play-recording-btn');
+            let playBtn =
+                resultSpan.querySelector('.play-recording-btn');
+
             if (!playBtn) {
                 playBtn = document.createElement('button');
-                playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
+                playBtn.className =
+                    'example-button play-recording-btn custom-tip-wrap';
+
                 playBtn.style.marginLeft = '8px';
-                playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
+
+                playBtn.innerHTML =
+                    '▶<span class="custom-tip-box">Play the recorded audio</span>';
+
                 playBtn.onclick = () => {
                     const audio = new Audio(recordedAudioUrl);
                     audio.playbackRate = 1.0;
                     audio.play();
                 };
+
                 resultSpan.appendChild(playBtn);
             }
         }
@@ -773,33 +989,52 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
     if (isAffirmative || isNegative) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = 'var(--text-primary)';
+
         appendPlayButton();
+
         correctionBox.style.display = 'none';
+
     } else {
         const hasCorrectY = hiraText.includes(hiraY);
 
         if (!hasCorrectY) {
             let highlightedText = hiraText;
-            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
-            
+
+            highlightedText = highlightedText.replace(
+                new RegExp(
+                    `(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`,
+                    'g'
+                ),
+                `$1<span style="color: var(--accent-color);">$2</span>$3`
+            );
+
             resultSpan.innerHTML = highlightedText + " ";
             resultSpan.style.color = 'var(--text-primary)';
+
             appendPlayButton();
 
             corrTextSpan.textContent = `Wrong word used.`;
             corrListenBtn.style.display = 'none';
+
         } else {
             resultSpan.textContent = hiraText + " ";
             resultSpan.style.color = 'var(--error-text)';
+
             appendPlayButton();
 
-            corrTextSpan.textContent = `Structure error, try it again`;
+            corrTextSpan.textContent =
+                `Structure error, try it again`;
+
             corrListenBtn.style.display = 'inline-block';
 
-            const correctSentence = expectedIsNeg ? `${currentX}は、${currentY}じゃないです。` : `${currentX}は、${currentY}です。`;
+            const correctSentence = expectedIsNeg
+                ? `${currentX}は、${currentY}じゃないです。`
+                : `${currentX}は、${currentY}です。`;
+
             corrListenBtn.onclick = () => {
                 corrListenBtn.disabled = true;
                 corrListenBtn.textContent = '🔊 Playing...';
+
                 speakText(correctSentence, () => {
                     corrListenBtn.disabled = false;
                     corrListenBtn.textContent = '🔊 きく';
@@ -813,10 +1048,12 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
 
 function setupExampleListen(btnId, text) {
     const btn = document.getElementById(btnId);
+
     if (btn) {
         btn.addEventListener('click', () => {
             btn.disabled = true;
             btn.textContent = '🔊 Playing...';
+
             speakText(text, () => {
                 btn.disabled = false;
                 btn.textContent = '🔊 きく';
