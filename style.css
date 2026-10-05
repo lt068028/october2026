@@ -64,6 +64,11 @@ h1, h2, h3, p, a, li {
     color: var(--text-primary);
 }
 
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
 a {
     color: var(--accent-color);
 }
@@ -289,7 +294,7 @@ input:checked + .slider:before {
     margin-left: 10px;
 }
 
-/* Tooltip Styles */
+/* Tooltip Styles (単語用) */
 .tooltip-wrap {
     position: relative;
     display: inline-block;
@@ -316,6 +321,36 @@ input:checked + .slider:before {
 }
 
 .tooltip-wrap:hover .tooltip-tip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Custom Tooltip Styles (モード切替用) */
+.custom-tip-wrap {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+
+.custom-tip-box {
+    visibility: hidden;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.custom-tip-wrap:hover .custom-tip-box {
     visibility: visible;
     opacity: 1;
 }
