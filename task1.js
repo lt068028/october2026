@@ -86,31 +86,9 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-function getBestVoice(utterance) {
-    const voices = speechSynthesis.getVoices();
-    // Google日本語音声を最優先で選択
-    const googleVoice = voices.find(v => v.lang === 'ja-JP' && v.name.includes('Google'));
-    if (googleVoice) {
-        utterance.voice = googleVoice;
-        return;
-    }
-    const jaVoice = voices.find(v => v.lang === 'ja-JP' || v.lang === 'ja_JP');
-    if (jaVoice) {
-        utterance.voice = jaVoice;
-    }
-}
-
 function speakText(text, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ja-JP';
-    getBestVoice(utterance);
-    
-    if (speechSynthesis.getVoices().length === 0) {
-        speechSynthesis.onvoiceschanged = () => {
-            getBestVoice(utterance);
-        };
-    }
-
     utterance.onend = () => {
         if (onEndCallback) onEndCallback();
     };
@@ -119,7 +97,22 @@ function speakText(text, onEndCallback) {
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
+    setupFooterGuide();
 });
+
+function setupFooterGuide() {
+    const trigger = document.getElementById('guideTrigger');
+    const box = document.getElementById('guideBox');
+    if (trigger && box) {
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            box.style.display = (box.style.display === 'none' ? 'block' : 'none');
+        });
+        document.addEventListener('click', () => {
+            box.style.display = 'none';
+        });
+    }
+}
 
 function formatWord(word, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
@@ -451,6 +444,7 @@ function initApp() {
             } else {
                 recordBtn.disabled = true;
                 listenBtn.disabled = true;
+                stopBtn.disabled = true;
             }
         };
 
@@ -460,7 +454,7 @@ function initApp() {
         const getXValue = () => selectX.value || "ともだち";
         const getYValue = () => selectY.value || "いしゃ";
 
-        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue);
+        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue, false);
 
         container.appendChild(rowDiv);
     }
@@ -525,7 +519,6 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     promptSpan.dataset.xMeaning = (targetX === "わたし" ? "I" : "friend");
     promptSpan.dataset.yWord = targetY;
     
-    // Yのromaji/meaningをタスクデータから逆引き
     const foundData = taskData.find(d => d.y === targetY);
     promptSpan.dataset.yRomaji = foundData ? foundData.yRomaji : "noun";
     promptSpan.dataset.yMeaning = foundData ? foundData.yMeaning : "noun";
@@ -614,8 +607,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         stopBtn.disabled = true;
         stopBtn.classList.remove('stop-btn-active');
 
-        // Manualモード時は停止ボタン押下（またはタイムアウト）時に初めて判定・テキスト表示する
-        if (isManualStop && accumulatedTranscript) {
+        if (accumulatedTranscript) {
             processRecognitionResult(accumulatedTranscript, getXFn(), getYFn(), expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
         }
     };
@@ -642,7 +634,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 recognition = new SpeechRecognition();
                 recognition.lang = 'ja-JP';
                 recognition.interimResults = false;
-                recognition.continuous = true; // 途切れ防止のため常時継続
+                recognition.continuous = true;
 
                 recognition.onresult = (e) => {
                     let rawTranscript = "";
@@ -652,7 +644,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     accumulatedTranscript += rawTranscript;
 
                     if (!isManualStop) {
-                        // Autoモード時は従来通り即時判定
                         processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
                     }
                 };
@@ -661,17 +652,9 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     console.error("Speech recognition error:", err);
                 };
 
-                recognition.onend = () => {
-                    // Manualモードで意図せず終了した場合の対策
-                    if (isManualStop && mediaRecorder && mediaRecorder.state === 'recording') {
-                        // まだレコーダーが動いていればそのまま継続
-                    }
-                };
-
                 recognition.start();
             }
 
-            // 15秒タイムアウト（マイク自動停止）
             timeoutTimer = setTimeout(() => {
                 stopRecordingProcess();
             }, 15000);
@@ -736,7 +719,7 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
                 playBtn.innerHTML = '▶️<span class="custom-tip-box">Play the recorded audio</span>';
                 playBtn.onclick = () => {
                     const audio = new Audio(recordedAudioUrl);
-                    audio.playbackRate = 1.0; // 100%等速再生
+                    audio.playbackRate = 1.0;
                     audio.play();
                 };
                 resultSpan.appendChild(playBtn);
