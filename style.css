@@ -252,6 +252,21 @@ input:checked + .slider:before {
     font-weight: bold;
 }
 
+/* Voice Guide Footer */
+.voice-guide-footer {
+    margin-top: 30px;
+    text-align: right;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.voice-guide-box {
+    text-align: left;
+    white-space: normal;
+    width: 320px;
+    line-height: 1.4;
+}
+
 /* ==========================================
    Example Box Style (例文エリア専用)
    ================================---------- */
