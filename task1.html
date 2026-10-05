@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -35,24 +34,22 @@
 
         <div id="task3DropZone" class="task3-drop-zone">
 
-            <textarea
-                id="task3Textarea"
-                placeholder="Paste your vocabulary text here..."
-            ></textarea>
+            <div class="task3-input-area">
 
-            <div class="task3-or">or</div>
+                <textarea
+                    id="task3Textarea"
+                    placeholder="Type words for people, professions, and nationalities, or drop a JPG/PNG image here."
+                ></textarea>
 
-            <label class="task3-file-label">
-                <span>Choose JPG/PNG</span>
-                <input
-                    type="file"
-                    id="task3ImageInput"
-                    accept="image/png, image/jpeg"
-                >
-            </label>
+                <label class="task3-file-label">
+                    <span>Choose<br>JPG/PNG</span>
+                    <input
+                        type="file"
+                        id="task3ImageInput"
+                        accept="image/png, image/jpeg"
+                    >
+                </label>
 
-            <div class="task3-drop-hint">
-                Type words for people, professions, and nationalities, or drop a JPG/PNG image here.
             </div>
 
         </div>
@@ -72,7 +69,7 @@
         </div>
 
         <div class="task3-preview-title">
-            Usable vocabulary
+            Check usable vocabulary
         </div>
 
         <div
@@ -131,4 +128,3 @@
     <script src="task1.js"></script>
 </body>
 </html>
-```
