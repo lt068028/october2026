@@ -98,7 +98,7 @@ a {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    flex: 7.5;
+    flex: 7;
 }
 
 .control-group {
@@ -106,7 +106,7 @@ a {
     flex-direction: column;
     align-items: flex-end;
     gap: 8px;
-    flex: 2.5;
+    flex: 3;
 }
 
 .control-item {
