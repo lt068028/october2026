@@ -1,6 +1,7 @@
 /* ==========================================
    Global Theme Variables (Light Mode Default)
-   ================================---------- */
+   ========================================== */
+
 :root {
     --bg-main: #ffffff;
     --bg-panel: #f1f5f9;
@@ -9,18 +10,20 @@
     --text-primary: #333333;
     --text-secondary: #64748b;
     --accent-color: #2196F3;
+
     --button-bg: #f8f9fa;
     --button-hover: #e9ecef;
+
     --button-disabled-bg: #e2e8f0;
     --button-disabled-text: #a0aec0;
-    
+
     --tooltip-bg: #333333;
     --tooltip-text: #ffffff;
-    
+
     --error-bg: #fff1f2;
     --error-border: #fda4af;
     --error-text: #be123c;
-    
+
     --rec-active-bg: #be123c;
     --rec-active-text: #ffffff;
 }
@@ -34,18 +37,20 @@
         --text-primary: #f8fafc;
         --text-secondary: #94a3b8;
         --accent-color: #38bdf8;
+
         --button-bg: #334155;
         --button-hover: #475569;
+
         --button-disabled-bg: #1e293b;
         --button-disabled-text: #64748b;
-        
+
         --tooltip-bg: #f8fafc;
         --tooltip-text: #0f172a;
-        
+
         --error-bg: #4c0519;
         --error-border: #9f1239;
         --error-text: #fecdd3;
-        
+
         --rec-active-bg: #9f1239;
         --rec-active-text: #fecdd3;
     }
@@ -61,7 +66,12 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-h1, h2, h3, p, a, li {
+h1,
+h2,
+h3,
+p,
+a,
+li {
     color: var(--text-primary);
 }
 
@@ -174,7 +184,10 @@ a {
 .slider {
     position: absolute;
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: var(--button-disabled-bg);
     transition: .3s;
     border-radius: 20px;
@@ -213,12 +226,33 @@ input:checked + .slider:before {
     color: var(--text-secondary);
 }
 
+/* ==========================================
+   Recording Stop Button Active State
+   ========================================== */
+
 .stop-btn-active {
     background-color: var(--rec-active-bg) !important;
     color: var(--rec-active-text) !important;
     border-color: var(--rec-active-bg) !important;
     font-weight: bold;
 }
+
+/* ==========================================
+   Disabled Button
+   ここが今回の重要な修正箇所
+   ========================================== */
+
+.example-button:disabled {
+    background-color: var(--button-disabled-bg) !important;
+    color: var(--button-disabled-text) !important;
+    border-color: var(--border-color) !important;
+    cursor: not-allowed !important;
+    opacity: 1 !important;
+}
+
+/* ==========================================
+   Footer Guide
+   ========================================== */
 
 .voice-guide-footer {
     margin-top: 30px;
@@ -250,6 +284,10 @@ input:checked + .slider:before {
     white-space: nowrap;
     display: none;
 }
+
+/* ==========================================
+   Example
+   ========================================== */
 
 .example-box {
     display: flex;
@@ -307,6 +345,10 @@ input:checked + .slider:before {
     color: var(--text-secondary);
     margin-left: 10px;
 }
+
+/* ==========================================
+   Tooltips
+   ========================================== */
 
 .tooltip-wrap {
     position: relative;
