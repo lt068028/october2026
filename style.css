@@ -239,7 +239,6 @@ input:checked + .slider:before {
 
 /* ==========================================
    Disabled Button
-   ここが今回の重要な修正箇所
    ========================================== */
 
 .example-button:disabled {
@@ -247,7 +246,8 @@ input:checked + .slider:before {
     color: var(--button-disabled-text) !important;
     border-color: var(--border-color) !important;
     cursor: not-allowed !important;
-    opacity: 1 !important;
+    filter: grayscale(100%);
+    opacity: 0.55;
 }
 
 /* ==========================================
@@ -401,6 +401,11 @@ input:checked + .slider:before {
     font-size: 12px;
     opacity: 0;
     transition: opacity 0.3s;
+}
+
+.custom-tip-wrap:hover .custom-tip-box {
+    visibility: visible;
+    opacity: 0;
 }
 
 .custom-tip-wrap:hover .custom-tip-box {
