@@ -8,33 +8,68 @@
 </head>
 <body>
     <h1>Practice1；XはYです</h1>
+
     <div id="exampleSection"></div>
+
     <div id="task1List"></div>
 
     <!-- Task 3 Section -->
     <div class="header-panel" style="margin-top: 30px;">
         <div class="title-instruction-group">
-            <span><strong>Task 3；Generate Drills from your Vocab List</strong></span>
+            <span>
+                <strong>Task 3；Generate Drills from your Vocab List</strong>
+            </span>
+
             <span style="color: var(--text-primary); font-size: 15px;">
                 💡 Paste your vocabulary list or upload an image (JPG/PNG). Click 'Generate Drills' to automatically create practice rows.
             </span>
         </div>
     </div>
-    
+
     <div class="drill-row">
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <textarea id="task3Textarea" placeholder="Paste your vocabulary list or sentences here..." class="custom-select" style="width: 100%; height: 80px; resize: vertical; box-sizing: border-box;"></textarea>
+
+            <textarea
+                id="task3Textarea"
+                placeholder="Paste your vocabulary list or sentences here..."
+                class="custom-select"
+                style="width: 100%; height: 80px; resize: vertical; box-sizing: border-box;"
+            ></textarea>
+
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <input type="file" id="task3ImageInput" accept="image/png, image/jpeg" class="custom-select">
-                <button id="task3GenerateBtn" class="example-button">✨ Generate Drills</button>
+
+                <input
+                    type="file"
+                    id="task3ImageInput"
+                    accept="image/png, image/jpeg"
+                    class="custom-select"
+                >
+
+                <button
+                    id="task3GenerateBtn"
+                    class="example-button"
+                >
+                    ✨ Generate Drills
+                </button>
+
             </div>
         </div>
     </div>
+
     <div id="task3List"></div>
 
     <div class="voice-guide-footer">
-        🔊Want to change the voice? <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
-        <div id="guideBox" class="guide-box-popup" style="display: none;">
+        🔊Want to change the voice?
+
+        <span id="guideTrigger" class="guide-trigger">
+            Check⚙️
+        </span>
+
+        <div
+            id="guideBox"
+            class="guide-box-popup"
+            style="display: none;"
+        >
             Win: Settings > Time & Language > Speech<br>
             Mac/iOS: Settings > Accessibility > Spoken Content<br>
             ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
