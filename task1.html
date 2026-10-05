@@ -16,22 +16,17 @@
         <div class="title-instruction-group">
             <span><strong>Task 3；Generate Drills from your Vocab List</strong></span>
             <span style="color: var(--text-primary); font-size: 15px;">
-                💡 Type Japanese words (X and Y) and choose Affirmative or Negative to generate custom drills.
+                💡 Paste your vocabulary list or upload an image (JPG/PNG). Click 'Generate Drills' to automatically create practice rows.
             </span>
         </div>
     </div>
     
     <div class="drill-row">
         <div style="display: flex; flex-direction: column; gap: 10px;">
+            <textarea id="task3Textarea" placeholder="Paste your vocabulary list or sentences here..." class="custom-select" style="width: 100%; height: 80px; resize: vertical; box-sizing: border-box;"></textarea>
             <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                <input type="text" id="task3InputX" placeholder="X (例: わたし)" class="custom-select" style="width: 140px;">
-                <span>は</span>
-                <input type="text" id="task3InputY" placeholder="Y (例: がくせい)" class="custom-select" style="width: 140px;">
-                <select id="task3SelectType" class="custom-select">
-                    <option value="aff">Affirmative (〜です)</option>
-                    <option value="neg">Negative (〜じゃないです)</option>
-                </select>
-                <button id="task3AddBtn" class="example-button">➕ Add Drill</button>
+                <input type="file" id="task3ImageInput" accept="image/png, image/jpeg" class="custom-select">
+                <button id="task3GenerateBtn" class="example-button">✨ Generate Drills</button>
             </div>
         </div>
     </div>
