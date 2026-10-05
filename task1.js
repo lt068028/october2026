@@ -407,6 +407,9 @@ function initApp() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
+        // 偶数行（iが2など）は否定形、奇数行は肯定形とする交互設計
+        const isCustomNeg = (i % 2 === 0);
+
         const updateDisplay = () => {
             const selectedOptX = selectX.options[selectX.selectedIndex];
             const selectedOptY = selectY.options[selectY.selectedIndex];
@@ -438,7 +441,7 @@ function initApp() {
                 recordBtn.disabled = false;
                 listenBtn.disabled = false;
                 listenBtn.onclick = () => {
-                    const textToSpeak = `${valX}は、${valY}です。`;
+                    const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
                     playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
                 };
             } else {
@@ -454,7 +457,7 @@ function initApp() {
         const getXValue = () => selectX.value || "ともだち";
         const getYValue = () => selectY.value || "いしゃ";
 
-        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue, false);
+        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue, isCustomNeg);
 
         container.appendChild(rowDiv);
     }
@@ -606,10 +609,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
         stopBtn.disabled = true;
         stopBtn.classList.remove('stop-btn-active');
-
-        if (accumulatedTranscript) {
-            processRecognitionResult(accumulatedTranscript, getXFn(), getYFn(), expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
-        }
     };
 
     recordBtn.addEventListener('click', async () => {
@@ -623,10 +622,17 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             mediaRecorder = new MediaRecorder(audioStream);
 
             mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            
+            // 録音データの生成完了（onstop）を確実に待ってからテキスト判定・再生ボタン生成を行う
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
+
+                if (accumulatedTranscript) {
+                    processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
+                }
             };
+
             mediaRecorder.start();
 
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -644,7 +650,8 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     accumulatedTranscript += rawTranscript;
 
                     if (!isManualStop) {
-                        processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
+                        // Autoモード時は音声認識の区切りで停止プロセスを走らせる
+                        stopRecordingProcess();
                     }
                 };
 
@@ -667,7 +674,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 resultSpan.style.color = 'var(--accent-color)';
             } else {
                 recordBtn.disabled = true;
-                stopBtn.disabled = true;
+                stopBtn.disabled = true; // Auto時はストップボタンを常に非活性（グレーアウト）
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
@@ -688,96 +695,4 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
-        resultSpan.style.color = 'var(--text-secondary)';
-        return;
-    }
-
-    const hiraText = convertToHiragana(rawTranscript);
-    const hiraX = convertToHiragana(currentX);
-    const hiraY = convertToHiragana(currentY);
-
-    const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
-    
-    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
-    const isAffirmative = affRegex.test(hiraText);
-
-    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
-    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
-    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
-    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
-    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
-
-    const recordedAudioUrl = getUrlFn();
-
-    const appendPlayButton = () => {
-        if (recordedAudioUrl) {
-            let playBtn = resultSpan.querySelector('.play-recording-btn');
-            if (!playBtn) {
-                playBtn = document.createElement('button');
-                playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
-                playBtn.style.marginLeft = '8px';
-                playBtn.innerHTML = '▶️<span class="custom-tip-box">Play the recorded audio</span>';
-                playBtn.onclick = () => {
-                    const audio = new Audio(recordedAudioUrl);
-                    audio.playbackRate = 1.0;
-                    audio.play();
-                };
-                resultSpan.appendChild(playBtn);
-            }
-        }
-    };
-
-    if (isAffirmative || isNegative) {
-        resultSpan.textContent = hiraText + " ✅ ";
-        resultSpan.style.color = 'var(--text-primary)';
-        appendPlayButton();
-        correctionBox.style.display = 'none';
-    } else {
-        const hasCorrectY = hiraText.includes(hiraY);
-
-        if (!hasCorrectY) {
-            let highlightedText = hiraText;
-            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
-            
-            resultSpan.innerHTML = highlightedText + " ";
-            resultSpan.style.color = 'var(--text-primary)';
-            appendPlayButton();
-
-            corrTextSpan.textContent = `Wrong word used.`;
-            corrListenBtn.style.display = 'none';
-        } else {
-            resultSpan.textContent = hiraText + " ";
-            resultSpan.style.color = 'var(--error-text)';
-            appendPlayButton();
-
-            corrTextSpan.textContent = `Structure error, try it again`;
-            corrListenBtn.style.display = 'inline-block';
-
-            const correctAff = expectedIsNeg ? `${currentX}は、${currentY}じゃないです。` : `${currentX}は、${currentY}です。`;
-            corrListenBtn.onclick = () => {
-                corrListenBtn.disabled = true;
-                corrListenBtn.textContent = '🔊 再生中...';
-                speakText(correctAff, () => {
-                    corrListenBtn.disabled = false;
-                    corrListenBtn.textContent = '🔊 きく';
-                });
-            };
-        }
-
-        correctionBox.style.display = 'block';
-    }
-}
-
-function setupExampleListen(btnId, text) {
-    const btn = document.getElementById(btnId);
-    if (btn) {
-        btn.addEventListener('click', () => {
-            btn.disabled = true;
-            btn.textContent = '🔊 再生中...';
-            speakText(text, () => {
-                btn.disabled = false;
-                btn.textContent = '🔊 きく';
-            });
-        });
-    }
-}
+        resultSpan.style.color
