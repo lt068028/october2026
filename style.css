@@ -252,19 +252,34 @@ input:checked + .slider:before {
     font-weight: bold;
 }
 
-/* Voice Guide Footer */
+/* Voice Guide Footer (左寄せ ＆ クリックポップアップ対応) */
 .voice-guide-footer {
     margin-top: 30px;
-    text-align: right;
+    text-align: left;
     font-size: 13px;
     color: var(--text-secondary);
+    position: relative;
+    display: inline-block;
 }
 
-.voice-guide-box {
-    text-align: left;
-    white-space: normal;
-    width: 320px;
+.guide-trigger {
+    cursor: pointer;
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+.guide-box-popup {
+    margin-top: 6px;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
     line-height: 1.4;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    white-space: nowrap;
 }
 
 /* ==========================================
