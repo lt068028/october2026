@@ -457,4 +457,271 @@ function updateWordsDisplay() {
     });
 }
 
-function createDrillRow
+function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetY) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'drill-row';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'top-row';
+
+    const listenBtn = document.createElement('button');
+    listenBtn.className = 'example-button custom-tip-wrap';
+    listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+    listenBtn.disabled = false;
+    listenBtn.onclick = () => {
+        const textToSpeak = `${targetX}は、${targetY}です。`;
+        playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
+    };
+
+    const indexSpan = document.createElement('span');
+    indexSpan.textContent = indexLabel;
+
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'prompt-label prompt-content';
+    promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
+
+    const recordBtn = document.createElement('button');
+    recordBtn.className = 'example-button custom-tip-wrap';
+    recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+
+    const stopBtn = document.createElement('button');
+    stopBtn.className = 'example-button custom-tip-wrap';
+    stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+    stopBtn.disabled = true;
+
+    const resultSpan = document.createElement('span');
+    resultSpan.className = 'result-text';
+    resultSpan.textContent = '(Not recorded yet)';
+    resultSpan.style.color = 'var(--text-secondary)';
+
+    topRow.appendChild(listenBtn);
+    topRow.appendChild(indexSpan);
+    topRow.appendChild(promptSpan);
+    topRow.appendChild(recordBtn);
+    topRow.appendChild(stopBtn);
+    topRow.appendChild(resultSpan);
+
+    const correctionBox = document.createElement('div');
+    correctionBox.className = 'correction-box';
+    
+    const corrListenBtn = document.createElement('button');
+    corrListenBtn.className = 'example-button';
+    corrListenBtn.textContent = '🔊 きく';
+    corrListenBtn.style.marginRight = '8px';
+
+    const corrTextSpan = document.createElement('span');
+    
+    correctionBox.appendChild(corrListenBtn);
+    correctionBox.appendChild(corrTextSpan);
+
+    rowDiv.appendChild(topRow);
+    rowDiv.appendChild(correctionBox);
+
+    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => targetX, () => targetY);
+
+    container.appendChild(rowDiv);
+}
+
+function playSyntheticAudio(text, btnElement, originalText) {
+    btnElement.disabled = true;
+    btnElement.textContent = '🔊再生中...';
+    setTimeout(() => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'ja-JP';
+        speechSynthesis.speak(utterance);
+        utterance.onend = () => {
+            btnElement.disabled = false;
+            btnElement.textContent = originalText;
+        };
+    }, 500);
+}
+
+function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXFn, getYFn) {
+    let mediaRecorder;
+    let audioChunks = [];
+    let audioStream = null;
+    let recognition = null;
+    let recordedAudioUrl = null;
+
+    recordBtn.addEventListener('click', async () => {
+        const currentX = getXFn();
+        const currentY = getYFn();
+
+        try {
+            audioChunks = [];
+            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(audioStream);
+
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                recordedAudioUrl = URL.createObjectURL(audioBlob);
+            };
+            mediaRecorder.start();
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'ja-JP';
+                recognition.interimResults = false;
+                recognition.continuous = isManualStop;
+
+                recognition.onresult = (e) => {
+                    let rawTranscript = "";
+                    for (let i = e.resultIndex; i < e.results.length; ++i) {
+                        rawTranscript += e.results[i][0].transcript;
+                    }
+
+                    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+                        resultSpan.textContent = rawTranscript + " (Too short)";
+                        resultSpan.style.color = 'var(--text-secondary)';
+                        return;
+                    }
+
+                    const hiraText = convertToHiragana(rawTranscript);
+                    const hiraX = convertToHiragana(currentX);
+                    const hiraY = convertToHiragana(currentY);
+
+                    const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
+                    
+                    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+                    const isAffirmative = affRegex.test(hiraText);
+
+                    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+                    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+                    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+                    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
+                    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+
+                    const appendPlayButton = () => {
+                        if (recordedAudioUrl) {
+                            let playBtn = resultSpan.querySelector('.play-recording-btn');
+                            if (!playBtn) {
+                                playBtn = document.createElement('button');
+                                playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
+                                playBtn.style.marginLeft = '8px';
+                                playBtn.innerHTML = '▶️<span class="custom-tip-box">Play the recorded audio</span>';
+                                playBtn.onclick = () => {
+                                    const audio = new Audio(recordedAudioUrl);
+                                    audio.playbackRate = 1.0;
+                                    audio.play();
+                                };
+                                resultSpan.appendChild(playBtn);
+                            }
+                        }
+                    };
+
+                    if (isAffirmative || isNegative) {
+                        resultSpan.textContent = hiraText + " ✅ ";
+                        resultSpan.style.color = 'var(--text-primary)';
+                        appendPlayButton();
+                        correctionBox.style.display = 'none';
+                    } else {
+                        const hasCorrectY = hiraText.includes(hiraY);
+
+                        if (!hasCorrectY) {
+                            let highlightedText = hiraText;
+                            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
+                            
+                            resultSpan.innerHTML = highlightedText + " ";
+                            resultSpan.style.color = 'var(--text-primary)';
+                            appendPlayButton();
+
+                            corrTextSpan.textContent = `Wrong word used.`;
+                            corrListenBtn.style.display = 'none';
+                        } else {
+                            resultSpan.textContent = hiraText + " ";
+                            resultSpan.style.color = 'var(--error-text)';
+                            appendPlayButton();
+
+                            corrTextSpan.textContent = `Structure error, try it again`;
+                            corrListenBtn.style.display = 'inline-block';
+
+                            const correctAff = `${currentX}は、${currentY}です。`;
+                            corrListenBtn.onclick = () => {
+                                corrListenBtn.disabled = true;
+                                corrListenBtn.textContent = '🔊 再生中...';
+                                setTimeout(() => {
+                                    const utterance = new SpeechSynthesisUtterance(correctAff);
+                                    utterance.lang = 'ja-JP';
+                                    speechSynthesis.speak(utterance);
+                                    utterance.onend = () => {
+                                        corrListenBtn.disabled = false;
+                                        corrListenBtn.textContent = '🔊 きく';
+                                    };
+                                }, 1000);
+                            };
+                        }
+
+                        correctionBox.style.display = 'block';
+                    }
+                };
+
+                recognition.onerror = (err) => {
+                    console.error("Speech recognition error:", err);
+                };
+
+                recognition.onend = () => {
+                    if (!isManualStop) {
+                        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                            mediaRecorder.stop();
+                        }
+                        if (audioStream) {
+                            audioStream.getTracks().forEach(track => track.stop());
+                        }
+                        recordBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    }
+                };
+
+                recognition.start();
+            }
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+            resultSpan.textContent = 'Recording...';
+            resultSpan.style.color = 'var(--accent-color)';
+            correctionBox.style.display = 'none';
+
+        } catch (err) {
+            console.error("Mic error:", err);
+            resultSpan.textContent = 'Mic error';
+            resultSpan.style.color = 'var(--error-text)';
+        }
+    });
+
+    stopBtn.addEventListener('click', () => {
+        if (recognition) {
+            recognition.stop();
+        }
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        if (audioStream) {
+            audioStream.getTracks().forEach(track => track.stop());
+        }
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
+    });
+}
+
+function setupExampleListen(btnId, text) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.textContent = '🔊 再生中...';
+
+            setTimeout(() => {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ja-JP';
+                speechSynthesis.speak(utterance);
+
+                utterance.onend = () => {
+                    btn.disabled = false;
+                    btn.textContent = '🔊 きく';
+                };
+            }, 1000);
+        });
+    }
+}
