@@ -14,16 +14,13 @@
     --button-disabled-bg: #e2e8f0;
     --button-disabled-text: #a0aec0;
     
-    /* ツールチップ・ポップアップ関連 */
     --tooltip-bg: #333333;
     --tooltip-text: #ffffff;
     
-    /* エラー・警告ボックス関連 */
     --error-bg: #fff1f2;
     --error-border: #fda4af;
     --error-text: #be123c;
     
-    /* 録音中強調用 */
     --rec-active-bg: #be123c;
     --rec-active-text: #ffffff;
 }
@@ -54,9 +51,6 @@
     }
 }
 
-/* ==========================================
-   Global Layout & Typography
-   ================================---------- */
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -80,14 +74,6 @@ a {
     color: var(--accent-color);
 }
 
-.menu-list {
-    line-height: 2.5;
-    font-size: 16px;
-}
-
-/* ==========================================
-   Common Component Styles (Header & Panels)
-   ================================---------- */
 .header-panel {
     display: flex;
     justify-content: space-between;
@@ -122,22 +108,6 @@ a {
     gap: 8px;
 }
 
-.back-link-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 10px;
-}
-
-.back-link {
-    text-decoration: none;
-    color: var(--accent-color);
-    font-weight: bold;
-    font-family: sans-serif;
-}
-
-/* ==========================================
-   Drill Rows & Interactive Elements Styles
-   ================================---------- */
 .drill-row {
     background-color: var(--bg-row);
     border: 1px solid var(--border-color);
@@ -188,7 +158,6 @@ a {
     font-size: 14px;
 }
 
-/* Switch & Mode Labels */
 .switch {
     position: relative;
     display: inline-block;
@@ -241,3 +210,160 @@ input:checked + .slider:before {
 }
 
 .inactive-mode {
+    color: var(--text-secondary);
+}
+
+.stop-btn-active {
+    background-color: var(--rec-active-bg) !important;
+    color: var(--rec-active-text) !important;
+    border-color: var(--rec-active-bg) !important;
+    font-weight: bold;
+}
+
+.voice-guide-footer {
+    margin-top: 30px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    display: inline-block;
+}
+
+.guide-trigger {
+    cursor: pointer;
+    color: var(--accent-color);
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.guide-box-popup {
+    margin-top: 6px;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    white-space: nowrap;
+    display: none;
+}
+
+.example-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    background-color: #fefce8;
+    border: 1px solid #fde047;
+    padding: 20px 16px 14px 16px;
+    margin-top: 16px;
+    border-radius: 6px;
+    color: var(--text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+    .example-box {
+        background-color: #422006;
+        border-color: #ca8a04;
+    }
+}
+
+.example-box::before {
+    content: "Example";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background-color: #ca8a04;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.example-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.example-button {
+    padding: 4px 8px;
+    font-size: 13px;
+    margin-left: 8px;
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.example-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-left: 10px;
+}
+
+/* Tooltip Styles (通常は非表示・ホバー時のみ表示) */
+.tooltip-wrap {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted var(--accent-color);
+    cursor: help;
+}
+
+.tooltip-wrap .tooltip-tip {
+    visibility: hidden;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip-wrap:hover .tooltip-tip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Custom Tooltip Styles (通常は非表示・ホバー時のみ表示) */
+.custom-tip-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-tip-box {
+    visibility: hidden;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.custom-tip-wrap:hover .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
