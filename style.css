@@ -102,8 +102,9 @@ a {
 
 .control-group {
     display: flex;
-    align-items: center;
-    gap: 16px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
 }
 
 .control-item {
