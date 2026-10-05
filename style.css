@@ -56,6 +56,11 @@
     }
 }
 
+
+/* ==========================================
+   Body
+   ========================================== */
+
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
@@ -83,6 +88,11 @@ h1 {
 a {
     color: var(--accent-color);
 }
+
+
+/* ==========================================
+   Header
+   ========================================== */
 
 .header-panel {
     display: flex;
@@ -117,6 +127,11 @@ a {
     align-items: center;
     gap: 8px;
 }
+
+
+/* ==========================================
+   Drill Rows
+   ========================================== */
 
 .drill-row {
     background-color: var(--bg-row);
@@ -167,6 +182,11 @@ a {
     border-radius: 4px;
     font-size: 14px;
 }
+
+
+/* ==========================================
+   Mode Switch
+   ========================================== */
 
 .switch {
     position: relative;
@@ -226,6 +246,7 @@ input:checked + .slider:before {
     color: var(--text-secondary);
 }
 
+
 /* ==========================================
    Recording Stop Button Active State
    ========================================== */
@@ -236,6 +257,7 @@ input:checked + .slider:before {
     border-color: var(--rec-active-bg) !important;
     font-weight: bold;
 }
+
 
 /* ==========================================
    Disabled Button
@@ -249,6 +271,7 @@ input:checked + .slider:before {
     filter: grayscale(100%);
     opacity: 0.55;
 }
+
 
 /* ==========================================
    Footer Guide
@@ -284,6 +307,7 @@ input:checked + .slider:before {
     white-space: nowrap;
     display: none;
 }
+
 
 /* ==========================================
    Example
@@ -346,9 +370,12 @@ input:checked + .slider:before {
     margin-left: 10px;
 }
 
+
 /* ==========================================
    Tooltips
    ========================================== */
+
+/* Vocabulary hover tooltip */
 
 .tooltip-wrap {
     position: relative;
@@ -365,20 +392,24 @@ input:checked + .slider:before {
     padding: 4px 8px;
     border-radius: 4px;
     position: absolute;
-    z-index: 1;
+    z-index: 20;
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
     font-size: 12px;
     opacity: 0;
-    transition: opacity 0.3s;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
 .tooltip-wrap:hover .tooltip-tip {
     visibility: visible;
     opacity: 1;
 }
+
+
+/* Button / mode-label tooltip */
 
 .custom-tip-wrap {
     position: relative;
@@ -387,20 +418,27 @@ input:checked + .slider:before {
 
 .custom-tip-box {
     visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+
     background-color: var(--tooltip-bg);
     color: var(--tooltip-text);
     text-align: center;
+
     padding: 4px 8px;
     border-radius: 4px;
+
     position: absolute;
-    z-index: 10;
+    z-index: 20;
+
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
+
     white-space: nowrap;
     font-size: 12px;
-    opacity: 0;
-    transition: opacity 0.3s;
+
+    transition: opacity 0.2s ease;
 }
 
 .custom-tip-wrap:hover .custom-tip-box {
@@ -430,7 +468,9 @@ input:checked + .slider:before {
     padding: 18px;
     text-align: center;
     background-color: var(--bg-panel);
-    transition: border-color 0.2s, background-color 0.2s;
+    transition:
+        border-color 0.2s,
+        background-color 0.2s;
 }
 
 .task3-drop-zone.task3-drop-active {
