@@ -34,6 +34,7 @@ const customDict = {
 
 let isManualStop = false;
 let hintMode = "hover";
+let task3Counter = 1;
 
 function convertToHiragana(text) {
     if (!text) return "";
@@ -98,6 +99,7 @@ function speakText(text, onEndCallback) {
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupFooterGuide();
+    setupTask3Add();
 });
 
 function setupFooterGuide() {
@@ -407,7 +409,6 @@ function initApp() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        // 8番（i=1）＝否定(true)、9番（i=2）＝肯定(false)、10番（i=3）＝否定(true)
         const isCustomNeg = (i !== 2);
 
         const updateDisplay = () => {
@@ -461,6 +462,102 @@ function initApp() {
 
         container.appendChild(rowDiv);
     }
+}
+
+function setupTask3Add() {
+    const addBtn = document.getElementById('task3AddBtn');
+    const container = document.getElementById('task3List');
+    if (!addBtn || !container) return;
+
+    addBtn.addEventListener('click', () => {
+        const inputX = document.getElementById('task3InputX');
+        const inputY = document.getElementById('task3InputY');
+        const selectType = document.getElementById('task3SelectType');
+
+        const xVal = inputX.value.trim();
+        const yVal = inputY.value.trim();
+        const typeVal = selectType.value; // 'aff' or 'neg'
+
+        if (!xVal || !yVal) {
+            alert("Please enter both X and Y words.");
+            return;
+        }
+
+        const isNeg = (typeVal === 'neg');
+        const rowNum = taskData.length + 3 + task3Counter;
+        task3Counter++;
+
+        createTask3DrillRow(container, `${rowNum}.`, xVal, yVal, isNeg);
+
+        inputX.value = "";
+        inputY.value = "";
+    });
+}
+
+function createTask3DrillRow(container, indexLabel, targetX, targetY, isNeg) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'drill-row';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'top-row';
+
+    const listenBtn = document.createElement('button');
+    listenBtn.className = 'example-button custom-tip-wrap';
+    listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+    listenBtn.disabled = false;
+    listenBtn.onclick = () => {
+        const textToSpeak = isNeg ? `${targetX}は、${targetY}じゃないです。` : `${targetX}は、${targetY}です。`;
+        playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
+    };
+
+    const indexSpan = document.createElement('span');
+    indexSpan.textContent = indexLabel;
+
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'prompt-label';
+    const typeIndicator = isNeg ? ' <span style="font-size:12px; color:var(--error-text);">(Negative)</span>' : ' <span style="font-size:12px; color:var(--accent-color);">(Affirmative)</span>';
+    promptSpan.innerHTML = `<span>${targetX}</span> は <span>${targetY}</span> です${typeIndicator}`;
+
+    const recordBtn = document.createElement('button');
+    recordBtn.className = 'example-button custom-tip-wrap';
+    recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+
+    const stopBtn = document.createElement('button');
+    stopBtn.className = 'example-button custom-tip-wrap';
+    stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+    stopBtn.disabled = true;
+
+    const resultSpan = document.createElement('span');
+    resultSpan.className = 'result-text';
+    resultSpan.textContent = '(Not recorded yet)';
+    resultSpan.style.color = 'var(--text-secondary)';
+
+    topRow.appendChild(listenBtn);
+    topRow.appendChild(indexSpan);
+    topRow.appendChild(promptSpan);
+    topRow.appendChild(recordBtn);
+    topRow.appendChild(stopBtn);
+    topRow.appendChild(resultSpan);
+
+    const correctionBox = document.createElement('div');
+    correctionBox.className = 'correction-box';
+    
+    const corrListenBtn = document.createElement('button');
+    corrListenBtn.className = 'example-button';
+    corrListenBtn.textContent = '🔊 きく';
+    corrListenBtn.style.marginRight = '8px';
+
+    const corrTextSpan = document.createElement('span');
+    
+    correctionBox.appendChild(corrListenBtn);
+    correctionBox.appendChild(corrTextSpan);
+
+    rowDiv.appendChild(topRow);
+    rowDiv.appendChild(correctionBox);
+
+    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => targetX, () => targetY, isNeg);
+
+    container.appendChild(rowDiv);
 }
 
 function updateWordsDisplay() {
@@ -572,7 +669,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
 function playSyntheticAudio(text, btnElement, originalText) {
     btnElement.disabled = true;
-    btnElement.textContent = '🔊再生中...';
+    btnElement.textContent = '🔊Playing...';
     speakText(text, () => {
         btnElement.disabled = false;
         btnElement.textContent = originalText;
@@ -612,7 +709,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
     };
 
     recordBtn.addEventListener('click', async () => {
-        // 連続で録音し直した際に古い1回目のファイルやボタンの残留を防ぐため完全にクリア
         if (recordedAudioUrl) {
             URL.revokeObjectURL(recordedAudioUrl);
             recordedAudioUrl = null;
@@ -729,7 +825,7 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
                 playBtn = document.createElement('button');
                 playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
                 playBtn.style.marginLeft = '8px';
-                playBtn.innerHTML = '▶️<span class="custom-tip-box">Play the recorded audio</span>';
+                playBtn.innerHTML = '▶️️<span class="custom-tip-box">Play the recorded audio</span>';
                 playBtn.onclick = () => {
                     const audio = new Audio(recordedAudioUrl);
                     audio.playbackRate = 1.0;
@@ -769,7 +865,7 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
             const correctSentence = expectedIsNeg ? `${currentX}は、${currentY}じゃないです。` : `${currentX}は、${currentY}です。`;
             corrListenBtn.onclick = () => {
                 corrListenBtn.disabled = true;
-                corrListenBtn.textContent = '🔊 再生中...';
+                corrListenBtn.textContent = '🔊 Playing...';
                 speakText(correctSentence, () => {
                     corrListenBtn.disabled = false;
                     corrListenBtn.textContent = '🔊 きく';
@@ -786,7 +882,7 @@ function setupExampleListen(btnId, text) {
     if (btn) {
         btn.addEventListener('click', () => {
             btn.disabled = true;
-            btn.textContent = '🔊 再生中...';
+            btn.textContent = '🔊 Playing...';
             speakText(text, () => {
                 btn.disabled = false;
                 btn.textContent = '🔊 きく';
