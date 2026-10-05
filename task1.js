@@ -189,3 +189,272 @@ function initApp() {
         } else {
             autoEl.className = 'mode-label active-mode custom-tip-wrap';
             manualEl.className = 'mode-label inactive-mode custom-tip-wrap';
+        }
+    });
+
+    controlItem.appendChild(labelAuto);
+    controlItem.appendChild(switchLabel);
+    controlItem.appendChild(labelManual);
+    controlGroup.appendChild(controlItem);
+
+    const vocabControl = document.createElement('div');
+    vocabControl.className = 'control-item';
+
+    const labelHover = document.createElement('span');
+    labelHover.id = 'labelHover';
+    labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
+    labelHover.innerHTML = '💬 Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+
+    const vocabSwitchLabel = document.createElement('label');
+    vocabSwitchLabel.className = 'switch';
+    const vocabSwitchInput = document.createElement('input');
+    vocabSwitchInput.type = 'checkbox';
+    vocabSwitchInput.checked = (hintMode === 'paren');
+    const vocabSlider = document.createElement('span');
+    vocabSlider.className = 'slider';
+    vocabSwitchLabel.appendChild(vocabSwitchInput);
+    vocabSwitchLabel.appendChild(vocabSlider);
+
+    const labelParen = document.createElement('span');
+    labelParen.id = 'labelParen';
+    labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
+    labelParen.innerHTML = '🔡Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+
+    vocabSwitchInput.addEventListener('change', (e) => {
+        hintMode = e.target.checked ? 'paren' : 'hover';
+        const hoverEl = document.getElementById('labelHover');
+        const parenEl = document.getElementById('labelParen');
+        if (hintMode === 'paren') {
+            parenEl.className = 'mode-label active-mode custom-tip-wrap';
+            hoverEl.className = 'mode-label inactive-mode custom-tip-wrap';
+        } else {
+            hoverEl.className = 'mode-label active-mode custom-tip-wrap';
+            parenEl.className = 'mode-label inactive-mode custom-tip-wrap';
+        }
+        updateWordsDisplay();
+    });
+
+    vocabControl.appendChild(labelHover);
+    vocabControl.appendChild(vocabSwitchLabel);
+    vocabControl.appendChild(labelParen);
+    controlGroup.appendChild(vocabControl);
+
+    headerPanel.appendChild(titleInstructionGroup1);
+    headerPanel.appendChild(controlGroup);
+    container.appendChild(headerPanel);
+
+    taskData.forEach((item, index) => {
+        const currentXWord = index < 4 ? "わたし" : "ともだち";
+        const currentXRomaji = index < 4 ? "watashi" : "tomodachi";
+        const currentXMeaning = index < 4 ? "I" : "friend";
+
+        const formattedX = formatWord(currentXWord, currentXRomaji, currentXMeaning);
+        const formattedY = formatWord(item.y, item.yRomaji, item.yMeaning);
+
+        createDrillRow(container, `${index + 1}.`, formattedX, formattedY, currentXWord, item.y);
+    });
+
+    const customHeaderPanel = document.createElement('div');
+    customHeaderPanel.className = 'header-panel';
+    customHeaderPanel.style.marginTop = "30px";
+
+    const titleInstructionGroup2 = document.createElement('div');
+    titleInstructionGroup2.className = 'title-instruction-group';
+
+    const titleArea2 = document.createElement('span');
+    titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
+
+    const descArea2 = document.createElement('span');
+    descArea2.style.color = 'var(--text-primary)';
+    descArea2.style.fontSize = '15px';
+    descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+
+    titleInstructionGroup2.appendChild(titleArea2);
+    titleInstructionGroup2.appendChild(descArea2);
+
+    customHeaderPanel.appendChild(titleInstructionGroup2);
+    container.appendChild(customHeaderPanel);
+
+    const optionsXHtml = `
+        <option value="" disabled selected>-- Choose X --</option>
+        <option value="ともだち" data-eng="friend">Friend</option>
+        <option value="かぞく" data-eng="family">Family</option>
+        <option value="どうりょう" data-eng="colleague">Colleague</option>
+        <option value="じょうし" data-eng="boss">Boss</option>
+        <option value="パートナー" data-eng="partner">Partner</option>
+        <option value="こいびと" data-eng="Bf/Gf">Bf/Gf</option>
+        <option value="しんゆう" data-eng="best friend">Best friend</option>
+        <option value="こども" data-eng="child">Child</option>
+        <option value="まご" data-eng="grandchild">Grandchild</option>
+        <option value="きょうだい" data-eng="sibling">Sibling</option>
+    `;
+
+    const optionsYHtml = `
+        <option value="" disabled selected>-- Choose Y --</option>
+        <option value="がいこくじん" data-eng="foreigner">Foreigner</option>
+        <option value="いしゃ" data-eng="doctor">Doctor</option>
+        <option value="エンジニア" data-eng="engineer">Engineer</option>
+        <option value="けんきゅうしゃ" data-eng="researcher">Researcher</option>
+        <option value="デザイナー" data-eng="designer">Designer</option>
+        <option value="てんいん" data-eng="store staff">Store staff</option>
+        <option value="じえいぎょう" data-eng="self-employed">Self-employed</option>
+        <option value="こうむいん" data-eng="civil servant">Civil servant</option>
+        <option value="かんごし" data-eng="nurse">Nurse</option>
+        <option value="アルバイト" data-eng="part-time worker">Part-time worker</option>
+    `;
+
+    for (let i = 1; i <= 3; i++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'drill-row';
+        rowDiv.setAttribute('data-custom-index', i);
+
+        const topRow = document.createElement('div');
+        topRow.className = 'top-row';
+
+        const listenBtn = document.createElement('button');
+        listenBtn.className = 'example-button custom-tip-wrap';
+        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+        listenBtn.disabled = true;
+
+        const indexSpan = document.createElement('span');
+        indexSpan.textContent = `${taskData.length + i}.`;
+
+        const selectX = document.createElement('select');
+        selectX.id = `customX_${i}`;
+        selectX.className = 'custom-select';
+        selectX.innerHTML = optionsXHtml;
+
+        const previewX = document.createElement('span');
+        previewX.id = `previewX_${i}`;
+        previewX.className = 'translation-preview';
+
+        const labelHa = document.createElement('span');
+        labelHa.id = `labelHa_${i}`;
+        labelHa.textContent = 'は';
+
+        const selectY = document.createElement('select');
+        selectY.id = `customY_${i}`;
+        selectY.className = 'custom-select';
+        selectY.innerHTML = optionsYHtml;
+
+        const previewY = document.createElement('span');
+        previewY.id = `previewY_${i}`;
+        previewY.className = 'translation-preview';
+
+        const recordBtn = document.createElement('button');
+        recordBtn.className = 'example-button custom-tip-wrap';
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.disabled = true;
+
+        const stopBtn = document.createElement('button');
+        stopBtn.className = 'example-button custom-tip-wrap';
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.disabled = true;
+
+        const resultSpan = document.createElement('span');
+        resultSpan.className = 'result-text';
+        resultSpan.textContent = '(Not recorded yet)';
+        resultSpan.style.color = 'var(--text-secondary)';
+
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(indexSpan);
+        topRow.appendChild(selectX);
+        topRow.appendChild(previewX);
+        topRow.appendChild(labelHa);
+        topRow.appendChild(selectY);
+        topRow.appendChild(previewY);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+
+        const correctionBox = document.createElement('div');
+        correctionBox.className = 'correction-box';
+        
+        const corrListenBtn = document.createElement('button');
+        corrListenBtn.className = 'example-button';
+        corrListenBtn.textContent = '🔊 きく';
+        corrListenBtn.style.marginRight = '8px';
+
+        const corrTextSpan = document.createElement('span');
+        
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
+
+        const updateDisplay = () => {
+            const selectedOptX = selectX.options[selectX.selectedIndex];
+            const selectedOptY = selectY.options[selectY.selectedIndex];
+
+            const valX = selectX.value;
+            const valY = selectY.value;
+
+            if (valX && selectedOptX) {
+                const engKey = selectedOptX.getAttribute('data-eng');
+                previewX.innerHTML = formatCustomWord(valX, engKey);
+            } else {
+                previewX.innerHTML = "";
+            }
+
+            if (valY && selectedOptY) {
+                const engKey = selectedOptY.getAttribute('data-eng');
+                previewY.innerHTML = formatCustomWord(valY, engKey);
+            } else {
+                previewY.innerHTML = "";
+            }
+
+            if (valX) {
+                labelHa.style.display = 'none';
+            } else {
+                labelHa.style.display = 'inline';
+            }
+
+            if (valX && valY) {
+                recordBtn.disabled = false;
+                listenBtn.disabled = false;
+                listenBtn.onclick = () => {
+                    const textToSpeak = `${valX}は、${valY}です。`;
+                    playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
+                };
+            } else {
+                recordBtn.disabled = true;
+                listenBtn.disabled = true;
+            }
+        };
+
+        selectX.addEventListener('change', updateDisplay);
+        selectY.addEventListener('change', updateDisplay);
+
+        const getXValue = () => selectX.value || "ともだち";
+        const getYValue = () => selectY.value || "いしゃ";
+
+        bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXValue, getYValue);
+
+        container.appendChild(rowDiv);
+    }
+}
+
+function updateWordsDisplay() {
+    const drillRows = document.querySelectorAll('.drill-row');
+    drillRows.forEach(row => {
+        const customIdx = row.getAttribute('data-custom-index');
+        if (customIdx) {
+            const selectX = document.getElementById(`customX_${customIdx}`);
+            const selectY = document.getElementById(`customY_${customIdx}`);
+            const previewX = document.getElementById(`previewX_${customIdx}`);
+            const previewY = document.getElementById(`previewY_${customIdx}`);
+
+            if (selectX && selectX.value && selectX.selectedIndex >= 0) {
+                const optX = selectX.options[selectX.selectedIndex];
+                previewX.innerHTML = formatCustomWord(selectX.value, optX.getAttribute('data-eng'));
+            }
+            if (selectY && selectY.value && selectY.selectedIndex >= 0) {
+                const optY = selectY.options[selectY.selectedIndex];
+                previewY.innerHTML = formatCustomWord(selectY.value, optY.getAttribute('data-eng'));
+            }
+        }
+    });
+}
+
+function createDrillRow
