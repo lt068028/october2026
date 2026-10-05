@@ -11,6 +11,32 @@
     <div id="exampleSection"></div>
     <div id="task1List"></div>
 
+    <!-- Task 3 Section -->
+    <div class="header-panel" style="margin-top: 30px;">
+        <div class="title-instruction-group">
+            <span><strong>Task 3；Generate Drills from your Vocab List</strong></span>
+            <span style="color: var(--text-primary); font-size: 15px;">
+                💡 Type Japanese words (X and Y) and choose Affirmative or Negative to generate custom drills.
+            </span>
+        </div>
+    </div>
+    
+    <div class="drill-row">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <input type="text" id="task3InputX" placeholder="X (例: わたし)" class="custom-select" style="width: 140px;">
+                <span>は</span>
+                <input type="text" id="task3InputY" placeholder="Y (例: がくせい)" class="custom-select" style="width: 140px;">
+                <select id="task3SelectType" class="custom-select">
+                    <option value="aff">Affirmative (〜です)</option>
+                    <option value="neg">Negative (〜じゃないです)</option>
+                </select>
+                <button id="task3AddBtn" class="example-button">➕ Add Drill</button>
+            </div>
+        </div>
+    </div>
+    <div id="task3List"></div>
+
     <div class="voice-guide-footer">
         🔊Want to change the voice? <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
         <div id="guideBox" class="guide-box-popup" style="display: none;">
