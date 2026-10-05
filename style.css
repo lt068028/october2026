@@ -142,7 +142,7 @@ a {
 .top-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
@@ -226,11 +226,11 @@ input:checked + .slider:before {
 
 .mode-label {
     font-size: 13px;
+    color: var(--text-primary);
 }
 
 .active-mode {
     font-weight: bold;
-    color: var(--text-primary);
 }
 
 .inactive-mode {
