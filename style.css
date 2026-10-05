@@ -325,7 +325,7 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
-/* Custom Tooltip Styles (モード切替用) */
+/* Custom Tooltip Styles (モード切替・コントロール用) */
 .custom-tip-wrap {
     position: relative;
     display: inline-block;
