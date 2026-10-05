@@ -22,6 +22,10 @@
     --error-bg: #fff1f2;
     --error-border: #fda4af;
     --error-text: #be123c;
+    
+    /* 録音中強調用 */
+    --rec-active-bg: #be123c;
+    --rec-active-text: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,6 +48,9 @@
         --error-bg: #4c0519;
         --error-border: #9f1239;
         --error-text: #fecdd3;
+        
+        --rec-active-bg: #9f1239;
+        --rec-active-text: #fecdd3;
     }
 }
 
@@ -235,6 +242,14 @@ input:checked + .slider:before {
 
 .inactive-mode {
     color: var(--text-secondary);
+}
+
+/* 録音中ストップボタン強調用クラス */
+.stop-btn-active {
+    background-color: var(--rec-active-bg) !important;
+    color: var(--rec-active-text) !important;
+    border-color: var(--rec-active-bg) !important;
+    font-weight: bold;
 }
 
 /* ==========================================
