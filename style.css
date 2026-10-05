@@ -308,7 +308,6 @@ input:checked + .slider:before {
     margin-left: 10px;
 }
 
-/* Tooltip Styles (通常は非表示・ホバー時のみ表示) */
 .tooltip-wrap {
     position: relative;
     display: inline-block;
@@ -339,7 +338,6 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
-/* Custom Tooltip Styles (通常は非表示・ホバー時のみ表示) */
 .custom-tip-wrap {
     position: relative;
     display: inline-block;
