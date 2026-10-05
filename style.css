@@ -1,3 +1,4 @@
+```css
 /* ==========================================
    Global Theme Variables (Light Mode Default)
    ========================================== */
@@ -375,8 +376,6 @@ input:checked + .slider:before {
    Tooltips
    ========================================== */
 
-/* Vocabulary hover tooltip */
-
 .tooltip-wrap {
     position: relative;
     display: inline-block;
@@ -408,9 +407,6 @@ input:checked + .slider:before {
     opacity: 1;
 }
 
-
-/* Button / mode-label tooltip */
-
 .custom-tip-wrap {
     position: relative;
     display: inline-block;
@@ -420,24 +416,18 @@ input:checked + .slider:before {
     visibility: hidden;
     opacity: 0;
     pointer-events: none;
-
     background-color: var(--tooltip-bg);
     color: var(--tooltip-text);
     text-align: center;
-
     padding: 4px 8px;
     border-radius: 4px;
-
     position: absolute;
     z-index: 20;
-
     bottom: 125%;
     left: 50%;
     transform: translateX(-50%);
-
     white-space: nowrap;
     font-size: 12px;
-
     transition: opacity 0.2s ease;
 }
 
@@ -522,6 +512,11 @@ input:checked + .slider:before {
     font-size: 12px;
 }
 
+.task3-example-hint {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
 .task3-action-row,
 .task3-generate-row,
 .task3-more-row {
@@ -580,3 +575,4 @@ input:checked + .slider:before {
     margin-top: 8px;
     margin-bottom: 20px;
 }
+```
