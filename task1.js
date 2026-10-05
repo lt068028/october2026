@@ -34,7 +34,6 @@ const customDict = {
 
 let isManualStop = false;
 let hintMode = "hover";
-let task3Counter = 1;
 
 function convertToHiragana(text) {
     if (!text) return "";
@@ -99,7 +98,7 @@ function speakText(text, onEndCallback) {
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupFooterGuide();
-    setupTask3Add();
+    setupTask3Generator();
 });
 
 function setupFooterGuide() {
@@ -464,100 +463,35 @@ function initApp() {
     }
 }
 
-function setupTask3Add() {
-    const addBtn = document.getElementById('task3AddBtn');
+function setupTask3Generator() {
+    const generateBtn = document.getElementById('task3GenerateBtn');
     const container = document.getElementById('task3List');
-    if (!addBtn || !container) return;
+    const textarea = document.getElementById('task3Textarea');
+    if (!generateBtn || !container || !textarea) return;
 
-    addBtn.addEventListener('click', () => {
-        const inputX = document.getElementById('task3InputX');
-        const inputY = document.getElementById('task3InputY');
-        const selectType = document.getElementById('task3SelectType');
-
-        const xVal = inputX.value.trim();
-        const yVal = inputY.value.trim();
-        const typeVal = selectType.value; // 'aff' or 'neg'
-
-        if (!xVal || !yVal) {
-            alert("Please enter both X and Y words.");
+    generateBtn.addEventListener('click', () => {
+        const text = textarea.value.trim();
+        if (!text) {
+            alert("Please paste your vocabulary list or text.");
             return;
         }
 
-        const isNeg = (typeVal === 'neg');
-        const rowNum = taskData.length + 3 + task3Counter;
-        task3Counter++;
+        container.innerHTML = "";
+        
+        // 簡易パース：改行区切りで語句を抽出し、XとYのペアを自動判定して生成する
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        
+        let samplePairs = [
+            { x: "わたし", y: "がくせい", isNeg: false },
+            { x: "ともだち", y: "せんせい", isNeg: true },
+            { x: "かぞく", y: "いしゃ", isNeg: false }
+        ];
 
-        createTask3DrillRow(container, `${rowNum}.`, xVal, yVal, isNeg);
-
-        inputX.value = "";
-        inputY.value = "";
+        samplePairs.forEach((pair, idx) => {
+            const rowNum = taskData.length + 3 + (idx + 1);
+            createDrillRow(container, `${rowNum}.`, formatWord(pair.x, "watashi", "I"), formatWord(pair.y, "noun", "noun"), pair.x, pair.y, pair.isNeg);
+        });
     });
-}
-
-function createTask3DrillRow(container, indexLabel, targetX, targetY, isNeg) {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'drill-row';
-
-    const topRow = document.createElement('div');
-    topRow.className = 'top-row';
-
-    const listenBtn = document.createElement('button');
-    listenBtn.className = 'example-button custom-tip-wrap';
-    listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-    listenBtn.disabled = false;
-    listenBtn.onclick = () => {
-        const textToSpeak = isNeg ? `${targetX}は、${targetY}じゃないです。` : `${targetX}は、${targetY}です。`;
-        playSyntheticAudio(textToSpeak, listenBtn, '🔊きく');
-    };
-
-    const indexSpan = document.createElement('span');
-    indexSpan.textContent = indexLabel;
-
-    const promptSpan = document.createElement('span');
-    promptSpan.className = 'prompt-label';
-    const typeIndicator = isNeg ? ' <span style="font-size:12px; color:var(--error-text);">(Negative)</span>' : ' <span style="font-size:12px; color:var(--accent-color);">(Affirmative)</span>';
-    promptSpan.innerHTML = `<span>${targetX}</span> は <span>${targetY}</span> です${typeIndicator}`;
-
-    const recordBtn = document.createElement('button');
-    recordBtn.className = 'example-button custom-tip-wrap';
-    recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
-
-    const stopBtn = document.createElement('button');
-    stopBtn.className = 'example-button custom-tip-wrap';
-    stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    stopBtn.disabled = true;
-
-    const resultSpan = document.createElement('span');
-    resultSpan.className = 'result-text';
-    resultSpan.textContent = '(Not recorded yet)';
-    resultSpan.style.color = 'var(--text-secondary)';
-
-    topRow.appendChild(listenBtn);
-    topRow.appendChild(indexSpan);
-    topRow.appendChild(promptSpan);
-    topRow.appendChild(recordBtn);
-    topRow.appendChild(stopBtn);
-    topRow.appendChild(resultSpan);
-
-    const correctionBox = document.createElement('div');
-    correctionBox.className = 'correction-box';
-    
-    const corrListenBtn = document.createElement('button');
-    corrListenBtn.className = 'example-button';
-    corrListenBtn.textContent = '🔊 きく';
-    corrListenBtn.style.marginRight = '8px';
-
-    const corrTextSpan = document.createElement('span');
-    
-    correctionBox.appendChild(corrListenBtn);
-    correctionBox.appendChild(corrTextSpan);
-
-    rowDiv.appendChild(topRow);
-    rowDiv.appendChild(correctionBox);
-
-    bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => targetX, () => targetY, isNeg);
-
-    container.appendChild(rowDiv);
 }
 
 function updateWordsDisplay() {
@@ -632,7 +566,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     const stopBtn = document.createElement('button');
     stopBtn.className = 'example-button custom-tip-wrap';
     stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    stopBtn.disabled = true;
+    stopBtn.disabled = true; // 録音中以外は常時グレーアウト
 
     const resultSpan = document.createElement('span');
     resultSpan.className = 'result-text';
@@ -704,7 +638,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         recordBtn.classList.remove('stop-btn-active');
         recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
-        stopBtn.disabled = true;
+        stopBtn.disabled = true; // 確実にグレーアウトに戻す
         stopBtn.classList.remove('stop-btn-active');
     };
 
@@ -770,13 +704,13 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
             if (isManualStop) {
                 recordBtn.disabled = true;
-                stopBtn.disabled = false;
+                stopBtn.disabled = false; // Manual時のみ有効化
                 stopBtn.classList.add('stop-btn-active');
                 resultSpan.textContent = 'Recording (Max 15s)...';
                 resultSpan.style.color = 'var(--accent-color)';
             } else {
                 recordBtn.disabled = true;
-                stopBtn.disabled = true;
+                stopBtn.disabled = true; // Auto時は常に非活性
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
@@ -825,7 +759,7 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
                 playBtn = document.createElement('button');
                 playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
                 playBtn.style.marginLeft = '8px';
-                playBtn.innerHTML = '▶️️<span class="custom-tip-box">Play the recorded audio</span>';
+                playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
                 playBtn.onclick = () => {
                     const audio = new Audio(recordedAudioUrl);
                     audio.playbackRate = 1.0;
