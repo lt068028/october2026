@@ -16,7 +16,6 @@
             font-weight: bold;
             font-family: sans-serif;
         }
-
         /* Temporary Area 用のスタイル */
         .temporary-area {
             background: var(--bg-panel);
@@ -33,75 +32,6 @@
             margin-bottom: 12px;
             text-transform: uppercase;
         }
-        .temp-sentence {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            font-size: 18px;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-        }
-        .temp-sentence:last-child {
-            margin-bottom: 0;
-        }
-        .temp-symbol {
-            color: #fb7185;
-            font-weight: normal !important;
-        }
-        .temp-low {
-            text-decoration: underline;
-            text-decoration-color: #fb7185;
-            text-decoration-thickness: 1px;
-            font-weight: normal !important;
-        }
-        .temp-high {
-            text-decoration: overline;
-            text-decoration-color: #fb7185;
-            text-decoration-thickness: 1px;
-            font-weight: normal !important;
-        }
-        .label-text {
-            font-size: 12px;
-            color: var(--text-secondary);
-            min-width: 320px;
-            text-align: right;
-        }
-
-        /* ② 擬似要素 (::before) + border-top */
-        .method-pseudo-border {
-            position: relative;
-            display: inline-block;
-        }
-        .method-pseudo-border::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            right: 0;
-            border-top: 1px solid #fb7185;
-        }
-        .top-minus-2::before {
-            top: -2px;
-        }
-        .top-minus-4::before {
-            top: -4px;
-        }
-        .top-minus-6::before {
-            top: -6px;
-        }
-        .top-minus-8::before {
-            top: -8px;
-        }
-
-        /* Ruby構造を利用した上線描画テスト用スタイル */
-        ruby.ruby-overline {
-            ruby-position: over;
-        }
-        ruby.ruby-overline rt {
-            font-size: 100%;
-            color: #fb7185;
-            text-decoration: overline;
-            text-decoration-thickness: 1px;
-        }
     </style>
 </head>
 <body>
@@ -112,62 +42,22 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area -->
+    <!-- Temporary Area (案A: リスト形式) -->
     <div class="temporary-area">
-        <div class="temporary-title">Temporary Area (Comparison)</div>
-        
-        <!-- ① text-decoration: overline -->
-        <div class="temp-sentence">
-            <span class="label-text">【1】text-decoration: overline</span>
-            <div>
-                <span class="temp-high">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="temp-high">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- ②-1 top: -2px -->
-        <div class="temp-sentence">
-            <span class="label-text">【2-1】擬似要素(::before) + border-top / top: -2px</span>
-            <div>
-                <span class="method-pseudo-border top-minus-2">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="method-pseudo-border top-minus-2">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- ②-2 top: -4px -->
-        <div class="temp-sentence">
-            <span class="label-text">【2-2】擬似要素(::before) + border-top / top: -4px</span>
-            <div>
-                <span class="method-pseudo-border top-minus-4">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="method-pseudo-border top-minus-4">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- ②-3 top: -6px -->
-        <div class="temp-sentence">
-            <span class="label-text">【2-3】擬似要素(::before) + border-top / top: -6px</span>
-            <div>
-                <span class="method-pseudo-border top-minus-6">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="method-pseudo-border top-minus-6">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- ②-4 top: -8px -->
-        <div class="temp-sentence">
-            <span class="label-text">【2-4】擬似要素(::before) + border-top / top: -8px</span>
-            <div>
-                <span class="method-pseudo-border top-minus-8">て</span><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><span class="method-pseudo-border top-minus-8">い</span><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
-
-        <!-- ③ Ruby構造 -->
-        <div class="temp-sentence">
-            <span class="label-text">【3】Ruby構造（rtタグ）による上線</span>
-            <div>
-                <ruby class="ruby-overline">て<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">んきが</span><span class="temp-symbol">｜</span><ruby class="ruby-overline">い<rt>¯</rt></ruby><span class="temp-symbol">↘</span><span class="temp-low">いです</span>
-            </div>
-        </div>
+        <div class="temporary-title">Temporary Area (Pitch Visualization Roadmap)</div>
+        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary); font-size: 15px; line-height: 1.8;">
+            <li><strong>Step 1:</strong> UIにCanvas要素を追加</li>
+            <li><strong>Step 2:</strong> F0抽出エンジンの再導入</li>
+            <li><strong>Step 3:</strong> 抽出データの平滑化・正規化処理</li>
+            <li><strong>Step 4:</strong> モデルピッチ曲線のCanvas描画</li>
+            <li><strong>Step 5:</strong> 学習者ピッチ曲線のCanvas描画（視覚的比較）</li>
+        </ul>
     </div>
 
     <!-- ドリルリスト表示エリア -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
-    <script src="pronunciation.js?v=20261004"></script>
+    <!-- ※読み込みファイル名はテスト中のもの(v8等)に合わせること -->
+    <script src="pronunciation_v8.js"></script>
 </body>
 </html>
