@@ -1,4 +1,3 @@
-```javascript
 // ============================================================================
 // Pronunciation Drill
 // ============================================================================
@@ -464,4 +463,3 @@ function initDrill() {
 }
 
 document.addEventListener("DOMContentLoaded", initDrill);
-```
