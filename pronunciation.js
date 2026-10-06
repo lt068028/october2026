@@ -5,7 +5,7 @@
 const modelSentences = [
     {
         targetText: "てんきがいいです",
-        symbolColor: "#fb7185",
+        symbolColor: "#facc15",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -16,7 +16,7 @@ const modelSentences = [
     },
     {
         targetText: "じかんがないです",
-        symbolColor: "#f43f5e",
+        symbolColor: "#34d399",
         displayHtml: [
             { text: "じ", low: true }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -27,7 +27,7 @@ const modelSentences = [
     },
     {
         targetText: "しごとがほしいです",
-        symbolColor: "#fda4af",
+        symbolColor: "#22d3ee",
         displayHtml: [
             { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -39,7 +39,7 @@ const modelSentences = [
     },
     {
         targetText: "せんせいはおもしろいです",
-        symbolColor: "#e879f9",
+        symbolColor: "#fda4af",
         displayHtml: [
             { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -52,7 +52,7 @@ const modelSentences = [
     },
     {
         targetText: "がっこうはたのしいです",
-        symbolColor: "#34d399",
+        symbolColor: "#e879f9",
         displayHtml: [
             { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
