@@ -69,7 +69,18 @@ const modelSentences = [
     }
 ];
 
-let isManualStop = false;
+
+// ============================================================================
+// Recording mode
+// ============================================================================
+
+/*
+ * Manual stopを初期状態にする。
+ *
+ * false = Autostop
+ * true  = Manual stop
+ */
+let isManualStop = true;
 
 
 // ============================================================================
@@ -84,6 +95,7 @@ const PITCH_ERROR_COLOR = "#ef4444";
 // ============================================================================
 
 function convertToHiragana(text) {
+
     if (!text) return "";
 
     let cleaned = text.replace(
@@ -94,17 +106,27 @@ function convertToHiragana(text) {
     /*
      * カタカナ → ひらがな
      */
-    cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
-        return String.fromCharCode(match.charCodeAt(0) - 0x60);
-    });
+    cleaned = cleaned.replace(
+        /[\u30a1-\u30f6]/g,
+        match => {
+            return String.fromCharCode(
+                match.charCodeAt(0) - 0x60
+            );
+        }
+    );
 
     /*
      * SpeechRecognitionが漢字で返した場合の正規化。
      *
      * 重要：
-     * 「電気」はモデルの「天気」と同一視しない。
-     * 電気 → でんき としてから比較することで、
-     * 「で」だけを音の違いとして検出できる。
+     * 電気 → でんき
+     *
+     * 天気と同一視するのではない。
+     * その後の比較で
+     *
+     * て ↔ で
+     *
+     * の違いとして検出する。
      */
     const dict = {
         "天気": "てんき",
@@ -121,8 +143,15 @@ function convertToHiragana(text) {
     };
 
     for (const key in dict) {
-        const regex = new RegExp(key, "g");
-        cleaned = cleaned.replace(regex, dict[key]);
+
+        const regex =
+            new RegExp(key, "g");
+
+        cleaned =
+            cleaned.replace(
+                regex,
+                dict[key]
+            );
     }
 
     return cleaned;
@@ -133,20 +162,25 @@ function convertToHiragana(text) {
 // Mora utilities
 // ============================================================================
 
-const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
-const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
+const SMALL_Y =
+    new Set(["ゃ", "ゅ", "ょ"]);
+
+const SPECIAL_MORA =
+    new Set(["っ", "ん", "ー"]);
+
 
 function splitIntoMora(text) {
 
-    const chars = Array.from(text);
+    const chars =
+        Array.from(text);
+
     const morae = [];
 
     for (const ch of chars) {
 
         /*
-         * 拗音は直前のモーラと一体化する。
+         * 拗音は直前のモーラと一体化。
          *
-         * 例：
          * きゃ → 1モーラ
          */
         if (
@@ -154,13 +188,17 @@ function splitIntoMora(text) {
             morae.length > 0
         ) {
 
-            morae[morae.length - 1].text += ch;
+            morae[
+                morae.length - 1
+            ].text += ch;
+
             continue;
         }
 
         morae.push({
             text: ch,
-            special: SPECIAL_MORA.has(ch)
+            special:
+                SPECIAL_MORA.has(ch)
         });
     }
 
@@ -176,20 +214,28 @@ function getModelMoraData(itemObj) {
 
     const charPitch = [];
 
-    itemObj.displayHtml.forEach(part => {
+    itemObj.displayHtml.forEach(
+        part => {
 
-        if (part.type === "symbol") {
-            return;
+            if (
+                part.type === "symbol"
+            ) {
+                return;
+            }
+
+            for (
+                const ch of Array.from(
+                    part.text
+                )
+            ) {
+
+                charPitch.push({
+                    char: ch,
+                    low: !!part.low
+                });
+            }
         }
-
-        for (const ch of Array.from(part.text)) {
-
-            charPitch.push({
-                char: ch,
-                low: !!part.low
-            });
-        }
-    });
+    );
 
     const targetText =
         charPitch
@@ -197,11 +243,18 @@ function getModelMoraData(itemObj) {
             .join("");
 
     const morae = [];
-    const chars = Array.from(targetText);
 
-    for (let i = 0; i < chars.length; i++) {
+    const chars =
+        Array.from(targetText);
 
-        const ch = chars[i];
+    for (
+        let i = 0;
+        i < chars.length;
+        i++
+    ) {
+
+        const ch =
+            chars[i];
 
         /*
          * 拗音
@@ -211,7 +264,10 @@ function getModelMoraData(itemObj) {
             morae.length > 0
         ) {
 
-            morae[morae.length - 1].text += ch;
+            morae[
+                morae.length - 1
+            ].text += ch;
+
             continue;
         }
 
@@ -220,10 +276,16 @@ function getModelMoraData(itemObj) {
 
         morae.push({
             text: ch,
+
+            /*
+             * っ・ん・ーはPitch対象外
+             */
             special: isSpecial,
-            low: isSpecial
-                ? null
-                : charPitch[i].low
+
+            low:
+                isSpecial
+                    ? null
+                    : charPitch[i].low
         });
     }
 
@@ -236,9 +298,10 @@ function getModelMoraData(itemObj) {
 // ============================================================================
 
 const styleElement =
-    document.createElement('style');
+    document.createElement("style");
 
 styleElement.textContent = `
+
     .header-panel {
         display: flex;
         justify-content: space-between;
@@ -421,12 +484,9 @@ styleElement.textContent = `
 
     .pronunciation-normal {
         color: var(--text-primary);
+        font-weight: normal !important;
     }
 
-    /*
-     * 音の違い・ピッチの違い・欠落・余分は
-     * すべて同じ赤色。
-     */
     .pronunciation-error {
         color: ${PITCH_ERROR_COLOR};
         font-weight: normal !important;
@@ -511,21 +571,32 @@ styleElement.textContent = `
     }
 `;
 
-document.head.appendChild(styleElement);
+document.head.appendChild(
+    styleElement
+);
 
 
 // ============================================================================
 // F0 analysis
 // ============================================================================
 
-function calculateRMS(buffer, start, end) {
+function calculateRMS(
+    buffer,
+    start,
+    end
+) {
 
     let sum = 0;
     let count = 0;
 
-    for (let i = start; i < end; i++) {
+    for (
+        let i = start;
+        i < end;
+        i++
+    ) {
 
-        const value = buffer[i];
+        const value =
+            buffer[i];
 
         sum += value * value;
         count++;
@@ -533,23 +604,67 @@ function calculateRMS(buffer, start, end) {
 
     if (!count) return 0;
 
-    return Math.sqrt(sum / count);
+    return Math.sqrt(
+        sum / count
+    );
 }
 
 
-function autocorrelationF0(buffer, sampleRate) {
+// ----------------------------------------------------------------------------
+// Autocorrelation F0
+// ----------------------------------------------------------------------------
+
+function autocorrelationF0(
+    buffer,
+    sampleRate
+) {
 
     const minFreq = 70;
     const maxFreq = 350;
 
     const minLag =
-        Math.floor(sampleRate / maxFreq);
+        Math.floor(
+            sampleRate / maxFreq
+        );
 
     const maxLag =
-        Math.floor(sampleRate / minFreq);
+        Math.floor(
+            sampleRate / minFreq
+        );
 
     let bestLag = -1;
     let bestCorrelation = 0;
+
+    /*
+     * DC offset除去
+     */
+    let mean = 0;
+
+    for (
+        let i = 0;
+        i < buffer.length;
+        i++
+    ) {
+        mean += buffer[i];
+    }
+
+    mean /=
+        buffer.length || 1;
+
+    const centered =
+        new Float32Array(
+            buffer.length
+        );
+
+    for (
+        let i = 0;
+        i < buffer.length;
+        i++
+    ) {
+
+        centered[i] =
+            buffer[i] - mean;
+    }
 
     for (
         let lag = minLag;
@@ -560,39 +675,49 @@ function autocorrelationF0(buffer, sampleRate) {
         let sum = 0;
         let sumA = 0;
         let sumB = 0;
-        let count = 0;
 
         const limit =
-            buffer.length - lag;
+            centered.length - lag;
 
-        for (let i = 0; i < limit; i++) {
+        for (
+            let i = 0;
+            i < limit;
+            i++
+        ) {
 
-            const a = buffer[i];
-            const b = buffer[i + lag];
+            const a =
+                centered[i];
+
+            const b =
+                centered[i + lag];
 
             sum += a * b;
             sumA += a * a;
             sumB += b * b;
-
-            count++;
         }
 
-        if (!count) continue;
-
         const denominator =
-            Math.sqrt(sumA * sumB);
+            Math.sqrt(
+                sumA * sumB
+            );
 
-        if (!denominator) continue;
+        if (!denominator) {
+            continue;
+        }
 
         const correlation =
             sum / denominator;
 
-        if (correlation > bestCorrelation) {
+        if (
+            correlation >
+            bestCorrelation
+        ) {
 
             bestCorrelation =
                 correlation;
 
-            bestLag = lag;
+            bestLag =
+                lag;
         }
     }
 
@@ -603,11 +728,20 @@ function autocorrelationF0(buffer, sampleRate) {
         return null;
     }
 
-    return sampleRate / bestLag;
+    return (
+        sampleRate /
+        bestLag
+    );
 }
 
 
-function extractF0Frames(audioBuffer) {
+// ----------------------------------------------------------------------------
+// Extract F0 frames
+// ----------------------------------------------------------------------------
+
+function extractF0Frames(
+    audioBuffer
+) {
 
     const channelData =
         audioBuffer.getChannelData(0);
@@ -615,24 +749,36 @@ function extractF0Frames(audioBuffer) {
     const sampleRate =
         audioBuffer.sampleRate;
 
-    const frameDuration = 0.04;
-    const hopDuration = 0.02;
+    /*
+     * 40ms frame / 10ms hop
+     *
+     * 従来の20ms hopより細かくして、
+     * モーラ境界の自由度を上げる。
+     */
+    const frameDuration =
+        0.04;
+
+    const hopDuration =
+        0.01;
 
     const frameSize =
         Math.floor(
-            sampleRate * frameDuration
+            sampleRate *
+            frameDuration
         );
 
     const hopSize =
         Math.floor(
-            sampleRate * hopDuration
+            sampleRate *
+            hopDuration
         );
 
     const frames = [];
 
     for (
         let start = 0;
-        start + frameSize < channelData.length;
+        start + frameSize <=
+            channelData.length;
         start += hopSize
     ) {
 
@@ -640,7 +786,10 @@ function extractF0Frames(audioBuffer) {
             start + frameSize;
 
         const frame =
-            channelData.slice(start, end);
+            channelData.slice(
+                start,
+                end
+            );
 
         const rms =
             calculateRMS(
@@ -649,7 +798,12 @@ function extractF0Frames(audioBuffer) {
                 frame.length
             );
 
-        if (rms < 0.015) {
+        /*
+         * 無音・極端に小さい音。
+         */
+        if (
+            rms < 0.012
+        ) {
 
             frames.push(null);
             continue;
@@ -672,19 +826,37 @@ function extractF0Frames(audioBuffer) {
 }
 
 
+// ============================================================================
+// Median
+// ============================================================================
+
 function median(values) {
 
     const valid =
         values
-            .filter(v => v != null)
-            .sort((a, b) => a - b);
+            .filter(
+                value =>
+                    value != null &&
+                    Number.isFinite(value)
+            )
+            .sort(
+                (a, b) =>
+                    a - b
+            );
 
-    if (!valid.length) return null;
+    if (!valid.length) {
+        return null;
+    }
 
     const middle =
-        Math.floor(valid.length / 2);
+        Math.floor(
+            valid.length / 2
+        );
 
-    if (valid.length % 2) {
+    if (
+        valid.length % 2
+    ) {
+
         return valid[middle];
     }
 
@@ -696,133 +868,44 @@ function median(values) {
 
 
 // ============================================================================
-// Estimate raw F0 per mora
+// F0 smoothing
 // ============================================================================
 
-function estimateMoraF0(
-    audioBuffer,
-    morae
+function smoothF0Frames(
+    frames
 ) {
 
-    const frameData =
-        extractF0Frames(audioBuffer);
-
-    const validFrames =
-        frameData.frames.filter(
-            value => value != null
-        );
-
-    if (validFrames.length < 3) {
-        return [];
-    }
-
-    let firstVoiced = -1;
-    let lastVoiced = -1;
+    const result =
+        frames.slice();
 
     for (
-        let i = 0;
-        i < frameData.frames.length;
+        let i = 1;
+        i < frames.length - 1;
         i++
     ) {
 
         if (
-            frameData.frames[i] != null
+            frames[i] == null
         ) {
-
-            if (firstVoiced < 0) {
-                firstVoiced = i;
-            }
-
-            lastVoiced = i;
-        }
-    }
-
-    if (
-        firstVoiced < 0 ||
-        lastVoiced < firstVoiced
-    ) {
-        return [];
-    }
-
-    const voicedFrameCount =
-        lastVoiced - firstVoiced + 1;
-
-    const normalMorae =
-        morae.filter(
-            mora => !mora.special
-        );
-
-    if (!normalMorae.length) {
-        return [];
-    }
-
-    const result = [];
-
-    let normalIndex = 0;
-
-    for (const mora of morae) {
-
-        if (mora.special) {
-
-            result.push({
-                mora,
-                f0: null,
-                high: null
-            });
-
             continue;
         }
 
-        const startRatio =
-            normalIndex /
-            normalMorae.length;
+        const neighbours = [
+            frames[i - 1],
+            frames[i],
+            frames[i + 1]
+        ].filter(
+            value =>
+                value != null
+        );
 
-        const endRatio =
-            (normalIndex + 1) /
-            normalMorae.length;
-
-        const startFrame =
-            Math.floor(
-                firstVoiced +
-                voicedFrameCount *
-                startRatio
-            );
-
-        const endFrame =
-            Math.max(
-                startFrame + 1,
-                Math.floor(
-                    firstVoiced +
-                    voicedFrameCount *
-                    endRatio
-                )
-            );
-
-        const values = [];
-
-        for (
-            let i = startFrame;
-            i < endFrame;
-            i++
+        if (
+            neighbours.length >= 2
         ) {
 
-            if (
-                frameData.frames[i] != null
-            ) {
-
-                values.push(
-                    frameData.frames[i]
-                );
-            }
+            result[i] =
+                median(neighbours);
         }
-
-        result.push({
-            mora,
-            f0: median(values),
-            high: null
-        });
-
-        normalIndex++;
     }
 
     return result;
@@ -830,177 +913,812 @@ function estimateMoraF0(
 
 
 // ============================================================================
-// Improved pitch classification
+// F0 normalization
 // ============================================================================
 
-function classifyLearnerPitch(
-    estimated
+function normalizeF0Frames(
+    frames
 ) {
 
-    const normalItems =
-        estimated.filter(
-            item =>
-                !item.mora.special &&
-                item.f0 != null
+    const valid =
+        frames.filter(
+            value =>
+                value != null
         );
 
     if (
-        normalItems.length < 3
+        valid.length < 5
     ) {
-        return estimated;
+        return null;
     }
 
-    const values =
-        normalItems.map(
-            item => item.f0
-        );
-
-    let lowCenter =
-        Math.min(...values);
-
-    let highCenter =
-        Math.max(...values);
-
     /*
-     * 最初からほぼ同じ高さなら、
-     * 無理にHigh / Lowへ分類しない。
+     * 話者固有の声の高さを消すため、
+     * Hzではなくsemitoneへ変換し、
+     * 話者の中央値を0とする。
      */
+    const center =
+        median(valid);
+
     if (
-        highCenter - lowCenter <
-        Math.max(
-            12,
-            median(values) * 0.07
-        )
+        center == null ||
+        center <= 0
     ) {
-
-        estimated.forEach(item => {
-            item.high = null;
-        });
-
-        return estimated;
+        return null;
     }
 
-    /*
-     * 2クラスタに分ける。
-     * 単純な1次元k-means。
-     */
-    for (let iteration = 0; iteration < 8; iteration++) {
-
-        const lowValues = [];
-        const highValues = [];
-
-        normalItems.forEach(item => {
-
-            const lowDistance =
-                Math.abs(
-                    item.f0 - lowCenter
-                );
-
-            const highDistance =
-                Math.abs(
-                    item.f0 - highCenter
-                );
+    return frames.map(
+        value => {
 
             if (
-                lowDistance <=
-                highDistance
+                value == null
             ) {
-
-                lowValues.push(item.f0);
-
-            } else {
-
-                highValues.push(item.f0);
+                return null;
             }
-        });
 
-        if (lowValues.length) {
-            lowCenter = median(lowValues);
-        }
-
-        if (highValues.length) {
-            highCenter = median(highValues);
-        }
-    }
-
-    /*
-     * クラスタ間の差が小さい場合は、
-     * ピッチ判定をしない。
-     *
-     * これが今回追加した重要な安全策。
-     */
-    const centerDifference =
-        highCenter - lowCenter;
-
-    const minimumDifference =
-        Math.max(
-            15,
-            ((highCenter + lowCenter) / 2) * 0.08
-        );
-
-    if (
-        centerDifference <
-        minimumDifference
-    ) {
-
-        estimated.forEach(item => {
-            item.high = null;
-        });
-
-        return estimated;
-    }
-
-    estimated.forEach(item => {
-
-        if (
-            item.mora.special ||
-            item.f0 == null
-        ) {
-
-            item.high = null;
-            return;
-        }
-
-        const lowDistance =
-            Math.abs(
-                item.f0 - lowCenter
+            return (
+                12 *
+                Math.log2(
+                    value / center
+                )
             );
-
-        const highDistance =
-            Math.abs(
-                item.f0 - highCenter
-            );
-
-        item.high =
-            highDistance < lowDistance;
-    });
-
-    return estimated;
+        }
+    );
 }
 
 
 // ============================================================================
-// Estimate learner pitch per mora
+// Find voiced range
 // ============================================================================
 
-function estimateMoraPitch(
-    audioBuffer,
-    morae
+function findVoicedRange(
+    frames
 ) {
 
-    const estimated =
-        estimateMoraF0(
-            audioBuffer,
-            morae
-        );
+    let first = -1;
+    let last = -1;
 
-    if (!estimated.length) {
-        return [];
+    for (
+        let i = 0;
+        i < frames.length;
+        i++
+    ) {
+
+        if (
+            frames[i] != null
+        ) {
+
+            if (first < 0) {
+                first = i;
+            }
+
+            last = i;
+        }
     }
 
-    return classifyLearnerPitch(
-        estimated
+    if (
+        first < 0 ||
+        last < first
+    ) {
+
+        return null;
+    }
+
+    return {
+        first,
+        last
+    };
+}
+
+
+// ============================================================================
+// Pitch segmentation
+// ============================================================================
+
+/*
+ * ここが従来方式との大きな違い。
+ *
+ * 従来：
+ *
+ *   音声全体
+ *       ↓
+ *   モーラ数で均等分割
+ *
+ * 今回：
+ *
+ *   F0フレーム列
+ *       ↓
+ *   各モーラに何フレーム割り当てるかをDPで探索
+ *
+ * したがって、
+ *
+ *   て   が長い
+ *   ん   が短い
+ *   き   が長い
+ *
+ * のような実際の発話時間の違いを許容する。
+ */
+
+
+function buildPrefixStatistics(
+    frames
+) {
+
+    const n =
+        frames.length;
+
+    const count =
+        new Array(n + 1).fill(0);
+
+    const sum =
+        new Array(n + 1).fill(0);
+
+    const sumSq =
+        new Array(n + 1).fill(0);
+
+    for (
+        let i = 0;
+        i < n;
+        i++
+    ) {
+
+        count[i + 1] =
+            count[i];
+
+        sum[i + 1] =
+            sum[i];
+
+        sumSq[i + 1] =
+            sumSq[i];
+
+        const value =
+            frames[i];
+
+        if (
+            value != null
+        ) {
+
+            count[i + 1]++;
+
+            sum[i + 1] +=
+                value;
+
+            sumSq[i + 1] +=
+                value * value;
+        }
+    }
+
+    return {
+        count,
+        sum,
+        sumSq
+    };
+}
+
+
+function segmentMean(
+    stats,
+    start,
+    end
+) {
+
+    const count =
+        stats.count[end] -
+        stats.count[start];
+
+    if (!count) {
+        return null;
+    }
+
+    return (
+        stats.sum[end] -
+        stats.sum[start]
+    ) / count;
+}
+
+
+function segmentVariance(
+    stats,
+    start,
+    end
+) {
+
+    const count =
+        stats.count[end] -
+        stats.count[start];
+
+    if (
+        count < 2
+    ) {
+        return 0;
+    }
+
+    const sum =
+        stats.sum[end] -
+        stats.sum[start];
+
+    const sumSq =
+        stats.sumSq[end] -
+        stats.sumSq[start];
+
+    const mean =
+        sum / count;
+
+    const variance =
+        (
+            sumSq -
+            count * mean * mean
+        ) / count;
+
+    return Math.max(
+        0,
+        variance
     );
+}
+
+
+/*
+ * F0値から2つの中心値を推定。
+ *
+ * これは「モーラを均等に区切る」ためではなく、
+ * 話者の中で実際に存在する低・高の2領域を
+ * 推定するために使う。
+ */
+function estimatePitchCenters(
+    normalizedFrames
+) {
+
+    const values =
+        normalizedFrames.filter(
+            value =>
+                value != null
+        );
+
+    if (
+        values.length < 5
+    ) {
+        return null;
+    }
+
+    let low =
+        Math.min(...values);
+
+    let high =
+        Math.max(...values);
+
+    /*
+     * 初期差が極端に小さい場合、
+     * Pitch判定自体を行わない。
+     */
+    if (
+        high - low < 1.5
+    ) {
+        return null;
+    }
+
+    for (
+        let iteration = 0;
+        iteration < 12;
+        iteration++
+    ) {
+
+        const lowValues = [];
+        const highValues = [];
+
+        values.forEach(
+            value => {
+
+                if (
+                    Math.abs(
+                        value - low
+                    ) <=
+                    Math.abs(
+                        value - high
+                    )
+                ) {
+
+                    lowValues.push(
+                        value
+                    );
+
+                } else {
+
+                    highValues.push(
+                        value
+                    );
+                }
+            }
+        );
+
+        if (lowValues.length) {
+            low =
+                median(lowValues);
+        }
+
+        if (highValues.length) {
+            high =
+                median(highValues);
+        }
+    }
+
+    if (
+        low == null ||
+        high == null
+    ) {
+        return null;
+    }
+
+    if (low > high) {
+        [low, high] =
+            [high, low];
+    }
+
+    /*
+     * 1.5 semitone未満なら
+     * High / Lowの区別が不十分とする。
+     */
+    if (
+        high - low < 1.5
+    ) {
+        return null;
+    }
+
+    return {
+        low,
+        high
+    };
+}
+
+
+// ============================================================================
+// Dynamic programming pitch alignment
+// ============================================================================
+
+function alignPitchToMorae(
+    normalizedFrames,
+    targetMorae,
+    centers
+) {
+
+    const voicedRange =
+        findVoicedRange(
+            normalizedFrames
+        );
+
+    if (!voicedRange) {
+        return null;
+    }
+
+    const frames =
+        normalizedFrames.slice(
+            voicedRange.first,
+            voicedRange.last + 1
+        );
+
+    const n =
+        frames.length;
+
+    const normalMorae =
+        targetMorae.filter(
+            mora =>
+                !mora.special
+        );
+
+    const m =
+        normalMorae.length;
+
+    if (
+        m < 1 ||
+        n < m * 2
+    ) {
+        return null;
+    }
+
+    const stats =
+        buildPrefixStatistics(
+            frames
+        );
+
+    /*
+     * 1モーラに割り当てる最小・最大フレーム数。
+     *
+     * 10ms hopなので、
+     * 20ms〜300ms程度を許容する。
+     */
+    const minFrames = 2;
+    const maxFrames = 30;
+
+    const INF =
+        Number.POSITIVE_INFINITY;
+
+    /*
+     * dp[i][j]
+     *
+     * i = 何モーラ処理したか
+     * j = 何フレーム処理したか
+     */
+    const dp =
+        Array.from(
+            { length: m + 1 },
+            () =>
+                new Array(n + 1)
+                    .fill(INF)
+        );
+
+    const back =
+        Array.from(
+            { length: m + 1 },
+            () =>
+                new Array(n + 1)
+                    .fill(null)
+        );
+
+    dp[0][0] = 0;
+
+    for (
+        let i = 0;
+        i < m;
+        i++
+    ) {
+
+        const expectedHigh =
+            !normalMorae[i].low;
+
+        const expectedCenter =
+            expectedHigh
+                ? centers.high
+                : centers.low;
+
+        for (
+            let start = 0;
+            start <= n;
+            start++
+        ) {
+
+            if (
+                !Number.isFinite(
+                    dp[i][start]
+                )
+            ) {
+                continue;
+            }
+
+            const remainingMorae =
+                m - i - 1;
+
+            const remainingFrames =
+                n - start;
+
+            const minRemaining =
+                remainingMorae *
+                minFrames;
+
+            const maxRemaining =
+                remainingMorae *
+                maxFrames;
+
+            let minEnd =
+                start + minFrames;
+
+            let maxEnd =
+                Math.min(
+                    n,
+                    start + maxFrames
+                );
+
+            /*
+             * 後続モーラに最低限必要な
+             * フレーム数を確保。
+             */
+            minEnd =
+                Math.max(
+                    minEnd,
+                    n -
+                    maxRemaining
+                );
+
+            maxEnd =
+                Math.min(
+                    maxEnd,
+                    n -
+                    minRemaining
+                );
+
+            if (
+                minEnd > maxEnd
+            ) {
+                continue;
+            }
+
+            for (
+                let end = minEnd;
+                end <= maxEnd;
+                end++
+            ) {
+
+                const count =
+                    stats.count[end] -
+                    stats.count[start];
+
+                if (!count) {
+                    continue;
+                }
+
+                const mean =
+                    segmentMean(
+                        stats,
+                        start,
+                        end
+                    );
+
+                if (mean == null) {
+                    continue;
+                }
+
+                const variance =
+                    segmentVariance(
+                        stats,
+                        start,
+                        end
+                    );
+
+                /*
+                 * 期待するPitch中心との距離。
+                 *
+                 * 分散も少しだけ加える。
+                 * ただし分散を強くすると
+                 * 極端に短い区間を選びやすくなるので
+                 * 小さくする。
+                 */
+                const centerCost =
+                    Math.pow(
+                        mean -
+                        expectedCenter,
+                        2
+                    );
+
+                const varianceCost =
+                    variance * 0.12;
+
+                /*
+                 * 極端に短い区間を避ける。
+                 */
+                const duration =
+                    end - start;
+
+                const durationPenalty =
+                    duration === minFrames
+                        ? 0.8
+                        : 0;
+
+                const cost =
+                    dp[i][start] +
+                    centerCost +
+                    varianceCost +
+                    durationPenalty;
+
+                if (
+                    cost <
+                    dp[i + 1][end]
+                ) {
+
+                    dp[i + 1][end] =
+                        cost;
+
+                    back[i + 1][end] = {
+                        start,
+                        end
+                    };
+                }
+            }
+        }
+    }
+
+    if (
+        !Number.isFinite(
+            dp[m][n]
+        )
+    ) {
+        return null;
+    }
+
+    /*
+     * Backtrack
+     */
+    const segments =
+        new Array(m);
+
+    let end =
+        n;
+
+    for (
+        let i = m;
+        i > 0;
+        i--
+    ) {
+
+        const item =
+            back[i][end];
+
+        if (!item) {
+            return null;
+        }
+
+        const start =
+            item.start;
+
+        segments[i - 1] = {
+            start,
+            end,
+            mean:
+                segmentMean(
+                    stats,
+                    start,
+                    end
+                )
+        };
+
+        end =
+            start;
+    }
+
+    return {
+        segments,
+        voicedStart:
+            voicedRange.first,
+        voicedEnd:
+            voicedRange.last,
+        cost:
+            dp[m][n]
+    };
+}
+
+
+// ============================================================================
+// Estimate pitch pattern
+// ============================================================================
+
+function estimatePitchPattern(
+    audioBuffer,
+    modelMorae
+) {
+
+    const frameData =
+        extractF0Frames(
+            audioBuffer
+        );
+
+    if (
+        !frameData.frames.length
+    ) {
+        return null;
+    }
+
+    const smoothedFrames =
+        smoothF0Frames(
+            frameData.frames
+        );
+
+    const normalizedFrames =
+        normalizeF0Frames(
+            smoothedFrames
+        );
+
+    if (!normalizedFrames) {
+        return null;
+    }
+
+    const centers =
+        estimatePitchCenters(
+            normalizedFrames
+        );
+
+    if (!centers) {
+        return null;
+    }
+
+    const alignment =
+        alignPitchToMorae(
+            normalizedFrames,
+            modelMorae,
+            centers
+        );
+
+    if (!alignment) {
+        return null;
+    }
+
+    const normalMorae =
+        modelMorae.filter(
+            mora =>
+                !mora.special
+        );
+
+    const results =
+        normalMorae.map(
+            (mora, index) => {
+
+                const segment =
+                    alignment.segments[
+                        index
+                    ];
+
+                if (!segment) {
+                    return {
+                        mora,
+                        high: null,
+                        mean: null
+                    };
+                }
+
+                const expectedHigh =
+                    !mora.low;
+
+                /*
+                 * セグメントの平均F0が
+                 * 2中心のどちらに近いか。
+                 */
+                const lowDistance =
+                    Math.abs(
+                        segment.mean -
+                        centers.low
+                    );
+
+                const highDistance =
+                    Math.abs(
+                        segment.mean -
+                        centers.high
+                    );
+
+                const learnerHigh =
+                    highDistance <
+                    lowDistance;
+
+                /*
+                 * 中間領域では無理に判定しない。
+                 */
+                const midpoint =
+                    (
+                        centers.low +
+                        centers.high
+                    ) / 2;
+
+                const centerGap =
+                    centers.high -
+                    centers.low;
+
+                const uncertainty =
+                    centerGap * 0.18;
+
+                let high =
+                    learnerHigh;
+
+                if (
+                    Math.abs(
+                        segment.mean -
+                        midpoint
+                    ) <
+                    uncertainty
+                ) {
+
+                    high = null;
+                }
+
+                return {
+                    mora,
+                    high,
+                    mean:
+                        segment.mean,
+                    expectedHigh
+                };
+            }
+        );
+
+    return {
+        results,
+        centers,
+        alignment
+    };
 }
 
 
@@ -1029,7 +1747,9 @@ function compareMoraSequences(
 
             operations.push({
                 type: "extra",
-                learner: learnerMorae[j]
+                learner:
+                    learnerMorae[j],
+                learnerIndex: j
             });
 
             j++;
@@ -1042,7 +1762,9 @@ function compareMoraSequences(
 
             operations.push({
                 type: "missing",
-                model: modelMorae[i]
+                model:
+                    modelMorae[i],
+                modelIndex: i
             });
 
             i++;
@@ -1077,14 +1799,17 @@ function compareMoraSequences(
          * 学習者側の余分なモーラ
          */
         if (
-            j + 1 < learnerMorae.length &&
+            j + 1 <
+                learnerMorae.length &&
             model.text ===
-                learnerMorae[j + 1].text
+                learnerMorae[
+                    j + 1
+                ].text
         ) {
 
             operations.push({
                 type: "extra",
-                learner: learner,
+                learner,
                 learnerIndex: j
             });
 
@@ -1096,14 +1821,17 @@ function compareMoraSequences(
          * モデル側の欠落モーラ
          */
         if (
-            i + 1 < modelMorae.length &&
-            modelMorae[i + 1].text ===
+            i + 1 <
+                modelMorae.length &&
+            modelMorae[
+                i + 1
+            ].text ===
                 learner.text
         ) {
 
             operations.push({
                 type: "missing",
-                model: model,
+                model,
                 modelIndex: i
             });
 
@@ -1134,7 +1862,23 @@ function compareMoraSequences(
 
 
 // ============================================================================
-// Render basic result
+// Check whether text/mora stage is completely correct
+// ============================================================================
+
+function isTextStageCorrect(
+    operations
+) {
+
+    return operations.every(
+        operation =>
+            operation.type ===
+            "match"
+    );
+}
+
+
+// ============================================================================
+// Render basic text result
 // ============================================================================
 
 function renderPronunciationResult(
@@ -1146,91 +1890,332 @@ function renderPronunciationResult(
 
     let hasError = false;
 
-    operations.forEach(operation => {
+    operations.forEach(
+        operation => {
 
-        if (
-            operation.type ===
-            "match"
-        ) {
+            if (
+                operation.type ===
+                "match"
+            ) {
 
-            const span =
-                document.createElement("span");
+                const span =
+                    document.createElement(
+                        "span"
+                    );
 
-            span.className =
-                "pronunciation-normal";
+                span.className =
+                    "pronunciation-normal";
 
-            span.textContent =
-                operation.learner.text;
+                span.textContent =
+                    operation.learner.text;
 
-            resultSpan.appendChild(span);
+                resultSpan.appendChild(
+                    span
+                );
 
-            return;
+                return;
+            }
+
+            if (
+                operation.type ===
+                "sound-error"
+            ) {
+
+                const span =
+                    document.createElement(
+                        "span"
+                    );
+
+                span.className =
+                    "pronunciation-error";
+
+                span.textContent =
+                    operation.learner.text;
+
+                resultSpan.appendChild(
+                    span
+                );
+
+                hasError = true;
+
+                return;
+            }
+
+            if (
+                operation.type ===
+                "missing"
+            ) {
+
+                const span =
+                    document.createElement(
+                        "span"
+                    );
+
+                span.className =
+                    "pronunciation-missing";
+
+                span.textContent =
+                    `[${operation.model.text}×]`;
+
+                resultSpan.appendChild(
+                    span
+                );
+
+                hasError = true;
+
+                return;
+            }
+
+            if (
+                operation.type ===
+                "extra"
+            ) {
+
+                const span =
+                    document.createElement(
+                        "span"
+                    );
+
+                span.className =
+                    "pronunciation-extra";
+
+                span.textContent =
+                    `[${operation.learner.text}+]`;
+
+                resultSpan.appendChild(
+                    span
+                );
+
+                hasError = true;
+            }
         }
-
-        if (
-            operation.type ===
-            "sound-error"
-        ) {
-
-            const span =
-                document.createElement("span");
-
-            span.className =
-                "pronunciation-error";
-
-            span.textContent =
-                operation.learner.text;
-
-            resultSpan.appendChild(span);
-
-            hasError = true;
-            return;
-        }
-
-        if (
-            operation.type ===
-            "missing"
-        ) {
-
-            const span =
-                document.createElement("span");
-
-            span.className =
-                "pronunciation-missing";
-
-            span.textContent =
-                `[${operation.model.text}×]`;
-
-            resultSpan.appendChild(span);
-
-            hasError = true;
-            return;
-        }
-
-        if (
-            operation.type ===
-            "extra"
-        ) {
-
-            const span =
-                document.createElement("span");
-
-            span.className =
-                "pronunciation-extra";
-
-            span.textContent =
-                `[${operation.learner.text}+]`;
-
-            resultSpan.appendChild(span);
-
-            hasError = true;
-        }
-    });
+    );
 
     if (!hasError) {
 
         const checkSpan =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
+
+        checkSpan.textContent =
+            " ✅️";
+
+        checkSpan.style.color =
+            "var(--text-primary)";
+
+        resultSpan.appendChild(
+            checkSpan
+        );
+    }
+
+    return hasError;
+}
+
+
+// ============================================================================
+// Render pitch result
+// ============================================================================
+
+function renderPitchResult(
+    resultSpan,
+    modelMorae,
+    pitchAnalysis
+) {
+
+    resultSpan.innerHTML = "";
+
+    /*
+     * Pitch解析が成立していない場合、
+     * 誤ってOKにはしない。
+     */
+    if (
+        !pitchAnalysis ||
+        !pitchAnalysis.results
+    ) {
+
+        renderPronunciationResult(
+            resultSpan,
+            modelMorae.map(
+                mora => ({
+                    type: "match",
+                    model: mora,
+                    learner: mora
+                })
+            )
+        );
+
+        /*
+         * 上記では一旦✅が出るため、
+         * Pitch解析不能表示に差し替える。
+         */
+        const last =
+            resultSpan.lastChild;
+
+        if (last) {
+            last.remove();
+        }
+
+        const note =
+            document.createElement(
+                "span"
+            );
+
+        note.textContent =
+            "（Pitch判定できず）";
+
+        note.style.color =
+            "var(--text-secondary)";
+
+        resultSpan.appendChild(
+            note
+        );
+
+        return false;
+    }
+
+    /*
+     * special moraを含めたモデルモーラ順に戻す。
+     *
+     * Pitch結果は通常モーラだけなので、
+     * special moraはそのまま表示する。
+     */
+    const pitchByTextIndex =
+        new Map();
+
+    let normalIndex = 0;
+
+    modelMorae.forEach(
+        (mora, modelIndex) => {
+
+            if (
+                mora.special
+            ) {
+                return;
+            }
+
+            pitchByTextIndex.set(
+                modelIndex,
+                pitchAnalysis.results[
+                    normalIndex
+                ]
+            );
+
+            normalIndex++;
+        }
+    );
+
+    let hasError = false;
+
+    modelMorae.forEach(
+        (mora, modelIndex) => {
+
+            const span =
+                document.createElement(
+                    "span"
+                );
+
+            span.textContent =
+                mora.text;
+
+            /*
+             * っ・ん・ーはPitch判定しない。
+             */
+            if (
+                mora.special
+            ) {
+
+                span.className =
+                    "pronunciation-normal";
+
+                resultSpan.appendChild(
+                    span
+                );
+
+                return;
+            }
+
+            const pitch =
+                pitchByTextIndex.get(
+                    modelIndex
+                );
+
+            let pitchError = false;
+
+            if (
+                pitch &&
+                pitch.high != null
+            ) {
+
+                const expectedHigh =
+                    !mora.low;
+
+                if (
+                    pitch.high !==
+                    expectedHigh
+                ) {
+
+                    pitchError = true;
+                }
+            }
+
+            if (pitchError) {
+
+                span.className =
+                    "pronunciation-error";
+
+                hasError = true;
+
+            } else {
+
+                span.className =
+                    "pronunciation-normal";
+            }
+
+            resultSpan.appendChild(
+                span
+            );
+        }
+    );
+
+    /*
+     * Pitch判定不能なモーラがあれば、
+     * 全体OKとはしない。
+     */
+    const hasUnknown =
+        pitchAnalysis.results.some(
+            item =>
+                item.high == null
+        );
+
+    if (
+        hasUnknown
+    ) {
+
+        const note =
+            document.createElement(
+                "span"
+            );
+
+        note.textContent =
+            "（Pitch判定不明）";
+
+        note.style.color =
+            "var(--text-secondary)";
+
+        resultSpan.appendChild(
+            note
+        );
+
+        return hasError;
+    }
+
+    if (!hasError) {
+
+        const checkSpan =
+            document.createElement(
+                "span"
+            );
 
         checkSpan.textContent =
             " ✅️";
@@ -1258,16 +2243,36 @@ async function analyzeRecordedAudio(
     resultSpan
 ) {
 
-    if (!audioBlob) return;
+    if (!audioBlob) {
+        return;
+    }
 
     /*
-     * まず文字・モーラ判定を表示する。
-     * F0解析に失敗しても、この結果は残す。
+     * まず文字・モーラ判定を表示。
      */
     renderPronunciationResult(
         resultSpan,
         operations
     );
+
+    /*
+     * 文字・モーラが完全一致していない場合、
+     * Pitch解析には進まない。
+     *
+     * これが今回のステージ分離の重要部分。
+     */
+    if (
+        !isTextStageCorrect(
+            operations
+        )
+    ) {
+        return;
+    }
+
+    /*
+     * SpeechRecognitionの結果は
+     * ここから先のPitch判定には使用しない。
+     */
 
     try {
 
@@ -1290,226 +2295,75 @@ async function analyzeRecordedAudio(
                 arrayBuffer
             );
 
-        /*
-         * F0解析対象の学習者モーラを作る。
-         *
-         * operations上のlearnerIndexとの対応を
-         * pitchIndexとして保存する。
-         */
-        const pitchMorae = [];
-
-        operations.forEach(operation => {
-
-            if (
-                operation.type === "match" ||
-                operation.type === "sound-error"
-            ) {
-
-                operation.pitchIndex =
-                    pitchMorae.length;
-
-                pitchMorae.push(
-                    operation.learner
-                );
-            }
-        });
-
-        if (!pitchMorae.length) {
-
-            await audioContext.close();
-            return;
-        }
-
-        const estimatedPitch =
-            estimateMoraPitch(
+        const pitchAnalysis =
+            estimatePitchPattern(
                 audioBuffer,
-                pitchMorae
+                modelMorae
             );
-
-        if (!estimatedPitch.length) {
-
-            await audioContext.close();
-            return;
-        }
-
-        /*
-         * pitchIndex → 推定Pitch
-         */
-        const pitchMap = new Map();
-
-        estimatedPitch.forEach(
-            (item, index) => {
-
-                pitchMap.set(
-                    index,
-                    item
-                );
-            }
-        );
-
-        /*
-         * もう一度結果を構築。
-         *
-         * sound-error はすでに音が違うため、
-         * ピッチ判定は追加しない。
-         */
-        resultSpan.innerHTML = "";
-
-        let hasError = false;
-
-        operations.forEach(operation => {
-
-            if (
-                operation.type ===
-                "match"
-            ) {
-
-                const span =
-                    document.createElement("span");
-
-                span.textContent =
-                    operation.learner.text;
-
-                let pitchError = false;
-
-                if (
-                    !operation.model.special
-                ) {
-
-                    const pitch =
-                        pitchMap.get(
-                            operation.pitchIndex
-                        );
-
-                    if (
-                        pitch &&
-                        pitch.high != null &&
-                        operation.model.low != null
-                    ) {
-
-                        const learnerLow =
-                            !pitch.high;
-
-                        if (
-                            learnerLow !==
-                            operation.model.low
-                        ) {
-
-                            pitchError = true;
-                        }
-                    }
-                }
-
-                if (pitchError) {
-
-                    span.className =
-                        "pronunciation-error";
-
-                    hasError = true;
-
-                } else {
-
-                    span.className =
-                        "pronunciation-normal";
-                }
-
-                resultSpan.appendChild(span);
-
-                return;
-            }
-
-            if (
-                operation.type ===
-                "sound-error"
-            ) {
-
-                const span =
-                    document.createElement("span");
-
-                span.className =
-                    "pronunciation-error";
-
-                span.textContent =
-                    operation.learner.text;
-
-                resultSpan.appendChild(span);
-
-                hasError = true;
-                return;
-            }
-
-            if (
-                operation.type ===
-                "missing"
-            ) {
-
-                const span =
-                    document.createElement("span");
-
-                span.className =
-                    "pronunciation-missing";
-
-                span.textContent =
-                    `[${operation.model.text}×]`;
-
-                resultSpan.appendChild(span);
-
-                hasError = true;
-                return;
-            }
-
-            if (
-                operation.type ===
-                "extra"
-            ) {
-
-                const span =
-                    document.createElement("span");
-
-                span.className =
-                    "pronunciation-extra";
-
-                span.textContent =
-                    `[${operation.learner.text}+]`;
-
-                resultSpan.appendChild(span);
-
-                hasError = true;
-            }
-        });
-
-        if (!hasError) {
-
-            const checkSpan =
-                document.createElement("span");
-
-            checkSpan.textContent =
-                " ✅️";
-
-            checkSpan.style.color =
-                "var(--text-primary)";
-
-            resultSpan.appendChild(
-                checkSpan
-            );
-        }
 
         await audioContext.close();
+
+        renderPitchResult(
+            resultSpan,
+            modelMorae,
+            pitchAnalysis
+        );
 
     } catch (error) {
 
         console.error(
-            "F0 analysis error:",
+            "Pitch analysis error:",
             error
         );
 
         /*
-         * F0解析失敗時は、
-         * 文字・モーラ判定だけを残す。
+         * Pitch解析失敗時に
+         * 勝手に✅にはしない。
          */
-        renderPronunciationResult(
-            resultSpan,
-            operations
+        resultSpan.innerHTML = "";
+
+        const textSpan =
+            document.createElement(
+                "span"
+            );
+
+        textSpan.className =
+            "pronunciation-normal";
+
+        modelMorae.forEach(
+            mora => {
+
+                const span =
+                    document.createElement(
+                        "span"
+                    );
+
+                span.textContent =
+                    mora.text;
+
+                textSpan.appendChild(
+                    span
+                );
+            }
+        );
+
+        resultSpan.appendChild(
+            textSpan
+        );
+
+        const note =
+            document.createElement(
+                "span"
+            );
+
+        note.textContent =
+            "（Pitch判定できず）";
+
+        note.style.color =
+            "var(--text-secondary)";
+
+        resultSpan.appendChild(
+            note
         );
     }
 }
@@ -1523,21 +2377,27 @@ function initDrill() {
 
     const drillList =
         document.getElementById(
-            'drillList'
+            "drillList"
         );
 
-    if (!drillList) return;
+    if (!drillList) {
+        return;
+    }
 
     drillList.innerHTML = "";
 
     const headerPanel =
-        document.createElement('div');
+        document.createElement(
+            "div"
+        );
 
     headerPanel.className =
-        'header-panel';
+        "header-panel";
 
     const titleArea =
-        document.createElement('span');
+        document.createElement(
+            "span"
+        );
 
     titleArea.innerHTML =
         "<strong>Pronunciation Drills</strong>";
@@ -1546,43 +2406,68 @@ function initDrill() {
         "var(--text-primary)";
 
     const controlItem =
-        document.createElement('div');
+        document.createElement(
+            "div"
+        );
 
     controlItem.className =
-        'control-item';
+        "control-item";
+
+
+    // ========================================================================
+    // Auto stop label
+    // ========================================================================
 
     const labelAuto =
-        document.createElement('span');
+        document.createElement(
+            "span"
+        );
 
     labelAuto.className =
-        'mode-label active-mode custom-tip-wrap';
+        isManualStop
+            ? "mode-label inactive-mode custom-tip-wrap"
+            : "mode-label active-mode custom-tip-wrap";
 
     labelAuto.innerHTML =
         '<span class="emoji-gray">⏹</span>Autostop' +
         '<span class="custom-tip-box">' +
         'Automatically stops recording when you stop speaking.' +
-        '</span>';
+        "</span>";
+
+
+    // ========================================================================
+    // Switch
+    // ========================================================================
 
     const switchLabel =
-        document.createElement('label');
+        document.createElement(
+            "label"
+        );
 
     switchLabel.className =
-        'switch';
+        "switch";
 
     const switchInput =
-        document.createElement('input');
+        document.createElement(
+            "input"
+        );
 
     switchInput.type =
-        'checkbox';
+        "checkbox";
 
+    /*
+     * Manual = checked
+     */
     switchInput.checked =
         isManualStop;
 
     const slider =
-        document.createElement('span');
+        document.createElement(
+            "span"
+        );
 
     slider.className =
-        'slider';
+        "slider";
 
     switchLabel.appendChild(
         switchInput
@@ -1592,43 +2477,60 @@ function initDrill() {
         slider
     );
 
+
+    // ========================================================================
+    // Manual stop label
+    // ========================================================================
+
     const labelManual =
-        document.createElement('span');
+        document.createElement(
+            "span"
+        );
 
     labelManual.className =
-        'mode-label inactive-mode custom-tip-wrap';
+        isManualStop
+            ? "mode-label active-mode custom-tip-wrap"
+            : "mode-label inactive-mode custom-tip-wrap";
 
     labelManual.innerHTML =
         '<span class="emoji-gray">⏹</span>Manual stop' +
         '<span class="custom-tip-box">' +
         'Records continuously until you click the stop button.' +
-        '</span>';
+        "</span>";
+
+
+    // ========================================================================
+    // Switch event
+    // ========================================================================
 
     switchInput.addEventListener(
-        'change',
-        (e) => {
+        "change",
+        e => {
 
             isManualStop =
                 e.target.checked;
 
-            if (isManualStop) {
+            if (
+                isManualStop
+            ) {
 
                 labelManual.className =
-                    'mode-label active-mode custom-tip-wrap';
+                    "mode-label active-mode custom-tip-wrap";
 
                 labelAuto.className =
-                    'mode-label inactive-mode custom-tip-wrap';
+                    "mode-label inactive-mode custom-tip-wrap";
 
             } else {
 
                 labelAuto.className =
-                    'mode-label active-mode custom-tip-wrap';
+                    "mode-label active-mode custom-tip-wrap";
 
                 labelManual.className =
-                    'mode-label inactive-mode custom-tip-wrap';
+                    "mode-label inactive-mode custom-tip-wrap";
             }
         }
     );
+
 
     controlItem.appendChild(
         labelAuto
@@ -1663,16 +2565,20 @@ function initDrill() {
         (itemObj, index) => {
 
             const rowDiv =
-                document.createElement('div');
+                document.createElement(
+                    "div"
+                );
 
             rowDiv.className =
-                'drill-row';
+                "drill-row";
 
             const topRow =
-                document.createElement('div');
+                document.createElement(
+                    "div"
+                );
 
             topRow.className =
-                'top-row';
+                "top-row";
 
 
             // ----------------------------------------------------------------
@@ -1680,24 +2586,28 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const numberSpan =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             numberSpan.className =
-                'sentence-number';
+                "sentence-number";
 
             numberSpan.textContent =
                 `${index + 1}.`;
 
 
             // ----------------------------------------------------------------
-            // Sentence + pitch lines
+            // Sentence + pitch display
             // ----------------------------------------------------------------
 
             const sentenceSpan =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             sentenceSpan.className =
-                'sentence-label';
+                "sentence-label";
 
             let speechText = "";
 
@@ -1705,11 +2615,13 @@ function initDrill() {
                 part => {
 
                     const span =
-                        document.createElement('span');
+                        document.createElement(
+                            "span"
+                        );
 
                     if (
                         part.type ===
-                        'symbol'
+                        "symbol"
                     ) {
 
                         span.style.color =
@@ -1726,10 +2638,12 @@ function initDrill() {
                         speechText +=
                             part.text;
 
-                        if (part.low) {
+                        if (
+                            part.low
+                        ) {
 
                             span.className =
-                                'low-pitch';
+                                "low-pitch";
 
                             span.style.textDecorationColor =
                                 itemObj.symbolColor;
@@ -1737,7 +2651,7 @@ function initDrill() {
                         } else {
 
                             span.className =
-                                'high-pitch';
+                                "high-pitch";
 
                             span.style.textDecorationColor =
                                 itemObj.symbolColor;
@@ -1756,25 +2670,31 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const listenWrapper =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             listenWrapper.className =
-                'tooltip-wrap';
+                "tooltip-wrap";
 
             const listenBtn =
-                document.createElement('button');
+                document.createElement(
+                    "button"
+                );
 
             listenBtn.textContent =
-                '🔊 きく';
+                "🔊 きく";
 
             const listenTip =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             listenTip.className =
-                'tooltip-tip';
+                "tooltip-tip";
 
             listenTip.textContent =
-                'Listen to model audio';
+                "Listen to model audio";
 
             listenWrapper.appendChild(
                 listenBtn
@@ -1785,14 +2705,14 @@ function initDrill() {
             );
 
             listenBtn.addEventListener(
-                'click',
+                "click",
                 () => {
 
                     listenBtn.disabled =
                         true;
 
                     listenBtn.textContent =
-                        '🔊Playing...';
+                        "🔊Playing...";
 
                     setTimeout(
                         () => {
@@ -1803,7 +2723,7 @@ function initDrill() {
                                 );
 
                             utterance.lang =
-                                'ja-JP';
+                                "ja-JP";
 
                             utterance.rate =
                                 0.7;
@@ -1815,7 +2735,7 @@ function initDrill() {
                                         false;
 
                                     listenBtn.textContent =
-                                        '🔊 きく';
+                                        "🔊 きく";
                                 };
 
                             speechSynthesis.speak(
@@ -1834,16 +2754,18 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const recordBtn =
-                document.createElement('button');
+                document.createElement(
+                    "button"
+                );
 
             recordBtn.className =
-                'custom-tip-wrap';
+                "custom-tip-wrap";
 
             recordBtn.innerHTML =
-                '⏺️とる' +
+                "⏺️とる" +
                 '<span class="custom-tip-box">' +
-                'Start recording your voice.' +
-                '</span>';
+                "Start recording your voice." +
+                "</span>";
 
 
             // ----------------------------------------------------------------
@@ -1851,16 +2773,18 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const stopBtn =
-                document.createElement('button');
+                document.createElement(
+                    "button"
+                );
 
             stopBtn.className =
-                'custom-tip-wrap';
+                "custom-tip-wrap";
 
             stopBtn.innerHTML =
                 '<span class="stop-btn-emoji">⏹️</span>' +
                 '<span class="custom-tip-box">' +
-                'Stop the active recording.' +
-                '</span>';
+                "Stop the active recording." +
+                "</span>";
 
             stopBtn.disabled =
                 true;
@@ -1871,22 +2795,26 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const resultContainer =
-                document.createElement('div');
+                document.createElement(
+                    "div"
+                );
 
             resultContainer.className =
-                'result-container';
+                "result-container";
 
             const resultSpan =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             resultSpan.className =
-                'result-text';
+                "result-text";
 
             resultSpan.textContent =
-                '(Not recorded yet)';
+                "(Not recorded yet)";
 
             resultSpan.style.color =
-                'var(--text-secondary)';
+                "var(--text-secondary)";
 
 
             // ----------------------------------------------------------------
@@ -1894,28 +2822,34 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const playRecordWrapper =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             playRecordWrapper.className =
-                'tooltip-wrap';
+                "tooltip-wrap";
 
             const playRecordBtn =
-                document.createElement('button');
+                document.createElement(
+                    "button"
+                );
 
             playRecordBtn.className =
-                'play-record-btn';
+                "play-record-btn";
 
             playRecordBtn.textContent =
-                '▶️';
+                "▶️";
 
             const playRecordTip =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             playRecordTip.className =
-                'tooltip-tip';
+                "tooltip-tip";
 
             playRecordTip.textContent =
-                'Play your recording';
+                "Play your recording";
 
             playRecordWrapper.appendChild(
                 playRecordBtn
@@ -1939,34 +2873,42 @@ function initDrill() {
             // ----------------------------------------------------------------
 
             const meaningContainer =
-                document.createElement('div');
+                document.createElement(
+                    "div"
+                );
 
             meaningContainer.className =
-                'meaning-container';
+                "meaning-container";
 
             const meaningWrapper =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             meaningWrapper.className =
-                'tooltip-wrap';
+                "tooltip-wrap";
 
             const meaningBtn =
-                document.createElement('button');
+                document.createElement(
+                    "button"
+                );
 
             meaningBtn.className =
-                'meaning-btn';
+                "meaning-btn";
 
             meaningBtn.textContent =
-                '🌐';
+                "🌐";
 
             const meaningTip =
-                document.createElement('span');
+                document.createElement(
+                    "span"
+                );
 
             meaningTip.className =
-                'tooltip-tip';
+                "tooltip-tip";
 
             meaningTip.textContent =
-                'Translate sentence';
+                "Translate sentence";
 
             meaningWrapper.appendChild(
                 meaningBtn
@@ -1977,39 +2919,41 @@ function initDrill() {
             );
 
             const meaningPopup =
-                document.createElement('div');
+                document.createElement(
+                    "div"
+                );
 
             meaningPopup.className =
-                'meaning-popup';
+                "meaning-popup";
 
             meaningPopup.textContent =
                 itemObj.meaning;
 
             meaningBtn.addEventListener(
-                'click',
-                (e) => {
+                "click",
+                e => {
 
                     e.stopPropagation();
 
                     meaningPopup.classList.toggle(
-                        'show'
+                        "show"
                     );
                 }
             );
 
             document.addEventListener(
-                'click',
+                "click",
                 () => {
 
                     meaningPopup.classList.remove(
-                        'show'
+                        "show"
                     );
                 }
             );
 
             meaningContainer.addEventListener(
-                'click',
-                (e) => {
+                "click",
+                e => {
 
                     e.stopPropagation();
                 }
@@ -2033,9 +2977,137 @@ function initDrill() {
             let audioStream = null;
             let recognition = null;
             let recordedAudioUrl = null;
+
             let latestTranscript = "";
             let recognitionResults = [];
+
             let recordingTimeout = null;
+
+            /*
+             * SpeechRecognition再起動用
+             */
+            let recognitionRestartTimer = null;
+
+            /*
+             * Autostop判定用。
+             */
+            let silenceTimer = null;
+
+            /*
+             * 録音終了処理の二重実行防止。
+             */
+            let recordingActive = false;
+            let finishingRecording = false;
+
+
+            // =================================================================
+            // Recognition helpers
+            // =================================================================
+
+            function clearRecognitionRestartTimer() {
+
+                if (
+                    recognitionRestartTimer
+                ) {
+
+                    clearTimeout(
+                        recognitionRestartTimer
+                    );
+
+                    recognitionRestartTimer =
+                        null;
+                }
+            }
+
+
+            function clearSilenceTimer() {
+
+                if (
+                    silenceTimer
+                ) {
+
+                    clearTimeout(
+                        silenceTimer
+                    );
+
+                    silenceTimer =
+                        null;
+                }
+            }
+
+
+            function scheduleAutostop() {
+
+                if (
+                    isManualStop ||
+                    !recordingActive ||
+                    finishingRecording
+                ) {
+                    return;
+                }
+
+                clearSilenceTimer();
+
+                /*
+                 * 最後のfinal resultから1.5秒。
+                 *
+                 * ここでは recognition.onend だけを
+                 * 「発話終了」とみなさない。
+                 */
+                silenceTimer =
+                    setTimeout(
+                        () => {
+
+                            if (
+                                !recordingActive ||
+                                finishingRecording
+                            ) {
+                                return;
+                            }
+
+                            finishRecording();
+
+                        },
+                        1500
+                    );
+            }
+
+
+            function restartRecognition() {
+
+                if (
+                    !recognition ||
+                    !recordingActive ||
+                    finishingRecording
+                ) {
+                    return;
+                }
+
+                try {
+
+                    recognition.start();
+
+                } catch (e) {
+
+                    /*
+                     * start()直後などで
+                     * InvalidStateErrorになる場合がある。
+                     * 少し待って再試行する。
+                     */
+                    recognitionRestartTimer =
+                        setTimeout(
+                            () => {
+
+                                recognitionRestartTimer =
+                                    null;
+
+                                restartRecognition();
+
+                            },
+                            300
+                        );
+                }
+            }
 
 
             // =================================================================
@@ -2050,6 +3122,9 @@ function initDrill() {
                     return null;
                 }
 
+                /*
+                 * 表示・比較ともに必ずひらがな化。
+                 */
                 const hiraText =
                     convertToHiragana(
                         rawTranscript
@@ -2070,7 +3145,7 @@ function initDrill() {
                         " (Too short)";
 
                     resultSpan.style.color =
-                        'var(--text-secondary)';
+                        "var(--text-secondary)";
 
                     return null;
                 }
@@ -2085,7 +3160,7 @@ function initDrill() {
                  * 文末のね・よ等は従来どおり許容。
                  */
                 const endParticleRegex =
-                    '(?:ね|よ|よね|ですね|ですよ)*$';
+                    "(?:ね|よ|よね|ですね|ですよ)*$";
 
                 const matchRegex =
                     new RegExp(
@@ -2116,9 +3191,10 @@ function initDrill() {
 
                 /*
                  * ね・よは文末許容。
-                 * 結果表示上も余分なエラーにしない。
                  */
-                if (exactSentence) {
+                if (
+                    exactSentence
+                ) {
 
                     operations =
                         operations.filter(
@@ -2128,6 +3204,7 @@ function initDrill() {
                                     operation.type !==
                                     "extra"
                                 ) {
+
                                     return true;
                                 }
 
@@ -2144,10 +3221,6 @@ function initDrill() {
                         );
                 }
 
-                /*
-                 * ここでは文字・モーラの結果だけ表示。
-                 * F0解析後にピッチ結果を上書きする。
-                 */
                 renderPronunciationResult(
                     resultSpan,
                     operations
@@ -2163,12 +3236,29 @@ function initDrill() {
 
 
             // =================================================================
-            // Stop active recording
+            // Finish recording
             // =================================================================
 
-            function stopActiveRecording() {
+            function finishRecording() {
 
-                if (recordingTimeout) {
+                if (
+                    finishingRecording
+                ) {
+                    return;
+                }
+
+                finishingRecording =
+                    true;
+
+                recordingActive =
+                    false;
+
+                clearRecognitionRestartTimer();
+                clearSilenceTimer();
+
+                if (
+                    recordingTimeout
+                ) {
 
                     clearTimeout(
                         recordingTimeout
@@ -2178,7 +3268,9 @@ function initDrill() {
                         null;
                 }
 
-                if (recognition) {
+                if (
+                    recognition
+                ) {
 
                     try {
                         recognition.stop();
@@ -2188,13 +3280,17 @@ function initDrill() {
                 if (
                     mediaRecorder &&
                     mediaRecorder.state !==
-                        'inactive'
+                        "inactive"
                 ) {
 
-                    mediaRecorder.stop();
+                    try {
+                        mediaRecorder.stop();
+                    } catch (e) {}
                 }
 
-                if (audioStream) {
+                if (
+                    audioStream
+                ) {
 
                     audioStream
                         .getTracks()
@@ -2203,7 +3299,8 @@ function initDrill() {
                                 track.stop()
                         );
 
-                    audioStream = null;
+                    audioStream =
+                        null;
                 }
 
                 recordBtn.disabled =
@@ -2213,7 +3310,7 @@ function initDrill() {
                     true;
 
                 stopBtn.classList.remove(
-                    'stop-btn-active'
+                    "stop-btn-active"
                 );
             }
 
@@ -2223,14 +3320,30 @@ function initDrill() {
             // =================================================================
 
             recordBtn.addEventListener(
-                'click',
+                "click",
                 async () => {
 
-                    try {
+                    /*
+                     * 前回の録音状態を完全にリセット。
+                     */
+                    clearRecognitionRestartTimer();
+                    clearSilenceTimer();
 
-                        audioChunks = [];
-                        latestTranscript = "";
-                        recognitionResults = [];
+                    recordingActive =
+                        false;
+
+                    finishingRecording =
+                        false;
+
+                    audioChunks = [];
+
+                    latestTranscript =
+                        "";
+
+                    recognitionResults =
+                        [];
+
+                    try {
 
                         audioStream =
                             await navigator.mediaDevices
@@ -2244,7 +3357,7 @@ function initDrill() {
                             );
 
                         mediaRecorder.ondataavailable =
-                            (e) => {
+                            e => {
 
                                 if (
                                     e.data &&
@@ -2260,12 +3373,15 @@ function initDrill() {
                         mediaRecorder.onstop =
                             async () => {
 
+                                recordingActive =
+                                    false;
+
                                 const audioBlob =
                                     new Blob(
                                         audioChunks,
                                         {
                                             type:
-                                                'audio/webm'
+                                                "audio/webm"
                                         }
                                     );
 
@@ -2284,8 +3400,11 @@ function initDrill() {
                                     );
 
                                 playRecordBtn.style.display =
-                                    'inline-flex';
+                                    "inline-flex";
 
+                                /*
+                                 * 最終認識結果を使う。
+                                 */
                                 if (
                                     latestTranscript
                                 ) {
@@ -2295,7 +3414,9 @@ function initDrill() {
                                             latestTranscript
                                         );
 
-                                    if (analysis) {
+                                    if (
+                                        analysis
+                                    ) {
 
                                         await analyzeRecordedAudio(
                                             audioBlob,
@@ -2304,39 +3425,59 @@ function initDrill() {
                                             resultSpan
                                         );
                                     }
+
+                                } else {
+
+                                    resultSpan.textContent =
+                                        "（音声を認識できませんでした）";
+
+                                    resultSpan.style.color =
+                                        "var(--text-secondary)";
                                 }
+
+                                finishingRecording =
+                                    false;
                             };
+
 
                         mediaRecorder.start();
 
+                        recordingActive =
+                            true;
+
+
+                        // ====================================================
+                        // SpeechRecognition
+                        // ====================================================
 
                         const SpeechRecognition =
                             window.SpeechRecognition ||
                             window.webkitSpeechRecognition;
 
-
-                        if (SpeechRecognition) {
+                        if (
+                            SpeechRecognition
+                        ) {
 
                             recognition =
                                 new SpeechRecognition();
 
                             recognition.lang =
-                                'ja-JP';
+                                "ja-JP";
 
                             recognition.interimResults =
                                 false;
 
+                            /*
+                             * onendで再開するため、
+                             * continuousもtrueにする。
+                             */
                             recognition.continuous =
-                                isManualStop;
+                                true;
 
 
                             recognition.onresult =
-                                (e) => {
+                                e => {
 
-                                    /*
-                                     * Manual modeでは
-                                     * final resultを累積する。
-                                     */
                                     let rawTranscript =
                                         "";
 
@@ -2345,7 +3486,7 @@ function initDrill() {
                                             e.resultIndex;
                                         i <
                                             e.results.length;
-                                        ++i
+                                        i++
                                     ) {
 
                                         if (
@@ -2358,7 +3499,9 @@ function initDrill() {
                                         }
                                     }
 
-                                    if (!rawTranscript) {
+                                    if (
+                                        !rawTranscript
+                                    ) {
                                         return;
                                     }
 
@@ -2377,14 +3520,17 @@ function initDrill() {
 
                                     } else {
 
+                                        /*
+                                         * Autostopでは
+                                         * 最後のfinal結果を保持。
+                                         */
                                         latestTranscript =
                                             rawTranscript;
                                     }
 
-
                                     /*
-                                     * Autostopでは認識時点で
-                                     * 一度文字判定を表示。
+                                     * 発話が来たので
+                                     * Autostopタイマーを延長。
                                      */
                                     if (
                                         !isManualStop
@@ -2393,17 +3539,26 @@ function initDrill() {
                                         processTranscript(
                                             latestTranscript
                                         );
+
+                                        scheduleAutostop();
                                     }
                                 };
 
 
                             recognition.onerror =
-                                (err) => {
+                                err => {
 
                                     console.error(
                                         "Speech recognition error:",
                                         err
                                     );
+
+                                    /*
+                                     * no-speech / aborted等で
+                                     * 直ちに録音終了しない。
+                                     *
+                                     * onend側で再起動する。
+                                     */
                                 };
 
 
@@ -2411,69 +3566,58 @@ function initDrill() {
                                 () => {
 
                                     /*
-                                     * 録音終了処理。
+                                     * ここでは即終了しない。
                                      *
-                                     * Manual stopでもAutostopでも
-                                     * 同じ終了処理にする。
+                                     * ブラウザのSpeechRecognitionは
+                                     * 発話途中でもonendすることがあるため、
+                                     * 短時間待って再起動する。
                                      */
                                     if (
-                                        mediaRecorder &&
-                                        mediaRecorder.state !==
-                                            'inactive'
+                                        !recordingActive ||
+                                        finishingRecording
                                     ) {
-
-                                        mediaRecorder.stop();
+                                        return;
                                     }
 
-                                    if (
-                                        audioStream
-                                    ) {
+                                    clearRecognitionRestartTimer();
 
-                                        audioStream
-                                            .getTracks()
-                                            .forEach(
-                                                track =>
-                                                    track.stop()
-                                            );
+                                    recognitionRestartTimer =
+                                        setTimeout(
+                                            () => {
 
-                                        audioStream =
-                                            null;
-                                    }
+                                                recognitionRestartTimer =
+                                                    null;
 
-                                    recordBtn.disabled =
-                                        false;
+                                                restartRecognition();
 
-                                    stopBtn.disabled =
-                                        true;
-
-                                    stopBtn.classList.remove(
-                                        'stop-btn-active'
-                                    );
-
-                                    if (
-                                        recordingTimeout
-                                    ) {
-
-                                        clearTimeout(
-                                            recordingTimeout
+                                            },
+                                            400
                                         );
-
-                                        recordingTimeout =
-                                            null;
-                                    }
                                 };
 
-                            recognition.start();
+
+                            try {
+
+                                recognition.start();
+
+                            } catch (e) {
+
+                                console.error(
+                                    "Recognition start error:",
+                                    e
+                                );
+                            }
 
                         } else {
 
-                            latestTranscript = "";
+                            latestTranscript =
+                                "";
                         }
 
 
-                        // ------------------------------------------------------
+                        // ====================================================
                         // Recording UI
-                        // ------------------------------------------------------
+                        // ====================================================
 
                         recordBtn.disabled =
                             true;
@@ -2486,11 +3630,11 @@ function initDrill() {
                                 false;
 
                             stopBtn.classList.add(
-                                'stop-btn-active'
+                                "stop-btn-active"
                             );
 
                             resultSpan.textContent =
-                                'Recording (Max 15s)...';
+                                "Recording (Max 15s)...";
 
                         } else {
 
@@ -2498,23 +3642,24 @@ function initDrill() {
                                 true;
 
                             stopBtn.classList.remove(
-                                'stop-btn-active'
+                                "stop-btn-active"
                             );
 
                             resultSpan.textContent =
-                                'Recording...';
+                                "Recording...";
                         }
 
                         resultSpan.style.color =
-                            'var(--accent-color)';
+                            "var(--accent-color)";
 
                         playRecordBtn.style.display =
-                            'none';
+                            "none";
 
 
-                        /*
-                         * Manual modeは最大15秒。
-                         */
+                        // ====================================================
+                        // Manual mode maximum 15 seconds
+                        // ====================================================
+
                         if (
                             isManualStop
                         ) {
@@ -2523,13 +3668,12 @@ function initDrill() {
                                 setTimeout(
                                     () => {
 
-                                        stopActiveRecording();
+                                        finishRecording();
 
                                     },
                                     15000
                                 );
                         }
-
 
                     } catch (err) {
 
@@ -2538,11 +3682,17 @@ function initDrill() {
                             err
                         );
 
+                        recordingActive =
+                            false;
+
+                        finishingRecording =
+                            false;
+
                         resultSpan.textContent =
-                            'Mic error';
+                            "Mic error";
 
                         resultSpan.style.color =
-                            'var(--error-text)';
+                            "var(--error-text)";
 
                         recordBtn.disabled =
                             false;
@@ -2551,7 +3701,7 @@ function initDrill() {
                             true;
 
                         stopBtn.classList.remove(
-                            'stop-btn-active'
+                            "stop-btn-active"
                         );
                     }
                 }
@@ -2563,10 +3713,10 @@ function initDrill() {
             // =================================================================
 
             stopBtn.addEventListener(
-                'click',
+                "click",
                 () => {
 
-                    stopActiveRecording();
+                    finishRecording();
                 }
             );
 
@@ -2576,10 +3726,12 @@ function initDrill() {
             // =================================================================
 
             playRecordBtn.addEventListener(
-                'click',
+                "click",
                 () => {
 
-                    if (!recordedAudioUrl) {
+                    if (
+                        !recordedAudioUrl
+                    ) {
                         return;
                     }
 
@@ -2595,7 +3747,7 @@ function initDrill() {
                         true;
 
                     playRecordBtn.textContent =
-                        '▶️ Playing...';
+                        "▶️ Playing...";
 
                     audio.play();
 
@@ -2606,7 +3758,7 @@ function initDrill() {
                                 false;
 
                             playRecordBtn.textContent =
-                                '▶️';
+                                "▶️";
                         };
                 }
             );
@@ -2661,13 +3813,16 @@ function initDrill() {
 // ============================================================================
 
 document.addEventListener(
-    'DOMContentLoaded',
+    "DOMContentLoaded",
     initDrill
 );
 
 if (
-    document.readyState === 'complete' ||
-    document.readyState === 'interactive'
+    document.readyState ===
+        "complete" ||
+    document.readyState ===
+        "interactive"
 ) {
+
     initDrill();
 }
