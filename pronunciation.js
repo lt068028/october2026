@@ -1,11 +1,13 @@
-// ============================================================================
+import codecs
+
+js_code = """// ============================================================================
 // Pronunciation Drill
 // ============================================================================
 
 const modelSentences = [
     {
         targetText: "てんきがいいです",
-        symbolColor: "#06b6d4",
+        symbolColor: "#ec4899", // 変更: 蛍光ピンク的な色
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -16,7 +18,7 @@ const modelSentences = [
     },
     {
         targetText: "じかんがないです",
-        symbolColor: "#f43f5e",
+        symbolColor: "#f43f5e", // 変更なし
         displayHtml: [
             { text: "じ", low: true }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -27,7 +29,7 @@ const modelSentences = [
     },
     {
         targetText: "しごとがほしいです",
-        symbolColor: "#84cc16",
+        symbolColor: "#e879f9", // 変更: 元の4番目の色
         displayHtml: [
             { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -39,7 +41,7 @@ const modelSentences = [
     },
     {
         targetText: "せんせいはおもしろいです",
-        symbolColor: "#e879f9",
+        symbolColor: "#06b6d4", // 変更: 元の1番目のアクアブルー
         displayHtml: [
             { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -52,7 +54,7 @@ const modelSentences = [
     },
     {
         targetText: "がっこうはたのしいです",
-        symbolColor: "#34d399",
+        symbolColor: "#34d399", // 変更なし
         displayHtml: [
             { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
@@ -111,7 +113,7 @@ let activePlayback = {
 
 function convertToHiragana(text) {
     if (!text) return "";
-    let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_~()（）「」。、\s]/g, "");
+    let cleaned = text.replace(/[.,\/#!$%\\^&\\*;:{}=\\-_~()（）「」。、\\s]/g, "");
     cleaned = cleaned.replace(/[ァ-ヶ]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
 
     const dict = {
@@ -315,7 +317,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     function processTranscript(rawTranscript) {
         if (!rawTranscript) return null;
         const hiraText = convertToHiragana(rawTranscript);
-        const cleanHira = hiraText.replace(/[\s、。]/g, "");
+        const cleanHira = hiraText.replace(/[\\s、。]/g, "");
         
         if (cleanHira.length < 2) {
             resultSpan.textContent = hiraText + " (Too short)";
@@ -323,7 +325,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
             return null;
         }
         
-        const cleanTarget = itemObj.targetText.replace(/[\s、。]/g, "");
+        const cleanTarget = itemObj.targetText.replace(/[\\s、。]/g, "");
         const matchRegex = new RegExp(`^${cleanTarget}(?:ね|よ|よね|ですね|ですよ)*$`);
         const exactSentence = matchRegex.test(cleanHira);
         
@@ -591,3 +593,8 @@ styleElement.textContent = `
 document.head.appendChild(styleElement);
 
 document.addEventListener("DOMContentLoaded", initDrill);
+"""
+
+with codecs.open("pronunciation_v14.js", "w", encoding="utf-8") as f:
+    f.write(js_code)
+print("File saved.")
