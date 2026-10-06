@@ -2979,14 +2979,8 @@ function initDrill() {
             let recordedAudioUrl = null;
 
             let latestTranscript = "";
-            let recognitionResults = [];
 
             let recordingTimeout = null;
-
-            /*
-             * SpeechRecognition再起動用
-             */
-            let recognitionRestartTimer = null;
 
             /*
              * Autostop判定用。
@@ -3003,22 +2997,6 @@ function initDrill() {
             // =================================================================
             // Recognition helpers
             // =================================================================
-
-            function clearRecognitionRestartTimer() {
-
-                if (
-                    recognitionRestartTimer
-                ) {
-
-                    clearTimeout(
-                        recognitionRestartTimer
-                    );
-
-                    recognitionRestartTimer =
-                        null;
-                }
-            }
-
 
             function clearSilenceTimer() {
 
@@ -3070,43 +3048,6 @@ function initDrill() {
                         },
                         1500
                     );
-            }
-
-
-            function restartRecognition() {
-
-                if (
-                    !recognition ||
-                    !recordingActive ||
-                    finishingRecording
-                ) {
-                    return;
-                }
-
-                try {
-
-                    recognition.start();
-
-                } catch (e) {
-
-                    /*
-                     * start()直後などで
-                     * InvalidStateErrorになる場合がある。
-                     * 少し待って再試行する。
-                     */
-                    recognitionRestartTimer =
-                        setTimeout(
-                            () => {
-
-                                recognitionRestartTimer =
-                                    null;
-
-                                restartRecognition();
-
-                            },
-                            300
-                        );
-                }
             }
 
 
@@ -3253,7 +3194,6 @@ function initDrill() {
                 recordingActive =
                     false;
 
-                clearRecognitionRestartTimer();
                 clearSilenceTimer();
 
                 if (
@@ -3326,7 +3266,6 @@ function initDrill() {
                     /*
                      * 前回の録音状態を完全にリセット。
                      */
-                    clearRecognitionRestartTimer();
                     clearSilenceTimer();
 
                     recordingActive =
@@ -3339,9 +3278,6 @@ function initDrill() {
 
                     latestTranscript =
                         "";
-
-                    recognitionResults =
-                        [];
 
                     try {
 
@@ -3468,11 +3404,11 @@ function initDrill() {
                                 false;
 
                             /*
-                             * onendで再開するため、
-                             * continuousもtrueにする。
+                             * SpeechRecognitionを録音中に
+                             * 自動再起動しない。
                              */
                             recognition.continuous =
-                                true;
+                                false;
 
 
                             recognition.onresult =
@@ -3505,28 +3441,13 @@ function initDrill() {
                                         return;
                                     }
 
-                                    if (
-                                        isManualStop
-                                    ) {
+                                    latestTranscript =
+                                        rawTranscript;
 
-                                        recognitionResults.push(
-                                            rawTranscript
-                                        );
-
-                                        latestTranscript =
-                                            recognitionResults.join(
-                                                ""
-                                            );
-
-                                    } else {
-
-                                        /*
-                                         * Autostopでは
-                                         * 最後のfinal結果を保持。
-                                         */
-                                        latestTranscript =
-                                            rawTranscript;
-                                    }
+                                    console.log(
+                                        "[SpeechRecognition]",
+                                        latestTranscript
+                                    );
 
                                     /*
                                      * 発話が来たので
@@ -3552,47 +3473,15 @@ function initDrill() {
                                         "Speech recognition error:",
                                         err
                                     );
-
-                                    /*
-                                     * no-speech / aborted等で
-                                     * 直ちに録音終了しない。
-                                     *
-                                     * onend側で再起動する。
-                                     */
                                 };
 
 
                             recognition.onend =
                                 () => {
 
-                                    /*
-                                     * ここでは即終了しない。
-                                     *
-                                     * ブラウザのSpeechRecognitionは
-                                     * 発話途中でもonendすることがあるため、
-                                     * 短時間待って再起動する。
-                                     */
-                                    if (
-                                        !recordingActive ||
-                                        finishingRecording
-                                    ) {
-                                        return;
-                                    }
-
-                                    clearRecognitionRestartTimer();
-
-                                    recognitionRestartTimer =
-                                        setTimeout(
-                                            () => {
-
-                                                recognitionRestartTimer =
-                                                    null;
-
-                                                restartRecognition();
-
-                                            },
-                                            400
-                                        );
+                                    console.log(
+                                        "[SpeechRecognition] ended"
+                                    );
                                 };
 
 
@@ -3816,13 +3705,3 @@ document.addEventListener(
     "DOMContentLoaded",
     initDrill
 );
-
-if (
-    document.readyState ===
-        "complete" ||
-    document.readyState ===
-        "interactive"
-) {
-
-    initDrill();
-}
