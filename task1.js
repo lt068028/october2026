@@ -98,7 +98,6 @@ function speakText(text, onEndCallback) {
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupFooterGuide();
-    setupTask3Generator();
 });
 
 function setupFooterGuide() {
@@ -463,37 +462,6 @@ function initApp() {
     }
 }
 
-function setupTask3Generator() {
-    const generateBtn = document.getElementById('task3GenerateBtn');
-    const container = document.getElementById('task3List');
-    const textarea = document.getElementById('task3Textarea');
-    if (!generateBtn || !container || !textarea) return;
-
-    generateBtn.addEventListener('click', () => {
-        const text = textarea.value.trim();
-        if (!text) {
-            alert("Please paste your vocabulary list or text.");
-            return;
-        }
-
-        container.innerHTML = "";
-        
-        // 簡易パース：改行区切りで語句を抽出し、XとYのペアを自動判定して生成する
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        
-        let samplePairs = [
-            { x: "わたし", y: "がくせい", isNeg: false },
-            { x: "ともだち", y: "せんせい", isNeg: true },
-            { x: "かぞく", y: "いしゃ", isNeg: false }
-        ];
-
-        samplePairs.forEach((pair, idx) => {
-            const rowNum = taskData.length + 3 + (idx + 1);
-            createDrillRow(container, `${rowNum}.`, formatWord(pair.x, "watashi", "I"), formatWord(pair.y, "noun", "noun"), pair.x, pair.y, pair.isNeg);
-        });
-    });
-}
-
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll('.drill-row');
     drillRows.forEach(row => {
@@ -566,7 +534,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     const stopBtn = document.createElement('button');
     stopBtn.className = 'example-button custom-tip-wrap';
     stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    stopBtn.disabled = true; // 録音中以外は常時グレーアウト
+    stopBtn.disabled = true; 
 
     const resultSpan = document.createElement('span');
     resultSpan.className = 'result-text';
@@ -638,7 +606,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         recordBtn.classList.remove('stop-btn-active');
         recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
-        stopBtn.disabled = true; // 確実にグレーアウトに戻す
+        stopBtn.disabled = true; 
         stopBtn.classList.remove('stop-btn-active');
     };
 
@@ -704,13 +672,13 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
             if (isManualStop) {
                 recordBtn.disabled = true;
-                stopBtn.disabled = false; // Manual時のみ有効化
+                stopBtn.disabled = false;
                 stopBtn.classList.add('stop-btn-active');
                 resultSpan.textContent = 'Recording (Max 15s)...';
                 resultSpan.style.color = 'var(--accent-color)';
             } else {
                 recordBtn.disabled = true;
-                stopBtn.disabled = true; // Auto時は常に非活性
+                stopBtn.disabled = true;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
