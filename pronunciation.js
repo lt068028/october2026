@@ -1,4 +1,3 @@
-```javascript
 // ============================================================================
 // Pronunciation Drill
 // ============================================================================
@@ -6,7 +5,7 @@
 const modelSentences = [
     {
         targetText: "てんきがいいです",
-        symbolColor: "#facc15",
+        symbolColor: "#fb7185",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -17,7 +16,7 @@ const modelSentences = [
     },
     {
         targetText: "じかんがないです",
-        symbolColor: "#34d399",
+        symbolColor: "#f43f5e",
         displayHtml: [
             { text: "じ", low: true }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -28,7 +27,7 @@ const modelSentences = [
     },
     {
         targetText: "しごとがほしいです",
-        symbolColor: "#22d3ee",
+        symbolColor: "#fda4af",
         displayHtml: [
             { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -40,7 +39,7 @@ const modelSentences = [
     },
     {
         targetText: "せんせいはおもしろいです",
-        symbolColor: "#fda4af",
+        symbolColor: "#e879f9",
         displayHtml: [
             { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -53,7 +52,7 @@ const modelSentences = [
     },
     {
         targetText: "がっこうはたのしいです",
-        symbolColor: "#e879f9",
+        symbolColor: "#34d399",
         displayHtml: [
             { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
@@ -607,4 +606,3 @@ styleElement.textContent = `
 document.head.appendChild(styleElement);
 
 document.addEventListener("DOMContentLoaded", initDrill);
-```
