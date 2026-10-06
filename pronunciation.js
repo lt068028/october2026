@@ -16,7 +16,7 @@ const modelSentences = [
         targetWord: "じかんが",
         symbolColor: "#f43f5e", // 2. ビビッドなコーラルレッド
         displayHtml: [
-            { text: "じ", low: false }, { type: "symbol", val: "↗" },
+            { text: "じ", low: true }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
             { text: "な", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
@@ -28,9 +28,9 @@ const modelSentences = [
         targetWord: "しごとが",
         symbolColor: "#fda4af", // 3. 明るいパステルピンク
         displayHtml: [
-            { text: "し", low: false }, { type: "symbol", val: "↗" },
+            { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
-            { text: "ほ", low: false }, { type: "symbol", val: "↗" },
+            { text: "ほ", low: true }, { type: "symbol", val: "↗" },
             { text: "し", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
@@ -41,10 +41,10 @@ const modelSentences = [
         targetWord: "せんせいは",
         symbolColor: "#e879f9", // 4. 蛍光感のあるマゼンタ・パープルピンク
         displayHtml: [
-            { text: "せ", low: false }, { type: "symbol", val: "↗" },
+            { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
             { text: "いは", low: true }, { type: "symbol", val: "｜" },
-            { text: "お", low: false }, { type: "symbol", val: "↗" },
+            { text: "お", low: true }, { type: "symbol", val: "↗" },
             { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
@@ -55,9 +55,9 @@ const modelSentences = [
         targetWord: "がっこうは",
         symbolColor: "#34d399", // 5. エメラルドグリーン（維持）
         displayHtml: [
-            { text: "が", low: false }, { type: "symbol", val: "↗" },
+            { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
-            { text: "た", low: false }, { type: "symbol", val: "↗" },
+            { text: "た", low: true }, { type: "symbol", val: "↗" },
             { text: "のし", low: false }, { type: "symbol", val: "↘" },
             { text: "いです", low: true }
         ],
