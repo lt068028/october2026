@@ -178,7 +178,6 @@ function compareMoraSequences(modelMorae, learnerMorae) {
 
 function renderPronunciationResult(resultSpan, operations) {
     resultSpan.innerHTML = "";
-    
     resultSpan.style.color = "";
 
     const recognizedText = operations
@@ -242,9 +241,14 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     playRecordBtn.addEventListener("click", () => {
         if (!recordedAudioUrl) return;
         const audio = new Audio(recordedAudioUrl);
-        audio.playbackRate = 1.0; playRecordBtn.disabled = true; playRecordBtn.textContent = "▶️ Playing...";
+        audio.playbackRate = 1.0; 
+        playRecordBtn.disabled = true; 
+        playRecordBtn.textContent = "▶️ Playing...";
         audio.play();
-        audio.onended = () => { playRecordBtn.disabled = false; playRecordBtn.textContent = "▶️"; };
+        audio.onended = () => { 
+            playRecordBtn.disabled = false; 
+            playRecordBtn.textContent = "▶️"; 
+        };
     });
 
     // --- UI Interactions ---
@@ -313,7 +317,10 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
                 if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
+                
                 playRecordBtn.style.display = "inline-flex";
+                // 録音完了直後は自動再生完了まで手動クリックをブロックする
+                playRecordBtn.disabled = true; 
                 
                 if (latestTranscript) {
                     processTranscript(latestTranscript);
@@ -323,20 +330,29 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 }
                 finishingRecording = false;
 
-                // 録音完了 ⇨ モデル音プレイ ⇨ 録音音源再生
+                // 録音完了 ⇨ モデル音プレイ(グレーアウト) ⇨ 録音音源再生(グレーアウト)
                 setTimeout(() => {
+                    listenBtn.disabled = true;
+                    listenBtn.textContent = "🔊Playing...";
+
                     const utterance = new SpeechSynthesisUtterance(speechText);
                     utterance.lang = "ja-JP";
                     utterance.rate = 0.7;
                     utterance.onend = () => {
+                        listenBtn.disabled = false;
+                        listenBtn.textContent = "🔊 きく";
+                        
                         if (recordedAudioUrl) {
                             setTimeout(() => {
-                                playRecordBtn.click();
-                            }, 400); // モデル音声終了後0.4秒あけて録音音声を再生
+                                playRecordBtn.disabled = false;
+                                playRecordBtn.click(); // 再生イベントを強制発火（中でPlaying...になりdisabled化する）
+                            }, 400);
+                        } else {
+                            playRecordBtn.disabled = false;
                         }
                     };
                     speechSynthesis.speak(utterance);
-                }, 500); // 録音完了から0.5秒後にモデル音声開始
+                }, 500);
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -479,7 +495,7 @@ styleElement.textContent = `
     .control-item { display: flex; align-items: center; gap: 8px; }
     .mode-label { font-weight: bold; font-size: 14px; }
     .mode-label .emoji-gray { filter: grayscale(100%); opacity: 0.55; }
-    .mode-label.active-mode .active-mode .emoji-gray { filter: none; opacity: 1; }
+    .mode-label.active-mode .emoji-gray { filter: none; opacity: 1; }
     .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px; }
