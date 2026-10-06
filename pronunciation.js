@@ -77,7 +77,6 @@ let isManualStop = false;
 // ============================================================================
 
 const PITCH_ERROR_COLOR = "#ef4444";
-const SOUND_ERROR_COLOR = "#f59e0b";
 
 
 // ============================================================================
@@ -92,12 +91,24 @@ function convertToHiragana(text) {
         ""
     );
 
+    /*
+     * カタカナ → ひらがな
+     */
     cleaned = cleaned.replace(/[\u30a1-\u30f6]/g, match => {
         return String.fromCharCode(match.charCodeAt(0) - 0x60);
     });
 
+    /*
+     * SpeechRecognitionが漢字で返した場合の正規化。
+     *
+     * 重要：
+     * 「電気」はモデルの「天気」と同一視しない。
+     * 電気 → でんき としてから比較することで、
+     * 「で」だけを音の違いとして検出できる。
+     */
     const dict = {
         "天気": "てんき",
+        "電気": "でんき",
         "時間": "じかん",
         "仕事": "しごと",
         "欲しい": "ほしい",
@@ -109,7 +120,7 @@ function convertToHiragana(text) {
         "でした": "でした"
     };
 
-    for (let key in dict) {
+    for (const key in dict) {
         const regex = new RegExp(key, "g");
         cleaned = cleaned.replace(regex, dict[key]);
     }
@@ -126,12 +137,23 @@ const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
 const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
 
 function splitIntoMora(text) {
+
     const chars = Array.from(text);
     const morae = [];
 
     for (const ch of chars) {
 
-        if (SMALL_Y.has(ch) && morae.length > 0) {
+        /*
+         * 拗音は直前のモーラと一体化する。
+         *
+         * 例：
+         * きゃ → 1モーラ
+         */
+        if (
+            SMALL_Y.has(ch) &&
+            morae.length > 0
+        ) {
+
             morae[morae.length - 1].text += ch;
             continue;
         }
@@ -156,9 +178,12 @@ function getModelMoraData(itemObj) {
 
     itemObj.displayHtml.forEach(part => {
 
-        if (part.type === "symbol") return;
+        if (part.type === "symbol") {
+            return;
+        }
 
         for (const ch of Array.from(part.text)) {
+
             charPitch.push({
                 char: ch,
                 low: !!part.low
@@ -166,9 +191,10 @@ function getModelMoraData(itemObj) {
         }
     });
 
-    const targetText = charPitch
-        .map(item => item.char)
-        .join("");
+    const targetText =
+        charPitch
+            .map(item => item.char)
+            .join("");
 
     const morae = [];
     const chars = Array.from(targetText);
@@ -177,15 +203,20 @@ function getModelMoraData(itemObj) {
 
         const ch = chars[i];
 
+        /*
+         * 拗音
+         */
         if (
             SMALL_Y.has(ch) &&
             morae.length > 0
         ) {
+
             morae[morae.length - 1].text += ch;
             continue;
         }
 
-        const isSpecial = SPECIAL_MORA.has(ch);
+        const isSpecial =
+            SPECIAL_MORA.has(ch);
 
         morae.push({
             text: ch,
@@ -204,7 +235,8 @@ function getModelMoraData(itemObj) {
 // Dynamic CSS
 // ============================================================================
 
-const styleElement = document.createElement('style');
+const styleElement =
+    document.createElement('style');
 
 styleElement.textContent = `
     .header-panel {
@@ -391,36 +423,23 @@ styleElement.textContent = `
         color: var(--text-primary);
     }
 
-    .pronunciation-pitch-error {
+    /*
+     * 音の違い・ピッチの違い・欠落・余分は
+     * すべて同じ赤色。
+     */
+    .pronunciation-error {
         color: ${PITCH_ERROR_COLOR};
         font-weight: normal !important;
     }
 
-    .pronunciation-sound-error {
-        color: ${SOUND_ERROR_COLOR};
-        font-weight: normal !important;
-    }
-
     .pronunciation-missing {
-        color: ${SOUND_ERROR_COLOR};
+        color: ${PITCH_ERROR_COLOR};
         font-weight: normal !important;
     }
 
     .pronunciation-extra {
-        color: ${SOUND_ERROR_COLOR};
+        color: ${PITCH_ERROR_COLOR};
         font-weight: normal !important;
-    }
-
-    .correction-box {
-        display: none;
-        margin-top: 6px;
-        width: 100%;
-        padding: 8px;
-        background: var(--error-bg);
-        border: 1px solid var(--error-border);
-        border-radius: 4px;
-        font-size: 14px;
-        color: var(--error-text);
     }
 
     .high-pitch {
@@ -505,7 +524,9 @@ function calculateRMS(buffer, start, end) {
     let count = 0;
 
     for (let i = start; i < end; i++) {
+
         const value = buffer[i];
+
         sum += value * value;
         count++;
     }
@@ -567,7 +588,10 @@ function autocorrelationF0(buffer, sampleRate) {
             sum / denominator;
 
         if (correlation > bestCorrelation) {
-            bestCorrelation = correlation;
+
+            bestCorrelation =
+                correlation;
+
             bestLag = lag;
         }
     }
@@ -626,6 +650,7 @@ function extractF0Frames(audioBuffer) {
             );
 
         if (rms < 0.015) {
+
             frames.push(null);
             continue;
         }
@@ -671,50 +696,25 @@ function median(values) {
 
 
 // ============================================================================
-// Estimate learner pitch per mora
+// Estimate raw F0 per mora
 // ============================================================================
 
-function estimateMoraPitch(
+function estimateMoraF0(
     audioBuffer,
     morae
 ) {
 
-    const channelData =
-        audioBuffer.getChannelData(0);
-
-    const sampleRate =
-        audioBuffer.sampleRate;
-
-    const totalSamples =
-        channelData.length;
-
     const frameData =
         extractF0Frames(audioBuffer);
 
-    const f0Values =
+    const validFrames =
         frameData.frames.filter(
             value => value != null
         );
 
-    if (f0Values.length < 2) {
+    if (validFrames.length < 3) {
         return [];
     }
-
-    const globalMedian =
-        median(f0Values);
-
-    if (!globalMedian) {
-        return [];
-    }
-
-    /*
-     * 簡易方式：
-     * 有声F0が存在する全体区間をモーラ数に応じて分割する。
-     *
-     * これは精密なモーラ境界検出ではない。
-     * 今回はまず「ブラウザだけで簡易判定できるか」を
-     * 確認するための第一段階として使用する。
-     */
 
     let firstVoiced = -1;
     let lastVoiced = -1;
@@ -744,8 +744,6 @@ function estimateMoraPitch(
         return [];
     }
 
-    const result = [];
-
     const voicedFrameCount =
         lastVoiced - firstVoiced + 1;
 
@@ -758,11 +756,14 @@ function estimateMoraPitch(
         return [];
     }
 
+    const result = [];
+
     let normalIndex = 0;
 
     for (const mora of morae) {
 
         if (mora.special) {
+
             result.push({
                 mora,
                 f0: null,
@@ -783,13 +784,18 @@ function estimateMoraPitch(
         const startFrame =
             Math.floor(
                 firstVoiced +
-                voicedFrameCount * startRatio
+                voicedFrameCount *
+                startRatio
             );
 
         const endFrame =
-            Math.floor(
-                firstVoiced +
-                voicedFrameCount * endRatio
+            Math.max(
+                startFrame + 1,
+                Math.floor(
+                    firstVoiced +
+                    voicedFrameCount *
+                    endRatio
+                )
             );
 
         const values = [];
@@ -803,28 +809,198 @@ function estimateMoraPitch(
             if (
                 frameData.frames[i] != null
             ) {
+
                 values.push(
                     frameData.frames[i]
                 );
             }
         }
 
-        const moraF0 =
-            median(values);
-
         result.push({
             mora,
-            f0: moraF0,
-            high:
-                moraF0 == null
-                    ? null
-                    : moraF0 >= globalMedian
+            f0: median(values),
+            high: null
         });
 
         normalIndex++;
     }
 
     return result;
+}
+
+
+// ============================================================================
+// Improved pitch classification
+// ============================================================================
+
+function classifyLearnerPitch(
+    estimated
+) {
+
+    const normalItems =
+        estimated.filter(
+            item =>
+                !item.mora.special &&
+                item.f0 != null
+        );
+
+    if (
+        normalItems.length < 3
+    ) {
+        return estimated;
+    }
+
+    const values =
+        normalItems.map(
+            item => item.f0
+        );
+
+    let lowCenter =
+        Math.min(...values);
+
+    let highCenter =
+        Math.max(...values);
+
+    /*
+     * 最初からほぼ同じ高さなら、
+     * 無理にHigh / Lowへ分類しない。
+     */
+    if (
+        highCenter - lowCenter <
+        Math.max(
+            12,
+            median(values) * 0.07
+        )
+    ) {
+
+        estimated.forEach(item => {
+            item.high = null;
+        });
+
+        return estimated;
+    }
+
+    /*
+     * 2クラスタに分ける。
+     * 単純な1次元k-means。
+     */
+    for (let iteration = 0; iteration < 8; iteration++) {
+
+        const lowValues = [];
+        const highValues = [];
+
+        normalItems.forEach(item => {
+
+            const lowDistance =
+                Math.abs(
+                    item.f0 - lowCenter
+                );
+
+            const highDistance =
+                Math.abs(
+                    item.f0 - highCenter
+                );
+
+            if (
+                lowDistance <=
+                highDistance
+            ) {
+
+                lowValues.push(item.f0);
+
+            } else {
+
+                highValues.push(item.f0);
+            }
+        });
+
+        if (lowValues.length) {
+            lowCenter = median(lowValues);
+        }
+
+        if (highValues.length) {
+            highCenter = median(highValues);
+        }
+    }
+
+    /*
+     * クラスタ間の差が小さい場合は、
+     * ピッチ判定をしない。
+     *
+     * これが今回追加した重要な安全策。
+     */
+    const centerDifference =
+        highCenter - lowCenter;
+
+    const minimumDifference =
+        Math.max(
+            15,
+            ((highCenter + lowCenter) / 2) * 0.08
+        );
+
+    if (
+        centerDifference <
+        minimumDifference
+    ) {
+
+        estimated.forEach(item => {
+            item.high = null;
+        });
+
+        return estimated;
+    }
+
+    estimated.forEach(item => {
+
+        if (
+            item.mora.special ||
+            item.f0 == null
+        ) {
+
+            item.high = null;
+            return;
+        }
+
+        const lowDistance =
+            Math.abs(
+                item.f0 - lowCenter
+            );
+
+        const highDistance =
+            Math.abs(
+                item.f0 - highCenter
+            );
+
+        item.high =
+            highDistance < lowDistance;
+    });
+
+    return estimated;
+}
+
+
+// ============================================================================
+// Estimate learner pitch per mora
+// ============================================================================
+
+function estimateMoraPitch(
+    audioBuffer,
+    morae
+) {
+
+    const estimated =
+        estimateMoraF0(
+            audioBuffer,
+            morae
+        );
+
+    if (!estimated.length) {
+        return [];
+    }
+
+    return classifyLearnerPitch(
+        estimated
+    );
 }
 
 
@@ -894,15 +1070,12 @@ function compareMoraSequences(
 
             i++;
             j++;
-
             continue;
         }
 
         /*
-         * 直後の文字が一致する場合、
-         * 現在の学習者側が余分と判断する。
+         * 学習者側の余分なモーラ
          */
-
         if (
             j + 1 < learnerMorae.length &&
             model.text ===
@@ -911,7 +1084,8 @@ function compareMoraSequences(
 
             operations.push({
                 type: "extra",
-                learner: learner
+                learner: learner,
+                learnerIndex: j
             });
 
             j++;
@@ -919,10 +1093,8 @@ function compareMoraSequences(
         }
 
         /*
-         * 直後のモデル文字が一致する場合、
-         * 現在のモデル側が欠落と判断する。
+         * モデル側の欠落モーラ
          */
-
         if (
             i + 1 < modelMorae.length &&
             modelMorae[i + 1].text ===
@@ -931,7 +1103,8 @@ function compareMoraSequences(
 
             operations.push({
                 type: "missing",
-                model: model
+                model: model,
+                modelIndex: i
             });
 
             i++;
@@ -939,10 +1112,11 @@ function compareMoraSequences(
         }
 
         /*
-         * どちらにも対応しない場合は、
-         * 音そのものの不一致。
+         * 音そのものが違う。
+         *
+         * 例：
+         * て → で
          */
-
         operations.push({
             type: "sound-error",
             model,
@@ -960,30 +1134,17 @@ function compareMoraSequences(
 
 
 // ============================================================================
-// Render pronunciation result
+// Render basic result
 // ============================================================================
 
 function renderPronunciationResult(
     resultSpan,
-    operations,
-    learnerPitch,
-    targetText
+    operations
 ) {
 
     resultSpan.innerHTML = "";
 
     let hasError = false;
-
-    const learnerPitchMap = new Map();
-
-    learnerPitch.forEach(
-        (item, index) => {
-            learnerPitchMap.set(
-                index,
-                item
-            );
-        }
-    );
 
     operations.forEach(operation => {
 
@@ -995,64 +1156,16 @@ function renderPronunciationResult(
             const span =
                 document.createElement("span");
 
+            span.className =
+                "pronunciation-normal";
+
             span.textContent =
                 operation.learner.text;
-
-            /*
-             * 特殊モーラは高低比較しない。
-             */
-
-            if (
-                operation.model.special
-            ) {
-
-                span.className =
-                    "pronunciation-normal";
-
-            } else {
-
-                const pitch =
-                    learnerPitchMap.get(
-                        operation.learnerIndex
-                    );
-
-                if (
-                    pitch &&
-                    pitch.high != null &&
-                    operation.model.low != null
-                ) {
-
-                    const learnerLow =
-                        !pitch.high;
-
-                    if (
-                        learnerLow !==
-                        operation.model.low
-                    ) {
-
-                        span.className =
-                            "pronunciation-pitch-error";
-
-                        hasError = true;
-
-                    } else {
-
-                        span.className =
-                            "pronunciation-normal";
-                    }
-
-                } else {
-
-                    span.className =
-                        "pronunciation-normal";
-                }
-            }
 
             resultSpan.appendChild(span);
 
             return;
         }
-
 
         if (
             operation.type ===
@@ -1063,7 +1176,7 @@ function renderPronunciationResult(
                 document.createElement("span");
 
             span.className =
-                "pronunciation-sound-error";
+                "pronunciation-error";
 
             span.textContent =
                 operation.learner.text;
@@ -1071,10 +1184,8 @@ function renderPronunciationResult(
             resultSpan.appendChild(span);
 
             hasError = true;
-
             return;
         }
-
 
         if (
             operation.type ===
@@ -1093,10 +1204,8 @@ function renderPronunciationResult(
             resultSpan.appendChild(span);
 
             hasError = true;
-
             return;
         }
-
 
         if (
             operation.type ===
@@ -1117,7 +1226,6 @@ function renderPronunciationResult(
             hasError = true;
         }
     });
-
 
     if (!hasError) {
 
@@ -1152,6 +1260,15 @@ async function analyzeRecordedAudio(
 
     if (!audioBlob) return;
 
+    /*
+     * まず文字・モーラ判定を表示する。
+     * F0解析に失敗しても、この結果は残す。
+     */
+    renderPronunciationResult(
+        resultSpan,
+        operations
+    );
+
     try {
 
         const arrayBuffer =
@@ -1173,41 +1290,35 @@ async function analyzeRecordedAudio(
                 arrayBuffer
             );
 
-        const normalMoraCount =
-            modelMorae.filter(
-                mora => !mora.special
-            ).length;
+        /*
+         * F0解析対象の学習者モーラを作る。
+         *
+         * operations上のlearnerIndexとの対応を
+         * pitchIndexとして保存する。
+         */
+        const pitchMorae = [];
 
-        if (!normalMoraCount) {
+        operations.forEach(operation => {
+
+            if (
+                operation.type === "match" ||
+                operation.type === "sound-error"
+            ) {
+
+                operation.pitchIndex =
+                    pitchMorae.length;
+
+                pitchMorae.push(
+                    operation.learner
+                );
+            }
+        });
+
+        if (!pitchMorae.length) {
+
             await audioContext.close();
             return;
         }
-
-        const learnerMorae =
-            operations
-                .filter(
-                    operation =>
-                        operation.type ===
-                        "match" ||
-                        operation.type ===
-                        "sound-error"
-                )
-                .map(
-                    operation =>
-                        operation.learner
-                );
-
-        /*
-         * 高低解析は、認識された発話側の
-         * 通常モーラ数を基準に行う。
-         */
-
-        const pitchMorae =
-            learnerMorae.map(
-                mora => ({
-                    ...mora
-                })
-            );
 
         const estimatedPitch =
             estimateMoraPitch(
@@ -1215,37 +1326,33 @@ async function analyzeRecordedAudio(
                 pitchMorae
             );
 
-        /*
-         * operationsの learnerIndex に
-         * 対応する簡易F0を戻す。
-         */
+        if (!estimatedPitch.length) {
 
-        let pitchIndex = 0;
-
-        const learnerPitchMap =
-            new Map();
-
-        for (
-            let i = 0;
-            i < pitchMorae.length;
-            i++
-        ) {
-
-            const item =
-                estimatedPitch[i];
-
-            learnerPitchMap.set(
-                pitchIndex,
-                item
-            );
-
-            pitchIndex++;
+            await audioContext.close();
+            return;
         }
 
         /*
-         * 実際の表示をもう一度構築する。
+         * pitchIndex → 推定Pitch
          */
+        const pitchMap = new Map();
 
+        estimatedPitch.forEach(
+            (item, index) => {
+
+                pitchMap.set(
+                    index,
+                    item
+                );
+            }
+        );
+
+        /*
+         * もう一度結果を構築。
+         *
+         * sound-error はすでに音が違うため、
+         * ピッチ判定は追加しない。
+         */
         resultSpan.innerHTML = "";
 
         let hasError = false;
@@ -1263,23 +1370,21 @@ async function analyzeRecordedAudio(
                 span.textContent =
                     operation.learner.text;
 
+                let pitchError = false;
+
                 if (
-                    operation.model.special
+                    !operation.model.special
                 ) {
 
-                    span.className =
-                        "pronunciation-normal";
-
-                } else {
-
                     const pitch =
-                        learnerPitchMap.get(
-                            operation.learnerIndex
+                        pitchMap.get(
+                            operation.pitchIndex
                         );
 
                     if (
                         pitch &&
-                        pitch.high != null
+                        pitch.high != null &&
+                        operation.model.low != null
                     ) {
 
                         const learnerLow =
@@ -1290,29 +1395,28 @@ async function analyzeRecordedAudio(
                             operation.model.low
                         ) {
 
-                            span.className =
-                                "pronunciation-pitch-error";
-
-                            hasError = true;
-
-                        } else {
-
-                            span.className =
-                                "pronunciation-normal";
+                            pitchError = true;
                         }
-
-                    } else {
-
-                        span.className =
-                            "pronunciation-normal";
                     }
+                }
+
+                if (pitchError) {
+
+                    span.className =
+                        "pronunciation-error";
+
+                    hasError = true;
+
+                } else {
+
+                    span.className =
+                        "pronunciation-normal";
                 }
 
                 resultSpan.appendChild(span);
 
                 return;
             }
-
 
             if (
                 operation.type ===
@@ -1323,7 +1427,7 @@ async function analyzeRecordedAudio(
                     document.createElement("span");
 
                 span.className =
-                    "pronunciation-sound-error";
+                    "pronunciation-error";
 
                 span.textContent =
                     operation.learner.text;
@@ -1331,10 +1435,8 @@ async function analyzeRecordedAudio(
                 resultSpan.appendChild(span);
 
                 hasError = true;
-
                 return;
             }
-
 
             if (
                 operation.type ===
@@ -1353,10 +1455,8 @@ async function analyzeRecordedAudio(
                 resultSpan.appendChild(span);
 
                 hasError = true;
-
                 return;
             }
-
 
             if (
                 operation.type ===
@@ -1377,7 +1477,6 @@ async function analyzeRecordedAudio(
                 hasError = true;
             }
         });
-
 
         if (!hasError) {
 
@@ -1405,15 +1504,12 @@ async function analyzeRecordedAudio(
         );
 
         /*
-         * F0解析に失敗しても、
-         * 文字・モーラ判定自体は残す。
+         * F0解析失敗時は、
+         * 文字・モーラ判定だけを残す。
          */
-
         renderPronunciationResult(
             resultSpan,
-            operations,
-            [],
-            ""
+            operations
         );
     }
 }
@@ -1656,7 +1752,7 @@ function initDrill() {
 
 
             // ----------------------------------------------------------------
-            // Listen
+            // Listen to model
             // ----------------------------------------------------------------
 
             const listenWrapper =
@@ -1929,37 +2025,6 @@ function initDrill() {
 
 
             // ----------------------------------------------------------------
-            // Correction box
-            // ----------------------------------------------------------------
-
-            const correctionBox =
-                document.createElement('div');
-
-            correctionBox.className =
-                'correction-box';
-
-            const corrListenBtn =
-                document.createElement('button');
-
-            corrListenBtn.textContent =
-                '🔊 きく';
-
-            corrListenBtn.style.marginRight =
-                '8px';
-
-            const corrTextSpan =
-                document.createElement('span');
-
-            correctionBox.appendChild(
-                corrListenBtn
-            );
-
-            correctionBox.appendChild(
-                corrTextSpan
-            );
-
-
-            // ----------------------------------------------------------------
             // Recording variables
             // ----------------------------------------------------------------
 
@@ -1970,6 +2035,7 @@ function initDrill() {
             let recordedAudioUrl = null;
             let latestTranscript = "";
             let recognitionResults = [];
+            let recordingTimeout = null;
 
 
             // =================================================================
@@ -1981,7 +2047,7 @@ function initDrill() {
             ) {
 
                 if (!rawTranscript) {
-                    return;
+                    return null;
                 }
 
                 const hiraText =
@@ -1995,30 +2061,29 @@ function initDrill() {
                         ""
                     );
 
+                if (
+                    cleanHira.length < 2
+                ) {
+
+                    resultSpan.textContent =
+                        hiraText +
+                        " (Too short)";
+
+                    resultSpan.style.color =
+                        'var(--text-secondary)';
+
+                    return null;
+                }
+
                 const cleanTarget =
                     itemObj.targetText.replace(
                         /[\s、。]/g,
                         ""
                     );
 
-                if (
-                    cleanHira.length < 2
-                ) {
-
-                    resultSpan.textContent =
-                        rawTranscript +
-                        " (Too short)";
-
-                    resultSpan.style.color =
-                        'var(--text-secondary)';
-
-                    return;
-                }
-
                 /*
-                 * 文末のね・よ等は従来どおり許容する。
+                 * 文末のね・よ等は従来どおり許容。
                  */
-
                 const endParticleRegex =
                     '(?:ね|よ|よね|ですね|ですよ)*$';
 
@@ -2033,12 +2098,6 @@ function initDrill() {
                         cleanHira
                     );
 
-                /*
-                 * まずモーラ単位で比較する。
-                 * 完全一致でなくても、
-                 * 欠落・追加・音違いを表示できる。
-                 */
-
                 const modelMorae =
                     getModelMoraData(
                         itemObj
@@ -2049,26 +2108,19 @@ function initDrill() {
                         cleanHira
                     );
 
-                const operations =
+                let operations =
                     compareMoraSequences(
                         modelMorae,
                         learnerMorae
                     );
 
                 /*
-                 * 認識文字列が完全一致なら
-                 * 音そのものの比較エラーはない。
-                 * それ以外はoperationsに従う。
+                 * ね・よは文末許容。
+                 * 結果表示上も余分なエラーにしない。
                  */
-
                 if (exactSentence) {
 
-                    /*
-                     * 文末の追加「ね」「よ」などは
-                     * 今回は余分な音として赤橙判定しない。
-                     */
-
-                    const filteredOperations =
+                    operations =
                         operations.filter(
                             operation => {
 
@@ -2090,98 +2142,16 @@ function initDrill() {
                                 );
                             }
                         );
-
-                    renderPronunciationResult(
-                        resultSpan,
-                        filteredOperations,
-                        [],
-                        itemObj.targetText
-                    );
-
-                } else {
-
-                    renderPronunciationResult(
-                        resultSpan,
-                        operations,
-                        [],
-                        itemObj.targetText
-                    );
                 }
-
 
                 /*
-                 * correction boxは、
-                 * 旧仕様の「Try Again」表示を残す。
-                 * 今回の主判定はresultSpan側。
+                 * ここでは文字・モーラの結果だけ表示。
+                 * F0解析後にピッチ結果を上書きする。
                  */
-
-                const hasStructuralError =
-                    operations.some(
-                        operation =>
-                            operation.type !==
-                            "match"
-                    );
-
-                if (
-                    hasStructuralError
-                ) {
-
-                    corrTextSpan.textContent =
-                        'Try Again';
-
-                    corrListenBtn.style.display =
-                        'inline-flex';
-
-                    corrListenBtn.onclick =
-                        () => {
-
-                            corrListenBtn.disabled =
-                                true;
-
-                            corrListenBtn.textContent =
-                                '🔊Playing...';
-
-                            setTimeout(
-                                () => {
-
-                                    const utterance =
-                                        new SpeechSynthesisUtterance(
-                                            speechText
-                                        );
-
-                                    utterance.lang =
-                                        'ja-JP';
-
-                                    utterance.rate =
-                                        0.7;
-
-                                    utterance.onend =
-                                        () => {
-
-                                            corrListenBtn.disabled =
-                                                false;
-
-                                            corrListenBtn.textContent =
-                                                '🔊 きく';
-                                        };
-
-                                    speechSynthesis.speak(
-                                        utterance
-                                    );
-
-                                },
-                                1000
-                            );
-                        };
-
-                    correctionBox.style.display =
-                        'block';
-
-                } else {
-
-                    correctionBox.style.display =
-                        'none';
-                }
+                renderPronunciationResult(
+                    resultSpan,
+                    operations
+                );
 
                 return {
                     hiraText,
@@ -2189,6 +2159,62 @@ function initDrill() {
                     learnerMorae,
                     operations
                 };
+            }
+
+
+            // =================================================================
+            // Stop active recording
+            // =================================================================
+
+            function stopActiveRecording() {
+
+                if (recordingTimeout) {
+
+                    clearTimeout(
+                        recordingTimeout
+                    );
+
+                    recordingTimeout =
+                        null;
+                }
+
+                if (recognition) {
+
+                    try {
+                        recognition.stop();
+                    } catch (e) {}
+                }
+
+                if (
+                    mediaRecorder &&
+                    mediaRecorder.state !==
+                        'inactive'
+                ) {
+
+                    mediaRecorder.stop();
+                }
+
+                if (audioStream) {
+
+                    audioStream
+                        .getTracks()
+                        .forEach(
+                            track =>
+                                track.stop()
+                        );
+
+                    audioStream = null;
+                }
+
+                recordBtn.disabled =
+                    false;
+
+                stopBtn.disabled =
+                    true;
+
+                stopBtn.classList.remove(
+                    'stop-btn-active'
+                );
             }
 
 
@@ -2220,9 +2246,15 @@ function initDrill() {
                         mediaRecorder.ondataavailable =
                             (e) => {
 
-                                audioChunks.push(
-                                    e.data
-                                );
+                                if (
+                                    e.data &&
+                                    e.data.size > 0
+                                ) {
+
+                                    audioChunks.push(
+                                        e.data
+                                    );
+                                }
                             };
 
                         mediaRecorder.onstop =
@@ -2253,11 +2285,6 @@ function initDrill() {
 
                                 playRecordBtn.style.display =
                                     'inline-flex';
-
-                                /*
-                                 * 文字列・モーラ判定ができている場合のみ
-                                 * F0解析を実行する。
-                                 */
 
                                 if (
                                     latestTranscript
@@ -2306,6 +2333,10 @@ function initDrill() {
                             recognition.onresult =
                                 (e) => {
 
+                                    /*
+                                     * Manual modeでは
+                                     * final resultを累積する。
+                                     */
                                     let rawTranscript =
                                         "";
 
@@ -2317,16 +2348,19 @@ function initDrill() {
                                         ++i
                                     ) {
 
-                                        rawTranscript +=
-                                            e.results[i][0]
-                                                .transcript;
+                                        if (
+                                            e.results[i].isFinal
+                                        ) {
+
+                                            rawTranscript +=
+                                                e.results[i][0]
+                                                    .transcript;
+                                        }
                                     }
 
-                                    /*
-                                     * Manual modeでは、
-                                     * 最後の結果だけでなく
-                                     * それまでの結果を蓄積する。
-                                     */
+                                    if (!rawTranscript) {
+                                        return;
+                                    }
 
                                     if (
                                         isManualStop
@@ -2348,6 +2382,10 @@ function initDrill() {
                                     }
 
 
+                                    /*
+                                     * Autostopでは認識時点で
+                                     * 一度文字判定を表示。
+                                     */
                                     if (
                                         !isManualStop
                                     ) {
@@ -2372,83 +2410,62 @@ function initDrill() {
                             recognition.onend =
                                 () => {
 
+                                    /*
+                                     * 録音終了処理。
+                                     *
+                                     * Manual stopでもAutostopでも
+                                     * 同じ終了処理にする。
+                                     */
                                     if (
-                                        isManualStop
+                                        mediaRecorder &&
+                                        mediaRecorder.state !==
+                                            'inactive'
                                     ) {
 
-                                        if (
-                                            mediaRecorder &&
-                                            mediaRecorder.state !==
-                                                'inactive'
-                                        ) {
+                                        mediaRecorder.stop();
+                                    }
 
-                                            mediaRecorder.stop();
-                                        }
+                                    if (
+                                        audioStream
+                                    ) {
 
-                                        if (
-                                            audioStream
-                                        ) {
+                                        audioStream
+                                            .getTracks()
+                                            .forEach(
+                                                track =>
+                                                    track.stop()
+                                            );
 
-                                            audioStream
-                                                .getTracks()
-                                                .forEach(
-                                                    track =>
-                                                        track.stop()
-                                                );
-                                        }
+                                        audioStream =
+                                            null;
+                                    }
 
-                                        recordBtn.disabled =
-                                            false;
+                                    recordBtn.disabled =
+                                        false;
 
-                                        stopBtn.disabled =
-                                            true;
+                                    stopBtn.disabled =
+                                        true;
 
-                                        stopBtn.classList.remove(
-                                            'stop-btn-active'
+                                    stopBtn.classList.remove(
+                                        'stop-btn-active'
+                                    );
+
+                                    if (
+                                        recordingTimeout
+                                    ) {
+
+                                        clearTimeout(
+                                            recordingTimeout
                                         );
 
-                                    } else {
-
-                                        if (
-                                            mediaRecorder &&
-                                            mediaRecorder.state !==
-                                                'inactive'
-                                        ) {
-
-                                            mediaRecorder.stop();
-                                        }
-
-                                        if (
-                                            audioStream
-                                        ) {
-
-                                            audioStream
-                                                .getTracks()
-                                                .forEach(
-                                                    track =>
-                                                        track.stop()
-                                                );
-                                        }
-
-                                        recordBtn.disabled =
-                                            false;
-
-                                        stopBtn.disabled =
-                                            true;
-
-                                        stopBtn.classList.remove(
-                                            'stop-btn-active'
-                                        );
+                                        recordingTimeout =
+                                            null;
                                     }
                                 };
 
                             recognition.start();
 
                         } else {
-
-                            /*
-                             * SpeechRecognitionがない場合。
-                             */
 
                             latestTranscript = "";
                         }
@@ -2494,8 +2511,24 @@ function initDrill() {
                         playRecordBtn.style.display =
                             'none';
 
-                        correctionBox.style.display =
-                            'none';
+
+                        /*
+                         * Manual modeは最大15秒。
+                         */
+                        if (
+                            isManualStop
+                        ) {
+
+                            recordingTimeout =
+                                setTimeout(
+                                    () => {
+
+                                        stopActiveRecording();
+
+                                    },
+                                    15000
+                                );
+                        }
 
 
                     } catch (err) {
@@ -2533,26 +2566,7 @@ function initDrill() {
                 'click',
                 () => {
 
-                    if (recognition) {
-
-                        try {
-                            recognition.stop();
-                        } catch (e) {}
-                    }
-
-                    /*
-                     * 判定はrecognition.onend後に行う。
-                     */
-
-                    recordBtn.disabled =
-                        false;
-
-                    stopBtn.disabled =
-                        true;
-
-                    stopBtn.classList.remove(
-                        'stop-btn-active'
-                    );
+                    stopActiveRecording();
                 }
             );
 
@@ -2632,10 +2646,6 @@ function initDrill() {
 
             rowDiv.appendChild(
                 topRow
-            );
-
-            rowDiv.appendChild(
-                correctionBox
             );
 
             drillList.appendChild(
