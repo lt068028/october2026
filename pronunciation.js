@@ -39,7 +39,7 @@ const modelSentences = [
     },
     {
         targetText: "せんせいはおもしろいです",
-        symbolColor: "#fda4af",
+        symbolColor: "#e879f9",
         displayHtml: [
             { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -52,7 +52,7 @@ const modelSentences = [
     },
     {
         targetText: "がっこうはたのしいです",
-        symbolColor: "#e879f9",
+        symbolColor: "#fda4af",
         displayHtml: [
             { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
