@@ -231,10 +231,9 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
         listenBtn.disabled = true;
         listenBtn.textContent = "🔊Playing...";
         
-        // Timeoutによる意図的なディレイを削除し、即時実行
         const utterance = new SpeechSynthesisUtterance(speechText);
         utterance.lang = "ja-JP"; 
-        utterance.rate = 0.7; // ※読み上げ速度設定（0.7=遅い）
+        utterance.rate = 0.8; // モデル音声を0.8に設定
         utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
         speechSynthesis.speak(utterance);
     });
@@ -242,7 +241,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     playRecordBtn.addEventListener("click", () => {
         if (!recordedAudioUrl) return;
         const audio = new Audio(recordedAudioUrl);
-        audio.playbackRate = 1.0; 
+        audio.playbackRate = 1.0; // 学習者音声は1.0を維持
         playRecordBtn.disabled = true; 
         playRecordBtn.textContent = "▶️ Playing...";
         audio.play();
@@ -332,19 +331,17 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 finishingRecording = false;
 
                 // 録音完了 ⇨ モデル音プレイ(グレーアウト) ⇨ 録音音源再生(グレーアウト)
-                // 待機時間（setTimeout）を削除し、即時実行
                 listenBtn.disabled = true;
                 listenBtn.textContent = "🔊Playing...";
 
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = "ja-JP";
-                utterance.rate = 0.7; // ※読み上げ速度
+                utterance.rate = 0.8; // モデル音声を0.8に設定
                 utterance.onend = () => {
                     listenBtn.disabled = false;
                     listenBtn.textContent = "🔊 きく";
                     
                     if (recordedAudioUrl) {
-                        // モデル音声終了後、即時に録音音声を再生（ディレイ削除）
                         playRecordBtn.disabled = false;
                         playRecordBtn.click();
                     } else {
