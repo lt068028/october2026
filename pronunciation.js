@@ -1,16 +1,66 @@
 // ============================================================================
-// Pronunciation Drill - Stage 2 Preparation
+// Pronunciation Drill
 // ============================================================================
 
 const modelSentences = [
-    // サンプル文は削除。録音テスト用のダミー行を1つだけ配置。
     {
-        targetText: "てすと",
-        symbolColor: "#64748b",
+        targetText: "てんきがいいです",
+        symbolColor: "#fb7185",
         displayHtml: [
-            { text: "System Test", low: false }
+            { text: "て", low: false }, { type: "symbol", val: "↘" },
+            { text: "んきが", low: true }, { type: "symbol", val: "｜" },
+            { text: "い", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
         ],
-        meaning: "Recording system test area."
+        meaning: "The weather is fine."
+    },
+    {
+        targetText: "じかんがないです",
+        symbolColor: "#f43f5e",
+        displayHtml: [
+            { text: "じ", low: true }, { type: "symbol", val: "↗" },
+            { text: "かんが", low: false }, { type: "symbol", val: "｜" },
+            { text: "な", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "I don't have time."
+    },
+    {
+        targetText: "しごとがほしいです",
+        symbolColor: "#fda4af",
+        displayHtml: [
+            { text: "し", low: true }, { type: "symbol", val: "↗" },
+            { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
+            { text: "ほ", low: true }, { type: "symbol", val: "↗" },
+            { text: "し", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "I want a job."
+    },
+    {
+        targetText: "せんせいはおもしろいです",
+        symbolColor: "#e879f9",
+        displayHtml: [
+            { text: "せ", low: true }, { type: "symbol", val: "↗" },
+            { text: "んせ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いは", low: true }, { type: "symbol", val: "｜" },
+            { text: "お", low: true }, { type: "symbol", val: "↗" },
+            { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "The teacher is interesting."
+    },
+    {
+        targetText: "がっこうはたのしいです",
+        symbolColor: "#34d399",
+        displayHtml: [
+            { text: "が", low: true }, { type: "symbol", val: "↗" },
+            { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
+            { text: "た", low: true }, { type: "symbol", val: "↗" },
+            { text: "のし", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "School is fun."
     }
 ];
 
@@ -129,7 +179,6 @@ function compareMoraSequences(modelMorae, learnerMorae) {
 function renderPronunciationResult(resultSpan, operations) {
     resultSpan.innerHTML = "";
     
-    // 発音判定の装飾をすべて廃止し、認識したテキストのみをプレーンに表示する
     const recognizedText = operations
         .filter(op => op.type !== "missing")
         .map(op => op.learner ? op.learner.text : "")
@@ -355,21 +404,6 @@ function initDrill() {
     };
     updateLabels();
 
-    // --- ロードマップ表示領域 ---
-    const roadmapPanel = document.createElement("div");
-    roadmapPanel.className = "drill-row";
-    roadmapPanel.innerHTML = `
-        <h3 style="margin: 0 0 8px 0; color: var(--text-primary);">Stage 2: Pitch Visualization Roadmap</h3>
-        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary); font-size: 14px; line-height: 1.6;">
-            <li><strong>Step 1:</strong> UIにCanvas要素を追加</li>
-            <li><strong>Step 2:</strong> F0抽出エンジンの再導入</li>
-            <li><strong>Step 3:</strong> 抽出データの平滑化・正規化処理</li>
-            <li><strong>Step 4:</strong> モデルピッチ曲線のCanvas描画</li>
-            <li><strong>Step 5:</strong> 学習者ピッチ曲線のCanvas描画（視覚的比較）</li>
-        </ul>
-    `;
-    drillList.appendChild(roadmapPanel);
-
     modelSentences.forEach((itemObj, index) => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
@@ -446,7 +480,6 @@ styleElement.textContent = `
     .result-container { display: flex; align-items: center; gap: 8px; flex-grow: 1; margin-left: 10px; }
     .result-text { font-size: 15px; color: var(--text-primary); font-weight: normal !important; }
     .pronunciation-normal { color: var(--text-primary); font-weight: normal !important; }
-    /* エラー用のクラスは定義を残すが使用しない */
     .pronunciation-error { color: var(--error-color, #ef4444); font-weight: normal !important; }
     .pronunciation-missing { color: var(--error-color, #ef4444); font-weight: normal !important; }
     .pronunciation-extra { color: var(--error-color, #ef4444); font-weight: normal !important; }
