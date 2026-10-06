@@ -111,46 +111,81 @@ styleElement.textContent = `
         flex-wrap: wrap;
         gap: 12px;
     }
+
     .control-item {
         display: flex;
         align-items: center;
         gap: 8px;
     }
+
     .mode-label {
         font-weight: bold;
         font-size: 14px;
     }
-    .inactive-mode { color: var(--text-secondary); opacity: 0.5; }
-    .active-mode { color: var(--accent-color); opacity: 1.0; }
+
+    .mode-label .emoji-gray {
+        filter: grayscale(100%);
+    }
+
+    .inactive-mode {
+        color: var(--text-secondary);
+        opacity: 0.5;
+    }
+
+    .active-mode {
+        color: var(--accent-color);
+        opacity: 1.0;
+    }
+
+    .active-mode .emoji-gray {
+        filter: none;
+    }
+
     .switch {
         position: relative;
         display: inline-block;
-        width: 44px;
-        height: 24px;
+        width: 36px;
+        height: 20px;
     }
-    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
     .slider {
         position: absolute;
         cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--accent-color);
-        transition: .4s;
-        border-radius: 24px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--button-disabled-bg);
+        transition: .3s;
+        border-radius: 20px;
     }
+
     .slider:before {
         position: absolute;
         content: "";
-        height: 18px;
-        width: 18px;
+        height: 14px;
+        width: 14px;
         left: 3px;
         bottom: 3px;
         background-color: white;
-        transition: .4s;
+        transition: .3s;
         border-radius: 50%;
     }
-    input:checked + .slider:before {
-        transform: translateX(20px);
+
+    input:checked + .slider {
+        background-color: var(--accent-color);
     }
+
+    input:checked + .slider:before {
+        transform: translateX(16px);
+    }
+
     .drill-row {
         display: flex;
         flex-direction: column;
@@ -163,6 +198,7 @@ styleElement.textContent = `
         border-radius: 6px;
         font-family: sans-serif;
     }
+
     .top-row {
         display: flex;
         align-items: center;
@@ -170,19 +206,24 @@ styleElement.textContent = `
         width: 100%;
         flex-wrap: wrap;
     }
+
     .sentence-number {
         font-weight: bold;
         min-width: 30px;
         font-size: 16px;
         color: var(--text-secondary);
     }
+
     .sentence-label {
         font-weight: normal !important;
         min-width: 220px;
         font-size: 16px;
         color: var(--text-primary);
     }
-    button, .play-record-btn, .meaning-btn {
+
+    button,
+    .play-record-btn,
+    .meaning-btn {
         padding: 6px 12px;
         cursor: pointer;
         border: 1px solid var(--border-color);
@@ -195,19 +236,32 @@ styleElement.textContent = `
         align-items: center;
         justify-content: center;
     }
-    button:hover, .play-record-btn:hover, .meaning-btn:hover { 
-        background: var(--button-hover); 
+
+    button:hover,
+    .play-record-btn:hover,
+    .meaning-btn:hover {
+        background: var(--button-hover);
     }
-    button:disabled { 
-        background: var(--button-disabled-bg); 
-        color: var(--button-disabled-text); 
-        cursor: not-allowed; 
-        border-color: var(--border-color); 
+
+    button:disabled {
+        background: var(--button-disabled-bg);
+        color: var(--button-disabled-text);
+        cursor: not-allowed;
+        border-color: var(--border-color);
     }
+
+    .stop-btn-active {
+        background-color: var(--rec-active-bg) !important;
+        color: var(--rec-active-text) !important;
+        border-color: var(--rec-active-bg) !important;
+        font-weight: bold;
+    }
+
     .play-record-btn {
         display: none;
         background-color: var(--button-bg);
     }
+
     .result-container {
         display: flex;
         align-items: center;
@@ -215,11 +269,13 @@ styleElement.textContent = `
         flex-grow: 1;
         margin-left: 10px;
     }
+
     .result-text {
         font-size: 15px;
         color: var(--text-primary);
         font-weight: normal !important;
     }
+
     .correction-box {
         display: none;
         margin-top: 6px;
@@ -231,15 +287,18 @@ styleElement.textContent = `
         font-size: 14px;
         color: var(--error-text);
     }
+
     .low-pitch {
         text-decoration: underline;
         text-decoration-thickness: 1px;
         font-weight: normal !important;
     }
+
     .meaning-container {
         position: relative;
         margin-left: auto;
     }
+
     .meaning-popup {
         display: none;
         position: absolute;
@@ -257,13 +316,16 @@ styleElement.textContent = `
         z-index: 10;
         font-weight: normal !important;
     }
+
     .meaning-popup.show {
         display: block;
     }
+
     .tooltip-wrap {
         position: relative;
         display: inline-block;
     }
+
     .tooltip-wrap .tooltip-tip {
         visibility: hidden;
         background-color: var(--tooltip-bg, #333);
@@ -282,6 +344,7 @@ styleElement.textContent = `
         white-space: nowrap;
         box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
+
     .tooltip-wrap:hover .tooltip-tip {
         visibility: visible;
         opacity: 1;
@@ -305,31 +368,39 @@ function initDrill() {
     controlItem.className = 'control-item';
 
     const labelAuto = document.createElement('span');
-    labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = '⏹Autostop';
+    labelAuto.className = 'mode-label active-mode custom-tip-wrap';
+    labelAuto.innerHTML =
+        '<span class="emoji-gray">⏹</span>Autostop' +
+        '<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
+
     const switchInput = document.createElement('input');
     switchInput.type = 'checkbox';
     switchInput.checked = isManualStop;
+
     const slider = document.createElement('span');
     slider.className = 'slider';
+
     switchLabel.appendChild(switchInput);
     switchLabel.appendChild(slider);
 
     const labelManual = document.createElement('span');
-    labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = '⏹Manual stop';
+    labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
+    labelManual.innerHTML =
+        '<span class="emoji-gray">⏹</span>Manual stop' +
+        '<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
+
         if (isManualStop) {
-            labelManual.className = 'mode-label active-mode';
-            labelAuto.className = 'mode-label inactive-mode';
+            labelManual.className = 'mode-label active-mode custom-tip-wrap';
+            labelAuto.className = 'mode-label inactive-mode custom-tip-wrap';
         } else {
-            labelAuto.className = 'mode-label active-mode';
-            labelManual.className = 'mode-label inactive-mode';
+            labelAuto.className = 'mode-label active-mode custom-tip-wrap';
+            labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
         }
     });
 
@@ -359,52 +430,65 @@ function initDrill() {
 
         itemObj.displayHtml.forEach(part => {
             const span = document.createElement('span');
+
             if (part.type === 'symbol') {
                 span.style.color = itemObj.symbolColor;
                 span.textContent = part.val;
             } else {
                 span.textContent = part.text;
                 speechText += part.text;
+
                 if (part.low) {
                     span.className = 'low-pitch';
                     span.style.textDecorationColor = itemObj.symbolColor;
                 }
             }
+
             sentenceSpan.appendChild(span);
         });
 
         const listenWrapper = document.createElement('span');
         listenWrapper.className = 'tooltip-wrap';
+
         const listenBtn = document.createElement('button');
         listenBtn.textContent = '🔊 きく';
+
         const listenTip = document.createElement('span');
         listenTip.className = 'tooltip-tip';
         listenTip.textContent = 'Listen to model audio';
+
         listenWrapper.appendChild(listenBtn);
         listenWrapper.appendChild(listenTip);
 
         listenBtn.addEventListener('click', () => {
             listenBtn.disabled = true;
-            listenBtn.textContent = '🔊 再生中...';
+            listenBtn.textContent = '🔊Playing...';
 
             setTimeout(() => {
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ja-JP';
                 utterance.rate = 0.7;
-                speechSynthesis.speak(utterance);
 
                 utterance.onend = () => {
                     listenBtn.disabled = false;
                     listenBtn.textContent = '🔊 きく';
                 };
+
+                speechSynthesis.speak(utterance);
             }, 1000);
         });
 
         const recordBtn = document.createElement('button');
-        recordBtn.textContent = '⏺とる';
+        recordBtn.className = 'custom-tip-wrap';
+        recordBtn.innerHTML =
+            '⏺️とる' +
+            '<span class="custom-tip-box">Start recording your voice.</span>';
 
         const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹とめる';
+        stopBtn.className = 'custom-tip-wrap';
+        stopBtn.innerHTML =
+            '⏹️' +
+            '<span class="custom-tip-box">Stop the active recording.</span>';
         stopBtn.disabled = true;
 
         const resultContainer = document.createElement('div');
@@ -417,12 +501,15 @@ function initDrill() {
 
         const playRecordWrapper = document.createElement('span');
         playRecordWrapper.className = 'tooltip-wrap';
+
         const playRecordBtn = document.createElement('button');
         playRecordBtn.className = 'play-record-btn';
         playRecordBtn.textContent = '▶️';
+
         const playRecordTip = document.createElement('span');
         playRecordTip.className = 'tooltip-tip';
         playRecordTip.textContent = 'Play your recording';
+
         playRecordWrapper.appendChild(playRecordBtn);
         playRecordWrapper.appendChild(playRecordTip);
 
@@ -434,12 +521,15 @@ function initDrill() {
 
         const meaningWrapper = document.createElement('span');
         meaningWrapper.className = 'tooltip-wrap';
+
         const meaningBtn = document.createElement('button');
         meaningBtn.className = 'meaning-btn';
         meaningBtn.textContent = '🌐';
+
         const meaningTip = document.createElement('span');
         meaningTip.className = 'tooltip-tip';
         meaningTip.textContent = 'Translate sentence';
+
         meaningWrapper.appendChild(meaningBtn);
         meaningWrapper.appendChild(meaningTip);
 
@@ -484,23 +574,29 @@ function initDrill() {
         recordBtn.addEventListener('click', async () => {
             try {
                 audioChunks = [];
+
                 audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(audioStream);
 
                 mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                
+
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
                     if (recordedAudioUrl) {
                         URL.revokeObjectURL(recordedAudioUrl);
                     }
+
                     recordedAudioUrl = URL.createObjectURL(audioBlob);
                     playRecordBtn.style.display = 'inline-flex';
                 };
 
                 mediaRecorder.start();
 
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                const SpeechRecognition =
+                    window.SpeechRecognition ||
+                    window.webkitSpeechRecognition;
+
                 if (SpeechRecognition) {
                     recognition = new SpeechRecognition();
                     recognition.lang = 'ja-JP';
@@ -509,6 +605,7 @@ function initDrill() {
 
                     recognition.onresult = (e) => {
                         let rawTranscript = "";
+
                         for (let i = e.resultIndex; i < e.results.length; ++i) {
                             rawTranscript += e.results[i][0].transcript;
                         }
@@ -524,10 +621,17 @@ function initDrill() {
 
                         const cleanHira = hiraText.replace(/[\s、。]/g, "");
                         const cleanTarget = target.replace(/[\s、。]/g, "");
-                        const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
-                        const matchRegex = new RegExp(`^${cleanTarget}` + endParticleRegex);
 
-                        if (matchRegex.test(cleanHira) || cleanHira === cleanTarget) {
+                        const endParticleRegex =
+                            '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
+
+                        const matchRegex =
+                            new RegExp(`^${cleanTarget}` + endParticleRegex);
+
+                        if (
+                            matchRegex.test(cleanHira) ||
+                            cleanHira === cleanTarget
+                        ) {
                             resultSpan.textContent = hiraText + " ✅";
                             resultSpan.style.color = 'var(--text-primary)';
                             correctionBox.style.display = 'none';
@@ -540,16 +644,21 @@ function initDrill() {
 
                             corrListenBtn.onclick = () => {
                                 corrListenBtn.disabled = true;
-                                corrListenBtn.textContent = '🔊 再生中...';
+                                corrListenBtn.textContent = '🔊Playing...';
+
                                 setTimeout(() => {
-                                    const utterance = new SpeechSynthesisUtterance(speechText);
+                                    const utterance =
+                                        new SpeechSynthesisUtterance(speechText);
+
                                     utterance.lang = 'ja-JP';
                                     utterance.rate = 0.7;
-                                    speechSynthesis.speak(utterance);
+
                                     utterance.onend = () => {
                                         corrListenBtn.disabled = false;
                                         corrListenBtn.textContent = '🔊 きく';
                                     };
+
+                                    speechSynthesis.speak(utterance);
                                 }, 1000);
                             };
 
@@ -563,14 +672,20 @@ function initDrill() {
 
                     recognition.onend = () => {
                         if (!isManualStop) {
-                            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                            if (
+                                mediaRecorder &&
+                                mediaRecorder.state !== 'inactive'
+                            ) {
                                 mediaRecorder.stop();
                             }
+
                             if (audioStream) {
                                 audioStream.getTracks().forEach(track => track.stop());
                             }
+
                             recordBtn.disabled = false;
                             stopBtn.disabled = true;
+                            stopBtn.classList.remove('stop-btn-active');
                         }
                     };
 
@@ -578,8 +693,17 @@ function initDrill() {
                 }
 
                 recordBtn.disabled = true;
-                stopBtn.disabled = !isManualStop;
-                resultSpan.textContent = 'Recording...';
+
+                if (isManualStop) {
+                    stopBtn.disabled = false;
+                    stopBtn.classList.add('stop-btn-active');
+                    resultSpan.textContent = 'Recording (Max 15s)...';
+                } else {
+                    stopBtn.disabled = true;
+                    stopBtn.classList.remove('stop-btn-active');
+                    resultSpan.textContent = 'Recording...';
+                }
+
                 resultSpan.style.color = 'var(--accent-color)';
                 playRecordBtn.style.display = 'none';
                 correctionBox.style.display = 'none';
@@ -587,30 +711,47 @@ function initDrill() {
             } catch (err) {
                 console.error("Mic error:", err);
                 resultSpan.textContent = 'Mic error';
+                resultSpan.style.color = 'var(--error-text)';
+
+                recordBtn.disabled = false;
+                stopBtn.disabled = true;
+                stopBtn.classList.remove('stop-btn-active');
             }
         });
 
         stopBtn.addEventListener('click', () => {
             if (recognition) {
-                recognition.stop();
+                try {
+                    recognition.stop();
+                } catch (e) {}
             }
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state !== 'inactive'
+            ) {
                 mediaRecorder.stop();
             }
+
             if (audioStream) {
                 audioStream.getTracks().forEach(track => track.stop());
             }
+
             recordBtn.disabled = false;
             stopBtn.disabled = true;
+            stopBtn.classList.remove('stop-btn-active');
         });
 
         playRecordBtn.addEventListener('click', () => {
             if (recordedAudioUrl) {
                 const audio = new Audio(recordedAudioUrl);
                 audio.playbackRate = 1.0;
+
                 playRecordBtn.disabled = true;
                 playRecordBtn.textContent = '▶️ 再生中...';
+
                 audio.play();
+
                 audio.onended = () => {
                     playRecordBtn.disabled = false;
                     playRecordBtn.textContent = '▶️';
@@ -634,6 +775,10 @@ function initDrill() {
 }
 
 document.addEventListener('DOMContentLoaded', initDrill);
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
+
+if (
+    document.readyState === 'complete' ||
+    document.readyState === 'interactive'
+) {
     initDrill();
 }
