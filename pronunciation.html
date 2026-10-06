@@ -16,6 +16,7 @@
             font-weight: bold;
             font-family: sans-serif;
         }
+
         /* Temporary Area 用のスタイル */
         .temporary-area {
             background: var(--bg-panel);
@@ -32,6 +33,13 @@
             margin-bottom: 12px;
             text-transform: uppercase;
         }
+        .roadmap-list {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--text-primary);
+            font-size: 15px;
+            line-height: 1.8;
+        }
     </style>
 </head>
 <body>
@@ -42,10 +50,10 @@
     <h1>音声を聞いて、とるを押して、文を読もう</h1>
     <p>Listen to the model audio, press record, and read the sentence.</p>
 
-    <!-- Temporary Area (案A: リスト形式) -->
+    <!-- Temporary Area -->
     <div class="temporary-area">
         <div class="temporary-title">Temporary Area (Pitch Visualization Roadmap)</div>
-        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary); font-size: 15px; line-height: 1.8;">
+        <ul class="roadmap-list">
             <li><strong>Step 1:</strong> UIにCanvas要素を追加</li>
             <li><strong>Step 2:</strong> F0抽出エンジンの再導入</li>
             <li><strong>Step 3:</strong> 抽出データの平滑化・正規化処理</li>
@@ -57,7 +65,7 @@
     <!-- ドリルリスト表示エリア -->
     <div id="drillList" style="margin-top: 20px;"></div>
 
-    <!-- ※読み込みファイル名はテスト中のもの(v8等)に合わせること -->
-    <script src="pronunciation_v8.js"></script>
+    <!-- JSファイル読み込み（ローカルの実際のファイル名に指定） -->
+    <script src="pronunciation.js?v=20261004"></script>
 </body>
 </html>
