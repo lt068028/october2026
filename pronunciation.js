@@ -179,14 +179,20 @@ function compareMoraSequences(modelMorae, learnerMorae) {
 function renderPronunciationResult(resultSpan, operations) {
     resultSpan.innerHTML = "";
     
+    // インラインスタイルの色指定（水色など）をリセットし、クラス設定を活かす
+    resultSpan.style.color = "";
+
     const recognizedText = operations
         .filter(op => op.type !== "missing")
         .map(op => op.learner ? op.learner.text : "")
         .join("");
 
     if (recognizedText) {
-        resultSpan.textContent = recognizedText;
-        resultSpan.className = "pronunciation-normal";
+        // 親要素のクラス（result-text）を破壊しないよう、子要素として追加する
+        const span = document.createElement("span");
+        span.className = "pronunciation-normal";
+        span.textContent = recognizedText;
+        resultSpan.appendChild(span);
     }
     return false;
 }
@@ -318,6 +324,11 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                     resultSpan.style.color = "var(--text-secondary)";
                 }
                 finishingRecording = false;
+
+                // 録音完了直後に自動再生をトリガーする
+                if (recordedAudioUrl) {
+                    playRecordBtn.click();
+                }
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -404,6 +415,24 @@ function initDrill() {
     };
     updateLabels();
 
+    // --- Temporary Area (Roadmap) ---
+    const roadmapPanel = document.createElement("div");
+    roadmapPanel.className = "drill-row";
+    roadmapPanel.style.backgroundColor = "var(--bg-panel)";
+    roadmapPanel.style.borderLeft = "4px solid var(--accent-color)";
+    roadmapPanel.innerHTML = `
+        <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">【Temporary Area】 Stage 2: Pitch Visualization Roadmap</h4>
+        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary); font-size: 14px; line-height: 1.6;">
+            <li><strong>Step 1:</strong> UIにCanvas要素を追加</li>
+            <li><strong>Step 2:</strong> F0抽出エンジンの再導入</li>
+            <li><strong>Step 3:</strong> 抽出データの平滑化・正規化処理</li>
+            <li><strong>Step 4:</strong> モデルピッチ曲線のCanvas描画</li>
+            <li><strong>Step 5:</strong> 学習者ピッチ曲線のCanvas描画（視覚的比較）</li>
+        </ul>
+    `;
+    drillList.appendChild(roadmapPanel);
+
+    // --- Drill Sentences ---
     modelSentences.forEach((itemObj, index) => {
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
