@@ -1,8 +1,12 @@
+// ============================================================================
+// Pronunciation Drill
+// ============================================================================
+
 const modelSentences = [
     {
         targetText: "てんきがいいです",
         targetWord: "てんきが",
-        symbolColor: "#fb7185", // 1. 蛍光感のあるローズピンク
+        symbolColor: "#fb7185",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -14,7 +18,7 @@ const modelSentences = [
     {
         targetText: "じかんがないです",
         targetWord: "じかんが",
-        symbolColor: "#f43f5e", // 2. ビビッドなコーラルレッド
+        symbolColor: "#f43f5e",
         displayHtml: [
             { text: "じ", low: true }, { type: "symbol", val: "↗" },
             { text: "かんが", low: false }, { type: "symbol", val: "｜" },
@@ -26,7 +30,7 @@ const modelSentences = [
     {
         targetText: "しごとがほしいです",
         targetWord: "しごとが",
-        symbolColor: "#fda4af", // 3. 明るいパステルピンク
+        symbolColor: "#fda4af",
         displayHtml: [
             { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -39,7 +43,7 @@ const modelSentences = [
     {
         targetText: "せんせいはおもしろいです",
         targetWord: "せんせいは",
-        symbolColor: "#e879f9", // 4. 蛍光感のあるマゼンタ・パープルピンク
+        symbolColor: "#e879f9",
         displayHtml: [
             { text: "せ", low: true }, { type: "symbol", val: "↗" },
             { text: "んせ", low: false }, { type: "symbol", val: "↘" },
@@ -53,7 +57,7 @@ const modelSentences = [
     {
         targetText: "がっこうはたのしいです",
         targetWord: "がっこうは",
-        symbolColor: "#34d399", // 5. エメラルドグリーン（維持）
+        symbolColor: "#34d399",
         displayHtml: [
             { text: "が", low: true }, { type: "symbol", val: "↗" },
             { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
@@ -66,6 +70,11 @@ const modelSentences = [
 ];
 
 let isManualStop = false;
+
+
+// ============================================================================
+// Hiragana conversion
+// ============================================================================
 
 function convertToHiragana(text) {
     if (!text) return "";
@@ -100,6 +109,11 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
+
+// ============================================================================
+// Dynamic CSS
+// ============================================================================
+
 const styleElement = document.createElement('style');
 
 styleElement.textContent = `
@@ -130,20 +144,12 @@ styleElement.textContent = `
 
     .mode-label .emoji-gray {
         filter: grayscale(100%);
+        opacity: 0.55;
     }
 
-    .inactive-mode {
-        color: var(--text-secondary);
-        opacity: 0.5;
-    }
-
-    .active-mode {
-        color: var(--accent-color);
-        opacity: 1.0;
-    }
-
-    .active-mode .emoji-gray {
+    .mode-label.active-mode .emoji-gray {
         filter: none;
+        opacity: 1;
     }
 
     .switch {
@@ -255,6 +261,18 @@ styleElement.textContent = `
         border-color: var(--border-color);
     }
 
+    /* ⏹️ 録音停止中 */
+    .stop-btn-emoji {
+        filter: grayscale(100%);
+        opacity: 0.55;
+    }
+
+    /* ⏹️ 録音中 */
+    .stop-btn-active .stop-btn-emoji {
+        filter: none;
+        opacity: 1;
+    }
+
     .stop-btn-active {
         background-color: var(--rec-active-bg) !important;
         color: var(--rec-active-text) !important;
@@ -293,6 +311,7 @@ styleElement.textContent = `
         color: var(--error-text);
     }
 
+    /* 高低ピッチ */
     .high-pitch {
         text-decoration: overline;
         text-decoration-thickness: 1px;
@@ -364,6 +383,11 @@ styleElement.textContent = `
 
 document.head.appendChild(styleElement);
 
+
+// ============================================================================
+// Drill initialization
+// ============================================================================
+
 function initDrill() {
     const drillList = document.getElementById('drillList');
     if (!drillList) return;
@@ -381,10 +405,14 @@ function initDrill() {
     controlItem.className = 'control-item';
 
     const labelAuto = document.createElement('span');
-    labelAuto.className = 'mode-label active-mode custom-tip-wrap';
+    labelAuto.className =
+        'mode-label active-mode custom-tip-wrap';
+
     labelAuto.innerHTML =
         '<span class="emoji-gray">⏹</span>Autostop' +
-        '<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+        '<span class="custom-tip-box">' +
+        'Automatically stops recording when you stop speaking.' +
+        '</span>';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -400,20 +428,30 @@ function initDrill() {
     switchLabel.appendChild(slider);
 
     const labelManual = document.createElement('span');
-    labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
+    labelManual.className =
+        'mode-label inactive-mode custom-tip-wrap';
+
     labelManual.innerHTML =
         '<span class="emoji-gray">⏹</span>Manual stop' +
-        '<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+        '<span class="custom-tip-box">' +
+        'Records continuously until you click the stop button.' +
+        '</span>';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
 
         if (isManualStop) {
-            labelManual.className = 'mode-label active-mode custom-tip-wrap';
-            labelAuto.className = 'mode-label inactive-mode custom-tip-wrap';
+            labelManual.className =
+                'mode-label active-mode custom-tip-wrap';
+
+            labelAuto.className =
+                'mode-label inactive-mode custom-tip-wrap';
         } else {
-            labelAuto.className = 'mode-label active-mode custom-tip-wrap';
-            labelManual.className = 'mode-label inactive-mode custom-tip-wrap';
+            labelAuto.className =
+                'mode-label active-mode custom-tip-wrap';
+
+            labelManual.className =
+                'mode-label inactive-mode custom-tip-wrap';
         }
     });
 
@@ -425,16 +463,32 @@ function initDrill() {
     headerPanel.appendChild(controlItem);
     drillList.appendChild(headerPanel);
 
+
+    // ========================================================================
+    // Each sentence
+    // ========================================================================
+
     modelSentences.forEach((itemObj, index) => {
+
         const rowDiv = document.createElement('div');
         rowDiv.className = 'drill-row';
 
         const topRow = document.createElement('div');
         topRow.className = 'top-row';
 
+
+        // --------------------------------------------------------------------
+        // Number
+        // --------------------------------------------------------------------
+
         const numberSpan = document.createElement('span');
         numberSpan.className = 'sentence-number';
         numberSpan.textContent = `${index + 1}.`;
+
+
+        // --------------------------------------------------------------------
+        // Sentence + pitch lines
+        // --------------------------------------------------------------------
 
         const sentenceSpan = document.createElement('span');
         sentenceSpan.className = 'sentence-label';
@@ -442,26 +496,37 @@ function initDrill() {
         let speechText = "";
 
         itemObj.displayHtml.forEach(part => {
+
             const span = document.createElement('span');
 
             if (part.type === 'symbol') {
+
                 span.style.color = itemObj.symbolColor;
                 span.textContent = part.val;
+
             } else {
+
                 span.textContent = part.text;
                 speechText += part.text;
 
                 if (part.low) {
                     span.className = 'low-pitch';
-                    span.style.textDecorationColor = itemObj.symbolColor;
+                    span.style.textDecorationColor =
+                        itemObj.symbolColor;
                 } else {
                     span.className = 'high-pitch';
-                    span.style.textDecorationColor = itemObj.symbolColor;
+                    span.style.textDecorationColor =
+                        itemObj.symbolColor;
                 }
             }
 
             sentenceSpan.appendChild(span);
         });
+
+
+        // --------------------------------------------------------------------
+        // Listen
+        // --------------------------------------------------------------------
 
         const listenWrapper = document.createElement('span');
         listenWrapper.className = 'tooltip-wrap';
@@ -477,11 +542,15 @@ function initDrill() {
         listenWrapper.appendChild(listenTip);
 
         listenBtn.addEventListener('click', () => {
+
             listenBtn.disabled = true;
             listenBtn.textContent = '🔊Playing...';
 
             setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(speechText);
+
+                const utterance =
+                    new SpeechSynthesisUtterance(speechText);
+
                 utterance.lang = 'ja-JP';
                 utterance.rate = 0.7;
 
@@ -491,21 +560,46 @@ function initDrill() {
                 };
 
                 speechSynthesis.speak(utterance);
+
             }, 1000);
         });
 
+
+        // --------------------------------------------------------------------
+        // Record button
+        // --------------------------------------------------------------------
+
         const recordBtn = document.createElement('button');
+
         recordBtn.className = 'custom-tip-wrap';
+
         recordBtn.innerHTML =
             '⏺️とる' +
-            '<span class="custom-tip-box">Start recording your voice.</span>';
+            '<span class="custom-tip-box">' +
+            'Start recording your voice.' +
+            '</span>';
+
+
+        // --------------------------------------------------------------------
+        // Stop button
+        // --------------------------------------------------------------------
 
         const stopBtn = document.createElement('button');
+
         stopBtn.className = 'custom-tip-wrap';
+
         stopBtn.innerHTML =
-            '⏹️' +
-            '<span class="custom-tip-box">Stop the active recording.</span>';
+            '<span class="stop-btn-emoji">⏹️</span>' +
+            '<span class="custom-tip-box">' +
+            'Stop the active recording.' +
+            '</span>';
+
         stopBtn.disabled = true;
+
+
+        // --------------------------------------------------------------------
+        // Result
+        // --------------------------------------------------------------------
 
         const resultContainer = document.createElement('div');
         resultContainer.className = 'result-container';
@@ -513,73 +607,175 @@ function initDrill() {
         const resultSpan = document.createElement('span');
         resultSpan.className = 'result-text';
         resultSpan.textContent = '(Not recorded yet)';
-        resultSpan.style.color = 'var(--text-secondary)';
+        resultSpan.style.color =
+            'var(--text-secondary)';
 
-        const playRecordWrapper = document.createElement('span');
-        playRecordWrapper.className = 'tooltip-wrap';
 
-        const playRecordBtn = document.createElement('button');
-        playRecordBtn.className = 'play-record-btn';
+        // --------------------------------------------------------------------
+        // Recorded audio playback
+        // --------------------------------------------------------------------
+
+        const playRecordWrapper =
+            document.createElement('span');
+
+        playRecordWrapper.className =
+            'tooltip-wrap';
+
+        const playRecordBtn =
+            document.createElement('button');
+
+        playRecordBtn.className =
+            'play-record-btn';
+
         playRecordBtn.textContent = '▶️';
 
-        const playRecordTip = document.createElement('span');
-        playRecordTip.className = 'tooltip-tip';
-        playRecordTip.textContent = 'Play your recording';
 
-        playRecordWrapper.appendChild(playRecordBtn);
-        playRecordWrapper.appendChild(playRecordTip);
+        const playRecordTip =
+            document.createElement('span');
+
+        playRecordTip.className =
+            'tooltip-tip';
+
+        playRecordTip.textContent =
+            'Play your recording';
+
+        playRecordWrapper.appendChild(
+            playRecordBtn
+        );
+
+        playRecordWrapper.appendChild(
+            playRecordTip
+        );
+
 
         resultContainer.appendChild(resultSpan);
-        resultContainer.appendChild(playRecordWrapper);
+        resultContainer.appendChild(
+            playRecordWrapper
+        );
 
-        const meaningContainer = document.createElement('div');
-        meaningContainer.className = 'meaning-container';
 
-        const meaningWrapper = document.createElement('span');
-        meaningWrapper.className = 'tooltip-wrap';
+        // --------------------------------------------------------------------
+        // Meaning
+        // --------------------------------------------------------------------
 
-        const meaningBtn = document.createElement('button');
-        meaningBtn.className = 'meaning-btn';
+        const meaningContainer =
+            document.createElement('div');
+
+        meaningContainer.className =
+            'meaning-container';
+
+        const meaningWrapper =
+            document.createElement('span');
+
+        meaningWrapper.className =
+            'tooltip-wrap';
+
+        const meaningBtn =
+            document.createElement('button');
+
+        meaningBtn.className =
+            'meaning-btn';
+
         meaningBtn.textContent = '🌐';
 
-        const meaningTip = document.createElement('span');
-        meaningTip.className = 'tooltip-tip';
-        meaningTip.textContent = 'Translate sentence';
+        const meaningTip =
+            document.createElement('span');
 
-        meaningWrapper.appendChild(meaningBtn);
-        meaningWrapper.appendChild(meaningTip);
+        meaningTip.className =
+            'tooltip-tip';
 
-        const meaningPopup = document.createElement('div');
-        meaningPopup.className = 'meaning-popup';
-        meaningPopup.textContent = itemObj.meaning;
+        meaningTip.textContent =
+            'Translate sentence';
+
+        meaningWrapper.appendChild(
+            meaningBtn
+        );
+
+        meaningWrapper.appendChild(
+            meaningTip
+        );
+
+
+        const meaningPopup =
+            document.createElement('div');
+
+        meaningPopup.className =
+            'meaning-popup';
+
+        meaningPopup.textContent =
+            itemObj.meaning;
+
 
         meaningBtn.addEventListener('click', (e) => {
+
             e.stopPropagation();
-            meaningPopup.classList.toggle('show');
+
+            meaningPopup.classList.toggle(
+                'show'
+            );
         });
+
 
         document.addEventListener('click', () => {
-            meaningPopup.classList.remove('show');
+            meaningPopup.classList.remove(
+                'show'
+            );
         });
 
-        meaningContainer.addEventListener('click', (e) => {
-            e.stopPropagation();
-        });
 
-        meaningContainer.appendChild(meaningWrapper);
-        meaningContainer.appendChild(meaningPopup);
+        meaningContainer.addEventListener(
+            'click',
+            (e) => {
+                e.stopPropagation();
+            }
+        );
 
-        const correctionBox = document.createElement('div');
-        correctionBox.className = 'correction-box';
+        meaningContainer.appendChild(
+            meaningWrapper
+        );
 
-        const corrListenBtn = document.createElement('button');
-        corrListenBtn.textContent = '🔊 きく';
-        corrListenBtn.style.marginRight = '8px';
+        meaningContainer.appendChild(
+            meaningPopup
+        );
 
-        const corrTextSpan = document.createElement('span');
 
-        correctionBox.appendChild(corrListenBtn);
-        correctionBox.appendChild(corrTextSpan);
+        // --------------------------------------------------------------------
+        // Correction box
+        // --------------------------------------------------------------------
+
+        const correctionBox =
+            document.createElement('div');
+
+        correctionBox.className =
+            'correction-box';
+
+
+        const corrListenBtn =
+            document.createElement('button');
+
+        corrListenBtn.textContent =
+            '🔊 きく';
+
+        corrListenBtn.style.marginRight =
+            '8px';
+
+
+        const corrTextSpan =
+            document.createElement('span');
+
+
+        correctionBox.appendChild(
+            corrListenBtn
+        );
+
+        correctionBox.appendChild(
+            corrTextSpan
+        );
+
+
+        // --------------------------------------------------------------------
+        // Recording variables
+        // --------------------------------------------------------------------
 
         let mediaRecorder;
         let audioChunks = [];
@@ -587,265 +783,602 @@ function initDrill() {
         let recognition = null;
         let recordedAudioUrl = null;
 
-        recordBtn.addEventListener('click', async () => {
-            try {
-                audioChunks = [];
+        // Manual modeではここに最新の認識結果だけ保持する
+        let latestTranscript = "";
 
-                audioStream = await navigator.mediaDevices.getUserMedia({
-                    audio: true
-                });
 
-                mediaRecorder = new MediaRecorder(audioStream);
+        // ====================================================================
+        // Transcript processing
+        // ====================================================================
 
-                mediaRecorder.ondataavailable = (e) => {
-                    audioChunks.push(e.data);
-                };
+        function processTranscript(rawTranscript) {
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, {
-                        type: 'audio/webm'
-                    });
+            if (!rawTranscript) return;
 
-                    if (recordedAudioUrl) {
-                        URL.revokeObjectURL(recordedAudioUrl);
-                    }
+            if (
+                rawTranscript
+                    .replace(/[\s.,]/g, "")
+                    .length < 2
+            ) {
+                resultSpan.textContent =
+                    rawTranscript + " (Too short)";
 
-                    recordedAudioUrl = URL.createObjectURL(audioBlob);
-                    playRecordBtn.style.display = 'inline-flex';
-                };
+                resultSpan.style.color =
+                    'var(--text-secondary)';
 
-                mediaRecorder.start();
+                return;
+            }
 
-                const SpeechRecognition =
-                    window.SpeechRecognition ||
-                    window.webkitSpeechRecognition;
 
-                if (SpeechRecognition) {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = 'ja-JP';
-                    recognition.interimResults = false;
-                    recognition.continuous = isManualStop;
+            const hiraText =
+                convertToHiragana(
+                    rawTranscript
+                );
 
-                    recognition.onresult = (e) => {
-                        let rawTranscript = "";
+            const target =
+                itemObj.targetText;
 
-                        for (
-                            let i = e.resultIndex;
-                            i < e.results.length;
-                            ++i
-                        ) {
-                            rawTranscript += e.results[i][0].transcript;
-                        }
 
-                        if (
-                            rawTranscript
-                                .replace(/[\s.,]/g, "")
-                                .length < 2
-                        ) {
-                            resultSpan.textContent =
-                                rawTranscript + " (Too short)";
-                            resultSpan.style.color =
-                                'var(--text-secondary)';
-                            return;
-                        }
+            const cleanHira =
+                hiraText.replace(
+                    /[\s、。]/g,
+                    ""
+                );
 
-                        const hiraText = convertToHiragana(rawTranscript);
-                        const target = itemObj.targetText;
+            const cleanTarget =
+                target.replace(
+                    /[\s、。]/g,
+                    ""
+                );
 
-                        const cleanHira =
-                            hiraText.replace(/[\s、。]/g, "");
 
-                        const cleanTarget =
-                            target.replace(/[\s、。]/g, "");
+            const endParticleRegex =
+                '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
 
-                        const endParticleRegex =
-                            '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
 
-                        const matchRegex =
-                            new RegExp(
-                                `^${cleanTarget}` +
-                                endParticleRegex
+            const matchRegex =
+                new RegExp(
+                    `^${cleanTarget}` +
+                    endParticleRegex
+                );
+
+
+            if (
+                matchRegex.test(cleanHira) ||
+                cleanHira === cleanTarget
+            ) {
+
+                resultSpan.textContent =
+                    hiraText + " ✅";
+
+                resultSpan.style.color =
+                    'var(--text-primary)';
+
+                correctionBox.style.display =
+                    'none';
+
+            } else {
+
+                resultSpan.textContent =
+                    hiraText;
+
+                resultSpan.style.color =
+                    'var(--error-text)';
+
+                corrTextSpan.textContent =
+                    'Try Again';
+
+                corrListenBtn.style.display =
+                    'inline-flex';
+
+
+                corrListenBtn.onclick = () => {
+
+                    corrListenBtn.disabled = true;
+
+                    corrListenBtn.textContent =
+                        '🔊Playing...';
+
+
+                    setTimeout(() => {
+
+                        const utterance =
+                            new SpeechSynthesisUtterance(
+                                speechText
                             );
 
-                        if (
-                            matchRegex.test(cleanHira) ||
-                            cleanHira === cleanTarget
-                        ) {
-                            resultSpan.textContent =
-                                hiraText + " ✅";
+                        utterance.lang = 'ja-JP';
+                        utterance.rate = 0.7;
 
-                            resultSpan.style.color =
-                                'var(--text-primary)';
 
-                            correctionBox.style.display = 'none';
-                        } else {
-                            resultSpan.textContent = hiraText;
-                            resultSpan.style.color =
-                                'var(--error-text)';
+                        utterance.onend = () => {
 
-                            corrTextSpan.textContent = `Try Again`;
-                            corrListenBtn.style.display = 'inline-flex';
+                            corrListenBtn.disabled =
+                                false;
 
-                            corrListenBtn.onclick = () => {
-                                corrListenBtn.disabled = true;
-                                corrListenBtn.textContent =
-                                    '🔊Playing...';
+                            corrListenBtn.textContent =
+                                '🔊 きく';
+                        };
 
-                                setTimeout(() => {
-                                    const utterance =
-                                        new SpeechSynthesisUtterance(
-                                            speechText
-                                        );
 
-                                    utterance.lang = 'ja-JP';
-                                    utterance.rate = 0.7;
+                        speechSynthesis.speak(
+                            utterance
+                        );
 
-                                    utterance.onend = () => {
-                                        corrListenBtn.disabled = false;
-                                        corrListenBtn.textContent =
-                                            '🔊 きく';
-                                    };
+                    }, 1000);
+                };
 
-                                    speechSynthesis.speak(utterance);
-                                }, 1000);
+
+                correctionBox.style.display =
+                    'block';
+            }
+        }
+
+
+        // ====================================================================
+        // Record
+        // ====================================================================
+
+        recordBtn.addEventListener(
+            'click',
+            async () => {
+
+                try {
+
+                    audioChunks = [];
+                    latestTranscript = "";
+
+                    audioStream =
+                        await navigator.mediaDevices
+                            .getUserMedia({
+                                audio: true
+                            });
+
+
+                    mediaRecorder =
+                        new MediaRecorder(
+                            audioStream
+                        );
+
+
+                    mediaRecorder.ondataavailable =
+                        (e) => {
+
+                            audioChunks.push(
+                                e.data
+                            );
+                        };
+
+
+                    mediaRecorder.onstop = () => {
+
+                        const audioBlob =
+                            new Blob(
+                                audioChunks,
+                                {
+                                    type:
+                                        'audio/webm'
+                                }
+                            );
+
+
+                        if (recordedAudioUrl) {
+                            URL.revokeObjectURL(
+                                recordedAudioUrl
+                            );
+                        }
+
+
+                        recordedAudioUrl =
+                            URL.createObjectURL(
+                                audioBlob
+                            );
+
+
+                        playRecordBtn.style.display =
+                            'inline-flex';
+                    };
+
+
+                    mediaRecorder.start();
+
+
+                    const SpeechRecognition =
+                        window.SpeechRecognition ||
+                        window.webkitSpeechRecognition;
+
+
+                    if (SpeechRecognition) {
+
+                        recognition =
+                            new SpeechRecognition();
+
+                        recognition.lang =
+                            'ja-JP';
+
+                        recognition.interimResults =
+                            false;
+
+                        recognition.continuous =
+                            isManualStop;
+
+
+                        recognition.onresult =
+                            (e) => {
+
+                                let rawTranscript =
+                                    "";
+
+                                for (
+                                    let i =
+                                        e.resultIndex;
+                                    i <
+                                        e.results.length;
+                                    ++i
+                                ) {
+
+                                    rawTranscript +=
+                                        e.results[i][0]
+                                            .transcript;
+                                }
+
+
+                                latestTranscript =
+                                    rawTranscript;
+
+
+                                // =================================================
+                                // Autostop
+                                // =================================================
+
+                                if (!isManualStop) {
+
+                                    processTranscript(
+                                        latestTranscript
+                                    );
+                                }
+
+                                // =================================================
+                                // Manual stop
+                                // =================================================
+                                // ここでは表示・判定しない。
+                                // ⏹️で停止した後に処理する。
                             };
 
-                            correctionBox.style.display = 'block';
-                        }
-                    };
 
-                    recognition.onerror = (err) => {
-                        console.error(
-                            "Speech recognition error:",
-                            err
+                        recognition.onerror =
+                            (err) => {
+
+                                console.error(
+                                    "Speech recognition error:",
+                                    err
+                                );
+                            };
+
+
+                        recognition.onend =
+                            () => {
+
+                                // =================================================
+                                // Manual
+                                // =================================================
+
+                                if (isManualStop) {
+
+                                    if (
+                                        latestTranscript
+                                    ) {
+
+                                        processTranscript(
+                                            latestTranscript
+                                        );
+                                    }
+
+
+                                    if (
+                                        mediaRecorder &&
+                                        mediaRecorder.state !==
+                                            'inactive'
+                                    ) {
+
+                                        mediaRecorder.stop();
+                                    }
+
+
+                                    if (audioStream) {
+
+                                        audioStream
+                                            .getTracks()
+                                            .forEach(
+                                                track =>
+                                                    track.stop()
+                                            );
+                                    }
+
+
+                                    recordBtn.disabled =
+                                        false;
+
+                                    stopBtn.disabled =
+                                        true;
+
+                                    stopBtn.classList.remove(
+                                        'stop-btn-active'
+                                    );
+
+                                // =================================================
+                                // Autostop
+                                // =================================================
+
+                                } else {
+
+                                    if (
+                                        mediaRecorder &&
+                                        mediaRecorder.state !==
+                                            'inactive'
+                                    ) {
+
+                                        mediaRecorder.stop();
+                                    }
+
+
+                                    if (audioStream) {
+
+                                        audioStream
+                                            .getTracks()
+                                            .forEach(
+                                                track =>
+                                                    track.stop()
+                                            );
+                                    }
+
+
+                                    recordBtn.disabled =
+                                        false;
+
+                                    stopBtn.disabled =
+                                        true;
+
+                                    stopBtn.classList.remove(
+                                        'stop-btn-active'
+                                    );
+                                }
+                            };
+
+
+                        recognition.start();
+                    }
+
+
+                    // ------------------------------------------------------------
+                    // Recording UI
+                    // ------------------------------------------------------------
+
+                    recordBtn.disabled =
+                        true;
+
+
+                    if (isManualStop) {
+
+                        stopBtn.disabled =
+                            false;
+
+                        stopBtn.classList.add(
+                            'stop-btn-active'
                         );
-                    };
 
-                    recognition.onend = () => {
-                        if (!isManualStop) {
-                            if (
-                                mediaRecorder &&
-                                mediaRecorder.state !== 'inactive'
-                            ) {
-                                mediaRecorder.stop();
-                            }
+                        resultSpan.textContent =
+                            'Recording (Max 15s)...';
 
-                            if (audioStream) {
-                                audioStream
-                                    .getTracks()
-                                    .forEach(track => track.stop());
-                            }
+                    } else {
 
-                            recordBtn.disabled = false;
-                            stopBtn.disabled = true;
-                            stopBtn.classList.remove(
-                                'stop-btn-active'
-                            );
-                        }
-                    };
+                        stopBtn.disabled =
+                            true;
 
-                    recognition.start();
-                }
+                        stopBtn.classList.remove(
+                            'stop-btn-active'
+                        );
 
-                recordBtn.disabled = true;
+                        resultSpan.textContent =
+                            'Recording...';
+                    }
 
-                if (isManualStop) {
-                    stopBtn.disabled = false;
-                    stopBtn.classList.add('stop-btn-active');
+
+                    resultSpan.style.color =
+                        'var(--accent-color)';
+
+
+                    playRecordBtn.style.display =
+                        'none';
+
+                    correctionBox.style.display =
+                        'none';
+
+
+                } catch (err) {
+
+                    console.error(
+                        "Mic error:",
+                        err
+                    );
+
                     resultSpan.textContent =
-                        'Recording (Max 15s)...';
-                } else {
-                    stopBtn.disabled = true;
+                        'Mic error';
+
+                    resultSpan.style.color =
+                        'var(--error-text)';
+
+
+                    recordBtn.disabled =
+                        false;
+
+                    stopBtn.disabled =
+                        true;
+
                     stopBtn.classList.remove(
                         'stop-btn-active'
                     );
-                    resultSpan.textContent =
-                        'Recording...';
+                }
+            }
+        );
+
+
+        // ====================================================================
+        // Manual stop button
+        // ====================================================================
+
+        stopBtn.addEventListener(
+            'click',
+            () => {
+
+                if (recognition) {
+
+                    try {
+                        recognition.stop();
+                    } catch (e) {}
                 }
 
-                resultSpan.style.color =
-                    'var(--accent-color)';
 
-                playRecordBtn.style.display = 'none';
-                correctionBox.style.display = 'none';
+                if (
+                    mediaRecorder &&
+                    mediaRecorder.state !==
+                        'inactive'
+                ) {
 
-            } catch (err) {
-                console.error("Mic error:", err);
+                    mediaRecorder.stop();
+                }
 
-                resultSpan.textContent = 'Mic error';
-                resultSpan.style.color = 'var(--error-text)';
 
-                recordBtn.disabled = false;
-                stopBtn.disabled = true;
+                if (audioStream) {
+
+                    audioStream
+                        .getTracks()
+                        .forEach(
+                            track =>
+                                track.stop()
+                        );
+                }
+
+
+                recordBtn.disabled =
+                    false;
+
+                stopBtn.disabled =
+                    true;
+
                 stopBtn.classList.remove(
                     'stop-btn-active'
                 );
+
+
+                // Manualでは認識結果の処理を
+                // recognition.onend に任せる。
             }
-        });
+        );
 
-        stopBtn.addEventListener('click', () => {
-            if (recognition) {
-                try {
-                    recognition.stop();
-                } catch (e) {}
-            }
 
-            if (
-                mediaRecorder &&
-                mediaRecorder.state !== 'inactive'
-            ) {
-                mediaRecorder.stop();
-            }
+        // ====================================================================
+        // Recorded audio playback
+        // ====================================================================
 
-            if (audioStream) {
-                audioStream
-                    .getTracks()
-                    .forEach(track => track.stop());
-            }
+        playRecordBtn.addEventListener(
+            'click',
+            () => {
 
-            recordBtn.disabled = false;
-            stopBtn.disabled = true;
-            stopBtn.classList.remove(
-                'stop-btn-active'
-            );
-        });
+                if (!recordedAudioUrl) {
+                    return;
+                }
 
-        playRecordBtn.addEventListener('click', () => {
-            if (recordedAudioUrl) {
+
                 const audio =
-                    new Audio(recordedAudioUrl);
+                    new Audio(
+                        recordedAudioUrl
+                    );
 
-                audio.playbackRate = 1.0;
 
-                playRecordBtn.disabled = true;
+                audio.playbackRate =
+                    1.0;
+
+
+                playRecordBtn.disabled =
+                    true;
+
+                // 「再生中」ではなく Playing... に統一
                 playRecordBtn.textContent =
-                    '▶️ 再生中...';
+                    '▶️ Playing...';
+
 
                 audio.play();
 
+
                 audio.onended = () => {
-                    playRecordBtn.disabled = false;
-                    playRecordBtn.textContent = '▶️';
+
+                    playRecordBtn.disabled =
+                        false;
+
+                    playRecordBtn.textContent =
+                        '▶️';
                 };
             }
-        });
+        );
 
-        topRow.appendChild(numberSpan);
-        topRow.appendChild(listenWrapper);
-        topRow.appendChild(sentenceSpan);
-        topRow.appendChild(recordBtn);
-        topRow.appendChild(stopBtn);
-        topRow.appendChild(resultContainer);
-        topRow.appendChild(meaningContainer);
 
-        rowDiv.appendChild(topRow);
-        rowDiv.appendChild(correctionBox);
+        // ====================================================================
+        // Row construction
+        // ====================================================================
 
-        drillList.appendChild(rowDiv);
+        topRow.appendChild(
+            numberSpan
+        );
+
+        topRow.appendChild(
+            listenWrapper
+        );
+
+        topRow.appendChild(
+            sentenceSpan
+        );
+
+        topRow.appendChild(
+            recordBtn
+        );
+
+        topRow.appendChild(
+            stopBtn
+        );
+
+        topRow.appendChild(
+            resultContainer
+        );
+
+        topRow.appendChild(
+            meaningContainer
+        );
+
+
+        rowDiv.appendChild(
+            topRow
+        );
+
+        rowDiv.appendChild(
+            correctionBox
+        );
+
+        drillList.appendChild(
+            rowDiv
+        );
     });
 }
 
-document.addEventListener('DOMContentLoaded', initDrill);
+
+// ============================================================================
+// Initialization
+// ============================================================================
+
+document.addEventListener(
+    'DOMContentLoaded',
+    initDrill
+);
 
 if (
     document.readyState === 'complete' ||
