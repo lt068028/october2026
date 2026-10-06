@@ -248,6 +248,19 @@ input:checked + .slider:before {
 
 
 /* ==========================================
+   Task 1 Mode Emoji
+   ========================================== */
+
+.mode-label.inactive-mode .emoji-gray {
+    filter: grayscale(100%);
+}
+
+.mode-label.active-mode .emoji-gray {
+    filter: none;
+}
+
+
+/* ==========================================
    Recording Stop Button Active State
    ========================================== */
 
@@ -270,15 +283,6 @@ input:checked + .slider:before {
     cursor: not-allowed !important;
     filter: grayscale(100%);
     opacity: 0.55;
-}
-
-
-/* ==========================================
-   Task 1 emoji
-   ========================================== */
-
-.emoji-gray {
-    filter: grayscale(100%);
 }
 
 
