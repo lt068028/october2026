@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -6,71 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XはYです</title>
     <link rel="stylesheet" href="style.css">
-
-    <!-- Task 3：JPG/PNG Japanese OCR -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
     <h1>Practice1；XはYです</h1>
 
     <div id="exampleSection"></div>
     <div id="task1List"></div>
-
-    <!-- Task 3 -->
-    <div class="header-panel task3-header-panel" style="margin-top: 30px;">
-        <div class="header-left">
-            <span class="header-title">Task 3</span>
-        </div>
-    </div>
-
-    <div class="drill-row task3-import-row">
-        <div id="task3DropZone" class="task3-drop-zone">
-            <div class="task3-input-area">
-                <textarea
-                    id="task3Textarea"
-                    placeholder="Paste Japanese vocabulary here..."
-                ></textarea>
-
-                <label class="task3-file-label">
-                    📷 JPG / PNG
-                    <input
-                        type="file"
-                        id="task3ImageInput"
-                        accept="image/png, image/jpeg"
-                    >
-                </label>
-            </div>
-        </div>
-
-        <div class="task3-action-row">
-            <button id="task3ImportBtn" class="task3-button">
-                Import
-            </button>
-            <span id="task3ImportStatus"></span>
-        </div>
-
-        <div class="task3-preview-title">
-            Check usable vocabulary
-        </div>
-
-        <div id="task3Preview" class="task3-preview">
-            <!-- imported vocabulary preview -->
-        </div>
-
-        <div class="task3-generate-row">
-            <button id="task3GenerateBtn" class="task3-button" disabled>
-                ✨ Generate Drills
-            </button>
-        </div>
-    </div>
-
-    <div id="task3List"></div>
-
-    <div class="task3-more-row">
-        <button id="task3MoreBtn" class="task3-button" disabled>
-            Generate more drills (up to 5)
-        </button>
-    </div>
 
     <!-- Footer -->
     <div class="voice-guide-footer">
@@ -89,4 +29,3 @@
     <script src="task1.js"></script>
 </body>
 </html>
-```
