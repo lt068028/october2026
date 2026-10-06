@@ -5,7 +5,7 @@
 const modelSentences = [
     {
         targetText: "てんきがいいです",
-        symbolColor: "#06b6d4", // 変更: アクアブルー
+        symbolColor: "#06b6d4",
         displayHtml: [
             { text: "て", low: false }, { type: "symbol", val: "↘" },
             { text: "んきが", low: true }, { type: "symbol", val: "｜" },
@@ -27,7 +27,7 @@ const modelSentences = [
     },
     {
         targetText: "しごとがほしいです",
-        symbolColor: "#84cc16", // 変更: ライムグリーン
+        symbolColor: "#84cc16",
         displayHtml: [
             { text: "し", low: true }, { type: "symbol", val: "↗" },
             { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
@@ -69,16 +69,17 @@ const modelSentences = [
 // ============================================================================
 
 let isManualStop = false;
-let isAutoPlay = true; // 基本設定はAutoplay
 
 const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
 const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
 
-// グローバルな再生管理オブジェクト（キャンセル処理用）
+// 即時キャンセル（提案B）のためのグローバルな再生管理オブジェクト
 let activePlayback = {
     audio: null,
     timeoutId: null,
+    sessionToken: 0, // 非同期処理の衝突を防ぐためのトークン
     cancel: function() {
+        this.sessionToken++;
         if (this.audio) {
             this.audio.pause();
             this.audio.currentTime = 0;
@@ -88,7 +89,19 @@ let activePlayback = {
             clearTimeout(this.timeoutId);
             this.timeoutId = null;
         }
-        speechSynthesis.cancel(); // 進行中のTTSを停止
+        speechSynthesis.cancel();
+        
+        // 画面上の全行のボタンUIを一括リセットする
+        document.querySelectorAll(".listen-btn").forEach(btn => { 
+            btn.disabled = false; 
+            btn.textContent = "🔊 きく"; 
+        });
+        document.querySelectorAll(".play-record-btn").forEach(btn => { 
+            if (btn.style.display !== "none") { 
+                btn.disabled = false; 
+                btn.textContent = "▶️"; 
+            } 
+        });
     }
 };
 
@@ -247,7 +260,8 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
 
     // --- Audio Playback (Manual) ---
     listenBtn.addEventListener("click", () => {
-        activePlayback.cancel();
+        activePlayback.cancel(); // 進行中の他行の再生をすべて即時中断
+        const currentToken = activePlayback.sessionToken;
 
         listenBtn.disabled = true;
         listenBtn.textContent = "🔊Playing...";
@@ -255,13 +269,19 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
         const utterance = new SpeechSynthesisUtterance(speechText);
         utterance.lang = "ja-JP"; 
         utterance.rate = 0.8; 
-        utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
+        utterance.onend = () => { 
+            // 割り込みキャンセルされていたら何もしない
+            if (activePlayback.sessionToken !== currentToken) return;
+            listenBtn.disabled = false; 
+            listenBtn.textContent = "🔊 きく"; 
+        };
         speechSynthesis.speak(utterance);
     });
 
     playRecordBtn.addEventListener("click", () => {
         if (!recordedAudioUrl) return;
         activePlayback.cancel();
+        const currentToken = activePlayback.sessionToken;
 
         const audio = new Audio(recordedAudioUrl);
         activePlayback.audio = audio; 
@@ -271,8 +291,9 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
         playRecordBtn.textContent = "▶️ Playing...";
         audio.play();
         audio.onended = () => { 
+            if (activePlayback.sessionToken !== currentToken) return;
             playRecordBtn.disabled = false; 
-            playRecordBtn.textContent = "▶️️"; 
+            playRecordBtn.textContent = "▶️"; 
             activePlayback.audio = null;
         };
     });
@@ -303,7 +324,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
         }
         
         const cleanTarget = itemObj.targetText.replace(/[\s、。]/g, "");
-        const matchRegex = new RegExp(`^${cleanTarget}(?:ね\vert{}よ\vert{}よね\vert{}ですね\vert{}ですよ)*$`);
+        const matchRegex = new RegExp(`^${cleanTarget}(?:ね|よ|よね|ですね|ですよ)*$`);
         const exactSentence = matchRegex.test(cleanHira);
         
         const modelMorae = getModelMoraData(itemObj);
@@ -332,7 +353,8 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     }
 
     recordBtn.addEventListener("click", async () => {
-        activePlayback.cancel();
+        activePlayback.cancel(); // 録音開始時にも進行中の他行の再生をすべて即時中断
+        
         clearSilenceTimer(); recordingActive = false; finishingRecording = false; audioChunks = []; latestTranscript = "";
         try {
             audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -355,48 +377,42 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 }
                 finishingRecording = false;
 
-                // --- 自動再生 / 手動再生 の条件分岐 ---
-                if (isAutoPlay) {
-                    listenBtn.disabled = true;
-                    listenBtn.textContent = "🔊Playing...";
-                    playRecordBtn.disabled = true; 
-                    playRecordBtn.textContent = "▶️ Playing...";
+                // --- 録音完了 ⇨ モデル音プレイ ⇨ 録音音源再生 の一連フロー ---
+                activePlayback.cancel();
+                const currentToken = activePlayback.sessionToken;
 
-                    const utterance = new SpeechSynthesisUtterance(speechText);
-                    utterance.lang = "ja-JP";
-                    utterance.rate = 0.8;
-                    
-                    utterance.onend = () => {
-                        listenBtn.disabled = false;
-                        listenBtn.textContent = "🔊 きく";
-                        
-                        if (recordedAudioUrl) {
-                            activePlayback.timeoutId = setTimeout(() => {
-                                if (!recordedAudioUrl) return; 
+                listenBtn.disabled = true;
+                listenBtn.textContent = "🔊Playing...";
+                playRecordBtn.disabled = true; 
+                playRecordBtn.textContent = "▶️ Playing...";
 
-                                const audio = new Audio(recordedAudioUrl);
-                                activePlayback.audio = audio; 
-                                audio.playbackRate = 1.0;
-                                audio.play();
-                                audio.onended = () => {
-                                    playRecordBtn.disabled = false;
-                                    playRecordBtn.textContent = "▶️";
-                                    activePlayback.audio = null;
-                                };
-                            }, 100);
-                        } else {
-                            playRecordBtn.disabled = false;
-                            playRecordBtn.textContent = "▶️";
-                        }
-                    };
-                    speechSynthesis.speak(utterance);
-                } else {
-                    // 手動再生モード: ボタンをアクティブにして待機
+                const utterance = new SpeechSynthesisUtterance(speechText);
+                utterance.lang = "ja-JP";
+                utterance.rate = 0.8; // モデル音声を0.8に設定
+                utterance.onend = () => {
+                    // キャンセルされていた場合は後続処理を放棄
+                    if (activePlayback.sessionToken !== currentToken) return;
+
                     listenBtn.disabled = false;
                     listenBtn.textContent = "🔊 きく";
-                    playRecordBtn.disabled = false;
-                    playRecordBtn.textContent = "▶️";
-                }
+                    
+                    if (recordedAudioUrl) {
+                        const audio = new Audio(recordedAudioUrl);
+                        activePlayback.audio = audio;
+                        audio.playbackRate = 1.0;
+                        audio.play();
+                        audio.onended = () => {
+                            if (activePlayback.sessionToken !== currentToken) return;
+                            playRecordBtn.disabled = false;
+                            playRecordBtn.textContent = "▶️";
+                            activePlayback.audio = null;
+                        };
+                    } else {
+                        playRecordBtn.disabled = false;
+                        playRecordBtn.textContent = "▶️";
+                    }
+                };
+                speechSynthesis.speak(utterance);
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -456,59 +472,30 @@ function initDrill() {
     headerPanel.className = "header-panel";
     headerPanel.innerHTML = `
         <span style="color: var(--text-primary);"><strong>Pronunciation Drills</strong></span>
-        <div class="controls-container">
-            <div class="control-item" id="stopModeControl"></div>
-            <div class="control-item" id="playModeControl"></div>
-        </div>
+        <div class="control-item" id="modeControlItem"></div>
     `;
     drillList.appendChild(headerPanel);
 
+    const controlItem = headerPanel.querySelector("#modeControlItem");
     const updateLabels = () => {
-        // --- Autostop / Manual stop トグル ---
-        const stopControl = document.getElementById("stopModeControl");
-        if(stopControl) {
-            stopControl.innerHTML = `
-                <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
-                    <span class="emoji-gray">⏹</span>Autostop
-                    <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
-                </span>
-                <label class="switch">
-                    <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
-                    <span class="slider"></span>
-                </label>
-                <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
-                    <span class="emoji-gray">⏹</span>Manual stop
-                    <span class="custom-tip-box">Records continuously until you click the stop button.</span>
-                </span>
-            `;
-            document.getElementById("modeSwitch").addEventListener("change", e => {
-                isManualStop = e.target.checked;
-                updateLabels();
-            });
-        }
-
-        // --- Autoplay / Manual play トグル ---
-        const playControl = document.getElementById("playModeControl");
-        if(playControl) {
-            playControl.innerHTML = `
-                <span class="mode-label ${isAutoPlay ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
-                    <span class="emoji-gray">▶️</span>Autoplay
-                    <span class="custom-tip-box">Automatically plays model and recorded audio after recording.</span>
-                </span>
-                <label class="switch">
-                    <input type="checkbox" id="playModeSwitch" ${!isAutoPlay ? 'checked' : ''}>
-                    <span class="slider"></span>
-                </label>
-                <span class="mode-label ${isAutoPlay ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
-                    <span class="emoji-gray">▶️</span>Manual play
-                    <span class="custom-tip-box">Requires manual click to play audio after recording.</span>
-                </span>
-            `;
-            document.getElementById("playModeSwitch").addEventListener("change", e => {
-                isAutoPlay = !e.target.checked; // checked時(右側)がManual play
-                updateLabels();
-            });
-        }
+        controlItem.innerHTML = `
+            <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
+                <span class="emoji-gray">⏹</span>Autostop
+                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
+                <span class="slider"></span>
+            </label>
+            <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
+                <span class="emoji-gray">⏹</span>Manual stop
+                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+            </span>
+        `;
+        document.getElementById("modeSwitch").addEventListener("change", e => {
+            isManualStop = e.target.checked;
+            updateLabels();
+        });
     };
     updateLabels();
 
@@ -533,7 +520,7 @@ function initDrill() {
                 ⏺️とる<span class="custom-tip-box">Start recording your voice.</span>
             </button>
             <button class="stop-btn custom-tip-wrap" disabled>
-                <span class="stop-btn-emoji">⏹</span><span class="custom-tip-box">Stop the active recording.</span>
+                <span class="stop-btn-emoji">⏹️</span><span class="custom-tip-box">Stop the active recording.</span>
             </button>
             <div class="result-container">
                 <span class="result-text" style="color: var(--text-secondary);">(Not recorded yet)</span>
@@ -564,5 +551,43 @@ function initDrill() {
 
 const styleElement = document.createElement("style");
 styleElement.textContent = `
-    .header-panel { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; font-family: sans-serif; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px; }
-    .controls-container { display: flex; flex-direction: column; gap: 10px; align-items: flex-
+    .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; font-family: sans-serif; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px; }
+    .control-item { display: flex; align-items: center; gap: 8px; }
+    .mode-label { font-weight: bold; font-size: 14px; }
+    .mode-label .emoji-gray { filter: grayscale(100%); opacity: 0.55; }
+    .mode-label.active-mode .active-mode .emoji-gray { filter: none; opacity: 1; }
+    .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px; }
+    .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--accent-color); }
+    input:checked + .slider:before { transform: translateX(16px); }
+    .drill-row { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-bottom: 12px; padding: 12px; background: var(--bg-row); border: 1px solid var(--border-color); border-radius: 6px; font-family: sans-serif; }
+    .top-row { display: flex; align-items: center; gap: 12px; width: 100%; flex-wrap: wrap; }
+    .sentence-number { font-weight: bold; min-width: 30px; font-size: 16px; color: var(--text-secondary); }
+    .sentence-label { font-weight: normal !important; min-width: 220px; font-size: 16px; color: var(--text-primary); }
+    button, .play-record-btn, .meaning-btn { padding: 6px 12px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 4px; background: var(--button-bg); color: var(--text-primary); font-size: 14px; line-height: 1.4; display: inline-flex; align-items: center; justify-content: center; }
+    button:hover, .play-record-btn:hover, .meaning-btn:hover { background: var(--button-hover); }
+    button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
+    .stop-btn-emoji { filter: grayscale(100%); opacity: 0.55; }
+    .stop-btn-active .stop-btn-emoji { filter: none; opacity: 1; }
+    .stop-btn-active { background-color: var(--rec-active-bg) !important; color: var(--rec-active-text) !important; border-color: var(--rec-active-bg) !important; font-weight: bold; }
+    .play-record-btn { display: none; background-color: var(--button-bg); }
+    .result-container { display: flex; align-items: center; gap: 8px; flex-grow: 1; margin-left: 10px; }
+    .result-text { font-size: 15px; color: var(--text-primary); font-weight: normal !important; }
+    .pronunciation-normal { color: var(--text-primary); font-weight: normal !important; }
+    .pronunciation-error { color: var(--error-color, #ef4444); font-weight: normal !important; }
+    .pronunciation-missing { color: var(--error-color, #ef4444); font-weight: normal !important; }
+    .pronunciation-extra { color: var(--error-color, #ef4444); font-weight: normal !important; }
+    .high-pitch { text-decoration: overline; text-decoration-thickness: 1px; font-weight: normal !important; }
+    .low-pitch { text-decoration: underline; text-decoration-thickness: 1px; font-weight: normal !important; }
+    .meaning-container { position: relative; margin-left: auto; }
+    .meaning-popup { display: none; position: absolute; right: 0; bottom: 100%; margin-bottom: 6px; background: var(--bg-panel); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap; font-size: 14px; color: var(--text-primary); z-index: 10; font-weight: normal !important; }
+    .meaning-popup.show { display: block; }
+    .tooltip-wrap { position: relative; display: inline-block; }
+    .tooltip-wrap .tooltip-tip { visibility: hidden; background-color: var(--tooltip-bg, #333); color: var(--tooltip-text, #fff); text-align: center; border-radius: 4px; padding: 4px 8px; position: absolute; z-index: 20; bottom: 125%; left: 50%; transform: translateX(-50%); opacity: 0; transition: opacity 0.3s; font-size: 11px; white-space: nowrap; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+    .tooltip-wrap:hover .tooltip-tip { visibility: visible; opacity: 1; }
+`;
+document.head.appendChild(styleElement);
+
+document.addEventListener("DOMContentLoaded", initDrill);
