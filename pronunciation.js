@@ -1,454 +1,571 @@
-// =========================================================================
+// ============================================================================
 // Pronunciation Drill
-// 第1段階：ピッチ判定・発音正誤判定を完全撤去
-// =========================================================================
-//
-// 現段階の仕様
-//   ・録音
-//   ・SpeechRecognitionによる音声認識
-//   ・認識結果をひらがな化して表示
-//   ・MediaRecorderによる録音データ取得
-//   ・録音音声の再生
-//
-// 撤去したもの
-//   ・F0抽出
-//   ・ピッチパターン推定
-//   ・ピッチ判定
-//   ・Pitch判定不明
-//   ・Pitch判定できず
-//   ・発音の正誤判定
-//   ・赤／オレンジによる誤り表示
-//   ・正解時の✅️表示
-//
-// 第2段階で追加予定
-//   ・モデル音声のピッチ曲線
-//   ・学習者音声のピッチ曲線
-//   ・両者の視覚的比較
-//   ・判定／採点は行わない
-// =========================================================================
-
-
-// =========================================================================
-// 【モデル文】
-// =========================================================================
+// 第1段階：音声認識結果の表示のみ
+// ============================================================================
 
 const modelSentences = [
     {
-        displayHtml: 'てんきが<span class="low-pitch">いい</span>です',
-        targetText: 'てんきがいいです',
-        targetWord: 'いい',
-        symbolColor: 'blue',
-        meaning: 'The weather is good.'
+        targetText: "てんきがいいです",
+        targetWord: "てんきが",
+        symbolColor: "#fb7185",
+        displayHtml: [
+            { text: "て", low: false }, { type: "symbol", val: "↘" },
+            { text: "んきが", low: true }, { type: "symbol", val: "｜" },
+            { text: "い", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "The weather is fine."
     },
     {
-        displayHtml: 'じかんが<span class="low-pitch">ない</span>です',
-        targetText: 'じかんがないです',
-        targetWord: 'ない',
-        symbolColor: 'blue',
-        meaning: 'I do not have time.'
+        targetText: "じかんがないです",
+        targetWord: "じかんが",
+        symbolColor: "#f43f5e",
+        displayHtml: [
+            { text: "じ", low: true }, { type: "symbol", val: "↗" },
+            { text: "かんが", low: false }, { type: "symbol", val: "｜" },
+            { text: "な", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "I don't have time."
     },
     {
-        displayHtml: 'しごとが<span class="low-pitch">ほしい</span>です',
-        targetText: 'しごとがほしいです',
-        targetWord: 'ほしい',
-        symbolColor: 'blue',
-        meaning: 'I want a job.'
+        targetText: "しごとがほしいです",
+        targetWord: "しごとが",
+        symbolColor: "#fda4af",
+        displayHtml: [
+            { text: "し", low: true }, { type: "symbol", val: "↗" },
+            { text: "ごとが", low: false }, { type: "symbol", val: "｜" },
+            { text: "ほ", low: true }, { type: "symbol", val: "↗" },
+            { text: "し", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "I want a job."
     },
     {
-        displayHtml: 'せんせいは<span class="high-pitch">おもしろい</span>です',
-        targetText: 'せんせいはおもしろいです',
-        targetWord: 'おもしろい',
-        symbolColor: 'red',
-        meaning: 'The teacher is interesting.'
+        targetText: "せんせいはおもしろいです",
+        targetWord: "せんせいは",
+        symbolColor: "#e879f9",
+        displayHtml: [
+            { text: "せ", low: true }, { type: "symbol", val: "↗" },
+            { text: "んせ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いは", low: true }, { type: "symbol", val: "｜" },
+            { text: "お", low: true }, { type: "symbol", val: "↗" },
+            { text: "もしろ", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "The teacher is interesting."
     },
     {
-        displayHtml: 'がっこうは<span class="high-pitch">たのしい</span>です',
-        targetText: 'がっこうはたのしいです',
-        targetWord: 'たのしい',
-        symbolColor: 'red',
-        meaning: 'School is fun.'
+        targetText: "がっこうはたのしいです",
+        targetWord: "がっこうは",
+        symbolColor: "#34d399",
+        displayHtml: [
+            { text: "が", low: true }, { type: "symbol", val: "↗" },
+            { text: "っこうは", low: false }, { type: "symbol", val: "｜" },
+            { text: "た", low: true }, { type: "symbol", val: "↗" },
+            { text: "のし", low: false }, { type: "symbol", val: "↘" },
+            { text: "いです", low: true }
+        ],
+        meaning: "School is fun."
     }
 ];
 
 
-// =========================================================================
-// 【状態】
-// =========================================================================
+// ============================================================================
+// State
+// ============================================================================
+
+// 第1段階では Autostop を初期値に戻す
+let isManualStop = false;
 
 let currentSentenceIndex = 0;
 
-let isRecording = false;
-let isStopping = false;
-
 let mediaRecorder = null;
+let mediaStream = null;
 let audioChunks = [];
-let recordedAudioBlob = null;
-let recordedAudioUrl = null;
+
+let recordingActive = false;
+let finishingRecording = false;
 
 let recognition = null;
-let recognitionSupported = false;
+let recognitionAvailable = false;
 
-let latestTranscript = '';
+let latestTranscript = "";
 
+let recordedAudioUrl = null;
 
-// =========================================================================
-// 【録音モード】
-// =========================================================================
-
-let autoStopEnabled = true;
+let autostopTimer = null;
 
 
-// =========================================================================
-// 【ひらがな変換】
-// =========================================================================
-//
-// SpeechRecognitionの認識結果を、表示用にひらがなへ統一する。
-// =========================================================================
+// ============================================================================
+// Hiragana conversion
+// ============================================================================
 
-function toHiragana(text) {
-    if (!text) return '';
+function convertToHiragana(text) {
+    if (!text) return "";
 
-    return text
-        .normalize('NFKC')
-        .replace(/[ァ-ヶ]/g, function(ch) {
-            return String.fromCharCode(ch.charCodeAt(0) - 0x60);
-        })
-        .replace(/ー/g, 'ー')
-        .trim();
+    let cleaned = text.replace(
+        /[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g,
+        ""
+    );
+
+    // Katakana → Hiragana
+    cleaned = cleaned.replace(
+        /[\u30a1-\u30f6]/g,
+        match => String.fromCharCode(match.charCodeAt(0) - 0x60)
+    );
+
+    const dict = {
+        "天気": "てんき",
+        "電気": "でんき",
+        "時間": "じかん",
+        "仕事": "しごと",
+        "欲しい": "ほしい",
+        "先生": "せんせい",
+        "面白い": "おもしろい",
+        "学校": "がっこう",
+        "楽しい": "たのしい",
+        "です": "です",
+        "でした": "でした"
+    };
+
+    for (const key in dict) {
+        const regex = new RegExp(key, "g");
+        cleaned = cleaned.replace(regex, dict[key]);
+    }
+
+    return cleaned;
 }
 
 
-// =========================================================================
-// 【モデル文取得】
-// =========================================================================
+// ============================================================================
+// Dynamic CSS
+// ============================================================================
 
-function getCurrentSentence() {
-    return modelSentences[currentSentenceIndex];
-}
+function injectStyles() {
 
-
-// =========================================================================
-// 【動的CSS】
-// =========================================================================
-
-function injectDynamicStyles() {
-
-    if (document.getElementById('pronunciation-dynamic-style')) {
+    if (document.getElementById("pronunciation-drill-styles")) {
         return;
     }
 
-    const style = document.createElement('style');
-
-    style.id = 'pronunciation-dynamic-style';
+    const style = document.createElement("style");
+    style.id = "pronunciation-drill-styles";
 
     style.textContent = `
-        .pronunciation-result {
-            white-space: pre-wrap;
-            word-break: break-word;
+
+        /* ================================================================
+           Header
+           ================================================================ */
+
+        .pronunciation-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .low-pitch {
-            color: #2563eb;
+        .pronunciation-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+
+        /* ================================================================
+           Mode switch
+           ================================================================ */
+
+        .record-mode-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .record-mode-label {
+            user-select: none;
+        }
+
+        .record-mode-switch {
+            position: relative;
+            display: inline-block;
+            width: 42px;
+            height: 22px;
+        }
+
+        .record-mode-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .record-mode-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #9ca3af;
+            border-radius: 999px;
+            transition: 0.2s;
+        }
+
+        .record-mode-slider::before {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            left: 2px;
+            top: 2px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .record-mode-switch input:checked + .record-mode-slider {
+            background: var(--accent-color);
+        }
+
+        .record-mode-switch input:checked + .record-mode-slider::before {
+            transform: translateX(20px);
+        }
+
+
+        /* ================================================================
+           Sentence rows
+           ================================================================ */
+
+        .pronunciation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pronunciation-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: var(--bg-secondary);
+        }
+
+        .pronunciation-row.active {
+            outline: 2px solid var(--accent-color);
+        }
+
+        .sentence-number {
+            min-width: 24px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .sentence-display {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            line-height: 1.8;
+            font-size: 18px;
+        }
+
+        .pitch-text {
+            display: inline-flex;
+            align-items: flex-end;
         }
 
         .high-pitch {
-            color: #dc2626;
+            border-bottom: 2px solid currentColor;
         }
 
-        .recording-active {
-            opacity: 1;
+        .low-pitch {
+            border-bottom: 2px solid currentColor;
+            opacity: 0.55;
         }
 
-        .recording-disabled {
+        .pitch-symbol {
+            display: inline-block;
+            margin: 0 3px;
+            font-size: 16px;
+            line-height: 1;
+            color: currentColor;
+            font-weight: 700;
+        }
+
+        .sentence-buttons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+
+        /* ================================================================
+           Buttons
+           ================================================================ */
+
+        .pronunciation-button {
+            border: none;
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            background: var(--button-bg, #e5e7eb);
+            color: var(--text-primary);
+            transition:
+                opacity 0.15s,
+                transform 0.1s,
+                background 0.15s;
+        }
+
+        .pronunciation-button:hover:not(:disabled) {
+            opacity: 0.85;
+        }
+
+        .pronunciation-button:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .pronunciation-button:disabled {
             opacity: 0.45;
+            cursor: default;
         }
 
-        .pronunciation-message {
-            color: inherit;
+        .record-button {
+            background: #fecdd3;
         }
+
+        .stop-button {
+            background: #e5e7eb;
+        }
+
+        .play-button {
+            background: #dbeafe;
+        }
+
+        .listen-button {
+            background: #fef3c7;
+        }
+
+        .meaning-button {
+            background: #e0e7ff;
+        }
+
+
+        /* ================================================================
+           Result
+           ================================================================ */
+
+        .result-container {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--bg-primary);
+        }
+
+        .result-text {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: normal !important;
+            min-height: 22px;
+            word-break: break-word;
+        }
+
+
+        /* ================================================================
+           Meaning popup
+           ================================================================ */
+
+        .meaning-popup {
+            position: fixed;
+            z-index: 99999;
+            max-width: 320px;
+            padding: 10px 13px;
+            border-radius: 9px;
+            background: var(--bg-primary, white);
+            color: var(--text-primary);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.18);
+            border: 1px solid rgba(128,128,128,0.25);
+            font-size: 14px;
+            line-height: 1.5;
+            display: none;
+        }
+
+
+        /* ================================================================
+           Back link
+           ================================================================ */
+
+        .back-link-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--accent-color);
+            font-size: 14px;
+        }
+
     `;
 
     document.head.appendChild(style);
 }
 
 
-// =========================================================================
-// 【SpeechRecognition初期化】
-// =========================================================================
+// ============================================================================
+// Utility
+// ============================================================================
 
-function initializeSpeechRecognition() {
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+
+// ============================================================================
+// Model sentence rendering
+// ============================================================================
+
+function renderModelSentence(sentence) {
+
+    let html = "";
+
+    sentence.displayHtml.forEach(item => {
+
+        if (item.type === "symbol") {
+
+            html += `
+                <span
+                    class="pitch-symbol"
+                    style="color:${sentence.symbolColor};"
+                >${escapeHtml(item.val)}</span>
+            `;
+
+            return;
+        }
+
+        const cls = item.low
+            ? "low-pitch"
+            : "high-pitch";
+
+        html += `
+            <span
+                class="${cls}"
+                style="color:${sentence.symbolColor};"
+            >${escapeHtml(item.text)}</span>
+        `;
+    });
+
+    return html;
+}
+
+
+// ============================================================================
+// SpeechRecognition
+// ============================================================================
+
+function setupSpeechRecognition() {
 
     const SpeechRecognition =
         window.SpeechRecognition ||
         window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-        recognitionSupported = false;
+
+        recognitionAvailable = false;
+        console.warn(
+            "[SpeechRecognition] This browser does not support SpeechRecognition."
+        );
+
         return;
     }
 
-    recognitionSupported = true;
+    recognitionAvailable = true;
 
     recognition = new SpeechRecognition();
 
-    recognition.lang = 'ja-JP';
-
+    recognition.lang = "ja-JP";
     recognition.interimResults = false;
-
     recognition.continuous = false;
-
     recognition.maxAlternatives = 1;
 
 
-    // ---------------------------------------------------------------------
-    // 音声認識結果
-    // ---------------------------------------------------------------------
+    recognition.onstart = () => {
 
-    recognition.onresult = function(event) {
+        console.log("[SpeechRecognition] started");
 
-        if (!event.results || event.results.length === 0) {
-            return;
-        }
-
-        let transcript = '';
-
-        for (let i = 0; i < event.results.length; i++) {
-
-            if (event.results[i][0]) {
-                transcript += event.results[i][0].transcript;
-            }
-        }
-
-        latestTranscript = transcript.trim();
-
-        if (latestTranscript) {
-            displayRecognizedText(latestTranscript);
-        }
     };
 
 
-    // ---------------------------------------------------------------------
-    // 音声認識エラー
-    // ---------------------------------------------------------------------
+    recognition.onresult = e => {
 
-    recognition.onerror = function(event) {
+        let rawTranscript = "";
+
+        for (
+            let i = e.resultIndex;
+            i < e.results.length;
+            i++
+        ) {
+
+            if (e.results[i].isFinal) {
+
+                rawTranscript +=
+                    e.results[i][0].transcript;
+            }
+        }
+
+        if (!rawTranscript) {
+            return;
+        }
+
+        latestTranscript = rawTranscript;
 
         console.log(
-            '[SpeechRecognition ERROR]',
-            event.error
+            "[SpeechRecognition]",
+            latestTranscript
         );
 
-        if (event.error === 'no-speech') {
 
-            if (!latestTranscript) {
-                displayRecognitionFailure();
-            }
-
-            return;
-        }
-
-        if (event.error === 'aborted') {
-            return;
-        }
-
-        if (!latestTranscript) {
-            displayRecognitionFailure();
+        // Autostop mode
+        if (!isManualStop) {
+            scheduleAutostop();
         }
     };
 
 
-    // ---------------------------------------------------------------------
-    // 音声認識終了
-    // ---------------------------------------------------------------------
+    recognition.onerror = e => {
 
-    recognition.onend = function() {
+        console.warn(
+            "[SpeechRecognition] error:",
+            e.error
+        );
 
-        console.log('[SpeechRecognition] ended');
+    };
 
-        if (isRecording && !isStopping) {
-            console.log(
-                '[SpeechRecognition] ended while recording.'
-            );
-        }
+
+    recognition.onend = () => {
+
+        console.log("[SpeechRecognition] ended");
+
     };
 }
 
 
-// =========================================================================
-// 【認識結果表示】
-// =========================================================================
-//
-// ここでは正誤判定を一切行わない。
-// 赤・オレンジ・緑などによる判定も行わない。
-// =========================================================================
+// ============================================================================
+// Start SpeechRecognition
+// ============================================================================
 
-function displayRecognizedText(text) {
+function startRecognition() {
 
-    const resultElement =
-        document.getElementById('pronunciation-result');
-
-    if (!resultElement) {
+    if (!recognitionAvailable || !recognition) {
         return;
     }
-
-    const hiragana = toHiragana(text);
-
-    resultElement.className =
-        'pronunciation-result pronunciation-message';
-
-    resultElement.textContent = hiragana;
-}
-
-
-// =========================================================================
-// 【認識失敗表示】
-// =========================================================================
-
-function displayRecognitionFailure() {
-
-    const resultElement =
-        document.getElementById('pronunciation-result');
-
-    if (!resultElement) {
-        return;
-    }
-
-    resultElement.className =
-        'pronunciation-result pronunciation-message';
-
-    resultElement.textContent =
-        '（音声を認識できませんでした）';
-}
-
-
-// =========================================================================
-// 【録音開始】
-// =========================================================================
-
-async function startRecording() {
-
-    if (isRecording) {
-        return;
-    }
-
-    if (!recognitionSupported || !recognition) {
-
-        displayRecognitionFailure();
-
-        return;
-    }
-
-
-    isRecording = true;
-    isStopping = false;
-
-    latestTranscript = '';
-
-    audioChunks = [];
-
-    recordedAudioBlob = null;
-
-
-    // ---------------------------------------------------------------------
-    // 既存録音URLを解放
-    // ---------------------------------------------------------------------
-
-    if (recordedAudioUrl) {
-
-        URL.revokeObjectURL(recordedAudioUrl);
-
-        recordedAudioUrl = null;
-    }
-
-
-    // ---------------------------------------------------------------------
-    // MediaRecorder
-    // ---------------------------------------------------------------------
-
-    try {
-
-        const stream =
-            await navigator.mediaDevices.getUserMedia({
-                audio: true
-            });
-
-        mediaRecorder =
-            new MediaRecorder(stream);
-
-        audioChunks = [];
-
-
-        mediaRecorder.ondataavailable =
-            function(event) {
-
-                if (event.data && event.data.size > 0) {
-                    audioChunks.push(event.data);
-                }
-            };
-
-
-        mediaRecorder.onstop =
-            function() {
-
-                recordedAudioBlob =
-                    new Blob(
-                        audioChunks,
-                        {
-                            type: mediaRecorder.mimeType ||
-                                  'audio/webm'
-                        }
-                    );
-
-                recordedAudioUrl =
-                    URL.createObjectURL(
-                        recordedAudioBlob
-                    );
-
-                const audio =
-                    document.getElementById(
-                        'recorded-audio'
-                    );
-
-                if (audio) {
-
-                    audio.src =
-                        recordedAudioUrl;
-
-                    audio.style.display =
-                        'block';
-                }
-
-
-                // マイクを停止
-                const tracks =
-                    stream.getTracks();
-
-                tracks.forEach(function(track) {
-                    track.stop();
-                });
-            };
-
-
-        mediaRecorder.start();
-
-    } catch (error) {
-
-        console.error(
-            '[MediaRecorder ERROR]',
-            error
-        );
-
-        isRecording = false;
-
-        displayRecognitionFailure();
-
-        return;
-    }
-
-
-    // ---------------------------------------------------------------------
-    // SpeechRecognition開始
-    // ---------------------------------------------------------------------
 
     try {
 
@@ -456,498 +573,1117 @@ async function startRecording() {
 
     } catch (error) {
 
-        console.error(
-            '[SpeechRecognition START ERROR]',
+        // SpeechRecognition がすでに動作中の場合など
+        console.warn(
+            "[SpeechRecognition] start failed:",
             error
         );
     }
-
-
-    updateRecordingUI(true);
 }
 
 
-// =========================================================================
-// 【録音停止】
-// =========================================================================
+// ============================================================================
+// Stop SpeechRecognition
+// ============================================================================
+
+function stopRecognition() {
+
+    if (!recognitionAvailable || !recognition) {
+        return;
+    }
+
+    try {
+
+        recognition.stop();
+
+    } catch (error) {
+
+        console.warn(
+            "[SpeechRecognition] stop failed:",
+            error
+        );
+    }
+}
+
+
+// ============================================================================
+// Autostop
+// ============================================================================
+
+function scheduleAutostop() {
+
+    clearTimeout(autostopTimer);
+
+    autostopTimer = setTimeout(() => {
+
+        if (
+            recordingActive &&
+            !isManualStop &&
+            mediaRecorder &&
+            mediaRecorder.state === "recording"
+        ) {
+
+            console.log(
+                "[Recorder] Autostop"
+            );
+
+            stopRecording();
+        }
+
+    }, 1500);
+}
+
+
+function clearAutostopTimer() {
+
+    if (autostopTimer) {
+
+        clearTimeout(autostopTimer);
+        autostopTimer = null;
+    }
+}
+
+
+// ============================================================================
+// Result processing
+// 第1段階では認識結果の正規化・表示だけを行う
+// ============================================================================
+
+function processTranscript(transcript, resultSpan) {
+
+    const hiraText = convertToHiragana(transcript);
+
+    if (!hiraText) {
+        return false;
+    }
+
+    if (resultSpan) {
+
+        resultSpan.textContent = hiraText;
+        resultSpan.style.color = "var(--text-primary)";
+    }
+
+    return hiraText;
+}
+
+
+// ============================================================================
+// Microphone
+// ============================================================================
+
+async function prepareMediaRecorder() {
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+
+        throw new Error(
+            "getUserMedia is not supported."
+        );
+    }
+
+    mediaStream =
+        await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+
+    mediaRecorder =
+        new MediaRecorder(mediaStream);
+
+    audioChunks = [];
+
+
+    mediaRecorder.ondataavailable = e => {
+
+        if (e.data && e.data.size > 0) {
+            audioChunks.push(e.data);
+        }
+    };
+
+
+    mediaRecorder.onstop = async () => {
+
+        recordingActive = false;
+
+        clearAutostopTimer();
+
+        stopRecognition();
+
+
+        const audioBlob = new Blob(
+            audioChunks,
+            { type: "audio/webm" }
+        );
+
+
+        if (recordedAudioUrl) {
+
+            URL.revokeObjectURL(
+                recordedAudioUrl
+            );
+        }
+
+        recordedAudioUrl =
+            URL.createObjectURL(audioBlob);
+
+
+        if (playRecordBtn) {
+            playRecordBtn.style.display =
+                "inline-flex";
+        }
+
+
+        // ================================================================
+        // 第1段階
+        //
+        // SpeechRecognition 成功
+        //     → ひらがな化した認識結果だけ表示
+        //
+        // SpeechRecognition 失敗
+        //     → Could not detect your speech.
+        //
+        // ピッチ/F0分析は行わない
+        // ================================================================
+
+        if (latestTranscript) {
+
+            const hiraText =
+                processTranscript(
+                    latestTranscript,
+                    resultSpan
+                );
+
+            if (!hiraText) {
+
+                resultSpan.textContent =
+                    "Could not detect your speech.";
+
+                resultSpan.style.color =
+                    "var(--text-secondary)";
+            }
+
+        } else {
+
+            resultSpan.textContent =
+                "Could not detect your speech.";
+
+            resultSpan.style.color =
+                "var(--text-secondary)";
+        }
+
+
+        // マイクを解放
+        if (mediaStream) {
+
+            mediaStream.getTracks().forEach(
+                track => track.stop()
+            );
+
+            mediaStream = null;
+        }
+
+
+        finishingRecording = false;
+
+        updateRecordingButtons();
+    };
+}
+
+
+// ============================================================================
+// Start recording
+// ============================================================================
+
+async function startRecording() {
+
+    if (recordingActive) {
+        return;
+    }
+
+    if (finishingRecording) {
+        return;
+    }
+
+    finishingRecording = true;
+
+
+    try {
+
+        latestTranscript = "";
+
+        audioChunks = [];
+
+
+        if (!mediaRecorder ||
+            mediaRecorder.state === "inactive") {
+
+            await prepareMediaRecorder();
+        }
+
+
+        // 新しい録音開始時には再生ボタンを隠す
+        if (playRecordBtn) {
+            playRecordBtn.style.display =
+                "none";
+        }
+
+
+        // 結果表示を初期化
+        if (resultSpan) {
+
+            resultSpan.textContent =
+                "(Recording...)";
+
+            resultSpan.style.color =
+                "var(--text-secondary)";
+        }
+
+
+        mediaRecorder.start();
+
+        recordingActive = true;
+
+        finishingRecording = false;
+
+        updateRecordingButtons();
+
+
+        // SpeechRecognition開始
+        startRecognition();
+
+
+        // Manual stopの場合は最大15秒
+        if (isManualStop) {
+
+            clearAutostopTimer();
+
+            autostopTimer = setTimeout(() => {
+
+                if (
+                    recordingActive &&
+                    mediaRecorder &&
+                    mediaRecorder.state === "recording"
+                ) {
+
+                    console.log(
+                        "[Recorder] Manual mode 15-second limit"
+                    );
+
+                    stopRecording();
+                }
+
+            }, 15000);
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "[Recorder] start error:",
+            error
+        );
+
+        recordingActive = false;
+        finishingRecording = false;
+
+        stopRecognition();
+
+        if (mediaStream) {
+
+            mediaStream.getTracks().forEach(
+                track => track.stop()
+            );
+
+            mediaStream = null;
+        }
+
+        resultSpan.textContent =
+            "Mic error";
+
+        resultSpan.style.color =
+            "var(--error-text)";
+
+        updateRecordingButtons();
+    }
+}
+
+
+// ============================================================================
+// Stop recording
+// ============================================================================
 
 function stopRecording() {
 
-    if (!isRecording) {
+    if (!mediaRecorder) {
         return;
     }
 
-    if (isStopping) {
+    if (mediaRecorder.state !== "recording") {
         return;
     }
 
-    isStopping = true;
+    clearAutostopTimer();
 
+    stopRecognition();
 
-    // ---------------------------------------------------------------------
-    // SpeechRecognition停止
-    // ---------------------------------------------------------------------
+    mediaRecorder.stop();
 
-    if (recognition) {
-
-        try {
-            recognition.stop();
-        } catch (error) {
-            console.log(
-                '[SpeechRecognition STOP]',
-                error
-            );
-        }
-    }
-
-
-    // ---------------------------------------------------------------------
-    // MediaRecorder停止
-    // ---------------------------------------------------------------------
-
-    if (
-        mediaRecorder &&
-        mediaRecorder.state !== 'inactive'
-    ) {
-
-        try {
-            mediaRecorder.stop();
-        } catch (error) {
-            console.log(
-                '[MediaRecorder STOP]',
-                error
-            );
-        }
-    }
-
-
-    isRecording = false;
-
-    updateRecordingUI(false);
-
-
-    // ---------------------------------------------------------------------
-    // 認識結果が得られていない場合
-    // ---------------------------------------------------------------------
-
-    setTimeout(function() {
-
-        if (!latestTranscript) {
-            displayRecognitionFailure();
-        }
-
-        isStopping = false;
-
-    }, 500);
+    updateRecordingButtons();
 }
 
 
-// =========================================================================
-// 【録音トグル】
-// =========================================================================
+// ============================================================================
+// Recording buttons
+// ============================================================================
 
-function toggleRecording() {
+function updateRecordingButtons() {
 
-    if (isRecording) {
+    if (!recordBtn || !stopBtn) {
+        return;
+    }
 
-        stopRecording();
+    if (recordingActive) {
+
+        recordBtn.disabled = true;
+        stopBtn.disabled = false;
 
     } else {
 
-        startRecording();
+        recordBtn.disabled = false;
+        stopBtn.disabled = true;
     }
 }
 
 
-// =========================================================================
-// 【録音UI更新】
-// =========================================================================
-
-function updateRecordingUI(recording) {
-
-    const recordButton =
-        document.getElementById('record-button');
-
-    const stopButton =
-        document.getElementById('stop-button');
-
-
-    if (recordButton) {
-
-        recordButton.classList.toggle(
-            'recording-active',
-            recording
-        );
-    }
-
-
-    if (stopButton) {
-
-        stopButton.classList.toggle(
-            'recording-active',
-            recording
-        );
-    }
-}
-
-
-// =========================================================================
-// 【再生】
-// =========================================================================
+// ============================================================================
+// Play recorded audio
+// ============================================================================
 
 function playRecordedAudio() {
 
-    const audio =
-        document.getElementById(
-            'recorded-audio'
-        );
-
-    if (!audio || !audio.src) {
+    if (!recordedAudioUrl) {
         return;
     }
 
-    audio.currentTime = 0;
+    const audio =
+        new Audio(recordedAudioUrl);
 
-    audio.play().catch(function(error) {
+    audio.play().catch(error => {
 
-        console.log(
-            '[Audio PLAY ERROR]',
+        console.warn(
+            "[Playback] failed:",
             error
         );
     });
 }
 
 
-// =========================================================================
-// 【自動停止設定】
-// =========================================================================
+// ============================================================================
+// Play model sentence
+// ============================================================================
 
-function setAutoStopEnabled(enabled) {
+function speakModelSentence(sentence) {
 
-    autoStopEnabled = Boolean(enabled);
-
-    const autoStopCheckbox =
-        document.getElementById(
-            'auto-stop-checkbox'
-        );
-
-    if (autoStopCheckbox) {
-        autoStopCheckbox.checked =
-            autoStopEnabled;
-    }
-}
-
-
-// =========================================================================
-// 【モデル文表示】
-// =========================================================================
-
-function renderModelSentence() {
-
-    const sentence =
-        getCurrentSentence();
-
-    const modelElement =
-        document.getElementById(
-            'model-sentence'
-        );
-
-    if (!modelElement) {
+    if (!window.speechSynthesis) {
         return;
     }
 
-    modelElement.innerHTML =
-        sentence.displayHtml;
+    window.speechSynthesis.cancel();
+
+    const utterance =
+        new SpeechSynthesisUtterance(
+            sentence.targetText
+        );
+
+    utterance.lang = "ja-JP";
+    utterance.rate = 0.7;
+    utterance.pitch = 1.0;
+
+    window.speechSynthesis.speak(
+        utterance
+    );
 }
 
 
-// =========================================================================
-// 【意味表示】
-// =========================================================================
+// ============================================================================
+// Meaning popup
+// ============================================================================
 
-function renderMeaning() {
+let meaningPopup = null;
 
-    const sentence =
-        getCurrentSentence();
 
-    const meaningElement =
-        document.getElementById(
-            'sentence-meaning'
+function showMeaningPopup(button, meaning) {
+
+    if (!meaningPopup) {
+
+        meaningPopup =
+            document.createElement("div");
+
+        meaningPopup.className =
+            "meaning-popup";
+
+        document.body.appendChild(
+            meaningPopup
         );
-
-    if (!meaningElement) {
-        return;
     }
 
-    meaningElement.textContent =
-        sentence.meaning;
-}
+    meaningPopup.textContent = meaning;
+
+    meaningPopup.style.display = "block";
 
 
-// =========================================================================
-// 【結果クリア】
-// =========================================================================
+    const rect =
+        button.getBoundingClientRect();
 
-function clearResult() {
+    const popupRect =
+        meaningPopup.getBoundingClientRect();
 
-    const resultElement =
-        document.getElementById(
-            'pronunciation-result'
-        );
+    let left =
+        rect.left;
 
-    if (!resultElement) {
-        return;
-    }
+    let top =
+        rect.bottom + 8;
 
-    resultElement.className =
-        'pronunciation-result pronunciation-message';
-
-    resultElement.textContent = '';
-}
-
-
-// =========================================================================
-// 【録音音声クリア】
-// =========================================================================
-
-function clearRecordedAudio() {
-
-    const audio =
-        document.getElementById(
-            'recorded-audio'
-        );
-
-    if (audio) {
-
-        audio.pause();
-
-        audio.removeAttribute('src');
-
-        audio.load();
-
-        audio.style.display =
-            'none';
-    }
-
-
-    if (recordedAudioUrl) {
-
-        URL.revokeObjectURL(
-            recordedAudioUrl
-        );
-
-        recordedAudioUrl = null;
-    }
-
-
-    recordedAudioBlob = null;
-
-    audioChunks = [];
-}
-
-
-// =========================================================================
-// 【文切り替え】
-// =========================================================================
-
-function showSentence(index) {
 
     if (
-        index < 0 ||
-        index >= modelSentences.length
+        left + popupRect.width >
+        window.innerWidth - 10
     ) {
-        return;
+
+        left =
+            window.innerWidth -
+            popupRect.width -
+            10;
+    }
+
+    if (
+        top + popupRect.height >
+        window.innerHeight - 10
+    ) {
+
+        top =
+            rect.top -
+            popupRect.height -
+            8;
     }
 
 
-    if (isRecording) {
-        stopRecording();
-    }
+    meaningPopup.style.left =
+        `${Math.max(10, left)}px`;
 
-
-    currentSentenceIndex = index;
-
-    latestTranscript = '';
-
-    clearResult();
-
-    clearRecordedAudio();
-
-    renderModelSentence();
-
-    renderMeaning();
+    meaningPopup.style.top =
+        `${Math.max(10, top)}px`;
 }
 
 
-// =========================================================================
-// 【次の文】
-// =========================================================================
+function hideMeaningPopup() {
 
-function nextSentence() {
+    if (meaningPopup) {
 
-    const nextIndex =
-        currentSentenceIndex + 1;
-
-    if (nextIndex >= modelSentences.length) {
-        return;
+        meaningPopup.style.display =
+            "none";
     }
-
-    showSentence(nextIndex);
 }
 
 
-// =========================================================================
-// 【前の文】
-// =========================================================================
+// ============================================================================
+// Sentence row
+// ============================================================================
 
-function previousSentence() {
+function createSentenceRow(
+    sentence,
+    index
+) {
 
-    const previousIndex =
-        currentSentenceIndex - 1;
+    const row =
+        document.createElement("div");
 
-    if (previousIndex < 0) {
-        return;
-    }
-
-    showSentence(previousIndex);
-}
+    row.className =
+        "pronunciation-row";
 
 
-// =========================================================================
-// 【UIイベント設定】
-// =========================================================================
+    const number =
+        document.createElement("span");
 
-function initializePronunciationEvents() {
+    number.className =
+        "sentence-number";
+
+    number.textContent =
+        `${index + 1}.`;
+
+
+    const sentenceDisplay =
+        document.createElement("div");
+
+    sentenceDisplay.className =
+        "sentence-display";
+
+    sentenceDisplay.innerHTML =
+        renderModelSentence(sentence);
+
+
+    const buttons =
+        document.createElement("div");
+
+    buttons.className =
+        "sentence-buttons";
+
+
+    // ------------------------------------------------------------
+    // 🔊 きく
+    // ------------------------------------------------------------
+
+    const listenBtn =
+        document.createElement("button");
+
+    listenBtn.type = "button";
+
+    listenBtn.className =
+        "pronunciation-button listen-button";
+
+    listenBtn.textContent =
+        "🔊 きく";
+
+    listenBtn.addEventListener(
+        "click",
+        () => {
+
+            speakModelSentence(
+                sentence
+            );
+        }
+    );
+
+
+    // ------------------------------------------------------------
+    // ⏺️ とる
+    // ------------------------------------------------------------
 
     const recordButton =
-        document.getElementById(
-            'record-button'
-        );
+        document.createElement("button");
 
-    if (recordButton) {
+    recordButton.type = "button";
 
-        recordButton.addEventListener(
-            'click',
-            toggleRecording
-        );
-    }
+    recordButton.className =
+        "pronunciation-button record-button";
 
+    recordButton.textContent =
+        "⏺️とる";
+
+
+    // ------------------------------------------------------------
+    // ⏹️
+    // ------------------------------------------------------------
 
     const stopButton =
-        document.getElementById(
-            'stop-button'
-        );
+        document.createElement("button");
 
-    if (stopButton) {
+    stopButton.type = "button";
 
-        stopButton.addEventListener(
-            'click',
-            stopRecording
-        );
-    }
+    stopButton.className =
+        "pronunciation-button stop-button";
 
+    stopButton.textContent =
+        "⏹️";
 
-    const playbackButton =
-        document.getElementById(
-            'playback-button'
-        );
-
-    if (playbackButton) {
-
-        playbackButton.addEventListener(
-            'click',
-            playRecordedAudio
-        );
-    }
+    stopButton.disabled = true;
 
 
-    const previousButton =
-        document.getElementById(
-            'previous-button'
-        );
+    // ------------------------------------------------------------
+    // ▶️
+    // ------------------------------------------------------------
 
-    if (previousButton) {
+    const playButton =
+        document.createElement("button");
 
-        previousButton.addEventListener(
-            'click',
-            previousSentence
-        );
-    }
+    playButton.type = "button";
 
+    playButton.className =
+        "pronunciation-button play-button";
 
-    const nextButton =
-        document.getElementById(
-            'next-button'
-        );
+    playButton.textContent =
+        "▶️";
 
-    if (nextButton) {
-
-        nextButton.addEventListener(
-            'click',
-            nextSentence
-        );
-    }
+    playButton.style.display =
+        "none";
 
 
-    const autoStopCheckbox =
-        document.getElementById(
-            'auto-stop-checkbox'
-        );
+    // ------------------------------------------------------------
+    // 🌐
+    // ------------------------------------------------------------
 
-    if (autoStopCheckbox) {
+    const meaningBtn =
+        document.createElement("button");
 
-        autoStopEnabled =
-            autoStopCheckbox.checked;
+    meaningBtn.type = "button";
 
-        autoStopCheckbox.addEventListener(
-            'change',
-            function() {
+    meaningBtn.className =
+        "pronunciation-button meaning-button";
 
-                setAutoStopEnabled(
-                    autoStopCheckbox.checked
+    meaningBtn.textContent =
+        "🌐";
+
+
+    // ------------------------------------------------------------
+    // Result
+    // ------------------------------------------------------------
+
+    const resultContainer =
+        document.createElement("div");
+
+    resultContainer.className =
+        "result-container";
+
+
+    const result =
+        document.createElement("div");
+
+    result.className =
+        "result-text";
+
+    result.textContent =
+        "(Not recorded yet)";
+
+
+    resultContainer.appendChild(
+        result
+    );
+
+
+    // ------------------------------------------------------------
+    // Event handlers
+    // ------------------------------------------------------------
+
+    recordButton.addEventListener(
+        "click",
+        async () => {
+
+            // 他の行の結果ではなく、この行を対象にする
+            currentSentenceIndex =
+                index;
+
+            // 既存録音があればURLを解放
+            if (recordedAudioUrl) {
+
+                URL.revokeObjectURL(
+                    recordedAudioUrl
                 );
+
+                recordedAudioUrl = null;
             }
+
+            // UI上の既存再生ボタンをリセット
+            playButton.style.display =
+                "none";
+
+            result.textContent =
+                "(Recording...)";
+
+            result.style.color =
+                "var(--text-secondary)";
+
+
+            // 現在の行を active にする
+            document
+                .querySelectorAll(
+                    ".pronunciation-row"
+                )
+                .forEach(
+                    r => r.classList.remove(
+                        "active"
+                    )
+                );
+
+            row.classList.add(
+                "active"
+            );
+
+
+            // 現在の行の録音用DOMをグローバル参照
+            recordBtn = recordButton;
+            stopBtn = stopButton;
+            playRecordBtn = playButton;
+            resultSpan = result;
+
+
+            await startRecording();
+        }
+    );
+
+
+    stopButton.addEventListener(
+        "click",
+        () => {
+
+            stopRecording();
+        }
+    );
+
+
+    playButton.addEventListener(
+        "click",
+        () => {
+
+            playRecordedAudio();
+        }
+    );
+
+
+    meaningBtn.addEventListener(
+        "click",
+        event => {
+
+            event.stopPropagation();
+
+            showMeaningPopup(
+                meaningBtn,
+                sentence.meaning
+            );
+        }
+    );
+
+
+    buttons.appendChild(
+        listenBtn
+    );
+
+    buttons.appendChild(
+        recordButton
+    );
+
+    buttons.appendChild(
+        stopButton
+    );
+
+    buttons.appendChild(
+        playButton
+    );
+
+    buttons.appendChild(
+        meaningBtn
+    );
+
+
+    const leftArea =
+        document.createElement("div");
+
+    leftArea.style.flex = "1";
+    leftArea.style.minWidth = "0";
+
+    leftArea.appendChild(
+        sentenceDisplay
+    );
+
+    leftArea.appendChild(
+        resultContainer
+    );
+
+
+    row.appendChild(
+        number
+    );
+
+    row.appendChild(
+        leftArea
+    );
+
+    row.appendChild(
+        buttons
+    );
+
+
+    return row;
+}
+
+
+// ============================================================================
+// Global current-row controls
+// ============================================================================
+
+let recordBtn = null;
+let stopBtn = null;
+let playRecordBtn = null;
+let resultSpan = null;
+
+
+// ============================================================================
+// Mode switch
+// ============================================================================
+
+function createModeSwitch() {
+
+    const container =
+        document.createElement("div");
+
+    container.className =
+        "record-mode-container";
+
+
+    const label =
+        document.createElement("span");
+
+    label.className =
+        "record-mode-label";
+
+    label.textContent =
+        "Autostop";
+
+
+    const switchLabel =
+        document.createElement("label");
+
+    switchLabel.className =
+        "record-mode-switch";
+
+
+    const checkbox =
+        document.createElement("input");
+
+    checkbox.type =
+        "checkbox";
+
+    // false = Autostop
+    // true  = Manual stop
+    checkbox.checked =
+        isManualStop;
+
+
+    const slider =
+        document.createElement("span");
+
+    slider.className =
+        "record-mode-slider";
+
+
+    checkbox.addEventListener(
+        "change",
+        () => {
+
+            isManualStop =
+                checkbox.checked;
+
+            label.textContent =
+                isManualStop
+                    ? "Manual stop"
+                    : "Autostop";
+
+            console.log(
+                "[Recording mode]",
+                isManualStop
+                    ? "Manual stop"
+                    : "Autostop"
+            );
+        }
+    );
+
+
+    switchLabel.appendChild(
+        checkbox
+    );
+
+    switchLabel.appendChild(
+        slider
+    );
+
+    container.appendChild(
+        label
+    );
+
+    container.appendChild(
+        switchLabel
+    );
+
+
+    return container;
+}
+
+
+// ============================================================================
+// initDrill
+// ============================================================================
+
+function initDrill() {
+
+    injectStyles();
+
+    setupSpeechRecognition();
+
+
+    // ------------------------------------------------------------
+    // Root
+    // ------------------------------------------------------------
+
+    const root =
+        document.getElementById(
+            "pronunciation-drill"
         );
+
+
+    if (!root) {
+
+        console.error(
+            "Element #pronunciation-drill was not found."
+        );
+
+        return;
     }
+
+
+    root.innerHTML = "";
+
+
+    // ------------------------------------------------------------
+    // Back link
+    // ------------------------------------------------------------
+
+    const backContainer =
+        document.createElement("div");
+
+    backContainer.className =
+        "back-link-container";
+
+
+    const backLink =
+        document.createElement("a");
+
+    backLink.className =
+        "back-link";
+
+    backLink.href =
+        "index.html";
+
+    backLink.textContent =
+        "← Back";
+
+
+    backContainer.appendChild(
+        backLink
+    );
+
+    root.appendChild(
+        backContainer
+    );
+
+
+    // ------------------------------------------------------------
+    // Header
+    // ------------------------------------------------------------
+
+    const header =
+        document.createElement("div");
+
+    header.className =
+        "pronunciation-header";
+
+
+    const title =
+        document.createElement("div");
+
+    title.className =
+        "pronunciation-title";
+
+    title.textContent =
+        "Pronunciation Drills";
+
+
+    header.appendChild(
+        title
+    );
+
+    root.appendChild(
+        header
+    );
+
+
+    // ------------------------------------------------------------
+    // Recording mode
+    // 初期値：Autostop
+    // ------------------------------------------------------------
+
+    root.appendChild(
+        createModeSwitch()
+    );
+
+
+    // ------------------------------------------------------------
+    // Sentence list
+    // ------------------------------------------------------------
+
+    const list =
+        document.createElement("div");
+
+    list.className =
+        "pronunciation-list";
+
+
+    modelSentences.forEach(
+        (sentence, index) => {
+
+            const row =
+                createSentenceRow(
+                    sentence,
+                    index
+                );
+
+            list.appendChild(
+                row
+            );
+        }
+    );
+
+
+    root.appendChild(
+        list
+    );
+
+
+    // ------------------------------------------------------------
+    // Global click
+    // ------------------------------------------------------------
+
+    document.addEventListener(
+        "click",
+        event => {
+
+            if (
+                meaningPopup &&
+                !event.target.closest(
+                    ".meaning-button"
+                ) &&
+                !event.target.closest(
+                    ".meaning-popup"
+                )
+            ) {
+
+                hideMeaningPopup();
+            }
+        }
+    );
+
+
+    console.log(
+        "[Pronunciation Drill] initialized"
+    );
+
+    console.log(
+        "[Recording mode] Default = Autostop"
+    );
 }
 
 
-// =========================================================================
-// 【ページ初期化】
-// =========================================================================
-
-function initializePronunciationPage() {
-
-    injectDynamicStyles();
-
-    initializeSpeechRecognition();
-
-    initializePronunciationEvents();
-
-    renderModelSentence();
-
-    renderMeaning();
-
-    clearResult();
-
-    clearRecordedAudio();
-}
-
-
-// =========================================================================
-// 【DOMContentLoaded】
-// =========================================================================
+// ============================================================================
+// DOM ready
+// ============================================================================
 
 if (
-    document.readyState === 'loading'
+    document.readyState === "loading"
 ) {
 
     document.addEventListener(
-        'DOMContentLoaded',
-        initializePronunciationPage
+        "DOMContentLoaded",
+        initDrill
     );
 
 } else {
 
-    initializePronunciationPage();
+    initDrill();
 }
