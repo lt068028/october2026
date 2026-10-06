@@ -69,6 +69,7 @@ const modelSentences = [
 // ============================================================================
 
 let isManualStop = false;
+let isAutoPlay = true; // 基本設定はAutoplay
 
 const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
 const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
@@ -246,7 +247,6 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
 
     // --- Audio Playback (Manual) ---
     listenBtn.addEventListener("click", () => {
-        // キャンセル処理: 他の再生が走っていれば停止
         activePlayback.cancel();
 
         listenBtn.disabled = true;
@@ -261,11 +261,10 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
 
     playRecordBtn.addEventListener("click", () => {
         if (!recordedAudioUrl) return;
-        // キャンセル処理: 他の再生が走っていれば停止
         activePlayback.cancel();
 
         const audio = new Audio(recordedAudioUrl);
-        activePlayback.audio = audio; // グローバル管理に登録
+        activePlayback.audio = audio; 
 
         audio.playbackRate = 1.0; 
         playRecordBtn.disabled = true; 
@@ -333,9 +332,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     }
 
     recordBtn.addEventListener("click", async () => {
-        // キャンセル処理: 録音開始時に現在再生中の音声を強制停止
         activePlayback.cancel();
-
         clearSilenceTimer(); recordingActive = false; finishingRecording = false; audioChunks = []; latestTranscript = "";
         try {
             audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -358,44 +355,48 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 }
                 finishingRecording = false;
 
-                // --- 修正箇所: 録音完了後のシーケンス ---
-                
-                // フライングでUIを Playing... に更新しロック
-                listenBtn.disabled = true;
-                listenBtn.textContent = "🔊Playing...";
-                playRecordBtn.disabled = true; 
-                playRecordBtn.textContent = "▶️ Playing...";
+                // --- 自動再生 / 手動再生 の条件分岐 ---
+                if (isAutoPlay) {
+                    listenBtn.disabled = true;
+                    listenBtn.textContent = "🔊Playing...";
+                    playRecordBtn.disabled = true; 
+                    playRecordBtn.textContent = "▶️ Playing...";
 
-                const utterance = new SpeechSynthesisUtterance(speechText);
-                utterance.lang = "ja-JP";
-                utterance.rate = 0.8;
-                
-                utterance.onend = () => {
+                    const utterance = new SpeechSynthesisUtterance(speechText);
+                    utterance.lang = "ja-JP";
+                    utterance.rate = 0.8;
+                    
+                    utterance.onend = () => {
+                        listenBtn.disabled = false;
+                        listenBtn.textContent = "🔊 きく";
+                        
+                        if (recordedAudioUrl) {
+                            activePlayback.timeoutId = setTimeout(() => {
+                                if (!recordedAudioUrl) return; 
+
+                                const audio = new Audio(recordedAudioUrl);
+                                activePlayback.audio = audio; 
+                                audio.playbackRate = 1.0;
+                                audio.play();
+                                audio.onended = () => {
+                                    playRecordBtn.disabled = false;
+                                    playRecordBtn.textContent = "▶️";
+                                    activePlayback.audio = null;
+                                };
+                            }, 100);
+                        } else {
+                            playRecordBtn.disabled = false;
+                            playRecordBtn.textContent = "▶️";
+                        }
+                    };
+                    speechSynthesis.speak(utterance);
+                } else {
+                    // 手動再生モード: ボタンをアクティブにして待機
                     listenBtn.disabled = false;
                     listenBtn.textContent = "🔊 きく";
-                    
-                    if (recordedAudioUrl) {
-                        // 修正箇所: 0.1秒(100ms)待機してから録音音声を再生
-                        activePlayback.timeoutId = setTimeout(() => {
-                            // 待機中にキャンセルされていれば処理中断
-                            if (!recordedAudioUrl) return; 
-
-                            const audio = new Audio(recordedAudioUrl);
-                            activePlayback.audio = audio; // グローバル管理に登録
-                            audio.playbackRate = 1.0;
-                            audio.play();
-                            audio.onended = () => {
-                                playRecordBtn.disabled = false;
-                                playRecordBtn.textContent = "▶️";
-                                activePlayback.audio = null;
-                            };
-                        }, 100);
-                    } else {
-                        playRecordBtn.disabled = false;
-                        playRecordBtn.textContent = "▶️";
-                    }
-                };
-                speechSynthesis.speak(utterance);
+                    playRecordBtn.disabled = false;
+                    playRecordBtn.textContent = "▶️";
+                }
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -455,30 +456,59 @@ function initDrill() {
     headerPanel.className = "header-panel";
     headerPanel.innerHTML = `
         <span style="color: var(--text-primary);"><strong>Pronunciation Drills</strong></span>
-        <div class="control-item" id="modeControlItem"></div>
+        <div class="controls-container">
+            <div class="control-item" id="stopModeControl"></div>
+            <div class="control-item" id="playModeControl"></div>
+        </div>
     `;
     drillList.appendChild(headerPanel);
 
-    const controlItem = headerPanel.querySelector("#modeControlItem");
     const updateLabels = () => {
-        controlItem.innerHTML = `
-            <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
-                <span class="emoji-gray">⏹</span>Autostop
-                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
-                <span class="slider"></span>
-            </label>
-            <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
-                <span class="emoji-gray">⏹</span>Manual stop
-                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
-            </span>
-        `;
-        document.getElementById("modeSwitch").addEventListener("change", e => {
-            isManualStop = e.target.checked;
-            updateLabels();
-        });
+        // --- Autostop / Manual stop トグル ---
+        const stopControl = document.getElementById("stopModeControl");
+        if(stopControl) {
+            stopControl.innerHTML = `
+                <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
+                    <span class="emoji-gray">⏹</span>Autostop
+                    <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
+                    <span class="emoji-gray">⏹</span>Manual stop
+                    <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                </span>
+            `;
+            document.getElementById("modeSwitch").addEventListener("change", e => {
+                isManualStop = e.target.checked;
+                updateLabels();
+            });
+        }
+
+        // --- Autoplay / Manual play トグル ---
+        const playControl = document.getElementById("playModeControl");
+        if(playControl) {
+            playControl.innerHTML = `
+                <span class="mode-label ${isAutoPlay ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
+                    <span class="emoji-gray">▶️</span>Autoplay
+                    <span class="custom-tip-box">Automatically plays model and recorded audio after recording.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="playModeSwitch" ${!isAutoPlay ? 'checked' : ''}>
+                    <span class="slider"></span>
+                </label>
+                <span class="mode-label ${isAutoPlay ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
+                    <span class="emoji-gray">▶️</span>Manual play
+                    <span class="custom-tip-box">Requires manual click to play audio after recording.</span>
+                </span>
+            `;
+            document.getElementById("playModeSwitch").addEventListener("change", e => {
+                isAutoPlay = !e.target.checked; // checked時(右側)がManual play
+                updateLabels();
+            });
+        }
     };
     updateLabels();
 
@@ -503,7 +533,7 @@ function initDrill() {
                 ⏺️とる<span class="custom-tip-box">Start recording your voice.</span>
             </button>
             <button class="stop-btn custom-tip-wrap" disabled>
-                <span class="stop-btn-emoji">⏹️</span><span class="custom-tip-box">Stop the active recording.</span>
+                <span class="stop-btn-emoji">⏹️️</span><span class="custom-tip-box">Stop the active recording.</span>
             </button>
             <div class="result-container">
                 <span class="result-text" style="color: var(--text-secondary);">(Not recorded yet)</span>
@@ -534,11 +564,13 @@ function initDrill() {
 
 const styleElement = document.createElement("style");
 styleElement.textContent = `
-    .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; font-family: sans-serif; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px; }
+    .header-panel { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; font-family: sans-serif; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px; }
+    .controls-container { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
     .control-item { display: flex; align-items: center; gap: 8px; }
-    .mode-label { font-weight: bold; font-size: 14px; }
+    .mode-label { font-weight: bold; font-size: 14px; transition: opacity 0.3s; }
+    .mode-label.inactive-mode { opacity: 0.5; }
     .mode-label .emoji-gray { filter: grayscale(100%); opacity: 0.55; }
-    .mode-label.active-mode .active-mode .emoji-gray { filter: none; opacity: 1; }
+    .mode-label.active-mode .emoji-gray { filter: none; opacity: 1; }
     .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px; }
