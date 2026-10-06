@@ -230,12 +230,13 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     listenBtn.addEventListener("click", () => {
         listenBtn.disabled = true;
         listenBtn.textContent = "🔊Playing...";
-        setTimeout(() => {
-            const utterance = new SpeechSynthesisUtterance(speechText);
-            utterance.lang = "ja-JP"; utterance.rate = 0.7;
-            utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
-            speechSynthesis.speak(utterance);
-        }, 1000);
+        
+        // Timeoutによる意図的なディレイを削除し、即時実行
+        const utterance = new SpeechSynthesisUtterance(speechText);
+        utterance.lang = "ja-JP"; 
+        utterance.rate = 0.7; // ※読み上げ速度設定（0.7=遅い）
+        utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
+        speechSynthesis.speak(utterance);
     });
 
     playRecordBtn.addEventListener("click", () => {
@@ -331,28 +332,26 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 finishingRecording = false;
 
                 // 録音完了 ⇨ モデル音プレイ(グレーアウト) ⇨ 録音音源再生(グレーアウト)
-                setTimeout(() => {
-                    listenBtn.disabled = true;
-                    listenBtn.textContent = "🔊Playing...";
+                // 待機時間（setTimeout）を削除し、即時実行
+                listenBtn.disabled = true;
+                listenBtn.textContent = "🔊Playing...";
 
-                    const utterance = new SpeechSynthesisUtterance(speechText);
-                    utterance.lang = "ja-JP";
-                    utterance.rate = 0.7;
-                    utterance.onend = () => {
-                        listenBtn.disabled = false;
-                        listenBtn.textContent = "🔊 きく";
-                        
-                        if (recordedAudioUrl) {
-                            setTimeout(() => {
-                                playRecordBtn.disabled = false;
-                                playRecordBtn.click(); // 再生イベントを強制発火（中でPlaying...になりdisabled化する）
-                            }, 400);
-                        } else {
-                            playRecordBtn.disabled = false;
-                        }
-                    };
-                    speechSynthesis.speak(utterance);
-                }, 500);
+                const utterance = new SpeechSynthesisUtterance(speechText);
+                utterance.lang = "ja-JP";
+                utterance.rate = 0.7; // ※読み上げ速度
+                utterance.onend = () => {
+                    listenBtn.disabled = false;
+                    listenBtn.textContent = "🔊 きく";
+                    
+                    if (recordedAudioUrl) {
+                        // モデル音声終了後、即時に録音音声を再生（ディレイ削除）
+                        playRecordBtn.disabled = false;
+                        playRecordBtn.click();
+                    } else {
+                        playRecordBtn.disabled = false;
+                    }
+                };
+                speechSynthesis.speak(utterance);
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -495,7 +494,7 @@ styleElement.textContent = `
     .control-item { display: flex; align-items: center; gap: 8px; }
     .mode-label { font-weight: bold; font-size: 14px; }
     .mode-label .emoji-gray { filter: grayscale(100%); opacity: 0.55; }
-    .mode-label.active-mode .emoji-gray { filter: none; opacity: 1; }
+    .mode-label.active-mode .active-mode .emoji-gray { filter: none; opacity: 1; }
     .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px; }
