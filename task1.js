@@ -704,13 +704,13 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
             if (isManualStop) {
                 recordBtn.disabled = true;
-                stopBtn.disabled = false; // Manual時のみ有効化
+                stopBtn.disabled = false;
                 stopBtn.classList.add('stop-btn-active');
                 resultSpan.textContent = 'Recording (Max 15s)...';
                 resultSpan.style.color = 'var(--accent-color)';
             } else {
                 recordBtn.disabled = true;
-                stopBtn.disabled = true; // Auto時は常に非活性
+                stopBtn.disabled = true;
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
