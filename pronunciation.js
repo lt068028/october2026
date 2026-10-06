@@ -69,9 +69,21 @@ const modelSentences = [
 // ============================================================================
 
 let isManualStop = false;
+let hasWarmedUpSpeech = false;
 
 const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
 const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
+
+// 提案C: 最初のクリック時に音声合成エンジンを無音で起動し、ラグを減らす
+function warmupSpeechSynthesis() {
+    if (hasWarmedUpSpeech) return;
+    const u = new SpeechSynthesisUtterance("あ");
+    u.volume = 0;
+    u.rate = 2.0;
+    speechSynthesis.speak(u);
+    hasWarmedUpSpeech = true;
+}
+document.addEventListener("click", warmupSpeechSynthesis, { once: true });
 
 // ============================================================================
 // Text & Mora Processing
@@ -226,14 +238,14 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     let latestTranscript = "", recordingTimeout, silenceTimer;
     let recordingActive = false, finishingRecording = false, audioChunks = [];
 
-    // --- Audio Playback ---
+    // --- Audio Playback (Manual) ---
     listenBtn.addEventListener("click", () => {
         listenBtn.disabled = true;
         listenBtn.textContent = "🔊Playing...";
         
         const utterance = new SpeechSynthesisUtterance(speechText);
         utterance.lang = "ja-JP"; 
-        utterance.rate = 0.8; // モデル音声を0.8に設定
+        utterance.rate = 0.8; 
         utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
         speechSynthesis.speak(utterance);
     });
@@ -241,7 +253,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
     playRecordBtn.addEventListener("click", () => {
         if (!recordedAudioUrl) return;
         const audio = new Audio(recordedAudioUrl);
-        audio.playbackRate = 1.0; // 学習者音声は1.0を維持
+        audio.playbackRate = 1.0; 
         playRecordBtn.disabled = true; 
         playRecordBtn.textContent = "▶️ Playing...";
         audio.play();
@@ -319,8 +331,6 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
                 
                 playRecordBtn.style.display = "inline-flex";
-                // 録音完了直後は自動再生完了まで手動クリックをブロックする
-                playRecordBtn.disabled = true; 
                 
                 if (latestTranscript) {
                     processTranscript(latestTranscript);
@@ -330,22 +340,33 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 }
                 finishingRecording = false;
 
-                // 録音完了 ⇨ モデル音プレイ(グレーアウト) ⇨ 録音音源再生(グレーアウト)
+                // 録音完了 ⇨ モデル音プレイ ⇨ 録音音源再生 の一連フロー
                 listenBtn.disabled = true;
                 listenBtn.textContent = "🔊Playing...";
 
+                // 録音完了直後から、録音再生ボタンをPlaying状態にしてロックする
+                playRecordBtn.disabled = true; 
+                playRecordBtn.textContent = "▶️ Playing...";
+
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = "ja-JP";
-                utterance.rate = 0.8; // モデル音声を0.8に設定
+                utterance.rate = 0.8;
                 utterance.onend = () => {
                     listenBtn.disabled = false;
                     listenBtn.textContent = "🔊 きく";
                     
                     if (recordedAudioUrl) {
-                        playRecordBtn.disabled = false;
-                        playRecordBtn.click();
+                        // モデル音声終了後、シームレスに録音音声を再生する
+                        const audio = new Audio(recordedAudioUrl);
+                        audio.playbackRate = 1.0;
+                        audio.play();
+                        audio.onended = () => {
+                            playRecordBtn.disabled = false;
+                            playRecordBtn.textContent = "▶️";
+                        };
                     } else {
                         playRecordBtn.disabled = false;
+                        playRecordBtn.textContent = "▶️";
                     }
                 };
                 speechSynthesis.speak(utterance);
