@@ -179,7 +179,6 @@ function compareMoraSequences(modelMorae, learnerMorae) {
 function renderPronunciationResult(resultSpan, operations) {
     resultSpan.innerHTML = "";
     
-    // インラインスタイルの色指定（水色など）をリセットし、クラス設定を活かす
     resultSpan.style.color = "";
 
     const recognizedText = operations
@@ -188,7 +187,6 @@ function renderPronunciationResult(resultSpan, operations) {
         .join("");
 
     if (recognizedText) {
-        // 親要素のクラス（result-text）を破壊しないよう、子要素として追加する
         const span = document.createElement("span");
         span.className = "pronunciation-normal";
         span.textContent = recognizedText;
@@ -325,10 +323,20 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 }
                 finishingRecording = false;
 
-                // 録音完了直後に自動再生をトリガーする
-                if (recordedAudioUrl) {
-                    playRecordBtn.click();
-                }
+                // 録音完了 ⇨ モデル音プレイ ⇨ 録音音源再生
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(speechText);
+                    utterance.lang = "ja-JP";
+                    utterance.rate = 0.7;
+                    utterance.onend = () => {
+                        if (recordedAudioUrl) {
+                            setTimeout(() => {
+                                playRecordBtn.click();
+                            }, 400); // モデル音声終了後0.4秒あけて録音音声を再生
+                        }
+                    };
+                    speechSynthesis.speak(utterance);
+                }, 500); // 録音完了から0.5秒後にモデル音声開始
             };
             
             mediaRecorder.start(); recordingActive = true;
@@ -415,23 +423,6 @@ function initDrill() {
     };
     updateLabels();
 
-    // --- Temporary Area (Roadmap) ---
-    const roadmapPanel = document.createElement("div");
-    roadmapPanel.className = "drill-row";
-    roadmapPanel.style.backgroundColor = "var(--bg-panel)";
-    roadmapPanel.style.borderLeft = "4px solid var(--accent-color)";
-    roadmapPanel.innerHTML = `
-        <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">【Temporary Area】 Stage 2: Pitch Visualization Roadmap</h4>
-        <ul style="margin: 0; padding-left: 20px; color: var(--text-primary); font-size: 14px; line-height: 1.6;">
-            <li><strong>Step 1:</strong> UIにCanvas要素を追加</li>
-            <li><strong>Step 2:</strong> F0抽出エンジンの再導入</li>
-            <li><strong>Step 3:</strong> 抽出データの平滑化・正規化処理</li>
-            <li><strong>Step 4:</strong> モデルピッチ曲線のCanvas描画</li>
-            <li><strong>Step 5:</strong> 学習者ピッチ曲線のCanvas描画（視覚的比較）</li>
-        </ul>
-    `;
-    drillList.appendChild(roadmapPanel);
-
     // --- Drill Sentences ---
     modelSentences.forEach((itemObj, index) => {
         const rowDiv = document.createElement("div");
@@ -488,7 +479,7 @@ styleElement.textContent = `
     .control-item { display: flex; align-items: center; gap: 8px; }
     .mode-label { font-weight: bold; font-size: 14px; }
     .mode-label .emoji-gray { filter: grayscale(100%); opacity: 0.55; }
-    .mode-label.active-mode .emoji-gray { filter: none; opacity: 1; }
+    .mode-label.active-mode .active-mode .emoji-gray { filter: none; opacity: 1; }
     .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px; }
