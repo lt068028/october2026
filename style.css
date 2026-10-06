@@ -274,6 +274,15 @@ input:checked + .slider:before {
 
 
 /* ==========================================
+   Task 1 emoji
+   ========================================== */
+
+.emoji-gray {
+    filter: grayscale(100%);
+}
+
+
+/* ==========================================
    Footer Guide
    ========================================== */
 
@@ -467,19 +476,6 @@ input:checked + .slider:before {
     background-color: var(--button-hover);
 }
 
-
-/* Task 3：Textarea + Choose JPG/PNG */
-
-.task3-input-area {
-    display: flex;
-    align-items: stretch;
-    gap: 10px;
-}
-
-.task3-input-area #task3Textarea {
-    flex: 1;
-}
-
 #task3Textarea {
     width: 100%;
     height: 80px;
@@ -491,17 +487,6 @@ input:checked + .slider:before {
     border-radius: 4px;
     background-color: var(--bg-main);
     color: var(--text-primary);
-}
-
-.task3-input-area .task3-file-label {
-    width: 80px;
-    min-width: 80px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    line-height: 1.3;
 }
 
 .task3-or {
@@ -540,9 +525,6 @@ input:checked + .slider:before {
     font-size: 12px;
 }
 
-
-/* Task 3：Import */
-
 .task3-action-row,
 .task3-generate-row,
 .task3-more-row {
@@ -550,10 +532,6 @@ input:checked + .slider:before {
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-.task3-action-row {
-    justify-content: flex-end;
 }
 
 .task3-action-row .example-button,
