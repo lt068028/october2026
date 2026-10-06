@@ -1,55 +1,24 @@
-// ============================================================================
-// F0 analysis
-// ============================================================================
+mediaRecorder.onstop = async () => {
+    recordingActive = false;
+    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+    if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
+    recordedAudioUrl = URL.createObjectURL(audioBlob);
+    playRecordBtn.style.display = "inline-flex";
 
-function calculateRMS(...) {
-    ...
-}
+    if (latestTranscript) {
+        const analysis = processTranscript(latestTranscript);
+        if (analysis) {
+            await analyzeRecordedAudio(
+                audioBlob,
+                analysis.modelMorae,
+                analysis.operations,
+                resultSpan
+            );
+        }
+    } else {
+        resultSpan.textContent = "Could not detect your speech.";
+        resultSpan.style.color = "var(--text-secondary)";
+    }
 
-function autocorrelationF0(...) {
-    ...
-}
-
-function extractF0Frames(...) {
-    ...
-}
-
-function median(...) {
-    ...
-}
-
-function smoothF0Frames(...) {
-    ...
-}
-
-function normalizeF0Frames(...) {
-    ...
-}
-
-function findVoicedRange(...) {
-    ...
-}
-
-function buildPrefixStatistics(...) {
-    ...
-}
-
-function segmentMean(...) {
-    ...
-}
-
-function segmentVariance(...) {
-    ...
-}
-
-function estimatePitchCenters(...) {
-    ...
-}
-
-function alignPitchToMorae(...) {
-    ...
-}
-
-function estimatePitchPattern(...) {
-    ...
-}
+    finishingRecording = false;
+};
