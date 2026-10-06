@@ -64,7 +64,18 @@ const modelSentences = [
     }
 ];
 
+// ============================================================================
+// State & Constants
+// ============================================================================
+
 let isManualStop = false;
+
+const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
+const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
+
+// ============================================================================
+// Text & Mora Processing
+// ============================================================================
 
 function convertToHiragana(text) {
     if (!text) return "";
@@ -82,9 +93,6 @@ function convertToHiragana(text) {
     }
     return cleaned;
 }
-
-const SMALL_Y = new Set(["ゃ", "ゅ", "ょ"]);
-const SPECIAL_MORA = new Set(["っ", "ん", "ー"]);
 
 function splitIntoMora(text) {
     const chars = Array.from(text);
@@ -126,6 +134,344 @@ function getModelMoraData(itemObj) {
     return morae;
 }
 
+function compareMoraSequences(modelMorae, learnerMorae) {
+    const operations = [];
+    let i = 0; let j = 0;
+
+    while (i < modelMorae.length || j < learnerMorae.length) {
+        if (i >= modelMorae.length) {
+            operations.push({ type: "extra", learner: learnerMorae[j], learnerIndex: j });
+            j++; continue;
+        }
+        if (j >= learnerMorae.length) {
+            operations.push({ type: "missing", model: modelMorae[i], modelIndex: i });
+            i++; continue;
+        }
+
+        const model = modelMorae[i];
+        const learner = learnerMorae[j];
+
+        if (model.text === learner.text) {
+            operations.push({ type: "match", model, learner, modelIndex: i, learnerIndex: j });
+            i++; j++; continue;
+        }
+
+        if (j + 1 < learnerMorae.length && model.text === learnerMorae[j + 1].text) {
+            operations.push({ type: "extra", learner, learnerIndex: j });
+            j++; continue;
+        }
+
+        if (i + 1 < modelMorae.length && modelMorae[i + 1].text === learner.text) {
+            operations.push({ type: "missing", model, modelIndex: i });
+            i++; continue;
+        }
+
+        operations.push({ type: "sound-error", model, learner, modelIndex: i, learnerIndex: j });
+        i++; j++;
+    }
+    return operations;
+}
+
+// ============================================================================
+// UI Rendering
+// ============================================================================
+
+function renderPronunciationResult(resultSpan, operations) {
+    resultSpan.innerHTML = "";
+    let hasError = false;
+
+    operations.forEach(op => {
+        const span = document.createElement("span");
+        if (op.type === "match") {
+            span.className = "pronunciation-normal";
+            span.textContent = op.learner.text;
+        } else if (op.type === "sound-error") {
+            span.className = "pronunciation-error";
+            span.textContent = op.learner.text;
+            hasError = true;
+        } else if (op.type === "missing") {
+            span.className = "pronunciation-missing";
+            span.textContent = `[${op.model.text}×]`;
+            hasError = true;
+        } else if (op.type === "extra") {
+            span.className = "pronunciation-extra";
+            span.textContent = `[${op.learner.text}+]`;
+            hasError = true;
+        }
+        resultSpan.appendChild(span);
+    });
+
+    if (!hasError) {
+        const checkSpan = document.createElement("span");
+        checkSpan.textContent = " ✅️";
+        checkSpan.style.color = "var(--text-primary)";
+        resultSpan.appendChild(checkSpan);
+    }
+    return hasError;
+}
+
+function buildHtmlParts(itemObj) {
+    let speechText = "";
+    let htmlParts = "";
+    itemObj.displayHtml.forEach(part => {
+        if (part.type === "symbol") {
+            htmlParts += `<span style="color: ${itemObj.symbolColor};">${part.val}</span>`;
+        } else {
+            speechText += part.text;
+            const pitchClass = part.low ? "low-pitch" : "high-pitch";
+            htmlParts += `<span class="${pitchClass}" style="text-decoration-color: ${itemObj.symbolColor};">${part.text}</span>`;
+        }
+    });
+    return { htmlParts, speechText };
+}
+
+// ============================================================================
+// Recording Controller
+// ============================================================================
+
+function setupRecordingEvents(rowElement, itemObj, speechText) {
+    const listenBtn = rowElement.querySelector(".listen-btn");
+    const recordBtn = rowElement.querySelector(".record-btn");
+    const stopBtn = rowElement.querySelector(".stop-btn");
+    const resultSpan = rowElement.querySelector(".result-text");
+    const playRecordBtn = rowElement.querySelector(".play-record-btn");
+    const meaningBtn = rowElement.querySelector(".meaning-btn");
+    const meaningPopup = rowElement.querySelector(".meaning-popup");
+
+    let mediaRecorder, audioStream, recognition, recordedAudioUrl;
+    let latestTranscript = "", recordingTimeout, silenceTimer;
+    let recordingActive = false, finishingRecording = false, audioChunks = [];
+
+    // --- Audio Playback ---
+    listenBtn.addEventListener("click", () => {
+        listenBtn.disabled = true;
+        listenBtn.textContent = "🔊Playing...";
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(speechText);
+            utterance.lang = "ja-JP"; utterance.rate = 0.7;
+            utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
+            speechSynthesis.speak(utterance);
+        }, 1000);
+    });
+
+    playRecordBtn.addEventListener("click", () => {
+        if (!recordedAudioUrl) return;
+        const audio = new Audio(recordedAudioUrl);
+        audio.playbackRate = 1.0; playRecordBtn.disabled = true; playRecordBtn.textContent = "▶️ Playing...";
+        audio.play();
+        audio.onended = () => { playRecordBtn.disabled = false; playRecordBtn.textContent = "▶️"; };
+    });
+
+    // --- UI Interactions ---
+    meaningBtn.addEventListener("click", e => { e.stopPropagation(); meaningPopup.classList.toggle("show"); });
+    document.addEventListener("click", () => meaningPopup.classList.remove("show"));
+    rowElement.querySelector(".meaning-container").addEventListener("click", e => e.stopPropagation());
+
+    // --- Recording Logic ---
+    function clearSilenceTimer() { if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; } }
+    
+    function scheduleAutostop() {
+        if (isManualStop || !recordingActive || finishingRecording) return;
+        clearSilenceTimer();
+        silenceTimer = setTimeout(() => { if (!recordingActive || finishingRecording) return; finishRecording(); }, 1500);
+    }
+
+    function processTranscript(rawTranscript) {
+        if (!rawTranscript) return null;
+        const hiraText = convertToHiragana(rawTranscript);
+        const cleanHira = hiraText.replace(/[\s、。]/g, "");
+        
+        if (cleanHira.length < 2) {
+            resultSpan.textContent = hiraText + " (Too short)";
+            resultSpan.style.color = "var(--text-secondary)";
+            return null;
+        }
+        
+        const cleanTarget = itemObj.targetText.replace(/[\s、。]/g, "");
+        const matchRegex = new RegExp(`^${cleanTarget}(?:ね|よ|よね|ですね|ですよ)*$`);
+        const exactSentence = matchRegex.test(cleanHira);
+        
+        const modelMorae = getModelMoraData(itemObj);
+        const learnerMorae = splitIntoMora(cleanHira);
+        let operations = compareMoraSequences(modelMorae, learnerMorae);
+        
+        if (exactSentence) {
+            operations = operations.filter(op => op.type !== "extra" || (op.learner && op.learner.text !== "ね" && op.learner.text !== "よ"));
+        }
+        
+        renderPronunciationResult(resultSpan, operations);
+        return { hiraText, modelMorae, learnerMorae, operations };
+    }
+
+    function finishRecording() {
+        if (finishingRecording) return;
+        finishingRecording = true; recordingActive = false;
+        clearSilenceTimer();
+        
+        if (recordingTimeout) { clearTimeout(recordingTimeout); recordingTimeout = null; }
+        if (recognition) { try { recognition.stop(); } catch (e) {} }
+        if (mediaRecorder && mediaRecorder.state !== "inactive") { try { mediaRecorder.stop(); } catch (e) {} }
+        if (audioStream) { audioStream.getTracks().forEach(track => track.stop()); audioStream = null; }
+        
+        recordBtn.disabled = false; stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
+    }
+
+    recordBtn.addEventListener("click", async () => {
+        clearSilenceTimer(); recordingActive = false; finishingRecording = false; audioChunks = []; latestTranscript = "";
+        try {
+            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(audioStream);
+            
+            mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
+            mediaRecorder.onstop = async () => {
+                recordingActive = false;
+                const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
+                recordedAudioUrl = URL.createObjectURL(audioBlob);
+                playRecordBtn.style.display = "inline-flex";
+                
+                if (latestTranscript) {
+                    processTranscript(latestTranscript);
+                } else {
+                    resultSpan.textContent = "Could not detect your speech.";
+                    resultSpan.style.color = "var(--text-secondary)";
+                }
+                finishingRecording = false;
+            };
+            
+            mediaRecorder.start(); recordingActive = true;
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = "ja-JP"; recognition.interimResults = false; recognition.continuous = false;
+                
+                recognition.onresult = e => {
+                    let rawTranscript = "";
+                    for (let i = e.resultIndex; i < e.results.length; i++) {
+                        if (e.results[i].isFinal) rawTranscript += e.results[i][0].transcript;
+                    }
+                    if (!rawTranscript) return;
+                    latestTranscript = rawTranscript;
+                    if (!isManualStop) { processTranscript(latestTranscript); scheduleAutostop(); }
+                };
+                recognition.onerror = err => console.error("Speech recognition error:", err);
+                try { recognition.start(); } catch (e) { console.error("Recognition start error:", e); }
+            } else { 
+                latestTranscript = ""; 
+            }
+
+            recordBtn.disabled = true;
+            if (isManualStop) {
+                stopBtn.disabled = false; stopBtn.classList.add("stop-btn-active");
+                resultSpan.textContent = "Recording (Max 15s)...";
+                recordingTimeout = setTimeout(() => finishRecording(), 15000);
+            } else {
+                stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
+                resultSpan.textContent = "Recording...";
+            }
+            resultSpan.style.color = "var(--accent-color)";
+            playRecordBtn.style.display = "none";
+
+        } catch (err) {
+            console.error("Mic error:", err); recordingActive = false; finishingRecording = false;
+            resultSpan.textContent = "Mic error"; resultSpan.style.color = "var(--error-text)";
+            recordBtn.disabled = false; stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
+        }
+    });
+
+    stopBtn.addEventListener("click", () => finishRecording());
+}
+
+// ============================================================================
+// App Initialization
+// ============================================================================
+
+function initDrill() {
+    const drillList = document.getElementById("drillList");
+    if (!drillList) return;
+    drillList.innerHTML = "";
+
+    const headerPanel = document.createElement("div");
+    headerPanel.className = "header-panel";
+    headerPanel.innerHTML = `
+        <span style="color: var(--text-primary);"><strong>Pronunciation Drills</strong></span>
+        <div class="control-item" id="modeControlItem"></div>
+    `;
+    drillList.appendChild(headerPanel);
+
+    const controlItem = headerPanel.querySelector("#modeControlItem");
+    const updateLabels = () => {
+        controlItem.innerHTML = `
+            <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
+                <span class="emoji-gray">⏹</span>Autostop
+                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
+                <span class="slider"></span>
+            </label>
+            <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
+                <span class="emoji-gray">⏹</span>Manual stop
+                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+            </span>
+        `;
+        document.getElementById("modeSwitch").addEventListener("change", e => {
+            isManualStop = e.target.checked;
+            updateLabels();
+        });
+    };
+    updateLabels();
+
+    modelSentences.forEach((itemObj, index) => {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "drill-row";
+        
+        const topRow = document.createElement("div");
+        topRow.className = "top-row";
+
+        const { htmlParts, speechText } = buildHtmlParts(itemObj);
+
+        topRow.innerHTML = `
+            <span class="sentence-number">${index + 1}.</span>
+            <span class="tooltip-wrap">
+                <button class="listen-btn">🔊 きく</button>
+                <span class="tooltip-tip">Listen to model audio</span>
+            </span>
+            <span class="sentence-label">${htmlParts}</span>
+            <button class="record-btn custom-tip-wrap">
+                ⏺️とる<span class="custom-tip-box">Start recording your voice.</span>
+            </button>
+            <button class="stop-btn custom-tip-wrap" disabled>
+                <span class="stop-btn-emoji">⏹️</span><span class="custom-tip-box">Stop the active recording.</span>
+            </button>
+            <div class="result-container">
+                <span class="result-text" style="color: var(--text-secondary);">(Not recorded yet)</span>
+                <span class="tooltip-wrap">
+                    <button class="play-record-btn">▶️</button>
+                    <span class="tooltip-tip">Play your recording</span>
+                </span>
+            </div>
+            <div class="meaning-container">
+                <span class="tooltip-wrap">
+                    <button class="meaning-btn">🌐</button>
+                    <span class="tooltip-tip">Translate sentence</span>
+                </span>
+                <div class="meaning-popup">${itemObj.meaning}</div>
+            </div>
+        `;
+        
+        rowDiv.appendChild(topRow);
+        drillList.appendChild(rowDiv);
+        
+        setupRecordingEvents(topRow, itemObj, speechText);
+    });
+}
+
+// ============================================================================
+// CSS Injection
+// ============================================================================
+
 const styleElement = document.createElement("style");
 styleElement.textContent = `
     .header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 12px 16px; background: var(--bg-panel); border-radius: 6px; font-family: sans-serif; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px; }
@@ -166,300 +512,5 @@ styleElement.textContent = `
     .tooltip-wrap:hover .tooltip-tip { visibility: visible; opacity: 1; }
 `;
 document.head.appendChild(styleElement);
-
-function compareMoraSequences(modelMorae, learnerMorae) {
-    const operations = [];
-    let i = 0; let j = 0;
-
-    while (i < modelMorae.length || j < learnerMorae.length) {
-        if (i >= modelMorae.length) {
-            operations.push({ type: "extra", learner: learnerMorae[j], learnerIndex: j });
-            j++; continue;
-        }
-        if (j >= learnerMorae.length) {
-            operations.push({ type: "missing", model: modelMorae[i], modelIndex: i });
-            i++; continue;
-        }
-
-        const model = modelMorae[i];
-        const learner = learnerMorae[j];
-
-        if (model.text === learner.text) {
-            operations.push({ type: "match", model, learner, modelIndex: i, learnerIndex: j });
-            i++; j++; continue;
-        }
-
-        if (j + 1 < learnerMorae.length && model.text === learnerMorae[j + 1].text) {
-            operations.push({ type: "extra", learner, learnerIndex: j });
-            j++; continue;
-        }
-
-        if (i + 1 < modelMorae.length && modelMorae[i + 1].text === learner.text) {
-            operations.push({ type: "missing", model, modelIndex: i });
-            i++; continue;
-        }
-
-        operations.push({ type: "sound-error", model, learner, modelIndex: i, learnerIndex: j });
-        i++; j++;
-    }
-    return operations;
-}
-
-function renderPronunciationResult(resultSpan, operations) {
-    resultSpan.innerHTML = "";
-    let hasError = false;
-
-    operations.forEach(op => {
-        const span = document.createElement("span");
-        if (op.type === "match") {
-            span.className = "pronunciation-normal";
-            span.textContent = op.learner.text;
-        } else if (op.type === "sound-error") {
-            span.className = "pronunciation-error";
-            span.textContent = op.learner.text;
-            hasError = true;
-        } else if (op.type === "missing") {
-            span.className = "pronunciation-missing";
-            span.textContent = `[${op.model.text}×]`;
-            hasError = true;
-        } else if (op.type === "extra") {
-            span.className = "pronunciation-extra";
-            span.textContent = `[${op.learner.text}+]`;
-            hasError = true;
-        }
-        resultSpan.appendChild(span);
-    });
-
-    if (!hasError) {
-        const checkSpan = document.createElement("span");
-        checkSpan.textContent = " ✅️";
-        checkSpan.style.color = "var(--text-primary)";
-        resultSpan.appendChild(checkSpan);
-    }
-    return hasError;
-}
-
-function initDrill() {
-    const drillList = document.getElementById("drillList");
-    if (!drillList) return;
-    drillList.innerHTML = "";
-
-    const headerPanel = document.createElement("div");
-    headerPanel.className = "header-panel";
-    headerPanel.innerHTML = `
-        <span style="color: var(--text-primary);"><strong>Pronunciation Drills</strong></span>
-        <div class="control-item" id="modeControlItem"></div>
-    `;
-    drillList.appendChild(headerPanel);
-
-    const controlItem = headerPanel.querySelector("#modeControlItem");
-
-    const updateLabels = () => {
-        controlItem.innerHTML = `
-            <span class="mode-label ${isManualStop ? 'inactive-mode' : 'active-mode'} custom-tip-wrap">
-                <span class="emoji-gray">⏹</span>Autostop
-                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="modeSwitch" ${isManualStop ? 'checked' : ''}>
-                <span class="slider"></span>
-            </label>
-            <span class="mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap">
-                <span class="emoji-gray">⏹</span>Manual stop
-                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
-            </span>
-        `;
-        document.getElementById("modeSwitch").addEventListener("change", e => {
-            isManualStop = e.target.checked;
-            updateLabels();
-        });
-    };
-    updateLabels();
-
-    modelSentences.forEach((itemObj, index) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "drill-row";
-
-        const topRow = document.createElement("div");
-        topRow.className = "top-row";
-
-        let speechText = "";
-        let htmlParts = "";
-        itemObj.displayHtml.forEach(part => {
-            if (part.type === "symbol") {
-                htmlParts += `<span style="color: ${itemObj.symbolColor};">${part.val}</span>`;
-            } else {
-                speechText += part.text;
-                const pitchClass = part.low ? "low-pitch" : "high-pitch";
-                htmlParts += `<span class="${pitchClass}" style="text-decoration-color: ${itemObj.symbolColor};">${part.text}</span>`;
-            }
-        });
-
-        topRow.innerHTML = `
-            <span class="sentence-number">${index + 1}.</span>
-            <span class="tooltip-wrap">
-                <button class="listen-btn">🔊 きく</button>
-                <span class="tooltip-tip">Listen to model audio</span>
-            </span>
-            <span class="sentence-label">${htmlParts}</span>
-            <button class="record-btn custom-tip-wrap">
-                ⏺️とる<span class="custom-tip-box">Start recording your voice.</span>
-            </button>
-            <button class="stop-btn custom-tip-wrap" disabled>
-                <span class="stop-btn-emoji">⏹️</span><span class="custom-tip-box">Stop the active recording.</span>
-            </button>
-            <div class="result-container">
-                <span class="result-text" style="color: var(--text-secondary);">(Not recorded yet)</span>
-                <span class="tooltip-wrap">
-                    <button class="play-record-btn">▶️</button>
-                    <span class="tooltip-tip">Play your recording</span>
-                </span>
-            </div>
-            <div class="meaning-container">
-                <span class="tooltip-wrap">
-                    <button class="meaning-btn">🌐</button>
-                    <span class="tooltip-tip">Translate sentence</span>
-                </span>
-                <div class="meaning-popup">${itemObj.meaning}</div>
-            </div>
-        `;
-        rowDiv.appendChild(topRow);
-        drillList.appendChild(rowDiv);
-
-        const listenBtn = topRow.querySelector(".listen-btn");
-        const recordBtn = topRow.querySelector(".record-btn");
-        const stopBtn = topRow.querySelector(".stop-btn");
-        const resultSpan = topRow.querySelector(".result-text");
-        const playRecordBtn = topRow.querySelector(".play-record-btn");
-        const meaningBtn = topRow.querySelector(".meaning-btn");
-        const meaningPopup = topRow.querySelector(".meaning-popup");
-
-        listenBtn.addEventListener("click", () => {
-            listenBtn.disabled = true;
-            listenBtn.textContent = "🔊Playing...";
-            setTimeout(() => {
-                const utterance = new SpeechSynthesisUtterance(speechText);
-                utterance.lang = "ja-JP"; utterance.rate = 0.7;
-                utterance.onend = () => { listenBtn.disabled = false; listenBtn.textContent = "🔊 きく"; };
-                speechSynthesis.speak(utterance);
-            }, 1000);
-        });
-
-        meaningBtn.addEventListener("click", e => { e.stopPropagation(); meaningPopup.classList.toggle("show"); });
-        document.addEventListener("click", () => meaningPopup.classList.remove("show"));
-        topRow.querySelector(".meaning-container").addEventListener("click", e => e.stopPropagation());
-
-        let mediaRecorder, audioStream, recognition, recordedAudioUrl, latestTranscript = "", recordingTimeout, silenceTimer;
-        let recordingActive = false, finishingRecording = false, audioChunks = [];
-
-        function clearSilenceTimer() { if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; } }
-        function scheduleAutostop() {
-            if (isManualStop || !recordingActive || finishingRecording) return;
-            clearSilenceTimer();
-            silenceTimer = setTimeout(() => { if (!recordingActive || finishingRecording) return; finishRecording(); }, 1500);
-        }
-
-        function processTranscript(rawTranscript) {
-            if (!rawTranscript) return null;
-            const hiraText = convertToHiragana(rawTranscript);
-            const cleanHira = hiraText.replace(/[\s、。]/g, "");
-            if (cleanHira.length < 2) {
-                resultSpan.textContent = hiraText + " (Too short)";
-                resultSpan.style.color = "var(--text-secondary)";
-                return null;
-            }
-            const cleanTarget = itemObj.targetText.replace(/[\s、。]/g, "");
-            const matchRegex = new RegExp(`^${cleanTarget}(?:ね|よ|よね|ですね|ですよ)*$`);
-            const exactSentence = matchRegex.test(cleanHira);
-            const modelMorae = getModelMoraData(itemObj);
-            const learnerMorae = splitIntoMora(cleanHira);
-            let operations = compareMoraSequences(modelMorae, learnerMorae);
-            if (exactSentence) {
-                operations = operations.filter(op => op.type !== "extra" || (op.learner && op.learner.text !== "ね" && op.learner.text !== "よ"));
-            }
-            renderPronunciationResult(resultSpan, operations);
-            return { hiraText, modelMorae, learnerMorae, operations };
-        }
-
-        function finishRecording() {
-            if (finishingRecording) return;
-            finishingRecording = true; recordingActive = false;
-            clearSilenceTimer();
-            if (recordingTimeout) { clearTimeout(recordingTimeout); recordingTimeout = null; }
-            if (recognition) { try { recognition.stop(); } catch (e) {} }
-            if (mediaRecorder && mediaRecorder.state !== "inactive") { try { mediaRecorder.stop(); } catch (e) {} }
-            if (audioStream) { audioStream.getTracks().forEach(track => track.stop()); audioStream = null; }
-            recordBtn.disabled = false; stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
-        }
-
-        recordBtn.addEventListener("click", async () => {
-            clearSilenceTimer(); recordingActive = false; finishingRecording = false; audioChunks = []; latestTranscript = "";
-            try {
-                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(audioStream);
-                mediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) audioChunks.push(e.data); };
-                mediaRecorder.onstop = async () => {
-                    recordingActive = false;
-                    const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-                    if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
-                    recordedAudioUrl = URL.createObjectURL(audioBlob);
-                    playRecordBtn.style.display = "inline-flex";
-                    if (latestTranscript) {
-                        processTranscript(latestTranscript);
-                    } else {
-                        resultSpan.textContent = "Could not detect your speech.";
-                        resultSpan.style.color = "var(--text-secondary)";
-                    }
-                    finishingRecording = false;
-                };
-                mediaRecorder.start(); recordingActive = true;
-
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (SpeechRecognition) {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = "ja-JP"; recognition.interimResults = false; recognition.continuous = false;
-                    recognition.onresult = e => {
-                        let rawTranscript = "";
-                        for (let i = e.resultIndex; i < e.results.length; i++) {
-                            if (e.results[i].isFinal) rawTranscript += e.results[i][0].transcript;
-                        }
-                        if (!rawTranscript) return;
-                        latestTranscript = rawTranscript;
-                        if (!isManualStop) { processTranscript(latestTranscript); scheduleAutostop(); }
-                    };
-                    recognition.onerror = err => console.error("Speech recognition error:", err);
-                    try { recognition.start(); } catch (e) { console.error("Recognition start error:", e); }
-                } else { latestTranscript = ""; }
-
-                recordBtn.disabled = true;
-                if (isManualStop) {
-                    stopBtn.disabled = false; stopBtn.classList.add("stop-btn-active");
-                    resultSpan.textContent = "Recording (Max 15s)...";
-                    recordingTimeout = setTimeout(() => finishRecording(), 15000);
-                } else {
-                    stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
-                    resultSpan.textContent = "Recording...";
-                }
-                resultSpan.style.color = "var(--accent-color)";
-                playRecordBtn.style.display = "none";
-
-            } catch (err) {
-                console.error("Mic error:", err); recordingActive = false; finishingRecording = false;
-                resultSpan.textContent = "Mic error"; resultSpan.style.color = "var(--error-text)";
-                recordBtn.disabled = false; stopBtn.disabled = true; stopBtn.classList.remove("stop-btn-active");
-            }
-        });
-
-        stopBtn.addEventListener("click", () => finishRecording());
-
-        playRecordBtn.addEventListener("click", () => {
-            if (!recordedAudioUrl) return;
-            const audio = new Audio(recordedAudioUrl);
-            audio.playbackRate = 1.0; playRecordBtn.disabled = true; playRecordBtn.textContent = "▶️ Playing...";
-            audio.play();
-            audio.onended = () => { playRecordBtn.disabled = false; playRecordBtn.textContent = "▶️"; };
-        });
-    });
-}
 
 document.addEventListener("DOMContentLoaded", initDrill);
