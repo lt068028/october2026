@@ -1,36 +1,589 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>XはYです</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-</head>
-<body>
-    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-        <a href="index.html" style="text-decoration:none; color:var(--accent-color); font-weight:bold;">↩️メニューへもどる</a>
-    </div>
-    <h1>Practice 1: XはYです</h1>
-    <div id="exampleSection"></div>
-    <div id="task1List"></div>
+/* ==========================================
+   Global Theme Variables (Light Mode Default)
+   ========================================== */
 
-    <div class="header-panel" style="margin-top:30px;">
-        <div class="title-instruction-group">
-            <strong>Task 3: Custom Drills</strong>
-            <span class="example-desc">Paste vocabulary text or drop image.</span>
-        </div>
-    </div>
-    <div class="drill-row task3-import-row">
-        <div class="task3-input-area">
-            <textarea id="task3Textarea" placeholder="Paste words here..."></textarea>
-            <label class="task3-file-label">Choose JPG<input type="file" id="task3ImageInput"></label>
-        </div>
-        <button id="task3ImportBtn">Import</button>
-        <div id="task3Preview" class="result-text">No words imported.</div>
-        <button id="task3GenerateBtn" disabled>✨ Generate Drills</button>
-    </div>
-    <div id="task3List"></div>
+:root {
+    --bg-main: #ffffff;
+    --bg-panel: #f1f5f9;
+    --bg-row: #ffffff;
+    --border-color: #cccccc;
+    --text-primary: #333333;
+    --text-secondary: #64748b;
+    --accent-color: #2196F3;
 
-    <script src="task1.js"></script>
-</body>
-</html>
+    --button-bg: #f8f9fa;
+    --button-hover: #e9ecef;
+
+    --button-disabled-bg: #e2e8f0;
+    --button-disabled-text: #a0aec0;
+
+    --tooltip-bg: #333333;
+    --tooltip-text: #ffffff;
+
+    --error-bg: #fff1f2;
+    --error-border: #fda4af;
+    --error-text: #be123c;
+
+    --rec-active-bg: #be123c;
+    --rec-active-text: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-main: #0f172a;
+        --bg-panel: #1e293b;
+        --bg-row: #1e293b;
+        --border-color: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #94a3b8;
+        --accent-color: #38bdf8;
+
+        --button-bg: #334155;
+        --button-hover: #475569;
+
+        --button-disabled-bg: #1e293b;
+        --button-disabled-text: #64748b;
+
+        --tooltip-bg: #f8fafc;
+        --tooltip-text: #0f172a;
+
+        --error-bg: #4c0519;
+        --error-border: #9f1239;
+        --error-text: #fecdd3;
+
+        --rec-active-bg: #9f1239;
+        --rec-active-text: #fecdd3;
+    }
+}
+
+
+/* ==========================================
+   Body
+   ========================================== */
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: sans-serif;
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+h1,
+h2,
+h3,
+p,
+a,
+li {
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+a {
+    color: var(--accent-color);
+}
+
+
+/* ==========================================
+   Header
+   ========================================== */
+
+.header-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: var(--bg-panel);
+    border: none !important;
+    border-radius: 0 !important;
+    flex-wrap: nowrap;
+    gap: 16px;
+}
+
+.title-instruction-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 7;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex: 3;
+}
+
+.control-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
+/* ==========================================
+   Drill Rows
+   ========================================== */
+
+.drill-row {
+    background-color: var(--bg-row);
+    border: 1px solid var(--border-color);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.prompt-label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.custom-select {
+    padding: 4px 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+}
+
+.translation-preview {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.result-text {
+    margin-left: auto;
+    font-size: 14px;
+}
+
+.correction-box {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-border);
+    color: var(--error-text);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+
+/* ==========================================
+   Mode Switch
+   ========================================== */
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--button-disabled-bg);
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+.mode-label {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.active-mode {
+    font-weight: bold;
+}
+
+.inactive-mode {
+    color: var(--text-secondary);
+}
+
+
+/* ==========================================
+   Task 1 Mode Emoji
+   ========================================== */
+
+.mode-label.inactive-mode .emoji-gray {
+    filter: grayscale(100%);
+}
+
+.mode-label.active-mode .emoji-gray {
+    filter: none;
+}
+
+
+/* ==========================================
+   Recording Stop Button Active State
+   ========================================== */
+
+.stop-btn-active {
+    background-color: var(--rec-active-bg) !important;
+    color: var(--rec-active-text) !important;
+    border-color: var(--rec-active-bg) !important;
+    font-weight: bold;
+}
+
+
+/* ==========================================
+   Disabled Button
+   ========================================== */
+
+.example-button:disabled {
+    background-color: var(--button-disabled-bg) !important;
+    color: var(--button-disabled-text) !important;
+    border-color: var(--border-color) !important;
+    cursor: not-allowed !important;
+    filter: grayscale(100%);
+    opacity: 0.55;
+}
+
+
+/* ==========================================
+   Footer Guide
+   ========================================== */
+
+.voice-guide-footer {
+    margin-top: 30px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    display: inline-block;
+}
+
+.guide-trigger {
+    cursor: pointer;
+    color: var(--accent-color);
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.guide-box-popup {
+    margin-top: 6px;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    white-space: nowrap;
+    display: none;
+}
+
+
+/* ==========================================
+   Example
+   ========================================== */
+
+.example-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+    position: relative;
+    background-color: #fefce8;
+    border: 1px solid #fde047;
+    padding: 20px 16px 14px 16px;
+    margin-top: 16px;
+    border-radius: 6px;
+    color: var(--text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+    .example-box {
+        background-color: #422006;
+        border-color: #ca8a04;
+    }
+}
+
+.example-box::before {
+    content: "Example";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background-color: #ca8a04;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.example-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.example-button {
+    padding: 4px 8px;
+    font-size: 13px;
+    margin-left: 8px;
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.example-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-left: 10px;
+}
+
+
+/* ==========================================
+   Tooltips
+   ========================================== */
+
+.tooltip-wrap {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted var(--accent-color);
+    cursor: help;
+}
+
+.tooltip-wrap .tooltip-tip {
+    visibility: hidden;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 20;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.tooltip-wrap:hover .tooltip-tip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.custom-tip-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-tip-box {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 20;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    transition: opacity 0.2s ease;
+}
+
+.custom-tip-wrap:hover .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+/* ==========================================
+   Task 3
+   ========================================== */
+
+.task3-instruction {
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.task3-import-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.task3-drop-zone {
+    border: 2px dashed var(--border-color);
+    border-radius: 6px;
+    padding: 18px;
+    text-align: center;
+    background-color: var(--bg-panel);
+    transition:
+        border-color 0.2s,
+        background-color 0.2s;
+}
+
+.task3-drop-zone.task3-drop-active {
+    border-color: var(--accent-color);
+    background-color: var(--button-hover);
+}
+
+#task3Textarea {
+    width: 100%;
+    height: 80px;
+    resize: vertical;
+    box-sizing: border-box;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+}
+
+.task3-or {
+    margin: 8px 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.task3-file-label {
+    display: inline-block;
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.task3-file-label:hover {
+    background-color: var(--button-hover);
+}
+
+.task3-file-label input {
+    display: none;
+}
+
+.task3-drop-hint {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.task3-example-hint {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.task3-action-row,
+.task3-generate-row,
+.task3-more-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.task3-action-row .example-button,
+.task3-generate-row .example-button,
+.task3-more-row .example-button {
+    margin-left: 0;
+}
+
+.task3-status {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.task3-preview-title {
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.task3-preview {
+    min-height: 30px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--bg-main);
+}
+
+.task3-vocab-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.task3-vocab-item {
+    display: inline-block;
+    padding: 3px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: var(--button-bg);
+    font-size: 14px;
+}
+
+.task3-empty {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.task3-more-row {
+    margin-top: 8px;
+    margin-bottom: 20px;
+}
