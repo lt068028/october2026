@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XはYです</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Task 3：JPG/PNG Japanese OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 </head>
 <body>
     <h1>Practice1；XはYです</h1>
@@ -12,14 +15,110 @@
     <div id="exampleSection"></div>
     <div id="task1List"></div>
 
-    <!-- Footer -->
+    <!-- =========================================================
+         Task 3
+         ========================================================= -->
+    <div class="header-panel task3-header-panel" style="margin-top: 30px;">
+        <div class="title-instruction-group">
+            <span>
+                <strong>Task 3；Generate Drills from your Vocab</strong>
+            </span>
+
+            <span class="task3-instruction">
+                💡 Paste your vocabulary text or drop a JPG/PNG here. The app will identify vocabulary that can be used as X or Y and automatically create up to 5 meaningful drills.
+            </span>
+        </div>
+    </div>
+
+    <div class="drill-row task3-import-row">
+
+        <div id="task3DropZone" class="task3-drop-zone">
+
+            <div class="task3-input-area">
+
+                <textarea
+                    id="task3Textarea"
+                    placeholder="Type words for people, professions, and nationalities, or drop a JPG/PNG image here."
+                ></textarea>
+
+                <label class="task3-file-label">
+                    <span>Choose<br>JPG/PNG</span>
+                    <input
+                        type="file"
+                        id="task3ImageInput"
+                        accept="image/png, image/jpeg"
+                    >
+                </label>
+
+            </div>
+
+        </div>
+
+        <div class="task3-action-row">
+            <button
+                id="task3ImportBtn"
+                class="example-button"
+            >
+                Import
+            </button>
+
+            <span
+                id="task3ImportStatus"
+                class="task3-status"
+            ></span>
+        </div>
+
+        <div class="task3-preview-title">
+            Check usable vocabulary
+        </div>
+
+        <div
+            id="task3Preview"
+            class="task3-preview"
+        >
+            <span class="task3-empty">
+                Import vocabulary to see the words the app can use.
+            </span>
+        </div>
+
+        <div class="task3-generate-row">
+            <button
+                id="task3GenerateBtn"
+                class="example-button"
+                disabled
+            >
+                ✨ Generate Drills
+            </button>
+        </div>
+
+    </div>
+
+    <div id="task3List"></div>
+
+    <div class="task3-more-row">
+        <button
+            id="task3MoreBtn"
+            class="example-button"
+            disabled
+        >
+            Generate more drills (up to 5)
+        </button>
+    </div>
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
     <div class="voice-guide-footer">
         🔊Want to change the voice?
         <span id="guideTrigger" class="guide-trigger">
             Check⚙️
         </span>
 
-        <div id="guideBox" class="guide-box-popup" style="display: none;">
+        <div
+            id="guideBox"
+            class="guide-box-popup"
+            style="display: none;"
+        >
             Win: Settings > Time & Language > Speech<br>
             Mac/iOS: Settings > Accessibility > Spoken Content<br>
             ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
