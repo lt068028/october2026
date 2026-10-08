@@ -27,7 +27,7 @@ const modelSentences = [
 ];
 
 // ============================================================================
-// Core Logic (共通)
+// Core Logic
 // ============================================================================
 let isManualStop = false;
 let isAutoPlay = true;
@@ -74,16 +74,25 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
         try {
             audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(audioStream);
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
+            
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+                if (recordedAudioUrl) URL.revokeObjectURL(recordedAudioUrl);
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
                 playRecordBtn.style.display = "inline-flex";
+
                 if (isAutoPlay) {
                     const utterance = new SpeechSynthesisUtterance(speechText);
                     utterance.lang = "ja-JP";
                     utterance.onend = () => {
-                        setTimeout(() => { if(recordedAudioUrl) new Audio(recordedAudioUrl).play(); }, 500);
+                        activePlayback.timeoutId = setTimeout(() => {
+                            if(recordedAudioUrl) {
+                                const audio = new Audio(recordedAudioUrl);
+                                activePlayback.audio = audio;
+                                audio.play();
+                            }
+                        }, 500);
                     };
                     speechSynthesis.speak(utterance);
                 }
@@ -94,7 +103,7 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
                 recognition = new SpeechRec();
                 recognition.lang = "ja-JP";
                 recognition.onresult = e => {
-                    resultSpan.textContent = "認識結果: " + e.results[0][0].transcript;
+                    resultSpan.textContent = "結果: " + e.results[0][0].transcript;
                     if (!isManualStop) stopBtn.click();
                 };
                 recognition.start();
@@ -106,22 +115,30 @@ function setupRecordingEvents(rowElement, itemObj, speechText) {
             stopBtn.disabled = false;
             stopBtn.classList.add("stop-btn-active");
             resultSpan.textContent = "録音中...";
-        } catch (e) { resultSpan.textContent = "マイクエラー"; }
+        } catch (e) { 
+            console.error(e);
+            resultSpan.textContent = "マイクエラー"; 
+        }
     };
 
     stopBtn.onclick = () => {
         if (!isRecording) return;
         isRecording = false;
-        mediaRecorder.stop();
+        if (mediaRecorder && mediaRecorder.state !== "inactive") mediaRecorder.stop();
         if (recognition) recognition.stop();
-        audioStream.getTracks().forEach(t => t.stop());
+        if (audioStream) audioStream.getTracks().forEach(t => t.stop());
         recordBtn.disabled = false;
         stopBtn.disabled = true;
         stopBtn.classList.remove("stop-btn-active");
     };
 
     playRecordBtn.onclick = () => {
-        if (recordedAudioUrl) new Audio(recordedAudioUrl).play();
+        if (recordedAudioUrl) {
+            activePlayback.cancel();
+            const audio = new Audio(recordedAudioUrl);
+            activePlayback.audio = audio;
+            audio.play();
+        }
     };
 }
 
@@ -144,7 +161,7 @@ function initDrill() {
             </div>
             <div class="control-item">
                 <span class="mode-label">再生: 自動</span>
-                <label class="switch"><input type="checkbox" id="playModeSwitch" checked><span class="slider"></span></label>
+                <label class="switch"><input type="checkbox" id="playModeSwitch" ${isAutoPlay ? 'checked' : ''}><span class="slider"></span></label>
             </div>
         </div>
     `;
@@ -169,7 +186,7 @@ function initDrill() {
 
         row.innerHTML = `
             <div class="top-row">
-                <span style="color:var(--text-secondary); font-weight:bold;">${idx + 1}.</span>
+                <span style="color:var(--text-secondary); font-weight:bold; min-width:20px;">${idx + 1}.</span>
                 <button class="listen-btn">🔊 きく</button>
                 <span class="sentence-label">${htmlContent}</span>
                 <button class="record-btn">⏺️ とる</button>
@@ -188,4 +205,5 @@ function initDrill() {
         setupRecordingEvents(row, item, speechText);
     });
 }
+
 document.addEventListener("DOMContentLoaded", initDrill);
