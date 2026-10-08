@@ -2,71 +2,20 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Pronunciation Drill</title>
-    <link rel="stylesheet" href="style.css?v=20261004">
-    <style>
-        .back-link-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            text-decoration: none;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-
-        /* Temporary Area 用のスタイル */
-        .temporary-area {
-            background: var(--bg-panel);
-            border: 1px dashed var(--accent-color);
-            padding: 16px;
-            margin-bottom: 24px;
-            border-radius: 6px;
-            font-family: sans-serif;
-        }
-        .temporary-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-        }
-        .roadmap-list {
-            margin: 0;
-            padding-left: 20px;
-            color: var(--text-primary);
-            font-size: 15px;
-            line-height: 1.8;
-        }
-    </style>
+    <title>Pronunciation Drill 1</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="back-link-container">
-        <a href="index.html" class="back-link">↩️もどる</a>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+        <a href="index.html" style="text-decoration:none; color:var(--accent-color); font-weight:bold;">↩️メニューへもどる</a>
     </div>
 
-    <h1>音声を聞いて、とるを押して、文を読もう</h1>
-    <p>Listen to the model audio, press record, and read the sentence.</p>
+    <h1>発音練習 1</h1>
+    <p>お手本を聞いて、文を読み上げてください。</p>
 
-    <!-- Temporary Area -->
-    <div class="temporary-area">
-        <div class="temporary-title">Temporary Area (Pitch Visualization Roadmap)</div>
-        <ul class="roadmap-list">
-            <li><strong>Step 1:</strong> ピッチを表示する場所を作る</li>
-            <li><strong>Step 2:</strong> 声から音の高さを取り出す</li>
-            <li><strong>Step 3:</strong> 音の高さのデータを整える</li>
-            <li><strong>Step 4:</strong> お手本のピッチを表示する</li>
-            <li><strong>Step 5:</strong> 自分のピッチを重ねて比較する</li>
-            <li><strong>Step 6:</strong> 必要なら、ピッチ以外の評価にLLM/APIを使うことを検討</li>
-        </ul>
-    </div>
+    <div id="drillList"></div>
 
-    <!-- ドリルリスト表示エリア -->
-    <div id="drillList" style="margin-top: 20px;"></div>
-
-    <!-- JSファイル読み込み（ローカルの実際のファイル名に指定） -->
-    <script src="pronunciation.js?v=20261004"></script>
+    <!-- JSファイル名を小文字に統一 -->
+    <script src="pronunciation1.js"></script>
 </body>
 </html>
