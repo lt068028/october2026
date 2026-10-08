@@ -2,30 +2,17 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Composition Drill - 瞬間文作成</title>
+    <title>Composition Drill</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .back-link-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            text-decoration: none;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-    </style>
 </head>
 <body>
-    <div class="back-link-container">
-        <a href="index.html" class="back-link">↩️もどる</a>
+    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+        <a href="index.html" style="text-decoration:none; color:var(--accent-color); font-weight:bold;">↩️メニューへもどる</a>
     </div>
     <h1>Japanese Composition Drill</h1>
-    <p>英語のプロンプトを見て、対応する日本語を発話して作文する。</p>
+    <p>英語を見て、日本語で答えてください。</p>
     
-    <div id="compositionList" style="margin-top: 20px;"></div>
+    <div id="compositionList"></div>
 
     <script src="app.js"></script>
 </body>
