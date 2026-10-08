@@ -1,3 +1,4 @@
+```js
 const taskData = [
     { x: "わたし", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "わたし", y: "せんせい", yRomaji: "sensei", yMeaning: "teacher", isNeg: true },
@@ -27,7 +28,7 @@ const customDict = {
     "designer": { hira: "デザイナー", romaji: "dezainaa", meaning: "designer" },
     "store staff": { hira: "てんいん", romaji: "tenin", meaning: "store staff" },
     "self-employed": { hira: "じえいぎょう", romaji: "jiei-gyou", meaning: "self-employed" },
-    "civil servant": { hira: "こうむいん", romaji: "koumuin", meaning: "civil servant" },
+    "civil servant": { hira: "こうむいん", romaji: "こうむいん", meaning: "civil servant" },
     "nurse": { hira: "かんごし", romaji: "kangoshi", meaning: "nurse" },
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
@@ -673,15 +674,43 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 };
 
                 recognition.onerror = (err) => {
-                    console.error("Speech recognition error:", err);
-                    console.error("Speech recognition error type:", err.error);
+                    console.error("========== Speech Recognition ERROR ==========");
+                    console.error("Event object:", err);
+                    console.error("Event type:", err.type);
+                    console.error("Event name:", err.name);
+                    console.error("Event error:", err.error);
+                    console.error("Event message:", err.message);
+                    console.error("Event code:", err.code);
+                    console.error("Event data:", err.data);
+                    console.error("Event target:", err.target);
+                    console.error("Recognition language:", recognition.lang);
+                    console.error("Recognition continuous:", recognition.continuous);
+                    console.error("Recognition interimResults:", recognition.interimResults);
+                    console.error("==============================================");
+
                     stopRecordingProcess();
                 };
 
-                recognition.start();
+                recognition.onstart = () => {
+                    console.log("Speech recognition started.");
+                };
+
+                recognition.onend = () => {
+                    console.log("Speech recognition ended.");
+                };
+
+                try {
+                    recognition.start();
+                    console.log("Speech recognition start() called.");
+                } catch (startError) {
+                    console.error("Speech recognition start() exception:", startError);
+                }
+            } else {
+                console.error("SpeechRecognition API is not available.");
             }
 
             timeoutTimer = setTimeout(() => {
+                console.log("Speech recognition timeout: 15 seconds.");
                 stopRecordingProcess();
             }, 15000);
 
@@ -807,3 +836,4 @@ function setupExampleListen(btnId, text) {
         });
     }
 }
+```
