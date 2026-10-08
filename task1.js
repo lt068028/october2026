@@ -186,7 +186,7 @@ function initApp() {
     const labelAuto = document.createElement('span');
     labelAuto.id = 'labelAuto';
     labelAuto.className = `mode-label ${!isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelAuto.innerHTML = '<span class="emoji-gray">⏹</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+    labelAuto.innerHTML = '⏹Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
     const switchLabel = document.createElement('label');
     switchLabel.className = 'switch';
@@ -201,13 +201,12 @@ function initApp() {
     const labelManual = document.createElement('span');
     labelManual.id = 'labelManual';
     labelManual.className = `mode-label ${isManualStop ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelManual.innerHTML = '<span class="emoji-gray">⏹</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+    labelManual.innerHTML = '⏹Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
 
     switchInput.addEventListener('change', (e) => {
         isManualStop = e.target.checked;
         const autoEl = document.getElementById('labelAuto');
         const manualEl = document.getElementById('labelManual');
-
         if (isManualStop) {
             manualEl.className = 'mode-label active-mode custom-tip-wrap';
             autoEl.className = 'mode-label inactive-mode custom-tip-wrap';
@@ -228,12 +227,13 @@ function initApp() {
     const labelHover = document.createElement('span');
     labelHover.id = 'labelHover';
     labelHover.className = `mode-label ${hintMode === 'hover' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelHover.innerHTML = '<span class="emoji-gray">💬</span>Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.innerHTML = '💬 Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement('label');
     vocabSwitchLabel.className = 'switch';
-    vocabSwitchLabel.type = 'checkbox';
-    vocabSwitchLabel.checked = (hintMode === 'paren');
+    const vocabSwitchInput = document.createElement('input');
+    vocabSwitchInput.type = 'checkbox';
+    vocabSwitchInput.checked = (hintMode === 'paren');
     const vocabSlider = document.createElement('span');
     vocabSlider.className = 'slider';
     vocabSwitchLabel.appendChild(vocabSwitchInput);
@@ -242,14 +242,12 @@ function initApp() {
     const labelParen = document.createElement('span');
     labelParen.id = 'labelParen';
     labelParen.className = `mode-label ${hintMode === 'paren' ? 'active-mode' : 'inactive-mode'} custom-tip-wrap`;
-    labelParen.innerHTML = '<span class="emoji-gray">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+    labelParen.innerHTML = '🔡Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
 
     vocabSwitchInput.addEventListener('change', (e) => {
         hintMode = e.target.checked ? 'paren' : 'hover';
-
         const hoverEl = document.getElementById('labelHover');
         const parenEl = document.getElementById('labelParen');
-
         if (hintMode === 'paren') {
             parenEl.className = 'mode-label active-mode custom-tip-wrap';
             hoverEl.className = 'mode-label inactive-mode custom-tip-wrap';
@@ -257,7 +255,6 @@ function initApp() {
             hoverEl.className = 'mode-label active-mode custom-tip-wrap';
             parenEl.className = 'mode-label inactive-mode custom-tip-wrap';
         }
-
         updateWordsDisplay();
     });
 
@@ -465,36 +462,6 @@ function initApp() {
     }
 }
 
-function setupTask3Generator() {
-    const generateBtn = document.getElementById('task3GenerateBtn');
-    const container = document.getElementById('task3List');
-    const textarea = document.getElementById('task3Textarea');
-    if (!generateBtn || !container || !textarea) return;
-
-    generateBtn.addEventListener('click', () => {
-        const text = textarea.value.trim();
-        if (!text) {
-            alert("Please paste your vocabulary list or text.");
-            return;
-        }
-
-        container.innerHTML = "";
-        
-        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        
-        let samplePairs = [
-            { x: "わたし", y: "がくせい", isNeg: false },
-            { x: "ともだち", y: "せんせい", isNeg: true },
-            { x: "かぞく", y: "いしゃ", isNeg: false }
-        ];
-
-        samplePairs.forEach((pair, idx) => {
-            const rowNum = taskData.length + 3 + (idx + 1);
-            createDrillRow(container, `${rowNum}.`, formatWord(pair.x, "watashi", "I"), formatWord(pair.y, "noun", "noun"), pair.x, pair.y, pair.isNeg);
-        });
-    });
-}
-
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll('.drill-row');
     drillRows.forEach(row => {
@@ -567,7 +534,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     const stopBtn = document.createElement('button');
     stopBtn.className = 'example-button custom-tip-wrap';
     stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    stopBtn.disabled = true;
+    stopBtn.disabled = true; 
 
     const resultSpan = document.createElement('span');
     resultSpan.className = 'result-text';
@@ -639,7 +606,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         recordBtn.classList.remove('stop-btn-active');
         recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
-        stopBtn.disabled = true;
+        stopBtn.disabled = true; 
         stopBtn.classList.remove('stop-btn-active');
     };
 
@@ -648,7 +615,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
             URL.revokeObjectURL(recordedAudioUrl);
             recordedAudioUrl = null;
         }
-
         const oldPlayBtn = resultSpan.querySelector('.play-recording-btn');
         if (oldPlayBtn) oldPlayBtn.remove();
 
@@ -668,17 +634,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 recordedAudioUrl = URL.createObjectURL(audioBlob);
 
                 if (accumulatedTranscript) {
-                    processRecognitionResult(
-                        accumulatedTranscript,
-                        currentX,
-                        currentY,
-                        expectedIsNeg,
-                        resultSpan,
-                        correctionBox,
-                        corrListenBtn,
-                        corrTextSpan,
-                        () => recordedAudioUrl
-                    );
+                    processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
                 }
             };
 
@@ -696,7 +652,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     for (let i = e.resultIndex; i < e.results.length; ++i) {
                         rawTranscript += e.results[i][0].transcript;
                     }
-
                     accumulatedTranscript += rawTranscript;
 
                     if (!isManualStop) {
@@ -727,7 +682,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 resultSpan.textContent = 'Recording...';
                 resultSpan.style.color = 'var(--accent-color)';
             }
-
             correctionBox.style.display = 'none';
 
         } catch (err) {
@@ -762,31 +716,23 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
     const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
     const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
     const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
-
-    const isNegative =
-        negRegex1.test(hiraText) ||
-        negRegex2.test(hiraText) ||
-        negRegex3.test(hiraText) ||
-        negRegex4.test(hiraText);
+    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
     const recordedAudioUrl = getUrlFn();
 
     const appendPlayButton = () => {
         if (recordedAudioUrl) {
             let playBtn = resultSpan.querySelector('.play-recording-btn');
-
             if (!playBtn) {
                 playBtn = document.createElement('button');
                 playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
                 playBtn.style.marginLeft = '8px';
                 playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
-
                 playBtn.onclick = () => {
                     const audio = new Audio(recordedAudioUrl);
                     audio.playbackRate = 1.0;
                     audio.play();
                 };
-
                 resultSpan.appendChild(playBtn);
             }
         }
@@ -802,11 +748,7 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
 
         if (!hasCorrectY) {
             let highlightedText = hiraText;
-
-            highlightedText = highlightedText.replace(
-                new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'),
-                `$1<span style="color: var(--accent-color);">$2</span>$3`
-            );
+            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
             
             resultSpan.innerHTML = highlightedText + " ";
             resultSpan.style.color = 'var(--text-primary)';
@@ -822,14 +764,10 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
             corrTextSpan.textContent = `Structure error, try it again`;
             corrListenBtn.style.display = 'inline-block';
 
-            const correctSentence = expectedIsNeg
-                ? `${currentX}は、${currentY}じゃないです。`
-                : `${currentX}は、${currentY}です。`;
-
+            const correctSentence = expectedIsNeg ? `${currentX}は、${currentY}じゃないです。` : `${currentX}は、${currentY}です。`;
             corrListenBtn.onclick = () => {
                 corrListenBtn.disabled = true;
                 corrListenBtn.textContent = '🔊 Playing...';
-
                 speakText(correctSentence, () => {
                     corrListenBtn.disabled = false;
                     corrListenBtn.textContent = '🔊 きく';
@@ -843,12 +781,10 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
 
 function setupExampleListen(btnId, text) {
     const btn = document.getElementById(btnId);
-
     if (btn) {
         btn.addEventListener('click', () => {
             btn.disabled = true;
             btn.textContent = '🔊 Playing...';
-
             speakText(text, () => {
                 btn.disabled = false;
                 btn.textContent = '🔊 きく';
