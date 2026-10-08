@@ -3,339 +3,90 @@ const drillData = [
     { en: "I want a watch.", jp: "とけいがほしいです" },
     { en: "Work is fun.", jp: "しごとはたのしいです" },
     { en: "Studying is interesting.", jp: "べんきょうはおもしろいです" },
-    { en: "Don't you have time?", jp: "時間がないですか" },
-    { en: "Is the weather bad?", jp: "てんきがわるいですか" },
-    { en: "The weather is not good.", jp: "てんきがよくないです" },
-    { en: "I want an umbrella.", jp: "かさがほしいです" }
+    { en: "Don't you have time?", jp: "じかんがないですか" }
 ];
 
 let isManualStop = false;
 
-// ひらがな変換ユーティリティ
 function convertToHiragana(str) {
-    return str.replace(/[\u30a1-\u30f6]/g, match => {
-        return String.fromCharCode(match.charCodeAt(0) - 0x60);
-    });
+    return str.replace(/[\u30a1-\u30f6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
 }
-
-const styleElement = document.createElement('style');
-styleElement.textContent = `
-    .header-panel {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        padding: 12px 16px;
-        background: var(--bg-panel);
-        border-radius: 6px;
-        font-family: sans-serif;
-        border: 1px solid var(--border-color);
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .control-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .mode-label {
-        font-weight: bold;
-        font-size: 14px;
-    }
-    .inactive-mode { color: var(--text-secondary); opacity: 0.5; }
-    .active-mode { color: var(--accent-color); opacity: 1.0; }
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 44px;
-        height: 24px;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--accent-color);
-        transition: .4s;
-        border-radius: 24px;
-    }
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 18px;
-        width: 18px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    input:checked + .slider:before {
-        transform: translateX(20px);
-    }
-    .drill-row {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-        padding: 12px;
-        background: var(--bg-row);
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-family: sans-serif;
-        flex-wrap: wrap;
-    }
-    .prompt-label {
-        font-weight: bold;
-        min-width: 220px;
-        font-size: 16px;
-        color: var(--text-primary);
-    }
-    button {
-        padding: 6px 12px;
-        cursor: pointer;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        background: var(--button-bg);
-        color: var(--text-primary);
-        font-size: 14px;
-    }
-    button:hover { background: var(--button-hover); }
-    button:disabled { background: var(--button-disabled-bg); color: var(--button-disabled-text); cursor: not-allowed; border-color: var(--border-color); }
-    .result-text {
-        margin-left: 10px;
-        font-size: 15px;
-        color: var(--text-primary);
-    }
-    .correction-box {
-        width: 100%;
-        margin-top: 8px;
-        padding: 10px 12px;
-        background-color: var(--error-bg);
-        border: 1px solid var(--error-border);
-        border-radius: 6px;
-        color: var(--error-text);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        font-size: 14px;
-    }
-`;
-document.head.appendChild(styleElement);
 
 function initCompositionDrill() {
     const container = document.getElementById('compositionList');
     if (!container) return;
     container.innerHTML = "";
 
-    const headerPanel = document.createElement('div');
-    headerPanel.className = 'header-panel';
-
-    const titleArea = document.createElement('span');
-    titleArea.innerHTML = "<strong>Composition Drills</strong>";
-    titleArea.style.color = "var(--text-primary)";
-
-    const controlItem = document.createElement('div');
-    controlItem.className = 'control-item';
-
-    const labelAuto = document.createElement('span');
-    labelAuto.className = 'mode-label active-mode';
-    labelAuto.textContent = '⏹Autostop';
-
-    const switchLabel = document.createElement('label');
-    switchLabel.className = 'switch';
-    const switchInput = document.createElement('input');
-    switchInput.type = 'checkbox';
-    switchInput.checked = isManualStop;
-    const slider = document.createElement('span');
-    slider.className = 'slider';
-    switchLabel.appendChild(switchInput);
-    switchLabel.appendChild(slider);
-
-    const labelManual = document.createElement('span');
-    labelManual.className = 'mode-label inactive-mode';
-    labelManual.textContent = '⏹Manual stop';
-
-    switchInput.addEventListener('change', (e) => {
-        isManualStop = e.target.checked;
-        if (isManualStop) {
-            labelManual.className = 'mode-label active-mode';
-            labelAuto.className = 'mode-label inactive-mode';
-        } else {
-            labelAuto.className = 'mode-label active-mode';
-            labelManual.className = 'mode-label inactive-mode';
-        }
-    });
-
-    controlItem.appendChild(labelAuto);
-    controlItem.appendChild(switchLabel);
-    controlItem.appendChild(labelManual);
-
-    headerPanel.appendChild(titleArea);
-    headerPanel.appendChild(controlItem);
-    container.appendChild(headerPanel);
+    const header = document.createElement('div');
+    header.className = 'header-panel';
+    header.innerHTML = `
+        <div class="title-instruction-group"><strong>Composition Drills</strong></div>
+        <div class="control-group"><div class="control-item">
+            <span class="mode-label ${!isManualStop ? '' : 'inactive-mode'}">Auto Stop</span>
+            <label class="switch"><input type="checkbox" id="stopSwitch" ${isManualStop ? 'checked' : ''}><span class="slider"></span></label>
+            <span class="mode-label ${isManualStop ? '' : 'inactive-mode'}">Manual</span>
+        </div></div>
+    `;
+    container.appendChild(header);
+    document.getElementById('stopSwitch').onchange = (e) => { isManualStop = e.target.checked; initCompositionDrill(); };
 
     drillData.forEach((item) => {
-        const wrapperDiv = document.createElement('div');
-        wrapperDiv.style.display = 'flex';
-        wrapperDiv.style.flexDirection = 'column';
-        wrapperDiv.style.marginBottom = '12px';
+        const row = document.createElement('div');
+        row.className = 'drill-row';
 
-        const rowDiv = document.createElement('div');
-        rowDiv.className = 'drill-row';
-        rowDiv.style.marginBottom = '0';
+        row.innerHTML = `
+            <div class="top-row">
+                <span class="prompt-label">${item.en}</span>
+                <button class="record-btn">⏺とる</button>
+                <button class="stop-btn" disabled>⏹とめる</button>
+                <span class="result-text">(未録音)</span>
+            </div>
+            <div class="correction-box" style="display:none"></div>
+        `;
+        container.appendChild(row);
 
-        const promptSpan = document.createElement('span');
-        promptSpan.className = 'prompt-label';
-        promptSpan.textContent = item.en;
+        const recBtn = row.querySelector('.record-btn');
+        const stopBtn = row.querySelector('.stop-btn');
+        const resText = row.querySelector('.result-text');
+        const corrBox = row.querySelector('.correction-box');
 
-        const recordBtn = document.createElement('button');
-        recordBtn.textContent = '⏺とる';
-
-        const stopBtn = document.createElement('button');
-        stopBtn.textContent = '⏹とめる';
-        stopBtn.disabled = true;
-
-        const resultSpan = document.createElement('span');
-        resultSpan.className = 'result-text';
-        resultSpan.textContent = '(Not recorded yet)';
-        resultSpan.style.color = 'var(--text-secondary)';
-
-        let mediaRecorder;
-        let audioChunks = [];
-        let audioStream = null;
-        let recognition = null;
-
-        const correctionContainer = document.createElement('div');
-        correctionContainer.style.display = 'none';
-        wrapperDiv.appendChild(rowDiv);
-        wrapperDiv.appendChild(correctionContainer);
-
-        recordBtn.addEventListener('click', async () => {
+        let recognition;
+        recBtn.onclick = async () => {
             try {
-                audioChunks = [];
-                correctionContainer.style.display = 'none';
-                correctionContainer.innerHTML = '';
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRec();
+                recognition.lang = 'ja-JP';
+                recognition.continuous = isManualStop;
 
-                audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(audioStream);
+                recognition.onresult = (e) => {
+                    const transcript = e.results[0][0].transcript;
+                    const cleanT = convertToHiragana(transcript).replace(/[.,、。\s]/g, "");
+                    const cleanJ = convertToHiragana(item.jp).replace(/[.,、。\s]/g, "");
 
-                mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-                mediaRecorder.start();
+                    if (cleanT.includes(cleanJ.substring(0,3))) {
+                        resText.innerHTML = `${transcript} ✅`;
+                        corrBox.style.display = 'none';
+                    } else {
+                        resText.innerHTML = `${transcript} ❌`;
+                        corrBox.innerHTML = `<span>正解: ${item.jp}</span><button onclick="speechSynthesis.speak(new SpeechSynthesisUtterance('${item.jp}'))">🔊 きく</button>`;
+                        corrBox.style.display = 'flex';
+                    }
+                    if(!isManualStop) stopBtn.click();
+                };
 
-                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                if (SpeechRecognition) {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = 'ja-JP';
-                    recognition.interimResults = false;
-                    recognition.continuous = isManualStop;
+                recognition.start();
+                recBtn.disabled = true; stopBtn.disabled = false;
+                stopBtn.classList.add('stop-btn-active');
+                resText.textContent = "Recording...";
+            } catch (e) { resText.textContent = "Mic Error"; }
+        };
 
-                    recognition.onresult = (e) => {
-                        let transcript = "";
-                        for (let i = e.resultIndex; i < e.results.length; ++i) {
-                            transcript += e.results[i][0].transcript;
-                        }
-                        
-                        // 正規化とひらがな変換
-                        let cleanTranscript = convertToHiragana(transcript.toLowerCase());
-                        cleanTranscript = cleanTranscript.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
-
-                        let cleanTarget = convertToHiragana(item.jp.toLowerCase());
-                        cleanTarget = cleanTarget.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
-
-                        // 文末の揺れ（ね、よ、ですか、です、等）の許容処理
-                        const endParticleRegex = /(ね|よ|ですか|ですよ|です|ます)?$/;
-                        const baseTarget = cleanTarget.replace(endParticleRegex, "");
-                        const baseTranscript = cleanTranscript.replace(endParticleRegex, "");
-
-                        if (cleanTranscript === cleanTarget || (baseTarget.length > 0 && baseTranscript.includes(baseTarget))) {
-                            resultSpan.textContent = transcript + " ✅";
-                            resultSpan.style.color = 'var(--text-primary)';
-                            correctionContainer.style.display = 'none';
-                        } else {
-                            resultSpan.textContent = transcript;
-                            resultSpan.style.color = 'var(--error-text)';
-
-                            // 構造エラー・不一致時の訂正ボックスと「きく」ボタン生成
-                            correctionContainer.innerHTML = '';
-                            const box = document.createElement('div');
-                            box.className = 'correction-box';
-
-                            const msgSpan = document.createElement('span');
-                            msgSpan.textContent = `⚠️ 正解は: 「${item.jp}」`;
-
-                            const listenCorrectBtn = document.createElement('button');
-                            listenCorrectBtn.textContent = '🔊 正答をきく';
-                            listenCorrectBtn.addEventListener('click', () => {
-                                const utterance = new SpeechSynthesisUtterance(item.jp);
-                                utterance.lang = 'ja-JP';
-                                speechSynthesis.speak(utterance);
-                            });
-
-                            box.appendChild(msgSpan);
-                            box.appendChild(listenCorrectBtn);
-                            correctionContainer.appendChild(box);
-                            correctionContainer.style.display = 'block';
-                        }
-                    };
-
-                    recognition.onerror = (err) => {
-                        console.error("Speech recognition error:", err);
-                    };
-
-                    recognition.onend = () => {
-                        if (!isManualStop) {
-                            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                                mediaRecorder.stop();
-                            }
-                            if (audioStream) {
-                                audioStream.getTracks().forEach(track => track.stop());
-                            }
-                            recordBtn.disabled = false;
-                            stopBtn.disabled = true;
-                        }
-                    };
-
-                    recognition.start();
-                }
-
-                recordBtn.disabled = true;
-                stopBtn.disabled = !isManualStop;
-                resultSpan.textContent = 'Recording...';
-                resultSpan.style.color = 'var(--accent-color)';
-
-            } catch (err) {
-                console.error("Mic error:", err);
-                resultSpan.textContent = 'Mic error';
-                resultSpan.style.color = 'var(--error-text)';
-            }
-        });
-
-        stopBtn.addEventListener('click', () => {
-            if (recognition) {
-                recognition.stop();
-            }
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-            }
-            if (audioStream) {
-                audioStream.getTracks().forEach(track => track.stop());
-            }
-            recordBtn.disabled = false;
-            stopBtn.disabled = true;
-        });
-
-        rowDiv.appendChild(promptSpan);
-        rowDiv.appendChild(recordBtn);
-        rowDiv.appendChild(stopBtn);
-        rowDiv.appendChild(resultSpan);
-
-        container.appendChild(wrapperDiv);
+        stopBtn.onclick = () => {
+            if (recognition) recognition.stop();
+            recBtn.disabled = false; stopBtn.disabled = true;
+            stopBtn.classList.remove('stop-btn-active');
+        };
     });
 }
-
 document.addEventListener('DOMContentLoaded', initCompositionDrill);
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    initCompositionDrill();
-}
