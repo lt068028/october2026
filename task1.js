@@ -635,6 +635,9 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
                 if (accumulatedTranscript) {
                     processRecognitionResult(accumulatedTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => recordedAudioUrl);
+                } else {
+                    resultSpan.textContent = 'No speech detected. Please try again.';
+                    resultSpan.style.color = 'var(--text-secondary)';
                 }
             };
 
@@ -661,6 +664,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
 
                 recognition.onerror = (err) => {
                     console.error("Speech recognition error:", err);
+                    stopRecordingProcess();
                 };
 
                 recognition.start();
