@@ -1141,7 +1141,7 @@ function processRecognitionResult(
         negRegex4.test(hiraText);
 
     // ------------------------------------------------------------------------
-    // Play sequence button (Model -> Recorded Audio)
+    // Play user's recorded audio button
     // ------------------------------------------------------------------------
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
@@ -1150,49 +1150,15 @@ function processRecognitionResult(
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play sequence: Model -> Your Voice</span>';
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
 
+            // ボタンクリック時は録音した音声のみを手動再生する
             playBtn.onclick = () => {
-                playBtn.disabled = true;
-
-                const correctSentence = expectedIsNeg
-                    ? `${currentX}は、${currentY}じゃないです。`
-                    : `${currentX}は、${currentY}です。`;
-
-                // 1. モデル音声を速度85%（0.85）で再生する
-                const utterance = new SpeechSynthesisUtterance(correctSentence);
-                utterance.lang = "ja-JP";
-                utterance.rate = 0.85;
-
-                utterance.onend = () => {
-                    // 2. 0.1秒（100ms）待機してから録音音源を速度100%（1.0）で再生する
-                    setTimeout(() => {
-                        const recordedAudioUrl = getUrlFn();
-                        if (recordedAudioUrl) {
-                            const audio = new Audio(recordedAudioUrl);
-                            audio.playbackRate = 1.0;
-                            audio.onended = () => {
-                                playBtn.disabled = false;
-                            };
-                            audio.onerror = () => {
-                                playBtn.disabled = false;
-                            };
-                            audio.play().catch(e => {
-                                console.warn("Playback failed", e);
-                                playBtn.disabled = false;
-                            });
-                        } else {
-                            playBtn.disabled = false;
-                        }
-                    }, 100);
-                };
-
-                utterance.onerror = () => {
-                    playBtn.disabled = false;
-                };
-
-                // 待機0秒で直ちにモデル音声の再生を開始する
-                speechSynthesis.speak(utterance);
+                const recordedAudioUrl = getUrlFn();
+                if (recordedAudioUrl) {
+                    const audio = new Audio(recordedAudioUrl);
+                    audio.play().catch(e => console.warn("Playback failed", e));
+                }
             };
 
             resultSpan.appendChild(playBtn);
@@ -1207,60 +1173,96 @@ function processRecognitionResult(
         resultSpan.style.color = "var(--text-primary)";
 
         appendPlayButton();
-
         correctionBox.style.display = "none";
-        return;
-    }
-
-    // ------------------------------------------------------------------------
-    // Incorrect sentence
-    // ------------------------------------------------------------------------
-    const hasCorrectY = hiraText.includes(hiraY);
-
-    if (!hasCorrectY) {
-        let highlightedText = hiraText;
-
-        highlightedText = highlightedText.replace(
-            new RegExp(
-                `(${hiraX}は)(.*?)` +
-                `((?:です|じゃないです|ではないです|じゃありません|ではありません))`,
-                "g"
-            ),
-            '$1<span style="color: var(--accent-color);">$2</span>$3'
-        );
-
-        resultSpan.innerHTML = highlightedText + " ";
-        resultSpan.style.color = "var(--text-primary)";
-
-        appendPlayButton();
-
-        corrTextSpan.textContent = "Wrong word used.";
-        corrListenBtn.style.display = "none";
     } else {
-        resultSpan.textContent = hiraText + " ";
-        resultSpan.style.color = "var(--error-text)";
+        // ------------------------------------------------------------------------
+        // Incorrect sentence
+        // ------------------------------------------------------------------------
+        const hasCorrectY = hiraText.includes(hiraY);
 
-        appendPlayButton();
+        if (!hasCorrectY) {
+            let highlightedText = hiraText;
 
-        corrTextSpan.textContent = "Structure error, try it again";
-        corrListenBtn.style.display = "inline-block";
+            highlightedText = highlightedText.replace(
+                new RegExp(
+                    `(${hiraX}は)(.*?)` +
+                    `((?:です|じゃないです|ではないです|じゃありません|ではありません))`,
+                    "g"
+                ),
+                '$1<span style="color: var(--accent-color);">$2</span>$3'
+            );
 
-        const correctSentence = expectedIsNeg
-            ? `${currentX}は、${currentY}じゃないです。`
-            : `${currentX}は、${currentY}です。`;
+            resultSpan.innerHTML = highlightedText + " ";
+            resultSpan.style.color = "var(--text-primary)";
 
-        corrListenBtn.onclick = () => {
-            corrListenBtn.disabled = true;
-            corrListenBtn.textContent = "🔊 Playing...";
+            appendPlayButton();
 
-            speakText(correctSentence, () => {
-                corrListenBtn.disabled = false;
-                corrListenBtn.textContent = "🔊 きく";
-            });
-        };
+            corrTextSpan.textContent = "Wrong word used.";
+            corrListenBtn.style.display = "none";
+        } else {
+            resultSpan.textContent = hiraText + " ";
+            resultSpan.style.color = "var(--error-text)";
+
+            appendPlayButton();
+
+            corrTextSpan.textContent = "Structure error, try it again";
+            corrListenBtn.style.display = "inline-block";
+
+            const correctSentenceForBtn = expectedIsNeg
+                ? `${currentX}は、${currentY}じゃないです。`
+                : `${currentX}は、${currentY}です。`;
+
+            corrListenBtn.onclick = () => {
+                corrListenBtn.disabled = true;
+                corrListenBtn.textContent = "🔊 Playing...";
+
+                speakText(correctSentenceForBtn, () => {
+                    corrListenBtn.disabled = false;
+                    corrListenBtn.textContent = "🔊 きく";
+                });
+            };
+        }
+
+        correctionBox.style.display = "block";
     }
 
-    correctionBox.style.display = "block";
+    // ------------------------------------------------------------------------
+    // 録音完了時の自動シーケンス（モデル 85% → 0.1秒 → 録音音声 100%）
+    // ------------------------------------------------------------------------
+    const correctSentence = expectedIsNeg
+        ? `${currentX}は、${currentY}じゃないです。`
+        : `${currentX}は、${currentY}です。`;
+
+    const runAutoPlaySequence = () => {
+        const recordedAudioUrl = getUrlFn();
+        if (!recordedAudioUrl) return;
+
+        const utterance = new SpeechSynthesisUtterance(correctSentence);
+        utterance.lang = "ja-JP";
+        utterance.rate = 0.85;
+
+        // モデル音声終了後に録音音声を再生
+        utterance.onend = () => {
+            setTimeout(() => {
+                const audio = new Audio(recordedAudioUrl);
+                audio.playbackRate = 1.0;
+                audio.play().catch(e => console.warn("Auto playback failed", e));
+            }, 100);
+        };
+
+        // 音声合成失敗時フォールバック
+        utterance.onerror = () => {
+            setTimeout(() => {
+                const audio = new Audio(recordedAudioUrl);
+                audio.play().catch(e => console.warn("Auto playback failed", e));
+            }, 100);
+        };
+
+        speechSynthesis.speak(utterance);
+    };
+
+    // 評価結果の表示処理のあとに自動シーケンスを開始する
+    runAutoPlaySequence();
 }
 
 
