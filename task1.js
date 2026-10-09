@@ -35,6 +35,31 @@ const customDict = {
 let isManualStop = false;
 let hintMode = "hover";
 
+// ===== タイトルパネル用CSSの動的挿入 =====
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    .title-group {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 300px;
+    }
+    .panel-style {
+        background-color: #e8f4fd;
+        border-left: 4px solid #2196f3;
+        padding: 12px 16px;
+        border-radius: 0 4px 4px 0;
+        color: #333;
+        font-size: 14px;
+        margin-top: 8px;
+        width: 100%;
+        box-sizing: border-box;
+        line-height: 1.5;
+    }
+`;
+document.head.appendChild(styleElement);
+// =======================================
+
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
@@ -163,15 +188,16 @@ function initApp() {
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
+    // パネルスタイル適用（Task 1）
     const titleInstructionGroup1 = document.createElement('div');
-    titleInstructionGroup1.className = 'title-instruction-group';
+    titleInstructionGroup1.className = 'title-group';
 
-    const titleArea1 = document.createElement('span');
+    const titleArea1 = document.createElement('div');
     titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
+    titleArea1.style.fontSize = "1.1em";
 
-    const descArea1 = document.createElement('span');
-    descArea1.style.color = 'var(--text-primary)';
-    descArea1.style.fontSize = '15px';
+    const descArea1 = document.createElement('div');
+    descArea1.className = 'panel-style';
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup1.appendChild(titleArea1);
@@ -278,19 +304,20 @@ function initApp() {
         createDrillRow(container, `${index + 1}.`, formattedX, formattedY, currentXWord, item.y, item.isNeg);
     });
 
+    // パネルスタイル適用（Task 2）
     const customHeaderPanel = document.createElement('div');
     customHeaderPanel.className = 'header-panel';
     customHeaderPanel.style.marginTop = "30px";
 
     const titleInstructionGroup2 = document.createElement('div');
-    titleInstructionGroup2.className = 'title-instruction-group';
+    titleInstructionGroup2.className = 'title-group';
 
-    const titleArea2 = document.createElement('span');
+    const titleArea2 = document.createElement('div');
     titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
+    titleArea2.style.fontSize = "1.1em";
 
-    const descArea2 = document.createElement('span');
-    descArea2.style.color = 'var(--text-primary)';
-    descArea2.style.fontSize = '15px';
+    const descArea2 = document.createElement('div');
+    descArea2.className = 'panel-style';
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
@@ -658,7 +685,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                 recognition = new SpeechRecognition();
                 recognition.lang = 'ja-JP';
                 recognition.interimResults = false;
-                recognition.continuous = true;
+                recognition.continuous = isManualStop; // ★ ここを修正（iOS/Safariでの即時クラッシュを回避）
 
                 recognition.onresult = (e) => {
                     let rawTranscript = "";
