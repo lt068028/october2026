@@ -1,111 +1,275 @@
 // ============================================================================
-// Practice 1: XはYです
+// Shared recording / speech recognition (Updated with MediaRecorder)
 // ============================================================================
 
-const taskData = [
-    { x: "わたし", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
-    { x: "わたし", y: "せんせい", yRomaji: "sensei", yMeaning: "teacher", isNeg: true },
-    { x: "わたし", y: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese", isNeg: false },
-    { x: "わたし", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee", isNeg: true },
-    { x: "ともだち", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
-    { x: "ともだち", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee", isNeg: true },
-    { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
-];
+function bindRecorderEvents(
+    recordBtn,
+    stopBtn,
+    resultSpan,
+    correctionBox,
+    corrListenBtn,
+    corrTextSpan,
+    getXFn,
+    getYFn,
+    expectedIsNeg = false
+) {
+    let session = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let audioStream = null;
+    let recordedAudioUrl = null;
+    let accumulatedTranscript = "";
 
-const customDict = {
-    "i": { hira: "わたし", romaji: "watashi", meaning: "I" },
-    "friend": { hira: "ともだち", romaji: "tomodachi", meaning: "friend" },
-    "family": { hira: "かぞく", romaji: "kazoku", meaning: "family" },
-    "colleague": { hira: "どうりょう", romaji: "douryou", meaning: "colleague" },
-    "boss": { hira: "じょうし", romaji: "joushi", meaning: "boss" },
-    "partner": { hira: "パートナー", romaji: "paatanaa", meaning: "partner" },
-    "Bf/Gf": { hira: "こいびと", romaji: "koibito", meaning: "Bf/Gf" },
-    "best friend": { hira: "しんゆう", romaji: "shinyuu", meaning: "best friend" },
-    "child": { hira: "こども", romaji: "kodomo", meaning: "child" },
-    "grandchild": { hira: "まご", romaji: "mago", meaning: "grandchild" },
-    "sibling": { hira: "きょうだい", romaji: "kyoudai", meaning: "sibling" },
-    "foreigner": { hira: "がいこくじん", romaji: "gaikokujin", meaning: "foreigner" },
-    "doctor": { hira: "いしゃ", romaji: "isha", meaning: "doctor" },
-    "engineer": { hira: "エンジニア", romaji: "enjinia", meaning: "engineer" },
-    "researcher": { hira: "けんきゅうしゃ", romaji: "kenkyuusha", meaning: "researcher" },
-    "designer": { hira: "デザイナー", romaji: "dezainaa", meaning: "designer" },
-    "store staff": { hira: "てんいん", romaji: "tenin", meaning: "store staff" },
-    "self-employed": { hira: "じえいぎょう", romaji: "jiei-gyou", meaning: "self-employed" },
-    "civil servant": { hira: "こうむいん", romaji: "koumuin", meaning: "civil servant" },
-    "nurse": { hira: "かんごし", romaji: "kangoshi", meaning: "nurse" },
-    "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
-};
+    // ------------------------------------------------------------------------
+    // Release the current session and restore this row's buttons.
+    // ------------------------------------------------------------------------
 
-let isManualStop = false;
-let hintMode = "hover";
+    function releaseSession(currentSession) {
+        if (!currentSession || currentSession.finished) return;
 
-// 全行で共有する録音セッション。複数行の同時録音を防ぐ。
-let activeRecognitionSession = null;
+        currentSession.finished = true;
 
-// ============================================================================
-// Japanese text conversion
-// ============================================================================
+        if (currentSession.watchdog !== null) {
+            clearTimeout(currentSession.watchdog);
+            currentSession.watchdog = null;
+        }
 
-function convertToHiragana(text) {
-    if (!text) return "";
+        if (activeRecognitionSession === currentSession) {
+            activeRecognitionSession = null;
+        }
 
-    let cleaned = text.replace(
-        /[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g,
-        ""
-    );
+        if (session === currentSession) {
+            session = null;
 
-    const dict = {
-        "私": "わたし", "学生": "がくせい", "先生": "せんせい",
-        "日本人": "にほんじん", "会社員": "かいしゃいん", "友達": "ともだち",
-        "家族": "かぞく", "同僚": "どうりょう", "上司": "じょうし",
-        "パートナー": "パートナー", "恋人": "こいびと", "親友": "しんゆう",
-        "子供": "こども", "子ども": "こども", "孫": "まご",
-        "兄弟": "きょうだい", "外国人": "がいこくじん", "医師": "いしゃ",
-        "医者": "いしゃ", "エンジニア": "エンジニア", "研究者": "けんきゅうしゃ",
-        "デザイナー": "デザイナー", "店員": "てんいん", "自営業": "じえいぎょう",
-        "こうむいん": "こうむいん", "公務員": "こうむいん", "看護師": "かんごし",
-        "看護婦": "かんごし", "アルバイト": "アルバイト", "です": "です",
-        "でした": "でした", "じゃないです": "じゃないです", "ではないです": "ではないです",
-        "じゃありません": "じゃありません", "ではありません": "ではありません"
-    };
-
-    for (let key in dict) {
-        const regex = new RegExp(key, "g");
-        cleaned = cleaned.replace(regex, dict[key]);
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            stopBtn.classList.remove("stop-btn-active");
+        }
     }
 
-    cleaned = cleaned.replace(/わ$/g, "は");
-    return cleaned;
-}
+    // ------------------------------------------------------------------------
+    // Stop or abort speech recognition and media recorder.
+    // ------------------------------------------------------------------------
 
-// ============================================================================
-// Speech synthesis
-// ============================================================================
+    function requestStop(currentSession, abort = false, errorMessage = "") {
+        if (!currentSession || currentSession.finished) return;
 
-function speakText(text, onEndCallback) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
+        if (errorMessage) {
+            currentSession.errorMessage = errorMessage;
+            resultSpan.textContent = errorMessage;
+            resultSpan.style.color = "var(--error-text)";
+        }
 
-    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
-    utterance.onerror = () => { if (onEndCallback) onEndCallback(); };
+        // Stop MediaRecorder and Audio Stream
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
+        if (audioStream) {
+            audioStream.getTracks().forEach(track => track.stop());
+        }
 
-    try {
-        speechSynthesis.speak(utterance);
-    } catch (err) {
-        console.error("Speech synthesis error:", err);
-        if (onEndCallback) onEndCallback();
+        const currentRecognition = currentSession.recognition;
+
+        if (!currentRecognition) {
+            releaseSession(currentSession);
+            return;
+        }
+
+        // Fallback in case the browser does not dispatch "end".
+        if (currentSession.watchdog === null) {
+            currentSession.watchdog = setTimeout(() => {
+                releaseSession(currentSession);
+            }, 2500);
+        }
+
+        try {
+            if (abort) {
+                currentRecognition.abort();
+            } else {
+                currentRecognition.stop();
+            }
+        } catch (err) {
+            console.warn("Speech recognition stop error:", err);
+            releaseSession(currentSession);
+        }
     }
+
+    // ------------------------------------------------------------------------
+    // Start recognition and recording.
+    // ------------------------------------------------------------------------
+
+    recordBtn.addEventListener("click", async () => {
+        if (recordBtn.disabled) return;
+
+        // Do not allow simultaneous sessions
+        if (activeRecognitionSession !== null) return;
+
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            resultSpan.textContent = "Speech recognition is not supported in this browser.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        const currentX = getXFn();
+        const currentY = getYFn();
+
+        if (!currentX || !currentY) {
+            resultSpan.textContent = "Please choose both X and Y.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        // Clean up previous recording
+        if (recordedAudioUrl) {
+            URL.revokeObjectURL(recordedAudioUrl);
+            recordedAudioUrl = null;
+        }
+        accumulatedTranscript = "";
+
+        const oldPlayBtn = resultSpan.querySelector('.play-recording-btn');
+        if (oldPlayBtn) oldPlayBtn.remove();
+
+        const currentSession = {
+            finished: false,
+            stopRequested: false,
+            errorMessage: "",
+            recognition: null,
+            watchdog: null
+        };
+
+        session = currentSession;
+        activeRecognitionSession = currentSession;
+
+        try {
+            // Initialize MediaRecorder
+            audioChunks = [];
+            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(audioStream);
+
+            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+            
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                recordedAudioUrl = URL.createObjectURL(audioBlob);
+
+                // Process transcript when recording stops
+                if (accumulatedTranscript && !currentSession.errorMessage) {
+                    processRecognitionResult(
+                        accumulatedTranscript,
+                        currentX,
+                        currentY,
+                        expectedIsNeg,
+                        resultSpan,
+                        correctionBox,
+                        corrListenBtn,
+                        corrTextSpan,
+                        () => recordedAudioUrl
+                    );
+                }
+            };
+
+            mediaRecorder.start();
+
+            // Initialize SpeechRecognition
+            const currentRecognition = new SpeechRecognition();
+            currentSession.recognition = currentRecognition;
+
+            currentRecognition.lang = "ja-JP";
+            currentRecognition.interimResults = false;
+            currentRecognition.continuous = isManualStop;
+
+            currentRecognition.onresult = (event) => {
+                if (
+                    currentSession.finished ||
+                    session !== currentSession ||
+                    currentSession.errorMessage
+                ) {
+                    return;
+                }
+
+                let rawTranscript = "";
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        rawTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                accumulatedTranscript += rawTranscript;
+
+                // If autostop is enabled, stop recording after receiving the final result
+                if (!isManualStop) {
+                    requestStop(currentSession, false);
+                }
+            };
+
+            currentRecognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+
+                if (currentSession.finished || session !== currentSession) {
+                    return;
+                }
+
+                const message =
+                    event.error === "not-allowed" || event.error === "service-not-allowed"
+                        ? "Microphone permission denied."
+                        : event.error === "no-speech"
+                            ? "No speech detected. Please try again."
+                            : event.error === "audio-capture"
+                                ? "Microphone unavailable."
+                                : event.error === "network"
+                                    ? "Speech recognition network error."
+                                    : event.error === "aborted"
+                                        ? "Recording stopped."
+                                        : "Speech recognition error. Please try again.";
+
+                requestStop(currentSession, true, message);
+            };
+
+            currentRecognition.onend = () => {
+                if (currentSession.finished) return;
+                releaseSession(currentSession);
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+
+            if (isManualStop) {
+                stopBtn.classList.add("stop-btn-active");
+            } else {
+                stopBtn.classList.remove("stop-btn-active");
+            }
+
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--accent-color)";
+            correctionBox.style.display = "none";
+
+            currentRecognition.start();
+        } catch (err) {
+            console.error("Recording start error:", err);
+            requestStop(
+                currentSession,
+                true,
+                "Could not start recording. Please try again."
+            );
+        }
+    });
+
+    // ------------------------------------------------------------------------
+    // Manual stop button
+    // ------------------------------------------------------------------------
+
+    stopBtn.addEventListener("click", () => {
+        if (!session || session.finished) return;
+        if (session.stopRequested) return;
+
+        session.stopRequested = true;
+        stopBtn.disabled = true;
+
+        requestStop(session, false);
+    });
 }
-
-// ============================================================================
-// Initialization
-// ============================================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-    initApp();
-    setupFooterGuide();
-    setupTask3Generator();
-});
-
-function setupFooterGuide() {
-    const trigger = document.getElementById("guideTrigger");
