@@ -1227,7 +1227,7 @@ function processRecognitionResult(
     }
 
     // ------------------------------------------------------------------------
-    // 録音完了時の自動シーケンス（モデル 85% → 0.1秒 → 録音音声 100%）
+    // 録音完了時の自動シーケンス（0.5秒待機 → モデル 85% → 0.1秒 → 録音音声 100%）
     // ------------------------------------------------------------------------
     const correctSentence = expectedIsNeg
         ? `${currentX}は、${currentY}じゃないです。`
@@ -1258,10 +1258,12 @@ function processRecognitionResult(
             }, 100);
         };
 
-        speechSynthesis.speak(utterance);
+        // 判定表示後、0.5秒待機してからモデル音声の再生を開始する
+        setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 500);
     };
 
-    // 評価結果の表示処理のあとに自動シーケンスを開始する
     runAutoPlaySequence();
 }
 
