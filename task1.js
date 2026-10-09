@@ -52,20 +52,21 @@ function setupPreferredVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    // 1. Edge用の音声を優先検索 (Keita または Nanami)
-    let selected = voices.find(v => v.name.includes("Keita") && v.lang.startsWith("ja"));
+    // 1. Edge用の音声を最優先検索 (大文字小文字を無視して Keita または Nanami を捕捉)
+    // ※EdgeのNatural音声はlang属性の挙動が不安定な場合があるため名前だけで判定する
+    let selected = voices.find(v => v.name.toLowerCase().includes("keita"));
     if (!selected) {
-        selected = voices.find(v => v.name.includes("Nanami") && v.lang.startsWith("ja"));
+        selected = voices.find(v => v.name.toLowerCase().includes("nanami"));
     }
 
     // 2. Chrome用の音声を検索 (Google 日本語)
     if (!selected) {
-        selected = voices.find(v => (v.name.includes("Google 日本語") || v.name.includes("Google Japanese")) && v.lang.startsWith("ja"));
+        selected = voices.find(v => v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
     }
 
     // 3. それ以外の普通設定 (OS標準の日本語音声)
     if (!selected) {
-        selected = voices.find(v => v.lang.startsWith("ja"));
+        selected = voices.find(v => v.lang.includes("ja"));
     }
 
     preferredVoice = selected;
@@ -73,7 +74,13 @@ function setupPreferredVoice() {
 
 if (typeof speechSynthesis !== "undefined") {
     setupPreferredVoice();
-    speechSynthesis.onvoiceschanged = setupPreferredVoice;
+    
+    // イベントリスナーを確実にバインドして非同期ロード完了を待つ
+    if (speechSynthesis.addEventListener) {
+        speechSynthesis.addEventListener("voiceschanged", setupPreferredVoice);
+    } else {
+        speechSynthesis.onvoiceschanged = setupPreferredVoice;
+    }
 }
 
 // ============================================================================
