@@ -80,7 +80,6 @@ if (typeof speechSynthesis !== "undefined") {
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
 let activePlayButton = null;
-// Chromeのガベージコレクション回避用参照
 let currentUtteranceRef = null; 
 
 function setPlayingState(btn, text) {
@@ -182,15 +181,15 @@ function convertToHiragana(text) {
 // Speech synthesis
 // ============================================================================
 
-function speakText(text, onEndCallback) {
+function speakText(text, rate = 1.0, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
+    utterance.rate = rate;
 
     if (preferredVoice) {
         utterance.voice = preferredVoice;
     }
     
-    // ガベージコレクション回避用
     currentUtteranceRef = utterance;
 
     utterance.onend = () => {
@@ -595,7 +594,7 @@ function initApp() {
                     const textToSpeak = isCustomNeg
                         ? `${valX}は、${valY}じゃないです。`
                         : `${valX}は、${valY}です。`;
-                    speakText(textToSpeak, () => stopAllPlayback());
+                    speakText(textToSpeak, 0.7, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -692,7 +691,7 @@ function createDrillRow(
         const textToSpeak = isNeg
             ? `${targetX}は、${targetY}じゃないです。`
             : `${targetX}は、${targetY}です。`;
-        speakText(textToSpeak, () => stopAllPlayback());
+        speakText(textToSpeak, 0.7, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -770,7 +769,7 @@ function setupExampleListen(btnId, text) {
     if (!btn) return;
     btn.addEventListener("click", () => {
         setPlayingState(btn, "🔊 Playing...");
-        speakText(text, () => stopAllPlayback());
+        speakText(text, 0.7, () => stopAllPlayback());
     });
 }
 
@@ -1119,7 +1118,7 @@ function processRecognitionResult(
 
             corrListenBtn.onclick = () => {
                 setPlayingState(corrListenBtn, "🔊 Playing...");
-                speakText(correctSentenceForBtn, () => stopAllPlayback());
+                speakText(correctSentenceForBtn, 0.7, () => stopAllPlayback());
             };
         }
         correctionBox.style.display = "block";
