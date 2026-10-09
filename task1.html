@@ -1,37 +1,91 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XはYです</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>Practice1；XはYです</h1>
+<style>
+  /* 共通スタイル */
+  .task-header-container {
+    margin-bottom: 20px;
+    font-family: sans-serif;
+  }
+  .task-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
 
-    <div id="exampleSection"></div>
-    <div id="task1List"></div>
+  /* 案A：インフォメーションパネル風 */
+  .panel-style {
+    background-color: #e8f4fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px 16px;
+    border-radius: 0 4px 4px 0;
+    color: #333;
+    font-size: 14px;
+  }
 
-    <!-- =========================================================
-         Footer
-         ========================================================= -->
-    <div class="voice-guide-footer">
-        🔊Want to change the voice?
-        <span id="guideTrigger" class="guide-trigger">
-            Check⚙️
-        </span>
+  /* 案B：アイコンリスト（箇条書き）風 */
+  .list-style {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    font-size: 14px;
+    color: #444;
+  }
+  .list-style li {
+    position: relative;
+    padding-left: 24px;
+    margin-bottom: 4px;
+  }
+  .list-style li::before {
+    content: "✅";
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 
-        <div
-            id="guideBox"
-            class="guide-box-popup"
-            style="display: none;"
-        >
-            Win: Settings > Time & Language > Speech<br>
-            Mac/iOS: Settings > Accessibility > Spoken Content<br>
-            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
-        </div>
+  /* 案C：アコーディオン（折りたたみ）方式 */
+  .accordion-style {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 16px;
+  }
+  .accordion-style summary {
+    font-weight: bold;
+    cursor: pointer;
+    color: #555;
+  }
+  .accordion-style summary:hover {
+    color: #000;
+  }
+  .accordion-content {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #444;
+  }
+</style>
+
+<!-- 案Aの表示 -->
+<div class="task-header-container">
+  <div class="task-title">Task 2；Custom Practice (案A: パネル)</div>
+  <div class="panel-style">
+    💡 選択肢から単語を選び、肯定文（XはYです）または否定文（XはYじゃないです）を作成せよ。
+  </div>
+</div>
+
+<!-- 案Bの表示 -->
+<div class="task-header-container">
+  <div class="task-title">Task 2；Custom Practice (案B: リスト)</div>
+  <ul class="list-style">
+    <li>ドロップダウンから主語(X)と名詞(Y)を選択する。</li>
+    <li>肯定文「XはYです」または否定文「XはYじゃないです」をマイクに向かって発声する。</li>
+  </ul>
+</div>
+
+<!-- 案Cの表示 -->
+<div class="task-header-container">
+  <div class="task-title">Task 2；Custom Practice (案C: アコーディオン)</div>
+  <details class="accordion-style">
+    <summary>📖 練習の手順を表示</summary>
+    <div class="accordion-content">
+      ドロップダウンから主語(X)と名詞(Y)を選択し、肯定文（XはYです）または否定文（XはYじゃないです）を作成して発声せよ。
     </div>
-
-    <script src="task1.js"></script>
-</body>
-</html>
+  </details>
+</div>
