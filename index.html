@@ -1,73 +1,21 @@
-
-    <hr>
-    <p>
-        音声認識テスト：
-        <button id="testMicButton" type="button">🎙️ とる</button>
-    </p>
-    <p id="testMicResult">ここに認識結果またはエラーが表示されます。</p>
-
-    <script>
-    (() => {
-        const button = document.getElementById("testMicButton");
-        const output = document.getElementById("testMicResult");
-
-        const SpeechRecognition =
-            window.SpeechRecognition ||
-            window.webkitSpeechRecognition;
-
-        if (!SpeechRecognition) {
-            output.textContent =
-                "このブラウザでは SpeechRecognition API が利用できません。";
-            button.disabled = true;
-            return;
-        }
-
-        let recognition = null;
-
-        button.addEventListener("click", () => {
-            if (recognition) {
-                output.textContent = "前の認識処理が終了するまでお待ちください。";
-                return;
-            }
-
-            const current = new SpeechRecognition();
-            recognition = current;
-
-            current.lang = "ja-JP";
-            current.continuous = false;
-            current.interimResults = false;
-
-            button.disabled = true;
-            output.textContent = "認識中です。日本語で話してください。";
-
-            current.onresult = (event) => {
-                output.textContent =
-                    "認識結果：" + event.results[0][0].transcript;
-            };
-
-            current.onerror = (event) => {
-                output.textContent =
-                    "エラー：" + event.error +
-                    (event.message ? " (" + event.message + ")" : "");
-            };
-
-            current.onend = () => {
-                if (recognition === current) {
-                    recognition = null;
-                    button.disabled = false;
-                }
-            };
-
-            try {
-                current.start();
-            } catch (error) {
-                output.textContent =
-                    "開始エラー：" + error.name + " - " + error.message;
-                recognition = null;
-                button.disabled = false;
-            }
-        });
-    })();
-    </script>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Language Learning Drills</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="menu-container">
+        <h1>Language Learning Drills</h1>
+        <p>Choose an exercise</p>
+        
+        <ul class="menu-list">
+            <li><a href="composition.html">English ➡️ Japanese Approach (いAdj)</a></li>
+            <li><a href="task1.html">Words ➡️ Sentence Approach (XはYです)</a></li>
+            <li><a href="pronunciation1.html">Pronunciation Drill 1</a></li>
+            <li><a href="pronunciation2.html">Pronunciation Drill 2</a></li>
+        </ul>
+    </div>
 </body>
 </html>
