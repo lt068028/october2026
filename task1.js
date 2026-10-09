@@ -39,7 +39,6 @@ const customDict = {
 let isManualStop = false;
 let hintMode = "hover";
 
-// 録音・認識セッションの管理
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -52,30 +51,21 @@ function setupPreferredVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    // 1. Edge用の音声を最優先検索 (大文字小文字を無視して Keita または Nanami を捕捉)
-    // ※EdgeのNatural音声はlang属性の挙動が不安定な場合があるため名前だけで判定する
     let selected = voices.find(v => v.name.toLowerCase().includes("keita"));
     if (!selected) {
         selected = voices.find(v => v.name.toLowerCase().includes("nanami"));
     }
-
-    // 2. Chrome用の音声を検索 (Google 日本語)
     if (!selected) {
         selected = voices.find(v => v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
     }
-
-    // 3. それ以外の普通設定 (OS標準の日本語音声)
     if (!selected) {
         selected = voices.find(v => v.lang.includes("ja"));
     }
-
     preferredVoice = selected;
 }
 
 if (typeof speechSynthesis !== "undefined") {
     setupPreferredVoice();
-    
-    // イベントリスナーを確実にバインドして非同期ロード完了を待つ
     if (speechSynthesis.addEventListener) {
         speechSynthesis.addEventListener("voiceschanged", setupPreferredVoice);
     } else {
@@ -90,6 +80,8 @@ if (typeof speechSynthesis !== "undefined") {
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
 let activePlayButton = null;
+// Chromeのガベージコレクション回避用参照
+let currentUtteranceRef = null; 
 
 function setPlayingState(btn, text) {
     stopAllPlayback();
@@ -117,6 +109,7 @@ function stopAllPlayback() {
         currentPlayTimeoutId = null;
     }
     speechSynthesis.cancel();
+    currentUtteranceRef = null;
     if (currentPlayingAudio) {
         currentPlayingAudio.pause();
         currentPlayingAudio = null;
@@ -181,7 +174,6 @@ function convertToHiragana(text) {
     }
 
     cleaned = cleaned.replace(/わ$/g, "は");
-
     return cleaned;
 }
 
@@ -197,12 +189,17 @@ function speakText(text, onEndCallback) {
     if (preferredVoice) {
         utterance.voice = preferredVoice;
     }
+    
+    // ガベージコレクション回避用
+    currentUtteranceRef = utterance;
 
     utterance.onend = () => {
+        currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     };
 
     utterance.onerror = () => {
+        currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     };
 
@@ -210,6 +207,7 @@ function speakText(text, onEndCallback) {
         speechSynthesis.speak(utterance);
     } catch (err) {
         console.error("Speech synthesis error:", err);
+        currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
 }
@@ -231,8 +229,7 @@ function setupFooterGuide() {
     if (trigger && box) {
         trigger.addEventListener("click", (e) => {
             e.stopPropagation();
-            box.style.display =
-                box.style.display === "none" ? "block" : "none";
+            box.style.display = box.style.display === "none" ? "block" : "none";
         });
         document.addEventListener("click", () => {
             box.style.display = "none";
@@ -288,7 +285,6 @@ function initApp() {
                     わたしは、がくせいです。(I am a student)
                 </span>
             </div>
-
             <div class="example-row">
                 <strong>Negative:</strong>
                 ${ex2X} ／ ${ex2Y}
@@ -305,71 +301,54 @@ function initApp() {
 
     const container = document.getElementById("task1List");
     if (!container) return;
-
     container.innerHTML = "";
 
     // ------------------------------------------------------------------------
     // Task 1 header and controls
     // ------------------------------------------------------------------------
-
     const headerPanel = document.createElement("div");
     headerPanel.className = "header-panel";
 
     const titleInstructionGroup1 = document.createElement("div");
     titleInstructionGroup1.className = "title-instruction-group";
-
     const titleArea1 = document.createElement("span");
     titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
-
     const descArea1 = document.createElement("span");
     descArea1.style.color = "var(--text-primary)";
     descArea1.style.fontSize = "15px";
-    descArea1.innerHTML =
-        '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
-
+    descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
     titleInstructionGroup1.appendChild(titleArea1);
     titleInstructionGroup1.appendChild(descArea1);
 
     const controlGroup = document.createElement("div");
     controlGroup.className = "control-group";
-
     const controlItem = document.createElement("div");
     controlItem.className = "control-item";
 
     const labelAuto = document.createElement("span");
     labelAuto.id = "labelAuto";
-    labelAuto.className =
-        `mode-label ${!isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-
-    labelAuto.innerHTML =
-        '⏹Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+    labelAuto.className = `mode-label ${!isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    labelAuto.innerHTML = '⏹Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
     const switchLabel = document.createElement("label");
     switchLabel.className = "switch";
-
     const switchInput = document.createElement("input");
     switchInput.type = "checkbox";
     switchInput.checked = isManualStop;
-
     const slider = document.createElement("span");
     slider.className = "slider";
-
     switchLabel.appendChild(switchInput);
     switchLabel.appendChild(slider);
 
     const labelManual = document.createElement("span");
     labelManual.id = "labelManual";
-    labelManual.className =
-        `mode-label ${isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-
-    labelManual.innerHTML =
-        '⏹Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+    labelManual.className = `mode-label ${isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    labelManual.innerHTML = '⏹Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
 
     switchInput.addEventListener("change", (e) => {
         isManualStop = e.target.checked;
         const autoEl = document.getElementById("labelAuto");
         const manualEl = document.getElementById("labelManual");
-
         if (isManualStop) {
             manualEl.className = "mode-label active-mode custom-tip-wrap";
             autoEl.className = "mode-label inactive-mode custom-tip-wrap";
@@ -387,44 +366,32 @@ function initApp() {
     // ------------------------------------------------------------------------
     // Vocabulary hint controls
     // ------------------------------------------------------------------------
-
     const vocabControl = document.createElement("div");
     vocabControl.className = "control-item";
-
     const labelHover = document.createElement("span");
     labelHover.id = "labelHover";
-    labelHover.className =
-        `mode-label ${hintMode === "hover" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-
-    labelHover.innerHTML =
-        '💬 Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    labelHover.className = `mode-label ${hintMode === "hover" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    labelHover.innerHTML = '💬 Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const vocabSwitchLabel = document.createElement("label");
     vocabSwitchLabel.className = "switch";
-
     const vocabSwitchInput = document.createElement("input");
     vocabSwitchInput.type = "checkbox";
     vocabSwitchInput.checked = hintMode === "paren";
-
     const vocabSlider = document.createElement("span");
     vocabSlider.className = "slider";
-
     vocabSwitchLabel.appendChild(vocabSwitchInput);
     vocabSwitchLabel.appendChild(vocabSlider);
 
     const labelParen = document.createElement("span");
     labelParen.id = "labelParen";
-    labelParen.className =
-        `mode-label ${hintMode === "paren" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-
-    labelParen.innerHTML =
-        '🔡Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+    labelParen.className = `mode-label ${hintMode === "paren" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    labelParen.innerHTML = '🔡Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
 
     vocabSwitchInput.addEventListener("change", (e) => {
         hintMode = e.target.checked ? "paren" : "hover";
         const hoverEl = document.getElementById("labelHover");
         const parenEl = document.getElementById("labelParen");
-
         if (hintMode === "paren") {
             parenEl.className = "mode-label active-mode custom-tip-wrap";
             hoverEl.className = "mode-label inactive-mode custom-tip-wrap";
@@ -438,7 +405,6 @@ function initApp() {
     vocabControl.appendChild(labelHover);
     vocabControl.appendChild(vocabSwitchLabel);
     vocabControl.appendChild(labelParen);
-
     controlGroup.appendChild(vocabControl);
     headerPanel.appendChild(titleInstructionGroup1);
     headerPanel.appendChild(controlGroup);
@@ -447,12 +413,10 @@ function initApp() {
     // ------------------------------------------------------------------------
     // Task 1 rows
     // ------------------------------------------------------------------------
-
     taskData.forEach((item, index) => {
         const currentXWord = index < 4 ? "わたし" : "ともだち";
         const currentXRomaji = index < 4 ? "watashi" : "tomodachi";
         const currentXMeaning = index < 4 ? "I" : "friend";
-
         const formattedX = formatWord(currentXWord, currentXRomaji, currentXMeaning);
         const formattedY = formatWord(item.y, item.yRomaji, item.yMeaning);
 
@@ -470,33 +434,27 @@ function initApp() {
     // ------------------------------------------------------------------------
     // Task 2 header
     // ------------------------------------------------------------------------
-
     const customHeaderPanel = document.createElement("div");
     customHeaderPanel.className = "header-panel";
     customHeaderPanel.style.marginTop = "30px";
 
     const titleInstructionGroup2 = document.createElement("div");
     titleInstructionGroup2.className = "title-instruction-group";
-
     const titleArea2 = document.createElement("span");
     titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
-
     const descArea2 = document.createElement("span");
     descArea2.style.color = "var(--text-primary)";
     descArea2.style.fontSize = "15px";
-    descArea2.innerHTML =
-        '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+    descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
     titleInstructionGroup2.appendChild(descArea2);
-
     customHeaderPanel.appendChild(titleInstructionGroup2);
     container.appendChild(customHeaderPanel);
 
     // ------------------------------------------------------------------------
     // Task 2 options
     // ------------------------------------------------------------------------
-
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち" data-eng="friend">Friend</option>
@@ -528,7 +486,6 @@ function initApp() {
     // ------------------------------------------------------------------------
     // Task 2 rows
     // ------------------------------------------------------------------------
-
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
@@ -595,14 +552,11 @@ function initApp() {
 
         const correctionBox = document.createElement("div");
         correctionBox.className = "correction-box";
-
         const corrListenBtn = document.createElement("button");
         corrListenBtn.className = "example-button";
         corrListenBtn.innerHTML = "🔊 きく";
         corrListenBtn.style.marginRight = "8px";
-
         const corrTextSpan = document.createElement("span");
-
         correctionBox.appendChild(corrListenBtn);
         correctionBox.appendChild(corrTextSpan);
 
@@ -636,7 +590,6 @@ function initApp() {
             if (valX && valY) {
                 recordBtn.disabled = false;
                 listenBtn.disabled = false;
-
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "🔊 Playing...");
                     const textToSpeak = isCustomNeg
@@ -677,7 +630,6 @@ function initApp() {
 
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll(".drill-row");
-
     drillRows.forEach(row => {
         const customIdx = row.getAttribute("data-custom-index");
         if (customIdx) {
@@ -704,7 +656,6 @@ function updateWordsDisplay() {
                 const yW = promptSpan.dataset.yWord;
                 const yR = promptSpan.dataset.yRomaji;
                 const yM = promptSpan.dataset.yMeaning;
-
                 promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
             }
         }
@@ -783,14 +734,11 @@ function createDrillRow(
 
     const correctionBox = document.createElement("div");
     correctionBox.className = "correction-box";
-
     const corrListenBtn = document.createElement("button");
     corrListenBtn.className = "example-button";
     corrListenBtn.innerHTML = "🔊 きく";
     corrListenBtn.style.marginRight = "8px";
-
     const corrTextSpan = document.createElement("span");
-
     correctionBox.appendChild(corrListenBtn);
     correctionBox.appendChild(corrTextSpan);
 
@@ -820,7 +768,6 @@ function createDrillRow(
 function setupExampleListen(btnId, text) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
-
     btn.addEventListener("click", () => {
         setPlayingState(btn, "🔊 Playing...");
         speakText(text, () => stopAllPlayback());
@@ -885,7 +832,6 @@ function bindRecorderEvents(
         }
 
         const currentRecognition = currentSession.recognition;
-
         if (!currentRecognition) {
             releaseSession(currentSession);
             return;
@@ -914,14 +860,11 @@ function bindRecorderEvents(
 
     recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
-        
-        // 録音開始時に他で再生中の音声をすべて中断する
         stopAllPlayback();
 
         if (activeRecognitionSession !== null) return;
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
         if (!SpeechRecognition) {
             resultSpan.textContent = "Speech recognition is not supported in this browser.";
             resultSpan.style.color = "var(--error-text)";
@@ -930,7 +873,6 @@ function bindRecorderEvents(
 
         const currentX = getXFn();
         const currentY = getYFn();
-
         if (!currentX || !currentY) {
             resultSpan.textContent = "Please choose both X and Y.";
             resultSpan.style.color = "var(--error-text)";
@@ -1047,7 +989,6 @@ function bindRecorderEvents(
 
             recordBtn.disabled = true;
             stopBtn.disabled = !isManualStop;
-
             if (isManualStop) {
                 stopBtn.classList.add("stop-btn-active");
             } else {
@@ -1119,7 +1060,6 @@ function processRecognitionResult(
     // ------------------------------------------------------------------------
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
-
         if (!playBtn) {
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
@@ -1156,7 +1096,6 @@ function processRecognitionResult(
         correctionBox.style.display = "none";
     } else {
         const hasCorrectY = hiraText.includes(hiraY);
-
         if (!hasCorrectY) {
             let highlightedText = hiraText.replace(
                 new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, "g"),
@@ -1207,7 +1146,11 @@ function processRecognitionResult(
             utterance.voice = preferredVoice;
         }
 
+        // ガベージコレクション回避用
+        currentUtteranceRef = utterance;
+
         utterance.onend = () => {
+            currentUtteranceRef = null;
             currentPlayTimeoutId = setTimeout(() => {
                 const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
