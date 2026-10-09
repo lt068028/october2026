@@ -40,7 +40,6 @@ let isManualStop = false;
 let hintMode = "hover";
 
 // 全行で共有する録音セッション。
-// 同時に複数の行が音声認識を開始することを防ぐ。
 let activeRecognitionSession = null;
 
 
@@ -793,7 +792,7 @@ function playSyntheticAudio(text, btnElement, originalText) {
 
 
 // ============================================================================
-// Shared recording / speech recognition (Updated)
+// Shared recording / speech recognition
 // ============================================================================
 
 function bindRecorderEvents(
@@ -823,16 +822,12 @@ function bindRecorderEvents(
             currentSession.watchdog = null;
         }
 
-        // MediaRecorderの停止
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try {
                 currentSession.mediaRecorder.stop();
-            } catch (e) {
-                console.warn("Error stopping MediaRecorder:", e);
-            }
+            } catch (e) {}
         }
 
-        // マイクストリームの完全解放
         if (currentSession.stream) {
             currentSession.stream.getTracks().forEach(track => track.stop());
         }
@@ -843,7 +838,6 @@ function bindRecorderEvents(
 
         if (session === currentSession) {
             session = null;
-
             recordBtn.disabled = false;
             stopBtn.disabled = true;
             stopBtn.classList.remove("stop-btn-active");
@@ -888,9 +882,7 @@ function bindRecorderEvents(
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try {
                 currentSession.mediaRecorder.stop();
-            } catch (err) {
-                console.warn("MediaRecorder stop error:", err);
-            }
+            } catch (err) {}
         }
     }
 
@@ -930,7 +922,6 @@ function bindRecorderEvents(
             return;
         }
 
-        // 過去の録音URLがあれば破棄してメモリリークを防ぐ
         if (lastAudioUrl) {
             URL.revokeObjectURL(lastAudioUrl);
             lastAudioUrl = null;
@@ -944,11 +935,35 @@ function bindRecorderEvents(
             watchdog: null,
             mediaRecorder: null,
             audioChunks: [],
-            stream: stream
+            stream: stream,
+            accumulatedTranscript: "",
+            recognitionDone: false,
+            recorderDone: false,
+            processed: false
         };
 
         session = currentSession;
         activeRecognitionSession = currentSession;
+
+        const tryProcessResult = () => {
+            if (currentSession.errorMessage || currentSession.processed) return;
+            
+            // 音声認識とMediaRecorderの両方が終了してから評価・表示処理を行う
+            if (currentSession.recognitionDone && currentSession.recorderDone) {
+                currentSession.processed = true;
+                processRecognitionResult(
+                    currentSession.accumulatedTranscript,
+                    currentX,
+                    currentY,
+                    expectedIsNeg,
+                    resultSpan,
+                    correctionBox,
+                    corrListenBtn,
+                    corrTextSpan,
+                    () => lastAudioUrl
+                );
+            }
+        };
 
         try {
             const currentRecognition = new SpeechRecognition();
@@ -958,7 +973,6 @@ function bindRecorderEvents(
             currentRecognition.interimResults = false;
             currentRecognition.continuous = isManualStop;
 
-            // 実際の音声を保存するためのMediaRecorderの設定
             const mediaRecorder = new MediaRecorder(stream);
             currentSession.mediaRecorder = mediaRecorder;
 
@@ -972,6 +986,8 @@ function bindRecorderEvents(
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 lastAudioUrl = URL.createObjectURL(audioBlob);
                 stream.getTracks().forEach(track => track.stop());
+                currentSession.recorderDone = true;
+                tryProcessResult();
             };
 
             // ---------------------------------------------------------------
@@ -987,34 +1003,20 @@ function bindRecorderEvents(
                 }
 
                 let rawTranscript = "";
-
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     if (event.results[i].isFinal) {
                         rawTranscript += event.results[i][0].transcript;
                     }
                 }
-
-                if (!rawTranscript) return;
-
-                processRecognitionResult(
-                    rawTranscript,
-                    currentX,
-                    currentY,
-                    expectedIsNeg,
-                    resultSpan,
-                    correctionBox,
-                    corrListenBtn,
-                    corrTextSpan,
-                    () => lastAudioUrl
-                );
+                
+                // テキストを蓄積（この時点ではまだ画面に表示・評価しない）
+                currentSession.accumulatedTranscript += rawTranscript;
             };
 
             // ---------------------------------------------------------------
             // Recognition errors
             // ---------------------------------------------------------------
             currentRecognition.onerror = (event) => {
-                console.error("Speech recognition error:", event.error);
-
                 if (currentSession.finished || session !== currentSession) {
                     return;
                 }
@@ -1039,11 +1041,15 @@ function bindRecorderEvents(
             // Recognition ended
             // ---------------------------------------------------------------
             currentRecognition.onend = () => {
+                currentSession.recognitionDone = true;
+                
                 if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
                     try {
                         currentSession.mediaRecorder.stop();
                     } catch (e) {}
                 }
+                
+                tryProcessResult();
                 releaseSession(currentSession);
             };
 
@@ -1135,7 +1141,7 @@ function processRecognitionResult(
         negRegex4.test(hiraText);
 
     // ------------------------------------------------------------------------
-    // Optional recorded-audio playback button.
+    // Play sequence button (Model -> Recorded Audio)
     // ------------------------------------------------------------------------
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
@@ -1144,15 +1150,49 @@ function processRecognitionResult(
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play sequence: Model -> Your Voice</span>';
 
             playBtn.onclick = () => {
-                const recordedAudioUrl = getUrlFn();
-                if (recordedAudioUrl) {
-                    const audio = new Audio(recordedAudioUrl);
-                    audio.playbackRate = 1.0;
-                    audio.play();
-                }
+                playBtn.disabled = true;
+
+                const correctSentence = expectedIsNeg
+                    ? `${currentX}は、${currentY}じゃないです。`
+                    : `${currentX}は、${currentY}です。`;
+
+                // 1. モデル音声を速度85%（0.85）で再生する
+                const utterance = new SpeechSynthesisUtterance(correctSentence);
+                utterance.lang = "ja-JP";
+                utterance.rate = 0.85;
+
+                utterance.onend = () => {
+                    // 2. 0.1秒（100ms）待機してから録音音源を速度100%（1.0）で再生する
+                    setTimeout(() => {
+                        const recordedAudioUrl = getUrlFn();
+                        if (recordedAudioUrl) {
+                            const audio = new Audio(recordedAudioUrl);
+                            audio.playbackRate = 1.0;
+                            audio.onended = () => {
+                                playBtn.disabled = false;
+                            };
+                            audio.onerror = () => {
+                                playBtn.disabled = false;
+                            };
+                            audio.play().catch(e => {
+                                console.warn("Playback failed", e);
+                                playBtn.disabled = false;
+                            });
+                        } else {
+                            playBtn.disabled = false;
+                        }
+                    }, 100);
+                };
+
+                utterance.onerror = () => {
+                    playBtn.disabled = false;
+                };
+
+                // 待機0秒で直ちにモデル音声の再生を開始する
+                speechSynthesis.speak(utterance);
             };
 
             resultSpan.appendChild(playBtn);
