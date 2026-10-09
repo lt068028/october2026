@@ -38,12 +38,6 @@ let hintMode = "hover";
 // ===== タイトルパネル用CSSの動的挿入 =====
 const styleElement = document.createElement('style');
 styleElement.textContent = `
-    .title-group {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        min-width: 300px;
-    }
     .panel-style {
         background-color: #e8f4fd;
         border-left: 4px solid #2196f3;
@@ -51,8 +45,8 @@ styleElement.textContent = `
         border-radius: 0 4px 4px 0;
         color: #333;
         font-size: 14px;
-        margin-top: 8px;
-        width: 100%;
+        flex: 1;
+        min-width: 300px;
         box-sizing: border-box;
         line-height: 1.5;
     }
@@ -188,16 +182,15 @@ function initApp() {
     const headerPanel = document.createElement('div');
     headerPanel.className = 'header-panel';
 
-    // パネルスタイル適用（Task 1）
     const titleInstructionGroup1 = document.createElement('div');
-    titleInstructionGroup1.className = 'title-group';
+    titleInstructionGroup1.className = 'panel-style';
 
     const titleArea1 = document.createElement('div');
     titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
     titleArea1.style.fontSize = "1.1em";
+    titleArea1.style.marginBottom = "8px";
 
     const descArea1 = document.createElement('div');
-    descArea1.className = 'panel-style';
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup1.appendChild(titleArea1);
@@ -304,20 +297,19 @@ function initApp() {
         createDrillRow(container, `${index + 1}.`, formattedX, formattedY, currentXWord, item.y, item.isNeg);
     });
 
-    // パネルスタイル適用（Task 2）
     const customHeaderPanel = document.createElement('div');
     customHeaderPanel.className = 'header-panel';
     customHeaderPanel.style.marginTop = "30px";
 
     const titleInstructionGroup2 = document.createElement('div');
-    titleInstructionGroup2.className = 'title-group';
+    titleInstructionGroup2.className = 'panel-style';
 
     const titleArea2 = document.createElement('div');
     titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
     titleArea2.style.fontSize = "1.1em";
+    titleArea2.style.marginBottom = "8px";
 
     const descArea2 = document.createElement('div');
-    descArea2.className = 'panel-style';
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
@@ -606,11 +598,7 @@ function playSyntheticAudio(text, btnElement, originalText) {
 }
 
 function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getXFn, getYFn, expectedIsNeg = false) {
-    let mediaRecorder;
-    let audioChunks = [];
-    let audioStream = null;
     let recognition = null;
-    let recordedAudioUrl = null;
     let timeoutTimer = null;
     let accumulatedTranscript = "";
 
@@ -622,12 +610,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         if (recognition) {
             try { recognition.stop(); } catch(e){}
         }
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-        }
-        if (audioStream) {
-            audioStream.getTracks().forEach(track => track.stop());
-        }
 
         recordBtn.disabled = false;
         recordBtn.classList.remove('stop-btn-active');
@@ -637,29 +619,50 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
         stopBtn.classList.remove('stop-btn-active');
     };
 
-    recordBtn.addEventListener('click', async () => {
-        if (recordedAudioUrl) {
-            URL.revokeObjectURL(recordedAudioUrl);
-            recordedAudioUrl = null;
-        }
-        const oldPlayBtn = resultSpan.querySelector('.play-recording-btn');
-        if (oldPlayBtn) oldPlayBtn.remove();
-
+    recordBtn.addEventListener('click', () => {
+        // UI初期化
         const currentX = getXFn();
         const currentY = getYFn();
         accumulatedTranscript = "";
+        correctionBox.style.display = 'none';
 
         try {
-            audioChunks = [];
-            audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(audioStream);
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                resultSpan.textContent = 'API Error: ご利用のブラウザは音声認識に対応していません。';
+                resultSpan.style.color = 'var(--error-text)';
+                return;
+            }
 
-            mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
-            
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                recordedAudioUrl = URL.createObjectURL(audioBlob);
+            recognition = new SpeechRecognition();
+            recognition.lang = 'ja-JP';
+            recognition.interimResults = false;
+            recognition.continuous = isManualStop;
 
+            recognition.onresult = (e) => {
+                let rawTranscript = "";
+                for (let i = e.resultIndex; i < e.results.length; ++i) {
+                    rawTranscript += e.results[i][0].transcript;
+                }
+                accumulatedTranscript += rawTranscript;
+
+                if (!isManualStop) {
+                    stopRecordingProcess();
+                }
+            };
+
+            recognition.onerror = (err) => {
+                console.error("Speech recognition error:", err);
+                if (err.error === 'network' && window.location.protocol === 'file:') {
+                    resultSpan.textContent = 'API Error: Live Serverを使用せよ (file:// 制限)';
+                } else {
+                    resultSpan.textContent = 'No speech detected or mic error.';
+                }
+                resultSpan.style.color = 'var(--error-text)';
+                stopRecordingProcess();
+            };
+
+            recognition.onend = () => {
                 if (accumulatedTranscript) {
                     processRecognitionResult(
                         accumulatedTranscript,
@@ -669,49 +672,16 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                         resultSpan,
                         correctionBox,
                         corrListenBtn,
-                        corrTextSpan,
-                        () => recordedAudioUrl
+                        corrTextSpan
                     );
-                } else if (resultSpan.textContent !== 'API Error: Live Serverを使用せよ (file:// 制限)') {
+                } else if (resultSpan.textContent.indexOf('API Error') === -1 && resultSpan.textContent.indexOf('error') === -1) {
                     resultSpan.textContent = 'No speech detected. Please try again.';
                     resultSpan.style.color = 'var(--text-secondary)';
                 }
+                stopRecordingProcess();
             };
 
-            mediaRecorder.start();
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                recognition = new SpeechRecognition();
-                recognition.lang = 'ja-JP';
-                recognition.interimResults = false;
-                recognition.continuous = isManualStop; // ★ ここを修正（iOS/Safariでの即時クラッシュを回避）
-
-                recognition.onresult = (e) => {
-                    let rawTranscript = "";
-                    for (let i = e.resultIndex; i < e.results.length; ++i) {
-                        rawTranscript += e.results[i][0].transcript;
-                    }
-                    accumulatedTranscript += rawTranscript;
-
-                    if (!isManualStop) {
-                        stopRecordingProcess();
-                    }
-                };
-
-                recognition.onerror = (err) => {
-                    console.error("Speech recognition error:", err);
-                    console.error("Speech recognition error type:", err.error);
-                    
-                    if (err.error === 'network' && window.location.protocol === 'file:') {
-                        resultSpan.textContent = 'API Error: Live Serverを使用せよ (file:// 制限)';
-                        resultSpan.style.color = 'var(--error-text)';
-                    }
-                    stopRecordingProcess();
-                };
-
-                recognition.start();
-            }
+            recognition.start();
 
             timeoutTimer = setTimeout(() => {
                 stopRecordingProcess();
@@ -733,7 +703,6 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
                     resultSpan.style.color = 'var(--accent-color)';
                 }
             }
-            correctionBox.style.display = 'none';
 
         } catch (err) {
             console.error("Mic error:", err);
@@ -747,7 +716,7 @@ function bindRecorderEvents(recordBtn, stopBtn, resultSpan, correctionBox, corrL
     });
 }
 
-function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn) {
+function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsNeg, resultSpan, correctionBox, corrListenBtn, corrTextSpan) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
         resultSpan.style.color = 'var(--text-secondary)';
@@ -769,30 +738,9 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
     const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
     const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
-    const recordedAudioUrl = getUrlFn();
-
-    const appendPlayButton = () => {
-        if (recordedAudioUrl) {
-            let playBtn = resultSpan.querySelector('.play-recording-btn');
-            if (!playBtn) {
-                playBtn = document.createElement('button');
-                playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
-                playBtn.style.marginLeft = '8px';
-                playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
-                playBtn.onclick = () => {
-                    const audio = new Audio(recordedAudioUrl);
-                    audio.playbackRate = 1.0;
-                    audio.play();
-                };
-                resultSpan.appendChild(playBtn);
-            }
-        }
-    };
-
     if (isAffirmative || isNegative) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = 'var(--text-primary)';
-        appendPlayButton();
         correctionBox.style.display = 'none';
     } else {
         const hasCorrectY = hiraText.includes(hiraY);
@@ -803,14 +751,12 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
             
             resultSpan.innerHTML = highlightedText + " ";
             resultSpan.style.color = 'var(--text-primary)';
-            appendPlayButton();
 
             corrTextSpan.textContent = `Wrong word used.`;
             corrListenBtn.style.display = 'none';
         } else {
             resultSpan.textContent = hiraText + " ";
             resultSpan.style.color = 'var(--error-text)';
-            appendPlayButton();
 
             corrTextSpan.textContent = `Structure error, try it again`;
             corrListenBtn.style.display = 'inline-block';
