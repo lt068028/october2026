@@ -793,7 +793,7 @@ function playSyntheticAudio(text, btnElement, originalText) {
 
 
 // ============================================================================
-// Shared recording / speech recognition
+// Shared recording / speech recognition (Updated)
 // ============================================================================
 
 function bindRecorderEvents(
@@ -808,11 +808,11 @@ function bindRecorderEvents(
     expectedIsNeg = false
 ) {
     let session = null;
+    let lastAudioUrl = null;
 
     // ------------------------------------------------------------------------
     // Release the current session and restore this row's buttons.
     // ------------------------------------------------------------------------
-
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
 
@@ -821,6 +821,20 @@ function bindRecorderEvents(
         if (currentSession.watchdog !== null) {
             clearTimeout(currentSession.watchdog);
             currentSession.watchdog = null;
+        }
+
+        // MediaRecorderの停止
+        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+            try {
+                currentSession.mediaRecorder.stop();
+            } catch (e) {
+                console.warn("Error stopping MediaRecorder:", e);
+            }
+        }
+
+        // マイクストリームの完全解放
+        if (currentSession.stream) {
+            currentSession.stream.getTracks().forEach(track => track.stop());
         }
 
         if (activeRecognitionSession === currentSession) {
@@ -837,15 +851,13 @@ function bindRecorderEvents(
     }
 
     // ------------------------------------------------------------------------
-    // Stop or abort speech recognition.
+    // Stop or abort speech recognition and recording.
     // ------------------------------------------------------------------------
-
     function requestStop(currentSession, abort = false, errorMessage = "") {
         if (!currentSession || currentSession.finished) return;
 
         if (errorMessage) {
             currentSession.errorMessage = errorMessage;
-
             resultSpan.textContent = errorMessage;
             resultSpan.style.color = "var(--error-text)";
         }
@@ -857,7 +869,6 @@ function bindRecorderEvents(
             return;
         }
 
-        // Fallback in case the browser does not dispatch "end".
         if (currentSession.watchdog === null) {
             currentSession.watchdog = setTimeout(() => {
                 releaseSession(currentSession);
@@ -872,18 +883,22 @@ function bindRecorderEvents(
             }
         } catch (err) {
             console.warn("Speech recognition stop error:", err);
-            releaseSession(currentSession);
+        }
+        
+        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+            try {
+                currentSession.mediaRecorder.stop();
+            } catch (err) {
+                console.warn("MediaRecorder stop error:", err);
+            }
         }
     }
 
     // ------------------------------------------------------------------------
-    // Start recognition.
+    // Start recognition & recording.
     // ------------------------------------------------------------------------
-
-    recordBtn.addEventListener("click", () => {
+    recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
-
-        // Do not allow simultaneous sessions across Task 1 and Task 2.
         if (activeRecognitionSession !== null) return;
 
         const SpeechRecognition =
@@ -891,8 +906,7 @@ function bindRecorderEvents(
             window.webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-            resultSpan.textContent =
-                "Speech recognition is not supported in this browser.";
+            resultSpan.textContent = "Speech recognition is not supported in this browser.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
@@ -906,12 +920,31 @@ function bindRecorderEvents(
             return;
         }
 
+        let stream;
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (err) {
+            console.error("Microphone access error:", err);
+            resultSpan.textContent = "Microphone access denied or unavailable.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        // 過去の録音URLがあれば破棄してメモリリークを防ぐ
+        if (lastAudioUrl) {
+            URL.revokeObjectURL(lastAudioUrl);
+            lastAudioUrl = null;
+        }
+
         const currentSession = {
             finished: false,
             stopRequested: false,
             errorMessage: "",
             recognition: null,
-            watchdog: null
+            watchdog: null,
+            mediaRecorder: null,
+            audioChunks: [],
+            stream: stream
         };
 
         session = currentSession;
@@ -919,17 +952,31 @@ function bindRecorderEvents(
 
         try {
             const currentRecognition = new SpeechRecognition();
-
             currentSession.recognition = currentRecognition;
 
             currentRecognition.lang = "ja-JP";
             currentRecognition.interimResults = false;
             currentRecognition.continuous = isManualStop;
 
+            // 実際の音声を保存するためのMediaRecorderの設定
+            const mediaRecorder = new MediaRecorder(stream);
+            currentSession.mediaRecorder = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    currentSession.audioChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
+                lastAudioUrl = URL.createObjectURL(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+            };
+
             // ---------------------------------------------------------------
             // Recognition result
             // ---------------------------------------------------------------
-
             currentRecognition.onresult = (event) => {
                 if (
                     currentSession.finished ||
@@ -941,11 +988,7 @@ function bindRecorderEvents(
 
                 let rawTranscript = "";
 
-                for (
-                    let i = event.resultIndex;
-                    i < event.results.length;
-                    i++
-                ) {
+                for (let i = event.resultIndex; i < event.results.length; i++) {
                     if (event.results[i].isFinal) {
                         rawTranscript += event.results[i][0].transcript;
                     }
@@ -953,8 +996,6 @@ function bindRecorderEvents(
 
                 if (!rawTranscript) return;
 
-                // Process the result immediately. In manual-stop mode,
-                // the final result can arrive after the Stop button is clicked.
                 processRecognitionResult(
                     rawTranscript,
                     currentX,
@@ -964,30 +1005,22 @@ function bindRecorderEvents(
                     correctionBox,
                     corrListenBtn,
                     corrTextSpan,
-                    () => null
+                    () => lastAudioUrl
                 );
             };
 
             // ---------------------------------------------------------------
             // Recognition errors
             // ---------------------------------------------------------------
-
             currentRecognition.onerror = (event) => {
-                console.error(
-                    "Speech recognition error:",
-                    event.error
-                );
+                console.error("Speech recognition error:", event.error);
 
-                if (
-                    currentSession.finished ||
-                    session !== currentSession
-                ) {
+                if (currentSession.finished || session !== currentSession) {
                     return;
                 }
 
                 const message =
-                    event.error === "not-allowed" ||
-                    event.error === "service-not-allowed"
+                    event.error === "not-allowed" || event.error === "service-not-allowed"
                         ? "Microphone permission denied."
                         : event.error === "no-speech"
                             ? "No speech detected. Please try again."
@@ -999,25 +1032,24 @@ function bindRecorderEvents(
                                         ? "Recording stopped."
                                         : "Speech recognition error. Please try again.";
 
-                // Do not call stop() repeatedly from an error event.
-                // abort() plus the shared release handler ends the session.
                 requestStop(currentSession, true, message);
             };
 
             // ---------------------------------------------------------------
             // Recognition ended
             // ---------------------------------------------------------------
-
             currentRecognition.onend = () => {
-                if (currentSession.finished) return;
-
+                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+                    try {
+                        currentSession.mediaRecorder.stop();
+                    } catch (e) {}
+                }
                 releaseSession(currentSession);
             };
 
             // ---------------------------------------------------------------
             // Update UI before starting
             // ---------------------------------------------------------------
-
             recordBtn.disabled = true;
             stopBtn.disabled = !isManualStop;
 
@@ -1031,6 +1063,7 @@ function bindRecorderEvents(
             resultSpan.style.color = "var(--accent-color)";
             correctionBox.style.display = "none";
 
+            mediaRecorder.start();
             currentRecognition.start();
         } catch (err) {
             console.error("Speech recognition start error:", err);
@@ -1046,7 +1079,6 @@ function bindRecorderEvents(
     // ------------------------------------------------------------------------
     // Manual stop button
     // ------------------------------------------------------------------------
-
     stopBtn.addEventListener("click", () => {
         if (!session || session.finished) return;
         if (session.stopRequested) return;
@@ -1054,7 +1086,6 @@ function bindRecorderEvents(
         session.stopRequested = true;
         stopBtn.disabled = true;
 
-        // stop() allows the browser to deliver a final recognition result.
         requestStop(session, false);
     });
 }
@@ -1090,24 +1121,12 @@ function processRecognitionResult(
     const affRegex = new RegExp(
         `^${hiraX}は${hiraY}です` + endParticleRegex
     );
-
     const isAffirmative = affRegex.test(hiraText);
 
-    const negRegex1 = new RegExp(
-        `^${hiraX}は${hiraY}じゃないです` + endParticleRegex
-    );
-
-    const negRegex2 = new RegExp(
-        `^${hiraX}は${hiraY}ではないです` + endParticleRegex
-    );
-
-    const negRegex3 = new RegExp(
-        `^${hiraX}は${hiraY}じゃありません` + endParticleRegex
-    );
-
-    const negRegex4 = new RegExp(
-        `^${hiraX}は${hiraY}ではありません` + endParticleRegex
-    );
+    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
 
     const isNegative =
         negRegex1.test(hiraText) ||
@@ -1115,30 +1134,25 @@ function processRecognitionResult(
         negRegex3.test(hiraText) ||
         negRegex4.test(hiraText);
 
-    const recordedAudioUrl = getUrlFn();
-
     // ------------------------------------------------------------------------
     // Optional recorded-audio playback button.
-    // This version uses SpeechRecognition only, so no recording URL is made.
     // ------------------------------------------------------------------------
-
     const appendPlayButton = () => {
-        if (!recordedAudioUrl) return;
-
         let playBtn = resultSpan.querySelector(".play-recording-btn");
 
         if (!playBtn) {
             playBtn = document.createElement("button");
-            playBtn.className =
-                "example-button play-recording-btn custom-tip-wrap";
+            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML =
-                '▶<span class="custom-tip-box">Play the recorded audio</span>';
+            playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
 
             playBtn.onclick = () => {
-                const audio = new Audio(recordedAudioUrl);
-                audio.playbackRate = 1.0;
-                audio.play();
+                const recordedAudioUrl = getUrlFn();
+                if (recordedAudioUrl) {
+                    const audio = new Audio(recordedAudioUrl);
+                    audio.playbackRate = 1.0;
+                    audio.play();
+                }
             };
 
             resultSpan.appendChild(playBtn);
@@ -1148,7 +1162,6 @@ function processRecognitionResult(
     // ------------------------------------------------------------------------
     // Correct sentence
     // ------------------------------------------------------------------------
-
     if (isAffirmative || isNegative) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
@@ -1162,7 +1175,6 @@ function processRecognitionResult(
     // ------------------------------------------------------------------------
     // Incorrect sentence
     // ------------------------------------------------------------------------
-
     const hasCorrectY = hiraText.includes(hiraY);
 
     if (!hasCorrectY) {
