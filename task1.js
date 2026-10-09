@@ -43,6 +43,40 @@ let hintMode = "hover";
 let activeRecognitionSession = null;
 
 // ============================================================================
+// Voice Selection Logic (Browser Specific Priority)
+// ============================================================================
+
+let preferredVoice = null;
+
+function setupPreferredVoice() {
+    const voices = speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return;
+
+    // 1. Edge用の音声を優先検索 (Keita または Nanami)
+    let selected = voices.find(v => v.name.includes("Keita") && v.lang.startsWith("ja"));
+    if (!selected) {
+        selected = voices.find(v => v.name.includes("Nanami") && v.lang.startsWith("ja"));
+    }
+
+    // 2. Chrome用の音声を検索 (Google 日本語)
+    if (!selected) {
+        selected = voices.find(v => (v.name.includes("Google 日本語") || v.name.includes("Google Japanese")) && v.lang.startsWith("ja"));
+    }
+
+    // 3. それ以外の普通設定 (OS標準の日本語音声)
+    if (!selected) {
+        selected = voices.find(v => v.lang.startsWith("ja"));
+    }
+
+    preferredVoice = selected;
+}
+
+if (typeof speechSynthesis !== "undefined") {
+    setupPreferredVoice();
+    speechSynthesis.onvoiceschanged = setupPreferredVoice;
+}
+
+// ============================================================================
 // Global Playback Management (Interrupt & UI Restoration)
 // ============================================================================
 
@@ -64,7 +98,7 @@ function restorePlayButton() {
         if (activePlayButton.dataset.originalHtml) {
             activePlayButton.innerHTML = activePlayButton.dataset.originalHtml;
         } else {
-            activePlayButton.innerHTML = "▶️";
+            activePlayButton.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
         }
         activePlayButton = null;
     }
@@ -152,6 +186,10 @@ function convertToHiragana(text) {
 function speakText(text, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
+
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
+    }
 
     utterance.onend = () => {
         if (onEndCallback) onEndCallback();
@@ -1157,6 +1195,10 @@ function processRecognitionResult(
         const utterance = new SpeechSynthesisUtterance(correctSentence);
         utterance.lang = "ja-JP";
         utterance.rate = 0.85;
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
 
         utterance.onend = () => {
             currentPlayTimeoutId = setTimeout(() => {
