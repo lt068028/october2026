@@ -939,4 +939,90 @@ function processRecognitionResult(rawTranscript, currentX, currentY, expectedIsN
 
     const hiraText = convertToHiragana(rawTranscript);
     const hiraX = convertToHiragana(currentX);
-    const
+    const hiraY = convertToHiragana(currentY);
+
+    const endParticleRegex = '(?:ね|よ|よね|ですね|ですよ)*[.。!]?$';
+    
+    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+    const isAffirmative = affRegex.test(hiraText);
+
+    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
+    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+
+    const recordedAudioUrl = getUrlFn();
+
+    const appendPlayButton = () => {
+        if (recordedAudioUrl) {
+            let playBtn = resultSpan.querySelector('.play-recording-btn');
+            if (!playBtn) {
+                playBtn = document.createElement('button');
+                playBtn.className = 'example-button play-recording-btn custom-tip-wrap';
+                playBtn.style.marginLeft = '8px';
+                playBtn.innerHTML = '▶<span class="custom-tip-box">Play the recorded audio</span>';
+                playBtn.onclick = () => {
+                    const audio = new Audio(recordedAudioUrl);
+                    audio.playbackRate = 1.0;
+                    audio.play();
+                };
+                resultSpan.appendChild(playBtn);
+            }
+        }
+    };
+
+    if (isAffirmative || isNegative) {
+        resultSpan.textContent = hiraText + " ✅ ";
+        resultSpan.style.color = 'var(--text-primary)';
+        appendPlayButton();
+        correctionBox.style.display = 'none';
+    } else {
+        const hasCorrectY = hiraText.includes(hiraY);
+
+        if (!hasCorrectY) {
+            let highlightedText = hiraText;
+            highlightedText = highlightedText.replace(new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, 'g'), `$1<span style="color: var(--accent-color);">$2</span>$3`);
+            
+            resultSpan.innerHTML = highlightedText + " ";
+            resultSpan.style.color = 'var(--text-primary)';
+            appendPlayButton();
+
+            corrTextSpan.textContent = `Wrong word used.`;
+            corrListenBtn.style.display = 'none';
+        } else {
+            resultSpan.textContent = hiraText + " ";
+            resultSpan.style.color = 'var(--error-text)';
+            appendPlayButton();
+
+            corrTextSpan.textContent = `Structure error, try it again`;
+            corrListenBtn.style.display = 'inline-block';
+
+            const correctSentence = expectedIsNeg ? `${currentX}は、${currentY}じゃないです。` : `${currentX}は、${currentY}です。`;
+            corrListenBtn.onclick = () => {
+                corrListenBtn.disabled = true;
+                corrListenBtn.textContent = '🔊 Playing...';
+                speakText(correctSentence, () => {
+                    corrListenBtn.disabled = false;
+                    corrListenBtn.textContent = '🔊 きく';
+                });
+            };
+        }
+
+        correctionBox.style.display = 'block';
+    }
+}
+
+function setupExampleListen(btnId, text) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.addEventListener('click', () => {
+            btn.disabled = true;
+            btn.textContent = '🔊 Playing...';
+            speakText(text, () => {
+                btn.disabled = false;
+                btn.textContent = '🔊 きく';
+            });
+        });
+    }
+}
