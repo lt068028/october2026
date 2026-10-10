@@ -36,7 +36,7 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
-// 状態管理フラグ (Task1, 2共通設定)
+// 状態管理フラグ
 let isManualStop = false;
 let hintMode = "hover";
 let isAutoPlay = true; 
@@ -53,19 +53,20 @@ function setupPreferredVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    let selected = voices.find(v => v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
+    // クラッシュを防ぐため、name や lang プロパティの存在確認を追加
+    let selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
     
     if (!selected) {
-        selected = voices.find(v => v.name.toLowerCase().includes("keita"));
+        selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
     }
     if (!selected) {
-        selected = voices.find(v => v.name.toLowerCase().includes("nanami"));
+        selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
     }
     if (!selected) {
-        selected = voices.find(v => v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
+        selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
     }
     if (!selected) {
-        selected = voices.find(v => v.lang.includes("ja"));
+        selected = voices.find(v => v.lang && v.lang.includes("ja"));
     }
     
     preferredVoice = selected;
@@ -269,39 +270,44 @@ function updateToggleLabelStyle(labelEl, isActive) {
 function initApp() {
     const exampleSection = document.getElementById("exampleSection");
     const container = document.getElementById("task1List");
+
+    // コンテナが存在する場合、設定ブロックを作る前に中身を確実にクリアしておく
+    if (container) {
+        container.innerHTML = "";
+    }
+
     const anchorElement = exampleSection || container;
 
     // ------------------------------------------------------------------------
-    // Top Layout Setup (右寄りのグローバル設定パネル)
+    // Top Layout Setup (もどるリンク と 3段トグル を左寄りに縦並び配置)
     // ------------------------------------------------------------------------
     if (anchorElement && anchorElement.parentNode) {
         const topLayoutContainer = document.createElement("div");
         topLayoutContainer.style.display = "flex";
-        topLayoutContainer.style.justifyContent = "flex-end"; // 右寄せ
+        topLayoutContainer.style.justifyContent = "flex-start"; // 左寄せ
         topLayoutContainer.style.marginBottom = "20px";
         topLayoutContainer.style.width = "100%";
 
-        const rightCol = document.createElement("div");
-        rightCol.className = "control-group";
-        rightCol.style.display = "flex";
-        rightCol.style.flexDirection = "column"; // 縦並び
-        rightCol.style.alignItems = "flex-end";  // 右揃え
-        rightCol.style.gap = "12px";
+        const leftSettingsCol = document.createElement("div");
+        leftSettingsCol.className = "control-group";
+        leftSettingsCol.style.display = "flex";
+        leftSettingsCol.style.flexDirection = "column";
+        leftSettingsCol.style.gap = "15px";
 
-        // ↩️もどる リンク (一番上)
+        // ↩️ もどる リンク
         const backLink = document.createElement("a");
         backLink.href = "#";
         backLink.innerHTML = "↩️ もどる";
         backLink.style.textDecoration = "none";
-        backLink.style.color = "var(--text-primary, #333)";
+        backLink.style.color = "var(--text-primary)";
         backLink.style.fontWeight = "bold";
         backLink.style.fontSize = "16px";
-        backLink.style.marginBottom = "4px";
+        backLink.style.marginBottom = "5px";
         backLink.onclick = (e) => {
             e.preventDefault();
             window.history.back();
         };
-        rightCol.appendChild(backLink);
+        leftSettingsCol.appendChild(backLink);
 
         // 1. Recording Toggle
         const recordControl = document.createElement("div");
@@ -332,7 +338,7 @@ function initApp() {
         recordControl.appendChild(labelAutoRecord);
         recordControl.appendChild(switchRecord);
         recordControl.appendChild(labelManualRecord);
-        rightCol.appendChild(recordControl);
+        leftSettingsCol.appendChild(recordControl);
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
 
@@ -366,7 +372,7 @@ function initApp() {
         vocabControl.appendChild(labelHoverHint);
         vocabControl.appendChild(switchHint);
         vocabControl.appendChild(labelParenHint);
-        rightCol.appendChild(vocabControl);
+        leftSettingsCol.appendChild(vocabControl);
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
 
@@ -399,13 +405,11 @@ function initApp() {
         playbackControl.appendChild(labelAutoPlay);
         playbackControl.appendChild(switchPlayback);
         playbackControl.appendChild(labelManualPlay);
-        rightCol.appendChild(playbackControl);
+        leftSettingsCol.appendChild(playbackControl);
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
 
-        topLayoutContainer.appendChild(rightCol);
-
-        // ExampleまたはTaskリストの前に挿入
+        topLayoutContainer.appendChild(leftSettingsCol);
         anchorElement.parentNode.insertBefore(topLayoutContainer, anchorElement);
     }
 
@@ -443,32 +447,30 @@ function initApp() {
     }
 
     if (!container) return;
-    container.innerHTML = "";
-
 
     // ------------------------------------------------------------------------
     // Task 1 header (案内パネル風デザイン)
     // ------------------------------------------------------------------------
     const headerPanelTask1 = document.createElement("div");
-    // インラインスタイルで案内パネル風に強制
-    headerPanelTask1.style.backgroundColor = "#f0f8ff"; 
-    headerPanelTask1.style.borderLeft = "6px solid #4facfe"; 
+    headerPanelTask1.className = "header-panel info-panel";
+    headerPanelTask1.style.backgroundColor = "#f8fbff"; 
+    headerPanelTask1.style.borderLeft = "5px solid #4facfe"; 
     headerPanelTask1.style.padding = "15px 20px";
-    headerPanelTask1.style.borderRadius = "8px";
-    headerPanelTask1.style.boxShadow = "0 2px 5px rgba(0,0,0,0.08)";
+    headerPanelTask1.style.borderRadius = "0 8px 8px 0";
+    headerPanelTask1.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
     headerPanelTask1.style.marginBottom = "20px";
 
     const titleInstructionGroup1 = document.createElement("div");
+    titleInstructionGroup1.className = "title-instruction-group";
     titleInstructionGroup1.style.display = "flex";
     titleInstructionGroup1.style.flexDirection = "column";
-    titleInstructionGroup1.style.gap = "6px";
+    titleInstructionGroup1.style.gap = "5px";
 
     const titleArea1 = document.createElement("span");
-    titleArea1.innerHTML = "<strong style='font-size: 1.2em; color: #2c3e50;'>Task 1；Drills</strong>";
+    titleArea1.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 1；Drills</strong>";
     const descArea1 = document.createElement("span");
-    descArea1.style.color = "var(--text-primary, #444)";
+    descArea1.style.color = "var(--text-primary)";
     descArea1.style.fontSize = "15px";
-    descArea1.style.lineHeight = "1.5";
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
     
     titleInstructionGroup1.appendChild(titleArea1);
@@ -502,25 +504,26 @@ function initApp() {
     // Task 2 header (案内パネル風デザイン)
     // ------------------------------------------------------------------------
     const customHeaderPanel = document.createElement("div");
-    customHeaderPanel.style.backgroundColor = "#fffcf0"; 
-    customHeaderPanel.style.borderLeft = "6px solid #ffb84d"; 
+    customHeaderPanel.className = "header-panel info-panel";
+    customHeaderPanel.style.backgroundColor = "#fffcf5"; 
+    customHeaderPanel.style.borderLeft = "5px solid #ffb84d"; 
     customHeaderPanel.style.padding = "15px 20px";
-    customHeaderPanel.style.borderRadius = "8px";
-    customHeaderPanel.style.marginTop = "35px";
+    customHeaderPanel.style.borderRadius = "0 8px 8px 0";
+    customHeaderPanel.style.marginTop = "30px";
     customHeaderPanel.style.marginBottom = "20px";
-    customHeaderPanel.style.boxShadow = "0 2px 5px rgba(0,0,0,0.08)";
+    customHeaderPanel.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
 
     const titleInstructionGroup2 = document.createElement("div");
+    titleInstructionGroup2.className = "title-instruction-group";
     titleInstructionGroup2.style.display = "flex";
     titleInstructionGroup2.style.flexDirection = "column";
-    titleInstructionGroup2.style.gap = "6px";
+    titleInstructionGroup2.style.gap = "5px";
 
     const titleArea2 = document.createElement("span");
-    titleArea2.innerHTML = "<strong style='font-size: 1.2em; color: #2c3e50;'>Task 2；Custom Practice</strong>";
+    titleArea2.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 2；Custom Practice</strong>";
     const descArea2 = document.createElement("span");
-    descArea2.style.color = "var(--text-primary, #444)";
+    descArea2.style.color = "var(--text-primary)";
     descArea2.style.fontSize = "15px";
-    descArea2.style.lineHeight = "1.5";
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
     titleInstructionGroup2.appendChild(titleArea2);
@@ -991,4 +994,261 @@ function bindRecorderEvents(
         const tryProcessResult = () => {
             if (currentSession.errorMessage || currentSession.processed) return;
             
-            if (currentSession.recognitionDone && currentSession.recorder
+            if (currentSession.recognitionDone && currentSession.recorderDone) {
+                currentSession.processed = true;
+                processRecognitionResult(
+                    currentSession.accumulatedTranscript,
+                    currentX,
+                    currentY,
+                    expectedIsNeg,
+                    resultSpan,
+                    correctionBox,
+                    corrListenBtn,
+                    corrTextSpan,
+                    () => lastAudioUrl
+                );
+            }
+        };
+
+        try {
+            const currentRecognition = new SpeechRecognition();
+            currentSession.recognition = currentRecognition;
+            currentRecognition.lang = "ja-JP";
+            currentRecognition.interimResults = false;
+            currentRecognition.continuous = isManualStop;
+
+            const mediaRecorder = new MediaRecorder(stream);
+            currentSession.mediaRecorder = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) {
+                    currentSession.audioChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
+                lastAudioUrl = URL.createObjectURL(audioBlob);
+                stream.getTracks().forEach(track => track.stop());
+                currentSession.recorderDone = true;
+                tryProcessResult();
+            };
+
+            currentRecognition.onresult = (event) => {
+                if (currentSession.finished || session !== currentSession || currentSession.errorMessage) return;
+                let rawTranscript = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        rawTranscript += event.results[i][0].transcript;
+                    }
+                }
+                currentSession.accumulatedTranscript += rawTranscript;
+            };
+
+            currentRecognition.onerror = (event) => {
+                if (currentSession.finished || session !== currentSession) return;
+                const message =
+                    event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
+                    event.error === "no-speech" ? "No speech detected. Please try again." :
+                    event.error === "audio-capture" ? "Microphone unavailable." :
+                    event.error === "network" ? "Speech recognition network error." :
+                    event.error === "aborted" ? "Recording stopped." :
+                    "Speech recognition error. Please try again.";
+                requestStop(currentSession, true, message);
+            };
+
+            currentRecognition.onend = () => {
+                currentSession.recognitionDone = true;
+                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+                    try { currentSession.mediaRecorder.stop(); } catch (e) {}
+                }
+                tryProcessResult();
+                releaseSession(currentSession);
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+            if (isManualStop) {
+                stopBtn.classList.add("stop-btn-active");
+            } else {
+                stopBtn.classList.remove("stop-btn-active");
+            }
+
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--accent-color)";
+            correctionBox.style.display = "none";
+
+            mediaRecorder.start();
+            currentRecognition.start();
+        } catch (err) {
+            console.error("Speech recognition start error:", err);
+            requestStop(currentSession, true, "Could not start recording. Please try again.");
+        }
+    });
+
+    stopBtn.addEventListener("click", () => {
+        if (!session || session.finished) return;
+        if (session.stopRequested) return;
+        
+        stopAllPlayback();
+        session.stopRequested = true;
+        stopBtn.disabled = true;
+        requestStop(session, false);
+    });
+}
+
+
+// ============================================================================
+// Recognition result processing
+// ============================================================================
+
+function processRecognitionResult(
+    rawTranscript,
+    currentX,
+    currentY,
+    expectedIsNeg,
+    resultSpan,
+    correctionBox,
+    corrListenBtn,
+    corrTextSpan,
+    getUrlFn
+) {
+    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+        resultSpan.textContent = rawTranscript + " (Too short)";
+        resultSpan.style.color = "var(--text-secondary)";
+        return;
+    }
+
+    const hiraText = convertToHiragana(rawTranscript);
+    const hiraX = convertToHiragana(currentX);
+    const hiraY = convertToHiragana(currentY);
+    const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
+
+    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+    const isAffirmative = affRegex.test(hiraText);
+
+    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
+
+    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+
+    // ------------------------------------------------------------------------
+    // Play user's recorded audio button setup
+    // ------------------------------------------------------------------------
+    const appendPlayButton = () => {
+        let playBtn = resultSpan.querySelector(".play-recording-btn");
+        if (!playBtn) {
+            playBtn = document.createElement("button");
+            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+            playBtn.style.marginLeft = "8px";
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
+            playBtn.onclick = () => {
+                const recordedAudioUrl = getUrlFn();
+                if (recordedAudioUrl) {
+                    setPlayingState(playBtn, "Playing...");
+                    const audio = new Audio(recordedAudioUrl);
+                    currentPlayingAudio = audio;
+                    audio.onended = () => stopAllPlayback();
+                    audio.play().catch(e => {
+                        console.warn("Playback failed", e);
+                        stopAllPlayback();
+                    });
+                }
+            };
+            resultSpan.appendChild(playBtn);
+        }
+        return playBtn;
+    };
+
+    let targetPlayBtn = null;
+
+    // ------------------------------------------------------------------------
+    // Evaluation Logic
+    // ------------------------------------------------------------------------
+    if (isAffirmative || isNegative) {
+        resultSpan.textContent = hiraText + " ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        targetPlayBtn = appendPlayButton();
+        correctionBox.style.display = "none";
+    } else {
+        const hasCorrectY = hiraText.includes(hiraY);
+        if (!hasCorrectY) {
+            let highlightedText = hiraText.replace(
+                new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, "g"),
+                '$1<span style="color: var(--accent-color);">$2</span>$3'
+            );
+            resultSpan.innerHTML = highlightedText + " ";
+            resultSpan.style.color = "var(--text-primary)";
+            targetPlayBtn = appendPlayButton();
+            corrTextSpan.textContent = "Wrong word used.";
+            corrListenBtn.style.display = "none";
+        } else {
+            resultSpan.textContent = hiraText + " ";
+            resultSpan.style.color = "var(--error-text)";
+            targetPlayBtn = appendPlayButton();
+            corrTextSpan.textContent = "Structure error, try it again";
+            corrListenBtn.style.display = "inline-block";
+
+            const correctSentenceForBtn = expectedIsNeg
+                ? `${currentX}は、${currentY}じゃないです。`
+                : `${currentX}は、${currentY}です。`;
+
+            corrListenBtn.onclick = () => {
+                setPlayingState(corrListenBtn, "Playing...");
+                speakText(correctSentenceForBtn, 0.7, () => stopAllPlayback());
+            };
+        }
+        correctionBox.style.display = "block";
+    }
+
+    // ------------------------------------------------------------------------
+    // Auto Play Sequence: 0.5s Wait -> Model Audio (85%) -> 0.1s Wait -> User Audio (100%)
+    // ------------------------------------------------------------------------
+    const runAutoPlaySequence = (btn) => {
+        if (!isAutoPlay) return;
+
+        const recordedAudioUrl = getUrlFn();
+        if (!recordedAudioUrl || !btn) return;
+
+        setPlayingState(btn, "Playing...");
+
+        const correctSentence = expectedIsNeg
+            ? `${currentX}は、${currentY}じゃないです。`
+            : `${currentX}は、${currentY}です。`;
+
+        const utterance = new SpeechSynthesisUtterance(correctSentence);
+        utterance.lang = "ja-JP";
+        utterance.rate = 0.85;
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
+        currentUtteranceRef = utterance;
+
+        utterance.onend = () => {
+            currentUtteranceRef = null;
+            currentPlayTimeoutId = setTimeout(() => {
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.playbackRate = 1.0;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => {
+                    console.warn("Auto playback failed", e);
+                    stopAllPlayback();
+                });
+            }, 100);
+        };
+
+        utterance.onerror = () => stopAllPlayback();
+
+        currentPlayTimeoutId = setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 500);
+    };
+
+    runAutoPlaySequence(targetPlayBtn);
+}
