@@ -36,7 +36,6 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
-// Task 3 用の専用語彙リスト（Task 1, 2に未登場の初級第1課語彙）
 const task3VocabLists = {
     genki1: [
         { xEng: "I", xHira: "わたし", yEng: "college student", yHira: "だいがくせい" },
@@ -278,7 +277,7 @@ function initExampleListen() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 1 (奇数: Affirmative, 偶数: Negative に順番整備)
+// Task 1
 // ----------------------------------------------------------------------------
 function initTask1() {
     const container = document.getElementById("task1List");
@@ -308,7 +307,7 @@ function initTask1() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 2 (奇数: Affirmative, 偶数: Negative ＆ フォントTask1統一)
+// Task 2
 // ----------------------------------------------------------------------------
 function initTask2() {
     const container = document.getElementById("task2List");
@@ -474,18 +473,16 @@ function initTask2() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 3 (Challenge - 自由入力 ＆ Use Hintsボタンでの専用語彙転記・内部日本語マッピング)
+// Task 3
 // ----------------------------------------------------------------------------
 function initTask3Container() {
     const container = document.getElementById("task3List");
-    const addBtn = document.getElementById("addThreeBtn");
     const useHintsBtn = document.getElementById("useHintsBtn");
     const vocabSelect = document.getElementById("vocabSourceSelect");
     if (!container) return;
 
     let rowCount = 0;
 
-    // 英語ヒントから対応する日本語（ひらがな）を逆引きするマッピング辞書
     const englishToHiraMap = {
         "i": "わたし", "college student": "だいがくせい", "major": "せんこう", 
         "korea": "かんこく", "england": "イギリス", "university": "だいがく", 
@@ -494,17 +491,14 @@ function initTask3Container() {
 
     function resolveJapanese(val) {
         const clean = val.trim().toLowerCase();
-        return englishToHiraMap[clean] || val; // 英語ヒントなら対応日本語に変換、自分でタイプされた日本語ならそのまま
+        return englishToHiraMap[clean] || val;
     }
 
     function addTask3Row() {
-        if (rowCount >= 12) {
-            alert("Maximum limit of 12 sentences reached.");
-            return;
-        }
+        if (rowCount >= 12) return;
         rowCount++;
         const currentGlobalIndex = taskData.length + 3 + rowCount;
-        const isCustomNeg = (rowCount % 2 === 0); // 奇数行: Affirmative, 偶数行: Negative
+        const isCustomNeg = (rowCount % 2 === 0);
 
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
@@ -613,29 +607,20 @@ function initTask3Container() {
         container.appendChild(rowDiv);
     }
 
-    // 初期状態3行生成
     container.innerHTML = "";
     for (let k = 0; k < 3; k++) {
         addTask3Row();
     }
 
-    // + Add 3 More ボタン
-    if (addBtn) {
-        const newAddBtn = addBtn.cloneNode(true);
-        addBtn.parentNode.replaceChild(newAddBtn, addBtn);
-        newAddBtn.addEventListener("click", () => {
-            for (let k = 0; k < 3; k++) {
-                if (rowCount < 12) addTask3Row();
-            }
-        });
-    }
-
-    // 🎯 Use Hints ボタン（未入力の行に対して選択中の教科書の専用英語ヒントを自動転記）
     if (useHintsBtn) {
         const newHintsBtn = useHintsBtn.cloneNode(true);
         useHintsBtn.parentNode.replaceChild(newHintsBtn, useHintsBtn);
         newHintsBtn.addEventListener("click", () => {
-            const source = vocabSelect ? vocabSelect.value : "genki1";
+            const source = vocabSelect ? vocabSelect.value : "";
+            if (!source) {
+                alert("Please select a textbook first.");
+                return;
+            }
             const list = task3VocabLists[source] || task3VocabLists.genki1;
             
             const rows = container.querySelectorAll(".drill-row");
