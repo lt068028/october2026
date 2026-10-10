@@ -212,7 +212,7 @@ h1 {
 
 .custom-input::placeholder {
     color: var(--text-secondary);
-    opacity: 0.6; /* 英語ヒントを半透明で表示 */
+    opacity: 0.6;
 }
 
 .correction-box {
