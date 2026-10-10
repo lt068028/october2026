@@ -25,25 +25,31 @@
         <!-- 左カラム：Example -->
         <div class="example-container">
             <div class="example-box">
-                <div class="example-line flex-row-center">
-                    <div>
+                <!-- Affirmative -->
+                <div class="example-line" style="margin-bottom: 12px;">
+                    <div style="margin-bottom: 6px; font-size: 15px;">
                         <strong class="example-label-title">Affirmative:</strong> 
                         <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
                         <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
-                        <span style="font-size: 16px; margin: 0 4px;">👉</span> わたしは、がくせいです。 
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span>
                     </div>
-                    <button id="ex1Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                        <span style="font-size: 16px;">👉</span>
+                        <button id="ex1Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                        <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+                    </div>
                 </div>
-                <div class="example-line dashed-border flex-row-center" style="margin-top: 10px; padding-top: 10px;">
-                    <div>
+                <!-- Negative -->
+                <div class="example-line dashed-border" style="padding-top: 12px;">
+                    <div style="margin-bottom: 6px; font-size: 15px;">
                         <strong class="example-label-title">Negative:</strong> 
                         <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
                         <span class="tooltip-wrap"><span class="target-word">せんせい</span><span class="tooltip-tip">sensei, teacher</span></span> 
-                        <span style="font-size: 16px; margin: 0 4px;">👉</span> わたしは、せんせいじゃないです。 
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span>
                     </div>
-                    <button id="ex2Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                        <span style="font-size: 16px;">👉</span>
+                        <button id="ex2Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                        <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,23 +57,7 @@
         <!-- 右カラム：グローバル設定パネル -->
         <div class="settings-container">
             <div class="settings-group">
-                <!-- Recording Toggle -->
-                <div class="control-item">
-                    <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
-                        <span class="icon-emoji">⏹️</span>Autostop
-                        <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
-                    </span>
-                    <label class="switch">
-                        <input type="checkbox" id="toggleRecordMode">
-                        <span class="slider"></span>
-                    </label>
-                    <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
-                        <span class="icon-emoji">⏹️</span>Manual stop
-                        <span class="custom-tip-box">Records continuously until you click the stop button.</span>
-                    </span>
-                </div>
-
-                <!-- Vocab Hint Toggle -->
+                <!-- 1. Vocab Hint Toggle -->
                 <div class="control-item">
                     <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
                         <span class="icon-emoji">💬</span> Vocab Hint
@@ -83,7 +73,23 @@
                     </span>
                 </div>
 
-                <!-- Playback Toggle -->
+                <!-- 2. Recording Toggle -->
+                <div class="control-item">
+                    <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleRecordMode">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏹️</span>Manual stop
+                        <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                    </span>
+                </div>
+
+                <!-- 3. Playback Toggle -->
                 <div class="control-item">
                     <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
                         <span class="icon-emoji">▶️</span>Autoplay
