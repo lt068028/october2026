@@ -33,17 +33,17 @@
                 </span>
             </div>
 
-            <!-- Recording Toggle -->
+            <!-- Recording Toggle (Default: Manual stop) -->
             <div class="control-item">
-                <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                <span id="labelAutoRecord" class="mode-label inactive-mode custom-tip-wrap">
                     <span class="icon-emoji">⏹️</span>Autostop
                     <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
                 </span>
                 <label class="switch">
-                    <input type="checkbox" id="toggleRecordMode">
+                    <input type="checkbox" id="toggleRecordMode" checked>
                     <span class="slider"></span>
                 </label>
-                <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                <span id="labelManualRecord" class="mode-label active-mode custom-tip-wrap">
                     <span class="icon-emoji">⏹️</span>Manual stop
                     <span class="custom-tip-box">Records continuously until you click the stop button.</span>
                 </span>
@@ -89,7 +89,7 @@
          ========================================================= -->
     <div class="info-panel info-panel-task1" style="margin-top: 25px;">
         <span class="info-panel-title">Drill 1</span>
-        <span class="info-panel-desc">💡 Listen to the model, record your voice, and practice pitch accent.</span>
+        <span class="info-panel-desc">💡 Listen to the model, mimic the voice and speak aloud.</span>
     </div>
     <div id="drill1List"></div>
 
