@@ -10,7 +10,7 @@ const drill1Data = [
     { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#fda4af" }
 ];
 
-let isManualStop = true; // デフォルトは Manual stop
+let isManualStop = true; 
 let isAutoPlay = true; 
 let useHiraganaOnly = false;
 let activeRecognitionSession = null;
@@ -97,21 +97,21 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 正確なピッチアクセント判定に基づく上線（overline）と下線（underline）のパーサー
+// 安全なピッチアクセントHTMLパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
-    let isHigh = true; // 語頭のデフォルトは高ピッチ（上線）
+    let isHigh = true; 
     
     let i = 0;
     while (i < textStr.length) {
         let ch = textStr[i];
         if (ch === '↘' || ch === '＼') {
             resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
-            isHigh = false; // 下落後は低ピッチ（下線）
+            isHigh = false; 
             i++;
         } else if (ch === '↗' || ch === '/') {
             resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
-            isHigh = true; // 上昇後は高ピッチ（上線）
+            isHigh = true; 
             i++;
         } else if (ch === '｜') {
             resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 4px;">${ch}</span>`;
@@ -121,24 +121,17 @@ function renderPitchAccentHTML(textStr, color) {
             i++;
         } else {
             let nextCh = textStr[i+1];
-            let isPrecedingSymbol = (nextCh === '↘' || nextCh === '↗' || nextCh === '＼' || nextCh === '/');
-            
             let effectiveHigh = isHigh;
-            // ↘（下降）の直前はまだ高いので上線、↗（上昇）の直前はまだ低いので下線を維持
-            if (isPrecedingSymbol) {
-                if (nextCh === '↘' || nextCh === '＼') {
-                    effectiveHigh = true; 
-                } else if (nextCh === '↗' || nextCh === '/') {
-                    effectiveHigh = false;
-                }
+            
+            if (nextCh === '↘' || nextCh === '＼') {
+                effectiveHigh = true; 
+            } else if (nextCh === '↗' || nextCh === '/') {
+                effectiveHigh = false;
             }
             
-            let decorationStyle = '';
-            if (effectiveHigh) {
-                decorationStyle = `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
-            } else {
-                decorationStyle = `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
-            }
+            let decorationStyle = effectiveHigh
+                ? `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`
+                : `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
             
             resultHTML += `<span style="${decorationStyle}">${ch}</span>`;
             i++;
@@ -233,7 +226,7 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            updateDrill1Prompts(); // 録音データを消さずにプロンプト文面のみを更新
+            updateDrill1Prompts();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
