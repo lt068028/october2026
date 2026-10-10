@@ -864,4 +864,23 @@ function processDrill2Result(rawTranscript, resultSpan, getUrlFn) {
         };
         resultSpan.appendChild(playBtn);
     }
+
+    // Drill 2: 録音完了後、Autoplayが有効なら即座に自分の音声を自動再生する（Playing...表示連動）
+    const runDrill2AutoPlay = () => {
+        if (!isAutoPlay) return;
+        const recordedAudioUrl = getUrlFn();
+        if (!recordedAudioUrl || !playBtn) return;
+
+        setPlayingStateMultiple([playBtn], "Playing...");
+        const audio = new Audio(recordedAudioUrl);
+        currentPlayingAudio = audio;
+        audio.playbackRate = 1.0;
+        audio.onended = () => stopAllPlayback();
+        audio.play().catch(e => {
+            console.warn("Drill 2 auto playback failed", e);
+            stopAllPlayback();
+        });
+    };
+
+    runDrill2AutoPlay();
 }
