@@ -215,6 +215,11 @@ h1 {
     opacity: 0.6;
 }
 
+/* 結果表示部分を右寄せにする指定 */
+.result-text {
+    margin-left: auto;
+}
+
 .correction-box {
     display: none; margin-top: 10px; padding: 10px 12px; background-color: var(--error-bg);
     border: 1px solid var(--error-border); color: var(--error-text); border-radius: 4px; font-size: 14px;
