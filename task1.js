@@ -53,7 +53,6 @@ function setupPreferredVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    // クラッシュを防ぐため、name や lang プロパティの存在確認を追加
     let selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
     
     if (!selected) {
@@ -200,6 +199,8 @@ function speakText(text, rate = 1.0, onEndCallback) {
 // ============================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 古いサイドバー余白などが残っていればリセット
+    document.body.style.paddingLeft = "";
     initApp();
     setupFooterGuide();
 });
@@ -271,150 +272,35 @@ function initApp() {
     const exampleSection = document.getElementById("exampleSection");
     const container = document.getElementById("task1List");
 
-    // コンテナが存在する場合、設定ブロックを作る前に中身を確実にクリアしておく
+    // コンテナ初期化
     if (container) {
         container.innerHTML = "";
     }
 
-    const anchorElement = exampleSection || container;
-
     // ------------------------------------------------------------------------
-    // Top Layout Setup (もどるリンク と 3段トグル を左寄りに縦並び配置)
+    // 1. ↩️もどる リンクをページ最上部（bodyの最初）に挿入
     // ------------------------------------------------------------------------
-    if (anchorElement && anchorElement.parentNode) {
-        const topLayoutContainer = document.createElement("div");
-        topLayoutContainer.style.display = "flex";
-        topLayoutContainer.style.justifyContent = "flex-start"; // 左寄せ
-        topLayoutContainer.style.marginBottom = "20px";
-        topLayoutContainer.style.width = "100%";
-
-        const leftSettingsCol = document.createElement("div");
-        leftSettingsCol.className = "control-group";
-        leftSettingsCol.style.display = "flex";
-        leftSettingsCol.style.flexDirection = "column";
-        leftSettingsCol.style.gap = "15px";
-
-        // ↩️ もどる リンク
+    if (!document.getElementById("top-back-link")) {
         const backLink = document.createElement("a");
+        backLink.id = "top-back-link";
         backLink.href = "#";
         backLink.innerHTML = "↩️ もどる";
+        backLink.style.display = "inline-block";
+        backLink.style.margin = "15px 20px";
         backLink.style.textDecoration = "none";
-        backLink.style.color = "var(--text-primary)";
+        backLink.style.color = "var(--text-primary, #333)";
         backLink.style.fontWeight = "bold";
         backLink.style.fontSize = "16px";
-        backLink.style.marginBottom = "5px";
         backLink.onclick = (e) => {
             e.preventDefault();
             window.history.back();
         };
-        leftSettingsCol.appendChild(backLink);
-
-        // 1. Recording Toggle
-        const recordControl = document.createElement("div");
-        recordControl.className = "control-item";
-        
-        const labelAutoRecord = document.createElement("span");
-        labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
-
-        const switchRecord = document.createElement("label");
-        switchRecord.className = "switch";
-        const inputRecord = document.createElement("input");
-        inputRecord.type = "checkbox";
-        inputRecord.checked = isManualStop;
-        const sliderRecord = document.createElement("span");
-        sliderRecord.className = "slider";
-        switchRecord.appendChild(inputRecord);
-        switchRecord.appendChild(sliderRecord);
-
-        const labelManualRecord = document.createElement("span");
-        labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
-
-        inputRecord.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
-        });
-
-        recordControl.appendChild(labelAutoRecord);
-        recordControl.appendChild(switchRecord);
-        recordControl.appendChild(labelManualRecord);
-        leftSettingsCol.appendChild(recordControl);
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
-
-        // 2. Vocab Hint Toggle
-        const vocabControl = document.createElement("div");
-        vocabControl.className = "control-item";
-        
-        const labelHoverHint = document.createElement("span");
-        labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
-
-        const switchHint = document.createElement("label");
-        switchHint.className = "switch";
-        const inputHint = document.createElement("input");
-        inputHint.type = "checkbox";
-        inputHint.checked = (hintMode === "paren");
-        const sliderHint = document.createElement("span");
-        sliderHint.className = "slider";
-        switchHint.appendChild(inputHint);
-        switchHint.appendChild(sliderHint);
-
-        const labelParenHint = document.createElement("span");
-        labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
-
-        inputHint.addEventListener("change", (e) => {
-            hintMode = e.target.checked ? "paren" : "hover";
-            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-            updateWordsDisplay();
-        });
-
-        vocabControl.appendChild(labelHoverHint);
-        vocabControl.appendChild(switchHint);
-        vocabControl.appendChild(labelParenHint);
-        leftSettingsCol.appendChild(vocabControl);
-        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-
-        // 3. Playback Toggle (Auto/Manual)
-        const playbackControl = document.createElement("div");
-        playbackControl.className = "control-item";
-
-        const labelAutoPlay = document.createElement("span");
-        labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
-
-        const switchPlayback = document.createElement("label");
-        switchPlayback.className = "switch";
-        const inputPlayback = document.createElement("input");
-        inputPlayback.type = "checkbox";
-        inputPlayback.checked = !isAutoPlay; 
-        const sliderPlayback = document.createElement("span");
-        sliderPlayback.className = "slider";
-        switchPlayback.appendChild(inputPlayback);
-        switchPlayback.appendChild(sliderPlayback);
-
-        const labelManualPlay = document.createElement("span");
-        labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
-
-        inputPlayback.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-        });
-
-        playbackControl.appendChild(labelAutoPlay);
-        playbackControl.appendChild(switchPlayback);
-        playbackControl.appendChild(labelManualPlay);
-        leftSettingsCol.appendChild(playbackControl);
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-
-        topLayoutContainer.appendChild(leftSettingsCol);
-        anchorElement.parentNode.insertBefore(topLayoutContainer, anchorElement);
+        // ページの一番上に挿入
+        document.body.insertBefore(backLink, document.body.firstChild);
     }
 
     // ------------------------------------------------------------------------
-    // Example Section Initialization
+    // 2. Example Section Initialization
     // ------------------------------------------------------------------------
     if (exampleSection) {
         const ex1X = formatWord("わたし", "watashi", "I");
@@ -446,37 +332,152 @@ function initApp() {
         setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
     }
 
+    // ------------------------------------------------------------------------
+    // 3. Global Settings Panel (Exampleの下に配置)
+    // ------------------------------------------------------------------------
+    const anchorElement = exampleSection || container;
+    if (anchorElement && anchorElement.parentNode) {
+        const globalSettingsPanel = document.createElement("div");
+        globalSettingsPanel.style.backgroundColor = "var(--bg-secondary, #f4f6f8)";
+        globalSettingsPanel.style.padding = "15px";
+        globalSettingsPanel.style.borderRadius = "8px";
+        globalSettingsPanel.style.marginBottom = "30px"; // Task 1との間隔
+        globalSettingsPanel.style.display = "flex";
+        globalSettingsPanel.style.flexWrap = "wrap"; // 画面幅に応じて折り返す
+        globalSettingsPanel.style.gap = "15px";
+
+        // Recording Toggle
+        const recordControl = document.createElement("div");
+        recordControl.className = "control-item";
+        
+        const labelAutoRecord = document.createElement("span");
+        labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+
+        const switchRecord = document.createElement("label");
+        switchRecord.className = "switch";
+        const inputRecord = document.createElement("input");
+        inputRecord.type = "checkbox";
+        inputRecord.checked = isManualStop;
+        const sliderRecord = document.createElement("span");
+        sliderRecord.className = "slider";
+        switchRecord.appendChild(inputRecord);
+        switchRecord.appendChild(sliderRecord);
+
+        const labelManualRecord = document.createElement("span");
+        labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+
+        inputRecord.addEventListener("change", (e) => {
+            isManualStop = e.target.checked;
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+            updateToggleLabelStyle(labelManualRecord, isManualStop);
+        });
+
+        recordControl.appendChild(labelAutoRecord);
+        recordControl.appendChild(switchRecord);
+        recordControl.appendChild(labelManualRecord);
+        globalSettingsPanel.appendChild(recordControl);
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        updateToggleLabelStyle(labelManualRecord, isManualStop);
+
+        // Vocab Hint Toggle
+        const vocabControl = document.createElement("div");
+        vocabControl.className = "control-item";
+        
+        const labelHoverHint = document.createElement("span");
+        labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+
+        const switchHint = document.createElement("label");
+        switchHint.className = "switch";
+        const inputHint = document.createElement("input");
+        inputHint.type = "checkbox";
+        inputHint.checked = (hintMode === "paren");
+        const sliderHint = document.createElement("span");
+        sliderHint.className = "slider";
+        switchHint.appendChild(inputHint);
+        switchHint.appendChild(sliderHint);
+
+        const labelParenHint = document.createElement("span");
+        labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+
+        inputHint.addEventListener("change", (e) => {
+            hintMode = e.target.checked ? "paren" : "hover";
+            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            updateWordsDisplay();
+        });
+
+        vocabControl.appendChild(labelHoverHint);
+        vocabControl.appendChild(switchHint);
+        vocabControl.appendChild(labelParenHint);
+        globalSettingsPanel.appendChild(vocabControl);
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+
+        // Playback Toggle (Auto/Manual)
+        const playbackControl = document.createElement("div");
+        playbackControl.className = "control-item";
+
+        const labelAutoPlay = document.createElement("span");
+        labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
+
+        const switchPlayback = document.createElement("label");
+        switchPlayback.className = "switch";
+        const inputPlayback = document.createElement("input");
+        inputPlayback.type = "checkbox";
+        inputPlayback.checked = !isAutoPlay; 
+        const sliderPlayback = document.createElement("span");
+        sliderPlayback.className = "slider";
+        switchPlayback.appendChild(inputPlayback);
+        switchPlayback.appendChild(sliderPlayback);
+
+        const labelManualPlay = document.createElement("span");
+        labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
+
+        inputPlayback.addEventListener("change", (e) => {
+            isAutoPlay = !e.target.checked;
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+        });
+
+        playbackControl.appendChild(labelAutoPlay);
+        playbackControl.appendChild(switchPlayback);
+        playbackControl.appendChild(labelManualPlay);
+        globalSettingsPanel.appendChild(playbackControl);
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+
+        // Example要素の直後に設定パネルを挿入
+        if (exampleSection && exampleSection.nextSibling) {
+            exampleSection.parentNode.insertBefore(globalSettingsPanel, exampleSection.nextSibling);
+        } else {
+            container.parentNode.insertBefore(globalSettingsPanel, container);
+        }
+    }
+
     if (!container) return;
 
     // ------------------------------------------------------------------------
-    // Task 1 header (案内パネル風デザイン)
+    // Task 1 header (案内パネル風デザイン: 青系)
     // ------------------------------------------------------------------------
     const headerPanelTask1 = document.createElement("div");
-    headerPanelTask1.className = "header-panel info-panel";
-    headerPanelTask1.style.backgroundColor = "#f8fbff"; 
-    headerPanelTask1.style.borderLeft = "5px solid #4facfe"; 
-    headerPanelTask1.style.padding = "15px 20px";
-    headerPanelTask1.style.borderRadius = "0 8px 8px 0";
-    headerPanelTask1.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
+    headerPanelTask1.style.backgroundColor = "#f0f8ff"; // 淡い青
+    headerPanelTask1.style.borderLeft = "5px solid #007bff"; 
+    headerPanelTask1.style.padding = "10px 15px";
+    headerPanelTask1.style.borderRadius = "0 4px 4px 0";
     headerPanelTask1.style.marginBottom = "20px";
-
-    const titleInstructionGroup1 = document.createElement("div");
-    titleInstructionGroup1.className = "title-instruction-group";
-    titleInstructionGroup1.style.display = "flex";
-    titleInstructionGroup1.style.flexDirection = "column";
-    titleInstructionGroup1.style.gap = "5px";
+    headerPanelTask1.style.display = "flex";
+    headerPanelTask1.style.flexDirection = "column";
+    headerPanelTask1.style.gap = "4px";
 
     const titleArea1 = document.createElement("span");
-    titleArea1.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 1；Drills</strong>";
+    titleArea1.innerHTML = "<strong style='font-size: 1.1em; color: #0056b3;'>Task 1；Drills</strong>";
     const descArea1 = document.createElement("span");
-    descArea1.style.color = "var(--text-primary)";
+    descArea1.style.color = "#333";
     descArea1.style.fontSize = "15px";
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
     
-    titleInstructionGroup1.appendChild(titleArea1);
-    titleInstructionGroup1.appendChild(descArea1);
-
-    headerPanelTask1.appendChild(titleInstructionGroup1);
+    headerPanelTask1.appendChild(titleArea1);
+    headerPanelTask1.appendChild(descArea1);
     container.appendChild(headerPanelTask1);
 
     // ------------------------------------------------------------------------
@@ -501,34 +502,28 @@ function initApp() {
     });
 
     // ------------------------------------------------------------------------
-    // Task 2 header (案内パネル風デザイン)
+    // Task 2 header (案内パネル風デザイン: オレンジ系)
     // ------------------------------------------------------------------------
     const customHeaderPanel = document.createElement("div");
-    customHeaderPanel.className = "header-panel info-panel";
-    customHeaderPanel.style.backgroundColor = "#fffcf5"; 
-    customHeaderPanel.style.borderLeft = "5px solid #ffb84d"; 
-    customHeaderPanel.style.padding = "15px 20px";
-    customHeaderPanel.style.borderRadius = "0 8px 8px 0";
+    customHeaderPanel.style.backgroundColor = "#fff8f0"; // 淡いオレンジ
+    customHeaderPanel.style.borderLeft = "5px solid #ff9900"; 
+    customHeaderPanel.style.padding = "10px 15px";
+    customHeaderPanel.style.borderRadius = "0 4px 4px 0";
     customHeaderPanel.style.marginTop = "30px";
     customHeaderPanel.style.marginBottom = "20px";
-    customHeaderPanel.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
-
-    const titleInstructionGroup2 = document.createElement("div");
-    titleInstructionGroup2.className = "title-instruction-group";
-    titleInstructionGroup2.style.display = "flex";
-    titleInstructionGroup2.style.flexDirection = "column";
-    titleInstructionGroup2.style.gap = "5px";
+    customHeaderPanel.style.display = "flex";
+    customHeaderPanel.style.flexDirection = "column";
+    customHeaderPanel.style.gap = "4px";
 
     const titleArea2 = document.createElement("span");
-    titleArea2.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 2；Custom Practice</strong>";
+    titleArea2.innerHTML = "<strong style='font-size: 1.1em; color: #cc7a00;'>Task 2；Custom Practice</strong>";
     const descArea2 = document.createElement("span");
-    descArea2.style.color = "var(--text-primary)";
+    descArea2.style.color = "#333";
     descArea2.style.fontSize = "15px";
     descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
 
-    titleInstructionGroup2.appendChild(titleArea2);
-    titleInstructionGroup2.appendChild(descArea2);
-    customHeaderPanel.appendChild(titleInstructionGroup2);
+    customHeaderPanel.appendChild(titleArea2);
+    customHeaderPanel.appendChild(descArea2);
     container.appendChild(customHeaderPanel);
 
     // ------------------------------------------------------------------------
