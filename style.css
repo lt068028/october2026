@@ -1,7 +1,6 @@
 /* ==========================================
-   Global Theme Variables (Light Mode Default)
+   Global Theme Variables
    ========================================== */
-
 :root {
     --bg-main: #ffffff;
     --bg-panel: #f1f5f9;
@@ -10,20 +9,13 @@
     --text-primary: #333333;
     --text-secondary: #64748b;
     --accent-color: #2196F3;
-
     --button-bg: #f8f9fa;
-    --button-hover: #e9ecef;
-
     --button-disabled-bg: #e2e8f0;
-    --button-disabled-text: #a0aec0;
-
     --tooltip-bg: #333333;
     --tooltip-text: #ffffff;
-
     --error-bg: #fff1f2;
     --error-border: #fda4af;
     --error-text: #be123c;
-
     --rec-active-bg: #be123c;
     --rec-active-text: #ffffff;
 }
@@ -37,29 +29,17 @@
         --text-primary: #f8fafc;
         --text-secondary: #94a3b8;
         --accent-color: #38bdf8;
-
         --button-bg: #334155;
-        --button-hover: #475569;
-
         --button-disabled-bg: #1e293b;
-        --button-disabled-text: #64748b;
-
         --tooltip-bg: #f8fafc;
         --tooltip-text: #0f172a;
-
         --error-bg: #4c0519;
         --error-border: #9f1239;
         --error-text: #fecdd3;
-
         --rec-active-bg: #9f1239;
         --rec-active-text: #fecdd3;
     }
 }
-
-
-/* ==========================================
-   Body
-   ========================================== */
 
 body {
     background-color: var(--bg-main);
@@ -68,16 +48,7 @@ body {
     max-width: 900px;
     margin: 40px auto;
     padding: 20px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-h1,
-h2,
-h3,
-p,
-a,
-li {
-    color: var(--text-primary);
+    position: relative; /* absolute配置の基準位置 */
 }
 
 h1 {
@@ -85,73 +56,81 @@ h1 {
     margin-bottom: 20px;
 }
 
-a {
-    color: var(--accent-color);
+/* ==========================================
+   Top Back Link (右上端配置)
+   ========================================== */
+.top-right-back {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 16px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
 }
-
+.top-right-back:hover {
+    background-color: var(--bg-panel);
+}
 
 /* ==========================================
-   Header / Global Settings Panel
+   Top Dashboard (左：Example, 右：Settings)
    ========================================== */
-
-.header-panel {
+.top-dashboard {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 12px 16px;
-    background: var(--bg-panel);
-    border: none !important;
-    border-radius: 8px;
-    flex-wrap: nowrap;
-    gap: 16px;
-}
-
-.global-settings {
-    flex-wrap: wrap;
-    gap: 15px;
+    align-items: flex-start;
+    gap: 20px;
     margin-bottom: 30px;
 }
 
-.title-instruction-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 7;
+.example-container {
+    flex: 1; /* 左側は取れるだけの幅をとる */
+    min-width: 0; 
 }
 
-.control-group {
+.settings-container {
+    flex: 0 0 320px; /* 右側の設定パネルは幅320pxに固定 */
+    background-color: var(--bg-panel);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.settings-group {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    flex: 3;
+    gap: 20px;
 }
 
 .control-item {
     display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-
 /* ==========================================
-   Info Panels (Task 1, 2, 3)
+   Info Panels (単一の青系デザイン)
    ========================================== */
-
 .info-panel {
     display: flex;
     flex-direction: column;
     gap: 5px;
     padding: 15px 20px;
     border-radius: 0 8px 8px 0;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background-color: #f0f8ff; 
+    border-left: 5px solid #007bff;
 }
 
 .info-panel-title {
     font-size: 1.15em;
     font-weight: bold;
+    color: #0056b3;
 }
 
 .info-panel-desc {
@@ -159,54 +138,48 @@ a {
     color: var(--text-primary);
 }
 
-/* Task 1: 鮮やかな青系 */
-.info-panel-task1 {
-    background-color: #f0f8ff;
-    border-left: 5px solid #007bff;
-}
-.info-panel-task1 .info-panel-title { color: #0056b3; }
-
-/* Task 2: トーンを落とした落ち着いた青系 */
-.info-panel-task2 {
-    background-color: #f1f5f9;
-    border-left: 5px solid #475569;
-}
-.info-panel-task2 .info-panel-title { color: #334155; }
-
-/* Task 3: さらにトーンを落としたグレーに近い青系 */
-.info-panel-task3 {
-    background-color: #f8fafc;
-    border-left: 5px solid #94a3b8;
-}
-.info-panel-task3 .info-panel-title { color: #475569; }
-
 @media (prefers-color-scheme: dark) {
-    .info-panel-task1 {
+    .info-panel {
         background-color: #0c3359;
         border-left-color: #3b82f6;
     }
-    .info-panel-task1 .info-panel-title { color: #93c5fd; }
-    
-    .info-panel-task2 {
-        background-color: #1e293b;
-        border-left-color: #64748b;
-    }
-    .info-panel-task2 .info-panel-title { color: #cbd5e1; }
-    
-    .info-panel-task3 {
-        background-color: #0f172a;
-        border-left-color: #475569;
-        border: 1px solid #334155;
-        border-left-width: 5px;
-    }
-    .info-panel-task3 .info-panel-title { color: #94a3b8; }
+    .info-panel-title { color: #93c5fd; }
 }
 
+/* ==========================================
+   Example Box (1行レイアウト対応)
+   ========================================== */
+.example-box {
+    background-color: #fefce8;
+    border: 1px solid #fde047;
+    padding: 24px 16px 16px 16px;
+    border-radius: 6px;
+    color: var(--text-primary);
+    position: relative;
+    margin-top: 8px;
+}
+.example-box::before {
+    content: "Example"; position: absolute; top: -10px; left: 12px;
+    background-color: #ca8a04; color: #ffffff; font-size: 11px; font-weight: bold;
+    padding: 2px 8px; border-radius: 4px;
+}
+.flex-row-center {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.dashed-border { border-top: 1px dashed #ca8a04; }
+
+@media (prefers-color-scheme: dark) {
+    .example-box { background-color: #422006; border-color: #ca8a04; }
+    .dashed-border { border-top-color: #713f12; }
+}
 
 /* ==========================================
-   Drill Rows
+   Drill Rows & Elements
    ========================================== */
-
 .drill-row {
     background-color: var(--bg-row);
     border: 1px solid var(--border-color);
@@ -214,346 +187,73 @@ a {
     margin-bottom: 12px;
     border-radius: 6px;
 }
-
 .top-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
 }
-
-.prompt-label {
-    font-size: 16px;
-    font-weight: 500;
-}
-
+.prompt-label { font-size: 16px; font-weight: 500; }
 .custom-select {
-    padding: 4px 8px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid var(--border-color);
-    background-color: var(--button-bg);
-    color: var(--text-primary);
+    padding: 4px 8px; font-size: 14px; border-radius: 4px; border: 1px solid var(--border-color); background-color: var(--button-bg); color: var(--text-primary);
 }
-
-.translation-preview {
-    margin-left: 4px;
-    margin-right: 4px;
-}
-
-.result-text {
-    margin-left: auto;
-    font-size: 14px;
-}
-
 .correction-box {
-    display: none;
-    margin-top: 10px;
-    padding: 10px 12px;
-    background-color: var(--error-bg);
-    border: 1px solid var(--error-border);
-    color: var(--error-text);
-    border-radius: 4px;
-    font-size: 14px;
+    display: none; margin-top: 10px; padding: 10px 12px; background-color: var(--error-bg);
+    border: 1px solid var(--error-border); color: var(--error-text); border-radius: 4px; font-size: 14px;
 }
-
 
 /* ==========================================
-   Mode Switch
+   Buttons & Switches
    ========================================== */
-
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 36px;
-    height: 20px;
-}
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--button-disabled-bg);
-    transition: .3s;
-    border-radius: 20px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-}
-
-input:checked + .slider {
-    background-color: var(--accent-color);
-}
-
-input:checked + .slider:before {
-    transform: translateX(16px);
-}
-
-.mode-label {
-    font-size: 13px;
-    color: var(--text-primary);
-}
-
-.active-mode {
-    font-weight: bold;
-}
-
-.inactive-mode {
-    color: var(--text-secondary);
-}
-
-
-/* ==========================================
-   Emoji Filtering
-   ========================================== */
-
-.icon-emoji {
-    display: inline-block;
-    transition: filter 0.3s, opacity 0.3s;
-}
-
-.mode-label.inactive-mode .icon-emoji {
-    filter: grayscale(100%);
-    opacity: 0.55;
-}
-
-.mode-label.active-mode .icon-emoji {
-    filter: none;
-    opacity: 1;
-}
-
-
-/* ==========================================
-   Recording Stop Button Active State
-   ========================================== */
-
-.stop-btn-active {
-    background-color: var(--rec-active-bg) !important;
-    color: var(--rec-active-text) !important;
-    border-color: var(--rec-active-bg) !important;
-    font-weight: bold;
-}
-
-
-/* ==========================================
-   Disabled Button
-   ========================================== */
-
 .example-button {
-    padding: 4px 8px;
-    font-size: 13px;
-    background-color: var(--button-bg);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    cursor: pointer;
+    padding: 4px 8px; font-size: 13px; background-color: var(--button-bg);
+    color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;
 }
-
 .example-button:disabled {
-    background-color: var(--button-disabled-bg) !important;
-    color: var(--button-disabled-text) !important;
-    border-color: var(--border-color) !important;
-    cursor: not-allowed !important;
-    filter: grayscale(100%);
-    opacity: 0.55;
+    background-color: var(--button-disabled-bg) !important; cursor: not-allowed !important; opacity: 0.55;
+}
+.stop-btn-active {
+    background-color: var(--rec-active-bg) !important; color: var(--rec-active-text) !important;
+    border-color: var(--rec-active-bg) !important;
 }
 
+.switch { position: relative; display: inline-block; width: 36px; height: 20px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px;
+}
+.slider:before {
+    position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+    background-color: white; transition: .3s; border-radius: 50%;
+}
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(16px); }
+
+.mode-label { font-size: 13px; color: var(--text-primary); }
+.active-mode { font-weight: bold; }
+.inactive-mode { color: var(--text-secondary); }
 
 /* ==========================================
-   Footer Guide
+   Tooltips & Emojis
    ========================================== */
+.icon-emoji { transition: filter 0.3s, opacity 0.3s; display: inline-block; }
+.inactive-mode .icon-emoji { filter: grayscale(100%); opacity: 0.55; }
+.active-mode .icon-emoji { filter: none; opacity: 1; }
 
+.tooltip-wrap { position: relative; display: inline-block; border-bottom: 1px dotted var(--accent-color); cursor: help; }
+.tooltip-wrap .tooltip-tip, .custom-tip-box {
+    visibility: hidden; opacity: 0; background-color: var(--tooltip-bg); color: var(--tooltip-text);
+    text-align: center; padding: 4px 8px; border-radius: 4px; position: absolute; z-index: 20;
+    bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; transition: 0.2s; pointer-events: none;
+}
+.tooltip-wrap:hover .tooltip-tip, .custom-tip-wrap:hover .custom-tip-box { visibility: visible; opacity: 1; }
+.custom-tip-wrap { position: relative; display: inline-block; }
+
+/* ==========================================
+   Footer
+   ========================================== */
 .voice-guide-footer {
-    margin-top: 30px;
-    text-align: left;
-    font-size: 13px;
-    color: var(--text-secondary);
-    position: relative;
-    display: inline-block;
+    margin-top: 30px; text-align: left; font-size: 13px; color: var(--text-secondary); position: relative; display: inline-block;
 }
-
-.guide-trigger {
-    cursor: pointer;
-    color: var(--accent-color);
-    text-decoration: underline;
-    font-weight: bold;
-}
-
+.guide-trigger { cursor: pointer; color: var(--accent-color); text-decoration: underline; font-weight: bold; }
 .guide-box-popup {
-    margin-top: 6px;
-    background-color: var(--tooltip-bg);
-    color: var(--tooltip-text);
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    line-height: 1.4;
-    position: absolute;
-    z-index: 10;
-    left: 0;
-    white-space: nowrap;
-    display: none;
-}
-
-
-/* ==========================================
-   Example Box & Table
-   ========================================== */
-
-.example-box {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 20px;
-    position: relative;
-    background-color: #fefce8;
-    border: 1px solid #fde047;
-    padding: 20px 16px 14px 16px;
-    margin-top: 16px;
-    border-radius: 6px;
-    color: var(--text-primary);
-}
-
-@media (prefers-color-scheme: dark) {
-    .example-box {
-        background-color: #422006;
-        border-color: #ca8a04;
-    }
-}
-
-.example-box::before {
-    content: "Example";
-    position: absolute;
-    top: -10px;
-    left: 12px;
-    background-color: #ca8a04;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-.example-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 5px;
-}
-
-.example-table td {
-    padding: 10px;
-    vertical-align: middle;
-}
-
-.example-table .col-label {
-    padding-left: 0;
-    white-space: nowrap;
-    width: 1%;
-}
-
-.example-table .col-prompt {
-    width: 30%;
-}
-
-.example-table .col-button {
-    width: 120px;
-    text-align: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    padding-right: 0;
-}
-
-.example-table .col-button button {
-    width: 100%;
-    margin: 0;
-}
-
-.example-table tr.dashed-border {
-    border-top: 1px dashed #ccc;
-}
-
-@media (prefers-color-scheme: dark) {
-    .example-table tr.dashed-border {
-        border-top-color: #713f12;
-    }
-}
-
-/* ==========================================
-   Tooltips
-   ========================================== */
-
-.tooltip-wrap {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted var(--accent-color);
-    cursor: help;
-}
-
-.tooltip-wrap .tooltip-tip {
-    visibility: hidden;
-    background-color: var(--tooltip-bg);
-    color: var(--tooltip-text);
-    text-align: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    position: absolute;
-    z-index: 20;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 12px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-}
-
-.tooltip-wrap:hover .tooltip-tip {
-    visibility: visible;
-    opacity: 1;
-}
-
-.custom-tip-wrap {
-    position: relative;
-    display: inline-block;
-}
-
-.custom-tip-box {
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-    background-color: var(--tooltip-bg);
-    color: var(--tooltip-text);
-    text-align: center;
-    padding: 4px 8px;
-    border-radius: 4px;
-    position: absolute;
-    z-index: 20;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 12px;
-    transition: opacity 0.2s ease;
-}
-
-.custom-tip-wrap:hover .custom-tip-box {
-    visibility: visible;
-    opacity: 1;
+    margin-top: 6px; background-color: var(--tooltip-bg); color: var(--tooltip-text); padding: 8px 12px; border-radius: 4px; font-size: 12px; line-height: 1.4; position: absolute; z-index: 10; left: 0; white-space: nowrap; display: none;
 }
