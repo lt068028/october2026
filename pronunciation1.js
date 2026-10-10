@@ -1,6 +1,5 @@
-
 // ============================================================================
-// Pronunciation Practice 1 (With English Meanings)
+// Pronunciation Practice 1 (English excluded from pitch decoration)
 // ============================================================================
 
 const drill1Data = [
@@ -94,7 +93,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// ピッチアクセントHTMLパーサー
+// アルファベットをルール適用外としたピッチアクセントHTMLパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
     let isHigh = true; 
@@ -102,7 +101,15 @@ function renderPitchAccentHTML(textStr, color) {
     let i = 0;
     while (i < textStr.length) {
         let ch = textStr[i];
-        if (ch === '↘' || ch === '＼') {
+        
+        // 半角アルファベット（A-Z, a-z）の判定
+        let isLatin = /[a-zA-Z]/.test(ch);
+
+        if (isLatin || ch === ' ') {
+            // アルファベットやスペースは装飾せずそのまま出力する
+            resultHTML += ch;
+            i++;
+        } else if (ch === '↘' || ch === '＼') {
             resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
             isHigh = false; 
             i++;
@@ -281,7 +288,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
     promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
-    promptSpan.style.minWidth = "300px";
+    promptSpan.style.minWidth = "380px";
     promptSpan.style.paddingLeft = "4px";
 
     const recordBtn = document.createElement("button");
