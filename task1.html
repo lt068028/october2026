@@ -7,23 +7,100 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 戻るリンク配置エリア -->
+
+    <!-- =========================================================
+         Top Back Link
+         ========================================================= -->
     <div style="margin-bottom: 15px;">
-        <a href="#" onclick="window.history.back(); return false;" style="text-decoration: none; color: var(--text-primary, #333); font-weight: bold; font-size: 16px;">
+        <a href="#" onclick="window.history.back(); return false;" style="text-decoration: none; color: var(--text-primary); font-weight: bold; font-size: 16px;">
             ↩️ もどる
         </a>
     </div>
 
     <h1>Practice1；XはYです</h1>
 
-    <!-- Exampleセクション -->
-    <div id="exampleSection"></div>
-    
-    <!-- 共通設定パネル（3つのトグル）配置エリア -->
-    <div id="globalSettingsSection"></div>
+    <!-- =========================================================
+         Global Settings Panel
+         ========================================================= -->
+    <div class="header-panel global-settings">
+        <!-- Recording Toggle -->
+        <div class="control-item">
+            <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                <span class="icon-emoji">⏹️</span>Autostop
+                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="toggleRecordMode">
+                <span class="slider"></span>
+            </label>
+            <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                <span class="icon-emoji">⏹️</span>Manual stop
+                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+            </span>
+        </div>
 
-    <!-- Task 1 & 2 配置エリア -->
+        <!-- Vocab Hint Toggle -->
+        <div class="control-item">
+            <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
+                <span class="icon-emoji">💬</span> Vocab Hint
+                <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="toggleHintMode">
+                <span class="slider"></span>
+            </label>
+            <span id="labelParenHint" class="mode-label inactive-mode custom-tip-wrap">
+                <span class="icon-emoji">🔡</span>Display Vocab
+                <span class="custom-tip-box">Always shows word's meaning in parentheses.</span>
+            </span>
+        </div>
+
+        <!-- Playback Toggle -->
+        <div class="control-item">
+            <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                <span class="icon-emoji">▶️</span>Autoplay
+                <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
+            </span>
+            <label class="switch">
+                <input type="checkbox" id="togglePlaybackMode">
+                <span class="slider"></span>
+            </label>
+            <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+                <span class="icon-emoji">⏯️</span>Manual play
+                <span class="custom-tip-box">Disables automatic playback.</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         Example Section
+         ========================================================= -->
+    <div class="example-box" id="exampleSection">
+        <!-- Content will be injected by JavaScript -->
+    </div>
+
+
+    <!-- =========================================================
+         Task 1 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task1">
+        <span class="info-panel-title">Task 1；Drills</span>
+        <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
+    </div>
+    
     <div id="task1List"></div>
+
+
+    <!-- =========================================================
+         Task 2 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task2" style="margin-top: 30px;">
+        <span class="info-panel-title">Task 2；Custom Practice</span>
+        <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
+    </div>
+    
+    <div id="task2List"></div>
+
 
     <!-- =========================================================
          Footer
