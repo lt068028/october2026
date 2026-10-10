@@ -201,31 +201,6 @@ function speakText(text, rate = 1.0, onEndCallback) {
 
 
 // ============================================================================
-// Initialization
-// ============================================================================
-
-document.addEventListener("DOMContentLoaded", () => {
-    initApp();
-    setupFooterGuide();
-});
-
-function setupFooterGuide() {
-    const trigger = document.getElementById("guideTrigger");
-    const box = document.getElementById("guideBox");
-
-    if (trigger && box) {
-        trigger.addEventListener("click", (e) => {
-            e.stopPropagation();
-            box.style.display = box.style.display === "none" ? "block" : "none";
-        });
-        document.addEventListener("click", () => {
-            box.style.display = "none";
-        });
-    }
-}
-
-
-// ============================================================================
 // Word formatting
 // ============================================================================
 
@@ -248,250 +223,179 @@ function formatCustomWord(hira, engKey) {
     return formatWord(hira, entry.romaji, entry.meaning);
 }
 
-// ----------------------------------------------------------------------------
-// Helper: Toggle UI Styler (Handles Emoji Grayscale)
-// ----------------------------------------------------------------------------
-function updateToggleLabelStyle(labelEl, isActive) {
-    if (!labelEl) return;
-    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    
-    const emoji = labelEl.querySelector('.icon-emoji');
-    if (emoji) {
-        if (isActive) {
-            emoji.style.filter = "none";
-            emoji.style.opacity = "1";
+function updateWordsDisplay() {
+    const drillRows = document.querySelectorAll(".drill-row");
+    drillRows.forEach(row => {
+        const customIdx = row.getAttribute("data-custom-index");
+        if (customIdx) {
+            const selectX = document.getElementById(`customX_${customIdx}`);
+            const selectY = document.getElementById(`customY_${customIdx}`);
+            const previewX = document.getElementById(`previewX_${customIdx}`);
+            const previewY = document.getElementById(`previewY_${customIdx}`);
+
+            if (selectX && selectX.value && selectX.selectedIndex >= 0) {
+                const optX = selectX.options[selectX.selectedIndex];
+                previewX.innerHTML = formatCustomWord(selectX.value, optX.getAttribute("data-eng"));
+            }
+            if (selectY && selectY.value && selectY.selectedIndex >= 0) {
+                const optY = selectY.options[selectY.selectedIndex];
+                previewY.innerHTML = formatCustomWord(selectY.value, optY.getAttribute("data-eng"));
+            }
         } else {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.55";
+            const promptSpan = row.querySelector(".prompt-content");
+            if (promptSpan && promptSpan.dataset.xWord && promptSpan.dataset.yWord) {
+                const xW = promptSpan.dataset.xWord;
+                const xR = promptSpan.dataset.xRomaji;
+                const xM = promptSpan.dataset.xMeaning;
+                const yW = promptSpan.dataset.yWord;
+                const yR = promptSpan.dataset.yRomaji;
+                const yM = promptSpan.dataset.yMeaning;
+                promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
+            }
         }
-    }
+    });
 }
 
 
 // ============================================================================
-// Main application
+// Initialization & DOM Setup
 // ============================================================================
 
-function initApp() {
-    // ------------------------------------------------------------------------
-    // 1. ↩️もどる リンクをページ最上部（bodyの先頭）に安全に挿入
-    // ------------------------------------------------------------------------
-    if (document.body && !document.getElementById("top-back-link")) {
-        const backLink = document.createElement("a");
-        backLink.id = "top-back-link";
-        backLink.href = "#";
-        backLink.innerHTML = "↩️ もどる";
-        backLink.style.display = "inline-block";
-        backLink.style.margin = "15px 20px";
-        backLink.style.textDecoration = "none";
-        backLink.style.color = "var(--text-primary, #333)";
-        backLink.style.fontWeight = "bold";
-        backLink.style.fontSize = "16px";
-        backLink.onclick = (e) => {
-            e.preventDefault();
-            window.history.back();
-        };
-        document.body.insertBefore(backLink, document.body.firstChild);
+document.addEventListener("DOMContentLoaded", () => {
+    initSettingsPanel();
+    initExampleSection();
+    initTask1();
+    initTask2();
+    setupFooterGuide();
+});
+
+function setupFooterGuide() {
+    const trigger = document.getElementById("guideTrigger");
+    const box = document.getElementById("guideBox");
+
+    if (trigger && box) {
+        trigger.addEventListener("click", (e) => {
+            e.stopPropagation();
+            box.style.display = box.style.display === "none" ? "block" : "none";
+        });
+        document.addEventListener("click", () => {
+            box.style.display = "none";
+        });
     }
+}
 
-    const exampleSection = document.getElementById("exampleSection");
-    const container = document.getElementById("task1List");
+function updateToggleLabelStyle(labelEl, isActive) {
+    if (!labelEl) return;
+    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+}
 
-    // ------------------------------------------------------------------------
-    // 2. Example Section Initialization (テーブルレイアウト)
-    // ------------------------------------------------------------------------
-    if (exampleSection) {
-        const ex1X = formatWord("わたし", "watashi", "I");
-        const ex1Y = formatWord("がくせい", "gakusei", "student");
-        const ex2X = formatWord("わたし", "watashi", "I");
-        const ex2Y = formatWord("せんせい", "sensei", "teacher");
+function initSettingsPanel() {
+    const toggleRecordMode = document.getElementById("toggleRecordMode");
+    const labelAutoRecord = document.getElementById("labelAutoRecord");
+    const labelManualRecord = document.getElementById("labelManualRecord");
 
-        exampleSection.className = "example-box";
-        exampleSection.innerHTML = `
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
-                <tr>
-                    <td style="padding: 10px 10px 10px 0; white-space: nowrap; width: 1%; vertical-align: middle;">
-                        <strong>Affirmative:</strong>
-                    </td>
-                    <td style="padding: 10px; width: 30%; vertical-align: middle;">
-                        ${ex1X} ／ ${ex1Y}
-                    </td>
-                    <td style="padding: 10px; vertical-align: middle;">
-                        わたしは、がくせいです。<br>
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span>
-                    </td>
-                    <td style="width: 120px; text-align: center; vertical-align: middle; padding: 10px 0;">
-                        <button id="ex1Listen" class="example-button" style="margin: 0; width: 100%;">🔊 きく</button>
-                    </td>
-                </tr>
-                <tr style="border-top: 1px dashed #ccc;">
-                    <td style="padding: 10px 10px 10px 0; white-space: nowrap; width: 1%; vertical-align: middle;">
-                        <strong>Negative:</strong>
-                    </td>
-                    <td style="padding: 10px; width: 30%; vertical-align: middle;">
-                        ${ex2X} ／ ${ex2Y}
-                    </td>
-                    <td style="padding: 10px; vertical-align: middle;">
-                        わたしは、せんせいじゃないです。<br>
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span>
-                    </td>
-                    <td style="width: 120px; text-align: center; vertical-align: middle; padding: 10px 0;">
-                        <button id="ex2Listen" class="example-button" style="margin: 0; width: 100%;">🔊 きく</button>
-                    </td>
-                </tr>
-            </table>
-        `;
-
-        setupExampleListen("ex1Listen", "わたしは、がくせいです。");
-        setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
-    }
-
-    if (!container) return;
-    container.innerHTML = "";
-
-    // ------------------------------------------------------------------------
-    // 3. Global Settings Panel (3段トグルを安全に生成)
-    // ------------------------------------------------------------------------
-    const globalSettingsPanel = document.createElement("div");
-    globalSettingsPanel.style.backgroundColor = "var(--bg-secondary, #f4f6f8)";
-    globalSettingsPanel.style.padding = "15px";
-    globalSettingsPanel.style.borderRadius = "8px";
-    globalSettingsPanel.style.marginBottom = "25px";
-    globalSettingsPanel.style.display = "flex";
-    globalSettingsPanel.style.flexWrap = "wrap"; 
-    globalSettingsPanel.style.gap = "15px";
-
-    // Recording Toggle
-    const recordControl = document.createElement("div");
-    recordControl.className = "control-item";
-    
-    const labelAutoRecord = document.createElement("span");
-    labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
-
-    const switchRecord = document.createElement("label");
-    switchRecord.className = "switch";
-    const inputRecord = document.createElement("input");
-    inputRecord.type = "checkbox";
-    inputRecord.checked = isManualStop;
-    const sliderRecord = document.createElement("span");
-    sliderRecord.className = "slider";
-    switchRecord.appendChild(inputRecord);
-    switchRecord.appendChild(sliderRecord);
-
-    const labelManualRecord = document.createElement("span");
-    labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
-
-    inputRecord.addEventListener("change", (e) => {
-        isManualStop = e.target.checked;
+    if (toggleRecordMode) {
+        toggleRecordMode.addEventListener("change", (e) => {
+            isManualStop = e.target.checked;
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+            updateToggleLabelStyle(labelManualRecord, isManualStop);
+        });
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
-    });
+    }
 
-    recordControl.appendChild(labelAutoRecord);
-    recordControl.appendChild(switchRecord);
-    recordControl.appendChild(labelManualRecord);
-    globalSettingsPanel.appendChild(recordControl);
-    updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-    updateToggleLabelStyle(labelManualRecord, isManualStop);
+    const toggleHintMode = document.getElementById("toggleHintMode");
+    const labelHoverHint = document.getElementById("labelHoverHint");
+    const labelParenHint = document.getElementById("labelParenHint");
 
-    // Vocab Hint Toggle
-    const vocabControl = document.createElement("div");
-    vocabControl.className = "control-item";
-    
-    const labelHoverHint = document.createElement("span");
-    labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
-
-    const switchHint = document.createElement("label");
-    switchHint.className = "switch";
-    const inputHint = document.createElement("input");
-    inputHint.type = "checkbox";
-    inputHint.checked = (hintMode === "paren");
-    const sliderHint = document.createElement("span");
-    sliderHint.className = "slider";
-    switchHint.appendChild(inputHint);
-    switchHint.appendChild(sliderHint);
-
-    const labelParenHint = document.createElement("span");
-    labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
-
-    inputHint.addEventListener("change", (e) => {
-        hintMode = e.target.checked ? "paren" : "hover";
+    if (toggleHintMode) {
+        toggleHintMode.addEventListener("change", (e) => {
+            hintMode = e.target.checked ? "paren" : "hover";
+            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            updateWordsDisplay();
+        });
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-        updateWordsDisplay();
-    });
+    }
 
-    vocabControl.appendChild(labelHoverHint);
-    vocabControl.appendChild(switchHint);
-    vocabControl.appendChild(labelParenHint);
-    globalSettingsPanel.appendChild(vocabControl);
-    updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-    updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
+    const labelAutoPlay = document.getElementById("labelAutoPlay");
+    const labelManualPlay = document.getElementById("labelManualPlay");
 
-    // Playback Toggle (Auto/Manual)
-    const playbackControl = document.createElement("div");
-    playbackControl.className = "control-item";
-
-    const labelAutoPlay = document.createElement("span");
-    labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
-
-    const switchPlayback = document.createElement("label");
-    switchPlayback.className = "switch";
-    const inputPlayback = document.createElement("input");
-    inputPlayback.type = "checkbox";
-    inputPlayback.checked = !isAutoPlay; 
-    const sliderPlayback = document.createElement("span");
-    sliderPlayback.className = "slider";
-    switchPlayback.appendChild(inputPlayback);
-    switchPlayback.appendChild(sliderPlayback);
-
-    const labelManualPlay = document.createElement("span");
-    labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
-
-    inputPlayback.addEventListener("change", (e) => {
-        isAutoPlay = !e.target.checked;
+    if (togglePlaybackMode) {
+        togglePlaybackMode.addEventListener("change", (e) => {
+            isAutoPlay = !e.target.checked;
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+        });
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+    }
+}
+
+function setupExampleListen(btnId, text) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+        setPlayingState(btn, "Playing...");
+        speakText(text, 0.7, () => stopAllPlayback());
     });
+}
 
-    playbackControl.appendChild(labelAutoPlay);
-    playbackControl.appendChild(switchPlayback);
-    playbackControl.appendChild(labelManualPlay);
-    globalSettingsPanel.appendChild(playbackControl);
-    updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-    updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+function initExampleSection() {
+    const exampleSection = document.getElementById("exampleSection");
+    if (!exampleSection) return;
 
-    // containerの先頭に確実に配置
-    container.appendChild(globalSettingsPanel);
+    const ex1X = formatWord("わたし", "watashi", "I");
+    const ex1Y = formatWord("がくせい", "gakusei", "student");
+    const ex2X = formatWord("わたし", "watashi", "I");
+    const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
-    // ------------------------------------------------------------------------
-    // Task 1 header (案内パネル風デザイン: 青系)
-    // ------------------------------------------------------------------------
-    const headerPanelTask1 = document.createElement("div");
-    headerPanelTask1.style.backgroundColor = "#f0f8ff"; 
-    headerPanelTask1.style.borderLeft = "5px solid #007bff"; 
-    headerPanelTask1.style.padding = "15px 20px";
-    headerPanelTask1.style.borderRadius = "0 8px 8px 0";
-    headerPanelTask1.style.marginBottom = "20px";
-    headerPanelTask1.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
-    headerPanelTask1.style.display = "flex";
-    headerPanelTask1.style.flexDirection = "column";
-    headerPanelTask1.style.gap = "5px";
+    exampleSection.className = "example-box";
+    exampleSection.innerHTML = `
+        <table class="example-table">
+            <tr>
+                <td class="col-label">
+                    <strong>Affirmative:</strong>
+                </td>
+                <td class="col-prompt">
+                    ${ex1X} ／ ${ex1Y}
+                </td>
+                <td>
+                    わたしは、がくせいです。<br>
+                    <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span>
+                </td>
+                <td class="col-button">
+                    <button id="ex1Listen" class="example-button">🔊 きく</button>
+                </td>
+            </tr>
+            <tr class="dashed-border">
+                <td class="col-label">
+                    <strong>Negative:</strong>
+                </td>
+                <td class="col-prompt">
+                    ${ex2X} ／ ${ex2Y}
+                </td>
+                <td>
+                    わたしは、せんせいじゃないです。<br>
+                    <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span>
+                </td>
+                <td class="col-button">
+                    <button id="ex2Listen" class="example-button">🔊 きく</button>
+                </td>
+            </tr>
+        </table>
+    `;
 
-    const titleArea1 = document.createElement("span");
-    titleArea1.innerHTML = "<strong style='font-size: 1.15em; color: #0056b3;'>Task 1；Drills</strong>";
-    const descArea1 = document.createElement("span");
-    descArea1.style.color = "#333";
-    descArea1.style.fontSize = "15px";
-    descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
-    
-    headerPanelTask1.appendChild(titleArea1);
-    headerPanelTask1.appendChild(descArea1);
-    container.appendChild(headerPanelTask1);
+    setupExampleListen("ex1Listen", "わたしは、がくせいです。");
+    setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
+}
 
-    // ------------------------------------------------------------------------
-    // Task 1 rows
-    // ------------------------------------------------------------------------
+function initTask1() {
+    const container = document.getElementById("task1List");
+    if (!container) return;
+
     taskData.forEach((item, index) => {
         const currentXWord = index < 4 ? "わたし" : "ともだち";
         const currentXRomaji = index < 4 ? "watashi" : "tomodachi";
@@ -509,36 +413,12 @@ function initApp() {
             item.isNeg
         );
     });
+}
 
-    // ------------------------------------------------------------------------
-    // Task 2 header (案内パネル風デザイン: 濃いオレンジ系)
-    // ------------------------------------------------------------------------
-    const customHeaderPanel = document.createElement("div");
-    customHeaderPanel.style.backgroundColor = "#ffeed9"; 
-    customHeaderPanel.style.borderLeft = "6px solid #e65c00"; 
-    customHeaderPanel.style.padding = "15px 20px";
-    customHeaderPanel.style.borderRadius = "0 8px 8px 0";
-    customHeaderPanel.style.marginTop = "30px";
-    customHeaderPanel.style.marginBottom = "20px";
-    customHeaderPanel.style.boxShadow = "0 4px 10px rgba(230, 92, 0, 0.15)";
-    customHeaderPanel.style.display = "flex";
-    customHeaderPanel.style.flexDirection = "column";
-    customHeaderPanel.style.gap = "5px";
+function initTask2() {
+    const container = document.getElementById("task2List");
+    if (!container) return;
 
-    const titleArea2 = document.createElement("span");
-    titleArea2.innerHTML = "<strong style='font-size: 1.15em; color: #b34700;'>Task 2；Custom Practice</strong>";
-    const descArea2 = document.createElement("span");
-    descArea2.style.color = "#333";
-    descArea2.style.fontSize = "15px";
-    descArea2.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
-
-    customHeaderPanel.appendChild(titleArea2);
-    customHeaderPanel.appendChild(descArea2);
-    container.appendChild(customHeaderPanel);
-
-    // ------------------------------------------------------------------------
-    // Task 2 options
-    // ------------------------------------------------------------------------
     const optionsXHtml = `
         <option value="" disabled selected>-- Choose X --</option>
         <option value="ともだち" data-eng="friend">Friend</option>
@@ -567,9 +447,6 @@ function initApp() {
         <option value="アルバイト" data-eng="part-time worker">Part-time worker</option>
     `;
 
-    // ------------------------------------------------------------------------
-    // Task 2 rows
-    // ------------------------------------------------------------------------
     for (let i = 1; i <= 3; i++) {
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
@@ -709,45 +586,6 @@ function initApp() {
 
 
 // ============================================================================
-// Update displayed words when hint mode changes
-// ============================================================================
-
-function updateWordsDisplay() {
-    const drillRows = document.querySelectorAll(".drill-row");
-    drillRows.forEach(row => {
-        const customIdx = row.getAttribute("data-custom-index");
-        if (customIdx) {
-            const selectX = document.getElementById(`customX_${customIdx}`);
-            const selectY = document.getElementById(`customY_${customIdx}`);
-            const previewX = document.getElementById(`previewX_${customIdx}`);
-            const previewY = document.getElementById(`previewY_${customIdx}`);
-
-            if (selectX && selectX.value && selectX.selectedIndex >= 0) {
-                const optX = selectX.options[selectX.selectedIndex];
-                previewX.innerHTML = formatCustomWord(selectX.value, optX.getAttribute("data-eng"));
-            }
-
-            if (selectY && selectY.value && selectY.selectedIndex >= 0) {
-                const optY = selectY.options[selectY.selectedIndex];
-                previewY.innerHTML = formatCustomWord(selectY.value, optY.getAttribute("data-eng"));
-            }
-        } else {
-            const promptSpan = row.querySelector(".prompt-content");
-            if (promptSpan && promptSpan.dataset.xWord && promptSpan.dataset.yWord) {
-                const xW = promptSpan.dataset.xWord;
-                const xR = promptSpan.dataset.xRomaji;
-                const xM = promptSpan.dataset.xMeaning;
-                const yW = promptSpan.dataset.yWord;
-                const yR = promptSpan.dataset.yRomaji;
-                const yM = promptSpan.dataset.yMeaning;
-                promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
-            }
-        }
-    });
-}
-
-
-// ============================================================================
 // Task 1 row creation
 // ============================================================================
 
@@ -842,20 +680,6 @@ function createDrillRow(
     );
 
     container.appendChild(rowDiv);
-}
-
-
-// ============================================================================
-// Example sentence playback
-// ============================================================================
-
-function setupExampleListen(btnId, text) {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.addEventListener("click", () => {
-        setPlayingState(btn, "Playing...");
-        speakText(text, 0.7, () => stopAllPlayback());
-    });
 }
 
 
@@ -1139,9 +963,6 @@ function processRecognitionResult(
 
     const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
-    // ------------------------------------------------------------------------
-    // Play user's recorded audio button setup
-    // ------------------------------------------------------------------------
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
         if (!playBtn) {
@@ -1170,9 +991,6 @@ function processRecognitionResult(
 
     let targetPlayBtn = null;
 
-    // ------------------------------------------------------------------------
-    // Evaluation Logic
-    // ------------------------------------------------------------------------
     if (isAffirmative || isNegative) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
@@ -1209,9 +1027,6 @@ function processRecognitionResult(
         correctionBox.style.display = "block";
     }
 
-    // ------------------------------------------------------------------------
-    // Auto Play Sequence: 0.5s Wait -> Model Audio (85%) -> 0.1s Wait -> User Audio (100%)
-    // ------------------------------------------------------------------------
     const runAutoPlaySequence = (btn) => {
         if (!isAutoPlay) return;
 
