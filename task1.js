@@ -242,6 +242,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
             updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
+        // 初期状態適用
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
     }
@@ -255,7 +256,7 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-            updateWordsDisplay(); // Taskのドリル行のみ更新される
+            updateWordsDisplay(); 
         });
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
