@@ -97,7 +97,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// スキル登録された正確なルールに基づく上線（overline: 高ピッチ）と下線（underline: 低ピッチ）のパーサー
+// 修正された正確な上線（overline）と下線（underline）のパーサー関数
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
     let tokens = [];
@@ -116,35 +116,40 @@ function renderPitchAccentHTML(textStr, color) {
         }
     }
 
-    // スキル登録ルール:
-    // ↘（下降）の直前までは高ピッチ（上線）、下がった後から次までが低ピッチ（下線）。
-    // ↗（上昇）の直前までは低ピッチ（下線）、上がった後から次までが高ピッチ（上線）。
-    let currentHigh = true; // 語頭のデフォルトは高ピッチ
+    // スキル登録ルールに基づき、文字列全体を走査して各文字のピッチ（高: true / 低: false）を決定する
+    // 語頭は高ピッチ(true)からスタート
+    let currentHigh = true;
     let charPitches = [];
 
-    // まずシンボルの位置を基準に各文字の状態を正確に判定する
+    // トークンを先に解析して各文字の状態をリスト化
     for (let idx = 0; idx < tokens.length; idx++) {
         let tok = tokens[idx];
-        if (tok.type === 'symbol') {
-            if (tok.val === '↘') {
-                currentHigh = false; // 下降の次からは低ピッチ
-            } else if (tok.val === '↗') {
-                currentHigh = true;  // 上昇の次からは高ピッチ
+        if (tok.type === 'char') {
+            // この文字の直後にある記号をチェックする
+            let nextSymbol = null;
+            for (let look = idx + 1; look < tokens.length; look++) {
+                if (tokens[look].type === 'symbol') {
+                    nextSymbol = tokens[look].val;
+                    break;
+                } else if (tokens[look].type === 'char') {
+                    break; // 次の文字に到達する前に記号がなければ終了
+                }
             }
-        } else if (tok.type === 'char') {
-            let nextTok = tokens[idx + 1];
-            let isBeforeFall = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↘');
-            let isBeforeRise = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↗');
 
             let effectiveHigh = currentHigh;
-            if (isBeforeFall) {
-                effectiveHigh = true;  // ↘の直前の文字は高ピッチ（上線）
-            }
-            if (isBeforeRise) {
-                effectiveHigh = false; // ↗の直前の文字は低ピッチ（下線）
+            if (nextSymbol === '↘') {
+                effectiveHigh = true;  // 下降(↘)の直前の文字は高ピッチ（上線）
+            } else if (nextSymbol === '↗') {
+                effectiveHigh = false; // 上昇(↗)の直前の文字は低ピッチ（下線）
             }
 
             charPitches.push({ char: tok.val, high: effectiveHigh });
+        } else if (tok.type === 'symbol') {
+            if (tok.val === '↘') {
+                currentHigh = false; // 下降(↘)の次からは低ピッチに切り替わる
+            } else if (tok.val === '↗') {
+                currentHigh = true;  // 上昇(↗)の次からは高ピッチに切り替わる
+            }
         }
     }
 
@@ -152,20 +157,20 @@ function renderPitchAccentHTML(textStr, color) {
     for (let idx = 0; idx < tokens.length; idx++) {
         let tok = tokens[idx];
         if (tok.type === 'symbol') {
-            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 2px; display: inline-block;">${tok.val}</span>`;
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${tok.val}</span>`;
         } else if (tok.type === 'space') {
             resultHTML += tok.val;
         } else if (tok.type === 'char') {
             let p = charPitches[pitchIdx++];
             let decorationStyle = p.high 
-                ? `text-decoration: overline; text-decoration-color: ${color};`
-                : `text-decoration: underline; text-decoration-color: ${color};`;
+                ? `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`
+                : `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
             
-            resultHTML += `<span style="${decorationStyle} text-decoration-thickness: 2px; display: inline-block; padding-bottom: 1px;">${p.char}</span>`;
+            resultHTML += `<span style="${decorationStyle}">${p.char}</span>`;
         }
     }
 
-    return `<span style="white-space: nowrap; font-size: 17px; letter-spacing: 0.5px;">${resultHTML}</span>`;
+    return resultHTML;
 }
 
 function speakText(text, rate = 0.9, onEndCallback) {
@@ -266,8 +271,7 @@ function updateDrill1Prompts() {
     promptSpans.forEach((span, index) => {
         const item = drill1Data[index];
         if (item) {
-            const displaySource = useHiraganaOnly ? item.hira : item.text;
-            span.innerHTML = renderPitchAccentHTML(displaySource, item.color);
+            span.innerHTML = renderPitchAccentHTML(item.text, item.color);
         }
     });
 }
@@ -314,8 +318,9 @@ function createDrill1Row(container, indexLabel, item, playRate) {
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
-    const displaySource = useHiraganaOnly ? item.hira : item.text;
-    promptSpan.innerHTML = renderPitchAccentHTML(displaySource, item.color);
+    promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
+    promptSpan.style.minWidth = "260px";
+    promptSpan.style.paddingLeft = "4px";
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
@@ -544,7 +549,6 @@ function processDrill1Result(
     const hiraText = convertToHiragana(rawTranscript);
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
-    // Drill 1 ではピッチ判定を行わず、チェックマーク(✅)は表示せずに認識結果と自分の録音再生ボタンのみを提供
     resultSpan.textContent = displayedTranscript + " ";
     resultSpan.style.color = "var(--text-primary)";
 
@@ -587,7 +591,7 @@ function processDrill1Result(
 
         const utterance = new SpeechSynthesisUtterance(item.hira);
         utterance.lang = "ja-JP";
-        utterance.rate = rate;
+        utterance.rate = playRate;
 
         if (preferredVoice) utterance.voice = preferredVoice;
 
