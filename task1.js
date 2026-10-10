@@ -36,8 +36,10 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
+// 状態管理フラグ
 let isManualStop = false;
 let hintMode = "hover";
+let isAutoPlay = true; // 初期状態はAutoplay ON
 
 let activeRecognitionSession = null;
 
@@ -260,6 +262,25 @@ function formatCustomWord(hira, engKey) {
     return formatWord(hira, entry.romaji, entry.meaning);
 }
 
+// ----------------------------------------------------------------------------
+// Helper: Toggle UI Styler (Handles Emoji Grayscale)
+// ----------------------------------------------------------------------------
+function updateToggleLabelStyle(labelEl, isActive) {
+    if (!labelEl) return;
+    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    
+    const emoji = labelEl.querySelector('.icon-emoji');
+    if (emoji) {
+        if (isActive) {
+            emoji.style.filter = "none";
+            emoji.style.opacity = "1";
+        } else {
+            emoji.style.filter = "grayscale(100%)";
+            emoji.style.opacity = "0.55";
+        }
+    }
+}
+
 
 // ============================================================================
 // Main application
@@ -321,90 +342,113 @@ function initApp() {
 
     const controlGroup = document.createElement("div");
     controlGroup.className = "control-group";
-    const controlItem = document.createElement("div");
-    controlItem.className = "control-item";
 
-    const labelAuto = document.createElement("span");
-    labelAuto.id = "labelAuto";
-    labelAuto.className = `mode-label ${!isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    labelAuto.innerHTML = '⏹Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+    // 1. Recording Toggle
+    const recordControl = document.createElement("div");
+    recordControl.className = "control-item";
 
-    const switchLabel = document.createElement("label");
-    switchLabel.className = "switch";
-    const switchInput = document.createElement("input");
-    switchInput.type = "checkbox";
-    switchInput.checked = isManualStop;
-    const slider = document.createElement("span");
-    slider.className = "slider";
-    switchLabel.appendChild(switchInput);
-    switchLabel.appendChild(slider);
+    const labelAutoRecord = document.createElement("span");
+    labelAutoRecord.id = "labelAutoRecord";
+    labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
-    const labelManual = document.createElement("span");
-    labelManual.id = "labelManual";
-    labelManual.className = `mode-label ${isManualStop ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    labelManual.innerHTML = '⏹Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+    const switchRecord = document.createElement("label");
+    switchRecord.className = "switch";
+    const inputRecord = document.createElement("input");
+    inputRecord.type = "checkbox";
+    inputRecord.checked = isManualStop;
+    const sliderRecord = document.createElement("span");
+    sliderRecord.className = "slider";
+    switchRecord.appendChild(inputRecord);
+    switchRecord.appendChild(sliderRecord);
 
-    switchInput.addEventListener("change", (e) => {
+    const labelManualRecord = document.createElement("span");
+    labelManualRecord.id = "labelManualRecord";
+    labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+
+    inputRecord.addEventListener("change", (e) => {
         isManualStop = e.target.checked;
-        const autoEl = document.getElementById("labelAuto");
-        const manualEl = document.getElementById("labelManual");
-        if (isManualStop) {
-            manualEl.className = "mode-label active-mode custom-tip-wrap";
-            autoEl.className = "mode-label inactive-mode custom-tip-wrap";
-        } else {
-            autoEl.className = "mode-label active-mode custom-tip-wrap";
-            manualEl.className = "mode-label inactive-mode custom-tip-wrap";
-        }
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        updateToggleLabelStyle(labelManualRecord, isManualStop);
     });
 
-    controlItem.appendChild(labelAuto);
-    controlItem.appendChild(switchLabel);
-    controlItem.appendChild(labelManual);
-    controlGroup.appendChild(controlItem);
+    recordControl.appendChild(labelAutoRecord);
+    recordControl.appendChild(switchRecord);
+    recordControl.appendChild(labelManualRecord);
+    controlGroup.appendChild(recordControl);
+    updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+    updateToggleLabelStyle(labelManualRecord, isManualStop);
 
-    // ------------------------------------------------------------------------
-    // Vocabulary hint controls
-    // ------------------------------------------------------------------------
+    // 2. Vocab Hint Toggle
     const vocabControl = document.createElement("div");
     vocabControl.className = "control-item";
-    const labelHover = document.createElement("span");
-    labelHover.id = "labelHover";
-    labelHover.className = `mode-label ${hintMode === "hover" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    labelHover.innerHTML = '💬 Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+    
+    const labelHoverHint = document.createElement("span");
+    labelHoverHint.id = "labelHoverHint";
+    labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
-    const vocabSwitchLabel = document.createElement("label");
-    vocabSwitchLabel.className = "switch";
-    const vocabSwitchInput = document.createElement("input");
-    vocabSwitchInput.type = "checkbox";
-    vocabSwitchInput.checked = hintMode === "paren";
-    const vocabSlider = document.createElement("span");
-    vocabSlider.className = "slider";
-    vocabSwitchLabel.appendChild(vocabSwitchInput);
-    vocabSwitchLabel.appendChild(vocabSlider);
+    const switchHint = document.createElement("label");
+    switchHint.className = "switch";
+    const inputHint = document.createElement("input");
+    inputHint.type = "checkbox";
+    inputHint.checked = (hintMode === "paren");
+    const sliderHint = document.createElement("span");
+    sliderHint.className = "slider";
+    switchHint.appendChild(inputHint);
+    switchHint.appendChild(sliderHint);
 
-    const labelParen = document.createElement("span");
-    labelParen.id = "labelParen";
-    labelParen.className = `mode-label ${hintMode === "paren" ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    labelParen.innerHTML = '🔡Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+    const labelParenHint = document.createElement("span");
+    labelParenHint.id = "labelParenHint";
+    labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
 
-    vocabSwitchInput.addEventListener("change", (e) => {
+    inputHint.addEventListener("change", (e) => {
         hintMode = e.target.checked ? "paren" : "hover";
-        const hoverEl = document.getElementById("labelHover");
-        const parenEl = document.getElementById("labelParen");
-        if (hintMode === "paren") {
-            parenEl.className = "mode-label active-mode custom-tip-wrap";
-            hoverEl.className = "mode-label inactive-mode custom-tip-wrap";
-        } else {
-            hoverEl.className = "mode-label active-mode custom-tip-wrap";
-            parenEl.className = "mode-label inactive-mode custom-tip-wrap";
-        }
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
         updateWordsDisplay();
     });
 
-    vocabControl.appendChild(labelHover);
-    vocabControl.appendChild(vocabSwitchLabel);
-    vocabControl.appendChild(labelParen);
+    vocabControl.appendChild(labelHoverHint);
+    vocabControl.appendChild(switchHint);
+    vocabControl.appendChild(labelParenHint);
     controlGroup.appendChild(vocabControl);
+    updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+    updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+
+    // 3. Playback Toggle (Auto/Manual)
+    const playbackControl = document.createElement("div");
+    playbackControl.className = "control-item";
+
+    const labelAutoPlay = document.createElement("span");
+    labelAutoPlay.id = "labelAutoPlay";
+    labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Auto<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
+
+    const switchPlayback = document.createElement("label");
+    switchPlayback.className = "switch";
+    const inputPlayback = document.createElement("input");
+    inputPlayback.type = "checkbox";
+    inputPlayback.checked = !isAutoPlay; 
+    const sliderPlayback = document.createElement("span");
+    sliderPlayback.className = "slider";
+    switchPlayback.appendChild(inputPlayback);
+    switchPlayback.appendChild(sliderPlayback);
+
+    const labelManualPlay = document.createElement("span");
+    labelManualPlay.id = "labelManualPlay";
+    labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual<span class="custom-tip-box">Disables automatic playback.</span>';
+
+    inputPlayback.addEventListener("change", (e) => {
+        isAutoPlay = !e.target.checked;
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+    });
+
+    playbackControl.appendChild(labelAutoPlay);
+    playbackControl.appendChild(switchPlayback);
+    playbackControl.appendChild(labelManualPlay);
+    controlGroup.appendChild(playbackControl);
+    updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+    updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+
     headerPanel.appendChild(titleInstructionGroup1);
     headerPanel.appendChild(controlGroup);
     container.appendChild(headerPanel);
@@ -590,7 +634,7 @@ function initApp() {
                 recordBtn.disabled = false;
                 listenBtn.disabled = false;
                 listenBtn.onclick = () => {
-                    setPlayingState(listenBtn, "🔊 Playing...");
+                    setPlayingState(listenBtn, "Playing...");
                     const textToSpeak = isCustomNeg
                         ? `${valX}は、${valY}じゃないです。`
                         : `${valX}は、${valY}です。`;
@@ -687,7 +731,7 @@ function createDrillRow(
     listenBtn.disabled = false;
 
     listenBtn.onclick = () => {
-        setPlayingState(listenBtn, "🔊 Playing...");
+        setPlayingState(listenBtn, "Playing...");
         const textToSpeak = isNeg
             ? `${targetX}は、${targetY}じゃないです。`
             : `${targetX}は、${targetY}です。`;
@@ -768,7 +812,7 @@ function setupExampleListen(btnId, text) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
     btn.addEventListener("click", () => {
-        setPlayingState(btn, "🔊 Playing...");
+        setPlayingState(btn, "Playing...");
         speakText(text, 0.7, () => stopAllPlayback());
     });
 }
@@ -1068,7 +1112,7 @@ function processRecognitionResult(
             playBtn.onclick = () => {
                 const recordedAudioUrl = getUrlFn();
                 if (recordedAudioUrl) {
-                    setPlayingState(playBtn, "▶️ Playing...");
+                    setPlayingState(playBtn, "Playing...");
                     const audio = new Audio(recordedAudioUrl);
                     currentPlayingAudio = audio;
                     audio.onended = () => stopAllPlayback();
@@ -1117,7 +1161,7 @@ function processRecognitionResult(
                 : `${currentX}は、${currentY}です。`;
 
             corrListenBtn.onclick = () => {
-                setPlayingState(corrListenBtn, "🔊 Playing...");
+                setPlayingState(corrListenBtn, "Playing...");
                 speakText(correctSentenceForBtn, 0.7, () => stopAllPlayback());
             };
         }
@@ -1128,10 +1172,12 @@ function processRecognitionResult(
     // Auto Play Sequence: 0.5s Wait -> Model Audio (85%) -> 0.1s Wait -> User Audio (100%)
     // ------------------------------------------------------------------------
     const runAutoPlaySequence = (btn) => {
+        if (!isAutoPlay) return; // マニュアル時は自動シーケンスを走らせない
+
         const recordedAudioUrl = getUrlFn();
         if (!recordedAudioUrl || !btn) return;
 
-        setPlayingState(btn, "▶️ Playing...");
+        setPlayingState(btn, "Playing...");
 
         const correctSentence = expectedIsNeg
             ? `${currentX}は、${currentY}じゃないです。`
@@ -1145,7 +1191,6 @@ function processRecognitionResult(
             utterance.voice = preferredVoice;
         }
 
-        // ガベージコレクション回避用
         currentUtteranceRef = utterance;
 
         utterance.onend = () => {
