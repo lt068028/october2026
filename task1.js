@@ -57,7 +57,7 @@ let isAutoPlay = true;
 let activeRecognitionSession = null;
 
 // ============================================================================
-// Voice Setup
+// Voice Setup (ボイス非同期ロード対応の修正版)
 // ============================================================================
 let preferredVoice = null;
 
@@ -72,16 +72,18 @@ function setupPreferredVoice() {
         if (!selected) selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.lang && v.lang.includes("ja"));
         
-        preferredVoice = selected;
+        if (selected) {
+            preferredVoice = selected;
+        }
     } catch (e) { console.warn("Voice setup error:", e); }
 }
 
 if (typeof speechSynthesis !== "undefined") {
     setupPreferredVoice();
-    if (speechSynthesis.addEventListener) {
-        speechSynthesis.addEventListener("voiceschanged", setupPreferredVoice);
-    } else {
-        speechSynthesis.onvoiceschanged = setupPreferredVoice;
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = () => {
+            setupPreferredVoice();
+        };
     }
 }
 
@@ -145,6 +147,7 @@ function convertToHiragana(text) {
 }
 
 function speakText(text, rate = 0.9, onEndCallback) {
+    setupPreferredVoice(); // 読み上げ直前にも確実にボイスを再確認
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
     utterance.rate = rate;
@@ -950,6 +953,7 @@ function bindRecorderEvents(
     });
 }
 
+// 判定ロジック（期待される肯定・否定 `expectedIsNeg` との一致を厳密に検証する修正版）
 function processRecognitionResult(
     rawTranscript, currentX, currentY, expectedIsNeg,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
@@ -974,6 +978,9 @@ function processRecognitionResult(
     const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
 
     const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+
+    // 期待される形式（肯定か否定か）と一致しているかを判定
+    const isCorrectType = expectedIsNeg ? isNegative : isAffirmative;
 
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
@@ -1003,7 +1010,7 @@ function processRecognitionResult(
 
     let targetPlayBtn = null;
 
-    if (isAffirmative || isNegative) {
+    if (isCorrectType) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
         targetPlayBtn = appendPlayButton();
