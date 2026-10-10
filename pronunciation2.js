@@ -3,11 +3,11 @@
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て ↘ んきが ｜ い ↘ いいです", color: "#eab308" },
-    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ ↗ かんが ｜ な ↘ いです", color: "#10b981" },
-    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し ↗ ごとが ｜ ほ ↗ し ↘ いです", color: "#06b6d4" },
-    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ ↗ んせ ↘ いは ｜ お ↗ もしろ ↘ いです", color: "#d946ef" },
-    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#f43f5e" }
+    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て ↘ んきが ｜ い ↘ いいです", color: "#facc15" },
+    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ ↗ かんが ｜ な ↘ いです", color: "#34d399" },
+    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し ↗ ごとが ｜ ほ ↗ し ↘ いです", color: "#22d3ee" },
+    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ ↗ んせ ↘ いは ｜ お ↗ もしろ ↘ いです", color: "#e879f9" },
+    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#fda4af" }
 ];
 
 let isManualStop = true; // デフォルトは Manual stop
@@ -97,9 +97,11 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 安定したピッチアクセントHTML生成パーサー
+// 正確なピッチアクセント判定に基づく上線（overline: 高ピッチ）と下線（underline: 低ピッチ）のパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
+    
+    // まず文字列をトークン（文字と記号）に分解して、各文字のピッチ状態を正確に決定する
     let tokens = [];
     let i = 0;
     while (i < textStr.length) {
@@ -116,49 +118,58 @@ function renderPitchAccentHTML(textStr, color) {
         }
     }
 
+    // 各文字のピッチ状態（high: 上線, low: 下線）を判定
+    // デフォルトは高ピッチ（語頭）。↗の後は高ピッチ、↘の後は低ピッチ。
     let currentHigh = true;
     let charPitches = [];
     
+    // まず全体のピッチ状態を走査して各文字に割り当てる
     for (let idx = 0; idx < tokens.length; idx++) {
         let tok = tokens[idx];
         if (tok.type === 'symbol') {
             if (tok.val === '↘') {
-                currentHigh = false;
+                currentHigh = false; // ↘の直後から低ピッチ
             } else if (tok.val === '↗') {
-                currentHigh = true;
+                currentHigh = true; // ↗の直後から高ピッチ
             }
         } else if (tok.type === 'char') {
+            // もしこの文字の「直後」に↘がある場合、その文字自体はまだ高い（上線）
             let nextTok = tokens[idx + 1];
             let isBeforeFall = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↘');
+            // もしこの文字の「直後」に↗がある場合、その文字自体はまだ低い（下線）
             let isBeforeRise = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↗');
 
             let effectiveHigh = currentHigh;
-            if (isBeforeFall) { effectiveHigh = true; }
-            if (isBeforeRise) { effectiveHigh = false; }
+            if (isBeforeFall) {
+                effectiveHigh = true;  // 下降の直前は高ピッチ
+            }
+            if (isBeforeRise) {
+                effectiveHigh = false; // 上昇の直前は低ピッチ
+            }
 
             charPitches.push({ char: tok.val, high: effectiveHigh });
         }
     }
 
+    // HTMLの構築
     let pitchIdx = 0;
     for (let idx = 0; idx < tokens.length; idx++) {
         let tok = tokens[idx];
         if (tok.type === 'symbol') {
-            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 2px;">${tok.val}</span>`;
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${tok.val}</span>`;
         } else if (tok.type === 'space') {
             resultHTML += tok.val;
         } else if (tok.type === 'char') {
             let p = charPitches[pitchIdx++];
-            // 上線(overline)は高ピッチ、下線(underline)は低ピッチ
-            let dec = p.high 
-                ? `text-decoration: overline; text-decoration-color: ${color};`
-                : `text-decoration: underline; text-decoration-color: ${color};`;
+            let decorationStyle = p.high 
+                ? `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`
+                : `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
             
-            resultHTML += `<span style="${dec} text-decoration-thickness: 2px; padding-bottom: 1px;">${p.char}</span>`;
+            resultHTML += `<span style="${decorationStyle}">${p.char}</span>`;
         }
     }
 
-    return `<span style="white-space: nowrap; font-size: 17px; letter-spacing: 0.5px;">${resultHTML}</span>`;
+    return resultHTML;
 }
 
 function speakText(text, rate = 0.9, onEndCallback) {
@@ -265,7 +276,7 @@ function updateDrill1Prompts() {
 }
 
 // ----------------------------------------------------------------------------
-// Drill 1 Initialization
+// Drill 1 Initialization (Mimic and Compare - No correctness check)
 // ----------------------------------------------------------------------------
 function initDrill1() {
     const container = document.getElementById("drill1List");
@@ -307,6 +318,8 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
     promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
+    promptSpan.style.minWidth = "260px";
+    promptSpan.style.paddingLeft = "4px";
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
@@ -535,6 +548,7 @@ function processDrill1Result(
     const hiraText = convertToHiragana(rawTranscript);
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
+    // Drill 1では正誤判定を行わず、発話されたテキストを表示し、音源の再生ボタンを提供
     resultSpan.textContent = displayedTranscript + " ";
     resultSpan.style.color = "var(--text-primary)";
 
