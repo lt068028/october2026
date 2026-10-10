@@ -39,7 +39,7 @@ const customDict = {
 // 状態管理フラグ
 let isManualStop = false;
 let hintMode = "hover";
-let isAutoPlay = true; // 初期状態はAutoplay ON
+let isAutoPlay = true; 
 
 let activeRecognitionSession = null;
 
@@ -53,23 +53,17 @@ function setupPreferredVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return;
 
-    // 1. Chrome OS固有の音声を最優先
     let selected = voices.find(v => v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
     
-    // 2. Edge用の音声を検索 (Keita または Nanami)
     if (!selected) {
         selected = voices.find(v => v.name.toLowerCase().includes("keita"));
     }
     if (!selected) {
         selected = voices.find(v => v.name.toLowerCase().includes("nanami"));
     }
-    
-    // 3. Chrome用の音声を検索 (Google 日本語)
     if (!selected) {
         selected = voices.find(v => v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
     }
-    
-    // 4. それ以外の普通設定 (OS標準の日本語音声)
     if (!selected) {
         selected = voices.find(v => v.lang.includes("ja"));
     }
@@ -310,29 +304,50 @@ function initApp() {
     container.innerHTML = "";
 
     // ------------------------------------------------------------------------
-    // Global Settings Panel (共通設定パネル)
+    // Left Sidebar Setup (グローバル設定パネルを左に配置)
     // ------------------------------------------------------------------------
-    const globalSettingsPanel = document.createElement("div");
-    globalSettingsPanel.className = "header-panel";
-    globalSettingsPanel.style.marginBottom = "30px";
-    globalSettingsPanel.style.backgroundColor = "var(--bg-secondary)"; // 視覚的な区別のためのスタイル
-    globalSettingsPanel.style.padding = "15px";
+    
+    // メインコンテンツと重ならないよう、bodyに左余白を追加
+    document.body.style.paddingLeft = "280px";
 
-    const settingsTitle = document.createElement("div");
-    settingsTitle.innerHTML = "<strong>⚙️ Global Settings</strong>";
-    settingsTitle.style.marginBottom = "15px";
-    settingsTitle.style.fontSize = "16px";
-    globalSettingsPanel.appendChild(settingsTitle);
+    const sidebar = document.createElement("div");
+    sidebar.id = "global-settings-sidebar";
+    sidebar.style.position = "fixed";
+    sidebar.style.top = "20px";
+    sidebar.style.left = "20px";
+    sidebar.style.width = "240px";
+    sidebar.style.backgroundColor = "var(--bg-secondary, #f4f6f8)";
+    sidebar.style.padding = "20px 15px";
+    sidebar.style.borderRadius = "8px";
+    sidebar.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+    sidebar.style.zIndex = "1000";
+    sidebar.style.display = "flex";
+    sidebar.style.flexDirection = "column";
+
+    // ↩️ もどる ボタン
+    const backBtn = document.createElement("button");
+    backBtn.innerHTML = "↩️ もどる";
+    backBtn.className = "example-button";
+    backBtn.style.width = "100%";
+    backBtn.style.marginBottom = "20px";
+    backBtn.style.justifyContent = "center";
+    backBtn.style.padding = "10px";
+    backBtn.onclick = () => window.history.back();
+    sidebar.appendChild(backBtn);
 
     const controlGroup = document.createElement("div");
     controlGroup.className = "control-group";
+    controlGroup.style.display = "flex";
+    controlGroup.style.flexDirection = "column";
+    controlGroup.style.gap = "15px";
+    controlGroup.style.alignItems = "stretch";
 
     // 1. Recording Toggle
     const recordControl = document.createElement("div");
     recordControl.className = "control-item";
+    recordControl.style.justifyContent = "space-between";
 
     const labelAutoRecord = document.createElement("span");
-    labelAutoRecord.id = "labelAutoRecord";
     labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
 
     const switchRecord = document.createElement("label");
@@ -346,7 +361,6 @@ function initApp() {
     switchRecord.appendChild(sliderRecord);
 
     const labelManualRecord = document.createElement("span");
-    labelManualRecord.id = "labelManualRecord";
     labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
 
     inputRecord.addEventListener("change", (e) => {
@@ -365,9 +379,9 @@ function initApp() {
     // 2. Vocab Hint Toggle
     const vocabControl = document.createElement("div");
     vocabControl.className = "control-item";
+    vocabControl.style.justifyContent = "space-between";
     
     const labelHoverHint = document.createElement("span");
-    labelHoverHint.id = "labelHoverHint";
     labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
 
     const switchHint = document.createElement("label");
@@ -381,7 +395,6 @@ function initApp() {
     switchHint.appendChild(sliderHint);
 
     const labelParenHint = document.createElement("span");
-    labelParenHint.id = "labelParenHint";
     labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
 
     inputHint.addEventListener("change", (e) => {
@@ -401,10 +414,10 @@ function initApp() {
     // 3. Playback Toggle (Auto/Manual)
     const playbackControl = document.createElement("div");
     playbackControl.className = "control-item";
+    playbackControl.style.justifyContent = "space-between";
 
     const labelAutoPlay = document.createElement("span");
-    labelAutoPlay.id = "labelAutoPlay";
-    labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Auto<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
+    labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
 
     const switchPlayback = document.createElement("label");
     switchPlayback.className = "switch";
@@ -417,8 +430,7 @@ function initApp() {
     switchPlayback.appendChild(sliderPlayback);
 
     const labelManualPlay = document.createElement("span");
-    labelManualPlay.id = "labelManualPlay";
-    labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual<span class="custom-tip-box">Disables automatic playback.</span>';
+    labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
 
     inputPlayback.addEventListener("change", (e) => {
         isAutoPlay = !e.target.checked;
@@ -433,23 +445,38 @@ function initApp() {
     updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
     updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
 
-    globalSettingsPanel.appendChild(controlGroup);
-    container.appendChild(globalSettingsPanel);
+    sidebar.appendChild(controlGroup);
+    
+    // bodyの先頭にサイドバーを挿入
+    document.body.insertBefore(sidebar, document.body.firstChild);
+
 
     // ------------------------------------------------------------------------
-    // Task 1 header
+    // Task 1 header (案内パネル風デザイン)
     // ------------------------------------------------------------------------
     const headerPanelTask1 = document.createElement("div");
-    headerPanelTask1.className = "header-panel";
+    headerPanelTask1.className = "header-panel info-panel";
+    // 案内パネル風のインラインスタイル
+    headerPanelTask1.style.backgroundColor = "#f8fbff"; 
+    headerPanelTask1.style.borderLeft = "5px solid #4facfe"; 
+    headerPanelTask1.style.padding = "15px 20px";
+    headerPanelTask1.style.borderRadius = "0 8px 8px 0";
+    headerPanelTask1.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
+    headerPanelTask1.style.marginBottom = "20px";
 
     const titleInstructionGroup1 = document.createElement("div");
     titleInstructionGroup1.className = "title-instruction-group";
+    titleInstructionGroup1.style.display = "flex";
+    titleInstructionGroup1.style.flexDirection = "column";
+    titleInstructionGroup1.style.gap = "5px";
+
     const titleArea1 = document.createElement("span");
-    titleArea1.innerHTML = "<strong>Task 1；Drills</strong>";
+    titleArea1.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 1；Drills</strong>";
     const descArea1 = document.createElement("span");
     descArea1.style.color = "var(--text-primary)";
     descArea1.style.fontSize = "15px";
     descArea1.innerHTML = '💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.';
+    
     titleInstructionGroup1.appendChild(titleArea1);
     titleInstructionGroup1.appendChild(descArea1);
 
@@ -478,16 +505,26 @@ function initApp() {
     });
 
     // ------------------------------------------------------------------------
-    // Task 2 header
+    // Task 2 header (案内パネル風デザイン)
     // ------------------------------------------------------------------------
     const customHeaderPanel = document.createElement("div");
-    customHeaderPanel.className = "header-panel";
+    customHeaderPanel.className = "header-panel info-panel";
+    customHeaderPanel.style.backgroundColor = "#fffcf5"; 
+    customHeaderPanel.style.borderLeft = "5px solid #ffb84d"; 
+    customHeaderPanel.style.padding = "15px 20px";
+    customHeaderPanel.style.borderRadius = "0 8px 8px 0";
     customHeaderPanel.style.marginTop = "30px";
+    customHeaderPanel.style.marginBottom = "20px";
+    customHeaderPanel.style.boxShadow = "0 2px 8px rgba(0,0,0,0.05)";
 
     const titleInstructionGroup2 = document.createElement("div");
     titleInstructionGroup2.className = "title-instruction-group";
+    titleInstructionGroup2.style.display = "flex";
+    titleInstructionGroup2.style.flexDirection = "column";
+    titleInstructionGroup2.style.gap = "5px";
+
     const titleArea2 = document.createElement("span");
-    titleArea2.innerHTML = "<strong>Task 2；Custom Practice</strong>";
+    titleArea2.innerHTML = "<strong style='font-size: 1.1em; color: #2c3e50;'>Task 2；Custom Practice</strong>";
     const descArea2 = document.createElement("span");
     descArea2.style.color = "var(--text-primary)";
     descArea2.style.fontSize = "15px";
