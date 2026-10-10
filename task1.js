@@ -36,7 +36,6 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
-// 教科書ごとの語彙データ (Genki 1 & Minna 1)
 const vocabLists = {
     genki1: {
         xList: ["わたし", "ともだち", "かぞく", "りゅうがくせい"],
@@ -144,7 +143,7 @@ function convertToHiragana(text) {
 function speakText(text, rate = 0.9, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
-    utterance.rate = rate; // 指定スピード（Example/Task1は0.9, Task2/3は0.8）
+    utterance.rate = rate;
     if (preferredVoice) utterance.voice = preferredVoice;
     
     currentUtteranceRef = utterance;
@@ -165,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initExampleListen();
     initTask1();
     initTask2();
-    initTask3Container(); // Task 3 初期化（3行＋追加ボタン連動）
+    initTask3Container();
     setupFooterGuide();
 });
 
@@ -255,9 +254,6 @@ function initSettingsPanel() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Example Section Event Binding
-// ----------------------------------------------------------------------------
 function initExampleListen() {
     const ex1Btn = document.getElementById("ex1Listen");
     if (ex1Btn) {
@@ -471,7 +467,7 @@ function initTask2() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 3 (Challenge - Free Input with Vocab rotation & Add 3 sentences up to 10)
+// Task 3
 // ----------------------------------------------------------------------------
 function initTask3Container() {
     const container = document.getElementById("task3List");
@@ -480,10 +476,9 @@ function initTask3Container() {
     if (!container) return;
 
     let rowCount = 0;
-
-    // プレースホルダーをローテーションで取得するヘルパー
     let xIndex = 0;
     let yIndex = 0;
+
     function getNextPlaceholders() {
         const source = vocabSelect ? vocabSelect.value : "genki1";
         const list = vocabLists[source] || vocabLists.genki1;
@@ -494,7 +489,6 @@ function initTask3Container() {
         return { pX, pY };
     }
 
-    // 1行追加する関数
     function addTask3Row() {
         if (rowCount >= 10) {
             alert("Maximum limit of 10 sentences reached.");
@@ -502,10 +496,7 @@ function initTask3Container() {
         }
         rowCount++;
         const currentGlobalIndex = taskData.length + 3 + rowCount;
-
-        // 肯定または否定をランダムに付与 (50%の確率)
         const isCustomNeg = Math.random() < 0.5;
-
         const { pX, pY } = getNextPlaceholders();
 
         const rowDiv = document.createElement("div");
@@ -612,15 +603,12 @@ function initTask3Container() {
         container.appendChild(rowDiv);
     }
 
-    // 初期状態で3行生成
     container.innerHTML = "";
     for (let k = 0; k < 3; k++) {
         addTask3Row();
     }
 
-    // + Add Three Sentences ボタンのイベント設定
     if (addBtn) {
-        // 重複登録を防ぐための置き換え
         const newAddBtn = addBtn.cloneNode(true);
         addBtn.parentNode.replaceChild(newAddBtn, addBtn);
         newAddBtn.addEventListener("click", () => {
@@ -630,7 +618,6 @@ function initTask3Container() {
         });
     }
 }
-
 
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll(".drill-row");
@@ -809,6 +796,7 @@ function bindRecorderEvents(
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
+            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
             resultSpan.textContent = "Speech recognition is not supported in this browser.";
             resultSpan.style.color = "var(--error-text)";
             return;
@@ -883,6 +871,12 @@ function bindRecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
+                
+                // Braveなどのネットワーク/サービス非対応エラーを検知した場合にポップアップを表示
+                if (event.error === "network" || event.error === "service-not-allowed") {
+                    alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
+                }
+
                 const message =
                     event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
                     event.error === "no-speech" ? "No speech detected. Please try again." :
@@ -915,6 +909,7 @@ function bindRecorderEvents(
             currentRecognition.start();
         } catch (err) {
             console.error("Speech recognition start error:", err);
+            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
             requestStop(currentSession, true, "Could not start recording. Please try again.");
         }
     });
