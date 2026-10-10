@@ -199,6 +199,7 @@ function speakText(text, rate = 1.0, onEndCallback) {
 // ============================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+    document.body.style.paddingLeft = ""; // サイドバーの名残をリセット
     initApp();
     setupFooterGuide();
 });
@@ -224,7 +225,7 @@ function setupFooterGuide() {
 // ============================================================================
 
 function formatWord(word, romaji, meaning) {
-    const hintStr = `${romaji}, ${meaning}`;
+    const hintStr = `${romaji},${meaning}`;
     if (hintMode === "paren") {
         return `<span class="target-word">${word}</span> (${hintStr})`;
     }
@@ -242,9 +243,6 @@ function formatCustomWord(hira, engKey) {
     return formatWord(hira, entry.romaji, entry.meaning);
 }
 
-// ----------------------------------------------------------------------------
-// Helper: Toggle UI Styler (Handles Emoji Grayscale)
-// ----------------------------------------------------------------------------
 function updateToggleLabelStyle(labelEl, isActive) {
     if (!labelEl) return;
     labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
@@ -270,13 +268,12 @@ function initApp() {
     const exampleSection = document.getElementById("exampleSection");
     const container = document.getElementById("task1List");
 
-    // コンテナ初期化
     if (container) {
         container.innerHTML = "";
     }
 
     // ------------------------------------------------------------------------
-    // 1. ↩️もどる リンクをページ最上部（bodyの最初）に挿入
+    // 1. ↩️もどる リンクをページ最上部に挿入
     // ------------------------------------------------------------------------
     if (!document.getElementById("top-back-link")) {
         const backLink = document.createElement("a");
@@ -293,28 +290,30 @@ function initApp() {
             e.preventDefault();
             window.history.back();
         };
-        // ページの一番上に挿入
         document.body.insertBefore(backLink, document.body.firstChild);
     }
 
     // ------------------------------------------------------------------------
-    // 2. Example Section Initialization (テーブルレイアウト)
+    // 2. Example と Global Settings の1行横並びレイアウト作成
     // ------------------------------------------------------------------------
-    if (exampleSection) {
+    if (exampleSection && exampleSection.parentNode) {
+        
+        // 既存のexampleSectionの内容をテーブルレイアウトで書き換え
         const ex1X = formatWord("わたし", "watashi", "I");
         const ex1Y = formatWord("がくせい", "gakusei", "student");
         const ex2X = formatWord("わたし", "watashi", "I");
         const ex2Y = formatWord("せんせい", "sensei", "teacher");
 
         exampleSection.className = "example-box";
+        exampleSection.style.margin = "0"; // Wrapperで余白を管理するためリセット
         exampleSection.innerHTML = `
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 5px;">
+            <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 10px 10px 0; white-space: nowrap; width: 1%; vertical-align: middle;">
                         <strong>Affirmative:</strong>
                     </td>
                     <td style="padding: 10px; width: 30%; vertical-align: middle;">
-                        ${ex1X} ／ ${ex1Y}
+                        ${ex1X} ／${ex1Y}
                     </td>
                     <td style="padding: 10px; vertical-align: middle;">
                         わたしは、がくせいです。<br>
@@ -329,7 +328,7 @@ function initApp() {
                         <strong>Negative:</strong>
                     </td>
                     <td style="padding: 10px; width: 30%; vertical-align: middle;">
-                        ${ex2X} ／ ${ex2Y}
+                        ${ex2X} ／${ex2Y}
                     </td>
                     <td style="padding: 10px; vertical-align: middle;">
                         わたしは、せんせいじゃないです。<br>
@@ -344,25 +343,42 @@ function initApp() {
 
         setupExampleListen("ex1Listen", "わたしは、がくせいです。");
         setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
-    }
 
-    // ------------------------------------------------------------------------
-    // 3. Global Settings Panel (Exampleの下に配置)
-    // ------------------------------------------------------------------------
-    const anchorElement = exampleSection || container;
-    if (anchorElement && anchorElement.parentNode) {
+        // 左右に並べるための親ラッパーを作成
+        const topWrapper = document.createElement("div");
+        topWrapper.style.display = "flex";
+        topWrapper.style.flexWrap = "wrap"; // 画面が狭い場合は縦に落ちるようにする
+        topWrapper.style.justifyContent = "space-between";
+        topWrapper.style.alignItems = "stretch";
+        topWrapper.style.gap = "20px";
+        topWrapper.style.marginBottom = "30px";
+
+        // DOMツリー上で exampleSection を topWrapper の中に移動する
+        exampleSection.parentNode.insertBefore(topWrapper, exampleSection);
+
+        // 左カラム (Example)
+        const leftCol = document.createElement("div");
+        leftCol.style.flex = "1 1 500px"; // 柔軟に伸縮しつつ、最小幅を確保
+        leftCol.appendChild(exampleSection);
+
+        // 右カラム (Global Settings Panel)
+        const rightCol = document.createElement("div");
+        rightCol.style.flex = "0 0 280px"; // 幅を固定
+        
         const globalSettingsPanel = document.createElement("div");
         globalSettingsPanel.style.backgroundColor = "var(--bg-secondary, #f4f6f8)";
         globalSettingsPanel.style.padding = "15px";
         globalSettingsPanel.style.borderRadius = "8px";
-        globalSettingsPanel.style.marginBottom = "30px"; // Task 1との間隔
+        globalSettingsPanel.style.height = "100%";
         globalSettingsPanel.style.display = "flex";
-        globalSettingsPanel.style.flexWrap = "wrap"; 
+        globalSettingsPanel.style.flexDirection = "column";
+        globalSettingsPanel.style.justifyContent = "center";
         globalSettingsPanel.style.gap = "15px";
 
         // Recording Toggle
         const recordControl = document.createElement("div");
         recordControl.className = "control-item";
+        recordControl.style.justifyContent = "space-between";
         
         const labelAutoRecord = document.createElement("span");
         labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
@@ -396,6 +412,7 @@ function initApp() {
         // Vocab Hint Toggle
         const vocabControl = document.createElement("div");
         vocabControl.className = "control-item";
+        vocabControl.style.justifyContent = "space-between";
         
         const labelHoverHint = document.createElement("span");
         labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
@@ -430,6 +447,7 @@ function initApp() {
         // Playback Toggle (Auto/Manual)
         const playbackControl = document.createElement("div");
         playbackControl.className = "control-item";
+        playbackControl.style.justifyContent = "space-between";
 
         const labelAutoPlay = document.createElement("span");
         labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
@@ -460,16 +478,11 @@ function initApp() {
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
 
-        // 要素の安全な挿入
-        if (exampleSection) {
-            if (exampleSection.nextSibling) {
-                exampleSection.parentNode.insertBefore(globalSettingsPanel, exampleSection.nextSibling);
-            } else {
-                exampleSection.parentNode.appendChild(globalSettingsPanel);
-            }
-        } else if (container) {
-            container.parentNode.insertBefore(globalSettingsPanel, container);
-        }
+        rightCol.appendChild(globalSettingsPanel);
+
+        // ラッパーに左右のカラムを格納
+        topWrapper.appendChild(leftCol);
+        topWrapper.appendChild(rightCol);
     }
 
     if (!container) return;
@@ -521,22 +534,22 @@ function initApp() {
     });
 
     // ------------------------------------------------------------------------
-    // Task 2 header (案内パネル風デザイン: 濃いオレンジ系)
+    // Task 2 header (案内パネル風デザイン: 青系で濃い色)
     // ------------------------------------------------------------------------
     const customHeaderPanel = document.createElement("div");
-    customHeaderPanel.style.backgroundColor = "#ffeed9"; // 濃いめのオレンジ背景
-    customHeaderPanel.style.borderLeft = "6px solid #e65c00"; // 太く、強いオレンジの境界線
+    customHeaderPanel.style.backgroundColor = "#e6f0fa"; // Task 1より一段濃い淡青
+    customHeaderPanel.style.borderLeft = "6px solid #004085"; // 深い紺色
     customHeaderPanel.style.padding = "15px 20px";
     customHeaderPanel.style.borderRadius = "0 8px 8px 0";
     customHeaderPanel.style.marginTop = "30px";
     customHeaderPanel.style.marginBottom = "20px";
-    customHeaderPanel.style.boxShadow = "0 4px 10px rgba(230, 92, 0, 0.15)"; // シャドウも強めに
+    customHeaderPanel.style.boxShadow = "0 4px 10px rgba(0, 86, 179, 0.15)"; // シャドウ強調
     customHeaderPanel.style.display = "flex";
     customHeaderPanel.style.flexDirection = "column";
     customHeaderPanel.style.gap = "5px";
 
     const titleArea2 = document.createElement("span");
-    titleArea2.innerHTML = "<strong style='font-size: 1.15em; color: #b34700;'>Task 2；Custom Practice</strong>";
+    titleArea2.innerHTML = "<strong style='font-size: 1.15em; color: #002752;'>Task 2；Custom Practice</strong>"; // さらに濃い紺色
     const descArea2 = document.createElement("span");
     descArea2.style.color = "#333";
     descArea2.style.fontSize = "15px";
@@ -750,7 +763,7 @@ function updateWordsDisplay() {
                 const yW = promptSpan.dataset.yWord;
                 const yR = promptSpan.dataset.yRomaji;
                 const yM = promptSpan.dataset.yMeaning;
-                promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／ ${formatWord(yW, yR, yM)}`;
+                promptSpan.innerHTML = `${formatWord(xW, xR, xM)} ／${formatWord(yW, yR, yM)}`;
             }
         }
     });
@@ -803,7 +816,7 @@ function createDrillRow(
     promptSpan.dataset.yRomaji = foundData ? foundData.yRomaji : "noun";
     promptSpan.dataset.yMeaning = foundData ? foundData.yMeaning : "noun";
 
-    promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
+    promptSpan.innerHTML = `${formattedX} ／${formattedY}`;
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
@@ -1145,125 +1158,4 @@ function processRecognitionResult(
     const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
     const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
     const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
-    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
-
-    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
-
-    // ------------------------------------------------------------------------
-    // Play user's recorded audio button setup
-    // ------------------------------------------------------------------------
-    const appendPlayButton = () => {
-        let playBtn = resultSpan.querySelector(".play-recording-btn");
-        if (!playBtn) {
-            playBtn = document.createElement("button");
-            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-            playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
-
-            playBtn.onclick = () => {
-                const recordedAudioUrl = getUrlFn();
-                if (recordedAudioUrl) {
-                    setPlayingState(playBtn, "Playing...");
-                    const audio = new Audio(recordedAudioUrl);
-                    currentPlayingAudio = audio;
-                    audio.onended = () => stopAllPlayback();
-                    audio.play().catch(e => {
-                        console.warn("Playback failed", e);
-                        stopAllPlayback();
-                    });
-                }
-            };
-            resultSpan.appendChild(playBtn);
-        }
-        return playBtn;
-    };
-
-    let targetPlayBtn = null;
-
-    // ------------------------------------------------------------------------
-    // Evaluation Logic
-    // ------------------------------------------------------------------------
-    if (isAffirmative || isNegative) {
-        resultSpan.textContent = hiraText + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-        targetPlayBtn = appendPlayButton();
-        correctionBox.style.display = "none";
-    } else {
-        const hasCorrectY = hiraText.includes(hiraY);
-        if (!hasCorrectY) {
-            let highlightedText = hiraText.replace(
-                new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, "g"),
-                '$1<span style="color: var(--accent-color);">$2</span>$3'
-            );
-            resultSpan.innerHTML = highlightedText + " ";
-            resultSpan.style.color = "var(--text-primary)";
-            targetPlayBtn = appendPlayButton();
-            corrTextSpan.textContent = "Wrong word used.";
-            corrListenBtn.style.display = "none";
-        } else {
-            resultSpan.textContent = hiraText + " ";
-            resultSpan.style.color = "var(--error-text)";
-            targetPlayBtn = appendPlayButton();
-            corrTextSpan.textContent = "Structure error, try it again";
-            corrListenBtn.style.display = "inline-block";
-
-            const correctSentenceForBtn = expectedIsNeg
-                ? `${currentX}は、${currentY}じゃないです。`
-                : `${currentX}は、${currentY}です。`;
-
-            corrListenBtn.onclick = () => {
-                setPlayingState(corrListenBtn, "Playing...");
-                speakText(correctSentenceForBtn, 0.7, () => stopAllPlayback());
-            };
-        }
-        correctionBox.style.display = "block";
-    }
-
-    // ------------------------------------------------------------------------
-    // Auto Play Sequence: 0.5s Wait -> Model Audio (85%) -> 0.1s Wait -> User Audio (100%)
-    // ------------------------------------------------------------------------
-    const runAutoPlaySequence = (btn) => {
-        if (!isAutoPlay) return;
-
-        const recordedAudioUrl = getUrlFn();
-        if (!recordedAudioUrl || !btn) return;
-
-        setPlayingState(btn, "Playing...");
-
-        const correctSentence = expectedIsNeg
-            ? `${currentX}は、${currentY}じゃないです。`
-            : `${currentX}は、${currentY}です。`;
-
-        const utterance = new SpeechSynthesisUtterance(correctSentence);
-        utterance.lang = "ja-JP";
-        utterance.rate = 0.85;
-
-        if (preferredVoice) {
-            utterance.voice = preferredVoice;
-        }
-
-        currentUtteranceRef = utterance;
-
-        utterance.onend = () => {
-            currentUtteranceRef = null;
-            currentPlayTimeoutId = setTimeout(() => {
-                const audio = new Audio(recordedAudioUrl);
-                currentPlayingAudio = audio;
-                audio.playbackRate = 1.0;
-                audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => {
-                    console.warn("Auto playback failed", e);
-                    stopAllPlayback();
-                });
-            }, 100);
-        };
-
-        utterance.onerror = () => stopAllPlayback();
-
-        currentPlayTimeoutId = setTimeout(() => {
-            speechSynthesis.speak(utterance);
-        }, 500);
-    };
-
-    runAutoPlaySequence(targetPlayBtn);
-}
+    const negRegex4 = new RegExp(`^${hira
