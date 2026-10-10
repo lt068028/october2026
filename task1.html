@@ -69,9 +69,36 @@
     </div>
 
     <!-- =========================================================
-         Example Section
+         Example Section (HTMLへ静的記述)
          ========================================================= -->
-    <div id="exampleSection"></div>
+    <div class="example-box">
+        <!-- Affirmative -->
+        <div class="example-line" style="margin-bottom: 12px;">
+            <div style="margin-bottom: 6px; font-size: 15px;">
+                <strong class="example-label-title">Affirmative:</strong> 
+                <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+                <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                <span style="font-size: 16px;">👉</span>
+                <button id="ex1Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+            </div>
+        </div>
+        <!-- Negative -->
+        <div class="example-line dashed-border" style="padding-top: 12px;">
+            <div style="margin-bottom: 6px; font-size: 15px;">
+                <strong class="example-label-title">Negative:</strong> 
+                <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+                <span class="tooltip-wrap"><span class="target-word">せんせい</span><span class="tooltip-tip">sensei, teacher</span></span> 
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                <span style="font-size: 16px;">👉</span>
+                <button id="ex2Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+            </div>
+        </div>
+    </div>
 
 
     <!-- =========================================================
