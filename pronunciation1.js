@@ -1,23 +1,23 @@
 // ============================================================================
-// Pronunciation Practice 1 (English excluded from pitch decoration)
+// Pronunciation Practice 1 (Hiragana Fixed & Compare Mode)
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
-    { kanji: "萌々。桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
-    { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
-    { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
-    { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
-    { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
-    { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
-    { kanji: "牡蠣。かき。", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
-    { kanji: "鶴。釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
-    { kanji: "雨。飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
+    { kanji: "箸、橋", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
+    { kanji: "腿、桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
+    { kanji: "降る、振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
+    { kanji: "切る、着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
+    { kanji: "撒く、巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
+    { kanji: "春、貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
+    { kanji: "隅、炭", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
+    { kanji: "牡蠣、柿", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
+    { kanji: "鶴、釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
+    { kanji: "雨、飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
 ];
 
 let isManualStop = true; 
 let isAutoPlay = true; 
-let useHiraganaOnly = false;
+const useHiraganaOnly = true; // ひらがな固定
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -101,12 +101,9 @@ function renderPitchAccentHTML(textStr, color) {
     let i = 0;
     while (i < textStr.length) {
         let ch = textStr[i];
-        
-        // 半角アルファベット（A-Z, a-z）の判定
         let isLatin = /[a-zA-Z]/.test(ch);
 
         if (isLatin || ch === ' ') {
-            // アルファベットやスペースは装飾せずそのまま出力する
             resultHTML += ch;
             i++;
         } else if (ch === '↘' || ch === '＼') {
@@ -218,30 +215,24 @@ function initSettingsPanel() {
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
     }
 
+    // スクリプト切り替えトグルは固定グレーアウト
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelKanji = document.getElementById("labelKanji");
     const labelHiragana = document.getElementById("labelHiragana");
-
     if (toggleScriptMode) {
-        toggleScriptMode.addEventListener("change", (e) => {
-            useHiraganaOnly = e.target.checked;
-            updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
-            updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            updateDrill1Prompts();
-        });
-        updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
-        updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
+        toggleScriptMode.checked = true;
+        toggleScriptMode.disabled = true;
     }
-}
-
-function updateDrill1Prompts() {
-    const promptSpans = document.querySelectorAll(".prompt-label");
-    promptSpans.forEach((span, index) => {
-        const item = drill1Data[index];
-        if (item) {
-            span.innerHTML = renderPitchAccentHTML(item.text, item.color);
-        }
-    });
+    if (labelKanji) {
+        labelKanji.className = "mode-label inactive-mode custom-tip-wrap";
+        const emoji = labelKanji.querySelector('.icon-emoji');
+        if (emoji) { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.55"; }
+    }
+    if (labelHiragana) {
+        labelHiragana.className = "mode-label active-mode custom-tip-wrap";
+        const emoji = labelHiragana.querySelector('.icon-emoji');
+        if (emoji) { emoji.style.filter = "none"; emoji.style.opacity = "1"; }
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -276,8 +267,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     listenBtn.onclick = () => {
         const recordBtnEl = rowDiv.querySelector(".play-recording-btn");
         setPlayingStateMultiple([listenBtn, recordBtnEl], "Playing...");
-        const speechText = useHiraganaOnly ? item.hira : item.kanji;
-        speakText(speechText, playRate, () => stopAllPlayback());
+        speakText(item.hira, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -525,21 +515,20 @@ function processDrill1Result(
     rawTranscript, expectedHiraText,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
-    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+    // 文字数制限を緩和（0文字以上、つまり極端に短くても表示するように変更）
+    if (rawTranscript.replace(/[\s.,]/g, "").length < 1) {
         resultSpan.textContent = rawTranscript + " (Too short)";
         resultSpan.style.color = "var(--text-secondary)";
         return;
     }
 
     const hiraText = convertToHiragana(rawTranscript);
-    const expectedHira = convertToHiragana(expectedHiraText);
-    const isCorrect = hiraText.includes(expectedHira);
-
-    const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
+    const displayedTranscript = hiraText || rawTranscript;
 
     const appendButtons = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
         if (!playBtn) {
+            playBtn = document.exitFullscreen ? null : document.createElement("button"); // safe creation
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
@@ -564,29 +553,11 @@ function processDrill1Result(
         }
     };
 
-    if (isCorrect) {
-        resultSpan.textContent = displayedTranscript + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-        appendButtons();
-        correctionBox.style.display = "none";
-    } else {
-        resultSpan.textContent = displayedTranscript + " ";
-        resultSpan.style.color = "var(--error-text)";
-        appendButtons();
-        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
-        corrListenBtn.style.display = "inline-block";
-
-        corrListenBtn.onclick = () => {
-            const rowContainer = resultSpan.closest(".drill-row");
-            const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
-            const playBtn = resultSpan.querySelector(".play-recording-btn");
-            setPlayingStateMultiple([corrListenBtn, modelListenBtn, playBtn], "Playing...");
-            const targetItem = drill1Data.find(d => d.hira === expectedHiraText);
-            const speechText = useHiraganaOnly ? expectedHiraText : (targetItem ? targetItem.kanji : expectedHiraText);
-            speakText(speechText, playRate, () => stopAllPlayback());
-        };
-        correctionBox.style.display = "block";
-    }
+    // 正誤判定を行わず、Compare（比較）用に音声再生ボタンと認識結果をそのまま表示する
+    resultSpan.textContent = displayedTranscript + " ";
+    resultSpan.style.color = "var(--text-primary)";
+    appendButtons();
+    correctionBox.style.display = "none";
 
     const runAutoPlaySequence = () => {
         if (!isAutoPlay) return;
@@ -600,9 +571,7 @@ function processDrill1Result(
 
         setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
 
-        const targetItem = drill1Data.find(d => d.hira === expectedHiraText);
-        const speechText = useHiraganaOnly ? expectedHiraText : (targetItem ? targetItem.kanji : expectedHiraText);
-        const utterance = new SpeechSynthesisUtterance(speechText);
+        const utterance = new SpeechSynthesisUtterance(expectedHiraText);
         utterance.lang = "ja-JP";
         utterance.rate = playRate;
 
