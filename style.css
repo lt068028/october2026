@@ -152,7 +152,7 @@ h1 {
     .info-panel-task2 { border-left-color: #2563eb; }
     .info-panel-task2 .info-panel-title { color: #2563eb; }
     .info-panel-task3 { border-left-color: #1d4ed8; }
-    .info-panel-task3 .info-panel-title { color: #1d4ed8; }
+    .info-panel-task3 .info-panel-title { color: #3b82f6; }
 }
 
 /* ==========================================
@@ -208,6 +208,11 @@ h1 {
     padding: 4px 8px; font-size: 14px; border-radius: 4px; 
     border: 1px solid var(--border-color); 
     background-color: var(--button-bg); color: var(--text-primary);
+}
+
+.custom-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6; /* 英語ヒントを半透明で表示 */
 }
 
 .correction-box {
