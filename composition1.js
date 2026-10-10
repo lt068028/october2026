@@ -15,7 +15,7 @@ const drill1Data = [
 
 let isManualStop = false;
 let isAutoPlay = true; 
-let useHiraganaOnly = false; // デフォルトは With Kanji (false)
+let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -183,21 +183,10 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            updateDrill1Display();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
     }
-}
-
-function updateDrill1Display() {
-    const promptSpans = document.querySelectorAll(".drill1-prompt");
-    promptSpans.forEach((span, idx) => {
-        const item = drill1Data[idx];
-        if (item) {
-            span.textContent = useHiraganaOnly ? item.jaHira : item.jaKanji;
-        }
-    });
 }
 
 // ----------------------------------------------------------------------------
@@ -480,11 +469,9 @@ function processDrill1Result(
     const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
     const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
 
-    const displayText = useHiraganaOnly ? jaHira : jaKanji;
     const modelSpeechText = jaKanji;
 
-    const appendButtons = (isSuccess) => {
-        // 順番: ✅ (またはテキスト) ➡️ ▶️ (録音再生) ➡️ 🔊 きく (正答モデル音)
+    const appendButtons = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
         if (!playBtn) {
             playBtn = document.createElement("button");
@@ -525,16 +512,19 @@ function processDrill1Result(
 
     let targetPlayBtn = null;
 
+    // 聞き取ったテキスト（Hiraganaモードならひらがな、With漢字モードなら漢字置換を試みる）をそのまま表示
+    let displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
+
     if (isCorrect) {
-        resultSpan.textContent = displayText + " ✅ ";
+        resultSpan.textContent = displayedTranscript + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
-        appendButtons(true);
+        appendButtons();
         targetPlayBtn = resultSpan.querySelector(".play-recording-btn");
         correctionBox.style.display = "none";
     } else {
-        resultSpan.textContent = displayText + " ";
+        resultSpan.textContent = displayedTranscript + " ";
         resultSpan.style.color = "var(--error-text)";
-        appendButtons(false);
+        appendButtons();
         targetPlayBtn = resultSpan.querySelector(".play-recording-btn");
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
@@ -839,7 +829,8 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
 
 function processDrill2Result(rawTranscript, resultSpan, getUrlFn, playRate) {
     const hiraText = convertToHiragana(rawTranscript);
-    resultSpan.textContent = (hiraText || rawTranscript) + " ";
+    const displayText = useHiraganaOnly ? hiraText : rawTranscript;
+    resultSpan.textContent = (displayText || rawTranscript) + " ";
     resultSpan.style.color = "var(--text-primary)";
 
     let playBtn = resultSpan.querySelector(".play-recording-btn");
