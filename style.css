@@ -92,7 +92,8 @@ h1 {
 }
 
 .settings-container {
-    flex: 0 0 320px; /* 右側の設定パネルは幅320pxに固定 */
+    flex: 0 0 auto; /* 固定値をやめ、中身に合わせる */
+    width: max-content; /* ぴったりギリギリの幅に調整 */
     background-color: var(--bg-panel);
     padding: 20px;
     border-radius: 8px;
