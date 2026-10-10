@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -13,7 +14,7 @@
          ========================================================= -->
     <div class="main-header">
         <h1>Pronunciation Practice 2</h1>
-        
+
         <div class="compact-settings">
             <a href="index.html" class="back-link">↩️ もどる</a>
 
@@ -33,7 +34,7 @@
                 </span>
             </div>
 
-            <!-- Recording Toggle (Default: Manual stop) -->
+            <!-- Recording Toggle -->
             <div class="control-item">
                 <span id="labelAutoRecord" class="mode-label inactive-mode custom-tip-wrap">
                     <span class="icon-emoji">⏹️</span>Autostop
@@ -67,12 +68,13 @@
         </div>
     </div>
 
-
     <!-- =========================================================
          Temporary Area (Pitch Visualization Roadmap)
          ========================================================= -->
     <div class="example-box" style="background-color: #f1f5f9; border-color: #cbd5e1;">
-        <div style="font-weight: bold; margin-bottom: 6px; color: class="text-primary";">Temporary Area (Pitch Visualization Roadmap)</div>
+        <div style="font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">
+            Temporary Area (Pitch Visualization Roadmap)
+        </div>
         <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary);">
             <li>Step 1: ピッチを表示する場所を作る</li>
             <li>Step 2: 声から音の高さを取り出す</li>
@@ -83,7 +85,6 @@
         </ul>
     </div>
 
-
     <!-- =========================================================
          Drill 1 Section
          ========================================================= -->
@@ -93,20 +94,17 @@
     </div>
     <div id="drill1List"></div>
 
-
     <!-- =========================================================
          Footer
          ========================================================= -->
     <div class="voice-guide-footer">
         🔊Want to change the voice?
-        <span id="guideTrigger" class="guide-trigger">
-            Check⚙️
-        </span>
+        <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
 
         <div id="guideBox" class="guide-box-popup" style="display: none;">
-            Win: Settings > Time & Language > Speech<br>
-            Mac/iOS: Settings > Accessibility > Spoken Content<br>
-            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
+            Win: Settings &gt; Time &amp; Language &gt; Speech<br>
+            Mac/iOS: Settings &gt; Accessibility &gt; Spoken Content<br>
+            ChromeOS: Settings &gt; Advanced &gt; Accessibility &gt; Text-to-Speech
         </div>
     </div>
 
