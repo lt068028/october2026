@@ -1,18 +1,18 @@
 // ============================================================================
-// Pronunciation Practice 1 (Hiragana Fixed & Compare Mode)
+// Pronunciation Practice 1 (Final Updated Version)
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "箸、橋", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
-    { kanji: "腿、桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
-    { kanji: "降る、振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
-    { kanji: "切る、着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
-    { kanji: "撒く、巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
-    { kanji: "春、貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
-    { kanji: "隅、炭", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
-    { kanji: "牡蠣、柿", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
-    { kanji: "鶴、釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
-    { kanji: "雨、飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
+    { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
+    { kanji: "萌々。桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
+    { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
+    { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
+    { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
+    { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
+    { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
+    { kanji: "牡蠣。かき。", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
+    { kanji: "鶴。釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
+    { kanji: "雨。飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
 ];
 
 let isManualStop = true; 
@@ -515,7 +515,6 @@ function processDrill1Result(
     rawTranscript, expectedHiraText,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
-    // 文字数制限を緩和（0文字以上、つまり極端に短くても表示するように変更）
     if (rawTranscript.replace(/[\s.,]/g, "").length < 1) {
         resultSpan.textContent = rawTranscript + " (Too short)";
         resultSpan.style.color = "var(--text-secondary)";
@@ -528,7 +527,6 @@ function processDrill1Result(
     const appendButtons = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
         if (!playBtn) {
-            playBtn = document.exitFullscreen ? null : document.createElement("button"); // safe creation
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
@@ -553,7 +551,6 @@ function processDrill1Result(
         }
     };
 
-    // 正誤判定を行わず、Compare（比較）用に音声再生ボタンと認識結果をそのまま表示する
     resultSpan.textContent = displayedTranscript + " ";
     resultSpan.style.color = "var(--text-primary)";
     appendButtons();
