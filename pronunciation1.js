@@ -4,12 +4,12 @@
 
 const drill1Data = [
     { kanji: "箸、橋", hira: "はし、はし", text: "は↘し｜は↗し", color: "#facc15" },
-    { kanji: "腿、桃", hira: "もも、もも", text: "も↘も｜も↗も", color: "#34d399" },
+    { kanji: "百々、桃", hira: "もも、もも", text: "も↘も｜も↗も", color: "#34d399" },
     { kanji: "降る、振る", hira: "ふる、ふる", text: "ふ↘る｜ふ↗る", color: "#22d3ee" },
     { kanji: "切る、着る", hira: "きる、きる", text: "き↘る｜き↗る", color: "#e879f9" },
     { kanji: "撒く、巻く", hira: "まく、まく", text: "ま↘く｜ま↗く", color: "#fda4af" },
     { kanji: "春、貼る", hira: "はる、はる", text: "は↘る｜は↗る", color: "#facc15" },
-    { kanji: "隅、炭", hira: "すみ、すみ", text: "す↘み｜す↗み", color: "#34d399" },
+    { kanji: "隅、墨", hira: "すみ、すみ", text: "す↘み｜す↗み", color: "#34d399" },
     { kanji: "牡蠣、柿", hira: "かき、かき", text: "か↘き｜か↗き", color: "#22d3ee" },
     { kanji: "鶴、釣る", hira: "つる、つる", text: "つ↘る｜つ↗る", color: "#e879f9" }
 ];
