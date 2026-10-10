@@ -15,7 +15,7 @@ const drill1Data = [
 
 let isManualStop = false;
 let isAutoPlay = true; 
-let useHiraganaOnly = false; // デフォルトは with Kanji (false)
+let useHiraganaOnly = false; // デフォルトは With Kanji (false)
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -86,7 +86,7 @@ function convertToHiragana(text) {
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     const dict = {
         "天気": "てんき", "時計": "とけい", "仕事": "しごと", "勉強": "べんきょう",
-        "時間": "じかん", "悪い": "わるい", "傘": "かさ", "良い": "いい", "良い": "よい"
+        "時間": "じかん", "悪い": "わるい", "傘": "かさ", "良い": "いい", "楽しい": "たのしい"
     };
     for (let key in dict) {
         const regex = new RegExp(key, "g");
@@ -373,9 +373,8 @@ function bindDrill1RecorderEvents(
             if (currentSession.errorMessage || currentSession.processed) return;
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
-                const expectedText = useHiraganaOnly ? jaHira : jaKanji;
                 processDrill1Result(
-                    currentSession.accumulatedTranscript, expectedText, jaKanji,
+                    currentSession.accumulatedTranscript, jaKanji, jaHira,
                     resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
                 );
             }
@@ -465,7 +464,7 @@ function bindDrill1RecorderEvents(
 }
 
 function processDrill1Result(
-    rawTranscript, expectedText, modelSpeechText,
+    rawTranscript, jaKanji, jaHira,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
@@ -475,13 +474,17 @@ function processDrill1Result(
     }
 
     const hiraText = convertToHiragana(rawTranscript);
-    const expectedHira = convertToHiragana(expectedText);
+    const expectedHira = convertToHiragana(jaHira);
     const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
 
     const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
     const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
 
-    const appendPlayButton = () => {
+    const displayText = useHiraganaOnly ? jaHira : jaKanji;
+    const modelSpeechText = jaKanji;
+
+    const appendButtons = (isSuccess) => {
+        // 順番: ✅ (またはテキスト) ➡️ ▶️ (録音再生) ➡️ 🔊 きく (正答モデル音)
         let playBtn = resultSpan.querySelector(".play-recording-btn");
         if (!playBtn) {
             playBtn = document.createElement("button");
@@ -504,20 +507,35 @@ function processDrill1Result(
             };
             resultSpan.appendChild(playBtn);
         }
-        return playBtn;
+
+        let listenBtn = resultSpan.querySelector(".model-listen-btn");
+        if (!listenBtn) {
+            listenBtn = document.createElement("button");
+            listenBtn.className = "example-button model-listen-btn custom-tip-wrap";
+            listenBtn.style.marginLeft = "6px";
+            listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+
+            listenBtn.onclick = () => {
+                setPlayingState(listenBtn, "Playing...");
+                speakText(modelSpeechText, playRate, () => stopAllPlayback());
+            };
+            resultSpan.appendChild(listenBtn);
+        }
     };
 
     let targetPlayBtn = null;
 
     if (isCorrect) {
-        resultSpan.textContent = expectedText + " ✅ ";
+        resultSpan.textContent = displayText + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
-        targetPlayBtn = appendPlayButton();
+        appendButtons(true);
+        targetPlayBtn = resultSpan.querySelector(".play-recording-btn");
         correctionBox.style.display = "none";
     } else {
-        resultSpan.textContent = expectedText + " ";
+        resultSpan.textContent = displayText + " ";
         resultSpan.style.color = "var(--error-text)";
-        targetPlayBtn = appendPlayButton();
+        appendButtons(false);
+        targetPlayBtn = resultSpan.querySelector(".play-recording-btn");
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
 
@@ -846,6 +864,4 @@ function processDrill2Result(rawTranscript, resultSpan, getUrlFn, playRate) {
         };
         resultSpan.appendChild(playBtn);
     }
-
-    // Drill 2 では判定やモデル音声の自動再生を行わず、自分の録音再生ボタンのみ提供
 }
