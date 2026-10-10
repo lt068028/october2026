@@ -2,31 +2,82 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Composition Drill - 瞬間文作成</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English ➡️ Japanese Approach</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .back-link-container {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 10px;
-        }
-        .back-link {
-            text-decoration: none;
-            color: var(--accent-color);
-            font-weight: bold;
-            font-family: sans-serif;
-        }
-    </style>
 </head>
 <body>
-    <div class="back-link-container">
-        <a href="index.html" class="back-link">↩️もどる</a>
-    </div>
-    <h1>Japanese Composition Drill</h1>
-    <p>英語のプロンプトを見て、対応する日本語を発話して作文する。</p>
-    
-    <div id="compositionList" style="margin-top: 20px;"></div>
 
-    <script src="app.js"></script>
+    <!-- =========================================================
+         Header & Settings
+         ========================================================= -->
+    <div class="main-header">
+        <h1>English ➡️ Japanese Approach (いAdj)</h1>
+        
+        <div class="compact-settings">
+            <a href="index.html" class="back-link">↩️ もどる</a>
+
+            <!-- Recording Toggle -->
+            <div class="control-item">
+                <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Autostop
+                    <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleRecordMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Manual stop
+                    <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                </span>
+            </div>
+
+            <!-- Playback Toggle -->
+            <div class="control-item">
+                <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">▶️</span>Autoplay
+                    <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="togglePlaybackMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏯️</span>Manual play
+                    <span class="custom-tip-box">Disables automatic playback.</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =========================================================
+         Drill 1 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+        <span class="info-panel-title">Drill 1</span>
+        <span class="info-panel-desc">💡 Translate the given English sentence into Japanese and speak aloud.</span>
+    </div>
+    <div id="drill1List"></div>
+
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
+    <div class="voice-guide-footer">
+        🔊Want to change the voice?
+        <span id="guideTrigger" class="guide-trigger">
+            Check⚙️
+        </span>
+
+        <div id="guideBox" class="guide-box-popup" style="display: none;">
+            Win: Settings > Time & Language > Speech<br>
+            Mac/iOS: Settings > Accessibility > Spoken Content<br>
+            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
+        </div>
+    </div>
+
+    <script src="composition1.js"></script>
 </body>
 </html>
