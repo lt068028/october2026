@@ -1,5 +1,5 @@
 // ============================================================================
-// Pronunciation Practice 1 (Final Updated Version)
+// Pronunciation Practice 1 (Hiragana Display & Kanji Speech)
 // ============================================================================
 
 const drill1Data = [
@@ -17,7 +17,7 @@ const drill1Data = [
 
 let isManualStop = true; 
 let isAutoPlay = true; 
-const useHiraganaOnly = true; // ひらがな固定
+const useHiraganaOnly = true; // ひらがな表示固定
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -176,16 +176,6 @@ function setupFooterGuide() {
     }
 }
 
-function updateToggleLabelStyle(labelEl, isActive) {
-    if (!labelEl) return;
-    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    const emoji = labelEl.querySelector('.icon-emoji');
-    if (emoji) {
-        if (isActive) { emoji.style.filter = "none"; emoji.style.opacity = "1"; }
-        else { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.55"; }
-    }
-}
-
 function initSettingsPanel() {
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
@@ -235,6 +225,16 @@ function initSettingsPanel() {
     }
 }
 
+function updateToggleLabelStyle(labelEl, isActive) {
+    if (!labelEl) return;
+    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+    const emoji = labelEl.querySelector('.icon-emoji');
+    if (emoji) {
+        if (isActive) { emoji.style.filter = "none"; emoji.style.opacity = "1"; }
+        else { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.55"; }
+    }
+}
+
 // ----------------------------------------------------------------------------
 // Drill 1 Initialization
 // ----------------------------------------------------------------------------
@@ -267,7 +267,8 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     listenBtn.onclick = () => {
         const recordBtnEl = rowDiv.querySelector(".play-recording-btn");
         setPlayingStateMultiple([listenBtn, recordBtnEl], "Playing...");
-        speakText(item.hira, playRate, () => stopAllPlayback());
+        // 読み上げには漢字表記（item.kanji）を使用して正しい発音を行わせる
+        speakText(item.kanji, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -317,7 +318,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
 
     bindDrill1RecorderEvents(
         recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        item.hira, playRate
+        item.kanji, playRate
     );
 
     container.appendChild(rowDiv);
@@ -325,7 +326,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
 
 function bindDrill1RecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-    expectedHiraText, playRate = 0.9
+    expectedKanjiText, playRate = 0.9
 ) {
     let session = null;
     let lastAudioUrl = null;
@@ -422,7 +423,7 @@ function bindDrill1RecorderEvents(
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
                 processDrill1Result(
-                    currentSession.accumulatedTranscript, expectedHiraText,
+                    currentSession.accumulatedTranscript, expectedKanjiText,
                     resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
                 );
             }
@@ -512,7 +513,7 @@ function bindDrill1RecorderEvents(
 }
 
 function processDrill1Result(
-    rawTranscript, expectedHiraText,
+    rawTranscript, expectedKanjiText,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 1) {
@@ -568,7 +569,7 @@ function processDrill1Result(
 
         setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
 
-        const utterance = new SpeechSynthesisUtterance(expectedHiraText);
+        const utterance = new SpeechSynthesisUtterance(expectedKanjiText);
         utterance.lang = "ja-JP";
         utterance.rate = playRate;
 
