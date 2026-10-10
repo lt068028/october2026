@@ -1,5 +1,5 @@
 // ============================================================================
-// Pronunciation Practice 1 (Hiragana Display & Kanji Speech)
+// Pronunciation Practice 1 (Autostop Default & Disabled Hiragana Toggle)
 // ============================================================================
 
 const drill1Data = [
@@ -15,9 +15,9 @@ const drill1Data = [
     { kanji: "雨。飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
 ];
 
-let isManualStop = true; 
+let isManualStop = false; // Autostopをデフォルトにするため false に設定
 let isAutoPlay = true; 
-const useHiraganaOnly = true; // ひらがな表示固定
+const useHiraganaOnly = true; 
 let activeRecognitionSession = null;
 
 // ============================================================================
@@ -90,6 +90,25 @@ function stopAllPlayback() {
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+    const dict = {
+        "箸": "はし", "橋": "はし",
+        "腿": "もも", "桃": "もも",
+        "降る": "ふる", "振る": "ふる",
+        "切る": "きる", "着る": "きる",
+        "撒く": "まく", "巻く": "まく",
+        "春": "はる", "貼る": "はる",
+        "隅": "すみ", "炭": "すみ",
+        "牡蠣": "かき", "柿": "かき",
+        "鶴": "つる", "釣る": "つる",
+        "雨": "あめ", "飴": "あめ",
+        "天気": "てんき", "時間": "じかん", "仕事": "しごと", "先生": "せんせい", "学校": "がっこう",
+        "悪い": "わるい", "傘": "かさ", "良い": "いい", "楽しい": "たのしい", "欲しい": "ほしい", "面白い": "おもしろい"
+    };
+    for (let key in dict) {
+        const regex = new RegExp(key, "g");
+        cleaned = cleaned.replace(regex, dict[key]);
+    }
+    cleaned = cleaned.replace(/わ$/g, "は");
     return cleaned;
 }
 
@@ -177,11 +196,14 @@ function setupFooterGuide() {
 }
 
 function initSettingsPanel() {
+    // 録音モード（Autostopデフォルト -> toggleRecordMode は unchecked）
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
     const labelManualRecord = document.getElementById("labelManualRecord");
 
     if (toggleRecordMode) {
+        toggleRecordMode.checked = false; // Autostopデフォルト
+        isManualStop = false;
         toggleRecordMode.addEventListener("change", (e) => {
             isManualStop = e.target.checked;
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
@@ -205,23 +227,29 @@ function initSettingsPanel() {
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
     }
 
-    // スクリプト切り替えトグルは固定グレーアウト
+    // スクリプト切り替えトグル（完全グレーアウト・無効化）
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelKanji = document.getElementById("labelKanji");
     const labelHiragana = document.getElementById("labelHiragana");
+    const scriptControlItem = toggleScriptMode ? toggleScriptMode.closest(".control-item") : null;
+
     if (toggleScriptMode) {
         toggleScriptMode.checked = true;
         toggleScriptMode.disabled = true;
     }
+    if (scriptControlItem) {
+        scriptControlItem.style.opacity = "0.4";
+        scriptControlItem.style.pointerEvents = "none";
+    }
     if (labelKanji) {
         labelKanji.className = "mode-label inactive-mode custom-tip-wrap";
         const emoji = labelKanji.querySelector('.icon-emoji');
-        if (emoji) { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.55"; }
+        if (emoji) { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.4"; }
     }
     if (labelHiragana) {
-        labelHiragana.className = "mode-label active-mode custom-tip-wrap";
+        labelHiragana.className = "mode-label inactive-mode custom-tip-wrap";
         const emoji = labelHiragana.querySelector('.icon-emoji');
-        if (emoji) { emoji.style.filter = "none"; emoji.style.opacity = "1"; }
+        if (emoji) { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.4"; }
     }
 }
 
@@ -267,7 +295,6 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     listenBtn.onclick = () => {
         const recordBtnEl = rowDiv.querySelector(".play-recording-btn");
         setPlayingStateMultiple([listenBtn, recordBtnEl], "Playing...");
-        // 読み上げには漢字表記（item.kanji）を使用して正しい発音を行わせる
         speakText(item.kanji, playRate, () => stopAllPlayback());
     };
 
