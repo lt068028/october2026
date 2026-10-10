@@ -36,15 +36,20 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
-const vocabLists = {
-    genki1: {
-        xList: ["わたし", "ともだち", "かぞく", "りゅうがくせい"],
-        yList: ["がくせい", "せんせい", "にほんじん", "アメリカじん", "いしゃ", "エンジニア"]
-    },
-    minna1: {
-        xList: ["わたし", "あなた", "きのう", "ともだち"],
-        yList: ["かいしゃいん", "ぎんこういん", "きょうし", "けんきゅうしゃ", "いしゃ"]
-    }
+// Task 3 用の専用語彙リスト（Task 1, 2に未登場の初級第1課語彙）
+const task3VocabLists = {
+    genki1: [
+        { xEng: "I", xHira: "わたし", yEng: "college student", yHira: "だいがくせい" },
+        { xEng: "I", xHira: "わたし", yEng: "major", yHira: "せんこう" },
+        { xEng: "I", xHira: "わたし", yEng: "Korea", yHira: "かんこく" },
+        { xEng: "I", xHira: "わたし", yEng: "England", yHira: "イギリス" }
+    ],
+    minna1: [
+        { xEng: "I", xHira: "わたし", yEng: "university", yHira: "だいがく" },
+        { xEng: "I", xHira: "わたし", yEng: "hospital", yHira: "びょういん" },
+        { xEng: "I", xHira: "わたし", yEng: "bank", yHira: "ぎんこう" },
+        { xEng: "I", xHira: "わたし", yEng: "America", yHira: "アメリカ" }
+    ]
 };
 
 let isManualStop = false;
@@ -273,7 +278,7 @@ function initExampleListen() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 1
+// Task 1 (奇数: Affirmative, 偶数: Negative に順番整備)
 // ----------------------------------------------------------------------------
 function initTask1() {
     const container = document.getElementById("task1List");
@@ -286,6 +291,8 @@ function initTask1() {
         const currentXMeaning = index < 4 ? "I" : "friend";
         const formattedX = formatWord(currentXWord, currentXRomaji, currentXMeaning);
         const formattedY = formatWord(item.y, item.yRomaji, item.yMeaning);
+        
+        const isNeg = (index % 2 === 1);
 
         createDrillRow(
             container,
@@ -294,14 +301,14 @@ function initTask1() {
             formattedY,
             currentXWord,
             item.y,
-            item.isNeg,
+            isNeg,
             0.9
         );
     });
 }
 
 // ----------------------------------------------------------------------------
-// Task 2
+// Task 2 (奇数: Affirmative, 偶数: Negative ＆ フォントTask1統一)
 // ----------------------------------------------------------------------------
 function initTask2() {
     const container = document.getElementById("task2List");
@@ -359,7 +366,7 @@ function initTask2() {
 
         const previewX = document.createElement("span");
         previewX.id = `previewX_${i}`;
-        previewX.className = "translation-preview";
+        previewX.className = "prompt-label translation-preview";
 
         const labelHa = document.createElement("span");
         labelHa.textContent = "は";
@@ -371,9 +378,9 @@ function initTask2() {
 
         const previewY = document.createElement("span");
         previewY.id = `previewY_${i}`;
-        previewY.className = "translation-preview";
+        previewY.className = "prompt-label translation-preview";
 
-        const isCustomNeg = (i === 2);
+        const isCustomNeg = (i % 2 === 0);
         const typeLabel = document.createElement("span");
         typeLabel.style.fontSize = "12px";
         typeLabel.style.color = "var(--text-secondary)";
@@ -445,7 +452,7 @@ function initTask2() {
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "Playing...");
                     const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
-                    speakText(textToSpeak, 0.8, () => stopAllPlayback());
+                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -459,7 +466,7 @@ function initTask2() {
 
         bindRecorderEvents(
             recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-            () => selectX.value, () => selectY.value, isCustomNeg, 0.8
+            () => selectX.value, () => selectY.value, isCustomNeg, 0.9
         );
 
         container.appendChild(rowDiv);
@@ -467,40 +474,41 @@ function initTask2() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 3
+// Task 3 (Challenge - 自由入力 ＆ Use Hintsボタンでの専用語彙転記・内部日本語マッピング)
 // ----------------------------------------------------------------------------
 function initTask3Container() {
     const container = document.getElementById("task3List");
     const addBtn = document.getElementById("addThreeBtn");
+    const useHintsBtn = document.getElementById("useHintsBtn");
     const vocabSelect = document.getElementById("vocabSourceSelect");
     if (!container) return;
 
     let rowCount = 0;
-    let xIndex = 0;
-    let yIndex = 0;
 
-    function getNextPlaceholders() {
-        const source = vocabSelect ? vocabSelect.value : "genki1";
-        const list = vocabLists[source] || vocabLists.genki1;
-        const pX = list.xList[xIndex % list.xList.length];
-        const pY = list.yList[yIndex % list.yList.length];
-        xIndex++;
-        yIndex++;
-        return { pX, pY };
+    // 英語ヒントから対応する日本語（ひらがな）を逆引きするマッピング辞書
+    const englishToHiraMap = {
+        "i": "わたし", "college student": "だいがくせい", "major": "せんこう", 
+        "korea": "かんこく", "england": "イギリス", "university": "だいがく", 
+        "hospital": "びょういん", "bank": "ぎんこう", "america": "アメリカ"
+    };
+
+    function resolveJapanese(val) {
+        const clean = val.trim().toLowerCase();
+        return englishToHiraMap[clean] || val; // 英語ヒントなら対応日本語に変換、自分でタイプされた日本語ならそのまま
     }
 
     function addTask3Row() {
-        if (rowCount >= 10) {
-            alert("Maximum limit of 10 sentences reached.");
+        if (rowCount >= 12) {
+            alert("Maximum limit of 12 sentences reached.");
             return;
         }
         rowCount++;
         const currentGlobalIndex = taskData.length + 3 + rowCount;
-        const isCustomNeg = Math.random() < 0.5;
-        const { pX, pY } = getNextPlaceholders();
+        const isCustomNeg = (rowCount % 2 === 0); // 奇数行: Affirmative, 偶数行: Negative
 
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
+        rowDiv.setAttribute("data-task3-row", rowCount);
 
         const topRow = document.createElement("div");
         topRow.className = "top-row";
@@ -515,8 +523,8 @@ function initTask3Container() {
 
         const inputX = document.createElement("input");
         inputX.type = "text";
-        inputX.className = "custom-input";
-        inputX.placeholder = `e.g. ${pX}`;
+        inputX.className = "custom-input task3-input-x";
+        inputX.placeholder = "X";
         inputX.style.width = "130px";
 
         const labelHa = document.createElement("span");
@@ -524,8 +532,8 @@ function initTask3Container() {
 
         const inputY = document.createElement("input");
         inputY.type = "text";
-        inputY.className = "custom-input";
-        inputY.placeholder = `e.g. ${pY}`;
+        inputY.className = "custom-input task3-input-y";
+        inputY.placeholder = "Y";
         inputY.style.width = "140px";
 
         const typeLabel = document.createElement("span");
@@ -582,8 +590,10 @@ function initTask3Container() {
                 listenBtn.disabled = false;
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "Playing...");
-                    const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
-                    speakText(textToSpeak, 0.8, () => stopAllPlayback());
+                    const resolvedX = resolveJapanese(valX);
+                    const resolvedY = resolveJapanese(valY);
+                    const textToSpeak = isCustomNeg ? `${resolvedX}は、${resolvedY}じゃないです。` : `${resolvedX}は、${resolvedY}です。`;
+                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -597,24 +607,48 @@ function initTask3Container() {
 
         bindRecorderEvents(
             recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-            () => inputX.value.trim(), () => inputY.value.trim(), isCustomNeg, 0.8
+            () => resolveJapanese(inputX.value), () => resolveJapanese(inputY.value), isCustomNeg, 0.9
         );
 
         container.appendChild(rowDiv);
     }
 
+    // 初期状態3行生成
     container.innerHTML = "";
     for (let k = 0; k < 3; k++) {
         addTask3Row();
     }
 
+    // + Add 3 More ボタン
     if (addBtn) {
         const newAddBtn = addBtn.cloneNode(true);
         addBtn.parentNode.replaceChild(newAddBtn, addBtn);
         newAddBtn.addEventListener("click", () => {
             for (let k = 0; k < 3; k++) {
-                if (rowCount < 10) addTask3Row();
+                if (rowCount < 12) addTask3Row();
             }
+        });
+    }
+
+    // 🎯 Use Hints ボタン（未入力の行に対して選択中の教科書の専用英語ヒントを自動転記）
+    if (useHintsBtn) {
+        const newHintsBtn = useHintsBtn.cloneNode(true);
+        useHintsBtn.parentNode.replaceChild(newHintsBtn, useHintsBtn);
+        newHintsBtn.addEventListener("click", () => {
+            const source = vocabSelect ? vocabSelect.value : "genki1";
+            const list = task3VocabLists[source] || task3VocabLists.genki1;
+            
+            const rows = container.querySelectorAll(".drill-row");
+            rows.forEach((row, idx) => {
+                const inputX = row.querySelector(".task3-input-x");
+                const inputY = row.querySelector(".task3-input-y");
+                if (inputX && inputY && !inputX.value && !inputY.value) {
+                    const pair = list[idx % list.length];
+                    inputX.value = pair.xEng;
+                    inputY.value = pair.yEng;
+                    inputX.dispatchEvent(new Event("input"));
+                }
+            });
         });
     }
 }
@@ -687,6 +721,13 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
 
+    const typeLabel = document.createElement("span");
+    typeLabel.style.fontSize = "12px";
+    typeLabel.style.color = "var(--text-secondary)";
+    typeLabel.style.marginLeft = "4px";
+    typeLabel.style.marginRight = "8px";
+    typeLabel.textContent = isNeg ? "(Negative)" : "(Affirmative)";
+
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
     recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
@@ -704,6 +745,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     topRow.appendChild(listenBtn);
     topRow.appendChild(indexSpan);
     topRow.appendChild(promptSpan);
+    topRow.appendChild(typeLabel);
     topRow.appendChild(recordBtn);
     topRow.appendChild(stopBtn);
     topRow.appendChild(resultSpan);
@@ -872,7 +914,6 @@ function bindRecorderEvents(
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
                 
-                // Braveなどのネットワーク/サービス非対応エラーを検知した場合にポップアップを表示
                 if (event.error === "network" || event.error === "service-not-allowed") {
                     alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
                 }
