@@ -92,10 +92,9 @@ h1 {
 }
 
 .settings-container {
-    flex: 0 0 auto; /* 固定値をやめ、中身に合わせる */
-    width: max-content; /* ぴったりギリギリの幅に調整 */
+    flex: 0 0 320px; /* 右側の設定パネルは幅320pxに固定 */
     background-color: var(--bg-panel);
-    padding: 20px;
+    padding: 12px 16px; /* パディングを削ってコンパクト化 */
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
@@ -103,7 +102,7 @@ h1 {
 .settings-group {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 2px; /* 3つの設定項目間の行間を極限まで狭める */
 }
 
 .control-item {
@@ -111,6 +110,7 @@ h1 {
     justify-content: space-between;
     align-items: center;
     gap: 10px;
+    padding: 2px 0; /* 項目の上下余白も最小化 */
 }
 
 /* ==========================================
@@ -148,7 +148,7 @@ h1 {
 }
 
 /* ==========================================
-   Example Box (1行レイアウト対応)
+   Example Box
    ========================================== */
 .example-box {
     background-color: #fefce8;
@@ -173,9 +173,15 @@ h1 {
 }
 .dashed-border { border-top: 1px dashed #ca8a04; }
 
+.example-label-title {
+    font-weight: bold;
+    color: #854d0e;
+}
+
 @media (prefers-color-scheme: dark) {
     .example-box { background-color: #422006; border-color: #ca8a04; }
     .dashed-border { border-top-color: #713f12; }
+    .example-label-title { color: #fde047; }
 }
 
 /* ==========================================
