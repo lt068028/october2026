@@ -3,11 +3,11 @@
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て ↘ んきが ｜ い ↘ いいです", color: "#facc15" },
-    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ ↗ かんが ｜ な ↘ いです", color: "#34d399" },
-    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し ↗ ごとが ｜ ほ ↗ し ↘ いです", color: "#22d3ee" },
-    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ ↗ んせ ↘ いは ｜ お ↗ もしろ ↘ いです", color: "#e879f9" },
-    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#fda4af" }
+    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て↘んきが｜い↘いいです", color: "#facc15" },
+    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ↗かんが｜な↘いです", color: "#34d399" },
+    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し↗ごとは｜ほ↗し↘いです", color: "#22d3ee" },
+    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ↗んせ↘いは｜お↗もしろ↘いです", color: "#e879f9" },
+    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が↗っこうは｜た↗のし↘いです", color: "#fda4af" }
 ];
 
 let isManualStop = true; 
@@ -97,7 +97,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 安全なピッチアクセントHTMLパーサー
+// ピッチアクセントHTMLパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
     let isHigh = true; 
@@ -115,9 +115,6 @@ function renderPitchAccentHTML(textStr, color) {
             i++;
         } else if (ch === '｜') {
             resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 4px;">${ch}</span>`;
-            i++;
-        } else if (ch === ' ' || ch === '、') {
-            resultHTML += ch;
             i++;
         } else {
             let nextCh = textStr[i+1];
