@@ -9,74 +9,76 @@
 <body>
 
     <!-- =========================================================
-         Top Back Link
+         Top Back Link (右上端に固定配置)
          ========================================================= -->
-    <div style="margin-bottom: 15px;">
-        <a href="#" onclick="window.history.back(); return false;" style="text-decoration: none; color: var(--text-primary); font-weight: bold; font-size: 16px;">
-            ↩️ もどる
-        </a>
-    </div>
+    <a href="#" class="top-right-back" onclick="window.history.back(); return false;">
+        ↩️ もどる
+    </a>
 
     <h1>Practice1；XはYです</h1>
 
     <!-- =========================================================
-         Global Settings Panel
+         Top Dashboard (左：Example, 右：設定の横並びコンテナ)
          ========================================================= -->
-    <div class="header-panel global-settings">
-        <!-- Recording Toggle -->
-        <div class="control-item">
-            <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
-                <span class="icon-emoji">⏹️</span>Autostop
-                <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="toggleRecordMode">
-                <span class="slider"></span>
-            </label>
-            <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
-                <span class="icon-emoji">⏹️</span>Manual stop
-                <span class="custom-tip-box">Records continuously until you click the stop button.</span>
-            </span>
+    <div class="top-dashboard">
+        
+        <!-- 左カラム：Exampleの空箱 (JSが中身だけを流し込む) -->
+        <div class="example-container">
+            <div id="exampleSection"></div>
         </div>
 
-        <!-- Vocab Hint Toggle -->
-        <div class="control-item">
-            <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
-                <span class="icon-emoji">💬</span> Vocab Hint
-                <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="toggleHintMode">
-                <span class="slider"></span>
-            </label>
-            <span id="labelParenHint" class="mode-label inactive-mode custom-tip-wrap">
-                <span class="icon-emoji">🔡</span>Display Vocab
-                <span class="custom-tip-box">Always shows word's meaning in parentheses.</span>
-            </span>
-        </div>
+        <!-- 右カラム：グローバル設定パネル -->
+        <div class="settings-container">
+            <div class="settings-group">
+                <!-- Recording Toggle -->
+                <div class="control-item">
+                    <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleRecordMode">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏹️</span>Manual stop
+                        <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                    </span>
+                </div>
 
-        <!-- Playback Toggle -->
-        <div class="control-item">
-            <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
-                <span class="icon-emoji">▶️</span>Autoplay
-                <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
-            </span>
-            <label class="switch">
-                <input type="checkbox" id="togglePlaybackMode">
-                <span class="slider"></span>
-            </label>
-            <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
-                <span class="icon-emoji">⏯️</span>Manual play
-                <span class="custom-tip-box">Disables automatic playback.</span>
-            </span>
-        </div>
-    </div>
+                <!-- Vocab Hint Toggle -->
+                <div class="control-item">
+                    <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">💬</span> Vocab Hint
+                        <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleHintMode">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="labelParenHint" class="mode-label inactive-mode custom-tip-wrap">
+                        <span class="icon-emoji">🔡</span>Display Vocab
+                        <span class="custom-tip-box">Always shows word's meaning in parentheses.</span>
+                    </span>
+                </div>
 
-    <!-- =========================================================
-         Example Section
-         ========================================================= -->
-    <div class="example-box" id="exampleSection">
-        <!-- Content will be injected by JavaScript -->
+                <!-- Playback Toggle -->
+                <div class="control-item">
+                    <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">▶️</span>Autoplay
+                        <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="togglePlaybackMode">
+                        <span class="slider"></span>
+                    </label>
+                    <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏯️</span>Manual play
+                        <span class="custom-tip-box">Disables automatic playback.</span>
+                    </span>
+                </div>
+            </div>
+        </div>
     </div>
 
 
@@ -87,7 +89,6 @@
         <span class="info-panel-title">Task 1；Drills</span>
         <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
     </div>
-    
     <div id="task1List"></div>
 
 
@@ -98,8 +99,17 @@
         <span class="info-panel-title">Task 2；Custom Practice</span>
         <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
     </div>
-    
     <div id="task2List"></div>
+
+
+    <!-- =========================================================
+         Task 3 Section (配置予約)
+         ========================================================= -->
+    <div class="info-panel info-panel-task3" style="margin-top: 30px;">
+        <span class="info-panel-title">Task 3；Challenge</span>
+        <span class="info-panel-desc">💡 Challenge practice based on the given words.</span>
+    </div>
+    <div id="task3List"></div>
 
 
     <!-- =========================================================
@@ -111,11 +121,7 @@
             Check⚙️
         </span>
 
-        <div
-            id="guideBox"
-            class="guide-box-popup"
-            style="display: none;"
-        >
+        <div id="guideBox" class="guide-box-popup" style="display: none;">
             Win: Settings > Time & Language > Speech<br>
             Mac/iOS: Settings > Accessibility > Spoken Content<br>
             ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
