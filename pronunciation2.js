@@ -89,6 +89,42 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
+// ピッチアクセントのルールに基づきHTMLを構築するパーサー
+function renderPitchAccentHTML(textStr, color) {
+    let cleaned = textStr.replace(/｜/g, ''); // 番号の右の縦棒（｜）を除去
+    let resultHTML = '';
+    let underline = false;
+    
+    let i = 0;
+    while (i < cleaned.length) {
+        let ch = cleaned[i];
+        if (ch === '↘' || ch === '＼') {
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
+            underline = true; // 下落後は低ピッチ（下線）
+            i++;
+        } else if (ch === '↗' || ch === '/') {
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
+            underline = false; // 上昇後は高ピッチ（下線なし）
+            i++;
+        } else if (ch === ' ') {
+            resultHTML += ' ';
+            i++;
+        } else {
+            let nextCh = cleaned[i+1];
+            let isPrecedingSymbol = (nextCh === '↘' || nextCh === '↗' || nextCh === '＼' || nextCh === '/');
+            let applyUnderline = underline && !isPrecedingSymbol;
+            
+            if (applyUnderline) {
+                resultHTML += `<span style="text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;">${ch}</span>`;
+            } else {
+                resultHTML += `<span>${ch}</span>`;
+            }
+            i++;
+        }
+    }
+    return resultHTML;
+}
+
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -222,7 +258,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
-    promptSpan.textContent = item.text;
+    promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
     promptSpan.style.minWidth = "240px";
     promptSpan.style.borderLeft = `4px solid ${item.color}`;
     promptSpan.style.paddingLeft = "8px";
