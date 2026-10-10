@@ -36,6 +36,18 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
+// 教科書ごとの語彙データ (Genki 1 & Minna 1)
+const vocabLists = {
+    genki1: {
+        xList: ["わたし", "ともだち", "かぞく", "りゅうがくせい"],
+        yList: ["がくせい", "せんせい", "にほんじん", "アメリカじん", "いしゃ", "エンジニア"]
+    },
+    minna1: {
+        xList: ["わたし", "あなた", "きのう", "ともだち"],
+        yList: ["かいしゃいん", "ぎんこういん", "きょうし", "けんきゅうしゃ", "いしゃ"]
+    }
+};
+
 let isManualStop = false;
 let hintMode = "hover";
 let isAutoPlay = true; 
@@ -129,10 +141,10 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-function speakText(text, rate = 1.0, onEndCallback) {
+function speakText(text, rate = 0.9, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
-    utterance.rate = rate;
+    utterance.rate = rate; // 指定スピード（Example/Task1は0.9, Task2/3は0.8）
     if (preferredVoice) utterance.voice = preferredVoice;
     
     currentUtteranceRef = utterance;
@@ -153,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initExampleListen();
     initTask1();
     initTask2();
-    initTask3();
+    initTask3Container(); // Task 3 初期化（3行＋追加ボタン連動）
     setupFooterGuide();
 });
 
@@ -251,7 +263,7 @@ function initExampleListen() {
     if (ex1Btn) {
         ex1Btn.addEventListener("click", () => {
             setPlayingState(ex1Btn, "Playing...");
-            speakText("わたしは、がくせいです。", 0.7, () => stopAllPlayback());
+            speakText("わたしは、がくせいです。", 0.9, () => stopAllPlayback());
         });
     }
 
@@ -259,7 +271,7 @@ function initExampleListen() {
     if (ex2Btn) {
         ex2Btn.addEventListener("click", () => {
             setPlayingState(ex2Btn, "Playing...");
-            speakText("わたしは、せんせいじゃないです。", 0.7, () => stopAllPlayback());
+            speakText("わたしは、せんせいじゃないです。", 0.9, () => stopAllPlayback());
         });
     }
 }
@@ -286,7 +298,8 @@ function initTask1() {
             formattedY,
             currentXWord,
             item.y,
-            item.isNeg
+            item.isNeg,
+            0.9
         );
     });
 }
@@ -436,7 +449,7 @@ function initTask2() {
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "Playing...");
                     const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
-                    speakText(textToSpeak, 0.8, () => stopAllPlayback()); // 80%再生スピード
+                    speakText(textToSpeak, 0.8, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -458,14 +471,43 @@ function initTask2() {
 }
 
 // ----------------------------------------------------------------------------
-// Task 3
+// Task 3 (Challenge - Free Input with Vocab rotation & Add 3 sentences up to 10)
 // ----------------------------------------------------------------------------
-function initTask3() {
+function initTask3Container() {
     const container = document.getElementById("task3List");
+    const addBtn = document.getElementById("addThreeBtn");
+    const vocabSelect = document.getElementById("vocabSourceSelect");
     if (!container) return;
-    container.innerHTML = "";
 
-    for (let i = 1; i <= 3; i++) {
+    let rowCount = 0;
+
+    // プレースホルダーをローテーションで取得するヘルパー
+    let xIndex = 0;
+    let yIndex = 0;
+    function getNextPlaceholders() {
+        const source = vocabSelect ? vocabSelect.value : "genki1";
+        const list = vocabLists[source] || vocabLists.genki1;
+        const pX = list.xList[xIndex % list.xList.length];
+        const pY = list.yList[yIndex % list.yList.length];
+        xIndex++;
+        yIndex++;
+        return { pX, pY };
+    }
+
+    // 1行追加する関数
+    function addTask3Row() {
+        if (rowCount >= 10) {
+            alert("Maximum limit of 10 sentences reached.");
+            return;
+        }
+        rowCount++;
+        const currentGlobalIndex = taskData.length + 3 + rowCount;
+
+        // 肯定または否定をランダムに付与 (50%の確率)
+        const isCustomNeg = Math.random() < 0.5;
+
+        const { pX, pY } = getNextPlaceholders();
+
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
 
@@ -478,12 +520,12 @@ function initTask3() {
         listenBtn.disabled = true;
 
         const indexSpan = document.createElement("span");
-        indexSpan.textContent = `${taskData.length + 3 + i}.`;
+        indexSpan.textContent = `${currentGlobalIndex}.`;
 
         const inputX = document.createElement("input");
         inputX.type = "text";
         inputX.className = "custom-input";
-        inputX.placeholder = "Enter X (e.g. わたし)";
+        inputX.placeholder = `e.g. ${pX}`;
         inputX.style.width = "130px";
 
         const labelHa = document.createElement("span");
@@ -492,10 +534,9 @@ function initTask3() {
         const inputY = document.createElement("input");
         inputY.type = "text";
         inputY.className = "custom-input";
-        inputY.placeholder = "Enter Y (e.g. がくせい)";
+        inputY.placeholder = `e.g. ${pY}`;
         inputY.style.width = "140px";
 
-        const isCustomNeg = (i === 2);
         const typeLabel = document.createElement("span");
         typeLabel.style.fontSize = "12px";
         typeLabel.style.color = "var(--text-secondary)";
@@ -551,7 +592,7 @@ function initTask3() {
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "Playing...");
                     const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
-                    speakText(textToSpeak, 0.8, () => stopAllPlayback()); // 80%再生スピード
+                    speakText(textToSpeak, 0.8, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -570,7 +611,26 @@ function initTask3() {
 
         container.appendChild(rowDiv);
     }
+
+    // 初期状態で3行生成
+    container.innerHTML = "";
+    for (let k = 0; k < 3; k++) {
+        addTask3Row();
+    }
+
+    // + Add Three Sentences ボタンのイベント設定
+    if (addBtn) {
+        // 重複登録を防ぐための置き換え
+        const newAddBtn = addBtn.cloneNode(true);
+        addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+        newAddBtn.addEventListener("click", () => {
+            for (let k = 0; k < 3; k++) {
+                if (rowCount < 10) addTask3Row();
+            }
+        });
+    }
 }
+
 
 function updateWordsDisplay() {
     const drillRows = document.querySelectorAll(".drill-row");
@@ -606,7 +666,7 @@ function updateWordsDisplay() {
     });
 }
 
-function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetY, isNeg) {
+function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetY, isNeg, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
@@ -621,7 +681,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     listenBtn.onclick = () => {
         setPlayingState(listenBtn, "Playing...");
         const textToSpeak = isNeg ? `${targetX}は、${targetY}じゃないです。` : `${targetX}は、${targetY}です。`;
-        speakText(textToSpeak, 0.7, () => stopAllPlayback());
+        speakText(textToSpeak, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -676,7 +736,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     bindRecorderEvents(
         recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => targetX, () => targetY, isNeg, 0.7
+        () => targetX, () => targetY, isNeg, playRate
     );
 
     container.appendChild(rowDiv);
@@ -684,7 +744,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
 function bindRecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-    getXFn, getYFn, expectedIsNeg = false, playRate = 0.7
+    getXFn, getYFn, expectedIsNeg = false, playRate = 0.9
 ) {
     let session = null;
     let lastAudioUrl = null;
@@ -972,7 +1032,7 @@ function processRecognitionResult(
 
         const utterance = new SpeechSynthesisUtterance(correctSentence);
         utterance.lang = "ja-JP";
-        utterance.rate = playRate; // 再生スピード反映（0.8 または 0.7）
+        utterance.rate = playRate;
 
         if (preferredVoice) utterance.voice = preferredVoice;
 
