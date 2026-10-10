@@ -2,18 +2,113 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>Pronunciation Drill 2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronunciation Practice 1</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-        <a href="index.html" style="text-decoration:none; color:var(--accent-color); font-weight:bold;">↩️メニューへもどる</a>
+
+    <!-- =========================================================
+         Header & Settings
+         ========================================================= -->
+    <div class="main-header">
+        <h1>Pronunciation Practice 1</h1>
+        
+        <div class="compact-settings">
+            <a href="index.html" class="back-link">↩️ もどる</a>
+
+            <!-- Script / Display Mode Toggle -->
+            <div class="control-item">
+                <span id="labelKanji" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">🐤</span> With漢字
+                    <span class="custom-tip-box">Display text with kanji.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleScriptMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelHiragana" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">🐣</span> Only Hiragana
+                    <span class="custom-tip-box">Display text in hiragana only.</span>
+                </span>
+            </div>
+
+            <!-- Recording Toggle -->
+            <div class="control-item">
+                <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Autostop
+                    <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleRecordMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Manual stop
+                    <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                </span>
+            </div>
+
+            <!-- Playback Toggle -->
+            <div class="control-item">
+                <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">▶️</span>Autoplay
+                    <span class="custom-tip-box">Plays your voice automatically after recording.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="togglePlaybackMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏯️</span>Manual play
+                    <span class="custom-tip-box">Disables automatic playback.</span>
+                </span>
+            </div>
+        </div>
     </div>
 
-    <h1>発音練習 2</h1>
-    <p>少し長い文章の練習です。</p>
 
-    <div id="drillList"></div>
+    <!-- =========================================================
+         Temporary Area (Pitch Visualization Roadmap)
+         ========================================================= -->
+    <div class="example-box" style="background-color: #f1f5f9; border-color: #cbd5e1;">
+        <div style="font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">Temporary Area (Pitch Visualization Roadmap)</div>
+        <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary);">
+            <li>Step 1: ピッチを表示する場所を作る</li>
+            <li>Step 2: 声から音の高さを取り出す</li>
+            <li>Step 3: 音の高さのデータを整える</li>
+            <li>Step 4: お手本のピッチを表示する</li>
+            <li>Step 5: 自分のピッチを重ねて比較する</li>
+            <li>Step 6: 必要なら、ピッチ以外の評価にLLM/APIを使うことを検討</li>
+        </ul>
+    </div>
+
+
+    <!-- =========================================================
+         Drill 1 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+        <span class="info-panel-title">Drill 1</span>
+        <span class="info-panel-desc">💡 Listen to the model, record your voice, and practice pitch accent.</span>
+    </div>
+    <div id="drill1List"></div>
+
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
+    <div class="voice-guide-footer">
+        🔊Want to change the voice?
+        <span id="guideTrigger" class="guide-trigger">
+            Check⚙️
+        </span>
+
+        <div id="guideBox" class="guide-box-popup" style="display: none;">
+            Win: Settings > Time & Language > Speech<br>
+            Mac/iOS: Settings > Accessibility > Spoken Content<br>
+            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
+        </div>
+    </div>
 
     <script src="pronunciation2.js"></script>
 </body>
