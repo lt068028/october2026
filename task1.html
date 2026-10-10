@@ -25,21 +25,27 @@
         <!-- 左カラム：Example -->
         <div class="example-container">
             <div class="example-box" id="exampleSection">
-                <div class="example-line flex-row-center">
-                    <div>
-                        <strong>Affirmative:</strong> 
-                        わたし (watashi, I) ／ がくせい (gakusei, student) 👉 わたしは、がくせいです。 
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span>
+                <div class="example-line" style="margin-bottom: 12px;">
+                    <div style="margin-bottom: 6px; font-size: 15px;">
+                        <span class="example-label-title">Affirmative:</span>
+                        わたし (watashi, I) ／ がくせい (gakusei, student)
                     </div>
-                    <button id="ex1Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                        <span style="font-size: 16px;">👉</span>
+                        <button class="example-button" style="margin: 0;">🔊 きく</button>
+                        <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+                    </div>
                 </div>
-                <div class="example-line dashed-border flex-row-center" style="margin-top: 10px; padding-top: 10px;">
-                    <div>
-                        <strong>Negative:</strong> 
-                        わたし (watashi, I) ／ せんせい (sensei, teacher) 👉 わたしは、せんせいじゃないです。 
-                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span>
+                <div class="example-line dashed-border" style="padding-top: 12px;">
+                    <div style="margin-bottom: 6px; font-size: 15px;">
+                        <span class="example-label-title">Negative:</span>
+                        わたし (watashi, I) ／ せんせい (sensei, teacher)
                     </div>
-                    <button id="ex2Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                        <span style="font-size: 16px;">👉</span>
+                        <button class="example-button" style="margin: 0;">🔊 きく</button>
+                        <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -102,7 +108,7 @@
     <!-- =========================================================
          Task 1 Section
          ========================================================= -->
-    <div class="info-panel">
+    <div class="info-panel info-panel-task1">
         <span class="info-panel-title">Task 1；Drills</span>
         <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
     </div>
@@ -112,7 +118,7 @@
     <!-- =========================================================
          Task 2 Section
          ========================================================= -->
-    <div class="info-panel" style="margin-top: 30px;">
+    <div class="info-panel info-panel-task2" style="margin-top: 30px;">
         <span class="info-panel-title">Task 2；Custom Practice</span>
         <span class="info-panel-desc">💡 Make a sentence using "XはYです" (affirmative) or "XはYじゃないです" (negative) based on the given words.</span>
     </div>
@@ -120,9 +126,9 @@
 
 
     <!-- =========================================================
-         Task 3 Section
+         Task 3 Section (配置予約)
          ========================================================= -->
-    <div class="info-panel" style="margin-top: 30px;">
+    <div class="info-panel info-panel-task3" style="margin-top: 30px;">
         <span class="info-panel-title">Task 3；Challenge</span>
         <span class="info-panel-desc">💡 Challenge practice based on the given words.</span>
     </div>
