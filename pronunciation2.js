@@ -3,11 +3,11 @@
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て ↘ んきが ｜ い ↘ いいです", color: "#facc15" },
-    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ ↗ かんが ｜ な ↘ いです", color: "#34d399" },
-    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し ↗ ごとが ｜ ほ ↗ し ↘ いです", color: "#22d3ee" },
-    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ ↗ んせ ↘ いは ｜ お ↗ もしろ ↘ いです", color: "#e879f9" },
-    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#fda4af" }
+    { kanji: "天気が、いいです", hira: "てんきが、いいです", text: "て ↘ んきが ｜ い ↘ いいです", color: "#eab308" },
+    { kanji: "時間が、ないです", hira: "じかんが、ないです", text: "じ ↗ かんが ｜ な ↘ いです", color: "#10b981" },
+    { kanji: "仕事が、ほしいです", hira: "しごとが、ほしいです", text: "し ↗ ごとが ｜ ほ ↗ し ↘ いです", color: "#06b6d4" },
+    { kanji: "先生は、おもしろいです", hira: "せんせいは、おもしろいです", text: "せ ↗ んせ ↘ いは ｜ お ↗ もしろ ↘ いです", color: "#d946ef" },
+    { kanji: "学校は、たのしいです", hira: "がっこうは、たのしいです", text: "が ↗ っこうは ｜ た ↗ のし ↘ いです", color: "#f43f5e" }
 ];
 
 let isManualStop = true; // デフォルトは Manual stop
@@ -97,7 +97,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// ピッチアクセントパーサー（確実にテキストを表示・装飾する構造）
+// 安定したピッチアクセントHTML生成パーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
     let tokens = [];
@@ -144,20 +144,21 @@ function renderPitchAccentHTML(textStr, color) {
     for (let idx = 0; idx < tokens.length; idx++) {
         let tok = tokens[idx];
         if (tok.type === 'symbol') {
-            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px; display: inline-block;">${tok.val}</span>`;
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 2px;">${tok.val}</span>`;
         } else if (tok.type === 'space') {
             resultHTML += tok.val;
         } else if (tok.type === 'char') {
             let p = charPitches[pitchIdx++];
-            let decorationStyle = p.high 
-                ? `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`
-                : `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
+            // 上線(overline)は高ピッチ、下線(underline)は低ピッチ
+            let dec = p.high 
+                ? `text-decoration: overline; text-decoration-color: ${color};`
+                : `text-decoration: underline; text-decoration-color: ${color};`;
             
-            resultHTML += `<span style="${decorationStyle} display: inline-block;">${p.char}</span>`;
+            resultHTML += `<span style="${dec} text-decoration-thickness: 2px; padding-bottom: 1px;">${p.char}</span>`;
         }
     }
 
-    return resultHTML;
+    return `<span style="white-space: nowrap; font-size: 17px; letter-spacing: 0.5px;">${resultHTML}</span>`;
 }
 
 function speakText(text, rate = 0.9, onEndCallback) {
@@ -258,8 +259,7 @@ function updateDrill1Prompts() {
     promptSpans.forEach((span, index) => {
         const item = drill1Data[index];
         if (item) {
-            const displaySource = useHiraganaOnly ? item.hira : item.text;
-            span.innerHTML = renderPitchAccentHTML(displaySource, item.color);
+            span.innerHTML = renderPitchAccentHTML(item.text, item.color);
         }
     });
 }
@@ -306,10 +306,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
-    const displaySource = useHiraganaOnly ? item.hira : item.text;
-    promptSpan.innerHTML = renderPitchAccentHTML(displaySource, item.color);
-    promptSpan.style.minWidth = "280px";
-    promptSpan.style.display = "inline-block";
+    promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
