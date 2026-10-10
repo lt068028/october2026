@@ -105,21 +105,14 @@ body {
     border-radius: 0 8px 8px 0;
     margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    background-color: #f0f8ff; 
-    border-left: 5px solid #007bff;
 }
 
 .info-panel-title { font-size: 1.15em; font-weight: bold; color: #0056b3; }
 .info-panel-desc { font-size: 15px; color: var(--text-primary); }
 
 .info-panel-task1 { background-color: #f0f8ff; border-left: 5px solid #007bff; }
-.info-panel-task1 .info-panel-title { color: #0056b3; }
-
 .info-panel-task2 { background-color: #e6f2ff; border-left: 5px solid #0056b3; }
-.info-panel-task2 .info-panel-title { color: #004085; }
-
 .info-panel-task3 { background-color: #cce5ff; border-left: 5px solid #004085; }
-.info-panel-task3 .info-panel-title { color: #002752; }
 
 @media (prefers-color-scheme: dark) {
     .info-panel-task1 { background-color: #0c3359; border-left-color: #3b82f6; }
@@ -133,30 +126,28 @@ body {
 }
 
 /* ==========================================
-   Example Box (改行レイアウト対応)
+   Example Box (配色調整済)
    ========================================== */
 .example-box {
-    background-color: #fefce8;
-    border: 1px solid #fde047;
+    background-color: #fff9c4; /* 白背景でも見える濃いめの薄黄色 */
+    border: 1px solid #fbc02d; /* はっきりとした黄色枠 */
     padding: 24px 16px 16px 16px;
     border-radius: 6px;
     color: var(--text-primary);
     position: relative;
+    margin-top: 8px;
 }
 .example-box::before {
     content: "Example"; position: absolute; top: -10px; left: 12px;
-    background-color: #ca8a04; color: #ffffff; font-size: 11px; font-weight: bold;
+    background-color: #fbc02d; color: #ffffff; font-size: 11px; font-weight: bold;
     padding: 2px 8px; border-radius: 4px;
 }
-.dashed-border { border-top: 1px dashed #ca8a04; }
-
-.example-label-title {
-    font-weight: bold;
-    color: #854d0e;
-}
+.dashed-border { border-top: 1px dashed #fbc02d; }
+.example-label-title { font-weight: bold; color: #f57f17; }
 
 @media (prefers-color-scheme: dark) {
     .example-box { background-color: #422006; border-color: #ca8a04; }
+    .example-box::before { background-color: #ca8a04; }
     .dashed-border { border-top-color: #713f12; }
     .example-label-title { color: #fde047; }
 }
