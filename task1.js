@@ -36,15 +36,13 @@ const customDict = {
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
 };
 
-// 状態管理フラグ
 let isManualStop = false;
 let hintMode = "hover";
 let isAutoPlay = true; 
-
 let activeRecognitionSession = null;
 
 // ============================================================================
-// Voice Selection Logic
+// Voice Setup
 // ============================================================================
 let preferredVoice = null;
 
@@ -60,9 +58,7 @@ function setupPreferredVoice() {
         if (!selected) selected = voices.find(v => v.lang && v.lang.includes("ja"));
         
         preferredVoice = selected;
-    } catch (e) {
-        console.warn("Voice setup error:", e);
-    }
+    } catch (e) { console.warn("Voice setup error:", e); }
 }
 
 if (typeof speechSynthesis !== "undefined") {
@@ -75,7 +71,7 @@ if (typeof speechSynthesis !== "undefined") {
 }
 
 // ============================================================================
-// Global Playback Management
+// Playback Control
 // ============================================================================
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
@@ -103,23 +99,13 @@ function restorePlayButton() {
 }
 
 function stopAllPlayback() {
-    if (currentPlayTimeoutId) {
-        clearTimeout(currentPlayTimeoutId);
-        currentPlayTimeoutId = null;
-    }
+    if (currentPlayTimeoutId) { clearTimeout(currentPlayTimeoutId); currentPlayTimeoutId = null; }
     try { speechSynthesis.cancel(); } catch (e) {}
     currentUtteranceRef = null;
-    if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
-        currentPlayingAudio = null;
-    }
+    if (currentPlayingAudio) { currentPlayingAudio.pause(); currentPlayingAudio = null; }
     restorePlayButton();
 }
 
-
-// ============================================================================
-// Japanese text conversion
-// ============================================================================
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
@@ -143,9 +129,6 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// ============================================================================
-// Speech synthesis
-// ============================================================================
 function speakText(text, rate = 1.0, onEndCallback) {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
@@ -153,32 +136,24 @@ function speakText(text, rate = 1.0, onEndCallback) {
     if (preferredVoice) utterance.voice = preferredVoice;
     
     currentUtteranceRef = utterance;
-    utterance.onend = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-    utterance.onerror = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-    try {
-        speechSynthesis.speak(utterance);
-    } catch (err) {
+    utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
+    utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
+    try { speechSynthesis.speak(utterance); } catch (err) {
         console.error("Speech synthesis error:", err);
         currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
 }
 
-
 // ============================================================================
 // Initialization & DOM Setup
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    initExampleListen();
+    initExampleSection();
     initTask1();
     initTask2();
+    initTask3();
     setupFooterGuide();
 });
 
@@ -218,19 +193,11 @@ function updateToggleLabelStyle(labelEl, isActive) {
     labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
     const emoji = labelEl.querySelector('.icon-emoji');
     if (emoji) {
-        if (isActive) {
-            emoji.style.filter = "none";
-            emoji.style.opacity = "1";
-        } else {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.55";
-        }
+        if (isActive) { emoji.style.filter = "none"; emoji.style.opacity = "1"; }
+        else { emoji.style.filter = "grayscale(100%)"; emoji.style.opacity = "0.55"; }
     }
 }
 
-// ----------------------------------------------------------------------------
-// 1. Settings Panel Logic
-// ----------------------------------------------------------------------------
 function initSettingsPanel() {
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
@@ -242,7 +209,6 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
             updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
-        // 初期状態適用
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
     }
@@ -257,6 +223,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
             updateWordsDisplay(); 
+            initExampleSection();
         });
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
@@ -277,26 +244,59 @@ function initSettingsPanel() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// 2. Example Listen Setup
-// ----------------------------------------------------------------------------
 function setupExampleListen(btnId, text) {
     const btn = document.getElementById(btnId);
     if (!btn) return;
-    btn.addEventListener("click", () => {
-        setPlayingState(btn, "Playing...");
+    // リスナー重複を防ぐため一度複製して置換
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener("click", () => {
+        setPlayingState(newBtn, "Playing...");
         speakText(text, 0.7, () => stopAllPlayback());
     });
 }
 
-function initExampleListen() {
+function initExampleSection() {
+    const exampleSection = document.getElementById("exampleSection");
+    if (!exampleSection) return;
+
+    const ex1X = formatWord("わたし", "watashi", "I");
+    const ex1Y = formatWord("がくせい", "gakusei", "student");
+    const ex2X = formatWord("わたし", "watashi", "I");
+    const ex2Y = formatWord("せんせい", "sensei", "teacher");
+
+    exampleSection.innerHTML = `
+        <div class="example-line" style="margin-bottom: 12px;">
+            <div style="margin-bottom: 6px; font-size: 15px;">
+                <strong class="example-label-title">Affirmative:</strong> 
+                ${ex1X} ／ ${ex1Y}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                <span style="font-size: 16px;">👉</span>
+                <button id="ex1Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+            </div>
+        </div>
+        <div class="example-line dashed-border" style="padding-top: 12px;">
+            <div style="margin-bottom: 6px; font-size: 15px;">
+                <strong class="example-label-title">Negative:</strong> 
+                ${ex2X} ／ ${ex2Y}
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
+                <span style="font-size: 16px;">👉</span>
+                <button id="ex2Listen" class="example-button" style="margin: 0;">🔊 きく</button>
+                <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+            </div>
+        </div>
+    `;
+
     setupExampleListen("ex1Listen", "わたしは、がくせいです。");
     setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
 }
 
 
 // ----------------------------------------------------------------------------
-// 3. Task 1 rows
+// Task 1
 // ----------------------------------------------------------------------------
 function initTask1() {
     const container = document.getElementById("task1List");
@@ -323,7 +323,7 @@ function initTask1() {
 }
 
 // ----------------------------------------------------------------------------
-// 4. Task 2 rows
+// Task 2
 // ----------------------------------------------------------------------------
 function initTask2() {
     const container = document.getElementById("task2List");
@@ -384,7 +384,6 @@ function initTask2() {
         previewX.className = "translation-preview";
 
         const labelHa = document.createElement("span");
-        labelHa.id = `labelHa_${i}`;
         labelHa.textContent = "は";
 
         const selectY = document.createElement("select");
@@ -395,6 +394,14 @@ function initTask2() {
         const previewY = document.createElement("span");
         previewY.id = `previewY_${i}`;
         previewY.className = "translation-preview";
+
+        const isCustomNeg = (i === 2);
+        const typeLabel = document.createElement("span");
+        typeLabel.style.fontSize = "12px";
+        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.style.marginLeft = "4px";
+        typeLabel.style.marginRight = "8px";
+        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
 
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
@@ -418,6 +425,7 @@ function initTask2() {
         topRow.appendChild(labelHa);
         topRow.appendChild(selectY);
         topRow.appendChild(previewY);
+        topRow.appendChild(typeLabel);
         topRow.appendChild(recordBtn);
         topRow.appendChild(stopBtn);
         topRow.appendChild(resultSpan);
@@ -435,8 +443,6 @@ function initTask2() {
         rowDiv.appendChild(topRow);
         rowDiv.appendChild(correctionBox);
 
-        const isCustomNeg = i !== 2;
-
         const updateDisplay = () => {
             const selectedOptX = selectX.options[selectX.selectedIndex];
             const selectedOptY = selectY.options[selectY.selectedIndex];
@@ -446,16 +452,12 @@ function initTask2() {
             if (valX && selectedOptX) {
                 const engKey = selectedOptX.getAttribute("data-eng");
                 previewX.innerHTML = formatCustomWord(valX, engKey);
-            } else {
-                previewX.innerHTML = "";
-            }
+            } else { previewX.innerHTML = ""; }
 
             if (valY && selectedOptY) {
                 const engKey = selectedOptY.getAttribute("data-eng");
                 previewY.innerHTML = formatCustomWord(valY, engKey);
-            } else {
-                previewY.innerHTML = "";
-            }
+            } else { previewY.innerHTML = ""; }
 
             labelHa.style.display = valX ? "none" : "inline";
 
@@ -464,9 +466,7 @@ function initTask2() {
                 listenBtn.disabled = false;
                 listenBtn.onclick = () => {
                     setPlayingState(listenBtn, "Playing...");
-                    const textToSpeak = isCustomNeg
-                        ? `${valX}は、${valY}じゃないです。`
-                        : `${valX}は、${valY}です。`;
+                    const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
                     speakText(textToSpeak, 0.7, () => stopAllPlayback());
                 };
             } else {
@@ -482,6 +482,121 @@ function initTask2() {
         bindRecorderEvents(
             recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
             () => selectX.value, () => selectY.value, isCustomNeg
+        );
+
+        container.appendChild(rowDiv);
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Task 3
+// ----------------------------------------------------------------------------
+function initTask3() {
+    const container = document.getElementById("task3List");
+    if (!container) return;
+    container.innerHTML = "";
+
+    for (let i = 1; i <= 3; i++) {
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "drill-row";
+
+        const topRow = document.createElement("div");
+        topRow.className = "top-row";
+
+        const listenBtn = document.createElement("button");
+        listenBtn.className = "example-button custom-tip-wrap";
+        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+        listenBtn.disabled = true;
+
+        const indexSpan = document.createElement("span");
+        indexSpan.textContent = `${taskData.length + 3 + i}.`;
+
+        const inputX = document.createElement("input");
+        inputX.type = "text";
+        inputX.className = "custom-input";
+        inputX.placeholder = "Enter X (e.g. わたし)";
+        inputX.style.width = "130px";
+
+        const labelHa = document.createElement("span");
+        labelHa.textContent = "は";
+
+        const inputY = document.createElement("input");
+        inputY.type = "text";
+        inputY.className = "custom-input";
+        inputY.placeholder = "Enter Y (e.g. がくせい)";
+        inputY.style.width = "140px";
+
+        const isCustomNeg = (i === 2);
+        const typeLabel = document.createElement("span");
+        typeLabel.style.fontSize = "12px";
+        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.style.marginLeft = "4px";
+        typeLabel.style.marginRight = "8px";
+        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
+
+        const recordBtn = document.createElement("button");
+        recordBtn.className = "example-button custom-tip-wrap";
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.disabled = true;
+
+        const stopBtn = document.createElement("button");
+        stopBtn.className = "example-button custom-tip-wrap";
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.disabled = true;
+
+        const resultSpan = document.createElement("span");
+        resultSpan.className = "result-text";
+        resultSpan.textContent = "(Not recorded yet)";
+        resultSpan.style.color = "var(--text-secondary)";
+
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(indexSpan);
+        topRow.appendChild(inputX);
+        topRow.appendChild(labelHa);
+        topRow.appendChild(inputY);
+        topRow.appendChild(typeLabel);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+
+        const correctionBox = document.createElement("div");
+        correctionBox.className = "correction-box";
+        const corrListenBtn = document.createElement("button");
+        corrListenBtn.className = "example-button";
+        corrListenBtn.innerHTML = "🔊 きく";
+        corrListenBtn.style.marginRight = "8px";
+        const corrTextSpan = document.createElement("span");
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
+
+        const updateDisplay = () => {
+            const valX = inputX.value.trim();
+            const valY = inputY.value.trim();
+
+            if (valX && valY) {
+                recordBtn.disabled = false;
+                listenBtn.disabled = false;
+                listenBtn.onclick = () => {
+                    setPlayingState(listenBtn, "Playing...");
+                    const textToSpeak = isCustomNeg ? `${valX}は、${valY}じゃないです。` : `${valX}は、${valY}です。`;
+                    speakText(textToSpeak, 0.7, () => stopAllPlayback());
+                };
+            } else {
+                recordBtn.disabled = true;
+                listenBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+        };
+
+        inputX.addEventListener("input", updateDisplay);
+        inputY.addEventListener("input", updateDisplay);
+
+        bindRecorderEvents(
+            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+            () => inputX.value.trim(), () => inputY.value.trim(), isCustomNeg
         );
 
         container.appendChild(rowDiv);
@@ -522,9 +637,6 @@ function updateWordsDisplay() {
     });
 }
 
-// ============================================================================
-// Task 1 row creation
-// ============================================================================
 function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetY, isNeg) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -539,9 +651,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     listenBtn.onclick = () => {
         setPlayingState(listenBtn, "Playing...");
-        const textToSpeak = isNeg
-            ? `${targetX}は、${targetY}じゃないです。`
-            : `${targetX}は、${targetY}です。`;
+        const textToSpeak = isNeg ? `${targetX}は、${targetY}じゃないです。` : `${targetX}は、${targetY}です。`;
         speakText(textToSpeak, 0.7, () => stopAllPlayback());
     };
 
@@ -603,9 +713,6 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     container.appendChild(rowDiv);
 }
 
-// ============================================================================
-// Shared recording / speech recognition
-// ============================================================================
 function bindRecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
     getXFn, getYFn, expectedIsNeg = false
@@ -652,23 +759,13 @@ function bindRecorderEvents(
         }
 
         const currentRecognition = currentSession.recognition;
-        if (!currentRecognition) {
-            releaseSession(currentSession);
-            return;
-        }
+        if (!currentRecognition) { releaseSession(currentSession); return; }
 
         if (currentSession.watchdog === null) {
-            currentSession.watchdog = setTimeout(() => {
-                releaseSession(currentSession);
-            }, 2500);
+            currentSession.watchdog = setTimeout(() => { releaseSession(currentSession); }, 2500);
         }
 
-        try {
-            if (abort) currentRecognition.abort();
-            else currentRecognition.stop();
-        } catch (err) {
-            console.warn("Speech recognition stop error:", err);
-        }
+        try { if (abort) currentRecognition.abort(); else currentRecognition.stop(); } catch (err) {}
         
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (err) {}
@@ -691,25 +788,20 @@ function bindRecorderEvents(
         const currentX = getXFn();
         const currentY = getYFn();
         if (!currentX || !currentY) {
-            resultSpan.textContent = "Please choose both X and Y.";
+            resultSpan.textContent = "Please provide both X and Y.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
 
         let stream;
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-            console.error("Microphone access error:", err);
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
+        catch (err) {
             resultSpan.textContent = "Microphone access denied or unavailable.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
 
-        if (lastAudioUrl) {
-            URL.revokeObjectURL(lastAudioUrl);
-            lastAudioUrl = null;
-        }
+        if (lastAudioUrl) { URL.revokeObjectURL(lastAudioUrl); lastAudioUrl = null; }
 
         const currentSession = {
             finished: false, stopRequested: false, errorMessage: "", recognition: null,
@@ -741,9 +833,7 @@ function bindRecorderEvents(
             const mediaRecorder = new MediaRecorder(stream);
             currentSession.mediaRecorder = mediaRecorder;
 
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data.size > 0) currentSession.audioChunks.push(e.data);
-            };
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
 
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
