@@ -97,10 +97,10 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 上線（overline: 高ピッチ）と下線（underline: 低ピッチ）を組み合わせたピッチアクセントパーサー
+// 正確なピッチアクセント判定に基づく上線（overline）と下線（underline）のパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
-    let isHigh = true; // 初期状態は高ピッチ（上線）
+    let isHigh = true; // 語頭のデフォルトは高ピッチ（上線）
     
     let i = 0;
     while (i < textStr.length) {
@@ -123,18 +123,24 @@ function renderPitchAccentHTML(textStr, color) {
             let nextCh = textStr[i+1];
             let isPrecedingSymbol = (nextCh === '↘' || nextCh === '↗' || nextCh === '＼' || nextCh === '/');
             
+            let effectiveHigh = isHigh;
+            // ↘（下降）の直前はまだ高いので上線、↗（上昇）の直前はまだ低いので下線を維持
+            if (isPrecedingSymbol) {
+                if (nextCh === '↘' || nextCh === '＼') {
+                    effectiveHigh = true; 
+                } else if (nextCh === '↗' || nextCh === '/') {
+                    effectiveHigh = false;
+                }
+            }
+            
             let decorationStyle = '';
-            if (isHigh && !isPrecedingSymbol) {
+            if (effectiveHigh) {
                 decorationStyle = `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
-            } else if (!isHigh && !isPrecedingSymbol) {
+            } else {
                 decorationStyle = `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
             }
             
-            if (decorationStyle) {
-                resultHTML += `<span style="${decorationStyle}">${ch}</span>`;
-            } else {
-                resultHTML += `<span>${ch}</span>`;
-            }
+            resultHTML += `<span style="${decorationStyle}">${ch}</span>`;
             i++;
         }
     }
@@ -227,11 +233,21 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            initDrill1(); // Only Hiragana切り替え時に即時再描画
+            updateDrill1Prompts(); // 録音データを消さずにプロンプト文面のみを更新
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
     }
+}
+
+function updateDrill1Prompts() {
+    const promptSpans = document.querySelectorAll(".prompt-label");
+    promptSpans.forEach((span, index) => {
+        const item = drill1Data[index];
+        if (item) {
+            span.innerHTML = renderPitchAccentHTML(item.text, item.color);
+        }
+    });
 }
 
 // ----------------------------------------------------------------------------
@@ -278,7 +294,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     promptSpan.className = "prompt-label";
     promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
     promptSpan.style.minWidth = "260px";
-    promptSpan.style.paddingLeft = "4px"; // 左側の余計なボーダー線を除去
+    promptSpan.style.paddingLeft = "4px";
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
@@ -288,9 +304,6 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     stopBtn.className = "example-button custom-tip-wrap";
     stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
     stopBtn.disabled = !isManualStop;
-    if (isManualStop && recordBtn.disabled) {
-        // 初期状態の調整
-    }
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
@@ -516,111 +529,111 @@ function bindDrill1RecorderEvents(
 function processDrill1Result(
     rawTranscript, expectedHiraText,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
-  ) {
-      if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
-          resultSpan.textContent = rawTranscript + " (Too short)";
-          resultSpan.style.color = "var(--text-secondary)";
-          return;
-      }
-  
-      const hiraText = convertToHiragana(rawTranscript);
-      const expectedHira = convertToHiragana(expectedHiraText);
-      const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
-  
-      const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
-      const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
-  
-      const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
-  
-      const appendButtons = () => {
-          let playBtn = resultSpan.querySelector(".play-recording-btn");
-          if (!playBtn) {
-              playBtn = document.createElement("button");
-              playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-              playBtn.style.marginLeft = "8px";
-              playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
-  
-              playBtn.onclick = () => {
-                  const recordedAudioUrl = getUrlFn();
-                  if (recordedAudioUrl) {
-                      const rowContainer = resultSpan.closest(".drill-row");
-                      const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
-                      setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
-                      const audio = new Audio(recordedAudioUrl);
-                      currentPlayingAudio = audio;
-                      audio.onended = () => stopAllPlayback();
-                      audio.play().catch(e => {
-                          console.warn("Playback failed", e);
-                          stopAllPlayback();
-                      });
-                  }
-              };
-              resultSpan.appendChild(playBtn);
-          }
-      };
-  
-      if (isCorrect) {
-          resultSpan.textContent = displayedTranscript + " ✅ ";
-          resultSpan.style.color = "var(--text-primary)";
-          appendButtons();
-          correctionBox.style.display = "none";
-      } else {
-          resultSpan.textContent = displayedTranscript + " ";
-          resultSpan.style.color = "var(--error-text)";
-          appendButtons();
-          corrTextSpan.textContent = "🔥 Keep going! Try once more!";
-          corrListenBtn.style.display = "inline-block";
-  
-          corrListenBtn.onclick = () => {
-              const rowContainer = resultSpan.closest(".drill-row");
-              const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
-              const playBtn = resultSpan.querySelector(".play-recording-btn");
-              setPlayingStateMultiple([corrListenBtn, modelListenBtn, playBtn], "Playing...");
-              speakText(expectedHiraText, playRate, () => stopAllPlayback());
-          };
-          correctionBox.style.display = "block";
-      }
-  
-      const runAutoPlaySequence = () => {
-          if (!isAutoPlay) return;
-  
-          const recordedAudioUrl = getUrlFn();
-          const rowContainer = resultSpan.closest(".drill-row");
-          const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
-          const playBtn = resultSpan.querySelector(".play-recording-btn");
-  
-          if (!recordedAudioUrl || !playBtn) return;
-  
-          setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
-  
-          const utterance = new SpeechSynthesisUtterance(expectedHiraText);
-          utterance.lang = "ja-JP";
-          utterance.rate = playRate;
-  
-          if (preferredVoice) utterance.voice = preferredVoice;
-  
-          currentUtteranceRef = utterance;
-  
-          utterance.onend = () => {
-              currentUtteranceRef = null;
-              currentPlayTimeoutId = setTimeout(() => {
-                  const audio = new Audio(recordedAudioUrl);
-                  currentPlayingAudio = audio;
-                  audio.playbackRate = 1.0;
-                  audio.onended = () => stopAllPlayback();
-                  audio.play().catch(e => {
-                      console.warn("Auto playback failed", e);
-                      stopAllPlayback();
-                  });
-              }, 100);
-          };
-  
-          utterance.onerror = () => stopAllPlayback();
-  
-          currentPlayTimeoutId = setTimeout(() => {
-              speechSynthesis.speak(utterance);
-          }, 500);
-      };
-  
-      runAutoPlaySequence();
-  }
+) {
+    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+        resultSpan.textContent = rawTranscript + " (Too short)";
+        resultSpan.style.color = "var(--text-secondary)";
+        return;
+    }
+
+    const hiraText = convertToHiragana(rawTranscript);
+    const expectedHira = convertToHiragana(expectedHiraText);
+    const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
+
+    const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
+    const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
+
+    const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
+
+    const appendButtons = () => {
+        let playBtn = resultSpan.querySelector(".play-recording-btn");
+        if (!playBtn) {
+            playBtn = document.createElement("button");
+            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+            playBtn.style.marginLeft = "8px";
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
+            playBtn.onclick = () => {
+                const recordedAudioUrl = getUrlFn();
+                if (recordedAudioUrl) {
+                    const rowContainer = resultSpan.closest(".drill-row");
+                    const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
+                    setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
+                    const audio = new Audio(recordedAudioUrl);
+                    currentPlayingAudio = audio;
+                    audio.onended = () => stopAllPlayback();
+                    audio.play().catch(e => {
+                        console.warn("Playback failed", e);
+                        stopAllPlayback();
+                    });
+                }
+            };
+            resultSpan.appendChild(playBtn);
+        }
+    };
+
+    if (isCorrect) {
+        resultSpan.textContent = displayedTranscript + " ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        appendButtons();
+        correctionBox.style.display = "none";
+    } else {
+        resultSpan.textContent = displayedTranscript + " ";
+        resultSpan.style.color = "var(--error-text)";
+        appendButtons();
+        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
+        corrListenBtn.style.display = "inline-block";
+
+        corrListenBtn.onclick = () => {
+            const rowContainer = resultSpan.closest(".drill-row");
+            const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
+            const playBtn = resultSpan.querySelector(".play-recording-btn");
+            setPlayingStateMultiple([corrListenBtn, modelListenBtn, playBtn], "Playing...");
+            speakText(expectedHiraText, playRate, () => stopAllPlayback());
+        };
+        correctionBox.style.display = "block";
+    }
+
+    const runAutoPlaySequence = () => {
+        if (!isAutoPlay) return;
+
+        const recordedAudioUrl = getUrlFn();
+        const rowContainer = resultSpan.closest(".drill-row");
+        const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
+        const playBtn = resultSpan.querySelector(".play-recording-btn");
+
+        if (!recordedAudioUrl || !playBtn) return;
+
+        setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
+
+        const utterance = new SpeechSynthesisUtterance(expectedHiraText);
+        utterance.lang = "ja-JP";
+        utterance.rate = playRate;
+
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        currentUtteranceRef = utterance;
+
+        utterance.onend = () => {
+            currentUtteranceRef = null;
+            currentPlayTimeoutId = setTimeout(() => {
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.playbackRate = 1.0;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => {
+                    console.warn("Auto playback failed", e);
+                    stopAllPlayback();
+                });
+            }, 100);
+        };
+
+        utterance.onerror = () => stopAllPlayback();
+
+        currentPlayTimeoutId = setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 500);
+    };
+
+    runAutoPlaySequence();
+}
