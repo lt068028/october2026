@@ -268,7 +268,155 @@ function updateToggleLabelStyle(labelEl, isActive) {
 
 function initApp() {
     const exampleSection = document.getElementById("exampleSection");
+    const container = document.getElementById("task1List");
+    const anchorElement = exampleSection || container;
 
+    // ------------------------------------------------------------------------
+    // Top Layout Setup (もどるリンク(左) と グローバル設定(右) のテーブル風配置)
+    // Example表示の直前に挿入する
+    // ------------------------------------------------------------------------
+    if (anchorElement) {
+        const topLayoutContainer = document.createElement("div");
+        topLayoutContainer.style.display = "flex";
+        topLayoutContainer.style.justifyContent = "space-between";
+        topLayoutContainer.style.alignItems = "flex-start"; // 上部で揃える
+        topLayoutContainer.style.marginBottom = "20px";
+        topLayoutContainer.style.width = "100%";
+
+        // 左側カラム: ↩️もどる リンク
+        const leftCol = document.createElement("div");
+        const backLink = document.createElement("a");
+        backLink.href = "#";
+        backLink.innerHTML = "↩️ もどる";
+        backLink.style.textDecoration = "none";
+        backLink.style.color = "var(--text-primary, #333)";
+        backLink.style.fontWeight = "bold";
+        backLink.style.fontSize = "16px";
+        backLink.style.display = "inline-block";
+        backLink.style.padding = "5px 0";
+        backLink.onclick = (e) => {
+            e.preventDefault();
+            window.history.back();
+        };
+        leftCol.appendChild(backLink);
+
+        // 右側カラム: グローバル設定 (3つのトグルボタン)
+        const rightCol = document.createElement("div");
+        rightCol.className = "control-group";
+        rightCol.style.display = "flex";
+        rightCol.style.flexDirection = "column"; // 縦並び
+        rightCol.style.alignItems = "flex-end";  // 右寄せ
+        rightCol.style.gap = "10px";
+
+        // 1. Recording Toggle
+        const recordControl = document.createElement("div");
+        recordControl.className = "control-item";
+        
+        const labelAutoRecord = document.createElement("span");
+        labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
+
+        const switchRecord = document.createElement("label");
+        switchRecord.className = "switch";
+        const inputRecord = document.createElement("input");
+        inputRecord.type = "checkbox";
+        inputRecord.checked = isManualStop;
+        const sliderRecord = document.createElement("span");
+        sliderRecord.className = "slider";
+        switchRecord.appendChild(inputRecord);
+        switchRecord.appendChild(sliderRecord);
+
+        const labelManualRecord = document.createElement("span");
+        labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
+
+        inputRecord.addEventListener("change", (e) => {
+            isManualStop = e.target.checked;
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+            updateToggleLabelStyle(labelManualRecord, isManualStop);
+        });
+
+        recordControl.appendChild(labelAutoRecord);
+        recordControl.appendChild(switchRecord);
+        recordControl.appendChild(labelManualRecord);
+        rightCol.appendChild(recordControl);
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        updateToggleLabelStyle(labelManualRecord, isManualStop);
+
+        // 2. Vocab Hint Toggle
+        const vocabControl = document.createElement("div");
+        vocabControl.className = "control-item";
+        
+        const labelHoverHint = document.createElement("span");
+        labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
+
+        const switchHint = document.createElement("label");
+        switchHint.className = "switch";
+        const inputHint = document.createElement("input");
+        inputHint.type = "checkbox";
+        inputHint.checked = (hintMode === "paren");
+        const sliderHint = document.createElement("span");
+        sliderHint.className = "slider";
+        switchHint.appendChild(inputHint);
+        switchHint.appendChild(sliderHint);
+
+        const labelParenHint = document.createElement("span");
+        labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
+
+        inputHint.addEventListener("change", (e) => {
+            hintMode = e.target.checked ? "paren" : "hover";
+            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            updateWordsDisplay();
+        });
+
+        vocabControl.appendChild(labelHoverHint);
+        vocabControl.appendChild(switchHint);
+        vocabControl.appendChild(labelParenHint);
+        rightCol.appendChild(vocabControl);
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+
+        // 3. Playback Toggle (Auto/Manual)
+        const playbackControl = document.createElement("div");
+        playbackControl.className = "control-item";
+
+        const labelAutoPlay = document.createElement("span");
+        labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
+
+        const switchPlayback = document.createElement("label");
+        switchPlayback.className = "switch";
+        const inputPlayback = document.createElement("input");
+        inputPlayback.type = "checkbox";
+        inputPlayback.checked = !isAutoPlay; 
+        const sliderPlayback = document.createElement("span");
+        sliderPlayback.className = "slider";
+        switchPlayback.appendChild(inputPlayback);
+        switchPlayback.appendChild(sliderPlayback);
+
+        const labelManualPlay = document.createElement("span");
+        labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
+
+        inputPlayback.addEventListener("change", (e) => {
+            isAutoPlay = !e.target.checked;
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+        });
+
+        playbackControl.appendChild(labelAutoPlay);
+        playbackControl.appendChild(switchPlayback);
+        playbackControl.appendChild(labelManualPlay);
+        rightCol.appendChild(playbackControl);
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+
+        topLayoutContainer.appendChild(leftCol);
+        topLayoutContainer.appendChild(rightCol);
+
+        anchorElement.parentNode.insertBefore(topLayoutContainer, anchorElement);
+    }
+
+    // ------------------------------------------------------------------------
+    // Example Section Initialization
+    // ------------------------------------------------------------------------
     if (exampleSection) {
         const ex1X = formatWord("わたし", "watashi", "I");
         const ex1Y = formatWord("がくせい", "gakusei", "student");
@@ -299,156 +447,8 @@ function initApp() {
         setupExampleListen("ex2Listen", "わたしは、せんせいじゃないです。");
     }
 
-    const container = document.getElementById("task1List");
     if (!container) return;
     container.innerHTML = "";
-
-    // ------------------------------------------------------------------------
-    // Left Sidebar Setup (グローバル設定パネルを左に配置)
-    // ------------------------------------------------------------------------
-    
-    // メインコンテンツと重ならないよう、bodyに左余白を追加
-    document.body.style.paddingLeft = "280px";
-
-    const sidebar = document.createElement("div");
-    sidebar.id = "global-settings-sidebar";
-    sidebar.style.position = "fixed";
-    sidebar.style.top = "20px";
-    sidebar.style.left = "20px";
-    sidebar.style.width = "240px";
-    sidebar.style.backgroundColor = "var(--bg-secondary, #f4f6f8)";
-    sidebar.style.padding = "20px 15px";
-    sidebar.style.borderRadius = "8px";
-    sidebar.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-    sidebar.style.zIndex = "1000";
-    sidebar.style.display = "flex";
-    sidebar.style.flexDirection = "column";
-
-    // ↩️ もどる ボタン
-    const backBtn = document.createElement("button");
-    backBtn.innerHTML = "↩️ もどる";
-    backBtn.className = "example-button";
-    backBtn.style.width = "100%";
-    backBtn.style.marginBottom = "20px";
-    backBtn.style.justifyContent = "center";
-    backBtn.style.padding = "10px";
-    backBtn.onclick = () => window.history.back();
-    sidebar.appendChild(backBtn);
-
-    const controlGroup = document.createElement("div");
-    controlGroup.className = "control-group";
-    controlGroup.style.display = "flex";
-    controlGroup.style.flexDirection = "column";
-    controlGroup.style.gap = "15px";
-    controlGroup.style.alignItems = "stretch";
-
-    // 1. Recording Toggle
-    const recordControl = document.createElement("div");
-    recordControl.className = "control-item";
-    recordControl.style.justifyContent = "space-between";
-
-    const labelAutoRecord = document.createElement("span");
-    labelAutoRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Autostop<span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>';
-
-    const switchRecord = document.createElement("label");
-    switchRecord.className = "switch";
-    const inputRecord = document.createElement("input");
-    inputRecord.type = "checkbox";
-    inputRecord.checked = isManualStop;
-    const sliderRecord = document.createElement("span");
-    sliderRecord.className = "slider";
-    switchRecord.appendChild(inputRecord);
-    switchRecord.appendChild(sliderRecord);
-
-    const labelManualRecord = document.createElement("span");
-    labelManualRecord.innerHTML = '<span class="icon-emoji">⏹️</span>Manual stop<span class="custom-tip-box">Records continuously until you click the stop button.</span>';
-
-    inputRecord.addEventListener("change", (e) => {
-        isManualStop = e.target.checked;
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
-    });
-
-    recordControl.appendChild(labelAutoRecord);
-    recordControl.appendChild(switchRecord);
-    recordControl.appendChild(labelManualRecord);
-    controlGroup.appendChild(recordControl);
-    updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-    updateToggleLabelStyle(labelManualRecord, isManualStop);
-
-    // 2. Vocab Hint Toggle
-    const vocabControl = document.createElement("div");
-    vocabControl.className = "control-item";
-    vocabControl.style.justifyContent = "space-between";
-    
-    const labelHoverHint = document.createElement("span");
-    labelHoverHint.innerHTML = '<span class="icon-emoji">💬</span> Vocab Hint<span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>';
-
-    const switchHint = document.createElement("label");
-    switchHint.className = "switch";
-    const inputHint = document.createElement("input");
-    inputHint.type = "checkbox";
-    inputHint.checked = (hintMode === "paren");
-    const sliderHint = document.createElement("span");
-    sliderHint.className = "slider";
-    switchHint.appendChild(inputHint);
-    switchHint.appendChild(sliderHint);
-
-    const labelParenHint = document.createElement("span");
-    labelParenHint.innerHTML = '<span class="icon-emoji">🔡</span>Display Vocab<span class="custom-tip-box">Always shows word\'s meaning in parentheses.</span>';
-
-    inputHint.addEventListener("change", (e) => {
-        hintMode = e.target.checked ? "paren" : "hover";
-        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-        updateWordsDisplay();
-    });
-
-    vocabControl.appendChild(labelHoverHint);
-    vocabControl.appendChild(switchHint);
-    vocabControl.appendChild(labelParenHint);
-    controlGroup.appendChild(vocabControl);
-    updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-    updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-
-    // 3. Playback Toggle (Auto/Manual)
-    const playbackControl = document.createElement("div");
-    playbackControl.className = "control-item";
-    playbackControl.style.justifyContent = "space-between";
-
-    const labelAutoPlay = document.createElement("span");
-    labelAutoPlay.innerHTML = '<span class="icon-emoji">▶️</span>Autoplay<span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>';
-
-    const switchPlayback = document.createElement("label");
-    switchPlayback.className = "switch";
-    const inputPlayback = document.createElement("input");
-    inputPlayback.type = "checkbox";
-    inputPlayback.checked = !isAutoPlay; 
-    const sliderPlayback = document.createElement("span");
-    sliderPlayback.className = "slider";
-    switchPlayback.appendChild(inputPlayback);
-    switchPlayback.appendChild(sliderPlayback);
-
-    const labelManualPlay = document.createElement("span");
-    labelManualPlay.innerHTML = '<span class="icon-emoji">⏯️</span>Manual play<span class="custom-tip-box">Disables automatic playback.</span>';
-
-    inputPlayback.addEventListener("change", (e) => {
-        isAutoPlay = !e.target.checked;
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-    });
-
-    playbackControl.appendChild(labelAutoPlay);
-    playbackControl.appendChild(switchPlayback);
-    playbackControl.appendChild(labelManualPlay);
-    controlGroup.appendChild(playbackControl);
-    updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-    updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-
-    sidebar.appendChild(controlGroup);
-    
-    // bodyの先頭にサイドバーを挿入
-    document.body.insertBefore(sidebar, document.body.firstChild);
 
 
     // ------------------------------------------------------------------------
@@ -456,7 +456,6 @@ function initApp() {
     // ------------------------------------------------------------------------
     const headerPanelTask1 = document.createElement("div");
     headerPanelTask1.className = "header-panel info-panel";
-    // 案内パネル風のインラインスタイル
     headerPanelTask1.style.backgroundColor = "#f8fbff"; 
     headerPanelTask1.style.borderLeft = "5px solid #4facfe"; 
     headerPanelTask1.style.padding = "15px 20px";
