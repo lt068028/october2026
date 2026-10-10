@@ -24,28 +24,26 @@
         
         <!-- 左カラム：Example -->
         <div class="example-container">
-            <div class="example-box" id="exampleSection">
-                <div class="example-line" style="margin-bottom: 12px;">
-                    <div style="margin-bottom: 6px; font-size: 15px;">
-                        <span class="example-label-title">Affirmative:</span>
-                        わたし (watashi, I) ／ がくせい (gakusei, student)
+            <div class="example-box">
+                <div class="example-line flex-row-center">
+                    <div>
+                        <strong class="example-label-title">Affirmative:</strong> 
+                        <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+                        <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
+                        <span style="font-size: 16px; margin: 0 4px;">👉</span> わたしは、がくせいです。 
+                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
-                        <span style="font-size: 16px;">👉</span>
-                        <button class="example-button" style="margin: 0;">🔊 きく</button>
-                        <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
-                    </div>
+                    <button id="ex1Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
                 </div>
-                <div class="example-line dashed-border" style="padding-top: 12px;">
-                    <div style="margin-bottom: 6px; font-size: 15px;">
-                        <span class="example-label-title">Negative:</span>
-                        わたし (watashi, I) ／ せんせい (sensei, teacher)
+                <div class="example-line dashed-border flex-row-center" style="margin-top: 10px; padding-top: 10px;">
+                    <div>
+                        <strong class="example-label-title">Negative:</strong> 
+                        <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+                        <span class="tooltip-wrap"><span class="target-word">せんせい</span><span class="tooltip-tip">sensei, teacher</span></span> 
+                        <span style="font-size: 16px; margin: 0 4px;">👉</span> わたしは、せんせいじゃないです。 
+                        <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 15px;">
-                        <span style="font-size: 16px;">👉</span>
-                        <button class="example-button" style="margin: 0;">🔊 きく</button>
-                        <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
-                    </div>
+                    <button id="ex2Listen" class="example-button" style="margin-left: auto;">🔊 きく</button>
                 </div>
             </div>
         </div>
@@ -126,7 +124,7 @@
 
 
     <!-- =========================================================
-         Task 3 Section (配置予約)
+         Task 3 Section
          ========================================================= -->
     <div class="info-panel info-panel-task3" style="margin-top: 30px;">
         <span class="info-panel-title">Task 3；Challenge</span>
