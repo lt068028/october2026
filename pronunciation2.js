@@ -97,78 +97,53 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 正確なピッチアクセント判定に基づく上線（overline: 高ピッチ）と下線（underline: 低ピッチ）のパーサー
+// 正確なピッチアクセント判定に基づく上線（overline）と下線（underline）のパーサー
 function renderPitchAccentHTML(textStr, color) {
     let resultHTML = '';
+    let isHigh = true; // 語頭のデフォルトは高ピッチ（上線）
     
-    // まず文字列をトークン（文字と記号）に分解して、各文字のピッチ状態を正確に決定する
-    let tokens = [];
     let i = 0;
     while (i < textStr.length) {
         let ch = textStr[i];
-        if (ch === '↘' || ch === '↗' || ch === '｜') {
-            tokens.push({ type: 'symbol', val: ch });
+        if (ch === '↘' || ch === '＼') {
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
+            isHigh = false; // 下落後は低ピッチ（下線）
+            i++;
+        } else if (ch === '↗' || ch === '/') {
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${ch}</span>`;
+            isHigh = true; // 上昇後は高ピッチ（上線）
+            i++;
+        } else if (ch === '｜') {
+            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 4px;">${ch}</span>`;
             i++;
         } else if (ch === ' ' || ch === '、') {
-            tokens.push({ type: 'space', val: ch });
+            resultHTML += ch;
             i++;
         } else {
-            tokens.push({ type: 'char', val: ch });
+            let nextCh = textStr[i+1];
+            let isPrecedingSymbol = (nextCh === '↘' || nextCh === '↗' || nextCh === '＼' || nextCh === '/');
+            
+            let effectiveHigh = isHigh;
+            // ↘（下降）の直前はまだ高いので上線、↗（上昇）の直前はまだ低いので下線を維持
+            if (isPrecedingSymbol) {
+                if (nextCh === '↘' || nextCh === '＼') {
+                    effectiveHigh = true; 
+                } else if (nextCh === '↗' || nextCh === '/') {
+                    effectiveHigh = false;
+                }
+            }
+            
+            let decorationStyle = '';
+            if (effectiveHigh) {
+                decorationStyle = `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
+            } else {
+                decorationStyle = `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
+            }
+            
+            resultHTML += `<span style="${decorationStyle}">${ch}</span>`;
             i++;
         }
     }
-
-    // 各文字のピッチ状態（high: 上線, low: 下線）を判定
-    // デフォルトは高ピッチ（語頭）。↗の後は高ピッチ、↘の後は低ピッチ。
-    let currentHigh = true;
-    let charPitches = [];
-    
-    // まず全体のピッチ状態を走査して各文字に割り当てる
-    for (let idx = 0; idx < tokens.length; idx++) {
-        let tok = tokens[idx];
-        if (tok.type === 'symbol') {
-            if (tok.val === '↘') {
-                currentHigh = false; // ↘の直後から低ピッチ
-            } else if (tok.val === '↗') {
-                currentHigh = true; // ↗の直後から高ピッチ
-            }
-        } else if (tok.type === 'char') {
-            // もしこの文字の「直後」に↘がある場合、その文字自体はまだ高い（上線）
-            let nextTok = tokens[idx + 1];
-            let isBeforeFall = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↘');
-            // もしこの文字の「直後」に↗がある場合、その文字自体はまだ低い（下線）
-            let isBeforeRise = (nextTok && nextTok.type === 'symbol' && nextTok.val === '↗');
-
-            let effectiveHigh = currentHigh;
-            if (isBeforeFall) {
-                effectiveHigh = true;  // 下降の直前は高ピッチ
-            }
-            if (isBeforeRise) {
-                effectiveHigh = false; // 上昇の直前は低ピッチ
-            }
-
-            charPitches.push({ char: tok.val, high: effectiveHigh });
-        }
-    }
-
-    // HTMLの構築
-    let pitchIdx = 0;
-    for (let idx = 0; idx < tokens.length; idx++) {
-        let tok = tokens[idx];
-        if (tok.type === 'symbol') {
-            resultHTML += `<span style="color: ${color}; font-weight: bold; margin: 0 1px;">${tok.val}</span>`;
-        } else if (tok.type === 'space') {
-            resultHTML += tok.val;
-        } else if (tok.type === 'char') {
-            let p = charPitches[pitchIdx++];
-            let decorationStyle = p.high 
-                ? `text-decoration: overline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`
-                : `text-decoration: underline; text-decoration-color: ${color}; text-decoration-thickness: 2px;`;
-            
-            resultHTML += `<span style="${decorationStyle}">${p.char}</span>`;
-        }
-    }
-
     return resultHTML;
 }
 
@@ -258,7 +233,7 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            updateDrill1Prompts();
+            updateDrill1Prompts(); // 録音データを消さずにプロンプト文面のみを更新
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
@@ -276,7 +251,7 @@ function updateDrill1Prompts() {
 }
 
 // ----------------------------------------------------------------------------
-// Drill 1 Initialization (Mimic and Compare - No correctness check)
+// Drill 1 Initialization
 // ----------------------------------------------------------------------------
 function initDrill1() {
     const container = document.getElementById("drill1List");
@@ -342,15 +317,30 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     topRow.appendChild(stopBtn);
     topRow.appendChild(resultSpan);
 
+    const correctionBox = document.createElement("div");
+    correctionBox.className = "correction-box";
+    const corrListenBtn = document.createElement("button");
+    corrListenBtn.className = "example-button";
+    corrListenBtn.innerHTML = "🔊 きく";
+    corrListenBtn.style.marginRight = "8px";
+    const corrTextSpan = document.createElement("span");
+    correctionBox.appendChild(corrListenBtn);
+    correctionBox.appendChild(corrTextSpan);
+
+    rowDiv.appendChild(topRow);
+    rowDiv.appendChild(correctionBox);
+
     bindDrill1RecorderEvents(
-        recordBtn, stopBtn, resultSpan, item, playRate
+        recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+        item.hira, playRate
     );
 
     container.appendChild(rowDiv);
 }
 
 function bindDrill1RecorderEvents(
-    recordBtn, stopBtn, resultSpan, item, playRate = 0.9
+    recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+    expectedHiraText, playRate = 0.9
 ) {
     let session = null;
     let lastAudioUrl = null;
@@ -447,8 +437,8 @@ function bindDrill1RecorderEvents(
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
                 processDrill1Result(
-                    currentSession.accumulatedTranscript, item,
-                    resultSpan, () => lastAudioUrl, playRate
+                    currentSession.accumulatedTranscript, expectedHiraText,
+                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
                 );
             }
         };
@@ -515,6 +505,7 @@ function bindDrill1RecorderEvents(
 
             resultSpan.textContent = "Recording...";
             resultSpan.style.color = "var(--accent-color)";
+            correctionBox.style.display = "none";
 
             mediaRecorder.start();
             currentRecognition.start();
@@ -536,8 +527,8 @@ function bindDrill1RecorderEvents(
 }
 
 function processDrill1Result(
-    rawTranscript, item,
-    resultSpan, getUrlFn, playRate
+    rawTranscript, expectedHiraText,
+    resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
@@ -546,35 +537,61 @@ function processDrill1Result(
     }
 
     const hiraText = convertToHiragana(rawTranscript);
+    const expectedHira = convertToHiragana(expectedHiraText);
+    const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
+
+    const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
+    const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
+
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
-    // Drill 1では正誤判定を行わず、発話されたテキストを表示し、音源の再生ボタンを提供
-    resultSpan.textContent = displayedTranscript + " ";
-    resultSpan.style.color = "var(--text-primary)";
+    const appendButtons = () => {
+        let playBtn = resultSpan.querySelector(".play-recording-btn");
+        if (!playBtn) {
+            playBtn = document.createElement("button");
+            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+            playBtn.style.marginLeft = "8px";
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
 
-    let playBtn = resultSpan.querySelector(".play-recording-btn");
-    if (!playBtn) {
-        playBtn = document.createElement("button");
-        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-        playBtn.style.marginLeft = "8px";
-        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+            playBtn.onclick = () => {
+                const recordedAudioUrl = getUrlFn();
+                if (recordedAudioUrl) {
+                    const rowContainer = resultSpan.closest(".drill-row");
+                    const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
+                    setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
+                    const audio = new Audio(recordedAudioUrl);
+                    currentPlayingAudio = audio;
+                    audio.onended = () => stopAllPlayback();
+                    audio.play().catch(e => {
+                        console.warn("Playback failed", e);
+                        stopAllPlayback();
+                    });
+                }
+            };
+            resultSpan.appendChild(playBtn);
+        }
+    };
 
-        playBtn.onclick = () => {
-            const recordedAudioUrl = getUrlFn();
-            if (recordedAudioUrl) {
-                const rowContainer = resultSpan.closest(".drill-row");
-                const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
-                setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
-                const audio = new Audio(recordedAudioUrl);
-                currentPlayingAudio = audio;
-                audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => {
-                    console.warn("Playback failed", e);
-                    stopAllPlayback();
-                });
-            }
+    if (isCorrect) {
+        resultSpan.textContent = displayedTranscript + " ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        appendButtons();
+        correctionBox.style.display = "none";
+    } else {
+        resultSpan.textContent = displayedTranscript + " ";
+        resultSpan.style.color = "var(--error-text)";
+        appendButtons();
+        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
+        corrListenBtn.style.display = "inline-block";
+
+        corrListenBtn.onclick = () => {
+            const rowContainer = resultSpan.closest(".drill-row");
+            const modelListenBtn = rowContainer ? rowContainer.querySelector(".example-button") : null;
+            const playBtn = resultSpan.querySelector(".play-recording-btn");
+            setPlayingStateMultiple([corrListenBtn, modelListenBtn, playBtn], "Playing...");
+            speakText(expectedHiraText, playRate, () => stopAllPlayback());
         };
-        resultSpan.appendChild(playBtn);
+        correctionBox.style.display = "block";
     }
 
     const runAutoPlaySequence = () => {
@@ -589,7 +606,7 @@ function processDrill1Result(
 
         setPlayingStateMultiple([modelListenBtn, playBtn], "Playing...");
 
-        const utterance = new SpeechSynthesisUtterance(item.hira);
+        const utterance = new SpeechSynthesisUtterance(expectedHiraText);
         utterance.lang = "ja-JP";
         utterance.rate = playRate;
 
