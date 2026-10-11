@@ -9,7 +9,7 @@ const drill1Data = [
     { en: "Studying is interesting.", jaKanji: "勉強はおもしろいです", jaHira: "べんきょうはおもしろいです" },
     { en: "Don't you have time?", jaKanji: "時間がないですか", jaHira: "じかんがないですか" },
     { en: "Is the weather bad?", jaKanji: "天気が悪いですか", jaHira: "てんきがわるいですか" },
-    { en: "The weather is not good.", jaKanji: "天気がよくないです", jaHira: "てんきがよくないです" },
+    { en: "The weather is not good.", jaKanji: "天気が良くないです", jaHira: "てんきがよくないです" },
     { en: "I want an umbrella.", jaKanji: "傘がほしいです", jaHira: "かさがほしいです" }
 ];
 
@@ -18,7 +18,6 @@ let isAutoPlay = true;
 let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
-// 録音データ永続保持マップ
 const savedAudioUrls = {};
 
 // ============================================================================
@@ -93,7 +92,7 @@ function convertToHiragana(text) {
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     const dict = {
         "天気": "てんき", "時計": "とけい", "仕事": "しごと", "勉強": "べんきょう",
-        "時間": "じかん", "悪い": "わるい", "傘": "かさ", "良い": "いい", "楽しい": "たのしい",
+        "時間": "じかん", "悪い": "わるい", "傘": "かさ", "良い": "いい", "良く": "よく", "楽しい": "たのしい",
         "欲しい": "ほしい", "面白い": "おもしろい"
     };
     for (let key in dict) {
@@ -211,7 +210,7 @@ function renderDrill1Section() {
     if (!container) {
         container = document.createElement("div");
         container.id = "drill1Container";
-        document.body.insertBefore(container, document.getElementById("drill2List") || document.body.lastChild);
+        document.body.insertBefore(container, document.getElementById("drill2Container") || document.body.lastChild);
     }
     container.innerHTML = "";
 
@@ -575,14 +574,15 @@ function processDrill1Result(
     const expectedHira = convertToHiragana(jaHira);
 
     const expectedHiraAlt = expectedHira.replace(/が/g, "は");
-    const expectedHiraAlt2 = expectedHira.replace(/は/g, "가"); // safety fallback
+    const expectedHiraAlt2 = expectedHira.replace(/は/g, "が");
 
     const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
     const matchRegex1 = new RegExp(`^${expectedHira}` + endParticleRegex);
     const matchRegex2 = new RegExp(`^${expectedHiraAlt}` + endParticleRegex);
+    const matchRegex3 = new RegExp(`^${expectedHiraAlt2}` + endParticleRegex);
 
     const isExactMatch = matchRegex1.test(hiraText) || hiraText.includes(expectedHira);
-    const isAltMatch = matchRegex2.test(hiraText) || hiraText.includes(expectedHiraAlt);
+    const isAltMatch = matchRegex2.test(hiraText) || matchRegex3.test(hiraText) || hiraText.includes(expectedHiraAlt) || hiraText.includes(expectedHiraAlt2);
     const isCorrect = isExactMatch || isAltMatch;
 
     const modelSpeechText = jaKanji;
@@ -593,7 +593,7 @@ function processDrill1Result(
 
     if (isCorrect) {
         if (isAltMatch && !isExactMatch) {
-            // 助詞違い（が ⇄ は）のとき、不一致となる助詞の1文字のみをピンポイントで青字にする
+            // 助詞違い（が ⇄ は）のとき、不一致となる助詞の1文字のみを原色の青（#0000FF）でピンポイントハイライト
             let highlightedHtml = "";
             for (let i = 0; i < hiraText.length; i++) {
                 if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
@@ -602,13 +602,12 @@ function processDrill1Result(
                     (expectedHira[i] === 'が' && hiraText[i] === 'は') || 
                     (expectedHira[i] === 'は' && hiraText[i] === 'が')
                 )) {
-                    // 助詞の1文字のみ青字に指定
-                    highlightedHtml += `<span style="color: #0ea5e9; font-weight: bold;">${hiraText[i]}</span>`;
+                    highlightedHtml += `<span style="color: #0000FF; font-weight: bold;">${hiraText[i]}</span>`;
                 } else {
                     highlightedHtml += hiraText[i];
                 }
             }
-            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0ea5e9;'>(Both 'ga' and 'wa' are correct in this context)</span>";
+            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0000FF;'>(Both 'ga' and 'wa' are correct in this context)</span>";
         } else {
             resultSpan.textContent = displayedTranscript + " ✅ ";
             resultSpan.style.color = "var(--text-primary)";
