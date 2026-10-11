@@ -10,7 +10,6 @@ const practice2Data = [
     { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
 ];
 
-// 赤色は1番目の赤（#fca5a5）に統一、未選択時はライトブルー（#bae6fd）、緑は #4ade80
 const rowColorThemes = [
     { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#fca5a5" },
     { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#fca5a5" },
@@ -242,30 +241,17 @@ function initExampleListen() {
     }
 }
 
-// イントネーションテストボタンの初期化
+// イントネーションテストボタンの初期化（4番目の「ですかぁ？」を追加）
 function initPitchTests() {
     const t1 = document.getElementById("testPitch1");
     const t2 = document.getElementById("testPitch2");
     const t3 = document.getElementById("testPitch3");
+    const t4 = document.getElementById("testPitch4");
 
-    if (t1) {
-        t1.onclick = () => {
-            setPlayingStateMultiple([t1], "Playing...");
-            speakText("おにいさんは、がくせいですか？", 0.9, () => stopAllPlayback());
-        };
-    }
-    if (t2) {
-        t2.onclick = () => {
-            setPlayingStateMultiple([t2], "Playing...");
-            speakText("おにいさんは、がくせいですかっ？", 0.9, () => stopAllPlayback());
-        };
-    }
-    if (t3) {
-        t3.onclick = () => {
-            setPlayingStateMultiple([t3], "Playing...");
-            speakText("おにいさんは、がくせいですかぁ～？", 0.9, () => stopAllPlayback());
-        };
-    }
+    if (t1) t1.onclick = () => { setPlayingStateMultiple([t1], "Playing..."); speakText("おにいさんは、がくせいですか？", 0.9, () => stopAllPlayback()); };
+    if (t2) t2.onclick = () => { setPlayingStateMultiple([t2], "Playing..."); speakText("おにいさんは、がくせいですかっ？", 0.9, () => stopAllPlayback()); };
+    if (t3) t3.onclick = () => { setPlayingStateMultiple([t3], "Playing..."); speakText("おにいさんは、がくせいですかぁ～？", 0.9, () => stopAllPlayback()); };
+    if (t4) t4.onclick = () => { setPlayingStateMultiple([t4], "Playing..."); speakText("おにいさんは、がくせいですかぁ？", 0.9, () => stopAllPlayback()); };
 }
 
 function updateWordsDisplay() {
@@ -372,11 +358,20 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aListenBtn.disabled = true;
     aListenBtn.style.opacity = "0.4";
 
+    // 👀Text ボタン（モデル文を表示するトリガー）
+    const showTextBtn = document.createElement("button");
+    showTextBtn.className = "example-button custom-tip-wrap";
+    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+    showTextBtn.disabled = true;
+    showTextBtn.style.opacity = "0.4";
+    showTextBtn.style.marginLeft = "4px";
+
     const aPromptLabel = document.createElement("span");
     aPromptLabel.className = "prompt-label";
     aPromptLabel.style.minWidth = "220px";
     aPromptLabel.style.color = "var(--text-secondary)";
     aPromptLabel.textContent = "(Choose 🙆 or 🙅 first)";
+    let isTextVisible = false;
 
     const aRecordBtn = document.createElement("button");
     aRecordBtn.className = "example-button custom-tip-wrap";
@@ -393,9 +388,25 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
+    // 👀Text ボタンクリック時の処理
+    showTextBtn.onclick = () => {
+        if (!selectedMode) return;
+        isTextVisible = !isTextVisible;
+        if (isTextVisible) {
+            aPromptLabel.style.color = "var(--text-primary)";
+            aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
+            showTextBtn.innerHTML = '🙈Hide<span class="custom-tip-box">Hide model answer text.</span>';
+        } else {
+            aPromptLabel.style.color = "var(--text-secondary)";
+            aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+        }
+    };
+
     yesBtn.onclick = () => {
         if (selectedMode === "yes") {
             selectedMode = null;
+            isTextVisible = false;
             yesBtn.style.backgroundColor = theme.unselected;
             yesBtn.style.opacity = "1";
             noBtn.style.backgroundColor = theme.unselected;
@@ -406,6 +417,9 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
             aListenBtn.disabled = true;
             aListenBtn.style.opacity = "0.4";
+            showTextBtn.disabled = true;
+            showTextBtn.style.opacity = "0.4";
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
             aRecordBtn.disabled = true;
 
             const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -414,16 +428,20 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         }
 
         selectedMode = "yes";
+        isTextVisible = false;
         yesBtn.style.backgroundColor = theme.yesActive;
         yesBtn.style.opacity = "1";
         noBtn.style.backgroundColor = theme.unselected;
         noBtn.style.opacity = "0.55";
 
-        aPromptLabel.style.color = "var(--text-primary)";
-        aPromptLabel.innerHTML = `はい、${item.y}です。`;
+        aPromptLabel.style.color = "var(--text-secondary)";
+        aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
 
         aListenBtn.disabled = false;
         aListenBtn.style.opacity = "1";
+        showTextBtn.disabled = false;
+        showTextBtn.style.opacity = "1";
+        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
         aRecordBtn.disabled = false;
 
         const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -433,6 +451,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     noBtn.onclick = () => {
         if (selectedMode === "no") {
             selectedMode = null;
+            isTextVisible = false;
             noBtn.style.backgroundColor = theme.unselected;
             noBtn.style.opacity = "1";
             yesBtn.style.backgroundColor = theme.unselected;
@@ -443,6 +462,9 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
             aListenBtn.disabled = true;
             aListenBtn.style.opacity = "0.4";
+            showTextBtn.disabled = true;
+            showTextBtn.style.opacity = "0.4";
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
             aRecordBtn.disabled = true;
 
             const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -451,16 +473,20 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         }
 
         selectedMode = "no";
+        isTextVisible = false;
         noBtn.style.backgroundColor = theme.noActive;
         noBtn.style.opacity = "1";
         yesBtn.style.backgroundColor = theme.unselected;
         yesBtn.style.opacity = "0.55";
 
-        aPromptLabel.style.color = "var(--text-primary)";
-        aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
+        aPromptLabel.style.color = "var(--text-secondary)";
+        aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
 
         aListenBtn.disabled = false;
         aListenBtn.style.opacity = "1";
+        showTextBtn.disabled = false;
+        showTextBtn.style.opacity = "1";
+        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
         aRecordBtn.disabled = false;
 
         const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -477,6 +503,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aRow.appendChild(yesBtn);
     aRow.appendChild(noBtn);
     aRow.appendChild(aListenBtn);
+    aRow.appendChild(showTextBtn);
     aRow.appendChild(aPromptLabel);
     aRow.appendChild(aRecordBtn);
     aRow.appendChild(aStopBtn);
