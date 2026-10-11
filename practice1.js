@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 1: XはYです (Hiragana Only完全動的連動版)
+// Practice 1: XはYです (Hiragana Only完全動的連動・最終版)
 // ============================================================================
 
 const taskData = [
@@ -217,6 +217,7 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -226,13 +227,17 @@ function initSettingsPanel() {
     }
 }
 
-// 例文部分のモード連動（Hiragana Only時は完全にひらがなにする）
+// 例文部分：scriptMode に応じて「私／学生」「わたし／がくせい」などを完全に動的切り替え
 function initExampleSection() {
     const container = document.getElementById("exampleSectionContainer");
     if (!container) return;
     
-    const ex1Text = scriptMode === "kanji" ? "私は、学生です。" : "わたしは、がくせいです。";
-    const ex2Text = scriptMode === "kanji" ? "私は、先生じゃないです。" : "わたしは、せんせいじゃないです。";
+    const w1 = formatWord("わたし", "私", "watashi", "I");
+    const w2 = formatWord("がくせい", "学生", "gakusei", "student");
+    const w3 = formatWord("せんせい", "先生", "sensei", "teacher");
+    
+    const ex1Sentence = scriptMode === "kanji" ? "私は、学生です。" : "わたしは、がくせいです。";
+    const ex2Sentence = scriptMode === "kanji" ? "私は、先生じゃないです。" : "わたしは、せんせいじゃないです。";
 
     container.innerHTML = `
         <div class="info-panel info-panel-task1" style="margin-top: 25px;">
@@ -241,10 +246,10 @@ function initExampleSection() {
         </div>
         <div class="example-box">
             <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-                <strong class="example-label-title">Affirmative:</strong> 私 ／ 学生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex1Listen" class="example-button">🔊 きく</button> <span>${ex1Text}</span>
+                <strong class="example-label-title">Affirmative:</strong> ${w1} ／ ${w2} <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex1Listen" class="example-button">🔊 きく</button> <span>${ex1Sentence}</span>
             </div>
             <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-                <strong class="example-label-title">Negative:</strong> 私 ／ 先生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex2Listen" class="example-button">🔊 きく</button> <span>${ex2Text}</span>
+                <strong class="example-label-title">Negative:</strong> ${w1} ／ ${w3} <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex2Listen" class="example-button">🔊 きく</button> <span>${ex2Sentence}</span>
             </div>
         </div>
     `;
