@@ -18,8 +18,8 @@ let isAutoPlay = true;
 let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
-// 各行ごとの録音データ（Blob URL）を保持するマップ
-const recordedAudioMap = {};
+// 録音データ（Blob URL）を保持するためのマップ { rowIndex: blobUrl }
+const savedAudioUrls = {};
 
 // ============================================================================
 // Voice Setup
@@ -191,7 +191,8 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            renderAll();
+            // 録音データを保持したまま、表示文字列のみを更新
+            updateActiveDisplayTexts();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
@@ -204,7 +205,7 @@ function renderAll() {
 }
 
 // ============================================================================
-// Render Drill 1 Section (単一のパネルとリストの描画)
+// Render Drill 1 Section (タイトル重複解消 & 正しいInstruction反映)
 // ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
@@ -232,17 +233,15 @@ function renderDrill1Section() {
         createDrill1Row(
             listDiv,
             `${index + 1}.`,
+            item,
             index,
-            item.en,
-            item.jaKanji,
-            item.jaHira,
             0.9
         );
     });
 }
 
 // ============================================================================
-// Render Drill 2 Section (Experimental Challenge)
+// Render Drill 2 Section
 // ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
@@ -271,12 +270,32 @@ function renderDrill2Section() {
     }
 }
 
+// スクリプトモード切替時に録音データを消さず、表示テキストだけを切り替える関数
+function updateActiveDisplayTexts() {
+    const rows = document.querySelectorAll("#drill1List .drill-row");
+    rows.forEach((rowDiv, index) => {
+        const item = drill1Data[index];
+        if (!item) return;
+        const resultSpan = rowDiv.querySelector(".result-text");
+        if (resultSpan && resultSpan.dataset.rawTranscript) {
+            const raw = resultSpan.dataset.rawTranscript;
+            const hira = convertToHiragana(raw);
+            const currentText = useHiraganaOnly ? hira : raw;
+            const isDone = resultSpan.dataset.isDone === "true";
+            if (isDone) {
+                resultSpan.firstChild.textContent = currentText + " ✅ ";
+            }
+        }
+    });
+}
+
 // ----------------------------------------------------------------------------
-// Drill 1 Row Creation (録音データの保持対応)
+// Drill 1 Row Creation
 // ----------------------------------------------------------------------------
-function createDrill1Row(container, indexLabel, rowIndex, englishText, jaKanji, jaHira, playRate) {
+function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
+    rowDiv.dataset.rowIndex = rowIndex;
 
     const topRow = document.createElement("div");
     topRow.className = "top-row";
@@ -287,7 +306,7 @@ function createDrill1Row(container, indexLabel, rowIndex, englishText, jaKanji, 
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
-    promptSpan.textContent = englishText;
+    promptSpan.textContent = item.en;
     promptSpan.style.minWidth = "220px";
 
     const recordBtn = document.createElement("button");
@@ -301,15 +320,8 @@ function createDrill1Row(container, indexLabel, rowIndex, englishText, jaKanji, 
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
+    resultSpan.textContent = "(Not recorded yet)";
     resultSpan.style.color = "var(--text-secondary)";
-
-    // 既に録音データが存在する場合は復元表示する
-    if (recordedAudioMap[rowIndex]) {
-        resultSpan.textContent = (useHiraganaOnly ? jaHira : jaKanji) + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-    } else {
-        resultSpan.textContent = "(Not recorded yet)";
-    }
 
     topRow.appendChild(indexSpan);
     topRow.appendChild(promptSpan);
@@ -330,23 +342,26 @@ function createDrill1Row(container, indexLabel, rowIndex, englishText, jaKanji, 
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
-    // 既存録音があれば再生ボタンを即時付与
-    if (recordedAudioMap[rowIndex]) {
-        appendPersistedPlayButton(resultSpan, rowIndex);
+    // すでにこの行の録音データが存在する場合は復元する
+    if (savedAudioUrls[rowIndex]) {
+        resultSpan.textContent = "(Recorded) ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        resultSpan.dataset.isDone = "true";
+        appendPersistedPlayButton(resultSpan, rowIndex, item.jaKanji, playRate);
     }
 
     bindDrill1RecorderEvents(
         recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        jaKanji, jaHira, playRate, rowIndex
+        item.jaKanji, item.jaHira, rowIndex, playRate
     );
 
     container.appendChild(rowDiv);
 }
 
-function appendPersistedPlayButton(resultSpan, rowIndex) {
+function appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate) {
     let playBtn = resultSpan.querySelector(".play-recording-btn");
     let listenBtn = resultSpan.querySelector(".model-listen-btn");
-    
+
     if (!listenBtn) {
         listenBtn = document.createElement("button");
         listenBtn.className = "example-button model-listen-btn custom-tip-wrap";
@@ -355,7 +370,7 @@ function appendPersistedPlayButton(resultSpan, rowIndex) {
         listenBtn.onclick = () => {
             const pBtn = resultSpan.querySelector(".play-recording-btn");
             setPlayingStateMultiple([listenBtn, pBtn], "Playing...");
-            speakText(drill1Data[rowIndex].jaKanji, 0.9, () => stopAllPlayback());
+            speakText(jaKanji, playRate, () => stopAllPlayback());
         };
         resultSpan.appendChild(listenBtn);
     }
@@ -366,14 +381,17 @@ function appendPersistedPlayButton(resultSpan, rowIndex) {
         playBtn.style.marginLeft = "6px";
         playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
         playBtn.onclick = () => {
-            const audioUrl = recordedAudioMap[rowIndex];
-            if (audioUrl) {
+            const recordedAudioUrl = savedAudioUrls[rowIndex];
+            if (recordedAudioUrl) {
                 const lBtn = resultSpan.querySelector(".model-listen-btn");
                 setPlayingStateMultiple([lBtn, playBtn], "Playing...");
-                const audio = new Audio(audioUrl);
+                const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
                 audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => { stopAllPlayback(); });
+                audio.play().catch(e => {
+                    console.warn("Playback failed", e);
+                    stopAllPlayback();
+                });
             }
         };
         resultSpan.appendChild(playBtn);
@@ -382,7 +400,7 @@ function appendPersistedPlayButton(resultSpan, rowIndex) {
 
 function bindDrill1RecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-    jaKanji, jaHira, playRate = 0.9, rowIndex
+    jaKanji, jaHira, rowIndex, playRate = 0.9
 ) {
     let session = null;
 
@@ -476,8 +494,8 @@ function bindDrill1RecorderEvents(
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
                 processDrill1Result(
-                    currentSession.accumulatedTranscript, jaKanji, jaHira,
-                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowIndex
+                    currentSession.accumulatedTranscript, jaKanji, jaHira, rowIndex,
+                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate
                 );
             }
         };
@@ -497,9 +515,7 @@ function bindDrill1RecorderEvents(
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 const audioUrl = URL.createObjectURL(audioBlob);
-                
-                // 録音データをグローバルマップに保持（トグル切替時の消去を防止）
-                recordedAudioMap[rowIndex] = audioUrl;
+                savedAudioUrls[rowIndex] = audioUrl; // 録音データをグローバルに保持
 
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
@@ -517,7 +533,18 @@ function bindDrill1RecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
-                const message = event.error === "no-speech" ? "No speech detected. Please try again." : "Speech recognition error.";
+                
+                if (event.error === "network" || event.error === "service-not-allowed") {
+                    alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
+                }
+
+                const message =
+                    event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
+                    event.error === "no-speech" ? "No speech detected. Please try again." :
+                    event.error === "audio-capture" ? "Microphone unavailable." :
+                    event.error === "network" ? "Speech recognition network error." :
+                    event.error === "aborted" ? "Recording stopped." :
+                    "Speech recognition error. Please try again.";
                 requestStop(currentSession, true, message);
             };
 
@@ -542,7 +569,9 @@ function bindDrill1RecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
         } catch (err) {
-            requestStop(currentSession, true, "Could not start recording.");
+            console.error("Speech recognition start error:", err);
+            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
+            requestStop(currentSession, true, "Could not start recording. Please try again.");
         }
     });
 
@@ -557,8 +586,8 @@ function bindDrill1RecorderEvents(
 }
 
 function processDrill1Result(
-    rawTranscript, jaKanji, jaHira,
-    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowIndex
+    rawTranscript, jaKanji, jaHira, rowIndex,
+    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
@@ -576,17 +605,18 @@ function processDrill1Result(
     const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
-    appendPersistedPlayButton(resultSpan, rowIndex);
+    resultSpan.dataset.rawTranscript = rawTranscript;
+    resultSpan.dataset.isDone = "true";
 
     if (isCorrect) {
         resultSpan.textContent = displayedTranscript + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
-        appendPersistedPlayButton(resultSpan, rowIndex);
+        appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         correctionBox.style.display = "none";
     } else {
         resultSpan.textContent = displayedTranscript + " ";
         resultSpan.style.color = "var(--error-text)";
-        appendPersistedPlayButton(resultSpan, rowIndex);
+        appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
 
@@ -599,26 +629,51 @@ function processDrill1Result(
         correctionBox.style.display = "block";
     }
 
-    if (isAutoPlay) {
-        const recordedAudioUrl = recordedAudioMap[rowIndex];
+    const runAutoPlaySequence = () => {
+        if (!isAutoPlay) return;
+
+        const recordedAudioUrl = savedAudioUrls[rowIndex];
         const listenBtn = resultSpan.querySelector(".model-listen-btn");
         const playBtn = resultSpan.querySelector(".play-recording-btn");
 
-        if (recordedAudioUrl && playBtn) {
-            setPlayingStateMultiple([listenBtn, playBtn], "Playing...");
-            speakText(modelSpeechText, playRate, () => {
+        if (!recordedAudioUrl || !listenBtn || !playBtn) return;
+
+        setPlayingStateMultiple([listenBtn, playBtn], "Playing...");
+
+        const utterance = new SpeechSynthesisUtterance(modelSpeechText);
+        utterance.lang = "ja-JP";
+        utterance.rate = playRate;
+
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        currentUtteranceRef = utterance;
+
+        utterance.onend = () => {
+            currentUtteranceRef = null;
+            currentPlayTimeoutId = setTimeout(() => {
                 const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
                 audio.playbackRate = 1.0;
                 audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => stopAllPlayback());
-            });
-        }
-    }
+                audio.play().catch(e => {
+                    console.warn("Auto playback failed", e);
+                    stopAllPlayback();
+                });
+            }, 100);
+        };
+
+        utterance.onerror = () => stopAllPlayback();
+
+        currentPlayTimeoutId = setTimeout(() => {
+            speechSynthesis.speak(utterance);
+        }, 500);
+    };
+
+    runAutoPlaySequence();
 }
 
 // ----------------------------------------------------------------------------
-// Drill 2 Row Creation (Experimental Challenge)
+// Drill 2 Initialization (Experimental Challenge)
 // ----------------------------------------------------------------------------
 function createDrill2Row(container, indexLabel, playRate) {
     const rowDiv = document.createElement("div");
@@ -801,4 +856,108 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
                 if (currentSession.finished || session !== currentSession || currentSession.errorMessage) return;
                 let rawTranscript = "";
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) rawTranscript +=
+                    if (event.results[i].isFinal) rawTranscript += event.results[i][0].transcript;
+                }
+                currentSession.accumulatedTranscript += rawTranscript;
+            };
+
+            currentRecognition.onerror = (event) => {
+                if (currentSession.finished || session !== currentSession) return;
+                
+                if (event.error === "network" || event.error === "service-not-allowed") {
+                    alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
+                }
+
+                const message =
+                    event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
+                    event.error === "no-speech" ? "No speech detected. Please try again." :
+                    event.error === "audio-capture" ? "Microphone unavailable." :
+                    event.error === "network" ? "Speech recognition network error." :
+                    event.error === "aborted" ? "Recording stopped." :
+                    "Speech recognition error. Please try again.";
+                requestStop(currentSession, true, message);
+            };
+
+            currentRecognition.onend = () => {
+                currentSession.recognitionDone = true;
+                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+                    try { currentSession.mediaRecorder.stop(); } catch (e) {}
+                }
+                tryProcessResult();
+                releaseSession(currentSession);
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+            if (isManualStop) stopBtn.classList.add("stop-btn-active");
+            else stopBtn.classList.remove("stop-btn-active");
+
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--accent-color)";
+
+            mediaRecorder.start();
+            currentRecognition.start();
+        } catch (err) {
+            console.error("Speech recognition start error:", err);
+            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
+            requestStop(currentSession, true, "Could not start recording. Please try again.");
+        }
+    });
+
+    stopBtn.addEventListener("click", () => {
+        if (!session || session.finished) return;
+        if (session.stopRequested) return;
+        stopAllPlayback();
+        session.stopRequested = true;
+        stopBtn.disabled = true;
+        requestStop(session, false);
+    });
+}
+
+function processDrill2Result(rawTranscript, resultSpan, getUrlFn) {
+    const hiraText = convertToHiragana(rawTranscript);
+    const displayText = useHiraganaOnly ? hiraText : rawTranscript;
+    resultSpan.textContent = (displayText || rawTranscript) + " ";
+    resultSpan.style.color = "var(--text-primary)";
+
+    let playBtn = resultSpan.querySelector(".play-recording-btn");
+    if (!playBtn) {
+        playBtn = document.createElement("button");
+        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+        playBtn.style.marginLeft = "8px";
+        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
+        playBtn.onclick = () => {
+            const recordedAudioUrl = getUrlFn();
+            if (recordedAudioUrl) {
+                setPlayingStateMultiple([playBtn], "Playing...");
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => {
+                    console.warn("Playback failed", e);
+                    stopAllPlayback();
+                });
+            }
+        };
+        resultSpan.appendChild(playBtn);
+    }
+
+    const runDrill2AutoPlay = () => {
+        if (!isAutoPlay) return;
+        const recordedAudioUrl = getUrlFn();
+        if (!recordedAudioUrl || !playBtn) return;
+
+        setPlayingStateMultiple([playBtn], "Playing...");
+        const audio = new Audio(recordedAudioUrl);
+        currentPlayingAudio = audio;
+        audio.playbackRate = 1.0;
+        audio.onended = () => stopAllPlayback();
+        audio.play().catch(e => {
+            console.warn("Drill 2 auto playback failed", e);
+            stopAllPlayback();
+        });
+    };
+
+    runDrill2AutoPlay();
+}
