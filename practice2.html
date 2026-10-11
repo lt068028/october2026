@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>XはYです</title>
+    <title>Practice 2: Questions & Yes/No Responses</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
          Header & Settings
          ========================================================= -->
     <div class="main-header">
-        <h1>Practice1；XはYです</h1>
+        <h1>Practice 2: Questions & Yes/No Responses</h1>
         
         <div class="compact-settings">
             <a href="#" class="back-link" onclick="window.history.back(); return false;">↩️ もどる</a>
@@ -72,70 +72,29 @@
          ========================================================= -->
     <div class="example-box">
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Affirmative:</strong> 
-            <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
-            <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
+            <strong class="example-label-title">Question:</strong> 
+            <span>おにいさん</span> ｜ <span>がくせい</span> 
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="ex1Listen" class="example-button">🔊 きく</button>
-            <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+            <span>おにいさんは、がくせいですか。 <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your older brother a student?)</span></span>
         </div>
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Negative:</strong> 
-            <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
-            <span class="tooltip-wrap"><span class="target-word">せんせい</span><span class="tooltip-tip">sensei, teacher</span></span> 
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex2Listen" class="example-button">🔊 きく</button>
-            <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+            <strong class="example-label-title">Response:</strong> 
+            <button id="exYesListen" class="example-button" style="margin-right: 6px;">🔊 🙆</button>
+            <span>はい、がくせいです。</span> ／ 
+            <button id="exNoListen" class="example-button" style="margin-left: 6px; margin-right: 6px;">🔊 🙅</button>
+            <span>いいえ、がくせいじゃないです。</span>
         </div>
     </div>
 
-
     <!-- =========================================================
-         Task 1 Section
+         Task 1 Section (Drills)
          ========================================================= -->
     <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-        <span class="info-panel-title">Task 1；Drills</span>
-        <span class="info-panel-desc">💡 Read the given words and build sentences following each row's instruction.</span>
+        <span class="info-panel-title">Drill 1</span>
+        <span class="info-panel-desc">💡 Form a question from the prompts and practice both 🙆 affirmative and 🙅 negative responses.</span>
     </div>
-    <div id="task1List"></div>
-
-
-    <!-- =========================================================
-         Task 2 Section
-         ========================================================= -->
-    <div class="info-panel info-panel-task2" style="margin-top: 30px;">
-        <span class="info-panel-title">Task 2；Custom Practice</span>
-        <span class="info-panel-desc">💡 Choose words from the menus to create your own sentences.</span>
-    </div>
-    <div id="task2List"></div>
-
-
-    <!-- =========================================================
-         Task 3 Section
-         ========================================================= -->
-    <div class="info-panel info-panel-task3" style="margin-top: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
-            <div>
-                <span class="info-panel-title">Task 3；Challenge</span>
-                <div class="info-panel-desc" style="margin-top: 4px;">💡 Practice free sentence-making, or click "Use Hints" for textbook vocabulary.</div>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                <!-- Textbook Selector (📖Select および統一教科書名) -->
-                <select id="vocabSourceSelect" class="custom-select" style="font-size: 13px;">
-                    <option value="" disabled selected>📖Select</option>
-                    <option value="genki1">Genki 1</option>
-                    <option value="minna1">みんなの日本語1</option>
-                </select>
-                <!-- Use Hints Button -->
-                <button id="useHintsBtn" class="example-button custom-tip-wrap" style="background-color: var(--accent-color); color: #fff; font-weight: bold; padding: 6px 12px;">
-                    🎯 Use Hints
-                    <span class="custom-tip-box">Click to insert textbook hints into your practice rows.</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    <div id="task3List"></div>
-
+    <div id="drill1List"></div>
 
     <!-- =========================================================
          Footer
