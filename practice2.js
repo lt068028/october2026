@@ -488,12 +488,12 @@ function renderDrill2Section() {
     const wMaj = formatWord("せんこう", "専攻", "senkou", "major");
 
     const exQ2 = scriptMode === "kanji"
-        ? "あなたの専攻は、何ですか。"
-        : "あなたのせんこうは、何ですか。";
+        ? "あなたの専攻は何ですか。"
+        : "あなたのせんこうは何ですか。";
 
     const exA2 = scriptMode === "kanji"
-        ? "わたしの専攻は。政治です。"
-        : "わたしのせんこうは、政治です。";
+        ? "わたしの専攻は、政治です。"
+        : "わたしのせんこうは、せいじです。";
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
@@ -510,7 +510,7 @@ function renderDrill2Section() {
 
     document.getElementById("ex2QListen").onclick = () => {
         setPlayingStateMultiple([document.getElementById("ex2QListen")], "Playing...");
-        speakText("あなたの専攻は、何ですか。", 0.9, () => stopAllPlayback());
+        speakText("あなたの専攻は何ですか。", 0.9, () => stopAllPlayback());
     };
 
     document.getElementById("ex2AListen").onclick = () => {
@@ -663,7 +663,6 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         if (isTextVisible) {
             aPromptLabel.style.color = "var(--text-primary)";
 
-            // 「はい」「いいえ」の直後に読点を入れる
             aPromptLabel.innerHTML = selectedMode === "yes"
                 ? `はい、${wordY}です。`
                 : `いいえ、${wordY}じゃないです。`;
@@ -757,7 +756,6 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
         const wordYKanji = item.yKanji;
 
-        // 音声合成でも「はい、〜」「いいえ、〜」と句点を含める
         const modelAns = selectedMode === "yes"
             ? `はい、${wordYKanji}です。`
             : `いいえ、${wordYKanji}じゃないです。`;
@@ -850,7 +848,7 @@ function createDrill2Row(container, indexLabel, target, playRate) {
 
     qListenBtn.onclick = () => {
         setPlayingStateMultiple([qListenBtn], "Playing...");
-        speakText(`${target.labelKanji}の専攻は、何ですか。`, playRate, () => stopAllPlayback());
+        speakText(`${target.labelKanji}の専攻は何ですか。`, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -1017,7 +1015,7 @@ function createDrill2Row(container, indexLabel, target, playRate) {
         if (!selectedMajor) return;
 
         setPlayingStateMultiple([aListenBtn], "Playing...");
-        speakText(`${target.possessiveKanji}専攻は、${selectedMajorKanji}です。`, playRate, () => stopAllPlayback());
+        speakText(`${target.possessiveKanji}専攻は${selectedMajorKanji}です。`, playRate, () => stopAllPlayback());
     };
 
     aRow.appendChild(aPromptPrefix);
@@ -1460,7 +1458,6 @@ function processResult(
         correctionBox.style.display = "block";
     }
 
-    // モデル音〜再生音の間隔をなくす（0秒設定）
     if (isAutoPlay) {
         speakText(kanjiTextForSpeech, playRate, () => {
             stopAllPlayback();
