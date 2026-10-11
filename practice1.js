@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 1: XはYです (状態保持・ラベル修正版)
+// Practice 1: XはYです (完全安定版)
 // ============================================================================
 
 const taskData = [
@@ -44,10 +44,9 @@ let scriptMode = "hiragana";
 let isAutoPlay = true; 
 let activeRecognitionSession = null;
 
-// プルダウンの選択値や録音データを保持するストア
 const practice1State = {
-    customSelects: {}, // { rowIndex: { x: val, y: val } }
-    audioUrls: {}      // { rowIndex: url }
+    customSelects: {},
+    audioUrls: {}
 };
 
 let preferredVoice = null;
@@ -90,7 +89,7 @@ function restorePlayButton() {
         if (activePlayButton.dataset.originalHtml) {
             activePlayButton.innerHTML = activePlayButton.dataset.originalHtml;
         } else {
-            activePlayButton.innerHTML = 'Playing...';
+            activePlayButton.innerHTML = 'Play';
         }
         activePlayButton = null;
     }
@@ -139,7 +138,6 @@ function speakText(text, rate = 0.9, onEndCallback) {
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     try { speechSynthesis.speak(utterance); } catch (err) {
-        console.error("Speech synthesis error:", err);
         currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
@@ -250,9 +248,6 @@ function initExampleListen() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Task 1
-// ----------------------------------------------------------------------------
 function initTask1() {
     const container = document.getElementById("task1List");
     if (!container) return;
@@ -265,28 +260,15 @@ function initTask1() {
         const currentXMeaning = index < 4 ? "I" : "friend";
         const formattedX = formatWord(currentXWord, currentXKanji, currentXRomaji, currentXMeaning);
         const formattedY = formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning);
-        
         const isNeg = (index % 2 === 1);
 
         createDrillRow(
-            container,
-            `${index + 1}.`,
-            formattedX,
-            formattedY,
-            currentXWord,
-            currentXKanji,
-            item.y,
-            item.yKanji,
-            isNeg,
-            0.9,
-            `task1_${index}`
+            container, `${index + 1}.`, formattedX, formattedY,
+            currentXWord, currentXKanji, item.y, item.yKanji, isNeg, 0.9, `task1_${index}`
         );
     });
 }
 
-// ----------------------------------------------------------------------------
-// Task 2 (プルダウン選択値の状態保持対応)
-// ----------------------------------------------------------------------------
 function initTask2() {
     const container = document.getElementById("task2List");
     if (!container) return;
@@ -353,7 +335,6 @@ function initTask2() {
         const previewY = document.createElement("span");
         previewY.className = "prompt-label translation-preview";
 
-        // 保存された選択値を復元
         if (practice1State.customSelects[rowKey]) {
             if (practice1State.customSelects[rowKey].x) selectX.value = practice1State.customSelects[rowKey].x;
             if (practice1State.customSelects[rowKey].y) selectY.value = practice1State.customSelects[rowKey].y;
@@ -417,21 +398,16 @@ function initTask2() {
             const valX = selectX.value;
             const valY = selectY.value;
 
-            // 状態を保存
             if (!practice1State.customSelects[rowKey]) practice1State.customSelects[rowKey] = {};
             practice1State.customSelects[rowKey].x = valX;
             practice1State.customSelects[rowKey].y = valY;
 
             if (valX && selectedOptX) {
-                const engKey = selectedOptX.getAttribute("data-eng");
-                const kanjiVal = selectedOptX.getAttribute("data-kanji");
-                previewX.innerHTML = formatCustomWord(valX, kanjiVal, engKey);
+                previewX.innerHTML = formatCustomWord(valX, selectedOptX.getAttribute("data-kanji"), selectedOptX.getAttribute("data-eng"));
             } else { previewX.innerHTML = ""; }
 
             if (valY && selectedOptY) {
-                const engKey = selectedOptY.getAttribute("data-eng");
-                const kanjiVal = selectedOptY.getAttribute("data-kanji");
-                previewY.innerHTML = formatCustomWord(valY, kanjiVal, engKey);
+                previewY.innerHTML = formatCustomWord(valY, selectedOptY.getAttribute("data-kanji"), selectedOptY.getAttribute("data-eng"));
             } else { previewY.innerHTML = ""; }
 
             labelHa.style.display = valX ? "none" : "inline";
@@ -443,8 +419,7 @@ function initTask2() {
                     setPlayingState(listenBtn, "Playing...");
                     const kanjiX = selectedOptX.getAttribute("data-kanji") || valX;
                     const kanjiY = selectedOptY.getAttribute("data-kanji") || valY;
-                    const textToSpeak = isCustomNeg ? `${kanjiX}は、${kanjiY}じゃないです。` : `${kanjiX}は、${kanjiY}です。`;
-                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
+                    speakText(isCustomNeg ? `${kanjiX}は、${kanjiY}じゃないです。` : `${kanjiX}は、${kanjiY}です。`, 0.9, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -455,7 +430,7 @@ function initTask2() {
 
         selectX.addEventListener("change", updateDisplay);
         selectY.addEventListener("change", updateDisplay);
-        updateDisplay(); // 初期ロード時復元用
+        updateDisplay();
 
         bindRecorderEvents(
             recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
@@ -474,15 +449,9 @@ function initTask2() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Task 3
-// ----------------------------------------------------------------------------
 function initTask3Container() {
     const container = document.getElementById("task3List");
-    const useHintsBtn = document.getElementById("useHintsBtn");
-    const vocabSelect = document.getElementById("vocabSourceSelect");
     if (!container) return;
-
     let rowCount = 0;
 
     const englishToMap = {
@@ -607,8 +576,7 @@ function initTask3Container() {
                     setPlayingState(listenBtn, "Playing...");
                     const resX = resolveData(valX);
                     const resY = resolveData(valY);
-                    const textToSpeak = isCustomNeg ? `${resX.kanji}は、${resY.kanji}じゃないです。` : `${resX.kanji}は、${resY.kanji}です。`;
-                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
+                    speakText(isCustomNeg ? `${resX.kanji}は、${resY.kanji}じゃないです。` : `${resX.kanji}は、${resY.kanji}です。`, 0.9, () => stopAllPlayback());
                 };
             } else {
                 recordBtn.disabled = true;
@@ -636,14 +604,9 @@ function initTask3Container() {
     }
 
     container.innerHTML = "";
-    for (let k = 0; k < 3; k++) {
-        addTask3Row();
-    }
+    for (let k = 0; k < 3; k++) { addTask3Row(); }
 }
 
-// ----------------------------------------------------------------------------
-// Common Drill Row Creation & Persistence
-// ----------------------------------------------------------------------------
 function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetKanjiX, targetY, targetKanjiY, isNeg, playRate, rowKey) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -658,8 +621,7 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     listenBtn.onclick = () => {
         setPlayingState(listenBtn, "Playing...");
-        const textToSpeak = isNeg ? `${targetKanjiX}は、${targetKanjiY}じゃないです。` : `${targetKanjiX}は、${targetKanjiY}です。`;
-        speakText(textToSpeak, playRate, () => stopAllPlayback());
+        speakText(isNeg ? `${targetKanjiX}は、${targetKanjiY}じゃないです。` : `${targetKanjiX}は、${targetKanjiY}です。`, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -755,24 +717,12 @@ function bindRecorderEvents(
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
         currentSession.finished = true;
-
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
+        if (currentSession.watchdog !== null) { clearTimeout(currentSession.watchdog); currentSession.watchdog = null; }
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (e) {}
         }
-
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
-
+        if (currentSession.stream) { currentSession.stream.getTracks().forEach(track => track.stop()); }
+        if (activeRecognitionSession === currentSession) { activeRecognitionSession = null; }
         if (session === currentSession) {
             session = null;
             recordBtn.disabled = false;
@@ -781,38 +731,13 @@ function bindRecorderEvents(
         }
     }
 
-    function requestStop(currentSession, abort = false, errorMessage = "") {
-        if (!currentSession || currentSession.finished) return;
-
-        if (errorMessage) {
-            currentSession.errorMessage = errorMessage;
-            resultSpan.textContent = errorMessage;
-            resultSpan.style.color = "var(--error-text)";
-        }
-
-        const currentRecognition = currentSession.recognition;
-        if (!currentRecognition) { releaseSession(currentSession); return; }
-
-        if (currentSession.watchdog === null) {
-            currentSession.watchdog = setTimeout(() => { releaseSession(currentSession); }, 2500);
-        }
-
-        try { if (abort) currentRecognition.abort(); else currentRecognition.stop(); } catch (err) {}
-        
-        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
-            try { currentSession.mediaRecorder.stop(); } catch (err) {}
-        }
-    }
-
     recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
         stopAllPlayback();
-
-        if (activeRecognitionSession !== null) return;
+        if (activeRecognitionSession !== null) { releaseSession(activeRecognitionSession); }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
             resultSpan.textContent = "Speech recognition is not supported in this browser.";
             resultSpan.style.color = "var(--error-text)";
             return;
@@ -829,7 +754,7 @@ function bindRecorderEvents(
         let stream;
         try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
         catch (err) {
-            resultSpan.textContent = "Microphone access denied or unavailable.";
+            resultSpan.textContent = "Microphone access denied.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
@@ -865,11 +790,10 @@ function bindRecorderEvents(
             currentSession.mediaRecorder = mediaRecorder;
 
             mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
-
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 const audioUrl = URL.createObjectURL(audioBlob);
-                if (rowKey) practice1State.audioUrls[rowKey] = audioUrl; // 永続保持
+                if (rowKey) practice1State.audioUrls[rowKey] = audioUrl;
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
                 tryProcessResult();
@@ -886,8 +810,7 @@ function bindRecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
-                const message = event.error === "no-speech" ? "No speech detected. Please try again." : "Speech recognition error.";
-                requestStop(currentSession, true, message);
+                releaseSession(currentSession);
             };
 
             currentRecognition.onend = () => {
@@ -911,17 +834,16 @@ function bindRecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
         } catch (err) {
-            requestStop(currentSession, true, "Could not start recording.");
+            releaseSession(currentSession);
         }
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished) return;
-        if (session.stopRequested) return;
+        if (!session || session.finished || session.stopRequested) return;
         stopAllPlayback();
         session.stopRequested = true;
         stopBtn.disabled = true;
-        requestStop(session, false);
+        releaseSession(session);
     });
 }
 
@@ -947,13 +869,10 @@ function processRecognitionResult(
     const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
     const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
     const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
-
     const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
     const isCorrectType = expectedIsNeg ? isNegative : isAffirmative;
     const kanjiTextForSpeech = getExpectedKanjiFn();
-
-    let targetPlayBtn = null;
 
     if (isCorrectType) {
         resultSpan.textContent = hiraText + " ✅ ";
