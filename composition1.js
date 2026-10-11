@@ -574,17 +574,15 @@ function processDrill1Result(
     const hiraText = convertToHiragana(rawTranscript);
     const expectedHira = convertToHiragana(jaHira);
 
-    // 「が」と「は」を相互に置換したバリエーションを作成し、どちらも正解とする
     const expectedHiraAlt = expectedHira.replace(/が/g, "は");
-    const expectedHiraAlt2 = expectedHira.replace(/は/g, "が");
+    const expectedHiraAlt2 = expectedHira.replace(/は/g, "가"); // safety fallback
 
     const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
     const matchRegex1 = new RegExp(`^${expectedHira}` + endParticleRegex);
     const matchRegex2 = new RegExp(`^${expectedHiraAlt}` + endParticleRegex);
-    const matchRegex3 = new RegExp(`^${expectedHiraAlt2}` + endParticleRegex);
 
     const isExactMatch = matchRegex1.test(hiraText) || hiraText.includes(expectedHira);
-    const isAltMatch = matchRegex2.test(hiraText) || matchRegex3.test(hiraText) || hiraText.includes(expectedHiraAlt);
+    const isAltMatch = matchRegex2.test(hiraText) || hiraText.includes(expectedHiraAlt);
     const isCorrect = isExactMatch || isAltMatch;
 
     const modelSpeechText = jaKanji;
@@ -595,13 +593,19 @@ function processDrill1Result(
 
     if (isCorrect) {
         if (isAltMatch && !isExactMatch) {
-            // 助詞違い（が ⇄ は）による合格の場合：異なる助詞部分を青字にし、解説を付与
+            // 助詞違い（が ⇄ は）のとき、不一致となる助詞の1文字のみをピンポイントで青字にする
             let highlightedHtml = "";
             for (let i = 0; i < hiraText.length; i++) {
                 if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
                     highlightedHtml += hiraText[i];
-                } else {
+                } else if (i < expectedHira.length && (
+                    (expectedHira[i] === 'が' && hiraText[i] === 'は') || 
+                    (expectedHira[i] === 'は' && hiraText[i] === 'が')
+                )) {
+                    // 助詞の1文字のみ青字に指定
                     highlightedHtml += `<span style="color: #0ea5e9; font-weight: bold;">${hiraText[i]}</span>`;
+                } else {
+                    highlightedHtml += hiraText[i];
                 }
             }
             resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0ea5e9;'>(Both 'ga' and 'wa' are correct in this context)</span>";
