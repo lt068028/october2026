@@ -1,5 +1,5 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach
+// Composition 1: English ➡️ Japanese Approach (ひらがな正規化・データ保持版)
 // ============================================================================
 
 const drill1Data = [
@@ -15,21 +15,28 @@ const drill1Data = [
 
 let isManualStop = false;
 let isAutoPlay = true; 
-let useHiraganaOnly = false; 
+let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
+// 録音データ永続保持マップ
 const savedAudioUrls = {};
 
+// ============================================================================
+// Voice Setup
+// ============================================================================
 let preferredVoice = null;
+
 function setupPreferredVoice() {
     try {
         const voices = speechSynthesis.getVoices();
         if (!voices || voices.length === 0) return;
+
         let selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
         if (!selected) selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.lang && v.lang.includes("ja"));
+        
         if (selected) preferredVoice = selected;
     } catch (e) { console.warn("Voice setup error:", e); }
 }
@@ -41,6 +48,9 @@ if (typeof speechSynthesis !== "undefined") {
     }
 }
 
+// ============================================================================
+// Playback Control & Simultaneous Button State
+// ============================================================================
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
 let activePlayButtons = [];
@@ -78,13 +88,15 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
+// 内部ひらがな正規化処理（モード切替時や漢字入力のブレを完全吸収）
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     const dict = {
         "天気": "てんき", "時計": "とけい", "仕事": "しごと", "勉強": "べんきょう",
         "時間": "じかん", "悪い": "わるい", "傘": "かさ", "良い": "いい", "良く": "よく", "楽しい": "たのしい",
-        "欲しい": "ほしい", "面白い": "おもしろい"
+        "欲しい": "ほしい", "面白い": "おもしろい",
+        "私": "わたし", "学生": "がくせい", "先生": "せんせい"
     };
     for (let key in dict) {
         const regex = new RegExp(key, "g");
@@ -94,6 +106,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
+// 音声合成：常に漢字混じりの正規文を使用して品質を担保
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -110,6 +123,9 @@ function speakText(text, rate = 0.9, onEndCallback) {
     }
 }
 
+// ============================================================================
+// Initialization & DOM Setup
+// ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     renderAll();
@@ -188,6 +204,9 @@ function renderAll() {
     renderDrill2Section();
 }
 
+// ============================================================================
+// Render Drill 1 Section
+// ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
     if (!container) {
@@ -215,6 +234,9 @@ function renderDrill1Section() {
     });
 }
 
+// ============================================================================
+// Render Drill 2 Section (Drill 2: Self-Check with i-Adjective Sentences)
+// ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
     if (!container) {
@@ -242,6 +264,9 @@ function renderDrill2Section() {
     }
 }
 
+// ----------------------------------------------------------------------------
+// Drill 1 Row Creation
+// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -293,6 +318,9 @@ function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     rowDiv.appendChild(correctionBox);
 
     if (savedAudioUrls[rowIndex]) {
+        resultSpan.textContent = "(Recorded) ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        resultSpan.dataset.isDone = "true";
         appendPersistedPlayButton(resultSpan, rowIndex, item.jaKanji, playRate);
     }
 
@@ -515,15 +543,15 @@ function processDrill1Result(
     const isAltMatch = matchRegex2.test(hiraText) || matchRegex3.test(hiraText) || hiraText.includes(expectedHiraAlt) || hiraText.includes(expectedHiraAlt2);
     const isCorrect = isExactMatch || isAltMatch;
 
-    const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
+    const modelSpeechText = jaKanji;
 
     resultSpan.dataset.rawTranscript = rawTranscript;
     resultSpan.dataset.isDone = "true";
 
     if (isCorrect) {
         if (isAltMatch && !isExactMatch) {
-            // 助詞違い（が ⇄ は）のとき、文全体の色は変えず、不一致となる助詞の1文字のみを原色ブルー（#0000FF）でハイライト
+            // ライト・ダークモード双方で視認性の高いスカイブルー（#38bdf8）を使用
             let highlightedHtml = "";
             for (let i = 0; i < hiraText.length; i++) {
                 if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
@@ -532,12 +560,12 @@ function processDrill1Result(
                     (expectedHira[i] === 'が' && hiraText[i] === 'は') || 
                     (expectedHira[i] === 'は' && hiraText[i] === 'が')
                 )) {
-                    highlightedHtml += `<span style="color: #0000FF; font-weight: bold;">${hiraText[i]}</span>`;
+                    highlightedHtml += `<span style="color: #38bdf8; font-weight: bold;">${hiraText[i]}</span>`;
                 } else {
                     highlightedHtml += hiraText[i];
                 }
             }
-            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0000FF;'>(Both 'ga' and 'wa' are correct in this context)</span>";
+            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #38bdf8;'>(Both 'ga' and 'wa' are correct in this context)</span>";
             resultSpan.style.color = "var(--text-primary)";
         } else {
             resultSpan.textContent = displayedTranscript + " ✅ ";
