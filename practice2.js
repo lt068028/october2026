@@ -488,8 +488,8 @@ function renderDrill2Section() {
     const wMaj = formatWord("せんこう", "専攻", "senkou", "major");
 
     const exQ2 = scriptMode === "kanji"
-        ? "あなたの専攻は何ですか。"
-        : "あなたのせんこうはなんですか。";
+        ? "あなたの専攻は、何ですか。"
+        : "あなたのせんこうは、なんですか。";
 
     const exA2 = scriptMode === "kanji"
         ? "わたしの専攻は、政治です。"
