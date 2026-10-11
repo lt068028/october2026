@@ -1,12 +1,12 @@
 // ============================================================================
-// Practice 2: Yes/No & Wh- Questions (Genki Lesson 2)
+// Practice 2: Yes/No & Wh- Questions (Genki Lesson 2 - 完全修正版)
 // ============================================================================
 
 const practice2Data = [
     { x: "おにいさん", xKanji: "お兄さん", xRomaji: "oniisan", xMeaning: "older brother", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student" },
     { x: "おかあさん", xKanji: "お母さん", xRomaji: "okaasan", xMeaning: "mother", y: "かいしゃいん", yKanji: "会社員", yRomaji: "kaishain", yMeaning: "company employee" },
     { x: "おねえさん", xKanji: "お姉さん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうこうせい", yKanji: "高校生", yRomaji: "koukousei", yMeaning: "high school student" },
-    { x: "おとうさん", xKanji: "お父さん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yRomaji: "自営業", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
+    { x: "おとうさん", xKanji: "お父さん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yKanji: "自営業", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
     { x: "いもうと", xKanji: "妹", xRomaji: "imouto", xMeaning: "younger sister", y: "フリーター", yKanji: "フリーター", yRomaji: "furiitaa", yMeaning: "part-time worker" }
 ];
 
@@ -39,6 +39,13 @@ let hintMode = "hover";
 let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
+
+// 状態永続保持マップ
+const practice2State = {
+    customSelects: {},
+    audioUrls: {},
+    savedResults: {}
+};
 
 let preferredVoice = null;
 function setupPreferredVoice() {
@@ -98,6 +105,7 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
+// ひらがな正規化処理
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
@@ -105,7 +113,7 @@ function convertToHiragana(text) {
         "お母さん": "おかあさん", "お父さん": "おとうさん", "お兄さん": "おにいさん", "お姉さん": "おねえさん", "弟": "おとうと", "妹": "いもうと",
         "会社員": "かいしゃいん", "自営業": "じえいぎょう", "高校生": "こうこうせい", "看護師": "かんごし", "主婦": "しゅふ",
         "政治": "せいじ", "経済": "けいざい", "歴史": "れきし", "日本語": "にほんご", "友達": "ともだち", "親友": "しんゆう", "同僚": "どうりょう",
-        "専攻": "せんこう", "政治": "せいじ", "経済": "けいざい", "歴史": "れきし", "日本語": "にほんご",
+        "専攻": "せんこう", "学生": "がくせい", "先生": "せんせい",
         "です": "です", "ですか": "ですか", "はい": "はい", "いいえ": "いいえ",
         "じゃないです": "じゃないです", "じゃ、ないです": "じゃ、ないです", "ではないです": "ではないです"
     };
@@ -128,7 +136,6 @@ function speakText(text, rate = 0.9, onEndCallback) {
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     try { speechSynthesis.speak(utterance); } catch (err) {
-        console.error("Speech synthesis error:", err);
         currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
@@ -236,21 +243,24 @@ function updateToggleLabelStyle(labelEl, isActive) {
     }
 }
 
-// ページ全体を完全に動的描画・更新する関数
 function renderAll() {
     renderDrill1Section();
     renderDrill2Section();
 }
 
 // ============================================================================
-// Render Drill 1 Section (InfoPanel -> Example -> List)
+// Render Drill 1 Section (タイトル ➡️ Example ➡️ リスト の順序を厳守)
 // ============================================================================
 function renderDrill1Section() {
-    const container = document.getElementById("drill1Container");
-    if (!container) return;
+    let container = document.getElementById("drill1Container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill1Container";
+        document.body.insertBefore(container, document.getElementById("drill2Container") || document.body.lastChild);
+    }
     container.innerHTML = "";
 
-    // 1. Info Panel
+    // 1. Info Panel (Drill Title)
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
     infoPanel.style.marginTop = "25px";
@@ -260,22 +270,26 @@ function renderDrill1Section() {
     `;
     container.appendChild(infoPanel);
 
-    // 2. Example Box
+    // 2. Example Box (タイトルの下に配置)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     const w1 = formatWord("おとうさん", "お父さん", "otousan", "father");
     const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
+    
+    const exQ = scriptMode === "kanji" ? "お父さんは、看護師ですか？" : "おとうさんは、かんごしですか？";
+    const exYes = scriptMode === "kanji" ? "はい、看護師です。" : "はい、かんごしです。";
+    const exNo = scriptMode === "kanji" ? "いいえ、看護師じゃないです。" : "いいえ、かんごしじゃないです。";
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>${w1} ／ ${w2}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>おとうさんは、かんごしですか？ <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your father a nurse?)</span></span>
+            <strong class="example-label-title">Question:</strong>${w1} ／ ${w2}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>${exQ}</span>
         </div>
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong> 
             <button id="exYesListen" class="example-button" style="margin-right: 4px;">🔊 🙆</button>
-            <span>はい、かんごしです。</span> ／ 
+            <span>${exYes}</span> ／ 
             <button id="exNoListen" class="example-button" style="margin-left: 4px; margin-right: 4px;">🔊 🙅</button>
-            <span>いいえ、かんごしじゃ、ないです。</span>
+            <span>${exNo}</span>
         </div>
     `;
     container.appendChild(exBox);
@@ -290,7 +304,7 @@ function renderDrill1Section() {
     };
     document.getElementById("exNoListen").onclick = () => {
         setPlayingStateMultiple([document.getElementById("exNoListen")], "Playing...");
-        speakText("いいえ、看護師じゃ、ないです。", 0.9, () => stopAllPlayback());
+        speakText("いいえ、看護師じゃないです。", 0.9, () => stopAllPlayback());
     };
 
     // 3. Drill 1 List
@@ -304,14 +318,18 @@ function renderDrill1Section() {
 }
 
 // ============================================================================
-// Render Drill 2 Section (InfoPanel -> Example -> List)
+// Render Drill 2 Section (タイトル ➡️ Example ➡️ リスト の順序を厳守)
 // ============================================================================
 function renderDrill2Section() {
-    const container = document.getElementById("drill2Container");
-    if (!container) return;
+    let container = document.getElementById("drill2Container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill2Container";
+        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
+    }
     container.innerHTML = "";
 
-    // 1. Info Panel
+    // 1. Info Panel (Drill Title)
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task2";
     infoPanel.style.marginTop = "45px";
@@ -321,20 +339,23 @@ function renderDrill2Section() {
     `;
     container.appendChild(infoPanel);
 
-    // 2. Example Box
+    // 2. Example Box (タイトルの下に配置)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     const wTarget = formatWord("あなた", "あなた", "anata", "you");
     const wMaj = formatWord("せんこう", "専攻", "senkou", "major");
 
+    const exQ2 = scriptMode === "kanji" ? "あなたの専攻は何ですか。" : "あなたのせんこうは何ですか。";
+    const exA2 = scriptMode === "kanji" ? "わたしの専攻は政治です。" : "わたしのせんこうは政治です。";
+
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>${wTarget} ／ ${wMaj}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex2QListen" class="example-button">🔊 きく</button><span>あなたの専攻は何ですか？ <span style="font-size: 0.85em; color: var(--text-secondary);">(What is your major?)</span></span>
+            <strong class="example-label-title">Question:</strong>${wTarget} ／ ${wMaj}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex2QListen" class="example-button">🔊 きく</button><span>${exQ2}</span>
         </div>
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong> 
             <button id="ex2AListen" class="example-button" style="margin-right: 4px;">🔊 きく</button>
-            <span>わたしの専攻は政治です。</span>
+            <span>${exA2}</span>
         </div>
     `;
     container.appendChild(exBox);
@@ -358,12 +379,10 @@ function renderDrill2Section() {
     });
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Row Creation
-// ----------------------------------------------------------------------------
 function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
+    rowDiv.dataset.rowIndex = `p2_drill1_${rowIndex}`;
 
     const theme = rowColorThemes[rowIndex % rowColorThemes.length];
 
@@ -376,7 +395,9 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
     qListenBtn.onclick = () => {
         setPlayingStateMultiple([qListenBtn], "Playing...");
-        speakText(`${item.xKanji}は、${item.yKanji}ですか？`, playRate, () => stopAllPlayback());
+        const xText = scriptMode === "kanji" ? item.xKanji : item.x;
+        const yText = scriptMode === "kanji" ? item.yKanji : item.y;
+        speakText(`${xText}は、${yText}ですか？`, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -384,7 +405,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     indexSpan.style.fontWeight = "bold";
 
     const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label prompt-content-q";
+    promptSpan.className = "prompt-label";
     promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
     promptSpan.style.minWidth = "220px";
 
@@ -399,8 +420,8 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     const qResultSpan = document.createElement("span");
     qResultSpan.className = "result-text";
-    qResultSpan.textContent = "(Not recorded yet)";
-    qResultSpan.style.color = "var(--text-secondary)";
+    qResultSpan.textContent = practice2State.audioUrls[`p2_drill1_q_${rowIndex}`] ? "(Recorded) ✅" : "(Not recorded yet)";
+    qResultSpan.style.color = practice2State.audioUrls[`p2_drill1_q_${rowIndex}`] ? "var(--text-primary)" : "var(--text-secondary)";
 
     qRow.appendChild(qListenBtn);
     qRow.appendChild(indexSpan);
@@ -408,6 +429,10 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     qRow.appendChild(qRecordBtn);
     qRow.appendChild(qStopBtn);
     qRow.appendChild(qResultSpan);
+
+    if (practice2State.audioUrls[`p2_drill1_q_${rowIndex}`]) {
+        appendPersistedPlayButton(qResultSpan, `p2_drill1_q_${rowIndex}`, playRate);
+    }
 
     const aRow = document.createElement("div");
     aRow.className = "top-row";
@@ -464,8 +489,8 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     const aResultSpan = document.createElement("span");
     aResultSpan.className = "result-text";
-    aResultSpan.textContent = "(Not recorded yet)";
-    aResultSpan.style.color = "var(--text-secondary)";
+    aResultSpan.textContent = practice2State.audioUrls[`p2_drill1_a_${rowIndex}`] ? "(Recorded) ✅" : "(Not recorded yet)";
+    aResultSpan.style.color = practice2State.audioUrls[`p2_drill1_a_${rowIndex}`] ? "var(--text-primary)" : "var(--text-secondary)";
 
     showTextBtn.onclick = () => {
         if (!selectedMode) return;
@@ -473,6 +498,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         const wordY = (scriptMode === "kanji") ? item.yKanji : item.y;
         if (isTextVisible) {
             aPromptLabel.style.color = "var(--text-primary)";
+            // 規則実装：「はい」「いいえ」の直後に必ず「、」を入れる
             aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${wordY}です。` : `いいえ、${wordY}じゃないです。`;
             showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
         } else {
@@ -548,7 +574,8 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         if (!selectedMode) return;
         setPlayingStateMultiple([aListenBtn], "Playing...");
         const wordYKanji = item.yKanji;
-        const modelAns = selectedMode === "yes" ? `はい、${wordYKanji}です。` : `いいえ、${wordYKanji}じゃ、ないです。`;
+        // 音声合成でも「はい、〜」「いいえ、〜」と句点を確実に含める
+        const modelAns = selectedMode === "yes" ? `はい、${wordYKanji}です。` : `いいえ、${wordYKanji}じゃないです。`;
         speakText(modelAns, playRate, () => stopAllPlayback());
     };
 
@@ -560,6 +587,10 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aRow.appendChild(aRecordBtn);
     aRow.appendChild(aStopBtn);
     aRow.appendChild(aResultSpan);
+
+    if (practice2State.audioUrls[`p2_drill1_a_${rowIndex}`]) {
+        appendPersistedPlayButton(aResultSpan, `p2_drill1_a_${rowIndex}`, playRate);
+    }
 
     const correctionBox = document.createElement("div");
     correctionBox.className = "correction-box";
@@ -577,25 +608,29 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     bindRecorderEvents(
         qRecordBtn, qStopBtn, qResultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => `${item.x}は${item.y}ですか`, () => `${item.xKanji}は${item.yKanji}ですか`, "question", false, playRate, 0.95, item
+        () => scriptMode === "kanji" ? `${item.xKanji}は${item.yKanji}ですか` : `${item.x}は${item.y}ですか`,
+        () => `${item.xKanji}は${item.yKanji}ですか`, playRate, `p2_drill1_q_${rowIndex}`
     );
 
     bindRecorderEvents(
         aRecordBtn, aStopBtn, aResultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => selectedMode === "yes" ? `はい${item.y}です` : `いいえ${item.y}じゃないです`, () => selectedMode === "yes" ? `はい${item.yKanji}です` : `いいえ${item.yKanji}じゃないです`, "answer", () => selectedMode === "no", playRate, 0.95, item
+        () => {
+            const yWord = scriptMode === "kanji" ? item.yKanji : item.y;
+            return selectedMode === "yes" ? `はい${yWord}です` : `いいえ${yWord}じゃないです`;
+        },
+        () => {
+            return selectedMode === "yes" ? `はい${item.yKanji}です` : `いいえ${item.yKanji}じゃないです`;
+        },
+        playRate, `p2_drill1_a_${rowIndex}`
     );
 
     container.appendChild(rowDiv);
 }
 
-// ----------------------------------------------------------------------------
-// Drill 2 Row Creation (「／」とSelectの隙間を狭く調整)
-// ----------------------------------------------------------------------------
 function createDrill2Row(container, indexLabel, target, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
-    // 1. 質問作成行
     const qRow = document.createElement("div");
     qRow.className = "top-row";
     qRow.style.marginBottom = "6px";
@@ -640,7 +675,6 @@ function createDrill2Row(container, indexLabel, target, playRate) {
     qRow.appendChild(qStopBtn);
     qRow.appendChild(qResultSpan);
 
-    // 2. 返答練習行（「／」とSelectの隙間をmargin/paddingで詰める調整）
     const aRow = document.createElement("div");
     aRow.className = "top-row";
     aRow.style.paddingLeft = "24px";
@@ -649,7 +683,6 @@ function createDrill2Row(container, indexLabel, target, playRate) {
 
     const aPromptPrefix = document.createElement("span");
     aPromptPrefix.className = "prompt-label";
-    // 隙間を詰めるためマージンを調整
     aPromptPrefix.innerHTML = `${tLabelDisplay} ／ ${senkouDisplay} ／ `;
     aPromptPrefix.style.minWidth = "180px";
     aPromptPrefix.style.marginRight = "2px";
@@ -670,7 +703,6 @@ function createDrill2Row(container, indexLabel, target, playRate) {
     majorsData.forEach(m => {
         const opt = document.createElement("option");
         opt.value = m.word;
-        // 標準では日本語のみ（Hintモード時にツールチップ等で補足）
         const displayMajor = (scriptMode === "kanji") ? m.kanji : m.word;
         opt.textContent = displayMajor;
         opt.title = `${m.romaji}, ${m.meaning}`;
@@ -724,7 +756,6 @@ function createDrill2Row(container, indexLabel, target, playRate) {
         aListenBtn.style.opacity = "1";
         showTextBtn.disabled = false;
         showTextBtn.style.opacity = "1";
-        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
         aRecordBtn.disabled = false;
 
         aPromptLabel.style.color = "var(--text-secondary)";
@@ -779,30 +810,49 @@ function createDrill2Row(container, indexLabel, target, playRate) {
     rowDiv.appendChild(aRow);
     rowDiv.appendChild(correctionBox);
 
-    const tLabel = target.label;
+    const tLabel = scriptMode === "kanji" ? target.labelKanji : target.label;
     const tLabelKanji = target.labelKanji;
-    const poss = target.possessive;
+    const poss = scriptMode === "kanji" ? target.possessiveKanji : target.possessive;
     const possKanji = target.possessiveKanji;
 
     bindRecorderEvents(
         qRecordBtn, qStopBtn, qResultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => `${tLabel}の専攻は何ですか`, () => `${tLabelKanji}の専攻は何ですか`, "question", false, playRate, 0.95, null
+        () => `${tLabel}の専攻は何ですか`, () => `${tLabelKanji}の専攻は何ですか`, playRate, ""
     );
 
     bindRecorderEvents(
         aRecordBtn, aStopBtn, aResultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => `${poss}専攻は${selectedMajor}です`, () => `${possKanji}専攻は${selectedMajorKanji}です`, "answer", false, playRate, 0.95, null
+        () => `${poss}専攻は${scriptMode === "kanji" ? selectedMajorKanji : selectedMajor}です`,
+        () => `${possKanji}専攻は${selectedMajorKanji}です`, playRate, ""
     );
 
     container.appendChild(rowDiv);
 }
 
-// ============================================================================
-// Recorder & Verification Logic
-// ============================================================================
+function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
+    let playBtn = resultSpan.querySelector(".play-recording-btn");
+    if (!playBtn) {
+        playBtn = document.createElement("button");
+        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+        playBtn.style.marginLeft = "8px";
+        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+        playBtn.onclick = () => {
+            const recordedAudioUrl = practice2State.audioUrls[rowKey];
+            if (recordedAudioUrl) {
+                setPlayingStateMultiple([playBtn], "Playing...");
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => stopAllPlayback());
+            }
+        };
+        resultSpan.appendChild(playBtn);
+    }
+}
+
 function bindRecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-    getExpectedTextFn, getExpectedKanjiFn, modeType, expectedIsNeg, playRate, modelPlayRate, item
+    getExpectedTextFn, getExpectedKanjiFn, playRate, rowKey
 ) {
     let session = null;
     let lastAudioUrl = null;
@@ -810,19 +860,12 @@ function bindRecorderEvents(
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
         currentSession.finished = true;
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
+        if (currentSession.watchdog !== null) { clearTimeout(currentSession.watchdog); currentSession.watchdog = null; }
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (e) {}
         }
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
+        if (currentSession.stream) { currentSession.stream.getTracks().forEach(track => track.stop()); }
+        if (activeRecognitionSession === currentSession) { activeRecognitionSession = null; }
         if (session === currentSession) {
             session = null;
             recordBtn.disabled = false;
@@ -852,12 +895,10 @@ function bindRecorderEvents(
     recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
         stopAllPlayback();
-
-        if (activeRecognitionSession !== null) return;
+        if (activeRecognitionSession !== null) { releaseSession(activeRecognitionSession); }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
             resultSpan.textContent = "Speech recognition is not supported.";
             resultSpan.style.color = "var(--error-text)";
             return;
@@ -888,8 +929,8 @@ function bindRecorderEvents(
                 currentSession.processed = true;
                 const expectedText = getExpectedTextFn();
                 processResult(
-                    currentSession.accumulatedTranscript, modeType, expectedText, getExpectedKanjiFn,
-                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate, modelPlayRate
+                    currentSession.accumulatedTranscript, expectedText, getExpectedKanjiFn,
+                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate, rowKey
                 );
             }
         };
@@ -908,6 +949,7 @@ function bindRecorderEvents(
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 lastAudioUrl = URL.createObjectURL(audioBlob);
+                if (rowKey) practice2State.audioUrls[rowKey] = lastAudioUrl;
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
                 tryProcessResult();
@@ -924,8 +966,7 @@ function bindRecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
-                const message = event.error === "no-speech" ? "No speech detected." : "Recognition error.";
-                requestStop(currentSession, true, message);
+                requestStop(currentSession, true, "Recognition error.");
             };
 
             currentRecognition.onend = () => {
@@ -963,8 +1004,8 @@ function bindRecorderEvents(
 }
 
 function processResult(
-    rawTranscript, modeType, expectedText, getExpectedKanjiFn,
-    resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate, modelPlayRate
+    rawTranscript, expectedText, getExpectedKanjiFn,
+    resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate, rowKey
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
@@ -976,41 +1017,22 @@ function processResult(
     const expectedHira = convertToHiragana(expectedText);
     const isCorrect = hiraText.includes(expectedHira) || hiraText.length >= 2;
 
-    const appendPlayButton = () => {
-        let playBtn = resultSpan.querySelector(".play-recording-btn");
-        if (!playBtn) {
-            playBtn = document.createElement("button");
-            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-            playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice (100%)</span>';
-            playBtn.onclick = () => {
-                const url = getUrlFn();
-                if (url) {
-                    setPlayingStateMultiple([playBtn], "Playing...");
-                    const audio = new Audio(url);
-                    currentPlayingAudio = audio;
-                    audio.playbackRate = 1.0;
-                    audio.onended = () => stopAllPlayback();
-                    audio.play().catch(e => stopAllPlayback());
-                }
-            };
-            resultSpan.appendChild(playBtn);
-        }
-        return playBtn;
-    };
-
-    let targetPlayBtn = null;
+    const displayedTranscript = scriptMode === "hiragana" ? hiraText : rawTranscript;
     const kanjiTextForSpeech = getExpectedKanjiFn();
 
+    let targetPlayBtn = null;
+
     if (isCorrect) {
-        resultSpan.textContent = hiraText + " ✅ ";
+        resultSpan.textContent = displayedTranscript + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
-        targetPlayBtn = appendPlayButton();
+        if (rowKey) practice2State.savedResults[rowKey] = { html: resultSpan.textContent, color: "var(--text-primary)" };
+        targetPlayBtn = appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
         correctionBox.style.display = "none";
     } else {
-        resultSpan.textContent = hiraText + " ";
+        resultSpan.textContent = displayedTranscript + " ";
         resultSpan.style.color = "var(--error-text)";
-        targetPlayBtn = appendPlayButton();
+        if (rowKey) practice2State.savedResults[rowKey] = { html: resultSpan.textContent, color: "var(--error-text)" };
+        targetPlayBtn = appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
 
@@ -1021,18 +1043,17 @@ function processResult(
         correctionBox.style.display = "block";
     }
 
+    // モデル音〜再生音の間隔を完全になくす（0秒設定）
     if (isAutoPlay) {
-        speakText(kanjiTextForSpeech, modelPlayRate, () => {
+        speakText(kanjiTextForSpeech, playRate, () => {
             stopAllPlayback();
-            if (targetPlayBtn) {
-                const url = getUrlFn();
-                if (url) {
-                    const audio = new Audio(url);
-                    currentPlayingAudio = audio;
-                    audio.playbackRate = 1.0;
-                    audio.onended = () => { currentPlayingAudio = null; };
-                    audio.play().catch(e => {});
-                }
+            const url = getUrlFn();
+            if (url) {
+                const audio = new Audio(url);
+                currentPlayingAudio = audio;
+                audio.playbackRate = 1.0;
+                audio.onended = () => { currentPlayingAudio = null; };
+                audio.play().catch(e => {});
             }
         });
     }
