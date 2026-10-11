@@ -241,7 +241,6 @@ function initExampleListen() {
     }
 }
 
-// イントネーションテストボタンの初期化（4番目の「ですかぁ？」を追加）
 function initPitchTests() {
     const t1 = document.getElementById("testPitch1");
     const t2 = document.getElementById("testPitch2");
@@ -358,10 +357,10 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aListenBtn.disabled = true;
     aListenBtn.style.opacity = "0.4";
 
-    // 👀Text ボタン（モデル文を表示するトリガー）
+    // 👀Text ボタン（ホバー時は Text to show.）
     const showTextBtn = document.createElement("button");
     showTextBtn.className = "example-button custom-tip-wrap";
-    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
     showTextBtn.disabled = true;
     showTextBtn.style.opacity = "0.4";
     showTextBtn.style.marginLeft = "4px";
@@ -370,7 +369,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aPromptLabel.className = "prompt-label";
     aPromptLabel.style.minWidth = "220px";
     aPromptLabel.style.color = "var(--text-secondary)";
-    aPromptLabel.textContent = "(Choose 🙆 or 🙅 first)";
+    aPromptLabel.textContent = ""; // 初期状態では何も表示しない
     let isTextVisible = false;
 
     const aRecordBtn = document.createElement("button");
@@ -388,18 +387,18 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
-    // 👀Text ボタンクリック時の処理
+    // 👀Text / 🕶️Hide 切替処理
     showTextBtn.onclick = () => {
         if (!selectedMode) return;
         isTextVisible = !isTextVisible;
         if (isTextVisible) {
             aPromptLabel.style.color = "var(--text-primary)";
             aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
-            showTextBtn.innerHTML = '🙈Hide<span class="custom-tip-box">Hide model answer text.</span>';
+            showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
         } else {
             aPromptLabel.style.color = "var(--text-secondary)";
-            aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+            aPromptLabel.textContent = "";
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
         }
     };
 
@@ -412,14 +411,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
             noBtn.style.backgroundColor = theme.unselected;
             noBtn.style.opacity = "1";
 
-            aPromptLabel.style.color = "var(--text-secondary)";
-            aPromptLabel.textContent = "(Choose 🙆 or 🙅 first)";
+            aPromptLabel.textContent = "";
 
             aListenBtn.disabled = true;
             aListenBtn.style.opacity = "0.4";
             showTextBtn.disabled = true;
             showTextBtn.style.opacity = "0.4";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
             aRecordBtn.disabled = true;
 
             const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -434,14 +432,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         noBtn.style.backgroundColor = theme.unselected;
         noBtn.style.opacity = "0.55";
 
-        aPromptLabel.style.color = "var(--text-secondary)";
-        aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
+        aPromptLabel.textContent = "";
 
         aListenBtn.disabled = false;
         aListenBtn.style.opacity = "1";
         showTextBtn.disabled = false;
         showTextBtn.style.opacity = "1";
-        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
         aRecordBtn.disabled = false;
 
         const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -457,14 +454,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
             yesBtn.style.backgroundColor = theme.unselected;
             yesBtn.style.opacity = "1";
 
-            aPromptLabel.style.color = "var(--text-secondary)";
-            aPromptLabel.textContent = "(Choose 🙆 or 🙅 first)";
+            aPromptLabel.textContent = "";
 
             aListenBtn.disabled = true;
             aListenBtn.style.opacity = "0.4";
             showTextBtn.disabled = true;
             showTextBtn.style.opacity = "0.4";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
             aRecordBtn.disabled = true;
 
             const tip = aRecordBtn.querySelector('.custom-tip-box');
@@ -479,14 +475,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         yesBtn.style.backgroundColor = theme.unselected;
         yesBtn.style.opacity = "0.55";
 
-        aPromptLabel.style.color = "var(--text-secondary)";
-        aPromptLabel.textContent = "(Text hidden. Click 👀Text to show)";
+        aPromptLabel.textContent = "";
 
         aListenBtn.disabled = false;
         aListenBtn.style.opacity = "1";
         showTextBtn.disabled = false;
         showTextBtn.style.opacity = "1";
-        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Click to show model answer text.</span>';
+        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
         aRecordBtn.disabled = false;
 
         const tip = aRecordBtn.querySelector('.custom-tip-box');
