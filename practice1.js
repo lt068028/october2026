@@ -6,9 +6,9 @@ const taskData = [
     { x: "わたし", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "わたし", y: "せんせい", yRomaji: "sensei", yMeaning: "teacher", isNeg: true },
     { x: "わたし", y: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese", isNeg: false },
-    { x: "わたし", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee", isNeg: true },
+    { x: "わたし", y: "りゅうがくせい", yRomaji: "ryuugakusei", yMeaning: "international student", isNeg: true }, // 4番変更
     { x: "ともだち", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
-    { x: "ともだち", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee", isNeg: true },
+    { x: "ともだち", y: "しゅふ", yRomaji: "shufu", yMeaning: "housewife", isNeg: true }, // 6番変更
     { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
 ];
 
@@ -33,7 +33,9 @@ const customDict = {
     "self-employed": { hira: "じえいぎょう", romaji: "jiei-gyou", meaning: "self-employed" },
     "civil servant": { hira: "こうむいん", romaji: "koumuin", meaning: "civil servant" },
     "nurse": { hira: "かんごし", romaji: "kangoshi", meaning: "nurse" },
-    "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" }
+    "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" },
+    "international student": { hira: "りゅうがくせい", romaji: "ryuugakusei", meaning: "international student" },
+    "housewife": { hira: "しゅふ", romaji: "shufu", meaning: "housewife" }
 };
 
 const task3VocabLists = {
@@ -135,6 +137,7 @@ function convertToHiragana(text) {
         "研究者": "けんきゅうしゃ", "デザイナー": "デザイナー", "店員": "てんいん",
         "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "こうむいん",
         "看護師": "かんごし", "看護婦": "かんごし", "アルバイト": "アルバイト",
+        "留学生": "りゅうがくせい", "主婦": "しゅふ",
         "です": "です", "でした": "でした", "じゃないです": "じゃないです",
         "ではないです": "ではないです", "じゃありません": "じゃありません", "ではありません": "ではありません"
     };
@@ -147,7 +150,7 @@ function convertToHiragana(text) {
 }
 
 function speakText(text, rate = 0.9, onEndCallback) {
-    setupPreferredVoice(); // 読み上げ直前にも確実にボイスを再確認
+    setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
     utterance.rate = rate;
@@ -953,7 +956,6 @@ function bindRecorderEvents(
     });
 }
 
-// 判定ロジック（期待される肯定・否定 `expectedIsNeg` との一致を厳密に検証する修正版）
 function processRecognitionResult(
     rawTranscript, currentX, currentY, expectedIsNeg,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
@@ -979,7 +981,6 @@ function processRecognitionResult(
 
     const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
 
-    // 期待される形式（肯定か否定か）と一致しているかを判定
     const isCorrectType = expectedIsNeg ? isNegative : isAffirmative;
 
     const appendPlayButton = () => {
