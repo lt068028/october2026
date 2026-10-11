@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 1: XはYです
+// Practice 1: XはYです (状態保持・ラベル修正版)
 // ============================================================================
 
 const taskData = [
@@ -38,50 +38,36 @@ const customDict = {
     "home maker": { hira: "しゅふ", kanji: "主婦", romaji: "home maker", meaning: "home maker" }
 };
 
-const task3VocabLists = {
-    genki1: [
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "college student", yHira: "だいがくせい", yKanji: "大学生" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "major", yHira: "せんこう", yKanji: "専攻" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "Korea", yHira: "かんこく", yKanji: "韓国" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "England", yHira: "イギリス", yKanji: "イギリス" }
-    ],
-    minna1: [
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "university", yHira: "だいがく", yKanji: "大学" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "hospital", yHira: "びょういん", yKanji: "病院" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "bank", yHira: "ぎんこう", yKanji: "銀行" },
-        { xEng: "I", xHira: "わたし", xKanji: "私", yEng: "America", yHira: "アメリカ", yKanji: "アメリカ" }
-    ]
-};
-
 let isManualStop = false;
 let hintMode = "hover";
-let scriptMode = "hiragana"; // 標準はHiragana Only
+let scriptMode = "hiragana"; 
 let isAutoPlay = true; 
 let activeRecognitionSession = null;
 
-let preferredVoice = null;
+// プルダウンの選択値や録音データを保持するストア
+const practice1State = {
+    customSelects: {}, // { rowIndex: { x: val, y: val } }
+    audioUrls: {}      // { rowIndex: url }
+};
 
+let preferredVoice = null;
 function setupPreferredVoice() {
     try {
         const voices = speechSynthesis.getVoices();
         if (!voices || voices.length === 0) return;
-
         let selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
         if (!selected) selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.lang && v.lang.includes("ja"));
-        
-        if (selected) {
-            preferredVoice = selected;
-        }
+        if (selected) preferredVoice = selected;
     } catch (e) { console.warn("Voice setup error:", e); }
 }
 
 if (typeof speechSynthesis !== "undefined") {
     setupPreferredVoice();
     if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = () => { setupPreferredVoice(); };
+        speechSynthesis.onvoiceschanged = () => setupPreferredVoice();
     }
 }
 
@@ -130,8 +116,7 @@ function convertToHiragana(text) {
         "研究者": "けんきゅうしゃ", "デザイナー": "デザイナー", "店員": "てんいん",
         "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "こうむいん",
         "看護師": "かんごし", "看護婦": "かんごし", "アルバイト": "アルバイト",
-        "留学生": "りゅうがくせい", "主婦": "しゅふ", "専攻": "せんこう", "韓国": "かんこく",
-        "大学": "だいがく", "病院": "びょういん", "銀行": "ぎんこう",
+        "留学生": "りゅうがくせい", "主婦": "しゅふ",
         "です": "です", "でした": "でした", "じゃないです": "じゃないです",
         "ではないです": "ではないです", "じゃありません": "じゃありません", "ではありません": "ではありません"
     };
@@ -162,7 +147,10 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    renderAll();
+    initExampleListen();
+    initTask1();
+    initTask2();
+    initTask3Container();
     setupFooterGuide();
 });
 
@@ -210,32 +198,20 @@ function updateToggleLabelStyle(labelEl, isActive) {
 
 function initSettingsPanel() {
     const toggleScriptMode = document.getElementById("toggleScriptMode");
-    const labelHiraganaOnly = document.getElementById("labelHiraganaOnly");
-    const labelWithKanji = document.getElementById("labelWithKanji");
+    const labelHiraganaOnly = document.getElementById("labelHiraganaOnly") || document.getElementById("labelHiragana");
+    const labelWithKanji = document.getElementById("labelWithKanji") || document.getElementById("labelKanji");
 
     if (toggleScriptMode) {
         toggleScriptMode.addEventListener("change", (e) => {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
             updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
-            renderAll();
+            initTask1();
+            initTask2();
+            initTask3Container();
         });
         updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
         updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
-    }
-
-    const toggleRecordMode = document.getElementById("toggleRecordMode");
-    const labelAutoRecord = document.getElementById("labelAutoRecord");
-    const labelManualRecord = document.getElementById("labelManualRecord");
-
-    if (toggleRecordMode) {
-        toggleRecordMode.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
-        });
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
     }
 
     const toggleHintMode = document.getElementById("toggleHintMode");
@@ -247,97 +223,40 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-            renderAll();
+            initTask1();
+            initTask2();
+            initTask3Container();
         });
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
     }
+}
 
-    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
-    const labelAutoPlay = document.getElementById("labelAutoPlay");
-    const labelManualPlay = document.getElementById("labelManualPlay");
-
-    if (togglePlaybackMode) {
-        togglePlaybackMode.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+function initExampleListen() {
+    const ex1Btn = document.getElementById("ex1Listen");
+    if (ex1Btn) {
+        ex1Btn.addEventListener("click", () => {
+            setPlayingState(ex1Btn, "Playing...");
+            speakText("私は、学生です。", 0.9, () => stopAllPlayback());
         });
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+    }
+
+    const ex2Btn = document.getElementById("ex2Listen");
+    if (ex2Btn) {
+        ex2Btn.addEventListener("click", () => {
+            setPlayingState(ex2Btn, "Playing...");
+            speakText("私は、先生じゃないです。", 0.9, () => stopAllPlayback());
+        });
     }
 }
 
-function renderAll() {
-    renderExampleSection();
-    renderTask1Section();
-    renderTask2Section();
-    renderTask3Section();
-}
-
-// ============================================================================
-// Render Example Section
-// ============================================================================
-function renderExampleSection() {
-    const container = document.getElementById("exampleSectionContainer");
+// ----------------------------------------------------------------------------
+// Task 1
+// ----------------------------------------------------------------------------
+function initTask1() {
+    const container = document.getElementById("task1List");
     if (!container) return;
     container.innerHTML = "";
-
-    const box = document.createElement("div");
-    box.className = "example-box";
-    
-    const w1 = formatWord("わたし", "私", "watashi", "I");
-    const w2 = formatWord("がくせい", "学生", "gakusei", "student");
-    const w3 = formatWord("せんせい", "先生", "sensei", "teacher");
-
-    box.innerHTML = `
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Affirmative:</strong> 
-            ${w1} ／ ${w2} 
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex1Listen" class="example-button">🔊 きく</button>
-            <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
-        </div>
-        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Negative:</strong> 
-            ${w1} ／ ${w3} 
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex2Listen" class="example-button">🔊 きく</button>
-            <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
-        </div>
-    `;
-    container.appendChild(box);
-
-    document.getElementById("ex1Listen").onclick = () => {
-        setPlayingState(document.getElementById("ex1Listen"), "Playing...");
-        speakText("私は、学生です。", 0.9, () => stopAllPlayback());
-    };
-    document.getElementById("ex2Listen").onclick = () => {
-        setPlayingState(document.getElementById("ex2Listen"), "Playing...");
-        speakText("私は、先生じゃないです。", 0.9, () => stopAllPlayback());
-    };
-}
-
-// ============================================================================
-// Render Task 1 Section
-// ============================================================================
-function renderTask1Section() {
-    const container = document.getElementById("task1Container");
-    if (!container) return;
-    container.innerHTML = "";
-
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 1</span>
-        <span class="info-panel-desc">💡 Read the given words and build sentences following each row's instruction.</span>
-    `;
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "task1List";
-    container.appendChild(listDiv);
 
     taskData.forEach((item, index) => {
         const currentXWord = index < 4 ? "わたし" : "ともだち";
@@ -350,7 +269,7 @@ function renderTask1Section() {
         const isNeg = (index % 2 === 1);
 
         createDrillRow(
-            listDiv,
+            container,
             `${index + 1}.`,
             formattedX,
             formattedY,
@@ -359,63 +278,373 @@ function renderTask1Section() {
             item.y,
             item.yKanji,
             isNeg,
-            0.9
+            0.9,
+            `task1_${index}`
         );
     });
 }
 
-// ============================================================================
-// Render Task 2 Section
-// ============================================================================
-function renderTask2Section() {
-    const container = document.getElementById("task2Container");
+// ----------------------------------------------------------------------------
+// Task 2 (プルダウン選択値の状態保持対応)
+// ----------------------------------------------------------------------------
+function initTask2() {
+    const container = document.getElementById("task2List");
     if (!container) return;
     container.innerHTML = "";
 
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task2";
-    infoPanel.style.marginTop = "30px";
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 2</span>
-        <span class="info-panel-desc">💡 Choose words from the menus to create your own sentences.</span>
+    const optionsXHtml = `
+        <option value="" disabled selected>-- Choose X --</option>
+        <option value="ともだち" data-eng="friend" data-kanji="友達">Friend</option>
+        <option value="かぞく" data-eng="family" data-kanji="家族">Family</option>
+        <option value="どうりょう" data-eng="colleague" data-kanji="同僚">Colleague</option>
+        <option value="じょうし" data-eng="boss" data-kanji="上司">Boss</option>
+        <option value="パートナー" data-eng="partner" data-kanji="パートナー">Partner</option>
+        <option value="こいびと" data-eng="Bf/Gf" data-kanji="恋人">Bf/Gf</option>
+        <option value="しんゆう" data-eng="best friend" data-kanji="親友">Best friend</option>
+        <option value="こども" data-eng="child" data-kanji="子供">Child</option>
+        <option value="まご" data-eng="grandchild" data-kanji="孫">Grandchild</option>
+        <option value="きょうだい" data-eng="sibling" data-kanji="兄弟">Sibling</option>
     `;
-    container.appendChild(infoPanel);
 
-    const listDiv = document.createElement("div");
-    listDiv.id = "task2List";
-    container.appendChild(listDiv);
+    const optionsYHtml = `
+        <option value="" disabled selected>-- Choose Y --</option>
+        <option value="がいこくじん" data-eng="foreigner" data-kanji="外国人">Foreigner</option>
+        <option value="いしゃ" data-eng="doctor" data-kanji="医者">Doctor</option>
+        <option value="エンジニア" data-eng="engineer" data-kanji="エンジニア">Engineer</option>
+        <option value="けんきゅうしゃ" data-eng="researcher" data-kanji="研究者">Researcher</option>
+        <option value="デザイナー" data-eng="designer" data-kanji="デザイナー">Designer</option>
+        <option value="てんいん" data-eng="store staff" data-kanji="店員">Store staff</option>
+        <option value="じえいぎょう" data-eng="self-employed" data-kanji="自営業">Self-employed</option>
+        <option value="こうむいん" data-eng="civil servant" data-kanji="こうむいん">Civil servant</option>
+        <option value="かんごし" data-eng="nurse" data-kanji="看護師">Nurse</option>
+        <option value="アルバイト" data-eng="part-time worker" data-kanji="アルバイト">Part-time worker</option>
+    `;
 
-    initTask2Rows(listDiv);
+    for (let i = 1; i <= 3; i++) {
+        const rowKey = `task2_${i}`;
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "drill-row";
+
+        const topRow = document.createElement("div");
+        topRow.className = "top-row";
+
+        const listenBtn = document.createElement("button");
+        listenBtn.className = "example-button custom-tip-wrap";
+        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+        listenBtn.disabled = true;
+
+        const indexSpan = document.createElement("span");
+        indexSpan.textContent = `${taskData.length + i}.`;
+
+        const selectX = document.createElement("select");
+        selectX.className = "custom-select";
+        selectX.innerHTML = optionsXHtml;
+
+        const previewX = document.createElement("span");
+        previewX.className = "prompt-label translation-preview";
+
+        const labelHa = document.createElement("span");
+        labelHa.textContent = "は";
+
+        const selectY = document.createElement("select");
+        selectY.className = "custom-select";
+        selectY.innerHTML = optionsYHtml;
+
+        const previewY = document.createElement("span");
+        previewY.className = "prompt-label translation-preview";
+
+        // 保存された選択値を復元
+        if (practice1State.customSelects[rowKey]) {
+            if (practice1State.customSelects[rowKey].x) selectX.value = practice1State.customSelects[rowKey].x;
+            if (practice1State.customSelects[rowKey].y) selectY.value = practice1State.customSelects[rowKey].y;
+        }
+
+        const isCustomNeg = (i % 2 === 0);
+        const typeLabel = document.createElement("span");
+        typeLabel.style.fontSize = "12px";
+        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.style.marginLeft = "4px";
+        typeLabel.style.marginRight = "8px";
+        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
+
+        const recordBtn = document.createElement("button");
+        recordBtn.className = "example-button custom-tip-wrap";
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.disabled = true;
+
+        const stopBtn = document.createElement("button");
+        stopBtn.className = "example-button custom-tip-wrap";
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.disabled = true;
+
+        const resultSpan = document.createElement("span");
+        resultSpan.className = "result-text";
+        resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
+        resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(indexSpan);
+        topRow.appendChild(selectX);
+        topRow.appendChild(previewX);
+        topRow.appendChild(labelHa);
+        topRow.appendChild(selectY);
+        topRow.appendChild(previewY);
+        topRow.appendChild(typeLabel);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+
+        if (practice1State.audioUrls[rowKey]) {
+            appendPersistedPlayButton(resultSpan, rowKey, 0.9);
+        }
+
+        const correctionBox = document.createElement("div");
+        correctionBox.className = "correction-box";
+        const corrListenBtn = document.createElement("button");
+        corrListenBtn.className = "example-button";
+        corrListenBtn.innerHTML = "🔊 きく";
+        corrListenBtn.style.marginRight = "8px";
+        const corrTextSpan = document.createElement("span");
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
+
+        const updateDisplay = () => {
+            const selectedOptX = selectX.options[selectX.selectedIndex];
+            const selectedOptY = selectY.options[selectY.selectedIndex];
+            const valX = selectX.value;
+            const valY = selectY.value;
+
+            // 状態を保存
+            if (!practice1State.customSelects[rowKey]) practice1State.customSelects[rowKey] = {};
+            practice1State.customSelects[rowKey].x = valX;
+            practice1State.customSelects[rowKey].y = valY;
+
+            if (valX && selectedOptX) {
+                const engKey = selectedOptX.getAttribute("data-eng");
+                const kanjiVal = selectedOptX.getAttribute("data-kanji");
+                previewX.innerHTML = formatCustomWord(valX, kanjiVal, engKey);
+            } else { previewX.innerHTML = ""; }
+
+            if (valY && selectedOptY) {
+                const engKey = selectedOptY.getAttribute("data-eng");
+                const kanjiVal = selectedOptY.getAttribute("data-kanji");
+                previewY.innerHTML = formatCustomWord(valY, kanjiVal, engKey);
+            } else { previewY.innerHTML = ""; }
+
+            labelHa.style.display = valX ? "none" : "inline";
+
+            if (valX && valY) {
+                recordBtn.disabled = false;
+                listenBtn.disabled = false;
+                listenBtn.onclick = () => {
+                    setPlayingState(listenBtn, "Playing...");
+                    const kanjiX = selectedOptX.getAttribute("data-kanji") || valX;
+                    const kanjiY = selectedOptY.getAttribute("data-kanji") || valY;
+                    const textToSpeak = isCustomNeg ? `${kanjiX}は、${kanjiY}じゃないです。` : `${kanjiX}は、${kanjiY}です。`;
+                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
+                };
+            } else {
+                recordBtn.disabled = true;
+                listenBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+        };
+
+        selectX.addEventListener("change", updateDisplay);
+        selectY.addEventListener("change", updateDisplay);
+        updateDisplay(); // 初期ロード時復元用
+
+        bindRecorderEvents(
+            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+            () => selectX.value, () => selectY.value,
+            () => {
+                const optX = selectX.options[selectX.selectedIndex];
+                const optY = selectY.options[selectY.selectedIndex];
+                const kX = optX ? optX.getAttribute("data-kanji") : selectX.value;
+                const kY = optY ? optY.getAttribute("data-kanji") : selectY.value;
+                return isCustomNeg ? `${kX}は${kY}じゃないです` : `${kX}は${kY}です`;
+            },
+            isCustomNeg, 0.9, rowKey
+        );
+
+        container.appendChild(rowDiv);
+    }
 }
 
-// ============================================================================
-// Render Task 3 Section
-// ============================================================================
-function renderTask3Section() {
-    const container = document.getElementById("task3Container");
+// ----------------------------------------------------------------------------
+// Task 3
+// ----------------------------------------------------------------------------
+function initTask3Container() {
+    const container = document.getElementById("task3List");
+    const useHintsBtn = document.getElementById("useHintsBtn");
+    const vocabSelect = document.getElementById("vocabSourceSelect");
     if (!container) return;
+
+    let rowCount = 0;
+
+    const englishToMap = {
+        "i": { hira: "わたし", kanji: "私" },
+        "college student": { hira: "だいがくせい", kanji: "大学生" },
+        "major": { hira: "せんこう", kanji: "専攻" }, 
+        "korea": { hira: "かんこく", kanji: "韓国" },
+        "england": { hira: "イギリス", kanji: "イギリス" },
+        "university": { hira: "だいがく", kanji: "大学" }, 
+        "hospital": { hira: "びょういん", kanji: "病院" },
+        "bank": { hira: "ぎんこう", kanji: "銀行" },
+        "america": { hira: "アメリカ", kanji: "アメリカ" }
+    };
+
+    function resolveData(val) {
+        const clean = val.trim().toLowerCase();
+        return englishToMap[clean] || { hira: val, kanji: val };
+    }
+
+    function addTask3Row() {
+        if (rowCount >= 12) return;
+        rowCount++;
+        const rowKey = `task3_${rowCount}`;
+        const currentGlobalIndex = taskData.length + 3 + rowCount;
+        const isCustomNeg = (rowCount % 2 === 0);
+
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "drill-row";
+
+        const topRow = document.createElement("div");
+        topRow.className = "top-row";
+
+        const listenBtn = document.createElement("button");
+        listenBtn.className = "example-button custom-tip-wrap";
+        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
+        listenBtn.disabled = true;
+
+        const indexSpan = document.createElement("span");
+        indexSpan.textContent = `${currentGlobalIndex}.`;
+
+        const inputX = document.createElement("input");
+        inputX.type = "text";
+        inputX.className = "custom-input task3-input-x";
+        inputX.placeholder = "X";
+        inputX.style.width = "130px";
+
+        const labelHa = document.createElement("span");
+        labelHa.textContent = "は";
+
+        const inputY = document.createElement("input");
+        inputY.type = "text";
+        inputY.className = "custom-input task3-input-y";
+        inputY.placeholder = "Y";
+        inputY.style.width = "140px";
+
+        if (practice1State.customSelects[rowKey]) {
+            if (practice1State.customSelects[rowKey].x) inputX.value = practice1State.customSelects[rowKey].x;
+            if (practice1State.customSelects[rowKey].y) inputY.value = practice1State.customSelects[rowKey].y;
+        }
+
+        const typeLabel = document.createElement("span");
+        typeLabel.style.fontSize = "12px";
+        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.style.marginLeft = "4px";
+        typeLabel.style.marginRight = "8px";
+        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
+
+        const recordBtn = document.createElement("button");
+        recordBtn.className = "example-button custom-tip-wrap";
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.disabled = true;
+
+        const stopBtn = document.createElement("button");
+        stopBtn.className = "example-button custom-tip-wrap";
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.disabled = true;
+
+        const resultSpan = document.createElement("span");
+        resultSpan.className = "result-text";
+        resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
+        resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(indexSpan);
+        topRow.appendChild(inputX);
+        topRow.appendChild(labelHa);
+        topRow.appendChild(inputY);
+        topRow.appendChild(typeLabel);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+
+        if (practice1State.audioUrls[rowKey]) {
+            appendPersistedPlayButton(resultSpan, rowKey, 0.9);
+        }
+
+        const correctionBox = document.createElement("div");
+        correctionBox.className = "correction-box";
+        const corrListenBtn = document.createElement("button");
+        corrListenBtn.className = "example-button";
+        corrListenBtn.innerHTML = "🔊 きく";
+        corrListenBtn.style.marginRight = "8px";
+        const corrTextSpan = document.createElement("span");
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
+
+        const updateDisplay = () => {
+            const valX = inputX.value.trim();
+            const valY = inputY.value.trim();
+
+            if (!practice1State.customSelects[rowKey]) practice1State.customSelects[rowKey] = {};
+            practice1State.customSelects[rowKey].x = inputX.value;
+            practice1State.customSelects[rowKey].y = inputY.value;
+
+            if (valX && valY) {
+                recordBtn.disabled = false;
+                listenBtn.disabled = false;
+                listenBtn.onclick = () => {
+                    setPlayingState(listenBtn, "Playing...");
+                    const resX = resolveData(valX);
+                    const resY = resolveData(valY);
+                    const textToSpeak = isCustomNeg ? `${resX.kanji}は、${resY.kanji}じゃないです。` : `${resX.kanji}は、${resY.kanji}です。`;
+                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
+                };
+            } else {
+                recordBtn.disabled = true;
+                listenBtn.disabled = true;
+                stopBtn.disabled = true;
+            }
+        };
+
+        inputX.addEventListener("input", updateDisplay);
+        inputY.addEventListener("input", updateDisplay);
+        updateDisplay();
+
+        bindRecorderEvents(
+            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+            () => resolveData(inputX.value).hira, () => resolveData(inputY.value).hira,
+            () => {
+                const rX = resolveData(inputX.value);
+                const rY = resolveData(inputY.value);
+                return isCustomNeg ? `${rX.kanji}は${rY.kanji}じゃないです` : `${rX.kanji}は${rY.kanji}です`;
+            },
+            isCustomNeg, 0.9, rowKey
+        );
+
+        container.appendChild(rowDiv);
+    }
+
     container.innerHTML = "";
-
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task3";
-    infoPanel.style.marginTop = "30px";
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Extra Challenge</span>
-        <div class="info-panel-desc" style="margin-top: 4px;">💡 Build and practice your own sentences freely.</div>
-    `;
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "task3List";
-    container.appendChild(listDiv);
-
-    initTask3ContainerRows(listDiv);
+    for (let k = 0; k < 3; k++) {
+        addTask3Row();
+    }
 }
 
 // ----------------------------------------------------------------------------
-// Task 1 Row Creation
+// Common Drill Row Creation & Persistence
 // ----------------------------------------------------------------------------
-function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetKanjiX, targetY, targetKanjiY, isNeg, playRate) {
+function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetKanjiX, targetY, targetKanjiY, isNeg, playRate, rowKey) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
@@ -458,8 +687,8 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
-    resultSpan.textContent = "(Not recorded yet)";
-    resultSpan.style.color = "var(--text-secondary)";
+    resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
+    resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
 
     topRow.appendChild(listenBtn);
     topRow.appendChild(indexSpan);
@@ -468,6 +697,10 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     topRow.appendChild(recordBtn);
     topRow.appendChild(stopBtn);
     topRow.appendChild(resultSpan);
+
+    if (practice1State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(resultSpan, rowKey, playRate);
+    }
 
     const correctionBox = document.createElement("div");
     correctionBox.className = "correction-box";
@@ -486,343 +719,38 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
         recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
         () => targetX, () => targetY,
         () => isNeg ? `${targetKanjiX}は${targetKanjiY}じゃないです` : `${targetKanjiX}は${targetKanjiY}です`,
-        isNeg, playRate
+        isNeg, playRate, rowKey
     );
 
     container.appendChild(rowDiv);
 }
 
-// ----------------------------------------------------------------------------
-// Task 2 Rows Initialization
-// ----------------------------------------------------------------------------
-function initTask2Rows(container) {
-    const optionsXHtml = `
-        <option value="" disabled selected>-- Choose X --</option>
-        <option value="ともだち" data-eng="friend" data-kanji="友達">Friend</option>
-        <option value="かぞく" data-eng="family" data-kanji="家族">Family</option>
-        <option value="どうりょう" data-eng="colleague" data-kanji="同僚">Colleague</option>
-        <option value="じょうし" data-eng="boss" data-kanji="上司">Boss</option>
-        <option value="パートナー" data-eng="partner" data-kanji="パートナー">Partner</option>
-        <option value="こいびと" data-eng="Bf/Gf" data-kanji="恋人">Bf/Gf</option>
-        <option value="しんゆう" data-eng="best friend" data-kanji="親友">Best friend</option>
-        <option value="こども" data-eng="child" data-kanji="子供">Child</option>
-        <option value="まご" data-eng="grandchild" data-kanji="孫">Grandchild</option>
-        <option value="きょうだい" data-eng="sibling" data-kanji="兄弟">Sibling</option>
-    `;
-
-    const optionsYHtml = `
-        <option value="" disabled selected>-- Choose Y --</option>
-        <option value="がいこくじん" data-eng="foreigner" data-kanji="外国人">Foreigner</option>
-        <option value="いしゃ" data-eng="doctor" data-kanji="医者">Doctor</option>
-        <option value="エンジニア" data-eng="engineer" data-kanji="エンジニア">Engineer</option>
-        <option value="けんきゅうしゃ" data-eng="researcher" data-kanji="研究者">Researcher</option>
-        <option value="デザイナー" data-eng="designer" data-kanji="デザイナー">Designer</option>
-        <option value="てんいん" data-eng="store staff" data-kanji="店員">Store staff</option>
-        <option value="じえいぎょう" data-eng="self-employed" data-kanji="自営業">Self-employed</option>
-        <option value="こうむいん" data-eng="civil servant" data-kanji="こうむいん">Civil servant</option>
-        <option value="かんごし" data-eng="nurse" data-kanji="看護師">Nurse</option>
-        <option value="アルバイト" data-eng="part-time worker" data-kanji="アルバイト">Part-time worker</option>
-    `;
-
-    for (let i = 1; i <= 3; i++) {
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "drill-row";
-        rowDiv.setAttribute("data-custom-index", i);
-
-        const topRow = document.createElement("div");
-        topRow.className = "top-row";
-
-        const listenBtn = document.createElement("button");
-        listenBtn.className = "example-button custom-tip-wrap";
-        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-        listenBtn.disabled = true;
-
-        const indexSpan = document.createElement("span");
-        indexSpan.textContent = `${taskData.length + i}.`;
-
-        const selectX = document.createElement("select");
-        selectX.id = `customX_${i}`;
-        selectX.className = "custom-select";
-        selectX.innerHTML = optionsXHtml;
-
-        const previewX = document.createElement("span");
-        previewX.id = `previewX_${i}`;
-        previewX.className = "prompt-label translation-preview";
-
-        const labelHa = document.createElement("span");
-        labelHa.textContent = "は";
-
-        const selectY = document.createElement("select");
-        selectY.id = `customY_${i}`;
-        selectY.className = "custom-select";
-        selectY.innerHTML = optionsYHtml;
-
-        const previewY = document.createElement("span");
-        previewY.id = `previewY_${i}`;
-        previewY.className = "prompt-label translation-preview";
-
-        const isCustomNeg = (i % 2 === 0);
-        const typeLabel = document.createElement("span");
-        typeLabel.style.fontSize = "12px";
-        typeLabel.style.color = "var(--text-secondary)";
-        typeLabel.style.marginLeft = "4px";
-        typeLabel.style.marginRight = "8px";
-        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
-
-        const recordBtn = document.createElement("button");
-        recordBtn.className = "example-button custom-tip-wrap";
-        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
-        recordBtn.disabled = true;
-
-        const stopBtn = document.createElement("button");
-        stopBtn.className = "example-button custom-tip-wrap";
-        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-        stopBtn.disabled = true;
-
-        const resultSpan = document.createElement("span");
-        resultSpan.className = "result-text";
-        resultSpan.textContent = "(Not recorded yet)";
-        resultSpan.style.color = "var(--text-secondary)";
-
-        topRow.appendChild(listenBtn);
-        topRow.appendChild(indexSpan);
-        topRow.appendChild(selectX);
-        topRow.appendChild(previewX);
-        topRow.appendChild(labelHa);
-        topRow.appendChild(selectY);
-        topRow.appendChild(previewY);
-        topRow.appendChild(typeLabel);
-        topRow.appendChild(recordBtn);
-        topRow.appendChild(stopBtn);
-        topRow.appendChild(resultSpan);
-
-        const correctionBox = document.createElement("div");
-        correctionBox.className = "correction-box";
-        const corrListenBtn = document.createElement("button");
-        corrListenBtn.className = "example-button";
-        corrListenBtn.innerHTML = "🔊 きく";
-        corrListenBtn.style.marginRight = "8px";
-        const corrTextSpan = document.createElement("span");
-        correctionBox.appendChild(corrListenBtn);
-        correctionBox.appendChild(corrTextSpan);
-
-        rowDiv.appendChild(topRow);
-        rowDiv.appendChild(correctionBox);
-
-        const updateDisplay = () => {
-            const selectedOptX = selectX.options[selectX.selectedIndex];
-            const selectedOptY = selectY.options[selectY.selectedIndex];
-            const valX = selectX.value;
-            const valY = selectY.value;
-
-            if (valX && selectedOptX) {
-                const engKey = selectedOptX.getAttribute("data-eng");
-                const kanjiVal = selectedOptX.getAttribute("data-kanji");
-                previewX.innerHTML = formatCustomWord(valX, kanjiVal, engKey);
-            } else { previewX.innerHTML = ""; }
-
-            if (valY && selectedOptY) {
-                const engKey = selectedOptY.getAttribute("data-eng");
-                const kanjiVal = selectedOptY.getAttribute("data-kanji");
-                previewY.innerHTML = formatCustomWord(valY, kanjiVal, engKey);
-            } else { previewY.innerHTML = ""; }
-
-            labelHa.style.display = valX ? "none" : "inline";
-
-            if (valX && valY) {
-                recordBtn.disabled = false;
-                listenBtn.disabled = false;
-                listenBtn.onclick = () => {
-                    setPlayingState(listenBtn, "Playing...");
-                    const kanjiX = selectedOptX.getAttribute("data-kanji") || valX;
-                    const kanjiY = selectedOptY.getAttribute("data-kanji") || valY;
-                    const textToSpeak = isCustomNeg ? `${kanjiX}は、${kanjiY}じゃないです。` : `${kanjiX}は、${kanjiY}です。`;
-                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
-                };
-            } else {
-                recordBtn.disabled = true;
-                listenBtn.disabled = true;
-                stopBtn.disabled = true;
+function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
+    let playBtn = resultSpan.querySelector(".play-recording-btn");
+    if (!playBtn) {
+        playBtn = document.createElement("button");
+        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+        playBtn.style.marginLeft = "8px";
+        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+        playBtn.onclick = () => {
+            const recordedAudioUrl = practice1State.audioUrls[rowKey];
+            if (recordedAudioUrl) {
+                setPlayingState(playBtn, "Playing...");
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => stopAllPlayback());
             }
         };
-
-        selectX.addEventListener("change", updateDisplay);
-        selectY.addEventListener("change", updateDisplay);
-
-        bindRecorderEvents(
-            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-            () => selectX.value, () => selectY.value,
-            () => {
-                const optX = selectX.options[selectX.selectedIndex];
-                const optY = selectY.options[selectY.selectedIndex];
-                const kX = optX ? optX.getAttribute("data-kanji") : selectX.value;
-                const kY = optY ? optY.getAttribute("data-kanji") : selectY.value;
-                return isCustomNeg ? `${kX}は${kY}じゃないです` : `${kX}は${kY}です`;
-            },
-            isCustomNeg, 0.9
-        );
-
-        container.appendChild(rowDiv);
+        resultSpan.appendChild(playBtn);
     }
 }
 
-// ----------------------------------------------------------------------------
-// Task 3 Rows Initialization
-// ----------------------------------------------------------------------------
-function initTask3ContainerRows(container) {
-    let rowCount = 0;
-
-    const englishToMap = {
-        "i": { hira: "わたし", kanji: "私" },
-        "college student": { hira: "だいがくせい", kanji: "大学生" },
-        "major": { hira: "せんこう", kanji: "専攻" }, 
-        "korea": { hira: "かんこく", kanji: "韓国" },
-        "england": { hira: "イギリス", kanji: "イギリス" },
-        "university": { hira: "だいがく", kanji: "大学" }, 
-        "hospital": { hira: "びょういん", kanji: "病院" },
-        "bank": { hira: "ぎんこう", kanji: "銀行" },
-        "america": { hira: "アメリカ", kanji: "アメリカ" }
-    };
-
-    function resolveData(val) {
-        const clean = val.trim().toLowerCase();
-        return englishToMap[clean] || { hira: val, kanji: val };
-    }
-
-    function addTask3Row() {
-        if (rowCount >= 12) return;
-        rowCount++;
-        const currentGlobalIndex = taskData.length + 3 + rowCount;
-        const isCustomNeg = (rowCount % 2 === 0);
-
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "drill-row";
-        rowDiv.setAttribute("data-task3-row", rowCount);
-
-        const topRow = document.createElement("div");
-        topRow.className = "top-row";
-
-        const listenBtn = document.createElement("button");
-        listenBtn.className = "example-button custom-tip-wrap";
-        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-        listenBtn.disabled = true;
-
-        const indexSpan = document.createElement("span");
-        indexSpan.textContent = `${currentGlobalIndex}.`;
-
-        const inputX = document.createElement("input");
-        inputX.type = "text";
-        inputX.className = "custom-input task3-input-x";
-        inputX.placeholder = "X";
-        inputX.style.width = "130px";
-
-        const labelHa = document.createElement("span");
-        labelHa.textContent = "は";
-
-        const inputY = document.createElement("input");
-        inputY.type = "text";
-        inputY.className = "custom-input task3-input-y";
-        inputY.placeholder = "Y";
-        inputY.style.width = "140px";
-
-        const typeLabel = document.createElement("span");
-        typeLabel.style.fontSize = "12px";
-        typeLabel.style.color = "var(--text-secondary)";
-        typeLabel.style.marginLeft = "4px";
-        typeLabel.style.marginRight = "8px";
-        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
-
-        const recordBtn = document.createElement("button");
-        recordBtn.className = "example-button custom-tip-wrap";
-        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
-        recordBtn.disabled = true;
-
-        const stopBtn = document.createElement("button");
-        stopBtn.className = "example-button custom-tip-wrap";
-        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-        stopBtn.disabled = true;
-
-        const resultSpan = document.createElement("span");
-        resultSpan.className = "result-text";
-        resultSpan.textContent = "(Not recorded yet)";
-        resultSpan.style.color = "var(--text-secondary)";
-
-        topRow.appendChild(listenBtn);
-        topRow.appendChild(indexSpan);
-        topRow.appendChild(inputX);
-        topRow.appendChild(labelHa);
-        topRow.appendChild(inputY);
-        topRow.appendChild(typeLabel);
-        topRow.appendChild(recordBtn);
-        topRow.appendChild(stopBtn);
-        topRow.appendChild(resultSpan);
-
-        const correctionBox = document.createElement("div");
-        correctionBox.className = "correction-box";
-        const corrListenBtn = document.createElement("button");
-        corrListenBtn.className = "example-button";
-        corrListenBtn.innerHTML = "🔊 きく";
-        corrListenBtn.style.marginRight = "8px";
-        const corrTextSpan = document.createElement("span");
-        correctionBox.appendChild(corrListenBtn);
-        correctionBox.appendChild(corrTextSpan);
-
-        rowDiv.appendChild(topRow);
-        rowDiv.appendChild(correctionBox);
-
-        const updateDisplay = () => {
-            const valX = inputX.value.trim();
-            const valY = inputY.value.trim();
-
-            if (valX && valY) {
-                recordBtn.disabled = false;
-                listenBtn.disabled = false;
-                listenBtn.onclick = () => {
-                    setPlayingState(listenBtn, "Playing...");
-                    const resX = resolveData(valX);
-                    const resY = resolveData(valY);
-                    const textToSpeak = isCustomNeg ? `${resX.kanji}は、${resY.kanji}じゃないです。` : `${resX.kanji}は、${resY.kanji}です。`;
-                    speakText(textToSpeak, 0.9, () => stopAllPlayback());
-                };
-            } else {
-                recordBtn.disabled = true;
-                listenBtn.disabled = true;
-                stopBtn.disabled = true;
-            }
-        };
-
-        inputX.addEventListener("input", updateDisplay);
-        inputY.addEventListener("input", updateDisplay);
-
-        bindRecorderEvents(
-            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-            () => resolveData(inputX.value).hira, () => resolveData(inputY.value).hira,
-            () => {
-                const rX = resolveData(inputX.value);
-                const rY = resolveData(inputY.value);
-                return isCustomNeg ? `${rX.kanji}は${rY.kanji}じゃないです` : `${rX.kanji}は${rY.kanji}です`;
-            },
-            isCustomNeg, 0.9
-        );
-
-        container.appendChild(rowDiv);
-    }
-
-    container.innerHTML = "";
-    for (let k = 0; k < 3; k++) {
-        addTask3Row();
-    }
-}
-
-// ============================================================================
-// Recorder & Verification Logic
-// ============================================================================
 function bindRecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-    getXFn, getYFn, getExpectedKanjiFn, expectedIsNeg = false, playRate = 0.9
+    getXFn, getYFn, getExpectedKanjiFn, expectedIsNeg = false, playRate = 0.9, rowKey = ""
 ) {
     let session = null;
-    let lastAudioUrl = null;
 
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
@@ -906,8 +834,6 @@ function bindRecorderEvents(
             return;
         }
 
-        if (lastAudioUrl) { URL.revokeObjectURL(lastAudioUrl); lastAudioUrl = null; }
-
         const currentSession = {
             finished: false, stopRequested: false, errorMessage: "", recognition: null,
             watchdog: null, mediaRecorder: null, audioChunks: [], stream: stream,
@@ -923,7 +849,7 @@ function bindRecorderEvents(
                 currentSession.processed = true;
                 processRecognitionResult(
                     currentSession.accumulatedTranscript, currentX, currentY, getExpectedKanjiFn, expectedIsNeg,
-                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
+                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowKey
                 );
             }
         };
@@ -942,7 +868,8 @@ function bindRecorderEvents(
 
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
-                lastAudioUrl = URL.createObjectURL(audioBlob);
+                const audioUrl = URL.createObjectURL(audioBlob);
+                if (rowKey) practice1State.audioUrls[rowKey] = audioUrl; // 永続保持
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
                 tryProcessResult();
@@ -959,18 +886,7 @@ function bindRecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
-                
-                if (event.error === "network" || event.error === "service-not-allowed") {
-                    alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
-                }
-
-                const message =
-                    event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
-                    event.error === "no-speech" ? "No speech detected. Please try again." :
-                    event.error === "audio-capture" ? "Microphone unavailable." :
-                    event.error === "network" ? "Speech recognition network error." :
-                    event.error === "aborted" ? "Recording stopped." :
-                    "Speech recognition error. Please try again.";
+                const message = event.error === "no-speech" ? "No speech detected. Please try again." : "Speech recognition error.";
                 requestStop(currentSession, true, message);
             };
 
@@ -995,9 +911,7 @@ function bindRecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
         } catch (err) {
-            console.error("Speech recognition start error:", err);
-            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
-            requestStop(currentSession, true, "Could not start recording. Please try again.");
+            requestStop(currentSession, true, "Could not start recording.");
         }
     });
 
@@ -1013,7 +927,7 @@ function bindRecorderEvents(
 
 function processRecognitionResult(
     rawTranscript, currentX, currentY, getExpectedKanjiFn, expectedIsNeg,
-    resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
+    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowKey
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
         resultSpan.textContent = rawTranscript + " (Too short)";
@@ -1039,102 +953,38 @@ function processRecognitionResult(
     const isCorrectType = expectedIsNeg ? isNegative : isAffirmative;
     const kanjiTextForSpeech = getExpectedKanjiFn();
 
-    const appendPlayButton = () => {
-        let playBtn = resultSpan.querySelector(".play-recording-btn");
-        if (!playBtn) {
-            playBtn = document.createElement("button");
-            playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-            playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
-
-            playBtn.onclick = () => {
-                const recordedAudioUrl = getUrlFn();
-                if (recordedAudioUrl) {
-                    setPlayingState(playBtn, "Playing...");
-                    const audio = new Audio(recordedAudioUrl);
-                    currentPlayingAudio = audio;
-                    audio.onended = () => stopAllPlayback();
-                    audio.play().catch(e => {
-                        console.warn("Playback failed", e);
-                        stopAllPlayback();
-                    });
-                }
-            };
-            resultSpan.appendChild(playBtn);
-        }
-        return playBtn;
-    };
-
     let targetPlayBtn = null;
 
     if (isCorrectType) {
         resultSpan.textContent = hiraText + " ✅ ";
         resultSpan.style.color = "var(--text-primary)";
-        targetPlayBtn = appendPlayButton();
+        if (rowKey) appendPersistedPlayButton(resultSpan, rowKey, playRate);
         correctionBox.style.display = "none";
     } else {
-        const hasCorrectY = hiraText.includes(hiraY);
-        if (!hasCorrectY) {
-            let highlightedText = hiraText.replace(
-                new RegExp(`(${hiraX}は)(.*?)((?:です|じゃないです|ではないです|じゃありません|ではありません))`, "g"),
-                '$1<span style="color: var(--accent-color);">$2</span>$3'
-            );
-            resultSpan.innerHTML = highlightedText + " ";
-            resultSpan.style.color = "var(--text-primary)";
-            targetPlayBtn = appendPlayButton();
-            corrTextSpan.textContent = "Wrong word used.";
-            corrListenBtn.style.display = "none";
-        } else {
-            resultSpan.textContent = hiraText + " ";
-            resultSpan.style.color = "var(--error-text)";
-            targetPlayBtn = appendPlayButton();
-            corrTextSpan.textContent = "Structure error, try it again";
-            corrListenBtn.style.display = "inline-block";
+        resultSpan.textContent = hiraText + " ";
+        resultSpan.style.color = "var(--error-text)";
+        if (rowKey) appendPersistedPlayButton(resultSpan, rowKey, playRate);
+        corrTextSpan.textContent = "Structure error, try it again";
+        corrListenBtn.style.display = "inline-block";
 
-            corrListenBtn.onclick = () => {
-                setPlayingState(corrListenBtn, "Playing...");
-                speakText(kanjiTextForSpeech, playRate, () => stopAllPlayback());
-            };
-        }
+        corrListenBtn.onclick = () => {
+            setPlayingState(corrListenBtn, "Playing...");
+            speakText(kanjiTextForSpeech, playRate, () => stopAllPlayback());
+        };
         correctionBox.style.display = "block";
     }
 
-    const runAutoPlaySequence = (btn) => {
-        if (!isAutoPlay) return;
-
-        const recordedAudioUrl = getUrlFn();
-        if (!recordedAudioUrl || !btn) return;
-
-        setPlayingState(btn, "Playing...");
-
-        const utterance = new SpeechSynthesisUtterance(kanjiTextForSpeech);
-        utterance.lang = "ja-JP";
-        utterance.rate = playRate;
-
-        if (preferredVoice) utterance.voice = preferredVoice;
-
-        currentUtteranceRef = utterance;
-
-        utterance.onend = () => {
-            currentUtteranceRef = null;
-            currentPlayTimeoutId = setTimeout(() => {
+    if (isAutoPlay && rowKey) {
+        const recordedAudioUrl = practice1State.audioUrls[rowKey];
+        if (recordedAudioUrl) {
+            speakText(kanjiTextForSpeech, playRate, () => {
+                stopAllPlayback();
                 const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
                 audio.playbackRate = 1.0;
-                audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => {
-                    console.warn("Auto playback failed", e);
-                    stopAllPlayback();
-                });
-            }, 100);
-        };
-
-        utterance.onerror = () => stopAllPlayback();
-
-        currentPlayTimeoutId = setTimeout(() => {
-            speechSynthesis.speak(utterance);
-        }, 500);
-    };
-
-    runAutoPlaySequence(targetPlayBtn);
+                audio.onended = () => { currentPlayingAudio = null; };
+                audio.play().catch(e => {});
+            });
+        }
+    }
 }
