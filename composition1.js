@@ -119,12 +119,11 @@ function speakText(text, rate = 0.9, onEndCallback) {
 }
 
 // ============================================================================
-// Initialization & DOM Setup
+// Initialization & DOM Setup (完全動的描画の統合)
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    initDrill1();
-    initDrill2();
+    renderAll();
     setupFooterGuide();
 });
 
@@ -188,23 +187,46 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
+            renderAll();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
     }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Initialization
-// ----------------------------------------------------------------------------
-function initDrill1() {
-    const container = document.getElementById("drill1List");
-    if (!container) return;
+function renderAll() {
+    renderDrill1Section();
+    renderDrill2Section();
+}
+
+// ============================================================================
+// Render Drill 1 Section (InfoPanel -> List)
+// ============================================================================
+function renderDrill1Section() {
+    let container = document.getElementById("drill1Container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill1Container";
+        document.body.insertBefore(container, document.getElementById("drill2List") || document.body.lastChild);
+    }
     container.innerHTML = "";
+
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task1";
+    infoPanel.style.marginTop = "25px";
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">Drill 1</span>
+        <span class="info-panel-desc">💡 Translate the given English sentence into Japanese and speak aloud.</span>
+    `;
+    container.appendChild(infoPanel);
+
+    const listDiv = document.createElement("div");
+    listDiv.id = "drill1List";
+    container.appendChild(listDiv);
 
     drill1Data.forEach((item, index) => {
         createDrill1Row(
-            container,
+            listDiv,
             `${index + 1}.`,
             item.en,
             item.jaKanji,
@@ -214,6 +236,39 @@ function initDrill1() {
     });
 }
 
+// ============================================================================
+// Render Drill 2 Section (InfoPanel -> List)
+// ============================================================================
+function renderDrill2Section() {
+    let container = document.getElementById("drill2Container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill2Container";
+        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
+    }
+    container.innerHTML = "";
+
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task2";
+    infoPanel.style.marginTop = "30px";
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">Experimental Challenge (No model answer provided)</span>
+        <span class="info-panel-desc">💡 Type an English sentence, and practice speaking the Japanese equivalent.</span>
+    `;
+    container.appendChild(infoPanel);
+
+    const listDiv = document.createElement("div");
+    listDiv.id = "drill2List";
+    container.appendChild(listDiv);
+
+    for (let i = 1; i <= 3; i++) {
+        createDrill2Row(listDiv, `${i + drill1Data.length}.`, 0.9);
+    }
+}
+
+// ----------------------------------------------------------------------------
+// Drill 1 Row Creation
+// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, englishText, jaKanji, jaHira, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -476,6 +531,7 @@ function processDrill1Result(
     const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
     const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
 
+    // 音声合成には常に漢字混じりの正規文 (jaKanji) を使用して品質向上
     const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
@@ -587,16 +643,6 @@ function processDrill1Result(
 // ----------------------------------------------------------------------------
 // Drill 2 Initialization (Experimental Challenge)
 // ----------------------------------------------------------------------------
-function initDrill2() {
-    const container = document.getElementById("drill2List");
-    if (!container) return;
-    container.innerHTML = "";
-
-    for (let i = 1; i <= 3; i++) {
-        createDrill2Row(container, `${i + drill1Data.length}.`, 0.9);
-    }
-}
-
 function createDrill2Row(container, indexLabel, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -865,7 +911,6 @@ function processDrill2Result(rawTranscript, resultSpan, getUrlFn) {
         resultSpan.appendChild(playBtn);
     }
 
-    // Drill 2: 録音完了後、Autoplayが有効なら即座に自分の音声を自動再生する（Playing...表示連動）
     const runDrill2AutoPlay = () => {
         if (!isAutoPlay) return;
         const recordedAudioUrl = getUrlFn();
