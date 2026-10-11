@@ -1,5 +1,5 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (ひらがな正規化・状態保持・完全版)
+// Composition 1: English ➡️ Japanese Approach (Example完全排除・クリーン版)
 // ============================================================================
 
 const drill1Data = [
@@ -15,16 +15,12 @@ const drill1Data = [
 
 let isManualStop = false;
 let isAutoPlay = true; 
-let useHiraganaOnly = false; // デフォルトは With漢字 (false)
+let useHiraganaOnly = false; 
 let activeRecognitionSession = null;
 
-// 録音データおよび判定結果の状態永続保持ストア
 const savedAudioUrls = {};
-const savedResults = {}; // { rowIndex: { htmlContent: "...", textColor: "..." } }
+const savedResults = {}; 
 
-// ============================================================================
-// Voice Setup
-// ============================================================================
 let preferredVoice = null;
 
 function setupPreferredVoice() {
@@ -49,9 +45,6 @@ if (typeof speechSynthesis !== "undefined") {
     }
 }
 
-// ============================================================================
-// Playback Control & Simultaneous Button State
-// ============================================================================
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
 let activePlayButtons = [];
@@ -89,7 +82,6 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
-// ひらがな正規化処理（テキスト抽出・判定用）
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
@@ -189,7 +181,7 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            renderAll(); // モード切替時も savedResults によりテキストが維持される
+            renderAll(); 
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
@@ -201,9 +193,6 @@ function renderAll() {
     renderDrill2Section();
 }
 
-// ============================================================================
-// Render Drill 1 Section (Title -> Example -> Listの順序を厳守)
-// ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
     if (!container) {
@@ -213,7 +202,6 @@ function renderDrill1Section() {
     }
     container.innerHTML = "";
 
-    // 1. Info Panel (Title)
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
     infoPanel.style.marginTop = "25px";
@@ -223,25 +211,8 @@ function renderDrill1Section() {
     `;
     container.appendChild(infoPanel);
 
-    // 2. Example Box (タイトルの下に配置)
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Example:</strong> It's a nice day. <span style="font-size: 16px; margin: 0 4px;">👉</span> <button id="ex1Listen" class="example-button">🔊 きく</button> <span>天気がいいです</span>
-        </div>
-    `;
-    container.appendChild(exBox);
+    // ※ 指示のない勝手な Example ボックスは完全に削除済み
 
-    const ex1Btn = document.getElementById("ex1Listen");
-    if (ex1Btn) {
-        ex1Btn.onclick = () => {
-            setPlayingStateMultiple([ex1Btn], "Playing...");
-            speakText("天気がいいです", 0.9, () => stopAllPlayback());
-        };
-    }
-
-    // 3. Drill 1 List Container
     const listDiv = document.createElement("div");
     listDiv.id = "drill1List";
     container.appendChild(listDiv);
@@ -251,9 +222,6 @@ function renderDrill1Section() {
     });
 }
 
-// ============================================================================
-// Render Drill 2 Section (Title -> List)
-// ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
     if (!container) {
@@ -281,9 +249,6 @@ function renderDrill2Section() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Row Creation & Persistence
-// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -334,7 +299,6 @@ function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
-    // モード切替時でも抽出結果やテキストが消えないよう保持データを復元
     if (savedAudioUrls[rowIndex]) {
         if (savedResults[rowIndex]) {
             resultSpan.innerHTML = savedResults[rowIndex].htmlContent;
@@ -447,7 +411,7 @@ function bindDrill1RecorderEvents(
         let stream;
         try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
         catch (err) {
-            resultSpan.textContent = "Microphone access denied.";
+            resultSpan.textContent = "Microphone access denied or unavailable.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
@@ -792,7 +756,7 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
                 }, 3000);
             }
         } catch (err) {
-            releaseSession(currentSession);
+            requestStop(currentSession, true, "Could not start recording.");
         }
     });
 
