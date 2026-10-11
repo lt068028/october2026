@@ -3,8 +3,8 @@
 // ============================================================================
 
 const practice2Data = [
-    { x: "おおかあさん", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
-    { x: "おとうさん", y: "じえいぎょう", yRomaji: "jiei-gyou", meaning: "self-employed" },
+    { x: "おかあさん", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "おとうさん", y: "じえいぎょう", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
     { x: "おとうと", y: "だいがくせい", yRomaji: "daigakusei", yMeaning: "college student" },
     { x: "いもうと", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" },
     { x: "おねえさん", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
@@ -220,14 +220,14 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
-    // 1. 質問作成セクション
+    // 1. 質問作成行（練習1の体裁に一致）
     const qRow = document.createElement("div");
     qRow.className = "top-row";
-    qRow.style.marginBottom = "8px";
+    qRow.style.marginBottom = "6px";
 
     const qListenBtn = document.createElement("button");
     qListenBtn.className = "example-button custom-tip-wrap";
-    qListenBtn.innerHTML = '🔊Q聴く<span class="custom-tip-box">Listen to model question.</span>';
+    qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
     qListenBtn.onclick = () => {
         setPlayingStateMultiple([qListenBtn], "Playing...");
         speakText(`${item.x}は、${item.y}ですか。`, playRate, () => stopAllPlayback());
@@ -239,21 +239,21 @@ function createPractice2Row(container, indexLabel, item, playRate) {
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = `<strong>[Q]</strong> ${item.x} ｜ ${item.y}`;
+    promptSpan.innerHTML = `${item.x} ／ ${item.y}`;
     promptSpan.style.minWidth = "200px";
 
     const qRecordBtn = document.createElement("button");
     qRecordBtn.className = "example-button custom-tip-wrap";
-    qRecordBtn.innerHTML = '⏺️Qとる<span class="custom-tip-box">Record your question.</span>';
+    qRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
     const qStopBtn = document.createElement("button");
     qStopBtn.className = "example-button custom-tip-wrap";
-    qStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
+    qStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
     qStopBtn.disabled = true;
 
     const qResultSpan = document.createElement("span");
     qResultSpan.className = "result-text";
-    qResultSpan.textContent = "(Question not recorded)";
+    qResultSpan.textContent = "(Not recorded yet)";
     qResultSpan.style.color = "var(--text-secondary)";
 
     qRow.appendChild(qListenBtn);
@@ -263,24 +263,24 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     qRow.appendChild(qStopBtn);
     qRow.appendChild(qResultSpan);
 
-    // 2. 返答練習セクション（Yes/No切替付き）
+    // 2. 返答練習行（直下配置・体裁統一）
     const aRow = document.createElement("div");
     aRow.className = "top-row";
     aRow.style.paddingLeft = "24px";
     aRow.style.borderTop = "1px dashed var(--border-color)";
-    aRow.style.paddingTop = "8px";
+    aRow.style.paddingTop = "6px";
 
-    let selectedMode = "yes"; // デフォルトは 🙆 Yes
+    let selectedMode = "yes"; // デフォルト 🙆
 
     const modeToggleBtn = document.createElement("button");
     modeToggleBtn.className = "example-button";
-    modeToggleBtn.style.minWidth = "60px";
-    modeToggleBtn.innerHTML = "🙆 Yes";
+    modeToggleBtn.style.minWidth = "50px";
+    modeToggleBtn.innerHTML = "🙆";
     modeToggleBtn.style.backgroundColor = "var(--accent-bg, #e0f2fe)";
 
     const aListenBtn = document.createElement("button");
     aListenBtn.className = "example-button custom-tip-wrap";
-    aListenBtn.innerHTML = '🔊A聴く<span class="custom-tip-box">Listen to model answer.</span>';
+    aListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
     aListenBtn.onclick = () => {
         setPlayingStateMultiple([aListenBtn], "Playing...");
         const modelAns = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
@@ -289,33 +289,34 @@ function createPractice2Row(container, indexLabel, item, playRate) {
 
     const aPromptLabel = document.createElement("span");
     aPromptLabel.className = "prompt-label";
-    aPromptLabel.style.minWidth = "180px";
-    aPromptLabel.innerHTML = `<strong>[Answer]</strong>`;
+    aPromptLabel.style.minWidth = "200px";
+    aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
 
     const aRecordBtn = document.createElement("button");
     aRecordBtn.className = "example-button custom-tip-wrap";
-    aRecordBtn.innerHTML = '⏺️Aとる<span class="custom-tip-box">Record your response.</span>';
+    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
     const aStopBtn = document.createElement("button");
     aStopBtn.className = "example-button custom-tip-wrap";
-    aStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
+    aStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
     aStopBtn.disabled = true;
 
     const aResultSpan = document.createElement("span");
     aResultSpan.className = "result-text";
-    aResultSpan.textContent = "(Response not recorded)";
+    aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
-    // Mode Toggle イベント
     modeToggleBtn.onclick = () => {
         if (selectedMode === "yes") {
             selectedMode = "no";
-            modeToggleBtn.innerHTML = "🙅 No";
+            modeToggleBtn.innerHTML = "🙅";
             modeToggleBtn.style.backgroundColor = "var(--error-bg, #fee2e2)";
+            aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
         } else {
             selectedMode = "yes";
-            modeToggleBtn.innerHTML = "🙆 Yes";
+            modeToggleBtn.innerHTML = "🙆";
             modeToggleBtn.style.backgroundColor = "var(--accent-bg, #e0f2fe)";
+            aPromptLabel.innerHTML = `はい、${item.y}です。`;
         }
     };
 
@@ -326,7 +327,6 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     aRow.appendChild(aStopBtn);
     aRow.appendChild(aResultSpan);
 
-    // 訂正ボックス（両セクション共通で利用可）
     const correctionBox = document.createElement("div");
     correctionBox.className = "correction-box";
     const corrListenBtn = document.createElement("button");
@@ -341,7 +341,6 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     rowDiv.appendChild(aRow);
     rowDiv.appendChild(correctionBox);
 
-    // レコーダーのバインド
     bindRecorderEvents(
         qRecordBtn, qStopBtn, qResultSpan, correctionBox, corrListenBtn, corrTextSpan,
         () => `${item.x}は${item.y}ですか`, "question", false, playRate, item
@@ -355,7 +354,7 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     container.appendChild(rowDiv);
 }
 
-// 共通レコーダーイベント・判定関数
+// 共通レコーダー・判定ロジック
 function bindRecorderEvents(
     recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
     getExpectedTextFn, modeType, expectedIsNeg, playRate, item
@@ -552,7 +551,7 @@ function processResult(
             playBtn = document.createElement("button");
             playBtn.className = "example-button play-recording-btn custom-tip-wrap";
             playBtn.style.marginLeft = "8px";
-            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play recording</span>';
+            playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
             playBtn.onclick = () => {
                 const url = getUrlFn();
                 if (url) {
@@ -578,7 +577,7 @@ function processResult(
         resultSpan.textContent = hiraText + " ";
         resultSpan.style.color = "var(--error-text)";
         targetPlayBtn = appendPlayButton();
-        corrTextSpan.textContent = "Try again!";
+        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
 
         const modelText = modeType === "question" 
