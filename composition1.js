@@ -1,5 +1,5 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (ひらがな正規化・データ保持版)
+// Composition 1: English ➡️ Japanese Approach (モード切替時のテキスト・状態保持版)
 // ============================================================================
 
 const drill1Data = [
@@ -18,8 +18,9 @@ let isAutoPlay = true;
 let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
-// 録音データ永続保持マップ
+// 録音データおよび判定結果の状態永続保持ストア
 const savedAudioUrls = {};
+const savedResults = {}; // { rowIndex: { htmlContent: "...", isCorrect: true, rawTranscript: "..." } }
 
 // ============================================================================
 // Voice Setup
@@ -88,7 +89,7 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
-// 内部ひらがな正規化処理（モード切替時や漢字入力のブレを完全吸収）
+// ひらがな正規化処理
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
@@ -106,7 +107,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 音声合成：常に漢字混じりの正規文を使用して品質を担保
+// 音声合成
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -192,7 +193,7 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            renderAll();
+            renderAll(); // モード切替時に再描画するが、savedResultsによりテキストや判定結果が維持される
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
         updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
@@ -204,9 +205,6 @@ function renderAll() {
     renderDrill2Section();
 }
 
-// ============================================================================
-// Render Drill 1 Section
-// ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
     if (!container) {
@@ -234,9 +232,6 @@ function renderDrill1Section() {
     });
 }
 
-// ============================================================================
-// Render Drill 2 Section (Drill 2: Self-Check with i-Adjective Sentences)
-// ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
     if (!container) {
@@ -264,9 +259,6 @@ function renderDrill2Section() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Row Creation
-// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -295,8 +287,8 @@ function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
-    resultSpan.textContent = savedAudioUrls[rowIndex] ? "(Recorded) ✅" : "(Not recorded yet)";
-    resultSpan.style.color = savedAudioUrls[rowIndex] ? "var(--text-primary)" : "var(--text-secondary)";
+    resultSpan.textContent = "(Not recorded yet)";
+    resultSpan.style.color = "var(--text-secondary)";
 
     topRow.appendChild(indexSpan);
     topRow.appendChild(promptSpan);
@@ -317,10 +309,15 @@ function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
+    // 以前の判定結果や録音データが存在する場合は、再描画時もそのまま復元する
     if (savedAudioUrls[rowIndex]) {
-        resultSpan.textContent = "(Recorded) ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-        resultSpan.dataset.isDone = "true";
+        if (savedResults[rowIndex]) {
+            resultSpan.innerHTML = savedResults[rowIndex].htmlContent;
+            resultSpan.style.color = savedResults[rowIndex].textColor;
+        } else {
+            resultSpan.textContent = "(Recorded) ✅ ";
+            resultSpan.style.color = "var(--text-primary)";
+        }
         appendPersistedPlayButton(resultSpan, rowIndex, item.jaKanji, playRate);
     }
 
@@ -510,7 +507,8 @@ function bindDrill1RecorderEvents(
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished || session.stopRequested) return;
+        if (!session || session.finished) return;
+        if (session.stopRequested) return;
         stopAllPlayback();
         session.stopRequested = true;
         stopBtn.disabled = true;
@@ -546,12 +544,10 @@ function processDrill1Result(
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
     const modelSpeechText = jaKanji;
 
-    resultSpan.dataset.rawTranscript = rawTranscript;
-    resultSpan.dataset.isDone = "true";
-
     if (isCorrect) {
+        let innerHtml = "";
+        let tColor = "var(--text-primary)";
         if (isAltMatch && !isExactMatch) {
-            // ライト・ダークモード双方で視認性の高いスカイブルー（#38bdf8）を使用
             let highlightedHtml = "";
             for (let i = 0; i < hiraText.length; i++) {
                 if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
@@ -565,12 +561,17 @@ function processDrill1Result(
                     highlightedHtml += hiraText[i];
                 }
             }
-            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #38bdf8;'>(Both 'ga' and 'wa' are correct in this context)</span>";
-            resultSpan.style.color = "var(--text-primary)";
+            innerHtml = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #38bdf8;'>(Both 'ga' and 'wa' are correct in this context)</span>";
         } else {
-            resultSpan.textContent = displayedTranscript + " ✅ ";
-            resultSpan.style.color = "var(--text-primary)";
+            innerHtml = displayedTranscript + " ✅ ";
         }
+
+        resultSpan.innerHTML = innerHtml;
+        resultSpan.style.color = tColor;
+
+        // 状態を保存し、モード切替時にも消えないようにする
+        savedResults[rowIndex] = { htmlContent: innerHtml, textColor: tColor };
+
         appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         correctionBox.style.display = "none";
     } else {
@@ -584,6 +585,10 @@ function processDrill1Result(
         }
 
         resultSpan.innerHTML = highlightedHtml + " ";
+        resultSpan.style.color = "var(--error-text)";
+
+        savedResults[rowIndex] = { htmlContent: highlightedHtml + " ", textColor: "var(--error-text)" };
+
         appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
