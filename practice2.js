@@ -10,13 +10,13 @@ const practice2Data = [
     { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
 ];
 
-// 5行分の蛍光色ベースのカラーバリエーション（未選択時の黄色、選択時の緑・赤のライトトーン）
+// 5行それぞれ異なる蛍光色ベースのカラーテーマ（1番目は黄色、残り4つは別の明るいライトカラー）
 const rowColorThemes = [
-    { unselected: "#fef08a", yesActive: "#86efac", noActive: "#fca5a5" }, // 1: ライトイエロー / ライトグリーン / ライトレッド
-    { unselected: "#fed7aa", yesActive: "#6ee7b7", noActive: "#f87171" }, // 2: ライトオレンジ / エメラルド / コーラル
-    { unselected: "#e9d5ff", yesActive: "#4ade80", noActive: "#fb7185" }, // 3: ライトパープル / ビビッドグリーン / ローズ
-    { unselected: "#bae6fd", yesActive: "#34d399", noActive: "#f43f5e" }, // 4: ライトブルー / ミント / ピンクレッド
-    { unselected: "#fbcfe8", yesActive: "#2dd4bf", noActive: "#e11d48" }  // 5: ライトピンク / ターコイズ / ディープローズ
+    { unselected: "#fef08a", yesActive: "#86efac", noActive: "#fca5a5" }, // 1: ライトイエロー
+    { unselected: "#fed7aa", yesActive: "#6ee7b7", noActive: "#f87171" }, // 2: ライトオレンジ
+    { unselected: "#e9d5ff", yesActive: "#4ade80", noActive: "#fb7185" }, // 3: ライトパープル
+    { unselected: "#bae6fd", yesActive: "#34d399", noActive: "#f43f5e" }, // 4: ライトブルー
+    { unselected: "#fbcfe8", yesActive: "#2dd4bf", noActive: "#e11d48" }  // 5: ライトピンク
 ];
 
 let isManualStop = false;
@@ -325,7 +325,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     let selectedMode = null; // 初期状態：未選択（null）
 
-    // 🙆 ボタン（未選択時はテーマ別の明るい蛍光イエロー）
+    // 🙆 ボタン
     const yesBtn = document.createElement("button");
     yesBtn.className = "example-button";
     yesBtn.style.minWidth = "40px";
@@ -333,7 +333,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     yesBtn.style.backgroundColor = theme.unselected;
     yesBtn.style.fontWeight = "bold";
 
-    // 🙅 ボタン（未選択時はテーマ別の明るい蛍光イエロー）
+    // 🙅 ボタン
     const noBtn = document.createElement("button");
     noBtn.className = "example-button";
     noBtn.style.minWidth = "40px";
@@ -370,13 +370,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
-    // 🙆 ボタンクリック時の処理
+    // 🙆 ボタンクリック時の処理（選択時はアクティブ、非選択時はグレーアウト・不透明度55%）
     yesBtn.onclick = () => {
         selectedMode = "yes";
-        yesBtn.style.backgroundColor = theme.yesActive; // 選択時：テーマ別ライトグリーン
-        yesBtn.style.color = "#000";
-        noBtn.style.backgroundColor = theme.unselected; // 非選択時
-        noBtn.style.color = "#000";
+        yesBtn.style.backgroundColor = theme.yesActive;
+        yesBtn.style.opacity = "1";
+        noBtn.style.backgroundColor = theme.unselected;
+        noBtn.style.opacity = "0.55"; // 非選択側は55%に減光
 
         aPromptLabel.style.color = "var(--text-primary)";
         aPromptLabel.innerHTML = `はい、${item.y}です。`;
@@ -389,13 +389,13 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         if (tip) tip.textContent = "Start recording your voice.";
     };
 
-    // 🙅 ボタンクリック時の処理
+    // 🙅 ボタンクリック時の処理（選択時はアクティブ、非選択時はグレーアウト・不透明度55%）
     noBtn.onclick = () => {
         selectedMode = "no";
-        noBtn.style.backgroundColor = theme.noActive; // 選択時：テーマ別ライトレッド
-        noBtn.style.color = "#000";
-        yesBtn.style.backgroundColor = theme.unselected; // 非選択時
-        yesBtn.style.color = "#000";
+        noBtn.style.backgroundColor = theme.noActive;
+        noBtn.style.opacity = "1";
+        yesBtn.style.backgroundColor = theme.unselected;
+        yesBtn.style.opacity = "0.55"; // 非選択側は55%に減光
 
         aPromptLabel.style.color = "var(--text-primary)";
         aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
