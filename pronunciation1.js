@@ -304,7 +304,7 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     topRow.appendChild(stopBtn);
     topRow.appendChild(resultSpan);
 
-    topRow.appendChild(correctionBox);
+    rowDiv.appendChild(topRow);
 
     bindDrill1RecorderEvents(
         recordBtn, stopBtn, resultSpan, item.kanji, playRate
