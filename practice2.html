@@ -68,31 +68,37 @@
     </div>
 
     <!-- =========================================================
-         Pitch Test Area (4パターンに拡張)
+         Test Area (「ですか」＆「じゃないです」実験用)
          ========================================================= -->
     <div class="example-box" style="background-color: #f8fafc; border: 1px dashed #cbd5e1; margin-bottom: 15px;">
-        <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">🧪 Pitch & Intonation Test Area:</div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div style="font-size: 13px; font-weight: bold; margin-bottom: 6px; color: var(--text-secondary);">🧪 Speech Intonation & Pause Test Area:</div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: bold; align-self: center;">[Question]:</span>
             <button id="testPitch1" class="example-button">🔊 ですか？</button>
             <button id="testPitch2" class="example-button">🔊 ですかっ？</button>
             <button id="testPitch3" class="example-button">🔊 ですかぁ～？</button>
             <button id="testPitch4" class="example-button">🔊 ですかぁ？</button>
         </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <span style="font-size: 12px; font-weight: bold; align-self: center;">[Negative]:</span>
+            <button id="testNeg1" class="example-button">🔊 じゃないです</button>
+            <button id="testNeg2" class="example-button">🔊 じゃ、ないです</button>
+        </div>
     </div>
 
     <!-- =========================================================
-         Example Section
+         Example Section (おかあさん／かいしゃいん に戻す)
          ========================================================= -->
     <div class="example-box">
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong><span class="tooltip-wrap"><span class="target-word">おにいさん</span><span class="tooltip-tip">oniisan, older brother</span></span> ／ <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span><span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>おにいさんは、がくせいですか。</span>
+            <strong class="example-label-title">Question:</strong><span class="tooltip-wrap"><span class="target-word">おかあさん</span><span class="tooltip-tip">okaasan, mother</span></span> ／ <span class="tooltip-wrap"><span class="target-word">かいしゃいん</span><span class="tooltip-tip">kaishain, company employee</span></span><span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>おかあさんは、かいしゃいんですか？ <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your mother a company employee?)</span></span>
         </div>
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong> 
             <button id="exYesListen" class="example-button" style="margin-right: 4px;">🔊 🙆</button>
-            <span>はい、がくせいです。</span> ／ 
+            <span>はい、かいしゃいんです。</span> ／ 
             <button id="exNoListen" class="example-button" style="margin-left: 4px; margin-right: 4px;">🔊 🙅</button>
-            <span>いいえ、がくせいじゃないです。</span>
+            <span>いいえ、かいしゃいんじゃないです。</span>
         </div>
     </div>
 
@@ -101,7 +107,7 @@
          ========================================================= -->
     <div class="info-panel info-panel-task1" style="margin-top: 25px;">
         <span class="info-panel-title">Drill 1</span>
-        <span class="info-panel-desc">💡 Form a question from the prompts and practice both 🙆 affirmative and 🙅 negative responses.</span>
+        <span class="info-panel-desc">💡 Form a question from the prompts and practice both 🙆 affirmative and nr negative responses.</span>
     </div>
     <div id="drill1List"></div>
 
