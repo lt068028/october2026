@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XはYです</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- =========================================================
+         Header & Settings
+         ========================================================= -->
+    <div class="main-header">
+        <h1>Practice1；XはYです</h1>
+        
+        <div class="compact-settings">
+            <a href="#" class="back-link" onclick="window.history.back(); return false;">↩️ もどる</a>
+
+            <!-- Vocab Hint Toggle -->
+            <div class="control-item">
+                <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">💬</span> Vocab Hint
+                    <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleHintMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelParenHint" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">🔡</span>Display Vocab
+                    <span class="custom-tip-box">Always shows word's meaning in parentheses.</span>
+                </span>
+            </div>
+
+            <!-- Recording Toggle -->
+            <div class="control-item">
+                <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Autostop
+                    <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleRecordMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏹️</span>Manual stop
+                    <span class="custom-tip-box">Records continuously until you click the stop button.</span>
+                </span>
+            </div>
+
+            <!-- Playback Toggle -->
+            <div class="control-item">
+                <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">▶️</span>Autoplay
+                    <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="togglePlaybackMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji">⏯️</span>Manual play
+                    <span class="custom-tip-box">Disables automatic playback.</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         Example Section
+         ========================================================= -->
+    <div class="example-box">
+        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
+            <strong class="example-label-title">Affirmative:</strong> 
+            <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+            <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="ex1Listen" class="example-button">🔊 きく</button>
+            <span>わたしは、がくせいです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am a student)</span></span>
+        </div>
+        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
+            <strong class="example-label-title">Negative:</strong> 
+            <span class="tooltip-wrap"><span class="target-word">わたし</span><span class="tooltip-tip">watashi, I</span></span> ／ 
+            <span class="tooltip-wrap"><span class="target-word">せんせい</span><span class="tooltip-tip">sensei, teacher</span></span> 
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="ex2Listen" class="example-button">🔊 きく</button>
+            <span>わたしは、せんせいじゃないです。 <span style="font-size: 0.85em; color: var(--text-secondary);">(I am not a teacher)</span></span>
+        </div>
+    </div>
+
+
+    <!-- =========================================================
+         Task 1 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+        <span class="info-panel-title">Task 1；Drills</span>
+        <span class="info-panel-desc">💡 Read the given words and build sentences following each row's instruction.</span>
+    </div>
+    <div id="task1List"></div>
+
+
+    <!-- =========================================================
+         Task 2 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task2" style="margin-top: 30px;">
+        <span class="info-panel-title">Task 2；Custom Practice</span>
+        <span class="info-panel-desc">💡 Choose words from the menus to create your own sentences.</span>
+    </div>
+    <div id="task2List"></div>
+
+
+    <!-- =========================================================
+         Task 3 Section
+         ========================================================= -->
+    <div class="info-panel info-panel-task3" style="margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+            <div>
+                <span class="info-panel-title">Task 3；Challenge</span>
+                <div class="info-panel-desc" style="margin-top: 4px;">💡 Practice free sentence-making, or click "Use Hints" for textbook vocabulary.</div>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                <!-- Textbook Selector (📖Select および統一教科書名) -->
+                <select id="vocabSourceSelect" class="custom-select" style="font-size: 13px;">
+                    <option value="" disabled selected>📖Select</option>
+                    <option value="genki1">Genki 1</option>
+                    <option value="minna1">みんなの日本語1</option>
+                </select>
+                <!-- Use Hints Button -->
+                <button id="useHintsBtn" class="example-button custom-tip-wrap" style="background-color: var(--accent-color); color: #fff; font-weight: bold; padding: 6px 12px;">
+                    🎯 Use Hints
+                    <span class="custom-tip-box">Click to insert textbook hints into your practice rows.</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="task3List"></div>
+
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
+    <div class="voice-guide-footer">
+        🔊Want to change the voice?
+        <span id="guideTrigger" class="guide-trigger">
+            Check⚙️
+        </span>
+
+        <div id="guideBox" class="guide-box-popup" style="display: none;">
+            Win: Settings > Time & Language > Speech<br>
+            Mac/iOS: Settings > Accessibility > Spoken Content<br>
+            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
+        </div>
+    </div>
+
+    <script src="practice2.js"></script>
+</body>
+</html>
