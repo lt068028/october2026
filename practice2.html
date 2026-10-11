@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practice 2: Questions & Yes/No Responses</title>
+    <title>Practice 2: XはYですか？</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
          Header & Settings
          ========================================================= -->
     <div class="main-header">
-        <h1>Practice 2: Questions & Yes/No Responses</h1>
+        <h1>Practice 2: XはYですか？</h1>
         
         <div class="compact-settings">
             <a href="#" class="back-link" onclick="window.history.back(); return false;">↩️ もどる</a>
@@ -68,16 +68,11 @@
     </div>
 
     <!-- =========================================================
-         Example Section (1行表示に修正)
+         Example Section (Questionの改行削除・1行化)
          ========================================================= -->
     <div class="example-box">
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong> 
-            <span class="tooltip-wrap"><span class="target-word">おにいさん</span><span class="tooltip-tip">oniisan, older brother</span></span> ／ 
-            <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span> 
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex1Listen" class="example-button">🔊 きく</button>
-            <span>おにいさんは、がくせいですか。 <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your older brother a student?)</span></span>
+            <strong class="example-label-title">Question:</strong><span class="tooltip-wrap"><span class="target-word">おにいさん</span><span class="tooltip-tip">oniisan, older brother</span></span> ／ <span class="tooltip-wrap"><span class="target-word">がくせい</span><span class="tooltip-tip">gakusei, student</span></span><span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>おにいさんは、がくせいですか。 <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your older brother a student?)</span></span>
         </div>
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong> 
