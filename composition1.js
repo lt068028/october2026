@@ -101,6 +101,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
+// 音声合成：常に漢字混じりの正規文を使用して品質を担保
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -187,6 +188,7 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
+            // 録音状態を保持したまま再描画
             renderAll();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
@@ -531,7 +533,6 @@ function processDrill1Result(
     const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
     const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
 
-    // 音声合成には常に漢字混じりの正規文 (jaKanji) を使用して品質向上
     const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
 
