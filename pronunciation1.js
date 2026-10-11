@@ -150,11 +150,11 @@ function speakText(text, rate = 0.9, onEndCallback) {
 }
 
 // ============================================================================
-// Initialization & DOM Setup
+// Initialization & DOM Setup (完全動的描画の統合)
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    initDrill1();
+    renderDrill1Section();
     setupFooterGuide();
 });
 
@@ -201,7 +201,6 @@ function initSettingsPanel() {
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
     }
 
-    // スクリプト切り替えトグル（完全グレーアウト）
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelKanji = document.getElementById("labelKanji");
     const labelHiragana = document.getElementById("labelHiragana");
@@ -237,12 +236,30 @@ function updateToggleLabelStyle(labelEl, isActive) {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Initialization
-// ----------------------------------------------------------------------------
-function initDrill1() {
-    const container = document.getElementById("drill1List");
-    if (!container) return;
+// ============================================================================
+// Render Drill 1 Section (InfoPanel -> List)
+// ============================================================================
+function renderDrill1Section() {
+    let container = document.getElementById("drill1List");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill1List";
+        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
+    }
+
+    // Drill 1 の前に Info Panel を動的挿入
+    const existingPanel = document.querySelector(".info-panel-task1");
+    if (!existingPanel) {
+        const infoPanel = document.createElement("div");
+        infoPanel.className = "info-panel info-panel-task1";
+        infoPanel.style.marginTop = "25px";
+        infoPanel.innerHTML = `
+            <span class="info-panel-title">Drill 1: Mimic and Compare (Listen & Shadow)</span>
+            <span class="info-panel-desc">💡 Listen to the model, mimic the voice and speak aloud.</span>
+        `;
+        container.parentNode.insertBefore(infoPanel, container);
+    }
+
     container.innerHTML = "";
 
     drill1Data.forEach((item, index) => {
@@ -255,6 +272,9 @@ function initDrill1() {
     });
 }
 
+// ----------------------------------------------------------------------------
+// Drill 1 Row Creation
+// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -313,7 +333,6 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     container.appendChild(rowDiv);
 }
 
-// 文字起こしを完全に排除し、録音完了後に音声再生ボタンのみを表示するレコーダー制御
 function bindDrill1RecorderEvents(
     recordBtn, stopBtn, resultSpan, expectedKanjiText, playRate = 0.9
 ) {
@@ -397,7 +416,6 @@ function bindDrill1RecorderEvents(
             resultSpan.style.color = "var(--text-primary)";
             appendPlayButton();
 
-            // AutoPlay設定が有効な場合、録音完了後に自動再生
             if (isAutoPlay) {
                 runAutoPlaySequence(resultSpan, expectedKanjiText, playRate, () => lastAudioUrl);
             }
@@ -414,7 +432,6 @@ function bindDrill1RecorderEvents(
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
 
-        // Autostopモード（isManualStop = false）の場合、2.5秒後に自動停止するタイマーを設定
         if (!isManualStop) {
             setTimeout(() => {
                 if (isRecording) {
@@ -431,7 +448,6 @@ function bindDrill1RecorderEvents(
     });
 }
 
-// 録音完了後の自動再生シーケンス（お手本音声 ➡ 少しウェイト ➡ 自分の録音音声）
 function runAutoPlaySequence(resultSpan, expectedKanjiText, playRate, getUrlFn) {
     if (!isAutoPlay) return;
 
