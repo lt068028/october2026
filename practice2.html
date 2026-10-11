@@ -17,6 +17,22 @@
         <div class="compact-settings">
             <a href="#" class="back-link" onclick="window.history.back(); return false;">↩️ もどる</a>
 
+            <!-- Script Mode Toggle (With Kanji / Hiragana Only) -->
+            <div class="control-item">
+                <span id="labelHiraganaOnly" class="mode-label active-mode custom-tip-wrap">
+                    <span class="icon-emoji">🔤</span>Hiragana Only
+                    <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
+                </span>
+                <label class="switch">
+                    <input type="checkbox" id="toggleScriptMode">
+                    <span class="slider"></span>
+                </label>
+                <span id="labelWithKanji" class="mode-label inactive-mode custom-tip-wrap">
+                    <span class="icon-emoji"> Kanji</span>With Kanji
+                    <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
+                </span>
+            </div>
+
             <!-- Vocab Hint Toggle -->
             <div class="control-item">
                 <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
@@ -68,38 +84,32 @@
     </div>
 
     <!-- =========================================================
-         Example Section (Drill 1用例文: おとうさん／しゅふ)
-         ========================================================= -->
-    <div class="example-box">
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong><span class="tooltip-wrap"><span class="target-word">おとうさん</span><span class="tooltip-tip">otousan, father</span></span> ／ <span class="tooltip-wrap"><span class="target-word">しゅふ</span><span class="tooltip-tip">shufu, housewife</span></span><span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>おとうさんは、しゅふですか？ <span style="font-size: 0.85em; color: var(--text-secondary);">(Is your father a homemaker?)</span></span>
-        </div>
-        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Response:</strong> 
-            <button id="exYesListen" class="example-button" style="margin-right: 4px;">🔊 🙆</button>
-            <span>はい、しゅふです。</span> ／ 
-            <button id="exNoListen" class="example-button" style="margin-left: 4px; margin-right: 4px;">🔊 🙅</button>
-            <span>いいえ、しゅふじゃ、ないです。</span>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         Drill 1 Section (Yes/No Q&A Drills)
+         Drill 1 Section (Yes/No Questions)
          ========================================================= -->
     <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-        <span class="info-panel-title">Drill 1</span>
-        <span class="info-panel-desc">💡 Form a question from the prompts and practice both 🙆 affirmative and 🙅 negative responses.</span>
+        <span class="info-panel-title">Drill 1: Yes/No Questions</span>
+        <span class="info-panel-desc">💡 Form a question from the prompts and practice both affirmative and negative responses.</span>
     </div>
+
+    <!-- Drill 1 Example Section -->
+    <div class="example-box" id="drill1ExampleBox"></div>
+
+    <!-- Drill 1 List -->
     <div id="drill1List"></div>
 
 
     <!-- =========================================================
-         Drill 2 Section (What Question & Major Practice)
-         ======================================================== -->
+         Drill 2 Section (Wh- Questions)
+         ========================================================= -->
     <div class="info-panel info-panel-task2" style="margin-top: 35px;">
-        <span class="info-panel-title">Drill 2: Majors (専攻)</span>
-        <span class="info-panel-desc">💡 Ask about majors using "What" and answer with possessive "my" (わたしの…は…です). Select a major from the dropdown.</span>
+        <span class="info-panel-title">Drill 2: Wh- Questions</span>
+        <span class="info-panel-desc">💡 Inquire about majors using Wh- questions. Select your major from the dropdown menu and reply using the possessive form (わたしの…).</span>
     </div>
+
+    <!-- Drill 2 Example Section -->
+    <div class="example-box" id="drill2ExampleBox"></div>
+
+    <!-- Drill 2 List -->
     <div id="drill2List"></div>
 
 
