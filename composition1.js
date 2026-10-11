@@ -240,15 +240,32 @@ function renderDrill1Section() {
 }
 
 // ============================================================================
-// Render Drill 2 Section (Self-Check & Voice Recording)
+// Render Drill 2 Section (Drill 2: Self-Check with i-Adjective Sentences)
 // ============================================================================
 function renderDrill2Section() {
-    let container = document.getElementById("drill2List");
-    if (!container) return;
+    let container = document.getElementById("drill2Container");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill2Container";
+        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
+    }
     container.innerHTML = "";
 
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task2";
+    infoPanel.style.marginTop = "30px";
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">Drill 2: Self-Check with i-Adjective Sentences</span>
+        <span class="info-panel-desc">💡 Use this space to record and review how your spoken Japanese sounds.</span>
+    `;
+    container.appendChild(infoPanel);
+
+    const listDiv = document.createElement("div");
+    listDiv.id = "drill2List";
+    container.appendChild(listDiv);
+
     for (let i = 1; i <= 3; i++) {
-        createDrill2Row(container, `${i + drill1Data.length}.`, 0.9);
+        createDrill2Row(listDiv, `${i + drill1Data.length}.`, 0.9);
     }
 }
 
@@ -566,8 +583,9 @@ function processDrill1Result(
     const matchRegex2 = new RegExp(`^${expectedHiraAlt}` + endParticleRegex);
     const matchRegex3 = new RegExp(`^${expectedHiraAlt2}` + endParticleRegex);
 
-    const isCorrect = matchRegex1.test(hiraText) || matchRegex2.test(hiraText) || matchRegex3.test(hiraText) ||
-                      hiraText.includes(expectedHira) || hiraText.includes(expectedHiraAlt);
+    const isExactMatch = matchRegex1.test(hiraText) || hiraText.includes(expectedHira);
+    const isAltMatch = matchRegex2.test(hiraText) || matchRegex3.test(hiraText) || hiraText.includes(expectedHiraAlt);
+    const isCorrect = isExactMatch || isAltMatch;
 
     const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
@@ -576,8 +594,21 @@ function processDrill1Result(
     resultSpan.dataset.isDone = "true";
 
     if (isCorrect) {
-        resultSpan.textContent = displayedTranscript + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
+        if (isAltMatch && !isExactMatch) {
+            // 助詞違い（が ⇄ は）による合格の場合：異なる助詞部分を青字にし、解説を付与
+            let highlightedHtml = "";
+            for (let i = 0; i < hiraText.length; i++) {
+                if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
+                    highlightedHtml += hiraText[i];
+                } else {
+                    highlightedHtml += `<span style="color: #0ea5e9; font-weight: bold;">${hiraText[i]}</span>`;
+                }
+            }
+            resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0ea5e9;'>(Both 'ga' and 'wa' are correct in this context)</span>";
+        } else {
+            resultSpan.textContent = displayedTranscript + " ✅ ";
+            resultSpan.style.color = "var(--text-primary)";
+        }
         appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         correctionBox.style.display = "none";
     } else {
