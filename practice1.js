@@ -6,9 +6,9 @@ const taskData = [
     { x: "わたし", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "わたし", y: "せんせい", yRomaji: "sensei", yMeaning: "teacher", isNeg: true },
     { x: "わたし", y: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese", isNeg: false },
-    { x: "わたし", y: "りゅうがくせい", yRomaji: "ryuugakusei", yMeaning: "international student", isNeg: true }, // 4番変更
+    { x: "わたし", y: "りゅうがくせい", yRomaji: "ryuugakusei", yMeaning: "international student", isNeg: true },
     { x: "ともだち", y: "がくせい", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
-    { x: "ともだち", y: "しゅふ", yRomaji: "shufu", yMeaning: "housewife", isNeg: true }, // 6番変更
+    { x: "ともだち", y: "しゅふ", yRomaji: "home maker", yMeaning: "home maker", isNeg: true }, // しゅふの英語を Home maker に変更
     { x: "ともだち", y: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
 ];
 
@@ -35,7 +35,7 @@ const customDict = {
     "nurse": { hira: "かんごし", romaji: "kangoshi", meaning: "nurse" },
     "part-time worker": { hira: "アルバイト", romaji: "arubaito", meaning: "part-time worker" },
     "international student": { hira: "りゅうがくせい", romaji: "ryuugakusei", meaning: "international student" },
-    "housewife": { hira: "しゅふ", romaji: "shufu", meaning: "housewife" }
+    "home maker": { hira: "しゅふ", romaji: "home maker", meaning: "home maker" } // 辞書データも Home maker に更新
 };
 
 const task3VocabLists = {
