@@ -489,7 +489,7 @@ function renderDrill2Section() {
 
     const exQ2 = scriptMode === "kanji"
         ? "あなたの専攻は何ですか。"
-        : "あなたのせんこうは何ですか。";
+        : "あなたのせんこうはなんですか。";
 
     const exA2 = scriptMode === "kanji"
         ? "わたしの専攻は、政治です。"
