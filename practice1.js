@@ -1,15 +1,15 @@
 // ============================================================================
-// Practice 1: XはYです (完全安定・Drill3セルフチェック化版)
+// Practice 1: XはYです (Hiragana Only完全動的連動版)
 // ============================================================================
 
 const taskData = [
     { x: "わたし", xKanji: "私", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "わたし", xKanji: "私", y: "せんせい", yKanji: "先生", yRomaji: "sensei", yMeaning: "teacher", isNeg: true },
-    { x: "わたし", xKanji: "私", y: "日本人", yKanji: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese", isNeg: false },
+    { x: "わたし", xKanji: "私", y: "にほんじん", yKanji: "日本人", yRomaji: "nihonjin", yMeaning: "Japanese", isNeg: false },
     { x: "わたし", xKanji: "私", y: "りゅうがくせい", yKanji: "留学生", yRomaji: "ryuugakusei", yMeaning: "international student", isNeg: true },
     { x: "ともだち", xKanji: "友達", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "ともだち", xKanji: "友達", y: "しゅふ", yKanji: "主婦", yRomaji: "home maker", yMeaning: "home maker", isNeg: true },
-    { x: "ともだち", xKanji: "友達", y: "アメリカ人", yKanji: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
+    { x: "ともだち", xKanji: "友達", y: "あめりかじん", yKanji: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
 ];
 
 const customDict = {
@@ -226,7 +226,7 @@ function initSettingsPanel() {
     }
 }
 
-// 例文部分のモード連動（学生等の漢字切り替え対応）
+// 例文部分のモード連動（Hiragana Only時は完全にひらがなにする）
 function initExampleSection() {
     const container = document.getElementById("exampleSectionContainer");
     if (!container) return;
@@ -481,9 +481,6 @@ function initTask2() {
     }
 }
 
-// ============================================================================
-// Drill 3: Self-Check Your Sounds (判定機能を完全に除外し、単なる録音・確認コーナーへ変更)
-// ============================================================================
 function initTask3() {
     const container = document.getElementById("task3Container");
     if (!container) return;
@@ -578,14 +575,12 @@ function initTask3() {
         inputY.addEventListener("input", updateState);
         updateState();
 
-        // 判定を行わず、単に録音して自分の音声を再生・確認できるセルフチェック専用の録音イベントバインド
         bindSelfCheckRecorderEvents(recordBtn, stopBtn, resultSpan, rowKey);
 
         listDiv.appendChild(rowDiv);
     }
 }
 
-// Drill 3専用のセルフチェック（判定なし、録音・再生のみ）録音イベント
 function bindSelfCheckRecorderEvents(recordBtn, stopBtn, resultSpan, rowKey) {
     let session = null;
     let lastAudioUrl = practice1State.audioUrls[rowKey] || null;
@@ -974,7 +969,6 @@ function processRecognitionResult(
         correctionBox.style.display = "block";
     }
 
-    // モデル音と再生音の間の間隔を完全になくす（0秒設定：モデル終了後即座に録音音声を再生）
     if (isAutoPlay && rowKey) {
         const recordedAudioUrl = practice1State.audioUrls[rowKey];
         if (recordedAudioUrl) {
