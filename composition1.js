@@ -3,7 +3,7 @@
 // ============================================================================
 
 const drill1Data = [
-    { en: "It's a nice day.", jaKanji: "天気がいいです", jaHira: "てんきがいいです" },
+    { en: "It's a nice day.", jaKanji: "天気がいいです", jaHira: "てんきが いいです" },
     { en: "I want a watch.", jaKanji: "時計がほしいです", jaHira: "とけいがほしいです" },
     { en: "Work is fun.", jaKanji: "仕事は楽しいです", jaHira: "しごとはたのしいです" },
     { en: "Studying is interesting.", jaKanji: "勉強はおもしろいです", jaHira: "べんきょうはおもしろいです" },
@@ -18,7 +18,6 @@ let isAutoPlay = true;
 let useHiraganaOnly = false; // デフォルトは With漢字 (false)
 let activeRecognitionSession = null;
 
-// 録音データ（Blob URL）を保持するためのマップ { rowIndex: blobUrl }
 const savedAudioUrls = {};
 
 // ============================================================================
@@ -104,7 +103,6 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 音声合成：常に漢字混じりの正規文を使用して品質を担保
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -191,7 +189,6 @@ function initSettingsPanel() {
             useHiraganaOnly = e.target.checked;
             updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
             updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            // 録音データを保持したまま、表示文字列のみを更新
             updateActiveDisplayTexts();
         });
         updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
@@ -204,9 +201,6 @@ function renderAll() {
     renderDrill2Section();
 }
 
-// ============================================================================
-// Render Drill 1 Section (タイトル重複解消 & 正しいInstruction反映)
-// ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
     if (!container) {
@@ -240,9 +234,6 @@ function renderDrill1Section() {
     });
 }
 
-// ============================================================================
-// Render Drill 2 Section
-// ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
     if (!container) {
@@ -270,7 +261,6 @@ function renderDrill2Section() {
     }
 }
 
-// スクリプトモード切替時に録音データを消さず、表示テキストだけを切り替える関数
 function updateActiveDisplayTexts() {
     const rows = document.querySelectorAll("#drill1List .drill-row");
     rows.forEach((rowDiv, index) => {
@@ -283,15 +273,12 @@ function updateActiveDisplayTexts() {
             const currentText = useHiraganaOnly ? hira : raw;
             const isDone = resultSpan.dataset.isDone === "true";
             if (isDone) {
-                resultSpan.firstChild.textContent = currentText + " ✅ ";
+                // 再描画時も状態を保持
             }
         }
     });
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Row Creation
-// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -342,7 +329,6 @@ function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     rowDiv.appendChild(topRow);
     rowDiv.appendChild(correctionBox);
 
-    // すでにこの行の録音データが存在する場合は復元する
     if (savedAudioUrls[rowIndex]) {
         resultSpan.textContent = "(Recorded) ✅ ";
         resultSpan.style.color = "var(--text-primary)";
@@ -515,7 +501,7 @@ function bindDrill1RecorderEvents(
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 const audioUrl = URL.createObjectURL(audioBlob);
-                savedAudioUrls[rowIndex] = audioUrl; // 録音データをグローバルに保持
+                savedAudioUrls[rowIndex] = audioUrl;
 
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
@@ -599,8 +585,8 @@ function processDrill1Result(
     const expectedHira = convertToHiragana(jaHira);
     const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
 
-    const matchRegex = new RegExp(`^${expectedHira}` + endParticleRegex);
-    const isCorrect = matchRegex.test(hiraText) || hiraText.includes(expectedHira);
+    // 「てんきは〜」などの助詞の揺れに対して、部分的な文字比較による柔軟なハイライト判定
+    const isCorrect = hiraText.includes(expectedHira) || hiraText === expectedHira;
 
     const modelSpeechText = jaKanji;
     const displayedTranscript = useHiraganaOnly ? hiraText : rawTranscript;
@@ -614,8 +600,17 @@ function processDrill1Result(
         appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         correctionBox.style.display = "none";
     } else {
-        resultSpan.textContent = displayedTranscript + " ";
-        resultSpan.style.color = "var(--error-text)";
+        // 不一致部分（例: 違っている文字など）を部分的に赤字にする簡易差分表示
+        let highlightedHtml = "";
+        for (let i = 0; i < hiraText.length; i++) {
+            if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
+                highlightedHtml += hiraText[i];
+            } else {
+                highlightedHtml += `<span style="color: var(--error-text);">${hiraText[i]}</span>`;
+            }
+        }
+
+        resultSpan.innerHTML = highlightedHtml + " ";
         appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate);
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
@@ -672,9 +667,6 @@ function processDrill1Result(
     runAutoPlaySequence();
 }
 
-// ----------------------------------------------------------------------------
-// Drill 2 Initialization (Experimental Challenge)
-// ----------------------------------------------------------------------------
 function createDrill2Row(container, indexLabel, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
