@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 1: XはYです (HTML完全連動・完全安定版)
+// Practice 1: XはYです (完全安定・Drill3セルフチェック化版)
 // ============================================================================
 
 const taskData = [
@@ -179,12 +179,6 @@ function formatWord(word, kanji, romaji, meaning) {
     `;
 }
 
-function formatCustomWord(hira, kanji, engKey) {
-    const entry = customDict[engKey];
-    if (!entry) return hira;
-    return formatWord(hira, kanji || entry.kanji, entry.romaji, entry.meaning);
-}
-
 function updateToggleLabelStyle(labelEl, isActive) {
     if (!labelEl) return;
     labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
@@ -205,6 +199,7 @@ function initSettingsPanel() {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
             updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
+            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -231,10 +226,14 @@ function initSettingsPanel() {
     }
 }
 
-// HTMLの #exampleSectionContainer に「タイトル ➡️ Example ➡️ リスト」の順序で確実に出力
+// 例文部分のモード連動（学生等の漢字切り替え対応）
 function initExampleSection() {
     const container = document.getElementById("exampleSectionContainer");
     if (!container) return;
+    
+    const ex1Text = scriptMode === "kanji" ? "私は、学生です。" : "わたしは、がくせいです。";
+    const ex2Text = scriptMode === "kanji" ? "私は、先生じゃないです。" : "わたしは、せんせいじゃないです。";
+
     container.innerHTML = `
         <div class="info-panel info-panel-task1" style="margin-top: 25px;">
             <span class="info-panel-title">Example</span>
@@ -242,10 +241,10 @@ function initExampleSection() {
         </div>
         <div class="example-box">
             <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-                <strong class="example-label-title">Affirmative:</strong> 私 ／ 学生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex1Listen" class="example-button">🔊 きく</button> <span>私は、学生です。</span>
+                <strong class="example-label-title">Affirmative:</strong> 私 ／ 学生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex1Listen" class="example-button">🔊 きく</button> <span>${ex1Text}</span>
             </div>
             <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-                <strong class="example-label-title">Negative:</strong> 私 ／ 先生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex2Listen" class="example-button">🔊 きく</button> <span>私は、先生じゃないです。</span>
+                <strong class="example-label-title">Negative:</strong> 私 ／ 先生 <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex2Listen" class="example-button">🔊 きく</button> <span>${ex2Text}</span>
             </div>
         </div>
     `;
@@ -482,39 +481,24 @@ function initTask2() {
     }
 }
 
+// ============================================================================
+// Drill 3: Self-Check Your Sounds (判定機能を完全に除外し、単なる録音・確認コーナーへ変更)
+// ============================================================================
 function initTask3() {
     const container = document.getElementById("task3Container");
     if (!container) return;
     container.innerHTML = `
         <div class="info-panel info-panel-task3" style="margin-top: 30px;">
-            <span class="info-panel-title">Drill 3: Free Input Practice</span>
-            <span class="info-panel-desc">💡 Type X and Y freely and practice.</span>
+            <span class="info-panel-title">Drill 3: Self-Check Your Sounds</span>
+            <span class="info-panel-desc">💡 Use this space to record and review how your spoken Japanese sounds.</span>
         </div>
         <div id="task3List"></div>
     `;
     const listDiv = document.getElementById("task3List");
 
-    const englishToMap = {
-        "i": { hira: "わたし", kanji: "私" },
-        "college student": { hira: "だいがくせい", kanji: "大学生" },
-        "major": { hira: "せんこう", kanji: "専攻" }, 
-        "korea": { hira: "かんこく", kanji: "韓国" },
-        "england": { hira: "イギリス", kanji: "イギリス" },
-        "university": { hira: "だいがく", kanji: "大学" }, 
-        "hospital": { hira: "びょういん", kanji: "病院" },
-        "bank": { hira: "ぎんこう", kanji: "銀行" },
-        "america": { hira: "アメリカ", kanji: "アメリカ" }
-    };
-
-    function resolveData(val) {
-        const clean = val.trim().toLowerCase();
-        return englishToMap[clean] || { hira: val, kanji: val };
-    }
-
     for (let k = 1; k <= 3; k++) {
         const rowKey = `task3_${k}`;
         const currentGlobalIndex = taskData.length + 3 + k;
-        const isCustomNeg = (k % 2 === 0);
 
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
@@ -522,49 +506,38 @@ function initTask3() {
         const topRow = document.createElement("div");
         topRow.className = "top-row";
 
-        const listenBtn = document.createElement("button");
-        listenBtn.className = "example-button custom-tip-wrap";
-        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-        listenBtn.disabled = true;
-
         const indexSpan = document.createElement("span");
         indexSpan.textContent = `${currentGlobalIndex}.`;
+        indexSpan.style.fontWeight = "bold";
 
         const inputX = document.createElement("input");
         inputX.type = "text";
-        inputX.className = "custom-input task3-input-x";
+        inputX.className = "custom-input";
         inputX.placeholder = "X";
-        inputX.style.width = "130px";
+        inputX.style.width = "120px";
 
         const labelHa = document.createElement("span");
         labelHa.textContent = "は";
 
         const inputY = document.createElement("input");
         inputY.type = "text";
-        inputY.className = "custom-input task3-input-y";
+        inputY.className = "custom-input";
         inputY.placeholder = "Y";
-        inputY.style.width = "140px";
+        inputY.style.width = "120px";
 
         if (practice1State.customSelects[rowKey]) {
             if (practice1State.customSelects[rowKey].x) inputX.value = practice1State.customSelects[rowKey].x;
             if (practice1State.customSelects[rowKey].y) inputY.value = practice1State.customSelects[rowKey].y;
         }
 
-        const typeLabel = document.createElement("span");
-        typeLabel.style.fontSize = "12px";
-        typeLabel.style.color = "var(--text-secondary)";
-        typeLabel.style.marginLeft = "4px";
-        typeLabel.style.marginRight = "8px";
-        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
-
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
-        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Record your voice.</span>';
         recordBtn.disabled = true;
 
         const stopBtn = document.createElement("button");
         stopBtn.className = "example-button custom-tip-wrap";
-        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement("span");
@@ -572,12 +545,10 @@ function initTask3() {
         resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
         resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
 
-        topRow.appendChild(listenBtn);
         topRow.appendChild(indexSpan);
         topRow.appendChild(inputX);
         topRow.appendChild(labelHa);
         topRow.appendChild(inputY);
-        topRow.appendChild(typeLabel);
         topRow.appendChild(recordBtn);
         topRow.appendChild(stopBtn);
         topRow.appendChild(resultSpan);
@@ -586,60 +557,135 @@ function initTask3() {
             appendPersistedPlayButton(resultSpan, rowKey, 0.9);
         }
 
-        const correctionBox = document.createElement("div");
-        correctionBox.className = "correction-box";
-        const corrListenBtn = document.createElement("button");
-        corrListenBtn.className = "example-button";
-        corrListenBtn.innerHTML = "🔊 きく";
-        corrListenBtn.style.marginRight = "8px";
-        const corrTextSpan = document.createElement("span");
-        correctionBox.appendChild(corrListenBtn);
-        correctionBox.appendChild(corrTextSpan);
-
         rowDiv.appendChild(topRow);
-        rowDiv.appendChild(correctionBox);
 
-        const updateDisplay = () => {
+        const updateState = () => {
             const valX = inputX.value.trim();
             const valY = inputY.value.trim();
-
             if (!practice1State.customSelects[rowKey]) practice1State.customSelects[rowKey] = {};
             practice1State.customSelects[rowKey].x = inputX.value;
             practice1State.customSelects[rowKey].y = inputY.value;
 
             if (valX && valY) {
                 recordBtn.disabled = false;
-                listenBtn.disabled = false;
-                listenBtn.onclick = () => {
-                    setPlayingState(listenBtn, "Playing...");
-                    const resX = resolveData(valX);
-                    const resY = resolveData(valY);
-                    speakText(isCustomNeg ? `${resX.kanji}は、${resY.kanji}じゃないです。` : `${resX.kanji}は、${resY.kanji}です。`, 0.9, () => stopAllPlayback());
-                };
             } else {
                 recordBtn.disabled = true;
-                listenBtn.disabled = true;
                 stopBtn.disabled = true;
             }
         };
 
-        inputX.addEventListener("input", updateDisplay);
-        inputY.addEventListener("input", updateDisplay);
-        updateDisplay();
+        inputX.addEventListener("input", updateState);
+        inputY.addEventListener("input", updateState);
+        updateState();
 
-        bindRecorderEvents(
-            recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
-            () => resolveData(inputX.value).hira, () => resolveData(inputY.value).hira,
-            () => {
-                const rX = resolveData(inputX.value);
-                const rY = resolveData(inputY.value);
-                return isCustomNeg ? `${rX.kanji}は${rY.kanji}じゃないです` : `${rX.kanji}は${rY.kanji}です`;
-            },
-            isCustomNeg, 0.9, rowKey
-        );
+        // 判定を行わず、単に録音して自分の音声を再生・確認できるセルフチェック専用の録音イベントバインド
+        bindSelfCheckRecorderEvents(recordBtn, stopBtn, resultSpan, rowKey);
 
         listDiv.appendChild(rowDiv);
     }
+}
+
+// Drill 3専用のセルフチェック（判定なし、録音・再生のみ）録音イベント
+function bindSelfCheckRecorderEvents(recordBtn, stopBtn, resultSpan, rowKey) {
+    let session = null;
+    let lastAudioUrl = practice1State.audioUrls[rowKey] || null;
+
+    recordBtn.addEventListener("click", async () => {
+        if (recordBtn.disabled) return;
+        stopAllPlayback();
+
+        let stream;
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
+        catch (err) {
+            resultSpan.textContent = "Microphone access denied.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        if (lastAudioUrl) { URL.revokeObjectURL(lastAudioUrl); lastAudioUrl = null; }
+
+        const currentSession = {
+            finished: false, stopRequested: false, mediaRecorder: null, audioChunks: [], stream: stream
+        };
+        session = currentSession;
+
+        try {
+            const mediaRecorder = new MediaRecorder(stream);
+            currentSession.mediaRecorder = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
+                lastAudioUrl = URL.createObjectURL(audioBlob);
+                practice1State.audioUrls[rowKey] = lastAudioUrl;
+                stream.getTracks().forEach(track => track.stop());
+
+                resultSpan.textContent = "Recorded ✅ ";
+                resultSpan.style.color = "var(--text-primary)";
+
+                let playBtn = resultSpan.querySelector(".play-recording-btn");
+                if (!playBtn) {
+                    playBtn = document.createElement("button");
+                    playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+                    playBtn.style.marginLeft = "8px";
+                    playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+                    playBtn.onclick = () => {
+                        if (lastAudioUrl) {
+                            setPlayingState(playBtn, "Playing...");
+                            const audio = new Audio(lastAudioUrl);
+                            currentPlayingAudio = audio;
+                            audio.onended = () => stopAllPlayback();
+                            audio.play().catch(e => stopAllPlayback());
+                        }
+                    };
+                    resultSpan.appendChild(playBtn);
+                }
+
+                if (isAutoPlay) {
+                    setPlayingState(playBtn, "Playing...");
+                    const audio = new Audio(lastAudioUrl);
+                    currentPlayingAudio = audio;
+                    audio.playbackRate = 1.0;
+                    audio.onended = () => stopAllPlayback();
+                    audio.play().catch(e => stopAllPlayback());
+                }
+
+                recordBtn.disabled = false;
+                stopBtn.disabled = true;
+                stopBtn.classList.remove("stop-btn-active");
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+            if (isManualStop) stopBtn.classList.add("stop-btn-active");
+            else stopBtn.classList.remove("stop-btn-active");
+
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--accent-color)";
+
+            mediaRecorder.start();
+
+            if (!isManualStop) {
+                setTimeout(() => {
+                    if (currentSession.mediaRecorder && currentSession.mediaRecorder.state === "recording") {
+                        currentSession.mediaRecorder.stop();
+                    }
+                }, 3000);
+            }
+        } catch (err) {
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+        }
+    });
+
+    stopBtn.addEventListener("click", () => {
+        if (!session || session.finished) return;
+        session.finished = true;
+        stopAllPlayback();
+        if (session.mediaRecorder && session.mediaRecorder.state === "recording") {
+            try { session.mediaRecorder.stop(); } catch (e) {}
+        }
+    });
 }
 
 function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, targetKanjiX, targetY, targetKanjiY, isNeg, playRate, rowKey) {
@@ -928,6 +974,7 @@ function processRecognitionResult(
         correctionBox.style.display = "block";
     }
 
+    // モデル音と再生音の間の間隔を完全になくす（0秒設定：モデル終了後即座に録音音声を再生）
     if (isAutoPlay && rowKey) {
         const recordedAudioUrl = practice1State.audioUrls[rowKey];
         if (recordedAudioUrl) {
