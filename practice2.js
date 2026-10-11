@@ -3,11 +3,11 @@
 // ============================================================================
 
 const practice2Data = [
+    { x: "おにいさん", xRomaji: "oniisan", xMeaning: "older brother", y: "がくせい", yRomaji: "gakusei", yMeaning: "student" }, // 1番目におにいさん／がくせい
     { x: "おかあさん", xRomaji: "okaasan", xMeaning: "mother", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
     { x: "おとうさん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
     { x: "おとうと", xRomaji: "otouto", xMeaning: "younger brother", y: "だいがくせい", yRomaji: "daigakusei", yMeaning: "college student" },
-    { x: "いもうと", xRomaji: "imouto", xMeaning: "younger sister", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" },
-    { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
+    { x: "いもうと", xRomaji: "imouto", xMeaning: "younger sister", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" }
 ];
 
 const rowColorThemes = [
@@ -220,7 +220,7 @@ function initExampleListen() {
     if (ex1Btn) {
         ex1Btn.addEventListener("click", () => {
             setPlayingStateMultiple([ex1Btn], "Playing...");
-            speakText("おにいさんは、がくせいですか。", 0.9, () => stopAllPlayback());
+            speakText("おかあさんは、かいしゃいんですか？", 0.9, () => stopAllPlayback());
         });
     }
 
@@ -228,7 +228,7 @@ function initExampleListen() {
     if (exYesBtn) {
         exYesBtn.addEventListener("click", () => {
             setPlayingStateMultiple([exYesBtn], "Playing...");
-            speakText("はい、がくせいです。", 0.9, () => stopAllPlayback());
+            speakText("はい、かいしゃいんです。", 0.9, () => stopAllPlayback());
         });
     }
 
@@ -236,7 +236,7 @@ function initExampleListen() {
     if (exNoBtn) {
         exNoBtn.addEventListener("click", () => {
             setPlayingStateMultiple([exNoBtn], "Playing...");
-            speakText("いいえ、がくせいじゃないです。", 0.9, () => stopAllPlayback());
+            speakText("いいえ、かいしゃいんじゃないです。", 0.9, () => stopAllPlayback());
         });
     }
 }
@@ -246,11 +246,16 @@ function initPitchTests() {
     const t2 = document.getElementById("testPitch2");
     const t3 = document.getElementById("testPitch3");
     const t4 = document.getElementById("testPitch4");
+    const n1 = document.getElementById("testNeg1");
+    const n2 = document.getElementById("testNeg2");
 
-    if (t1) t1.onclick = () => { setPlayingStateMultiple([t1], "Playing..."); speakText("おにいさんは、がくせいですか？", 0.9, () => stopAllPlayback()); };
-    if (t2) t2.onclick = () => { setPlayingStateMultiple([t2], "Playing..."); speakText("おにいさんは、がくせいですかっ？", 0.9, () => stopAllPlayback()); };
-    if (t3) t3.onclick = () => { setPlayingStateMultiple([t3], "Playing..."); speakText("おにいさんは、がくせいですかぁ～？", 0.9, () => stopAllPlayback()); };
-    if (t4) t4.onclick = () => { setPlayingStateMultiple([t4], "Playing..."); speakText("おにいさんは、がくせいですかぁ？", 0.9, () => stopAllPlayback()); };
+    if (t1) t1.onclick = () => { setPlayingStateMultiple([t1], "Playing..."); speakText("おかあさんは、かいしゃいんですか？", 0.9, () => stopAllPlayback()); };
+    if (t2) t2.onclick = () => { setPlayingStateMultiple([t2], "Playing..."); speakText("おかあさんは、かいしゃいんですかっ？", 0.9, () => stopAllPlayback()); };
+    if (t3) t3.onclick = () => { setPlayingStateMultiple([t3], "Playing..."); speakText("おかあさんは、かいしゃいんですかぁ～？", 0.9, () => stopAllPlayback()); };
+    if (t4) t4.onclick = () => { setPlayingStateMultiple([t4], "Playing..."); speakText("おかあさんは、かいしゃいんですかぁ？", 0.9, () => stopAllPlayback()); };
+
+    if (n1) n1.onclick = () => { setPlayingStateMultiple([n1], "Playing..."); speakText("いいえ、かいしゃいんじゃないです。", 0.9, () => stopAllPlayback()); };
+    if (n2) n2.onclick = () => { setPlayingStateMultiple([n2], "Playing..."); speakText("いいえ、かいしゃいんじゃ、ないです。", 0.9, () => stopAllPlayback()); };
 }
 
 function updateWordsDisplay() {
@@ -284,7 +289,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     const theme = rowColorThemes[rowIndex % rowColorThemes.length];
 
-    // 1. 質問作成行
+    // 1. 質問作成行（「ですか？」を採用）
     const qRow = document.createElement("div");
     qRow.className = "top-row";
     qRow.style.marginBottom = "6px";
@@ -294,7 +299,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
     qListenBtn.onclick = () => {
         setPlayingStateMultiple([qListenBtn], "Playing...");
-        speakText(`${item.x}は、${item.y}ですか。`, playRate, () => stopAllPlayback());
+        speakText(`${item.x}は、${item.y}ですか？`, playRate, () => stopAllPlayback());
     };
 
     const indexSpan = document.createElement("span");
@@ -357,7 +362,6 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aListenBtn.disabled = true;
     aListenBtn.style.opacity = "0.4";
 
-    // 👀Text ボタン（ホバー時は Text to show.）
     const showTextBtn = document.createElement("button");
     showTextBtn.className = "example-button custom-tip-wrap";
     showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
@@ -369,7 +373,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aPromptLabel.className = "prompt-label";
     aPromptLabel.style.minWidth = "220px";
     aPromptLabel.style.color = "var(--text-secondary)";
-    aPromptLabel.textContent = ""; // 初期状態では何も表示しない
+    aPromptLabel.textContent = "";
     let isTextVisible = false;
 
     const aRecordBtn = document.createElement("button");
@@ -387,7 +391,6 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
-    // 👀Text / 🕶️Hide 切替処理
     showTextBtn.onclick = () => {
         if (!selectedMode) return;
         isTextVisible = !isTextVisible;
@@ -759,7 +762,7 @@ function processResult(
         corrListenBtn.style.display = "inline-block";
 
         const modelText = modeType === "question" 
-            ? `${item.x}は、${item.y}ですか。`
+            ? `${item.x}は、${item.y}ですか？`
             : (!expectedIsNeg ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`);
 
         corrListenBtn.onclick = () => {
