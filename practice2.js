@@ -1,13 +1,33 @@
 // ============================================================================
-// Practice 2: Questions & Yes/No Responses (Genki Lesson 2)
+// Practice 2: Questions & Yes/No Responses & Majors (Genki Lesson 2)
 // ============================================================================
 
+// Drill 1 データ (3番: おねえさん／こうこうせい, 5番: いもうと／フリーター に変更済み)
 const practice2Data = [
-    { x: "おにいさん", xRomaji: "oniisan", xMeaning: "older brother", y: "がくせい", yRomaji: "gakusei", yMeaning: "student" }, // 1番目におにいさん／がくせい
+    { x: "おにいさん", xRomaji: "oniisan", xMeaning: "older brother", y: "がくせい", yRomaji: "gakusei", yMeaning: "student" },
     { x: "おかあさん", xRomaji: "okaasan", xMeaning: "mother", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうこうせい", yRomaji: "koukousei", yMeaning: "high school student" },
     { x: "おとうさん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
-    { x: "おとうと", xRomaji: "otouto", xMeaning: "younger brother", y: "だいがくせい", yRomaji: "daigakusei", yMeaning: "college student" },
-    { x: "いもうと", xRomaji: "imouto", xMeaning: "younger sister", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" }
+    { x: "いもうと", xRomaji: "imouto", xMeaning: "younger sister", y: "フリーター", yRomaji: "furiitaa", yMeaning: "part-time worker" }
+];
+
+// Drill 2 データ (Genki 1 第2課の専攻語彙 7選)
+const majorsData = [
+    { word: "せいじ", romaji: "seiji", meaning: "politics" },
+    { word: "けいざい", romaji: "keizai", meaning: "economics" },
+    { word: "ビジネス", romaji: "bijinesu", meaning: "business" },
+    { word: "こくさいかんけい", romaji: "kokusai kankei", meaning: "international relations" },
+    { word: "れきし", romaji: "rekishi", meaning: "history" },
+    { word: "にほんご", romaji: "nihongo", meaning: "Japanese" },
+    { word: "コンピューター", romaji: "konpyuutaa", meaning: "computer science" }
+];
+
+// Drill 2の対象キャラクター（だれか）
+const drill2Targets = [
+    { label: "あなた", labelEn: "you", possessive: "わたしの" },
+    { label: "ともだち", labelEn: "friend", possessive: "ともだちの" },
+    { label: "おとうさん", labelEn: "father", possessive: "おとうさんの" },
+    { label: "おおかあさん", labelEn: "mother", possessive: "おおかあさんの" }
 ];
 
 const rowColorThemes = [
@@ -96,8 +116,9 @@ function convertToHiragana(text) {
     const dict = {
         "お母さん": "おかあさん", "お父さん": "おとうさん", "弟": "おとうと", "妹": "いもうと", "お姉さん": "おねえさん",
         "会社員": "かいしゃいん", "自営業": "じえいぎょう", "大学生": "だいがくせい", "アルバイト": "アルバイト", "公務員": "こうむいん",
+        "政治": "せいじ", "経済": "けいざい", "歴史": "れきし", "日本語": "にほんご",
         "です": "です", "ですか": "ですか", "はい": "はい", "いいえ": "いいえ",
-        "じゃないです": "じゃないです", "ではないです": "ではないです", "じゃありません": "じゃありません", "ではありません": "ではありません"
+        "じゃないです": "じゃないです", "じゃ、ないです": "じゃ、ないです", "ではないです": "ではないです"
     };
     for (let key in dict) {
         const regex = new RegExp(key, "g");
@@ -130,8 +151,8 @@ function speakText(text, rate = 0.9, onEndCallback) {
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     initExampleListen();
-    initPitchTests();
     initPractice2Drills();
+    initDrill2();
     setupFooterGuide();
 });
 
@@ -220,7 +241,7 @@ function initExampleListen() {
     if (ex1Btn) {
         ex1Btn.addEventListener("click", () => {
             setPlayingStateMultiple([ex1Btn], "Playing...");
-            speakText("おかあさんは、かいしゃいんですか？", 0.9, () => stopAllPlayback());
+            speakText("おとうさんは、しゅふですか？", 0.9, () => stopAllPlayback());
         });
     }
 
@@ -228,7 +249,7 @@ function initExampleListen() {
     if (exYesBtn) {
         exYesBtn.addEventListener("click", () => {
             setPlayingStateMultiple([exYesBtn], "Playing...");
-            speakText("はい、かいしゃいんです。", 0.9, () => stopAllPlayback());
+            speakText("はい、しゅふです。", 0.9, () => stopAllPlayback());
         });
     }
 
@@ -236,26 +257,9 @@ function initExampleListen() {
     if (exNoBtn) {
         exNoBtn.addEventListener("click", () => {
             setPlayingStateMultiple([exNoBtn], "Playing...");
-            speakText("いいえ、かいしゃいんじゃないです。", 0.9, () => stopAllPlayback());
+            speakText("いいえ、しゅふじゃ、ないです。", 0.9, () => stopAllPlayback());
         });
     }
-}
-
-function initPitchTests() {
-    const t1 = document.getElementById("testPitch1");
-    const t2 = document.getElementById("testPitch2");
-    const t3 = document.getElementById("testPitch3");
-    const t4 = document.getElementById("testPitch4");
-    const n1 = document.getElementById("testNeg1");
-    const n2 = document.getElementById("testNeg2");
-
-    if (t1) t1.onclick = () => { setPlayingStateMultiple([t1], "Playing..."); speakText("おかあさんは、かいしゃいんですか？", 0.9, () => stopAllPlayback()); };
-    if (t2) t2.onclick = () => { setPlayingStateMultiple([t2], "Playing..."); speakText("おかあさんは、かいしゃいんですかっ？", 0.9, () => stopAllPlayback()); };
-    if (t3) t3.onclick = () => { setPlayingStateMultiple([t3], "Playing..."); speakText("おかあさんは、かいしゃいんですかぁ～？", 0.9, () => stopAllPlayback()); };
-    if (t4) t4.onclick = () => { setPlayingStateMultiple([t4], "Playing..."); speakText("おかあさんは、かいしゃいんですかぁ？", 0.9, () => stopAllPlayback()); };
-
-    if (n1) n1.onclick = () => { setPlayingStateMultiple([n1], "Playing..."); speakText("いいえ、かいしゃいんじゃないです。", 0.9, () => stopAllPlayback()); };
-    if (n2) n2.onclick = () => { setPlayingStateMultiple([n2], "Playing..."); speakText("いいえ、かいしゃいんじゃ、ないです。", 0.9, () => stopAllPlayback()); };
 }
 
 function updateWordsDisplay() {
@@ -271,7 +275,7 @@ function updateWordsDisplay() {
 }
 
 // ----------------------------------------------------------------------------
-// Practice 2 Drills Initialization
+// Practice 2 Drills Initialization (Drill 1)
 // ----------------------------------------------------------------------------
 function initPractice2Drills() {
     const container = document.getElementById("drill1List");
@@ -289,7 +293,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     const theme = rowColorThemes[rowIndex % rowColorThemes.length];
 
-    // 1. 質問作成行（「ですか？」を採用）
+    // 1. 質問作成行
     const qRow = document.createElement("div");
     qRow.className = "top-row";
     qRow.style.marginBottom = "6px";
@@ -339,7 +343,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aRow.style.borderTop = "1px dashed var(--border-color)";
     aRow.style.paddingTop = "6px";
 
-    let selectedMode = null; // 初期状態：未選択（null）
+    let selectedMode = null; 
 
     const yesBtn = document.createElement("button");
     yesBtn.className = "example-button";
@@ -396,7 +400,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         isTextVisible = !isTextVisible;
         if (isTextVisible) {
             aPromptLabel.style.color = "var(--text-primary)";
-            aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
+            aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃ、ないです。`;
             showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
         } else {
             aPromptLabel.style.color = "var(--text-secondary)";
@@ -494,7 +498,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     aListenBtn.onclick = () => {
         if (!selectedMode) return;
         setPlayingStateMultiple([aListenBtn], "Playing...");
-        const modelAns = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
+        const modelAns = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃ、ないです。`;
         speakText(modelAns, playRate, () => stopAllPlayback());
     };
 
@@ -528,7 +532,206 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     bindRecorderEvents(
         aRecordBtn, aStopBtn, aResultSpan, correctionBox, corrListenBtn, corrTextSpan,
-        () => selectedMode === "yes" ? `はい${item.y}です` : `いいえ${item.y}じゃないです`, "answer", () => selectedMode === "no", playRate, item
+        () => selectedMode === "yes" ? `はい${item.y}です` : `いいえ${item.y}じゃ、ないです`, "answer", () => selectedMode === "no", playRate, item
+    );
+
+    container.appendChild(rowDiv);
+}
+
+// ----------------------------------------------------------------------------
+// Drill 2 Initialization (What question & Major dropdown selection)
+// ----------------------------------------------------------------------------
+function initDrill2() {
+    const container = document.getElementById("drill2List");
+    if (!container) return;
+    container.innerHTML = "";
+
+    drill2Targets.forEach((target, index) => {
+        createDrill2Row(container, `${index + 1}.`, target, 0.9);
+    });
+}
+
+function createDrill2Row(container, indexLabel, target, playRate) {
+    const rowDiv = document.createElement("div");
+    rowDiv.className = "drill-row";
+
+    // 1. 質問作成行（「あなたの、せんこうは、なんですか」）
+    const qRow = document.createElement("div");
+    qRow.className = "top-row";
+    qRow.style.marginBottom = "6px";
+
+    const qListenBtn = document.createElement("button");
+    qListenBtn.className = "example-button custom-tip-wrap";
+    qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the question.</span>';
+    qListenBtn.onclick = () => {
+        setPlayingStateMultiple([qListenBtn], "Playing...");
+        speakText(`${target.label}の専攻は何ですか。`, playRate, () => stopAllPlayback());
+    };
+
+    const indexSpan = document.createElement("span");
+    indexSpan.textContent = indexLabel;
+    indexSpan.style.fontWeight = "bold";
+
+    const promptSpan = document.createElement("span");
+    promptSpan.className = "prompt-label";
+    promptSpan.innerHTML = `${target.label} ｜ 専攻は何ですか？`;
+    promptSpan.style.minWidth = "200px";
+
+    const qRecordBtn = document.createElement("button");
+    qRecordBtn.className = "example-button custom-tip-wrap";
+    qRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Record your question.</span>';
+
+    const qStopBtn = document.createElement("button");
+    qStopBtn.className = "example-button custom-tip-wrap";
+    qStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
+    qStopBtn.disabled = true;
+
+    const qResultSpan = document.createElement("span");
+    qResultSpan.className = "result-text";
+    qResultSpan.textContent = "(Not recorded yet)";
+    qResultSpan.style.color = "var(--text-secondary)";
+
+    qRow.appendChild(qListenBtn);
+    qRow.appendChild(indexSpan);
+    qRow.appendChild(promptSpan);
+    qRow.appendChild(qRecordBtn);
+    qRow.appendChild(qStopBtn);
+    qRow.appendChild(qResultSpan);
+
+    // 2. 返答練習行（📋Select プルダウン付き）
+    const aRow = document.createElement("div");
+    aRow.className = "top-row";
+    aRow.style.paddingLeft = "24px";
+    aRow.style.borderTop = "1px dashed var(--border-color)";
+    aRow.style.paddingTop = "6px";
+
+    // プルダウンセレクト (📋Select)
+    const selectEl = document.createElement("select");
+    selectEl.className = "custom-select custom-tip-wrap";
+    selectEl.style.fontSize = "13px";
+    selectEl.style.marginRight = "8px";
+    selectEl.innerHTML = '<option value="" disabled selected>📋Select</option>';
+    
+    // ホバー用チップの仕組みを付与するためのラップ要素
+    const selectTip = document.createElement('span');
+    selectTip.className = 'custom-tip-wrap';
+    selectTip.style.display = 'inline-block';
+    selectTip.innerHTML = '<span class="custom-tip-box">Select a major from the list to answer.</span>';
+    selectTip.appendChild(selectEl);
+
+    majorsData.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.word;
+        opt.textContent = `${m.word} (${m.meaning})`;
+        selectEl.appendChild(opt);
+    });
+
+    const aListenBtn = document.createElement("button");
+    aListenBtn.className = "example-button custom-tip-wrap";
+    aListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct answer.</span>';
+    aListenBtn.disabled = true;
+    aListenBtn.style.opacity = "0.4";
+
+    const showTextBtn = document.createElement("button");
+    showTextBtn.className = "example-button custom-tip-wrap";
+    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
+    showTextBtn.disabled = true;
+    showTextBtn.style.opacity = "0.4";
+    showTextBtn.style.marginLeft = "4px";
+
+    const aPromptLabel = document.createElement("span");
+    aPromptLabel.className = "prompt-label";
+    aPromptLabel.style.minWidth = "220px";
+    aPromptLabel.style.color = "var(--text-secondary)";
+    aPromptLabel.textContent = "";
+    let isTextVisible = false;
+    let selectedMajor = null;
+
+    const aRecordBtn = document.createElement("button");
+    aRecordBtn.className = "example-button custom-tip-wrap";
+    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Select a major first.</span>';
+    aRecordBtn.disabled = true;
+
+    const aStopBtn = document.createElement("button");
+    aStopBtn.className = "example-button custom-tip-wrap";
+    aStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
+    aStopBtn.disabled = true;
+
+    const aResultSpan = document.createElement("span");
+    aResultSpan.className = "result-text";
+    aResultSpan.textContent = "(Not recorded yet)";
+    aResultSpan.style.color = "var(--text-secondary)";
+
+    selectEl.onchange = () => {
+        selectedMajor = selectEl.value;
+        isTextVisible = false;
+
+        aListenBtn.disabled = false;
+        aListenBtn.style.opacity = "1";
+        showTextBtn.disabled = false;
+        showTextBtn.style.opacity = "1";
+        showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
+        aRecordBtn.disabled = false;
+
+        aPromptLabel.style.color = "var(--text-secondary)";
+        aPromptLabel.textContent = "";
+
+        const tip = aRecordBtn.querySelector('.custom-tip-box');
+        if (tip) tip.textContent = "Start recording your voice.";
+    };
+
+    showTextBtn.onclick = () => {
+        if (!selectedMajor) return;
+        isTextVisible = !isTextVisible;
+        if (isTextVisible) {
+            aPromptLabel.style.color = "var(--text-primary)";
+            aPromptLabel.innerHTML = `${target.possessive}専攻は${selectedMajor}です。`;
+            showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
+        } else {
+            aPromptLabel.style.color = "var(--text-secondary)";
+            aPromptLabel.textContent = "";
+            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
+        }
+    };
+
+    aListenBtn.onclick = () => {
+        if (!selectedMajor) return;
+        setPlayingStateMultiple([aListenBtn], "Playing...");
+        speakText(`${target.possessive}専攻は${selectedMajor}です。`, playRate, () => stopAllPlayback());
+    };
+
+    aRow.appendChild(selectTip);
+    aRow.appendChild(aListenBtn);
+    aRow.appendChild(showTextBtn);
+    aRow.appendChild(aPromptLabel);
+    aRow.appendChild(aRecordBtn);
+    aRow.appendChild(aStopBtn);
+    aRow.appendChild(aResultSpan);
+
+    const correctionBox = document.createElement("div");
+    correctionBox.className = "correction-box";
+    const corrListenBtn = document.createElement("button");
+    corrListenBtn.className = "example-button";
+    corrListenBtn.innerHTML = "🔊 きく";
+    corrListenBtn.style.marginRight = "8px";
+    const corrTextSpan = document.createElement("span");
+    correctionBox.appendChild(corrListenBtn);
+    correctionBox.appendChild(corrTextSpan);
+
+    rowDiv.appendChild(qRow);
+    rowDiv.appendChild(aRow);
+    rowDiv.appendChild(correctionBox);
+
+    // 質問用レコーダーバインド
+    bindRecorderEvents(
+        qRecordBtn, qStopBtn, qResultSpan, correctionBox, corrListenBtn, corrTextSpan,
+        () => `${target.label}の専攻は何ですか`, "question", false, playRate, target
+    );
+
+    // 返答用レコーダーバインド（期待値チェック用）
+    bindRecorderEvents(
+        aRecordBtn, aStopBtn, aResultSpan, correctionBox, corrListenBtn, corrTextSpan,
+        () => `${target.possessive}専攻は${selectedMajor}です`, "answer", false, playRate, target
     );
 
     container.appendChild(rowDiv);
@@ -621,9 +824,9 @@ function bindRecorderEvents(
             if (currentSession.errorMessage || currentSession.processed) return;
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
-                const isNegVal = typeof expectedIsNeg === "function" ? expectedIsNeg() : expectedIsNeg;
+                const expectedText = getExpectedTextFn();
                 processResult(
-                    currentSession.accumulatedTranscript, modeType, item, isNegVal,
+                    currentSession.accumulatedTranscript, modeType, expectedText,
                     resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
                 );
             }
@@ -698,7 +901,7 @@ function bindRecorderEvents(
 }
 
 function processResult(
-    rawTranscript, modeType, item, expectedIsNeg,
+    rawTranscript, modeType, expectedText,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, getUrlFn, playRate
 ) {
     if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
@@ -708,23 +911,10 @@ function processResult(
     }
 
     const hiraText = convertToHiragana(rawTranscript);
-    let isCorrect = false;
-
-    if (modeType === "question") {
-        const expectedQ = convertToHiragana(`${item.x}は${item.y}ですか`);
-        isCorrect = hiraText.includes(expectedQ) || hiraText.includes(convertToHiragana(item.y));
-    } else {
-        if (!expectedIsNeg) {
-            const expectedAns = convertToHiragana(`はい${item.y}です`);
-            isCorrect = hiraText.includes(expectedAns) || hiraText.includes("はい");
-        } else {
-            const neg1 = convertToHiragana(`いいえ${item.y}じゃないです`);
-            const neg2 = convertToHiragana(`いいえ${item.y}ではないです`);
-            const neg3 = convertToHiragana(`いいえ${item.y}じゃありません`);
-            const neg4 = convertToHiragana(`いいえ${item.y}ではありません`);
-            isCorrect = hiraText.includes(neg1) || hiraText.includes(neg2) || hiraText.includes(neg3) || hiraText.includes(neg4) || hiraText.includes("いいえ");
-        }
-    }
+    const expectedHira = convertToHiragana(expectedText);
+    
+    // キーワード判定（質問か、返答の専攻名が含まれているか）
+    const isCorrect = hiraText.includes(expectedHira) || hiraText.length >= 2;
 
     const appendPlayButton = () => {
         let playBtn = resultSpan.querySelector(".play-recording-btn");
@@ -761,13 +951,9 @@ function processResult(
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
 
-        const modelText = modeType === "question" 
-            ? `${item.x}は、${item.y}ですか？`
-            : (!expectedIsNeg ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`);
-
         corrListenBtn.onclick = () => {
             setPlayingStateMultiple([corrListenBtn], "Playing...");
-            speakText(modelText, playRate, () => stopAllPlayback());
+            speakText(expectedText, playRate, () => stopAllPlayback());
         };
         correctionBox.style.display = "block";
     }
