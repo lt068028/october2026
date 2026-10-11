@@ -10,13 +10,13 @@ const practice2Data = [
     { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
 ];
 
-// 5行それぞれ異なるカラーテーマ（未選択時の規定値はすべて4つ目のライトブルー `#bae6fd`）
+// 緑色は統一（#4ade80）、赤色は5段階のグラデーション、未選択時はライトブルー（#bae6fd）
 const rowColorThemes = [
-    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#f87171" }, // 1: ライトブルーベース
-    { unselected: "#bae6fd", yesActive: "#34d399", noActive: "#f43f5e" }, // 2: ライトブルーベース
-    { unselected: "#bae6fd", yesActive: "#22c55e", noActive: "#ef4444" }, // 3: ライトブルーベース
-    { unselected: "#bae6fd", yesActive: "#16a34a", noActive: "#dc2626" }, // 4: ライトブルーベース
-    { unselected: "#bae6fd", yesActive: "#15803d", noActive: "#b91c1c" }  // 5: ライトブルーベース
+    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#fca5a5" }, // 1番行：ライトレッド
+    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#f87171" }, // 2番行：ソフトレッド
+    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#ef4444" }, // 3番行：ミディアムレッド
+    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#dc2626" }, // 4番行：ディープレッド
+    { unselected: "#bae6fd", yesActive: "#4ade80", noActive: "#b91c1c" }  // 5番行：ご指定の濃い赤
 ];
 
 let isManualStop = false;
@@ -324,7 +324,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
 
     let selectedMode = null; // 初期状態：未選択（null）
 
-    // 🙆 ボタン（初期状態はライトブルー `#bae6fd`）
+    // 🙆 ボタン（初期状態はライトブルー）
     const yesBtn = document.createElement("button");
     yesBtn.className = "example-button";
     yesBtn.style.minWidth = "40px";
@@ -332,7 +332,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     yesBtn.style.backgroundColor = theme.unselected;
     yesBtn.style.fontWeight = "bold";
 
-    // 🙅 ボタン（初期状態はライトブルー `#bae6fd`）
+    // 🙅 ボタン（初期状態はライトブルー）
     const noBtn = document.createElement("button");
     noBtn.className = "example-button";
     noBtn.style.minWidth = "40px";
@@ -372,7 +372,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     // 🙆 ボタンクリック時の処理
     yesBtn.onclick = () => {
         if (selectedMode === "yes") {
-            // すでに選択されている状態で再度押されたら選択解除（標準状態に戻す）
+            // 再度クリックされたら選択解除（標準状態に戻す）
             selectedMode = null;
             yesBtn.style.backgroundColor = theme.unselected;
             yesBtn.style.opacity = "1";
@@ -395,7 +395,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         yesBtn.style.backgroundColor = theme.yesActive;
         yesBtn.style.opacity = "1";
         noBtn.style.backgroundColor = theme.unselected;
-        noBtn.style.opacity = "0.55"; // 非選択側は不透明度55%で減光
+        noBtn.style.opacity = "0.55"; // 非選択側は55%に減光
 
         aPromptLabel.style.color = "var(--text-primary)";
         aPromptLabel.innerHTML = `はい、${item.y}です。`;
@@ -411,7 +411,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
     // 🙅 ボタンクリック時の処理
     noBtn.onclick = () => {
         if (selectedMode === "no") {
-            // すでに選択されている状態で再度押されたら選択解除（標準状態に戻す）
+            // 再度クリックされたら選択解除（標準状態に戻す）
             selectedMode = null;
             noBtn.style.backgroundColor = theme.unselected;
             noBtn.style.opacity = "1";
@@ -434,7 +434,7 @@ function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
         noBtn.style.backgroundColor = theme.noActive;
         noBtn.style.opacity = "1";
         yesBtn.style.backgroundColor = theme.unselected;
-        yesBtn.style.opacity = "0.55"; // 非選択側は不透明度55%で減光
+        yesBtn.style.opacity = "0.55"; // 非選択側は55%に減光
 
         aPromptLabel.style.color = "var(--text-primary)";
         aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
@@ -666,7 +666,7 @@ function processResult(
     let isCorrect = false;
 
     if (modeType === "question") {
-        const expectedQ = convertToHiragana(`${item.x}は${item.y}ですか`);
+        const expectedQ = convertToHiragana(`${item.x}は${item.y}ですか？`);
         isCorrect = hiraText.includes(expectedQ) || hiraText.includes(convertToHiragana(item.y));
     } else {
         if (!expectedIsNeg) {
