@@ -3,14 +3,15 @@
 // ============================================================================
 
 const practice2Data = [
-    { x: "おかあさん", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
-    { x: "おとうさん", y: "じえいぎょう", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
-    { x: "おとうと", y: "だいがくせい", yRomaji: "daigakusei", yMeaning: "college student" },
-    { x: "いもうと", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" },
-    { x: "おねえさん", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
+    { x: "おかあさん", xRomaji: "okaasan", xMeaning: "mother", y: "かいしゃいん", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "おとうさん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
+    { x: "おとうと", xRomaji: "otouto", xMeaning: "younger brother", y: "だいがくせい", yRomaji: "daigakusei", yMeaning: "college student" },
+    { x: "いもうと", xRomaji: "imouto", xMeaning: "younger sister", y: "アルバイト", yRomaji: "arubaito", yMeaning: "part-time worker" },
+    { x: "おねえさん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうむいん", yRomaji: "koumuin", yMeaning: "civil servant" }
 ];
 
 let isManualStop = false;
+let hintMode = "hover";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
@@ -137,6 +138,19 @@ function setupFooterGuide() {
     }
 }
 
+function formatWord(word, romaji, meaning) {
+    const hintStr = `${romaji}, ${meaning}`;
+    if (hintMode === "paren") {
+        return `<span class="target-word">${word}</span> (${hintStr})`;
+    }
+    return `
+        <span class="tooltip-wrap">
+            <span class="target-word">${word}</span>
+            <span class="tooltip-tip">${hintStr}</span>
+        </span>
+    `;
+}
+
 function initSettingsPanel() {
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
@@ -150,6 +164,21 @@ function initSettingsPanel() {
         });
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
+    }
+
+    const toggleHintMode = document.getElementById("toggleHintMode");
+    const labelHoverHint = document.getElementById("labelHoverHint");
+    const labelParenHint = document.getElementById("labelParenHint");
+
+    if (toggleHintMode) {
+        toggleHintMode.addEventListener("change", (e) => {
+            hintMode = e.target.checked ? "paren" : "hover";
+            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            updateWordsDisplay();
+        });
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
     }
 
     const togglePlaybackMode = document.getElementById("togglePlaybackMode");
@@ -203,6 +232,18 @@ function initExampleListen() {
     }
 }
 
+function updateWordsDisplay() {
+    const drillRows = document.querySelectorAll(".drill-row");
+    drillRows.forEach((row, index) => {
+        const item = practice2Data[index];
+        if (!item) return;
+        const promptSpan = row.querySelector(".prompt-content-q");
+        if (promptSpan) {
+            promptSpan.innerHTML = `${formatWord(item.x, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`;
+        }
+    });
+}
+
 // ----------------------------------------------------------------------------
 // Practice 2 Drills Initialization
 // ----------------------------------------------------------------------------
@@ -220,7 +261,7 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
-    // 1. 質問作成行（練習1の体裁に一致）
+    // 1. 質問作成行
     const qRow = document.createElement("div");
     qRow.className = "top-row";
     qRow.style.marginBottom = "6px";
@@ -238,9 +279,9 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     indexSpan.style.fontWeight = "bold";
 
     const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = `${item.x} ／ ${item.y}`;
-    promptSpan.style.minWidth = "200px";
+    promptSpan.className = "prompt-label prompt-content-q";
+    promptSpan.innerHTML = `${formatWord(item.x, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yRomaji, item.yMeaning)}`;
+    promptSpan.style.minWidth = "220px";
 
     const qRecordBtn = document.createElement("button");
     qRecordBtn.className = "example-button custom-tip-wrap";
@@ -263,38 +304,47 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     qRow.appendChild(qStopBtn);
     qRow.appendChild(qResultSpan);
 
-    // 2. 返答練習行（直下配置・体裁統一）
+    // 2. 返答練習行
     const aRow = document.createElement("div");
     aRow.className = "top-row";
     aRow.style.paddingLeft = "24px";
     aRow.style.borderTop = "1px dashed var(--border-color)";
     aRow.style.paddingTop = "6px";
 
-    let selectedMode = "yes"; // デフォルト 🙆
+    let selectedMode = null; // 初期状態：未選択（null）
 
-    const modeToggleBtn = document.createElement("button");
-    modeToggleBtn.className = "example-button";
-    modeToggleBtn.style.minWidth = "50px";
-    modeToggleBtn.innerHTML = "🙆";
-    modeToggleBtn.style.backgroundColor = "var(--accent-bg, #e0f2fe)";
+    // 🙆 ボタン
+    const yesBtn = document.createElement("button");
+    yesBtn.className = "example-button";
+    yesBtn.style.minWidth = "40px";
+    yesBtn.innerHTML = "🙆";
+    yesBtn.style.backgroundColor = "#facc15"; // 未選択時は目立つ黄色
+
+    // 🙅 ボタン
+    const noBtn = document.createElement("button");
+    noBtn.className = "example-button";
+    noBtn.style.minWidth = "40px";
+    noBtn.innerHTML = "🙅";
+    noBtn.style.backgroundColor = "#facc15"; // 未選択時は目立つ黄色
+    noBtn.style.marginLeft = "4px";
 
     const aListenBtn = document.createElement("button");
     aListenBtn.className = "example-button custom-tip-wrap";
     aListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-    aListenBtn.onclick = () => {
-        setPlayingStateMultiple([aListenBtn], "Playing...");
-        const modelAns = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
-        speakText(modelAns, playRate, () => stopAllPlayback());
-    };
+    aListenBtn.disabled = true;
+    aListenBtn.style.opacity = "0.4";
 
     const aPromptLabel = document.createElement("span");
     aPromptLabel.className = "prompt-label";
-    aPromptLabel.style.minWidth = "200px";
-    aPromptLabel.innerHTML = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
+    aPromptLabel.style.minWidth = "220px";
+    aPromptLabel.style.color = "var(--text-secondary)";
+    aPromptLabel.textContent = "(Choose 🙆 or 🙅 first)";
 
+    // ⏺️とるボタン（初期はグレーアウトし、ホバー時に警告を表示）
     const aRecordBtn = document.createElement("button");
     aRecordBtn.className = "example-button custom-tip-wrap";
-    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Choose 🙆 or 🙅.</span>';
+    aRecordBtn.disabled = true;
 
     const aStopBtn = document.createElement("button");
     aStopBtn.className = "example-button custom-tip-wrap";
@@ -306,21 +356,54 @@ function createPractice2Row(container, indexLabel, item, playRate) {
     aResultSpan.textContent = "(Not recorded yet)";
     aResultSpan.style.color = "var(--text-secondary)";
 
-    modeToggleBtn.onclick = () => {
-        if (selectedMode === "yes") {
-            selectedMode = "no";
-            modeToggleBtn.innerHTML = "🙅";
-            modeToggleBtn.style.backgroundColor = "var(--error-bg, #fee2e2)";
-            aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
-        } else {
-            selectedMode = "yes";
-            modeToggleBtn.innerHTML = "🙆";
-            modeToggleBtn.style.backgroundColor = "var(--accent-bg, #e0f2fe)";
-            aPromptLabel.innerHTML = `はい、${item.y}です。`;
-        }
+    // 🙆 ボタンクリック時の処理
+    yesBtn.onclick = () => {
+        selectedMode = "yes";
+        yesBtn.style.backgroundColor = "#15803d"; // 選択時：濃い緑
+        yesBtn.style.color = "#fff";
+        noBtn.style.backgroundColor = "#e2e8f0"; // 非選択時
+        noBtn.style.color = "inherit";
+
+        aPromptLabel.style.color = "var(--text-primary)";
+        aPromptLabel.innerHTML = `はい、${item.y}です。`;
+
+        aListenBtn.disabled = false;
+        aListenBtn.style.opacity = "1";
+        aRecordBtn.disabled = false;
+
+        // ツールチップを更新
+        const tip = aRecordBtn.querySelector('.custom-tip-box');
+        if (tip) tip.textContent = "Start recording your voice.";
     };
 
-    aRow.appendChild(modeToggleBtn);
+    // 🙅 ボタンクリック時の処理
+    noBtn.onclick = () => {
+        selectedMode = "no";
+        noBtn.style.backgroundColor = "#b91c1c"; // 選択時：濃い赤
+        noBtn.style.color = "#fff";
+        yesBtn.style.backgroundColor = "#e2e8f0"; // 非選択時
+        yesBtn.style.color = "inherit";
+
+        aPromptLabel.style.color = "var(--text-primary)";
+        aPromptLabel.innerHTML = `いいえ、${item.y}じゃないです。`;
+
+        aListenBtn.disabled = false;
+        aListenBtn.style.opacity = "1";
+        aRecordBtn.disabled = false;
+
+        const tip = aRecordBtn.querySelector('.custom-tip-box');
+        if (tip) tip.textContent = "Start recording your voice.";
+    };
+
+    aListenBtn.onclick = () => {
+        if (!selectedMode) return;
+        setPlayingStateMultiple([aListenBtn], "Playing...");
+        const modelAns = selectedMode === "yes" ? `はい、${item.y}です。` : `いいえ、${item.y}じゃないです。`;
+        speakText(modelAns, playRate, () => stopAllPlayback());
+    };
+
+    aRow.appendChild(yesBtn);
+    aRow.appendChild(noBtn);
     aRow.appendChild(aListenBtn);
     aRow.appendChild(aPromptLabel);
     aRow.appendChild(aRecordBtn);
@@ -441,8 +524,9 @@ function bindRecorderEvents(
             if (currentSession.errorMessage || currentSession.processed) return;
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
+                const isNegVal = typeof expectedIsNeg === "function" ? expectedIsNeg() : expectedIsNeg;
                 processResult(
-                    currentSession.accumulatedTranscript, modeType, item, expectedIsNeg,
+                    currentSession.accumulatedTranscript, modeType, item, isNegVal,
                     resultSpan, correctionBox, corrListenBtn, corrTextSpan, () => lastAudioUrl, playRate
                 );
             }
