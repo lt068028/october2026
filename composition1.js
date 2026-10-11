@@ -15,27 +15,21 @@ const drill1Data = [
 
 let isManualStop = false;
 let isAutoPlay = true; 
-let useHiraganaOnly = false; // デフォルトは With漢字 (false)
+let useHiraganaOnly = false; 
 let activeRecognitionSession = null;
 
 const savedAudioUrls = {};
 
-// ============================================================================
-// Voice Setup
-// ============================================================================
 let preferredVoice = null;
-
 function setupPreferredVoice() {
     try {
         const voices = speechSynthesis.getVoices();
         if (!voices || voices.length === 0) return;
-
         let selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("chrome os") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
         if (!selected) selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
         if (!selected) selected = voices.find(v => v.name && v.lang && v.name.toLowerCase().includes("google") && v.lang.includes("ja"));
         if (!selected) selected = voices.find(v => v.lang && v.lang.includes("ja"));
-        
         if (selected) preferredVoice = selected;
     } catch (e) { console.warn("Voice setup error:", e); }
 }
@@ -47,9 +41,6 @@ if (typeof speechSynthesis !== "undefined") {
     }
 }
 
-// ============================================================================
-// Playback Control & Simultaneous Button State
-// ============================================================================
 let currentPlayingAudio = null;
 let currentPlayTimeoutId = null;
 let activePlayButtons = [];
@@ -103,7 +94,6 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-// 音声合成：常に漢字混じりの正規文を使用して品質を担保
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -115,15 +105,11 @@ function speakText(text, rate = 0.9, onEndCallback) {
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     try { speechSynthesis.speak(utterance); } catch (err) {
-        console.error("Speech synthesis error:", err);
         currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
 }
 
-// ============================================================================
-// Initialization & DOM Setup
-// ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     renderAll();
@@ -202,9 +188,6 @@ function renderAll() {
     renderDrill2Section();
 }
 
-// ============================================================================
-// Render Drill 1 Section
-// ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
     if (!container) {
@@ -228,19 +211,10 @@ function renderDrill1Section() {
     container.appendChild(listDiv);
 
     drill1Data.forEach((item, index) => {
-        createDrill1Row(
-            listDiv,
-            `${index + 1}.`,
-            item,
-            index,
-            0.9
-        );
+        createDrill1Row(listDiv, `${index + 1}.`, item, index, 0.9);
     });
 }
 
-// ============================================================================
-// Render Drill 2 Section (Drill 2: Self-Check with i-Adjective Sentences)
-// ============================================================================
 function renderDrill2Section() {
     let container = document.getElementById("drill2Container");
     if (!container) {
@@ -268,9 +242,6 @@ function renderDrill2Section() {
     }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 1 Row Creation
-// ----------------------------------------------------------------------------
 function createDrill1Row(container, indexLabel, item, rowIndex, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -363,10 +334,7 @@ function appendPersistedPlayButton(resultSpan, rowIndex, jaKanji, playRate) {
                 const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
                 audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => {
-                    console.warn("Playback failed", e);
-                    stopAllPlayback();
-                });
+                audio.play().catch(e => stopAllPlayback());
             }
         };
         resultSpan.appendChild(playBtn);
@@ -382,24 +350,12 @@ function bindDrill1RecorderEvents(
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
         currentSession.finished = true;
-
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
+        if (currentSession.watchdog !== null) { clearTimeout(currentSession.watchdog); currentSession.watchdog = null; }
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (e) {}
         }
-
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
-
+        if (currentSession.stream) { currentSession.stream.getTracks().forEach(track => track.stop()); }
+        if (activeRecognitionSession === currentSession) { activeRecognitionSession = null; }
         if (session === currentSession) {
             session = null;
             recordBtn.disabled = false;
@@ -410,22 +366,17 @@ function bindDrill1RecorderEvents(
 
     function requestStop(currentSession, abort = false, errorMessage = "") {
         if (!currentSession || currentSession.finished) return;
-
         if (errorMessage) {
             currentSession.errorMessage = errorMessage;
             resultSpan.textContent = errorMessage;
             resultSpan.style.color = "var(--error-text)";
         }
-
         const currentRecognition = currentSession.recognition;
         if (!currentRecognition) { releaseSession(currentSession); return; }
-
         if (currentSession.watchdog === null) {
             currentSession.watchdog = setTimeout(() => { releaseSession(currentSession); }, 2500);
         }
-
         try { if (abort) currentRecognition.abort(); else currentRecognition.stop(); } catch (err) {}
-        
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (err) {}
         }
@@ -434,14 +385,10 @@ function bindDrill1RecorderEvents(
     recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
         stopAllPlayback();
-
-        if (activeRecognitionSession !== null) {
-            releaseSession(activeRecognitionSession);
-        }
+        if (activeRecognitionSession !== null) { releaseSession(activeRecognitionSession); }
 
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
             resultSpan.textContent = "Speech recognition is not supported in this browser.";
             resultSpan.style.color = "var(--error-text)";
             return;
@@ -486,12 +433,10 @@ function bindDrill1RecorderEvents(
             currentSession.mediaRecorder = mediaRecorder;
 
             mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
-
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 const audioUrl = URL.createObjectURL(audioBlob);
                 savedAudioUrls[rowIndex] = audioUrl;
-
                 stream.getTracks().forEach(track => track.stop());
                 currentSession.recorderDone = true;
                 tryProcessResult();
@@ -508,19 +453,7 @@ function bindDrill1RecorderEvents(
 
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
-                
-                if (event.error === "network" || event.error === "service-not-allowed") {
-                    alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
-                }
-
-                const message =
-                    event.error === "not-allowed" || event.error === "service-not-allowed" ? "Microphone permission denied." :
-                    event.error === "no-speech" ? "No speech detected. Please try again." :
-                    event.error === "audio-capture" ? "Microphone unavailable." :
-                    event.error === "network" ? "Speech recognition network error." :
-                    event.error === "aborted" ? "Recording stopped." :
-                    "Speech recognition error. Please try again.";
-                requestStop(currentSession, true, message);
+                requestStop(currentSession, true, "Speech recognition error.");
             };
 
             currentRecognition.onend = () => {
@@ -544,15 +477,12 @@ function bindDrill1RecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
         } catch (err) {
-            console.error("Speech recognition start error:", err);
-            alert("Browser Notice\nBrave browser does not support speech recognition. Please try another browser.");
-            requestStop(currentSession, true, "Could not start recording. Please try again.");
+            requestStop(currentSession, true, "Could not start recording.");
         }
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished) return;
-        if (session.stopRequested) return;
+        if (!session || session.finished || session.stopRequested) return;
         stopAllPlayback();
         session.stopRequested = true;
         stopBtn.disabled = true;
@@ -593,7 +523,7 @@ function processDrill1Result(
 
     if (isCorrect) {
         if (isAltMatch && !isExactMatch) {
-            // 助詞違い（が ⇄ は）のとき、不一致となる助詞の1文字のみを原色の青（#0000FF）でピンポイントハイライト
+            // 助詞違い（が ⇄ は）のとき、文全体の色は変えず、不一致となる助詞の1文字のみを原色ブルー（#0000FF）でハイライト
             let highlightedHtml = "";
             for (let i = 0; i < hiraText.length; i++) {
                 if (i < expectedHira.length && hiraText[i] === expectedHira[i]) {
@@ -608,6 +538,7 @@ function processDrill1Result(
                 }
             }
             resultSpan.innerHTML = highlightedHtml + " ✅ <br><span style='font-size: 11px; color: #0000FF;'>(Both 'ga' and 'wa' are correct in this context)</span>";
+            resultSpan.style.color = "var(--text-primary)";
         } else {
             resultSpan.textContent = displayedTranscript + " ✅ ";
             resultSpan.style.color = "var(--text-primary)";
@@ -638,52 +569,24 @@ function processDrill1Result(
         correctionBox.style.display = "block";
     }
 
-    const runAutoPlaySequence = () => {
-        if (!isAutoPlay) return;
-
+    if (isAutoPlay) {
         const recordedAudioUrl = savedAudioUrls[rowIndex];
         const listenBtn = resultSpan.querySelector(".model-listen-btn");
         const playBtn = resultSpan.querySelector(".play-recording-btn");
-
-        if (!recordedAudioUrl || !listenBtn || !playBtn) return;
-
-        setPlayingStateMultiple([listenBtn, playBtn], "Playing...");
-
-        const utterance = new SpeechSynthesisUtterance(modelSpeechText);
-        utterance.lang = "ja-JP";
-        utterance.rate = playRate;
-
-        if (preferredVoice) utterance.voice = preferredVoice;
-
-        currentUtteranceRef = utterance;
-
-        utterance.onend = () => {
-            currentUtteranceRef = null;
-            currentPlayTimeoutId = setTimeout(() => {
+        if (recordedAudioUrl && playBtn) {
+            setPlayingStateMultiple([listenBtn, playBtn], "Playing...");
+            speakText(modelSpeechText, playRate, () => {
+                stopAllPlayback();
                 const audio = new Audio(recordedAudioUrl);
                 currentPlayingAudio = audio;
                 audio.playbackRate = 1.0;
                 audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => {
-                    console.warn("Auto playback failed", e);
-                    stopAllPlayback();
-                });
-            }, 100);
-        };
-
-        utterance.onerror = () => stopAllPlayback();
-
-        currentPlayTimeoutId = setTimeout(() => {
-            speechSynthesis.speak(utterance);
-        }, 500);
-    };
-
-    runAutoPlaySequence();
+                audio.play().catch(e => stopAllPlayback());
+            });
+        }
+    }
 }
 
-// ----------------------------------------------------------------------------
-// Drill 2 Initialization (Self-Check & Voice Recording)
-// ----------------------------------------------------------------------------
 function createDrill2Row(container, indexLabel, playRate) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -734,24 +637,12 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
     function releaseSession(currentSession) {
         if (!currentSession || currentSession.finished) return;
         currentSession.finished = true;
-
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
+        if (currentSession.watchdog !== null) { clearTimeout(currentSession.watchdog); currentSession.watchdog = null; }
         if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
             try { currentSession.mediaRecorder.stop(); } catch (e) {}
         }
-
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
-
+        if (currentSession.stream) { currentSession.stream.getTracks().forEach(track => track.stop()); }
+        if (activeRecognitionSession === currentSession) { activeRecognitionSession = null; }
         if (session === currentSession) {
             session = null;
             recordBtn.disabled = false;
@@ -760,39 +651,15 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
         }
     }
 
-    function requestStop(currentSession, abort = false, errorMessage = "") {
-        if (!currentSession || currentSession.finished) return;
-
-        if (errorMessage) {
-            currentSession.errorMessage = errorMessage;
-            resultSpan.textContent = errorMessage;
-            resultSpan.style.color = "var(--error-text)";
-        }
-
-        const currentMediaRecorder = currentSession.mediaRecorder;
-        if (!currentMediaRecorder) { releaseSession(currentSession); return; }
-
-        if (currentSession.watchdog === null) {
-            currentSession.watchdog = setTimeout(() => { releaseSession(currentSession); }, 2500);
-        }
-
-        if (currentMediaRecorder.state !== "inactive") {
-            try { currentMediaRecorder.stop(); } catch (err) {}
-        }
-    }
-
     recordBtn.addEventListener("click", async () => {
         if (recordBtn.disabled) return;
         stopAllPlayback();
-
-        if (activeRecognitionSession !== null) {
-            releaseSession(activeRecognitionSession);
-        }
+        if (activeRecognitionSession !== null) { releaseSession(activeRecognitionSession); }
 
         let stream;
         try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
         catch (err) {
-            resultSpan.textContent = "Microphone access denied or unavailable.";
+            resultSpan.textContent = "Microphone access denied.";
             resultSpan.style.color = "var(--error-text)";
             return;
         }
@@ -812,7 +679,6 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
             currentSession.mediaRecorder = mediaRecorder;
 
             mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
-
             mediaRecorder.onstop = () => {
                 const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
                 lastAudioUrl = URL.createObjectURL(audioBlob);
@@ -827,17 +693,13 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
                     playBtn.className = "example-button play-recording-btn custom-tip-wrap";
                     playBtn.style.marginLeft = "8px";
                     playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
-
                     playBtn.onclick = () => {
                         if (lastAudioUrl) {
                             setPlayingStateMultiple([playBtn], "Playing...");
                             const audio = new Audio(lastAudioUrl);
                             currentPlayingAudio = audio;
                             audio.onended = () => stopAllPlayback();
-                            audio.play().catch(e => {
-                                console.warn("Playback failed", e);
-                                stopAllPlayback();
-                            });
+                            audio.play().catch(e => stopAllPlayback());
                         }
                     };
                     resultSpan.appendChild(playBtn);
@@ -873,17 +735,15 @@ function bindDrill2RecorderEvents(recordBtn, stopBtn, resultSpan, playRate = 0.9
                 }, 3000);
             }
         } catch (err) {
-            console.error("Recording start error:", err);
             requestStop(currentSession, true, "Could not start recording.");
         }
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished) return;
-        if (session.stopRequested) return;
+        if (!session || session.finished || session.stopRequested) return;
         stopAllPlayback();
         session.stopRequested = true;
         stopBtn.disabled = true;
-        requestStop(session, false);
+        releaseSession(session);
     });
 }
