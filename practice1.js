@@ -107,6 +107,10 @@ function stopAllPlayback() {
 function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
+    
+    // カタカナを機械的にひらがなに一括変換
+    cleaned = cleaned.replace(/[\u30A1-\u30F6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
+
     const dict = {
         "私": "わたし", "学生": "がくせい", "先生": "せんせい", "日本人": "にほんじん",
         "会社員": "かいしゃいん", "友達": "ともだち", "家族": "かぞく", "同僚": "どうりょう",
@@ -114,9 +118,10 @@ function convertToHiragana(text) {
         "子供": "こども", "子ども": "こども", "孫": "まご", "兄弟": "きょうだい",
         "外国人": "がいこくじん", "医師": "いしゃ", "医者": "いしゃ", "エンジニア": "エンジニア",
         "研究者": "けんきゅうしゃ", "デザイナー": "デザイナー", "店員": "てんいん",
-        "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "公務員",
+        "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "こうむいん",
         "看護師": "かんごし", "看護婦": "かんごし", "アルバイト": "アルバイト",
-        "留学生": "りゅうがくせい", "主婦": "しゅふ",
+        "留学生": "りゅうがくせい", "留学せい": "りゅうがくせい", "留がくせい": "りゅうがくせい", "主婦": "しゅふ",
+        "アメリカ人": "あめりかじん", "アメリカじん": "あめりかじん",
         "です": "です", "でした": "でした", "じゃないです": "じゃないです",
         "ではないです": "ではないです", "じゃありません": "じゃありません", "ではありません": "ではありません"
     };
@@ -293,7 +298,7 @@ function initTask2() {
         <option value="デザイナー" data-eng="designer" data-kanji="デザイナー">Designer</option>
         <option value="てんいん" data-eng="store staff" data-kanji="店員">Store staff</option>
         <option value="じえいぎょう" data-eng="self-employed" data-kanji="自営業">Self-employed</option>
-        <option value="こうむいん" data-eng="civil servant" data-kanji="公務員">Civil servant</option>
+        <option value="こうむいん" data-eng="civil servant" data-kanji="こうむいん">Civil servant</option>
         <option value="かんごし" data-eng="nurse" data-kanji="看護師">Nurse</option>
         <option value="アルバイト" data-eng="part-time worker" data-kanji="アルバイト">Part-time worker</option>
     `;
