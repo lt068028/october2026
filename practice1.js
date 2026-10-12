@@ -108,7 +108,6 @@ function convertToHiragana(text) {
     if (!text) return "";
     let cleaned = text.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
     
-    // カタカナを機械的にひらがなに一括変換
     cleaned = cleaned.replace(/[\u30A1-\u30F6]/g, match => String.fromCharCode(match.charCodeAt(0) - 0x60));
 
     const dict = {
@@ -241,7 +240,7 @@ function initTask1() {
     container.innerHTML = `
         <div class="info-panel info-panel-task1" style="margin-top: 25px;">
             <span class="info-panel-title">Drill 1: Basic Sentences</span>
-            <span class="info-panel-desc">💡 Practice affirmative and negative statements.</span>
+            <span class="info-panel-desc">💡 Practice forming 🟢 affirmative and 🔴 negative statements.</span>
         </div>
         <div id="task1List"></div>
     `;
@@ -343,11 +342,12 @@ function initTask2() {
 
         const isCustomNeg = (i % 2 === 0);
         const typeLabel = document.createElement("span");
-        typeLabel.style.fontSize = "12px";
-        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.className = "custom-tip-wrap";
+        typeLabel.style.fontSize = "16px";
         typeLabel.style.marginLeft = "4px";
         typeLabel.style.marginRight = "8px";
-        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
+        typeLabel.style.cursor = "pointer";
+        typeLabel.innerHTML = isCustomNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
 
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
@@ -677,11 +677,12 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
 
     const typeLabel = document.createElement("span");
-    typeLabel.style.fontSize = "12px";
-    typeLabel.style.color = "var(--text-secondary)";
+    typeLabel.className = "custom-tip-wrap";
+    typeLabel.style.fontSize = "16px";
     typeLabel.style.marginLeft = "4px";
     typeLabel.style.marginRight = "8px";
-    typeLabel.textContent = isNeg ? "(Negative)" : "(Affirmative)";
+    typeLabel.style.cursor = "pointer";
+    typeLabel.innerHTML = isNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
