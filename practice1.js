@@ -1,8 +1,8 @@
-// ============================================================================
+￥// ============================================================================
 // Practice 1: XはYです
 // Drill 1: Basic Sentences
 // Drill 2: Selectable Practice
-// Drill 3: Free Input + Speech Recognition + Structure Judgement
+// Drill 3: Free Input + Speech Recognition
 // ============================================================================
 
 const taskData = [
@@ -164,26 +164,16 @@ function stopAllPlayback() {
 // Text normalization
 // ============================================================================
 
-// Normalize text for comparison:
-// - remove punctuation and whitespace
-// - convert katakana to hiragana where possible
-// - convert known kanji vocabulary to hiragana
-//
-// Unknown kanji cannot reliably be converted to hiragana without a
-// pronunciation dictionary. Therefore, arbitrary kanji readings are not
-// guessed here.
 function convertToHiragana(text) {
     if (!text) return "";
 
     let cleaned = String(text).normalize("NFKC");
 
-    // Remove punctuation and whitespace, but preserve Japanese characters.
     cleaned = cleaned.replace(
         /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。，．！？!?：；…・"'“”‘’]/g,
         ""
     );
 
-    // Convert standard katakana characters to hiragana.
     cleaned = cleaned.replace(/[\u30A1-\u30F6]/g, match =>
         String.fromCharCode(match.charCodeAt(0) - 0x60)
     );
@@ -227,7 +217,6 @@ function convertToHiragana(text) {
         "アメリカじん": "あめりかじん"
     };
 
-    // Replace longer dictionary entries first to reduce partial matches.
     const keys = Object.keys(dict).sort((a, b) => b.length - a.length);
 
     for (const key of keys) {
@@ -453,7 +442,6 @@ function initTask1() {
             item.yMeaning
         );
 
-        // Use the data definition rather than deriving polarity from row index.
         const isNeg = item.isNeg;
 
         createDrillRow(
@@ -590,7 +578,7 @@ function initTask2() {
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
         resultSpan.textContent = practice1State.audioUrls[rowKey]
-            ? "(Recorded) ✅"
+            ? "(Recorded)"
             : "(Not recorded yet)";
         resultSpan.style.color = practice1State.audioUrls[rowKey]
             ? "var(--text-primary)"
@@ -729,7 +717,7 @@ function initTask2() {
 }
 
 // ============================================================================
-// Drill 3: Free X/Y input + speech recognition + structure judgement
+// Drill 3: Free X/Y input + speech recognition
 // ============================================================================
 
 function initTask3() {
@@ -739,7 +727,7 @@ function initTask3() {
     container.innerHTML = `
         <div class="info-panel info-panel-task3" style="margin-top: 30px;">
             <span class="info-panel-title">Drill 3: Free Practice</span>
-            <span class="info-panel-desc">💡 Enter X and Y, then speak a sentence. Affirmative and negative sentences are both accepted.</span>
+            <span class="info-panel-desc">💡 Enter X and Y, then speak a sentence. You can use affirmative or negative sentences.</span>
         </div>
         <div id="task3List"></div>
     `;
@@ -788,7 +776,7 @@ function initTask3() {
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
         recordBtn.innerHTML =
-            '⏺️とる<span class="custom-tip-box">Start recording and checking your sentence.</span>';
+            '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
         recordBtn.disabled = true;
 
         const stopBtn = document.createElement("button");
@@ -800,7 +788,7 @@ function initTask3() {
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
         resultSpan.textContent = practice1State.audioUrls[rowKey]
-            ? "(Recorded) ✅"
+            ? "(Recorded)"
             : "(Not recorded yet)";
         resultSpan.style.color = practice1State.audioUrls[rowKey]
             ? "var(--text-primary)"
@@ -858,7 +846,6 @@ function initTask3() {
 
         updateState();
 
-        // Drill 3 accepts either affirmative or negative sentence structures.
         bindRecorderEvents(
             recordBtn,
             stopBtn,
@@ -880,7 +867,7 @@ function initTask3() {
 }
 
 // ============================================================================
-// Shared recording button for saved audio playback
+// Saved audio playback
 // ============================================================================
 
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
@@ -1000,7 +987,6 @@ function bindRecorderEvents(
 
         stopAllPlayback();
 
-        // Only one recognition/recording session may be active at a time.
         if (activeRecognitionSession !== null) {
             releaseSession(activeRecognitionSession, true);
         }
@@ -1010,7 +996,7 @@ function bindRecorderEvents(
 
         if (!SpeechRecognition) {
             showError(
-                "このブラウザーでは音声認識を利用できません。Chrome などの対応ブラウザーを使用してください。"
+                "Speech recognition is not available in this browser. Please use a supported browser such as Chrome."
             );
             return;
         }
@@ -1019,7 +1005,7 @@ function bindRecorderEvents(
         const currentY = String(getYFn() || "").trim();
 
         if (!currentX || !currentY) {
-            showError("XとYの両方を入力・選択してください。");
+            showError("Please enter or select both X and Y.");
             return;
         }
 
@@ -1027,7 +1013,7 @@ function bindRecorderEvents(
             !navigator.mediaDevices ||
             typeof navigator.mediaDevices.getUserMedia !== "function"
         ) {
-            showError("この環境ではマイクを利用できません。");
+            showError("Microphone access is not available in this environment.");
             return;
         }
 
@@ -1039,13 +1025,11 @@ function bindRecorderEvents(
             });
         } catch (err) {
             showError(
-                "マイクを利用できません。マイクの使用許可を確認してください。"
+                "Microphone access failed. Please check your microphone permissions."
             );
             return;
         }
 
-        // Another recording may have started while microphone permission
-        // was being requested. Release this newly acquired stream if so.
         if (activeRecognitionSession !== null) {
             stream.getTracks().forEach(track => track.stop());
             return;
@@ -1088,17 +1072,8 @@ function bindRecorderEvents(
 
                 processRecognitionResult(
                     currentSession.accumulatedTranscript,
-                    currentX,
-                    currentY,
-                    getExpectedKanjiFn,
-                    expectedIsNeg,
                     resultSpan,
-                    correctionBox,
-                    corrListenBtn,
-                    corrTextSpan,
-                    playRate,
-                    rowKey,
-                    allowEitherStructure
+                    correctionBox
                 );
             }
         };
@@ -1124,13 +1099,11 @@ function bindRecorderEvents(
                 if (currentSession.finished) return;
 
                 currentSession.errorMessage = "recording-error";
-                showError("録音に失敗しました。もう一度お試しください。");
+                showError("Recording failed. Please try again.");
                 releaseSession(currentSession, true);
             };
 
             mediaRecorder.onstop = () => {
-                // A recording can finish after the session has been stopped.
-                // Avoid creating or processing a second result.
                 if (currentSession.errorMessage) return;
 
                 if (currentSession.audioChunks.length > 0) {
@@ -1193,26 +1166,29 @@ function bindRecorderEvents(
                     return;
                 }
 
-                currentSession.errorMessage = event.error || "recognition-error";
+                currentSession.errorMessage =
+                    event.error || "recognition-error";
 
-                if (event.error === "not-allowed" ||
-                    event.error === "service-not-allowed") {
+                if (
+                    event.error === "not-allowed" ||
+                    event.error === "service-not-allowed"
+                ) {
                     showError(
-                        "マイクまたは音声認識の使用が許可されていません。ブラウザーの設定を確認してください。"
+                        "Microphone or speech recognition permission was denied. Check your browser settings."
                     );
                 } else if (event.error === "audio-capture") {
                     showError(
-                        "マイクを検出できません。マイクの接続と設定を確認してください。"
+                        "No microphone was detected. Check your microphone connection and settings."
                     );
                 } else if (event.error === "no-speech") {
                     showError("No speech detected.");
                 } else if (event.error === "network") {
                     showError(
-                        "音声認識サービスとの通信に失敗しました。接続を確認して再試行してください。"
+                        "Speech recognition service connection failed. Check your connection and try again."
                     );
                 } else if (event.error !== "aborted") {
                     showError(
-                        "音声を認識できませんでした。もう一度録音してください。"
+                        "Speech could not be recognized. Please try recording again."
                     );
                 }
 
@@ -1235,8 +1211,6 @@ function bindRecorderEvents(
 
                 tryProcessResult();
 
-                // Do not release a normal session before both recognition
-                // and MediaRecorder have finished.
                 if (
                     currentSession.recorderDone &&
                     currentSession.recognitionDone
@@ -1254,8 +1228,8 @@ function bindRecorderEvents(
                 stopBtn.classList.remove("stop-btn-active");
             }
 
-            resultSpan.textContent = "録音中...";
-            resultSpan.style.color = "var(--accent-color)";
+            // Do not display a "Recording..." status.
+            // The result area remains unchanged until a transcript is available.
 
             if (correctionBox) {
                 correctionBox.style.display = "none";
@@ -1264,8 +1238,6 @@ function bindRecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
 
-            // Safety timeout: prevent a session from holding the microphone
-            // indefinitely if the browser fails to finish recognition.
             currentSession.watchdog = setTimeout(() => {
                 if (
                     currentSession.finished ||
@@ -1276,13 +1248,11 @@ function bindRecorderEvents(
 
                 currentSession.errorMessage = "timeout";
                 showError(
-                    "音声認識が終了しませんでした。もう一度録音してください。"
+                    "Speech recognition did not finish. Please try recording again."
                 );
                 releaseSession(currentSession, true);
             }, isManualStop ? 20000 : 12000);
 
-            // In automatic mode, stop the recording after a short interval.
-            // Recognition may finish slightly later; both results are awaited.
             if (!isManualStop) {
                 currentSession.autoStopTimer = setTimeout(() => {
                     if (
@@ -1313,7 +1283,7 @@ function bindRecorderEvents(
 
             currentSession.errorMessage = "startup-error";
             showError(
-                "録音を開始できませんでした。マイクの設定を確認して再試行してください。"
+                "Recording could not start. Check your microphone settings and try again."
             );
             releaseSession(currentSession, true);
         }
@@ -1334,8 +1304,6 @@ function bindRecorderEvents(
         stopAllPlayback();
         stopBtn.disabled = true;
 
-        // Stop both recognition and audio recording. The normal completion
-        // handlers will process the result once both have finished.
         if (
             currentSession.mediaRecorder &&
             currentSession.mediaRecorder.state === "recording"
@@ -1354,186 +1322,31 @@ function bindRecorderEvents(
 }
 
 // ============================================================================
-// Recognition result judgement
+// Recognition result display
+// No sentence judgement, no correct/incorrect messages.
 // ============================================================================
 
 function processRecognitionResult(
     rawTranscript,
-    currentX,
-    currentY,
-    getExpectedKanjiFn,
-    expectedIsNeg,
     resultSpan,
-    correctionBox,
-    corrListenBtn,
-    corrTextSpan,
-    playRate,
-    rowKey,
-    allowEitherStructure = false
+    correctionBox
 ) {
-    const hiraText = convertToHiragana(rawTranscript);
-    const hiraX = convertToHiragana(currentX);
-    const hiraY = convertToHiragana(currentY);
+    const transcript = String(rawTranscript || "").trim();
 
-    // An empty transcript means no speech was detected.
-    // A short but non-empty transcript is displayed separately.
-    if (!hiraText) {
+    if (correctionBox) {
+        correctionBox.style.display = "none";
+    }
+
+    if (!transcript) {
         resultSpan.textContent = "No speech detected.";
         resultSpan.style.color = "var(--error-text)";
-
-        if (correctionBox) {
-            correctionBox.style.display = "none";
-        }
-
         return;
     }
 
-    if (hiraText.length < 2) {
-        resultSpan.textContent = hiraText;
-        resultSpan.style.color = "var(--text-secondary)";
-
-        if (correctionBox) {
-            correctionBox.style.display = "none";
-        }
-
-        return;
-    }
-
-    if (!hiraX || !hiraY) {
-        resultSpan.textContent = "XとYの両方を入力・選択してください。";
-        resultSpan.style.color = "var(--error-text)";
-
-        if (correctionBox) {
-            correctionBox.style.display = "none";
-        }
-
-        return;
-    }
-
-    // Exact normalized matching prevents extra words or an incorrect
-    // particle from being accepted as a correct sentence.
-    //
-    // Accepted affirmative forms:
-    //   XはYです
-    //   XはY
-    //
-    // Accepted negative forms:
-    //   XはYじゃないです
-    //   XはYではないです
-    //   XはYじゃありません
-    //   XはYではありません
-    //
-    // A single final ね or よ may be added to each accepted form.
-    // Punctuation and whitespace have already been removed.
-    const affirmativeBases = [
-        `${hiraX}は${hiraY}です`,
-        `${hiraX}は${hiraY}`
-    ];
-
-    const negativeBases = [
-        `${hiraX}は${hiraY}じゃないです`,
-        `${hiraX}は${hiraY}ではないです`,
-        `${hiraX}は${hiraY}じゃありません`,
-        `${hiraX}は${hiraY}ではありません`
-    ];
-
-    const isAcceptedForm = (transcript, bases) => {
-        return bases.some(base =>
-            transcript === base ||
-            transcript === `${base}ね` ||
-            transcript === `${base}よ`
-        );
-    };
-
-    const isAffirmative = isAcceptedForm(hiraText, affirmativeBases);
-    const isNegative = isAcceptedForm(hiraText, negativeBases);
-
-    const isCorrect = allowEitherStructure
-        ? (isAffirmative || isNegative)
-        : (expectedIsNeg ? isNegative : isAffirmative);
-
-    let kanjiTextForSpeech = "";
-
-    try {
-        kanjiTextForSpeech = getExpectedKanjiFn
-            ? getExpectedKanjiFn()
-            : "";
-    } catch (e) {
-        kanjiTextForSpeech = "";
-    }
-
-    if (isCorrect) {
-        resultSpan.textContent = `${hiraText} ✅ 正解`;
-        resultSpan.style.color = "var(--text-primary)";
-
-        if (rowKey) {
-            appendPersistedPlayButton(resultSpan, rowKey, playRate);
-        }
-
-        if (correctionBox) {
-            correctionBox.style.display = "none";
-        }
-    } else {
-        resultSpan.textContent = `${hiraText} — 文の構造が違います`;
-        resultSpan.style.color = "var(--error-text)";
-
-        if (rowKey) {
-            appendPersistedPlayButton(resultSpan, rowKey, playRate);
-        }
-
-        if (corrTextSpan) {
-            corrTextSpan.textContent =
-                "文の構造が違います。XはYです／XはY、または否定文の形を確認してください。";
-        }
-
-        if (corrListenBtn) {
-            corrListenBtn.style.display = "inline-block";
-
-            corrListenBtn.onclick = () => {
-                if (!kanjiTextForSpeech) return;
-
-                setPlayingState(corrListenBtn, "Playing...");
-                speakText(
-                    kanjiTextForSpeech,
-                    playRate,
-                    () => stopAllPlayback()
-                );
-            };
-        }
-
-        if (correctionBox) {
-            correctionBox.style.display = "block";
-        }
-    }
-
-    // In automatic playback mode, play the model sentence and then the
-    // learner's recording. The model is a reference, not the basis of
-    // the structure judgement.
-    if (isAutoPlay && rowKey) {
-        const recordedAudioUrl = practice1State.audioUrls[rowKey];
-
-        if (recordedAudioUrl && kanjiTextForSpeech) {
-            speakText(kanjiTextForSpeech, playRate, () => {
-                stopAllPlayback();
-
-                const audio = new Audio(recordedAudioUrl);
-                currentPlayingAudio = audio;
-                audio.playbackRate = 1.0;
-
-                audio.onended = () => {
-                    currentPlayingAudio = null;
-                };
-
-                audio.onerror = () => {
-                    currentPlayingAudio = null;
-                };
-
-                audio.play().catch(() => {
-                    currentPlayingAudio = null;
-                });
-            });
-        }
-    }
+    // Display the recognized text as-is.
+    // Do not normalize it for judgement or evaluate sentence structure.
+    resultSpan.textContent = transcript;
+    resultSpan.style.color = "var(--text-primary)";
 }
 
 // ============================================================================
@@ -1568,8 +1381,6 @@ function createDrillRow(
     listenBtn.onclick = () => {
         setPlayingState(listenBtn, "Playing...");
 
-        // Insert pauses in negative models to make the pronunciation
-        // sound more natural. Punctuation is ignored during judgement.
         const modelSentence = isNeg
             ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。`
             : `${targetKanjiX}は、${targetKanjiY}です。`;
@@ -1608,7 +1419,7 @@ function createDrillRow(
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
     resultSpan.textContent = practice1State.audioUrls[rowKey]
-        ? "(Recorded) ✅"
+        ? "(Recorded)"
         : "(Not recorded yet)";
     resultSpan.style.color = practice1State.audioUrls[rowKey]
         ? "var(--text-primary)"
