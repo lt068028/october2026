@@ -149,7 +149,6 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    initExampleSection();
     initTask1();
     initTask2();
     initTask3();
@@ -208,7 +207,6 @@ function initSettingsPanel() {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
             updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
-            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -226,7 +224,6 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -264,8 +261,8 @@ function initSettingsPanel() {
     }
 }
 
-function initExampleSection() {
-    const container = document.getElementById("exampleSectionContainer");
+function initTask1() {
+    const container = document.getElementById("task1Container");
     if (!container) return;
 
     container.innerHTML = `
@@ -277,6 +274,11 @@ function initExampleSection() {
                 <button id="ex2Listen" class="example-button">🔊 否定例をきく (I am not a teacher)</button>
             </div>
         </div>
+        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+            <span class="info-panel-title">Drill 1: Basic Sentences</span>
+            <span class="info-panel-desc">💡 Practice forming 🟢 affirmative and 🔴 negative statements.</span>
+        </div>
+        <div id="task1List"></div>
     `;
 
     const ex1Btn = document.getElementById("ex1Listen");
@@ -294,18 +296,7 @@ function initExampleSection() {
             speakText(scriptMode === "kanji" ? "私は先生じゃないです。" : "わたしは、せんせいじゃないです。", 0.9, () => stopAllPlayback());
         });
     }
-}
 
-function initTask1() {
-    const container = document.getElementById("task1Container");
-    if (!container) return;
-    container.innerHTML = `
-        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-            <span class="info-panel-title">Drill 1: Basic Sentences</span>
-            <span class="info-panel-desc">💡 Practice affirmative and negative statements.</span>
-        </div>
-        <div id="task1List"></div>
-    `;
     const listDiv = document.getElementById("task1List");
 
     taskData.forEach((item, index) => {
@@ -404,11 +395,12 @@ function initTask2() {
 
         const isCustomNeg = (i % 2 === 0);
         const typeLabel = document.createElement("span");
-        typeLabel.style.fontSize = "12px";
-        typeLabel.style.color = "var(--text-secondary)";
+        typeLabel.className = "custom-tip-wrap";
+        typeLabel.style.fontSize = "16px";
         typeLabel.style.marginLeft = "4px";
         typeLabel.style.marginRight = "8px";
-        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
+        typeLabel.style.cursor = "pointer";
+        typeLabel.innerHTML = isCustomNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
 
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
@@ -738,11 +730,12 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
 
     const typeLabel = document.createElement("span");
-    typeLabel.style.fontSize = "12px";
-    typeLabel.style.color = "var(--text-secondary)";
+    typeLabel.className = "custom-tip-wrap";
+    typeLabel.style.fontSize = "16px";
     typeLabel.style.marginLeft = "4px";
     typeLabel.style.marginRight = "8px";
-    typeLabel.textContent = isNeg ? "(Negative)" : "(Affirmative)";
+    typeLabel.style.cursor = "pointer";
+    typeLabel.innerHTML = isNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
