@@ -412,7 +412,7 @@ function renderExampleSection() {
             <div class="info-panel-desc">
             </div>
 
-            <div class="flex-row-center" style="margin-top: 16px;">
+            <div class="flex-row-center" style="margin-top: 5px;">
                 <span class="example-label-title">🟢Affirmative:</span>
                 ${formattedX}
                 ／
