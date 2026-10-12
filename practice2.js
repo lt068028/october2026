@@ -3,17 +3,17 @@
 // ============================================================================
 
 const practice2Data = [
-    { x: "おにいさん", xKanji: "お兄さん", xRomaji: "oniisan", xMeaning: "older brother", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student" },
-    { x: "おかあさん", xKanji: "お母さん", xRomaji: "okaasan", xMeaning: "mother", y: "かいしゃいん", yKanji: "会社員", yRomaji: "kaishain", yMeaning: "company employee" },
-    { x: "おねえさん", xKanji: "お姉さん", xRomaji: "oneesan", xMeaning: "older sister", y: "こうこうせい", yKanji: "高校生", yRomaji: "koukousei", yMeaning: "high school student" },
-    { x: "おとうさん", xKanji: "お父さん", xRomaji: "otousan", xMeaning: "father", y: "じえいぎょう", yKanji: "自営業", yRomaji: "jiei-gyou", yMeaning: "self-employed" },
-    { x: "いもうと", xKanji: "妹", xRomaji: "imouto", xMeaning: "younger sister", y: "フリーター", yKanji: "フリーター", yRomaji: "furiitaa", yMeaning: "part-time worker" }
+    { x: "おにいさん", xKanji: "お兄さん", xRomaji: "onīsan", xMeaning: "older brother", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student" },
+    { x: "おかあさん", xKanji: "お母さん", xRomaji: "okāsan", xMeaning: "mother", y: "かいしゃいん", yKanji: "会社員", yRomaji: "kaishain", yMeaning: "company employee" },
+    { x: "おねえさん", xKanji: "お姉さん", xRomaji: "onēsan", xMeaning: "older sister", y: "こうこうせい", yKanji: "高校生", yRomaji: "kōkōsei", yMeaning: "high school student" },
+    { x: "おとうさん", xKanji: "お父さん", xRomaji: "otōsan", xMeaning: "father", y: "じえいぎょう", yKanji: "自営業", yRomaji: "jiēgyō", yMeaning: "self-employed" },
+    { x: "いもうと", xKanji: "妹", xRomaji: "imōto", xMeaning: "younger sister", y: "フリーター", yKanji: "フリーター", yRomaji: "furītā", yMeaning: "part-time worker" }
 ];
 
 const drill2Targets = [
     { label: "ともだち", labelKanji: "友達", labelRomaji: "tomodachi", labelMeaning: "friend", possessive: "ともだちの", possessiveKanji: "友達の" },
-    { label: "しんゆう", labelKanji: "親友", labelRomaji: "shinyuu", labelMeaning: "best friend", possessive: "しんゆうの", possessiveKanji: "親友の" },
-    { label: "どうりょう", labelKanji: "同僚", labelRomaji: "douryou", labelMeaning: "colleague", possessive: "どうりょうの", possessiveKanji: "同僚の" }
+    { label: "しんゆう", labelKanji: "親友", labelRomaji: "shinyū", labelMeaning: "best friend", possessive: "しんゆうの", possessiveKanji: "親友の" },
+    { label: "どうりょう", labelKanji: "同僚", labelRomaji: "dōryō", labelMeaning: "colleague", possessive: "どうりょうの", possessiveKanji: "同僚の" }
 ];
 
 const majorsData = [
@@ -23,7 +23,7 @@ const majorsData = [
     { word: "こくさいかんけい", kanji: "国際関係", romaji: "kokusai kankei", meaning: "international relations" },
     { word: "れきし", kanji: "歴史", romaji: "rekishi", meaning: "history" },
     { word: "にほんご", kanji: "日本語", romaji: "nihongo", meaning: "Japanese" },
-    { word: "コンピューター", kanji: "コンピューター", romaji: "konpyuutaa", meaning: "computer science" }
+    { word: "コンピューター", kanji: "コンピューター", romaji: "konpyūtā", meaning: "computer science" }
 ];
 
 const rowColorThemes = [
@@ -398,7 +398,7 @@ function renderDrill1Section() {
     const exBox = document.createElement("div");
     exBox.className = "example-box";
 
-    const w1 = formatWord("おとうさん", "お父さん", "otousan", "father");
+    const w1 = formatWord("おとうさん", "お父さん", "otōsan", "father");
     const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
 
     const exQ = scriptMode === "kanji"
@@ -485,7 +485,7 @@ function renderDrill2Section() {
     exBox.className = "example-box";
 
     const wTarget = formatWord("あなた", "あなた", "anata", "you");
-    const wMaj = formatWord("せんこう", "専攻", "senkou", "major");
+    const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
 
     const exQ2 = scriptMode === "kanji"
         ? "あなたの専攻は、何ですか。"
@@ -862,7 +862,7 @@ function createDrill2Row(container, indexLabel, target, playRate) {
         target.labelMeaning
     );
 
-    const senkouDisplay = formatWord("せんこう", "専攻", "senkou", "major");
+    const senkouDisplay = formatWord("せんこう", "専攻", "senkō", "major");
 
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
