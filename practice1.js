@@ -680,41 +680,485 @@ function initTask2() {
         selectX.addEventListener("change", updateDisplay);
         selectY.addEventListener("change", updateDisplay);
         updateDisplay();
+// ============================================================================
+// Shared recorder + speech recognition
+// Recording is independent from speech recognition.
+// A recognition timeout must not discard a successful audio recording.
+// ============================================================================
 
-        bindRecorderEvents(
-            recordBtn,
-            stopBtn,
-            resultSpan,
-            correctionBox,
-            corrListenBtn,
-            corrTextSpan,
-            () => selectX.value,
-            () => selectY.value,
-            () => {
-                const optX = selectX.options[selectX.selectedIndex];
-                const optY = selectY.options[selectY.selectedIndex];
+　　　　 bindRecorderEvents(
+    recordBtn,
+    stopBtn,
+    resultSpan,
+    correctionBox,
+    corrListenBtn,
+    corrTextSpan,
+    getXFn,
+    getYFn,
+    getExpectedKanjiFn,
+    expectedIsNeg = false,
+    playRate = 0.9,
+    rowKey = "",
+    allowEitherStructure = false
+) {
+    let session = null;
 
-                const kX = optX
-                    ? optX.getAttribute("data-kanji") || selectX.value
-                    : selectX.value;
+    function showError(message) {
+        resultSpan.textContent = message;
+        resultSpan.style.color = "var(--error-text)";
 
-                const kY = optY
-                    ? optY.getAttribute("data-kanji") || selectY.value
-                    : selectY.value;
-
-                return isCustomNeg
-                    ? `${kX}は、${kY}じゃ、ないです。`
-                    : `${kX}は、${kY}です。`;
-            },
-            isCustomNeg,
-            0.9,
-            rowKey,
-            false
-        );
-
-        listDiv.appendChild(rowDiv);
+        if (correctionBox) {
+            correctionBox.style.display = "none";
+        }
     }
+
+    function releaseSession(currentSession, stopRecognition = false) {
+        if (!currentSession || currentSession.finished) return;
+
+        currentSession.finished = true;
+
+        if (currentSession.watchdog !== null) {
+            clearTimeout(currentSession.watchdog);
+            currentSession.watchdog = null;
+        }
+
+        if (currentSession.autoStopTimer !== null) {
+            clearTimeout(currentSession.autoStopTimer);
+            currentSession.autoStopTimer = null;
+        }
+
+        if (stopRecognition && currentSession.recognition) {
+            try {
+                currentSession.recognition.stop();
+            } catch (e) {}
+        }
+
+        if (
+            currentSession.mediaRecorder &&
+            currentSession.mediaRecorder.state !== "inactive"
+        ) {
+            try {
+                currentSession.mediaRecorder.stop();
+            } catch (e) {}
+        }
+
+        if (currentSession.stream) {
+            currentSession.stream.getTracks().forEach(track => {
+                try {
+                    track.stop();
+                } catch (e) {}
+            });
+        }
+
+        if (activeRecognitionSession === currentSession) {
+            activeRecognitionSession = null;
+        }
+
+        if (session === currentSession) {
+            session = null;
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            stopBtn.classList.remove("stop-btn-active");
+        }
+    }
+
+    function stopMediaRecorder(currentSession) {
+        if (
+            currentSession.mediaRecorder &&
+            currentSession.mediaRecorder.state === "recording"
+        ) {
+            try {
+                currentSession.mediaRecorder.stop();
+            } catch (e) {}
+        }
+    }
+
+    function finishIfReady(currentSession) {
+        if (
+            !currentSession ||
+            currentSession.finished ||
+            session !== currentSession
+        ) {
+            return;
+        }
+
+        if (
+            !currentSession.recorderDone ||
+            !currentSession.recognitionDone
+        ) {
+            return;
+        }
+
+        if (!currentSession.processed) {
+            currentSession.processed = true;
+
+            if (
+                currentSession.timedOut &&
+                !currentSession.accumulatedTranscript.trim()
+            ) {
+                showError(
+                    "Speech recognition timed out. Your recording is saved; press ▶️ to listen."
+                );
+            } else {
+                processRecognitionResult(
+                    currentSession.accumulatedTranscript,
+                    resultSpan,
+                    correctionBox
+                );
+            }
+
+            // Keep the successfully recorded audio available for playback.
+            if (
+                rowKey &&
+                practice1State.audioUrls[rowKey]
+            ) {
+                appendPersistedPlayButton(
+                    resultSpan,
+                    rowKey,
+                    playRate
+                );
+            }
+        }
+
+        releaseSession(currentSession);
+    }
+
+    recordBtn.addEventListener("click", async () => {
+        if (recordBtn.disabled) return;
+
+        stopAllPlayback();
+
+        if (activeRecognitionSession !== null) {
+            releaseSession(activeRecognitionSession, true);
+        }
+
+        const SpeechRecognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            showError(
+                "Speech recognition is not available in this browser. Please use a supported browser such as Chrome."
+            );
+            return;
+        }
+
+        const currentX = String(getXFn() || "").trim();
+        const currentY = String(getYFn() || "").trim();
+
+        if (!currentX || !currentY) {
+            showError("Please enter or select both X and Y.");
+            return;
+        }
+
+        if (
+            !navigator.mediaDevices ||
+            typeof navigator.mediaDevices.getUserMedia !== "function"
+        ) {
+            showError(
+                "Microphone access is not available in this environment."
+            );
+            return;
+        }
+
+        let stream;
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+        } catch (err) {
+            showError(
+                "Microphone access failed. Please check your microphone permissions."
+            );
+            return;
+        }
+
+        // Another row may have started recording while permission was pending.
+        if (activeRecognitionSession !== null) {
+            stream.getTracks().forEach(track => {
+                try {
+                    track.stop();
+                } catch (e) {}
+            });
+            return;
+        }
+
+        const currentSession = {
+            finished: false,
+            stopRequested: false,
+            errorMessage: "",
+            timedOut: false,
+            recognition: null,
+            watchdog: null,
+            autoStopTimer: null,
+            mediaRecorder: null,
+            audioChunks: [],
+            stream,
+            accumulatedTranscript: "",
+            recognitionDone: false,
+            recorderDone: false,
+            processed: false,
+            audioUrl: null
+        };
+
+        session = currentSession;
+        activeRecognitionSession = currentSession;
+
+        try {
+            const currentRecognition = new SpeechRecognition();
+            currentSession.recognition = currentRecognition;
+
+            currentRecognition.lang = "ja-JP";
+            currentRecognition.interimResults = false;
+            currentRecognition.continuous = isManualStop;
+
+            const mediaRecorder = new MediaRecorder(stream);
+            currentSession.mediaRecorder = mediaRecorder;
+
+            mediaRecorder.ondataavailable = event => {
+                if (event.data && event.data.size > 0) {
+                    currentSession.audioChunks.push(event.data);
+                }
+            };
+
+            mediaRecorder.onerror = () => {
+                if (currentSession.finished) return;
+
+                currentSession.errorMessage = "recording-error";
+                showError("Recording failed. Please try again.");
+
+                releaseSession(currentSession, true);
+            };
+
+            mediaRecorder.onstop = () => {
+                if (currentSession.finished) return;
+
+                if (currentSession.audioChunks.length > 0) {
+                    const audioBlob = new Blob(
+                        currentSession.audioChunks,
+                        {
+                            type:
+                                mediaRecorder.mimeType ||
+                                "audio/webm"
+                        }
+                    );
+
+                    currentSession.audioUrl =
+                        URL.createObjectURL(audioBlob);
+
+                    if (rowKey) {
+                        const oldUrl =
+                            practice1State.audioUrls[rowKey];
+
+                        if (
+                            oldUrl &&
+                            oldUrl !== currentSession.audioUrl
+                        ) {
+                            URL.revokeObjectURL(oldUrl);
+                        }
+
+                        practice1State.audioUrls[rowKey] =
+                            currentSession.audioUrl;
+                    }
+                }
+
+                currentSession.recorderDone = true;
+                finishIfReady(currentSession);
+            };
+
+            currentRecognition.onresult = event => {
+                if (
+                    currentSession.finished ||
+                    session !== currentSession ||
+                    currentSession.errorMessage
+                ) {
+                    return;
+                }
+
+                let rawTranscript = "";
+
+                for (
+                    let i = event.resultIndex;
+                    i < event.results.length;
+                    i++
+                ) {
+                    if (event.results[i].isFinal) {
+                        rawTranscript +=
+                            event.results[i][0].transcript;
+                    }
+                }
+
+                currentSession.accumulatedTranscript += rawTranscript;
+            };
+
+            currentRecognition.onerror = event => {
+                if (
+                    currentSession.finished ||
+                    session !== currentSession
+                ) {
+                    return;
+                }
+
+                // "aborted" can occur when the user or timeout stops
+                // recognition. It should not overwrite a saved recording.
+                if (
+                    event.error === "aborted" &&
+                    currentSession.timedOut
+                ) {
+                    currentSession.recognitionDone = true;
+                    stopMediaRecorder(currentSession);
+                    finishIfReady(currentSession);
+                    return;
+                }
+
+                currentSession.errorMessage =
+                    event.error || "recognition-error";
+
+                if (
+                    event.error === "not-allowed" ||
+                    event.error === "service-not-allowed"
+                ) {
+                    showError(
+                        "Microphone or speech recognition permission was denied. Check your browser settings."
+                    );
+                } else if (event.error === "audio-capture") {
+                    showError(
+                        "No microphone was detected. Check your microphone connection and settings."
+                    );
+                } else if (event.error === "no-speech") {
+                    showError("No speech detected.");
+                } else if (event.error === "network") {
+                    showError(
+                        "Speech recognition service connection failed. Check your connection and try again."
+                    );
+                } else if (event.error !== "aborted") {
+                    showError(
+                        "Speech could not be recognized. Please try recording again."
+                    );
+                }
+
+                releaseSession(currentSession, true);
+            };
+
+            currentRecognition.onend = () => {
+                if (currentSession.finished) return;
+
+                currentSession.recognitionDone = true;
+
+                // Stop audio capture if recognition finishes first.
+                stopMediaRecorder(currentSession);
+
+                finishIfReady(currentSession);
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+
+            if (isManualStop) {
+                stopBtn.classList.add("stop-btn-active");
+            } else {
+                stopBtn.classList.remove("stop-btn-active");
+            }
+
+            if (correctionBox) {
+                correctionBox.style.display = "none";
+            }
+
+            // Show recording status immediately.
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--text-primary)";
+
+            mediaRecorder.start();
+            currentRecognition.start();
+
+            // The watchdog handles recognition delays separately from
+            // successful audio capture. It does not immediately report
+            // a generic error or discard the audio.
+            currentSession.watchdog = setTimeout(() => {
+                if (
+                    currentSession.finished ||
+                    session !== currentSession
+                ) {
+                    return;
+                }
+
+                currentSession.timedOut = true;
+                currentSession.recognitionDone = true;
+
+                // Stop recognition, but preserve the audio recording.
+                if (currentSession.recognition) {
+                    try {
+                        currentSession.recognition.stop();
+                    } catch (e) {}
+                }
+
+                stopMediaRecorder(currentSession);
+
+                // finishIfReady() waits for the recorder's onstop event
+                // before displaying the result and releasing resources.
+                finishIfReady(currentSession);
+            }, isManualStop ? 20000 : 12000);
+
+            if (!isManualStop) {
+                currentSession.autoStopTimer = setTimeout(() => {
+                    if (
+                        currentSession.finished ||
+                        session !== currentSession
+                    ) {
+                        return;
+                    }
+
+                    stopMediaRecorder(currentSession);
+
+                    if (currentSession.recognition) {
+                        try {
+                            currentSession.recognition.stop();
+                        } catch (e) {}
+                    }
+                }, 5000);
+            }
+        } catch (err) {
+            console.error(
+                "Recording/recognition startup error:",
+                err
+            );
+
+            currentSession.errorMessage = "startup-error";
+
+            showError(
+                "Recording could not start. Check your microphone settings and try again."
+            );
+
+            releaseSession(currentSession, true);
+        }
+    });
+
+    stopBtn.addEventListener("click", () => {
+        if (
+            !session ||
+            session.finished ||
+            session.stopRequested
+        ) {
+            return;
+        }
+
+        const currentSession = session;
+        currentSession.stopRequested = true;
+
+        stopAllPlayback();
+        stopBtn.disabled = true;
+
+        stopMediaRecorder(currentSession);
+
+        if (currentSession.recognition) {
+            try {
+                currentSession.recognition.stop();
+            } catch (e) {}
+        }
+    });
 }
+            
 
 // ============================================================================
 // Drill 3: Free X/Y input + speech recognition
