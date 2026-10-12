@@ -9,7 +9,7 @@ const taskData = [
     { x: "わたし", xKanji: "私", y: "りゅうがくせい", yKanji: "留学生", yRomaji: "ryūgakusei", yMeaning: "international student", isNeg: true },
     { x: "ともだち", xKanji: "友達", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
     { x: "ともだち", xKanji: "友達", y: "しゅふ", yKanji: "主婦", yRomaji: "home maker", yMeaning: "home maker", isNeg: true },
-    { x: "ともだち", xKanji: "友達", y: "あめりかじん", yKanji: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
+    { x: "ともだち", xKanji: "友達", y: "アメリカじん", yKanji: "アメリカ人", yRomaji: "amerikajin", yMeaning: "American", isNeg: false }
 ];
 
 const customDict = {
