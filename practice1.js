@@ -268,7 +268,7 @@ function initTask1() {
     container.innerHTML = `
         <div class="info-panel" style="margin-top: 25px;">
             <span class="info-panel-title">Example: Sentence Structure</span>
-            <span class="info-panel-desc">💡 🟢 Affirmative: [X]は[Y]です ／ 🔴 Negative: [X]は[Y]じゃないです</span>
+            <span class="info-panel-desc">💡 Affirmative: [X]は[Y]です ／ Negative: [X]は[Y]じゃないです</span>
             <div style="margin-top: 12px; display: flex; gap: 15px; flex-wrap: wrap;">
                 <button id="ex1Listen" class="example-button">🔊 肯定例をきく (I am a student)</button>
                 <button id="ex2Listen" class="example-button">🔊 否定例をきく (I am not a teacher)</button>
@@ -276,7 +276,7 @@ function initTask1() {
         </div>
         <div class="info-panel info-panel-task1" style="margin-top: 25px;">
             <span class="info-panel-title">Drill 1: Basic Sentences</span>
-            <span class="info-panel-desc">💡 Practice forming 🟢 affirmative and 🔴 negative statements.</span>
+            <span class="info-panel-desc">💡 Practice affirmative and negative statements.</span>
         </div>
         <div id="task1List"></div>
     `;
@@ -395,12 +395,11 @@ function initTask2() {
 
         const isCustomNeg = (i % 2 === 0);
         const typeLabel = document.createElement("span");
-        typeLabel.className = "custom-tip-wrap";
-        typeLabel.style.fontSize = "16px";
+        typeLabel.style.fontSize = "12px";
+        typeLabel.style.color = "var(--text-secondary)";
         typeLabel.style.marginLeft = "4px";
         typeLabel.style.marginRight = "8px";
-        typeLabel.style.cursor = "pointer";
-        typeLabel.innerHTML = isCustomNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
+        typeLabel.textContent = isCustomNeg ? "(Negative)" : "(Affirmative)";
 
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
@@ -730,12 +729,11 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     promptSpan.innerHTML = `${formattedX} ／ ${formattedY}`;
 
     const typeLabel = document.createElement("span");
-    typeLabel.className = "custom-tip-wrap";
-    typeLabel.style.fontSize = "16px";
+    typeLabel.style.fontSize = "12px";
+    typeLabel.style.color = "var(--text-secondary)";
     typeLabel.style.marginLeft = "4px";
     typeLabel.style.marginRight = "8px";
-    typeLabel.style.cursor = "pointer";
-    typeLabel.innerHTML = isNeg ? `🔴<span class="custom-tip-box">Negative</span>` : `🟢<span class="custom-tip-box">Affirmative</span>`;
+    typeLabel.textContent = isNeg ? "(Negative)" : "(Affirmative)";
 
     const recordBtn = document.createElement("button");
     recordBtn.className = "example-button custom-tip-wrap";
