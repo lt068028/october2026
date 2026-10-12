@@ -1233,8 +1233,13 @@ function bindRecorderEvents(
                 stopBtn.classList.remove("stop-btn-active");
             }
 
-            // Do not display a "Recording..." status.
-            // The result area remains unchanged until a transcript is available.
+            // Show recording status while recording is active.
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--text-primary)";
+
+            if (correctionBox) {
+                correctionBox.style.display = "none";
+            }
 
             if (correctionBox) {
                 correctionBox.style.display = "none";
