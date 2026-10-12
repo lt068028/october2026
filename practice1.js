@@ -389,6 +389,7 @@ function updateToggleLabelStyle(labelEl, isActive) {
 // ============================================================================
 // Example Section（復元）
 // ============================================================================
+
 function renderExampleSection() {
     const container = document.getElementById("exampleSectionContainer");
     if (!container) return;
@@ -405,37 +406,37 @@ function renderExampleSection() {
         ? "私は、先生じゃないです。"
         : "わたしは、せんせいじゃないです。";
 
+    // ExampleをDrillタイトル用のinfo-panelから独立させる
     container.innerHTML = `
-        <div class="info-panel info-panel-task1">
-            <span class="info-panel-title">Example</span>
-            <span class="info-panel-desc">
+        <div class="example-box">
+            <div class="info-panel-title">Example</div>
+            <div class="info-panel-desc">
                 💡 Listen to model sentences and practice basic structures.
-            </span>
+            </div>
 
-            <div class="example-box">
-                <div class="flex-row-center">
-                    <span class="example-label-title">Affirmative:</span>
-                    ${formattedX}
-                    ／
-                    ${formattedStudent}
-                    <span>👉</span>
-                    <button id="ex1Listen" class="example-button">
-                        🔊 きく
-                    </button>
-                    <span>${affirmativeSentence}</span>
-                </div>
+            <div class="flex-row-center" style="margin-top: 16px;">
+                <span class="example-label-title">Affirmative:</span>
+                ${formattedX}
+                ／
+                ${formattedStudent}
+                <span>👉</span>
+                <button id="ex1Listen" class="example-button">
+                    🔊 きく
+                </button>
+                <span>${affirmativeSentence}</span>
+            </div>
 
-                <div class="flex-row-center dashed-border" style="margin-top: 12px; padding-top: 12px;">
-                    <span class="example-label-title">Negative:</span>
-                    ${formattedX}
-                    ／
-                    ${formattedTeacher}
-                    <span>👉</span>
-                    <button id="ex2Listen" class="example-button">
-                        🔊 きく
-                    </button>
-                    <span>${negativeSentence}</span>
-                </div>
+            <div class="flex-row-center dashed-border"
+                 style="margin-top: 12px; padding-top: 12px;">
+                <span class="example-label-title">Negative:</span>
+                ${formattedX}
+                ／
+                ${formattedTeacher}
+                <span>👉</span>
+                <button id="ex2Listen" class="example-button">
+                    🔊 きく
+                </button>
+                <span>${negativeSentence}</span>
             </div>
         </div>
     `;
@@ -457,6 +458,7 @@ function renderExampleSection() {
         });
     }
 }
+
 
 function renderAll() {
     renderExampleSection();
