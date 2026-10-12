@@ -384,17 +384,9 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 1: Yes/No Questions</span>
-        <span class="info-panel-desc">💡 Form a question from the prompts and practice both affirmative and negative responses.</span>
-    `;
-
-    container.appendChild(infoPanel);
-
+    // ------------------------------------------------------------------------
+    // Example: Drillタイトルより先に表示
+    // ------------------------------------------------------------------------
     const exBox = document.createElement("div");
     exBox.className = "example-box";
 
@@ -415,8 +407,13 @@ function renderDrill1Section() {
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>${w1} ／ ${w2}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex1Listen" class="example-button">🔊 きく</button><span>${exQ}</span>
+            <strong class="example-label-title">Question:</strong>
+            ${w1} ／ ${w2}
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="ex1Listen" class="example-button">🔊 きく</button>
+            <span>${exQ}</span>
         </div>
+
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong>
             <button id="exYesListen" class="example-button" style="margin-right: 4px;">🔊 🙆</button>
@@ -429,20 +426,48 @@ function renderDrill1Section() {
     container.appendChild(exBox);
 
     document.getElementById("ex1Listen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("ex1Listen")], "Playing...");
+        setPlayingStateMultiple(
+            [document.getElementById("ex1Listen")],
+            "Playing..."
+        );
         speakText("お父さんは、看護師ですか？", 0.9, () => stopAllPlayback());
     };
 
     document.getElementById("exYesListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("exYesListen")], "Playing...");
+        setPlayingStateMultiple(
+            [document.getElementById("exYesListen")],
+            "Playing..."
+        );
         speakText("はい、看護師です。", 0.9, () => stopAllPlayback());
     };
 
     document.getElementById("exNoListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("exNoListen")], "Playing...");
+        setPlayingStateMultiple(
+            [document.getElementById("exNoListen")],
+            "Playing..."
+        );
         speakText("いいえ、看護師じゃないです。", 0.9, () => stopAllPlayback());
     };
 
+    // ------------------------------------------------------------------------
+    // Drill 1タイトルと説明：Exampleの下に表示
+    // ------------------------------------------------------------------------
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task1";
+    infoPanel.style.marginTop = "25px";
+
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">Drill 1: Yes/No Questions</span>
+        <span class="info-panel-desc">
+            💡 Form a question from the prompts and practice both affirmative and negative responses.
+        </span>
+    `;
+
+    container.appendChild(infoPanel);
+
+    // ------------------------------------------------------------------------
+    // Practice rows
+    // ------------------------------------------------------------------------
     const listDiv = document.createElement("div");
     listDiv.id = "drill1List";
     container.appendChild(listDiv);
@@ -453,6 +478,7 @@ function renderDrill1Section() {
 }
 
 // ============================================================================
+// // ============================================================================
 // Render Drill 2 Section
 // ============================================================================
 function renderDrill2Section() {
@@ -470,17 +496,9 @@ function renderDrill2Section() {
 
     container.innerHTML = "";
 
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task2";
-    infoPanel.style.marginTop = "45px";
-
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 2: Wh- Questions</span>
-        <span class="info-panel-desc">💡 Ask about majors using Wh- questions. Select your major from the dropdown menu and reply using the possessive form.</span>
-    `;
-
-    container.appendChild(infoPanel);
-
+    // ------------------------------------------------------------------------
+    // Example: Drillタイトルより先に表示
+    // ------------------------------------------------------------------------
     const exBox = document.createElement("div");
     exBox.className = "example-box";
 
@@ -497,8 +515,13 @@ function renderDrill2Section() {
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>${wTarget} ／ ${wMaj}<span style="font-size: 16px; margin: 0 4px;">👉</span><button id="ex2QListen" class="example-button">🔊 きく</button><span>${exQ2}</span>
+            <strong class="example-label-title">Question:</strong>
+            ${wTarget} ／ ${wMaj}
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="ex2QListen" class="example-button">🔊 きく</button>
+            <span>${exQ2}</span>
         </div>
+
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
             <strong class="example-label-title">Response:</strong>
             <button id="ex2AListen" class="example-button" style="margin-right: 4px;">🔊 きく</button>
@@ -509,15 +532,40 @@ function renderDrill2Section() {
     container.appendChild(exBox);
 
     document.getElementById("ex2QListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("ex2QListen")], "Playing...");
+        setPlayingStateMultiple(
+            [document.getElementById("ex2QListen")],
+            "Playing..."
+        );
         speakText("あなたの専攻は何ですか。", 0.9, () => stopAllPlayback());
     };
 
     document.getElementById("ex2AListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("ex2AListen")], "Playing...");
+        setPlayingStateMultiple(
+            [document.getElementById("ex2AListen")],
+            "Playing..."
+        );
         speakText("わたしの専攻は、政治です。", 0.9, () => stopAllPlayback());
     };
 
+    // ------------------------------------------------------------------------
+    // Drill 2タイトルと説明：Exampleの下に表示
+    // ------------------------------------------------------------------------
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task2";
+    infoPanel.style.marginTop = "45px";
+
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">Drill 2: Wh- Questions</span>
+        <span class="info-panel-desc">
+            💡 Ask about majors using Wh- questions. Select your major from the dropdown menu and reply using the possessive form.
+        </span>
+    `;
+
+    container.appendChild(infoPanel);
+
+    // ------------------------------------------------------------------------
+    // Practice rows
+    // ------------------------------------------------------------------------
     const listDiv = document.createElement("div");
     listDiv.id = "drill2List";
     container.appendChild(listDiv);
