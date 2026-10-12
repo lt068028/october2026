@@ -1064,23 +1064,34 @@ function bindRecorderEvents(
                 return;
             }
 
-            if (
-                currentSession.recognitionDone &&
-                currentSession.recorderDone
-            ) {
-                currentSession.processed = true;
+            currentSession.processed = true;
+            currentSession.finished = true;
 
-                processRecognitionResult(
-                    currentSession.accumulatedTranscript,
-                    resultSpan,
-                    correctionBox,
-                    getExpectedKanjiFn(),
-                    expectedIsNeg,
-                    allowEitherStructure,
-                    currentX,
-                    currentY
-                );
+            if (currentSession.watchdog !== null) {
+                clearTimeout(currentSession.watchdog);
+                currentSession.watchdog = null;
             }
+            if (currentSession.autoStopTimer) {
+                clearTimeout(currentSession.autoStopTimer);
+                currentSession.autoStopTimer = null;
+            }
+
+            processRecognitionResult(
+                currentSession.accumulatedTranscript,
+                resultSpan,
+                correctionBox,
+                getExpectedKanjiFn(),
+                expectedIsNeg,
+                allowEitherStructure,
+                currentX,
+                currentY
+            );
+
+            if (rowKey && currentSession.audioUrl) {
+                appendPersistedPlayButton(resultSpan, rowKey, playRate);
+            }
+
+            releaseSession(currentSession);
         };
 
         try {
@@ -1171,6 +1182,10 @@ function bindRecorderEvents(
                     return;
                 }
 
+                if (event.error === "no-speech") {
+                    return;
+                }
+
                 currentSession.errorMessage =
                     event.error || "recognition-error";
 
@@ -1185,8 +1200,6 @@ function bindRecorderEvents(
                     showError(
                         "No microphone was detected. Check your microphone connection and settings."
                     );
-                } else if (event.error === "no-speech") {
-                    showError("No speech detected.");
                 } else if (event.error === "network") {
                     showError(
                         "Speech recognition service connection failed. Check your connection and try again."
@@ -1212,15 +1225,8 @@ function bindRecorderEvents(
                     try {
                         currentSession.mediaRecorder.stop();
                     } catch (e) {}
-                }
-
-                tryProcessResult();
-
-                if (
-                    currentSession.recorderDone &&
-                    currentSession.recognitionDone
-                ) {
-                    releaseSession(currentSession);
+                } else {
+                    tryProcessResult();
                 }
             };
 
@@ -1251,12 +1257,16 @@ function bindRecorderEvents(
                     return;
                 }
 
-                currentSession.errorMessage = "timeout";
-                showError(
-                    "Speech recognition did not finish. Please try recording again."
-                );
-                releaseSession(currentSession, true);
-            }, isManualStop ? 20000 : 12000);
+                if (currentSession.accumulatedTranscript) {
+                    tryProcessResult();
+                } else {
+                    currentSession.errorMessage = "timeout";
+                    showError(
+                        "Speech recognition did not finish. Please try recording again."
+                    );
+                    releaseSession(currentSession, true);
+                }
+            }, 15000);
 
             if (!isManualStop) {
                 currentSession.autoStopTimer = setTimeout(() => {
@@ -1281,7 +1291,7 @@ function bindRecorderEvents(
                             currentSession.recognition.stop();
                         } catch (e) {}
                     }
-                }, 5000);
+                }, 6000);
             }
         } catch (err) {
             console.error("Recording/recognition startup error:", err);
