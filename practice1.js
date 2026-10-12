@@ -410,7 +410,6 @@ function renderExampleSection() {
     container.innerHTML = `
         <div class="example-box">
             <div class="info-panel-desc">
-                💡 Listen to model sentences and practice basic structures.
             </div>
 
             <div class="flex-row-center" style="margin-top: 16px;">
