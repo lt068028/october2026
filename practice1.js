@@ -1,9 +1,10 @@
-// ============================================================================
-// Practice 1: XはYです
-// Drill 1: Basic Sentences
-// Drill 2: Selectable Practice
-// Drill 3: Free Input + Speech Recognition
-// ============================================================================
+
+ // ============================================================================
+ // Practice 1: XはYです
+ // Drill 1: Basic Sentences
+ // Drill 2: Selectable Practice
+ // Drill 3: Free Input + Speech Recognition
+ // ============================================================================
 
 const taskData = [
     { x: "わたし", xKanji: "私", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
@@ -1055,22 +1056,26 @@ function bindRecorderEvents(
         session = currentSession;
         activeRecognitionSession = currentSession;
 
+        // 修正：録音と音声認識の両方が終了してから判定する。
+        // finished は releaseSession() に任せ、ここでは先に true にしない。
         const tryProcessResult = () => {
             if (
                 currentSession.errorMessage ||
                 currentSession.processed ||
-                currentSession.finished
+                currentSession.finished ||
+                !currentSession.recognitionDone ||
+                !currentSession.recorderDone
             ) {
                 return;
             }
 
             currentSession.processed = true;
-            currentSession.finished = true;
 
             if (currentSession.watchdog !== null) {
                 clearTimeout(currentSession.watchdog);
                 currentSession.watchdog = null;
             }
+
             if (currentSession.autoStopTimer) {
                 clearTimeout(currentSession.autoStopTimer);
                 currentSession.autoStopTimer = null;
@@ -1091,6 +1096,7 @@ function bindRecorderEvents(
                 appendPersistedPlayButton(resultSpan, rowKey, playRate);
             }
 
+            // releaseSession() 内で finished を設定し、リソースを解放する
             releaseSession(currentSession);
         };
 
@@ -1147,6 +1153,8 @@ function bindRecorderEvents(
                 }
 
                 currentSession.recorderDone = true;
+
+                // 音声認識がまだ終了していなければ、ここでは判定しない
                 tryProcessResult();
             };
 
@@ -1214,7 +1222,9 @@ function bindRecorderEvents(
             };
 
             currentRecognition.onend = () => {
-                if (currentSession.errorMessage) return;
+                if (currentSession.errorMessage || currentSession.finished) {
+                    return;
+                }
 
                 currentSession.recognitionDone = true;
 
@@ -1225,9 +1235,10 @@ function bindRecorderEvents(
                     try {
                         currentSession.mediaRecorder.stop();
                     } catch (e) {}
-                } else {
-                    tryProcessResult();
                 }
+
+                // 録音側が先に終了していた場合も、ここで判定を再試行する
+                tryProcessResult();
             };
 
             recordBtn.disabled = true;
@@ -1249,6 +1260,8 @@ function bindRecorderEvents(
             mediaRecorder.start();
             currentRecognition.start();
 
+            // 修正：タイムアウト時は即座にセッションを破棄せず、
+            // 認識と録音の停止を要求し、取得済みの結果を処理する。
             currentSession.watchdog = setTimeout(() => {
                 if (
                     currentSession.finished ||
@@ -1257,15 +1270,47 @@ function bindRecorderEvents(
                     return;
                 }
 
-                if (currentSession.accumulatedTranscript) {
-                    tryProcessResult();
-                } else {
-                    currentSession.errorMessage = "timeout";
-                    showError(
-                        "Speech recognition did not finish. Please try recording again."
-                    );
-                    releaseSession(currentSession, true);
+                currentSession.watchdog = null;
+
+                // まず音声認識の停止を要求する
+                try {
+                    if (currentSession.recognition) {
+                        currentSession.recognition.stop();
+                    }
+                } catch (e) {
+                    // stop() の例外が発生しても録音側の終了処理を続ける
                 }
+
+                // 録音が続いていれば停止する
+                if (
+                    currentSession.mediaRecorder &&
+                    currentSession.mediaRecorder.state === "recording"
+                ) {
+                    try {
+                        currentSession.mediaRecorder.stop();
+                    } catch (e) {
+                        // 下の終了処理で状態を確認する
+                    }
+                }
+
+                // 音声認識の onend が来ない場合に備え、タイムアウト時点で
+                // 認識側の終了を確定する。取得済み transcript は保持する。
+                currentSession.recognitionDone = true;
+
+                // 録音がすでに停止している場合は、録音側も終了扱いにして
+                // 結果処理を再試行する。通常は mediaRecorder.onstop が処理する。
+                if (
+                    currentSession.mediaRecorder &&
+                    currentSession.mediaRecorder.state === "inactive" &&
+                    !currentSession.recorderDone
+                ) {
+                    currentSession.recorderDone = true;
+                }
+
+                tryProcessResult();
+
+                // 録音がまだ停止処理中なら、mediaRecorder.onstop で
+                // recorderDone が設定された後に tryProcessResult() が再実行される。
             }, 15000);
 
             if (!isManualStop) {
