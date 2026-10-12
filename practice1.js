@@ -856,7 +856,7 @@ function initTask3() {
             () => inputX.value.trim(),
             () => inputY.value.trim(),
             () => `${inputX.value.trim()}は、${inputY.value.trim()}です。`,
-            null,
+            false,
             0.9,
             rowKey,
             true
@@ -1233,13 +1233,8 @@ function bindRecorderEvents(
                 stopBtn.classList.remove("stop-btn-active");
             }
 
-            // Show recording status while recording is active.
             resultSpan.textContent = "Recording...";
             resultSpan.style.color = "var(--text-primary)";
-
-            if (correctionBox) {
-                correctionBox.style.display = "none";
-            }
 
             if (correctionBox) {
                 correctionBox.style.display = "none";
@@ -1357,15 +1352,11 @@ function processRecognitionResult(
         return;
     }
 
-    // Display the recognized text.
-    // The sentence judgement compares normalized text, not pronunciation.
     const normalizedTranscript = convertToHiragana(transcript);
 
     let acceptableSentences = [];
 
     if (allowEitherStructure) {
-        // Drill 3: use the student's current X and Y input.
-        // No predefined sentence list is required.
         const x = String(inputX || "").trim();
         const y = String(inputY || "").trim();
 
@@ -1383,8 +1374,6 @@ function processRecognitionResult(
             `${x}は${y}ではありません`
         ];
     } else if (expectedIsNeg === true) {
-        // Drill 1 and Drill 2: negative target.
-        // Accept common negative forms with the same X and Y.
         const expected = String(expectedSentence || "").trim();
         const normalizedExpected = convertToHiragana(expected);
 
@@ -1396,7 +1385,6 @@ function processRecognitionResult(
             normalizedExpected.replace(/ではないです$/, "ではありません")
         ];
     } else {
-        // Drill 1 and Drill 2: affirmative target.
         acceptableSentences = [
             String(expectedSentence || "").trim()
         ];
