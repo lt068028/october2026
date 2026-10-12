@@ -409,13 +409,12 @@ function renderExampleSection() {
     // ExampleをDrillタイトル用のinfo-panelから独立させる
     container.innerHTML = `
         <div class="example-box">
-            <div class="info-panel-title">Example</div>
             <div class="info-panel-desc">
                 💡 Listen to model sentences and practice basic structures.
             </div>
 
             <div class="flex-row-center" style="margin-top: 16px;">
-                <span class="example-label-title">Affirmative:</span>
+                <span class="example-label-title">🟢Affirmative:</span>
                 ${formattedX}
                 ／
                 ${formattedStudent}
@@ -428,7 +427,7 @@ function renderExampleSection() {
 
             <div class="flex-row-center dashed-border"
                  style="margin-top: 12px; padding-top: 12px;">
-                <span class="example-label-title">Negative:</span>
+                <span class="example-label-title">🔴Negative:</span>
                 ${formattedX}
                 ／
                 ${formattedTeacher}
