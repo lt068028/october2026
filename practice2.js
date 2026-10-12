@@ -500,8 +500,9 @@ function renderDrill2Section() {
     // ------------------------------------------------------------------------
     // Example: Drillタイトルより先に表示
     // ------------------------------------------------------------------------
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
+const exBox = document.createElement("div");
+exBox.className = "example-box";
+exBox.style.marginTop = "30px";
 
     const wTarget = formatWord("あなた", "あなた", "anata", "you");
     const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
