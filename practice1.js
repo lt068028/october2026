@@ -146,7 +146,6 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
-    initExampleSection();
     initTask1();
     initTask2();
     initTask3();
@@ -199,7 +198,6 @@ function initSettingsPanel() {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
             updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
-            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -217,56 +215,12 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
         });
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
-    }
-}
-
-function initExampleSection() {
-    const container = document.getElementById("exampleSectionContainer");
-    if (!container) return;
-    
-    const w1 = formatWord("わたし", "私", "watashi", "I");
-    const w2 = formatWord("がくせい", "学生", "gakusei", "student");
-    const w3 = formatWord("せんせい", "先生", "sensei", "teacher");
-    
-    const ex1Sentence = scriptMode === "kanji" ? "私は、学生です。" : "わたしは、がくせいです。";
-    const ex2Sentence = scriptMode === "kanji" ? "私は、先生じゃないです。" : "わたしは、せんせいじゃないです。";
-
-    container.innerHTML = `
-        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-            <span class="info-panel-title">Example</span>
-            <span class="info-panel-desc">💡 Listen to model sentences and practice basic structures.</span>
-        </div>
-        <div class="example-box">
-            <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-                <strong class="example-label-title">Affirmative:</strong> ${w1} ／ ${w2} <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex1Listen" class="example-button">🔊 きく</button> <span>${ex1Sentence}</span>
-            </div>
-            <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-                <strong class="example-label-title">Negative:</strong> ${w1} ／ ${w3} <span style="font-size: 16px; margin: 0 4px;">👉</span> <button type="button" id="ex2Listen" class="example-button">🔊 きく</button> <span>${ex2Sentence}</span>
-            </div>
-        </div>
-    `;
-
-    const ex1Btn = document.getElementById("ex1Listen");
-    if (ex1Btn) {
-        ex1Btn.onclick = () => {
-            setPlayingState(ex1Btn, "Playing...");
-            speakText("私は、学生です。", 0.9, () => stopAllPlayback());
-        };
-    }
-
-    const ex2Btn = document.getElementById("ex2Listen");
-    if (ex2Btn) {
-        ex2Btn.onclick = () => {
-            setPlayingState(ex2Btn, "Playing...");
-            speakText("私は、先生じゃないです。", 0.9, () => stopAllPlayback());
-        };
     }
 }
 
