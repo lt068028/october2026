@@ -747,4 +747,262 @@ function createDrillRow(container, indexLabel, formattedX, formattedY, targetX, 
     stopBtn.disabled = true;
 
     const resultSpan = document.createElement("span");
-    resultSpan.className =
+    resultSpan.className = "result-text";
+    resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
+    resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+
+    topRow.appendChild(listenBtn);
+    topRow.appendChild(indexSpan);
+    topRow.appendChild(promptSpan);
+    topRow.appendChild(typeLabel);
+    topRow.appendChild(recordBtn);
+    topRow.appendChild(stopBtn);
+    topRow.appendChild(resultSpan);
+
+    if (practice1State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(resultSpan, rowKey, playRate);
+    }
+
+    const correctionBox = document.createElement("div");
+    correctionBox.className = "correction-box";
+    const corrListenBtn = document.createElement("button");
+    corrListenBtn.className = "example-button";
+    corrListenBtn.innerHTML = "🔊 きく";
+    corrListenBtn.style.marginRight = "8px";
+    const corrTextSpan = document.createElement("span");
+    correctionBox.appendChild(corrListenBtn);
+    correctionBox.appendChild(corrTextSpan);
+
+    rowDiv.appendChild(topRow);
+    rowDiv.appendChild(correctionBox);
+
+    bindRecorderEvents(
+        recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+        () => targetX, () => targetY,
+        () => isNeg ? `${targetKanjiX}は${targetKanjiY}じゃないです` : `${targetKanjiX}は${targetKanjiY}です`,
+        isNeg, playRate, rowKey
+    );
+
+    container.appendChild(rowDiv);
+}
+
+function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
+    let playBtn = resultSpan.querySelector(".play-recording-btn");
+    if (!playBtn) {
+        playBtn = document.createElement("button");
+        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
+        playBtn.style.marginLeft = "8px";
+        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+        playBtn.onclick = () => {
+            const recordedAudioUrl = practice1State.audioUrls[rowKey];
+            if (recordedAudioUrl) {
+                setPlayingState(playBtn, "Playing...");
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(e => stopAllPlayback());
+            }
+        };
+        resultSpan.appendChild(playBtn);
+    }
+}
+
+function bindRecorderEvents(
+    recordBtn, stopBtn, resultSpan, correctionBox, corrListenBtn, corrTextSpan,
+    getXFn, getYFn, getExpectedKanjiFn, expectedIsNeg = false, playRate = 0.9, rowKey = ""
+) {
+    let session = null;
+
+    function releaseSession(currentSession) {
+        if (!currentSession || currentSession.finished) return;
+        currentSession.finished = true;
+        if (currentSession.watchdog !== null) { clearTimeout(currentSession.watchdog); currentSession.watchdog = null; }
+        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+            try { currentSession.mediaRecorder.stop(); } catch (e) {}
+        }
+        if (currentSession.stream) { currentSession.stream.getTracks().forEach(track => track.stop()); }
+        if (activeRecognitionSession === currentSession) { activeRecognitionSession = null; }
+        if (session === currentSession) {
+            session = null;
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            stopBtn.classList.remove("stop-btn-active");
+        }
+    }
+
+    recordBtn.addEventListener("click", async () => {
+        if (recordBtn.disabled) return;
+        stopAllPlayback();
+        if (activeRecognitionSession !== null) { releaseSession(activeRecognitionSession); }
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            resultSpan.textContent = "Speech recognition is not supported in this browser.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        const currentX = getXFn();
+        const currentY = getYFn();
+        if (!currentX || !currentY) {
+            resultSpan.textContent = "Please provide both X and Y.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        let stream;
+        try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); } 
+        catch (err) {
+            resultSpan.textContent = "Microphone access denied.";
+            resultSpan.style.color = "var(--error-text)";
+            return;
+        }
+
+        const currentSession = {
+            finished: false, stopRequested: false, errorMessage: "", recognition: null,
+            watchdog: null, mediaRecorder: null, audioChunks: [], stream: stream,
+            accumulatedTranscript: "", recognitionDone: false, recorderDone: false, processed: false
+        };
+
+        session = currentSession;
+        activeRecognitionSession = currentSession;
+
+        const tryProcessResult = () => {
+            if (currentSession.errorMessage || currentSession.processed) return;
+            if (currentSession.recognitionDone && currentSession.recorderDone) {
+                currentSession.processed = true;
+                processRecognitionResult(
+                    currentSession.accumulatedTranscript, currentX, currentY, getExpectedKanjiFn, expectedIsNeg,
+                    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowKey
+                );
+            }
+        };
+
+        try {
+            const currentRecognition = new SpeechRecognition();
+            currentSession.recognition = currentRecognition;
+            currentRecognition.lang = "ja-JP";
+            currentRecognition.interimResults = false;
+            currentRecognition.continuous = isManualStop;
+
+            const mediaRecorder = new MediaRecorder(stream);
+            currentSession.mediaRecorder = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) currentSession.audioChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
+                const audioUrl = URL.createObjectURL(audioBlob);
+                if (rowKey) practice1State.audioUrls[rowKey] = audioUrl;
+                stream.getTracks().forEach(track => track.stop());
+                currentSession.recorderDone = true;
+                tryProcessResult();
+            };
+
+            currentRecognition.onresult = (event) => {
+                if (currentSession.finished || session !== currentSession || currentSession.errorMessage) return;
+                let rawTranscript = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) rawTranscript += event.results[i][0].transcript;
+                }
+                currentSession.accumulatedTranscript += rawTranscript;
+            };
+
+            currentRecognition.onerror = (event) => {
+                if (currentSession.finished || session !== currentSession) return;
+                releaseSession(currentSession);
+            };
+
+            currentRecognition.onend = () => {
+                currentSession.recognitionDone = true;
+                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+                    try { currentSession.mediaRecorder.stop(); } catch (e) {}
+                }
+                tryProcessResult();
+                releaseSession(currentSession);
+            };
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = !isManualStop;
+            if (isManualStop) stopBtn.classList.add("stop-btn-active");
+            else stopBtn.classList.remove("stop-btn-active");
+
+            resultSpan.textContent = "Recording...";
+            resultSpan.style.color = "var(--accent-color)";
+            correctionBox.style.display = "none";
+
+            mediaRecorder.start();
+            currentRecognition.start();
+        } catch (err) {
+            releaseSession(currentSession);
+        }
+    });
+
+    stopBtn.addEventListener("click", () => {
+        if (!session || session.finished || session.stopRequested) return;
+        stopAllPlayback();
+        session.stopRequested = true;
+        stopBtn.disabled = true;
+        releaseSession(session);
+    });
+}
+
+function processRecognitionResult(
+    rawTranscript, currentX, currentY, getExpectedKanjiFn, expectedIsNeg,
+    resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowKey
+) {
+    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
+        resultSpan.textContent = rawTranscript + " (Too short)";
+        resultSpan.style.color = "var(--text-secondary)";
+        return;
+    }
+
+    const hiraText = convertToHiragana(rawTranscript);
+    const hiraX = convertToHiragana(currentX);
+    const hiraY = convertToHiragana(currentY);
+    const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
+
+    const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
+    const isAffirmative = affRegex.test(hiraText);
+
+    const negRegex1 = new RegExp(`^${hiraX}は${hiraY}じゃないです` + endParticleRegex);
+    const negRegex2 = new RegExp(`^${hiraX}は${hiraY}ではないです` + endParticleRegex);
+    const negRegex3 = new RegExp(`^${hiraX}は${hiraY}じゃありません` + endParticleRegex);
+    const negRegex4 = new RegExp(`^${hiraX}は${hiraY}ではありません` + endParticleRegex);
+    const isNegative = negRegex1.test(hiraText) || negRegex2.test(hiraText) || negRegex3.test(hiraText) || negRegex4.test(hiraText);
+
+    const isCorrectType = expectedIsNeg ? isNegative : isAffirmative;
+    const kanjiTextForSpeech = getExpectedKanjiFn();
+
+    if (isCorrectType) {
+        resultSpan.textContent = hiraText + " ✅ ";
+        resultSpan.style.color = "var(--text-primary)";
+        if (rowKey) appendPersistedPlayButton(resultSpan, rowKey, playRate);
+        correctionBox.style.display = "none";
+    } else {
+        resultSpan.textContent = hiraText + " ";
+        resultSpan.style.color = "var(--error-text)";
+        if (rowKey) appendPersistedPlayButton(resultSpan, rowKey, playRate);
+        corrTextSpan.textContent = "Structure error, try it again";
+        corrListenBtn.style.display = "inline-block";
+
+        corrListenBtn.onclick = () => {
+            setPlayingState(corrListenBtn, "Playing...");
+            speakText(kanjiTextForSpeech, playRate, () => stopAllPlayback());
+        };
+        correctionBox.style.display = "block";
+    }
+
+    if (isAutoPlay && rowKey) {
+        const recordedAudioUrl = practice1State.audioUrls[rowKey];
+        if (recordedAudioUrl) {
+            speakText(kanjiTextForSpeech, playRate, () => {
+                stopAllPlayback();
+                const audio = new Audio(recordedAudioUrl);
+                currentPlayingAudio = audio;
+                audio.playbackRate = 1.0;
+                audio.onended = () => { currentPlayingAudio = null; };
+                audio.play().catch(e => {});
+            });
+        }
+    }
+}
