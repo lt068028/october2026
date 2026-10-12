@@ -502,7 +502,7 @@ function renderDrill2Section() {
     // ------------------------------------------------------------------------
 const exBox = document.createElement("div");
 exBox.className = "example-box";
-exBox.style.marginTop = "30px";
+exBox.style.marginTop = "40px";
 
     const wTarget = formatWord("あなた", "あなた", "anata", "you");
     const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
