@@ -114,7 +114,7 @@ function convertToHiragana(text) {
         "子供": "こども", "子ども": "こども", "孫": "まご", "兄弟": "きょうだい",
         "外国人": "がいこくじん", "医師": "いしゃ", "医者": "いしゃ", "エンジニア": "エンジニア",
         "研究者": "けんきゅうしゃ", "デザイナー": "デザイナー", "店員": "てんいん",
-        "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "こうむいん",
+        "自営業": "じえいぎょう", "こうむいん": "こうむいん", "公務員": "公務員",
         "看護師": "かんごし", "看護婦": "かんごし", "アルバイト": "アルバイト",
         "留学生": "りゅうがくせい", "主婦": "しゅふ",
         "です": "です", "でした": "でした", "じゃないです": "じゃないです",
@@ -176,6 +176,12 @@ function formatWord(word, kanji, romaji, meaning) {
             <span class="tooltip-tip">${hintStr}</span>
         </span>
     `;
+}
+
+function formatCustomWord(word, kanji, meaning) {
+    const displayWord = (scriptMode === "kanji" && kanji) ? kanji : word;
+    const romaji = customDict[Object.keys(customDict).find(k => customDict[k].meaning.toLowerCase() === meaning.toLowerCase())]?.romaji || meaning;
+    return formatWord(word, kanji, romaji, meaning);
 }
 
 function updateToggleLabelStyle(labelEl, isActive) {
@@ -287,7 +293,7 @@ function initTask2() {
         <option value="デザイナー" data-eng="designer" data-kanji="デザイナー">Designer</option>
         <option value="てんいん" data-eng="store staff" data-kanji="店員">Store staff</option>
         <option value="じえいぎょう" data-eng="self-employed" data-kanji="自営業">Self-employed</option>
-        <option value="こうむいん" data-eng="civil servant" data-kanji="こうむいん">Civil servant</option>
+        <option value="こうむいん" data-eng="civil servant" data-kanji="公務員">Civil servant</option>
         <option value="かんごし" data-eng="nurse" data-kanji="看護師">Nurse</option>
         <option value="アルバイト" data-eng="part-time worker" data-kanji="アルバイト">Part-time worker</option>
     `;
