@@ -386,7 +386,80 @@ function updateToggleLabelStyle(labelEl, isActive) {
     }
 }
 
+// ============================================================================
+// Example Section（復元）
+// ============================================================================
+function renderExampleSection() {
+    const container = document.getElementById("exampleSectionContainer");
+    if (!container) return;
+
+    const formattedX = formatWord("わたし", "私", "watashi", "I");
+    const formattedStudent = formatWord("がくせい", "学生", "gakusei", "student");
+    const formattedTeacher = formatWord("せんせい", "先生", "sensei", "teacher");
+
+    const affirmativeSentence = scriptMode === "kanji"
+        ? "私は、学生です。"
+        : "わたしは、がくせいです。";
+
+    const negativeSentence = scriptMode === "kanji"
+        ? "私は、先生じゃないです。"
+        : "わたしは、せんせいじゃないです。";
+
+    container.innerHTML = `
+        <div class="info-panel info-panel-task1">
+            <span class="info-panel-title">Example</span>
+            <span class="info-panel-desc">
+                💡 Listen to model sentences and practice basic structures.
+            </span>
+
+            <div class="example-box">
+                <div class="flex-row-center">
+                    <span class="example-label-title">Affirmative:</span>
+                    ${formattedX}
+                    ／
+                    ${formattedStudent}
+                    <span>👉</span>
+                    <button id="ex1Listen" class="example-button">
+                        🔊 きく
+                    </button>
+                    <span>${affirmativeSentence}</span>
+                </div>
+
+                <div class="flex-row-center dashed-border" style="margin-top: 12px; padding-top: 12px;">
+                    <span class="example-label-title">Negative:</span>
+                    ${formattedX}
+                    ／
+                    ${formattedTeacher}
+                    <span>👉</span>
+                    <button id="ex2Listen" class="example-button">
+                        🔊 きく
+                    </button>
+                    <span>${negativeSentence}</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const ex1Listen = document.getElementById("ex1Listen");
+    const ex2Listen = document.getElementById("ex2Listen");
+
+    if (ex1Listen) {
+        ex1Listen.addEventListener("click", () => {
+            setPlayingStateMultiple([ex1Listen], "Playing...");
+            speakText(affirmativeSentence, 0.9, () => stopAllPlayback());
+        });
+    }
+
+    if (ex2Listen) {
+        ex2Listen.addEventListener("click", () => {
+            setPlayingStateMultiple([ex2Listen], "Playing...");
+            speakText(negativeSentence, 0.9, () => stopAllPlayback());
+        });
+    }
+}
+
 function renderAll() {
+    renderExampleSection();
     renderTask1();
     renderTask2();
     renderTask3();
