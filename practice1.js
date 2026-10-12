@@ -1,7 +1,6 @@
-
- // ============================================================================
- // Practice 1: XはYです (Hiragana Only完全動的連動・最終版)
- // ============================================================================
+// ============================================================================
+// Practice 1: XはYです (Hiragana Only完全動的連動・最終版)
+// ============================================================================
 
 const taskData = [
     { x: "わたし", xKanji: "私", y: "がくせい", yKanji: "学生", yRomaji: "gakusei", yMeaning: "student", isNeg: false },
@@ -1120,8 +1119,17 @@ function bindRecorderEvents(
                 currentSession.accumulatedTranscript += rawTranscript;
             };
 
+            // 修正1：無音の場合は、明示的に "No speech detected." を表示する。
             currentRecognition.onerror = (event) => {
                 if (currentSession.finished || session !== currentSession) return;
+
+                if (event.error === "no-speech") {
+                    currentSession.errorMessage = "No speech detected.";
+                    resultSpan.textContent = "No speech detected.";
+                    resultSpan.style.color = "var(--error-text)";
+                    correctionBox.style.display = "none";
+                }
+
                 releaseSession(currentSession);
             };
 
@@ -1176,24 +1184,33 @@ function processRecognitionResult(
     rawTranscript, currentX, currentY, getExpectedKanjiFn, expectedIsNeg,
     resultSpan, correctionBox, corrListenBtn, corrTextSpan, playRate, rowKey
 ) {
-    // Restore the original message when no speech is detected.
-    if (!rawTranscript || !rawTranscript.trim()) {
-        resultSpan.textContent = "No speech detected.";
-        resultSpan.style.color = "var(--text-secondary)";
-        correctionBox.style.display = "none";
-        return;
-    }
-
-    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
-        resultSpan.textContent = rawTranscript + " (Too short)";
-        resultSpan.style.color = "var(--text-secondary)";
-        correctionBox.style.display = "none";
-        return;
-    }
-
     const hiraText = convertToHiragana(rawTranscript);
     const hiraX = convertToHiragana(currentX);
     const hiraY = convertToHiragana(currentY);
+
+    // 修正2：認識結果が空の場合と、1文字など短すぎる場合を分けて処理する。
+    if (!hiraText) {
+        resultSpan.textContent = "No speech detected.";
+        resultSpan.style.color = "var(--error-text)";
+
+        if (correctionBox) {
+            correctionBox.style.display = "none";
+        }
+
+        return;
+    }
+
+    if (hiraText.length < 2) {
+        resultSpan.textContent = hiraText;
+        resultSpan.style.color = "var(--text-secondary)";
+
+        if (correctionBox) {
+            correctionBox.style.display = "none";
+        }
+
+        return;
+    }
+
     const endParticleRegex = "(?:ね|よ|よね|ですね|ですよ)*[.。!]?$";
 
     const affRegex = new RegExp(`^${hiraX}は${hiraY}です` + endParticleRegex);
