@@ -454,7 +454,7 @@ function renderDrill1Section() {
     // ------------------------------------------------------------------------
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
+    infoPanel.style.marginTop = "40px";
 
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 1: Yes/No Questions</span>
@@ -552,7 +552,7 @@ function renderDrill2Section() {
     // ------------------------------------------------------------------------
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task2";
-    infoPanel.style.marginTop = "45px";
+    infoPanel.style.marginTop = "20px";
 
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 2: Wh- Questions</span>
