@@ -573,7 +573,7 @@ function bindDrill1RecorderEvents(
 
                 if (!playBtn) {
                     resultSpan.textContent =
-                        "Recording saved. Play it back to review your pronunciation.";
+                        "Recorded.";
                     resultSpan.style.color = "var(--text-primary)";
 
                     playBtn = document.createElement("button");
