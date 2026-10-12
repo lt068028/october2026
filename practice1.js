@@ -1039,7 +1039,6 @@ function bindRecorderEvents(
             finished: false,
             stopRequested: false,
             errorMessage: "",
-            timedOut: false,
             recognition: null,
             watchdog: null,
             autoStopTimer: null,
@@ -1056,95 +1055,33 @@ function bindRecorderEvents(
         session = currentSession;
         activeRecognitionSession = currentSession;
 
-        function stopRecorder() {
+        const tryProcessResult = () => {
             if (
-                currentSession.mediaRecorder &&
-                currentSession.mediaRecorder.state !== "inactive"
+                currentSession.errorMessage ||
+                currentSession.processed ||
+                currentSession.finished
             ) {
-                try {
-                    currentSession.mediaRecorder.stop();
-                } catch (e) {}
-            }
-        }
-
-        function stopRecognition() {
-            if (currentSession.recognition) {
-                try {
-                    currentSession.recognition.stop();
-                } catch (e) {
-                    currentSession.recognitionDone = true;
-                }
-            } else {
-                currentSession.recognitionDone = true;
-            }
-        }
-
-        function saveRecordedAudio() {
-            if (currentSession.audioUrl || currentSession.audioChunks.length === 0) {
                 return;
             }
 
-            const mimeType =
-                currentSession.audioChunks[0].type ||
-                (currentSession.mediaRecorder &&
-                    currentSession.mediaRecorder.mimeType) ||
-                "audio/webm";
+            if (
+                currentSession.recognitionDone &&
+                currentSession.recorderDone
+            ) {
+                currentSession.processed = true;
 
-            const audioBlob = new Blob(
-                currentSession.audioChunks,
-                { type: mimeType }
-            );
-
-            if (!audioBlob.size) return;
-
-            currentSession.audioUrl = URL.createObjectURL(audioBlob);
-
-            if (rowKey) {
-                const oldUrl = practice1State.audioUrls[rowKey];
-
-                if (oldUrl && oldUrl !== currentSession.audioUrl) {
-                    URL.revokeObjectURL(oldUrl);
-                }
-
-                practice1State.audioUrls[rowKey] = currentSession.audioUrl;
-            }
-        }
-
-        function finishSession() {
-            if (currentSession.finished) return;
-
-            if (!currentSession.recorderDone) return;
-
-            if (!currentSession.recognitionDone) return;
-
-            if (currentSession.processed) return;
-
-            currentSession.processed = true;
-
-            saveRecordedAudio();
-
-            if (currentSession.accumulatedTranscript.trim()) {
                 processRecognitionResult(
                     currentSession.accumulatedTranscript,
                     resultSpan,
-                    correctionBox
+                    correctionBox,
+                    getExpectedKanjiFn(),
+                    expectedIsNeg,
+                    allowEitherStructure,
+                    currentX,
+                    currentY
                 );
-            } else if (currentSession.timedOut) {
-                showError(
-                    "Speech recognition timed out. Your recording may still be played back."
-                );
-            } else if (currentSession.errorMessage === "no-speech") {
-                showError("No speech detected. Your recording may still be played back.");
-            } else if (!currentSession.errorMessage) {
-                showError("No speech detected.");
             }
-
-            if (currentSession.audioUrl) {
-                appendPersistedPlayButton(resultSpan, rowKey, playRate);
-            }
-
-            releaseSession(currentSession);
-        }
+        };
 
         try {
             const currentRecognition = new SpeechRecognition();
@@ -1172,15 +1109,41 @@ function bindRecorderEvents(
             };
 
             mediaRecorder.onstop = () => {
+                if (currentSession.errorMessage) return;
+
+                if (currentSession.audioChunks.length > 0) {
+                    const audioBlob = new Blob(
+                        currentSession.audioChunks,
+                        { type: "audio/webm" }
+                    );
+
+                    currentSession.audioUrl =
+                        URL.createObjectURL(audioBlob);
+
+                    if (rowKey) {
+                        const oldUrl = practice1State.audioUrls[rowKey];
+
+                        if (
+                            oldUrl &&
+                            oldUrl !== currentSession.audioUrl
+                        ) {
+                            URL.revokeObjectURL(oldUrl);
+                        }
+
+                        practice1State.audioUrls[rowKey] =
+                            currentSession.audioUrl;
+                    }
+                }
+
                 currentSession.recorderDone = true;
-                saveRecordedAudio();
-                finishSession();
+                tryProcessResult();
             };
 
             currentRecognition.onresult = event => {
                 if (
                     currentSession.finished ||
-                    session !== currentSession
+                    session !== currentSession ||
+                    currentSession.errorMessage
                 ) {
                     return;
                 }
@@ -1208,73 +1171,57 @@ function bindRecorderEvents(
                     return;
                 }
 
-                const recognitionError = event.error || "recognition-error";
-                currentSession.errorMessage = recognitionError;
+                currentSession.errorMessage =
+                    event.error || "recognition-error";
 
                 if (
-                    recognitionError === "not-allowed" ||
-                    recognitionError === "service-not-allowed"
+                    event.error === "not-allowed" ||
+                    event.error === "service-not-allowed"
                 ) {
                     showError(
                         "Microphone or speech recognition permission was denied. Check your browser settings."
                     );
-                    releaseSession(currentSession, true);
-                    return;
-                }
-
-                if (recognitionError === "audio-capture") {
+                } else if (event.error === "audio-capture") {
                     showError(
                         "No microphone was detected. Check your microphone connection and settings."
                     );
-                    releaseSession(currentSession, true);
-                    return;
-                }
-
-                if (recognitionError === "network") {
+                } else if (event.error === "no-speech") {
+                    showError("No speech detected.");
+                } else if (event.error === "network") {
                     showError(
                         "Speech recognition service connection failed. Check your connection and try again."
                     );
-                    releaseSession(currentSession, true);
-                    return;
+                } else if (event.error !== "aborted") {
+                    showError(
+                        "Speech could not be recognized. Please try recording again."
+                    );
                 }
 
-                if (recognitionError === "no-speech") {
-                    currentSession.recognitionDone = true;
-                    stopRecorder();
-                    finishSession();
-                    return;
-                }
-
-                if (recognitionError === "aborted") {
-                    currentSession.recognitionDone = true;
-                    stopRecorder();
-                    finishSession();
-                    return;
-                }
-
-                showError(
-                    "Speech could not be recognized. Please try recording again."
-                );
                 releaseSession(currentSession, true);
             };
 
             currentRecognition.onend = () => {
-                if (currentSession.finished) return;
+                if (currentSession.errorMessage) return;
 
                 currentSession.recognitionDone = true;
 
-                if (currentSession.watchdog !== null) {
-                    clearTimeout(currentSession.watchdog);
-                    currentSession.watchdog = null;
+                if (
+                    currentSession.mediaRecorder &&
+                    currentSession.mediaRecorder.state !== "inactive"
+                ) {
+                    try {
+                        currentSession.mediaRecorder.stop();
+                    } catch (e) {}
                 }
 
-                if (currentSession.autoStopTimer) {
-                    clearTimeout(currentSession.autoStopTimer);
-                    currentSession.autoStopTimer = null;
-                }
+                tryProcessResult();
 
-                stopRecorder();
-                finishSession();
+                if (
+                    currentSession.recorderDone &&
+                    currentSession.recognitionDone
+                ) {
+                    releaseSession(currentSession);
+                }
             };
 
             recordBtn.disabled = true;
@@ -1286,12 +1233,12 @@ function bindRecorderEvents(
                 stopBtn.classList.remove("stop-btn-active");
             }
 
+            // Do not display a "Recording..." status.
+            // The result area remains unchanged until a transcript is available.
+
             if (correctionBox) {
                 correctionBox.style.display = "none";
             }
-
-            resultSpan.textContent = "Recording...";
-            resultSpan.style.color = "var(--text-secondary)";
 
             mediaRecorder.start();
             currentRecognition.start();
@@ -1304,27 +1251,11 @@ function bindRecorderEvents(
                     return;
                 }
 
-                currentSession.timedOut = true;
                 currentSession.errorMessage = "timeout";
-
-                if (currentSession.watchdog !== null) {
-                    clearTimeout(currentSession.watchdog);
-                    currentSession.watchdog = null;
-                }
-
-                if (currentSession.autoStopTimer) {
-                    clearTimeout(currentSession.autoStopTimer);
-                    currentSession.autoStopTimer = null;
-                }
-
-                currentSession.recognitionDone = true;
-
-                stopRecognition();
-                stopRecorder();
-
-                // Do not release the session here.
-                // Wait for MediaRecorder.onstop so the audio can be saved.
-                finishSession();
+                showError(
+                    "Speech recognition did not finish. Please try recording again."
+                );
+                releaseSession(currentSession, true);
             }, isManualStop ? 20000 : 12000);
 
             if (!isManualStop) {
@@ -1336,8 +1267,20 @@ function bindRecorderEvents(
                         return;
                     }
 
-                    stopRecorder();
-                    stopRecognition();
+                    if (
+                        currentSession.mediaRecorder &&
+                        currentSession.mediaRecorder.state === "recording"
+                    ) {
+                        try {
+                            currentSession.mediaRecorder.stop();
+                        } catch (e) {}
+                    }
+
+                    if (currentSession.recognition) {
+                        try {
+                            currentSession.recognition.stop();
+                        } catch (e) {}
+                    }
                 }, 5000);
             }
         } catch (err) {
@@ -1366,18 +1309,6 @@ function bindRecorderEvents(
         stopAllPlayback();
         stopBtn.disabled = true;
 
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
-        if (currentSession.autoStopTimer) {
-            clearTimeout(currentSession.autoStopTimer);
-            currentSession.autoStopTimer = null;
-        }
-
-        // Stop the microphone recording and speech recognition.
-        // Final processing waits for both to finish.
         if (
             currentSession.mediaRecorder &&
             currentSession.mediaRecorder.state === "recording"
@@ -1390,24 +1321,24 @@ function bindRecorderEvents(
         if (currentSession.recognition) {
             try {
                 currentSession.recognition.stop();
-            } catch (e) {
-                currentSession.recognitionDone = true;
-            }
-        } else {
-            currentSession.recognitionDone = true;
+            } catch (e) {}
         }
     });
 }
 
 // ============================================================================
-// Recognition result display
-// No sentence judgement, no correct/incorrect messages.
+// Recognition result + sentence judgement
 // ============================================================================
 
 function processRecognitionResult(
     rawTranscript,
     resultSpan,
-    correctionBox
+    correctionBox,
+    expectedSentence,
+    expectedIsNeg,
+    allowEitherStructure,
+    inputX,
+    inputY
 ) {
     const transcript = String(rawTranscript || "").trim();
 
@@ -1421,12 +1352,65 @@ function processRecognitionResult(
         return;
     }
 
-    // Normalize recognized text for display only.
-    // This does not judge the sentence or determine whether it is correct.
-    const hiraganaTranscript = convertToHiragana(transcript);
+    // Display the recognized text.
+    // The sentence judgement compares normalized text, not pronunciation.
+    const normalizedTranscript = convertToHiragana(transcript);
 
-    resultSpan.textContent = hiraganaTranscript || transcript;
-    resultSpan.style.color = "var(--text-primary)";
+    let acceptableSentences = [];
+
+    if (allowEitherStructure) {
+        // Drill 3: use the student's current X and Y input.
+        // No predefined sentence list is required.
+        const x = String(inputX || "").trim();
+        const y = String(inputY || "").trim();
+
+        if (!x || !y) {
+            resultSpan.textContent = transcript;
+            resultSpan.style.color = "var(--text-primary)";
+            return;
+        }
+
+        acceptableSentences = [
+            `${x}は${y}です`,
+            `${x}は${y}じゃないです`,
+            `${x}は${y}ではないです`,
+            `${x}は${y}じゃありません`,
+            `${x}は${y}ではありません`
+        ];
+    } else if (expectedIsNeg === true) {
+        // Drill 1 and Drill 2: negative target.
+        // Accept common negative forms with the same X and Y.
+        const expected = String(expectedSentence || "").trim();
+        const normalizedExpected = convertToHiragana(expected);
+
+        acceptableSentences = [
+            normalizedExpected,
+            normalizedExpected.replace(/じゃないです$/, "ではないです"),
+            normalizedExpected.replace(/ではないです$/, "じゃないです"),
+            normalizedExpected.replace(/じゃないです$/, "じゃありません"),
+            normalizedExpected.replace(/ではないです$/, "ではありません")
+        ];
+    } else {
+        // Drill 1 and Drill 2: affirmative target.
+        acceptableSentences = [
+            String(expectedSentence || "").trim()
+        ];
+    }
+
+    const normalizedAcceptableSentences = acceptableSentences
+        .map(sentence => convertToHiragana(sentence))
+        .filter(Boolean);
+
+    const isCorrect =
+        normalizedAcceptableSentences.includes(normalizedTranscript);
+
+    resultSpan.textContent = isCorrect
+        ? `✅ Correct! ${transcript}`
+        : `❌ Try again. ${transcript}`;
+
+    resultSpan.style.color = isCorrect
+        ? "var(--text-primary)"
+        : "var(--error-text)";
 }
 
 // ============================================================================
