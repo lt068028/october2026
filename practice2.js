@@ -389,6 +389,7 @@ function renderDrill1Section() {
     // ------------------------------------------------------------------------
     const exBox = document.createElement("div");
     exBox.className = "example-box";
+    exBox.style.marginTop = "30px";
 
     const w1 = formatWord("おとうさん", "お父さん", "otōsan", "father");
     const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
@@ -454,7 +455,7 @@ function renderDrill1Section() {
     // ------------------------------------------------------------------------
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "40px";
+    infoPanel.style.marginTop = "25px";
 
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 1: Yes/No Questions</span>
