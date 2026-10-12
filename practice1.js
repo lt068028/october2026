@@ -149,6 +149,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
+    initExampleSection();
     initTask1();
     initTask2();
     initTask3();
@@ -207,6 +208,7 @@ function initSettingsPanel() {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
             updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
+            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -224,6 +226,7 @@ function initSettingsPanel() {
             hintMode = e.target.checked ? "paren" : "hover";
             updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            initExampleSection();
             initTask1();
             initTask2();
             initTask3();
@@ -261,24 +264,19 @@ function initSettingsPanel() {
     }
 }
 
-function initTask1() {
-    const container = document.getElementById("task1Container");
+function initExampleSection() {
+    const container = document.getElementById("exampleSectionContainer");
     if (!container) return;
 
     container.innerHTML = `
         <div class="info-panel" style="margin-top: 25px;">
             <span class="info-panel-title">Example: Sentence Structure</span>
-            <span class="info-panel-desc">💡 Affirmative: [X]は[Y]です ／ Negative: [X]は[Y]じゃないです</span>
+            <span class="info-panel-desc">💡 🟢 Affirmative: [X]は[Y]です ／ 🔴 Negative: [X]は[Y]じゃないです</span>
             <div style="margin-top: 12px; display: flex; gap: 15px; flex-wrap: wrap;">
                 <button id="ex1Listen" class="example-button">🔊 肯定例をきく (I am a student)</button>
                 <button id="ex2Listen" class="example-button">🔊 否定例をきく (I am not a teacher)</button>
             </div>
         </div>
-        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-            <span class="info-panel-title">Drill 1: Basic Sentences</span>
-            <span class="info-panel-desc">💡 Practice affirmative and negative statements.</span>
-        </div>
-        <div id="task1List"></div>
     `;
 
     const ex1Btn = document.getElementById("ex1Listen");
@@ -296,7 +294,18 @@ function initTask1() {
             speakText(scriptMode === "kanji" ? "私は先生じゃないです。" : "わたしは、せんせいじゃないです。", 0.9, () => stopAllPlayback());
         });
     }
+}
 
+function initTask1() {
+    const container = document.getElementById("task1Container");
+    if (!container) return;
+    container.innerHTML = `
+        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+            <span class="info-panel-title">Drill 1: Basic Sentences</span>
+            <span class="info-panel-desc">💡 Practice affirmative and negative statements.</span>
+        </div>
+        <div id="task1List"></div>
+    `;
     const listDiv = document.getElementById("task1List");
 
     taskData.forEach((item, index) => {
