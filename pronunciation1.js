@@ -270,6 +270,50 @@ function renderDrill1Section() {
             0.9
         );
     });
+
+    // ========================================================================
+    // 追加: AIで練習しようの行（他の Drill と同じ .drill-row 構造）
+    // ========================================================================
+    const aiRowDiv = document.createElement("div");
+    aiRowDiv.className = "drill-row";
+
+    const topRow = document.createElement("div");
+    topRow.className = "top-row";
+
+    const iconSpan = document.createElement("button");
+    iconSpan.className = "example-button custom-tip-wrap";
+    iconSpan.innerHTML = '🤖<span class="custom-tip-box">AI Practice</span>';
+    iconSpan.style.pointerEvents = "none";
+
+    const indexSpan = document.createElement("span");
+    indexSpan.textContent = "AI.";
+    indexSpan.style.fontWeight = "bold";
+    indexSpan.style.marginRight = "6px";
+
+    const promptSpan = document.createElement("span");
+    promptSpan.className = "prompt-label";
+    promptSpan.innerHTML = '<span style="font-weight: bold; color: var(--text-primary);">AIで練習しよう</span> ｜ Practice with AI in a new window';
+    promptSpan.style.minWidth = "380px";
+    promptSpan.style.paddingLeft = "4px";
+
+    const aiLinkBtn = document.createElement("a");
+    aiLinkBtn.className = "example-button custom-tip-wrap";
+    aiLinkBtn.href = "ai_practice.html"; // 必要に応じて遷移先URLを変更
+    aiLinkBtn.target = "_blank";
+    aiLinkBtn.rel = "noopener noreferrer";
+    aiLinkBtn.innerHTML = '🚀ひらく<span class="custom-tip-box">Open AI practice in a new window.</span>';
+    aiLinkBtn.style.textDecoration = "none";
+    aiLinkBtn.style.display = "inline-flex";
+    aiLinkBtn.style.alignItems = "center";
+    aiLinkBtn.style.justifyContent = "center";
+
+    topRow.appendChild(iconSpan);
+    topRow.appendChild(indexSpan);
+    topRow.appendChild(promptSpan);
+    topRow.appendChild(aiLinkBtn);
+
+    aiRowDiv.appendChild(topRow);
+    container.appendChild(aiRowDiv);
 }
 
 // ----------------------------------------------------------------------------
