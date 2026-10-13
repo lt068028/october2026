@@ -6,7 +6,7 @@ const drill1Data = [
     { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
     { kanji: "萌々。桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
     { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
-    { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
+    { kanji: "きる。きる", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
     { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
     { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
     { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
@@ -272,7 +272,7 @@ function renderDrill1Section() {
     });
 
     // ========================================================================
-    // 追加: AIで練習しようの行（他の Drill と同じ .drill-row 構造）
+    // 追加: AI Pronunciation Lab の行（他の Drill と同じ .drill-row 構造）
     // ========================================================================
     const aiRowDiv = document.createElement("div");
     aiRowDiv.className = "drill-row";
@@ -298,7 +298,7 @@ function renderDrill1Section() {
 
     const aiLinkBtn = document.createElement("a");
     aiLinkBtn.className = "example-button custom-tip-wrap";
-    aiLinkBtn.href = "ai_practice.html"; // 必要に応じて遷移先URLを変更
+    aiLinkBtn.href = "ai_practice.html"; // 実際のAI用ページのファイル名やURL
     aiLinkBtn.target = "_blank";
     aiLinkBtn.rel = "noopener noreferrer";
     aiLinkBtn.innerHTML = '🚀ひらく<span class="custom-tip-box">Open AI practice in a new window.</span>';
