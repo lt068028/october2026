@@ -764,6 +764,10 @@ function renderTask3() {
         const rowKey = `task3_${k}`;
         const currentGlobalIndex = taskData.length + 3 + k;
 
+        // 11番：肯定、12番：否定、13番：肯定
+        const isNegative = k === 2;
+        const typeEmoji = isNegative ? "🔴" : "🟢";
+
         const rowDiv = document.createElement("div");
         rowDiv.className = "drill-row";
 
@@ -790,34 +794,70 @@ function renderTask3() {
         inputY.style.width = "120px";
 
         if (practice1State.customSelects[rowKey]) {
-            if (practice1State.customSelects[rowKey].x) inputX.value = practice1State.customSelects[rowKey].x;
-            if (practice1State.customSelects[rowKey].y) inputY.value = practice1State.customSelects[rowKey].y;
+            if (practice1State.customSelects[rowKey].x) {
+                inputX.value = practice1State.customSelects[rowKey].x;
+            }
+
+            if (practice1State.customSelects[rowKey].y) {
+                inputY.value = practice1State.customSelects[rowKey].y;
+            }
         }
+
+        // Y入力欄の右側に配置するモデル音ボタン
+        const listenBtn = document.createElement("button");
+        listenBtn.className = "example-button custom-tip-wrap";
+        listenBtn.innerHTML =
+            `${typeEmoji} 🔊きく` +
+            `<span class="custom-tip-box">Listen to the model sentence.</span>`;
+        listenBtn.disabled = true;
+
+        listenBtn.addEventListener("click", () => {
+            const x = inputX.value.trim();
+            const y = inputY.value.trim();
+
+            if (!x || !y) return;
+
+            const modelSentence = isNegative
+                ? `${x}は、${y}じゃ、ないです。`
+                : `${x}は、${y}です。`;
+
+            setPlayingStateMultiple([listenBtn], "Playing...");
+            speakText(modelSentence, 0.9, () => stopAllPlayback());
+        });
 
         const recordBtn = document.createElement("button");
         recordBtn.className = "example-button custom-tip-wrap";
-        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+        recordBtn.innerHTML =
+            '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
         recordBtn.disabled = true;
 
         const stopBtn = document.createElement("button");
         stopBtn.className = "example-button custom-tip-wrap";
-        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
+        stopBtn.innerHTML =
+            '⏹️<span class="custom-tip-box">Stop recording.</span>';
         stopBtn.disabled = true;
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
+
         if (practice1State.savedResults[rowKey]) {
             resultSpan.textContent = practice1State.savedResults[rowKey].html;
             resultSpan.style.color = practice1State.savedResults[rowKey].color;
         } else {
-            resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
-            resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+            resultSpan.textContent = practice1State.audioUrls[rowKey]
+                ? "(Recorded) ✅"
+                : "(Not recorded yet)";
+
+            resultSpan.style.color = practice1State.audioUrls[rowKey]
+                ? "var(--text-primary)"
+                : "var(--text-secondary)";
         }
 
         topRow.appendChild(indexSpan);
         topRow.appendChild(inputX);
         topRow.appendChild(labelHa);
         topRow.appendChild(inputY);
+        topRow.appendChild(listenBtn);
         topRow.appendChild(recordBtn);
         topRow.appendChild(stopBtn);
         topRow.appendChild(resultSpan);
@@ -836,6 +876,7 @@ function renderTask3() {
         corrListenBtn.style.marginRight = "8px";
 
         const corrTextSpan = document.createElement("span");
+
         correctionBox.appendChild(corrListenBtn);
         correctionBox.appendChild(corrTextSpan);
 
@@ -853,15 +894,19 @@ function renderTask3() {
             practice1State.customSelects[rowKey].x = inputX.value;
             practice1State.customSelects[rowKey].y = inputY.value;
 
-            recordBtn.disabled = !(valX && valY);
+            const hasBothInputs = Boolean(valX && valY);
 
-            if (!valX || !valY) {
+            recordBtn.disabled = !hasBothInputs;
+            listenBtn.disabled = !hasBothInputs;
+
+            if (!hasBothInputs) {
                 stopBtn.disabled = true;
             }
         };
 
         inputX.addEventListener("input", updateState);
         inputY.addEventListener("input", updateState);
+
         updateState();
 
         bindRecorderEvents(
@@ -871,12 +916,27 @@ function renderTask3() {
             correctionBox,
             corrListenBtn,
             corrTextSpan,
+
+            // 判定表示用の期待文
             () => {
                 const x = inputX.value.trim();
                 const y = inputY.value.trim();
-                return `${x}は${y}です`;
+
+                return isNegative
+                    ? `${x}は${y}じゃないです`
+                    : `${x}は${y}です`;
             },
-            () => `${inputX.value.trim()}は、${inputY.value.trim()}です。`,
+
+            // モデル音・訂正音声用の期待文
+            () => {
+                const x = inputX.value.trim();
+                const y = inputY.value.trim();
+
+                return isNegative
+                    ? `${x}は、${y}じゃ、ないです。`
+                    : `${x}は、${y}です。`;
+            },
+
             0.9,
             rowKey,
             true,
@@ -1361,9 +1421,12 @@ function processResult(
     }
 
     const normalizedTranscript = convertToHiragana(transcript);
-    let acceptableSentences = [];
+    let isCorrect = false;
 
     if (allowEitherStructure) {
+        // Drill 3：
+        // X・Yの語彙や表記は照合しない。
+        // 指定された文型を満たすかどうかだけを判定する。
         const x = String(inputX || "").trim();
         const y = String(inputY || "").trim();
 
@@ -1373,40 +1436,44 @@ function processResult(
             return;
         }
 
-        // Drill 3: 入力語彙そのものは検査せず、指定の文型だけを判定する。
-        // 肯定文1パターン、否定文4パターンを許容する。
-        acceptableSentences = [
-            `${x}は${y}です`,
-            `${x}は${y}じゃないです`,
-            `${x}は${y}ではないです`,
-            `${x}は${y}じゃありません`,
-            `${x}は${y}ではありません`
-        ];
+        // 正規化後の音声認識結果が、
+        // 「X は Y + 指定の述語」で構成されているかを確認する。
+        // 入力欄のX・Yとの一致は要求しない。
+        const structurePattern =
+            /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+
+        isCorrect = structurePattern.test(normalizedTranscript);
     } else {
+        // Drill 1・2：既存の完全一致ベースの判定を維持する。
         const expected = String(expectedText || "").trim();
         const normalizedExpected = convertToHiragana(expected);
 
-        acceptableSentences = [
+        const acceptableSentences = [
             normalizedExpected,
             normalizedExpected.replace(/じゃないです$/, "ではないです"),
             normalizedExpected.replace(/ではないです$/, "じゃないです"),
             normalizedExpected.replace(/じゃないです$/, "じゃありません"),
             normalizedExpected.replace(/ではないです$/, "ではありません")
         ];
+
+        const normalizedAcceptableSentences = acceptableSentences
+            .map(sentence => convertToHiragana(sentence))
+            .filter(Boolean);
+
+        isCorrect = normalizedAcceptableSentences.includes(
+            normalizedTranscript
+        );
     }
 
-    const normalizedAcceptableSentences = acceptableSentences
-        .map(sentence => convertToHiragana(sentence))
-        .filter(Boolean);
-
-    const isCorrect = normalizedAcceptableSentences.includes(normalizedTranscript);
     const displayedTranscript =
-        scriptMode === "hiragana" ? normalizedTranscript : transcript;
+        scriptMode === "hiragana"
+            ? normalizedTranscript
+            : transcript;
 
     const kanjiTextForSpeech = getExpectedKanjiFn();
 
     if (isCorrect) {
-        // 正解は、認識されたテキストの右にチェックを表示する。
+        // 正解表示
         resultSpan.textContent = `${displayedTranscript} ✅`;
         resultSpan.style.color = "var(--text-primary)";
 
@@ -1417,25 +1484,37 @@ function processResult(
             };
         }
 
-        appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
+        appendPersistedPlayButton(
+            resultSpan,
+            rowKey || "temp_res",
+            playRate
+        );
+
         correctionBox.style.display = "none";
     } else {
-        // 不正解時は、文型と語のどちらに問題があるかを分類する。
-        // これは入力語彙の妥当性を検証する処理ではない。
-        let errorType = "⚠️ Wrong word.";
+        // Drill 3では語彙判定をしないため、
+        // Wrong word. は表示しない。
+        let errorType;
 
-        const hasTopicMarker = normalizedTranscript.includes("は");
-        const hasValidEnding =
-            /(です|ないです|ではないです|じゃありません|ではありません)$/
-                .test(normalizedTranscript);
-
-        if (!hasTopicMarker || !hasValidEnding) {
+        if (allowEitherStructure) {
             errorType = "⚠️ Wrong structure.";
         } else {
-            errorType = "⚠️ Wrong word.";
+            // Drill 1・2の既存エラー分類を維持する。
+            const hasTopicMarker = normalizedTranscript.includes("は");
+
+            const hasValidEnding =
+                /(です|ないです|ではないです|じゃありません|ではありません)$/
+                    .test(normalizedTranscript);
+
+            errorType =
+                (!hasTopicMarker || !hasValidEnding)
+                    ? "⚠️ Wrong structure."
+                    : "⚠️ Wrong word.";
         }
 
-        resultSpan.textContent = `${errorType} ${displayedTranscript}`;
+        resultSpan.textContent =
+            `${errorType} ${displayedTranscript}`;
+
         resultSpan.style.color = "var(--error-text)";
 
         if (rowKey) {
@@ -1445,7 +1524,11 @@ function processResult(
             };
         }
 
-        appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
+        appendPersistedPlayButton(
+            resultSpan,
+            rowKey || "temp_res",
+            playRate
+        );
 
         corrTextSpan.textContent = `Expected: ${expectedText}`;
         corrListenBtn.style.display = "inline-block";
