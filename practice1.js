@@ -176,8 +176,6 @@ function removeRecognitionPunctuation(text) {
         );
 }
 
-// Hiragana Only 用の正規化関数。
-// この関数は With Kanji モードの認識結果の判定には使わない。
 function normalizeHiraganaTranscript(text) {
     if (!text) return "";
 
@@ -235,12 +233,10 @@ function normalizeHiraganaTranscript(text) {
     return cleaned;
 }
 
-// With Kanji 用：漢字・カタカナの表記を維持する。
 function normalizeKanjiTranscript(text) {
     return removeRecognitionPunctuation(text);
 }
 
-// 既存コードとの互換性用。
 function convertToHiragana(text) {
     return normalizeHiraganaTranscript(text);
 }
@@ -1367,8 +1363,6 @@ function bindRecorderEvents(
             window.AudioContext || window.webkitAudioContext;
 
         if (!AudioContextClass) {
-            // AudioContext が使えない場合は、録音を継続し、
-            // 手動停止または安全タイムアウトで終了する。
             currentSession.watchdog = setTimeout(() => {
                 stopAudioOnlySession(currentSession);
             }, 15000);
@@ -1393,7 +1387,6 @@ function bindRecorderEvents(
             currentSession.lastSoundAt = 0;
             currentSession.recordingStartedAt = Date.now();
 
-            // 最大録音時間は15秒。無音判定が機能しない場合の安全策。
             currentSession.watchdog = setTimeout(() => {
                 stopAudioOnlySession(currentSession);
             }, 15000);
@@ -1420,7 +1413,6 @@ function bindRecorderEvents(
                 const rms = Math.sqrt(sumSquares / buffer.length);
                 const now = Date.now();
 
-                // 音量がしきい値を超えたら発声として扱う。
                 if (rms > 0.025) {
                     if (!currentSession.soundDetectedAt) {
                         currentSession.soundDetectedAt = now;
@@ -1429,7 +1421,6 @@ function bindRecorderEvents(
                     currentSession.lastSoundAt = now;
                 }
 
-                // 最初の発声を検出したあと、1.5秒間の無音で停止。
                 if (
                     currentSession.soundDetectedAt &&
                     currentSession.lastSoundAt &&
@@ -1441,7 +1432,6 @@ function bindRecorderEvents(
         } catch (err) {
             console.warn("Silence detection setup failed:", err);
 
-            // 無音検出が使えない場合でも録音自体は継続する。
             currentSession.watchdog = setTimeout(() => {
                 stopAudioOnlySession(currentSession);
             }, 15000);
@@ -1462,6 +1452,7 @@ function bindRecorderEvents(
         }
 
         const chunks = currentSession.audioChunks || [];
+        let audioUrl = null;
 
         if (chunks.length > 0) {
             const mimeType =
@@ -1473,7 +1464,7 @@ function bindRecorderEvents(
             const audioBlob = new Blob(chunks, { type: mimeType });
 
             if (audioBlob.size > 0) {
-                const audioUrl = URL.createObjectURL(audioBlob);
+                audioUrl = URL.createObjectURL(audioBlob);
 
                 if (rowKey) {
                     const previousUrl = practice1State.audioUrls[rowKey];
@@ -1521,9 +1512,31 @@ function bindRecorderEvents(
 
         correctionBox.style.display = "none";
 
-        // 録音後は認識結果や正誤判定を表示せず、
-        // 合意した Audio Only の表示を維持する。
         showAudioOnlyStatus(currentSession, false);
+
+        // ====================================================================
+        // Hiragana Only (Audio Only) モード録音完了後の自動再生処理
+        // ====================================================================
+        if (isAutoPlay && audioUrl) {
+            const kanjiTextForSpeech = getExpectedKanjiFn();
+            speakText(kanjiTextForSpeech, playRate, () => {
+                stopAllPlayback();
+
+                const audio = new Audio(audioUrl);
+                currentPlayingAudio = audio;
+                audio.playbackRate = playRate;
+
+                audio.onended = () => {
+                    currentPlayingAudio = null;
+                };
+
+                audio.onerror = () => {
+                    currentPlayingAudio = null;
+                };
+
+                audio.play().catch(() => {});
+            });
+        }
     }
 
     function startAudioOnlyRecording(stream) {
@@ -1593,7 +1606,6 @@ function bindRecorderEvents(
             if (!isManualStop) {
                 startSilenceDetection(currentSession);
             } else {
-                // 手動停止モードでも、録音が止まらない事故を防ぐ。
                 currentSession.watchdog = setTimeout(() => {
                     stopAudioOnlySession(currentSession);
                 }, 15000);
@@ -1903,8 +1915,6 @@ function bindRecorderEvents(
             return;
         }
 
-        // モードを録音開始時点で確定する。
-        // Hiragana Only では SpeechRecognition を一切生成しない。
         const recordingMode = scriptMode;
 
         if (recordingMode === "hiragana") {
@@ -1933,7 +1943,6 @@ function bindRecorderEvents(
 // ============================================================================
 // Result Processing
 // With Kanji のみがこの処理に到達する。
-// Hiragana Only は bindRecorderEvents 内で録音専用処理を行う。
 // ============================================================================
 
 function processResult(
@@ -1963,7 +1972,6 @@ function processResult(
     let isCorrect = false;
 
     if (allowEitherStructure) {
-        // Drill 3：X・Yの入力語彙との一致は要求せず、文型だけを判定。
         const x = String(inputX || "").trim();
         const y = String(inputY || "").trim();
 
@@ -1978,8 +1986,6 @@ function processResult(
         normalizedTranscript = structureResult.normalizedTranscript;
         isCorrect = structureResult.isCorrect;
     } else {
-        // Drill 1・2：既存の完全一致判定。
-        // With Kanji の入力でも、比較用には正規化した表記を使う。
         normalizedTranscript = normalizeHiraganaTranscript(transcript);
 
         const expected = String(expectedText || "").trim();
