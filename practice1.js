@@ -1,5 +1,6 @@
 // ============================================================================
-// Practice 1: XはYです (Practice 2 アーキテクチャ完全準拠版)
+// Practice 1: XはYです
+// Hiragana Only / With Kanji 分離対応版
 // ============================================================================
 
 const taskData = [
@@ -51,6 +52,10 @@ const practice1State = {
 };
 
 let preferredVoice = null;
+
+// ============================================================================
+// 音声設定
+// ============================================================================
 
 function setupPreferredVoice() {
     try {
@@ -159,22 +164,25 @@ function stopAllPlayback() {
 }
 
 // ============================================================================
-// ひらがな正規化処理
+// 文字正規化
 // ============================================================================
 
-function convertToHiragana(text) {
+// 共通：全角・半角の正規化と句読点・空白の除去
+function removeRecognitionPunctuation(text) {
+    return String(text || "")
+        .normalize("NFKC")
+        .replace(
+            /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。，．！？!?：；…・"'“”‘’]/g,
+            ""
+        );
+}
+
+// Hiragana Only 用：ひらがなへの正規化
+// 登録済み語彙は変換できるが、未知の漢字は自動変換できない。
+function normalizeHiraganaTranscript(text) {
     if (!text) return "";
 
-    let cleaned = String(text).normalize("NFKC");
-
-    cleaned = cleaned.replace(
-        /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。，．！？!?：；…・"'“”‘’]/g,
-        ""
-    );
-
-    cleaned = cleaned.replace(/[\u30A1-\u30F6]/g, match =>
-        String.fromCharCode(match.charCodeAt(0) - 0x60)
-    );
+    let cleaned = removeRecognitionPunctuation(text);
 
     const dict = {
         "私": "わたし",
@@ -217,12 +225,71 @@ function convertToHiragana(text) {
 
     const keys = Object.keys(dict).sort((a, b) => b.length - a.length);
 
+    // 先に辞書変換することで、カタカナを含む登録語も変換できるようにする。
     for (const key of keys) {
         cleaned = cleaned.split(key).join(dict[key]);
     }
 
+    // 残ったカタカナをひらがなに変換する。
+    cleaned = cleaned.replace(/[\u30A1-\u30F6]/g, match =>
+        String.fromCharCode(match.charCodeAt(0) - 0x60)
+    );
+
     return cleaned;
 }
+
+// With Kanji 用：漢字・カタカナの表記を維持して正規化
+function normalizeKanjiTranscript(text) {
+    return removeRecognitionPunctuation(text);
+}
+
+// Drill 1・2の既存処理との互換性用
+function convertToHiragana(text) {
+    return normalizeHiraganaTranscript(text);
+}
+
+// ============================================================================
+// Drill 3 専用の文型判定
+// ============================================================================
+
+// Hiragana Only 用の判定経路
+function checkHiraganaStructure(transcript) {
+    const normalized = normalizeHiraganaTranscript(transcript);
+
+    const pattern =
+        /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+
+    return {
+        normalizedTranscript: normalized,
+        isCorrect: pattern.test(normalized)
+    };
+}
+
+// With Kanji 用の判定経路
+function checkKanjiStructure(transcript) {
+    const normalized = normalizeKanjiTranscript(transcript);
+
+    const pattern =
+        /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+
+    return {
+        normalizedTranscript: normalized,
+        isCorrect: pattern.test(normalized)
+    };
+}
+
+// 現在のスクリプトモードに応じて別々の判定関数を呼び出す。
+function checkDrill3Structure(transcript) {
+    if (scriptMode === "hiragana") {
+        return checkHiraganaStructure(transcript);
+    }
+
+    return checkKanjiStructure(transcript);
+}
+
+// ============================================================================
+// 音声読み上げ
+// ============================================================================
 
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
@@ -255,6 +322,10 @@ function speakText(text, rate = 0.9, onEndCallback) {
     }
 }
 
+// ============================================================================
+// 初期化
+// ============================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     renderAll();
@@ -277,6 +348,10 @@ function setupFooterGuide() {
         });
     }
 }
+
+// ============================================================================
+// 表示用単語フォーマット
+// ============================================================================
 
 function formatWord(word, kanji, romaji, meaning) {
     const displayWord = (scriptMode === "kanji" && kanji) ? kanji : word;
@@ -310,6 +385,10 @@ function formatCustomWord(word, kanji, meaning) {
     return formatWord(word, kanji, romaji, meaning);
 }
 
+// ============================================================================
+// Settings Panel
+// ============================================================================
+
 function initSettingsPanel() {
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelHiraganaOnly = document.getElementById("labelHiraganaOnly");
@@ -322,6 +401,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
             renderAll();
         });
+
         updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
         updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
     }
@@ -337,6 +417,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelParenHint, hintMode === "paren");
             renderAll();
         });
+
         updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
         updateToggleLabelStyle(labelParenHint, hintMode === "paren");
     }
@@ -351,6 +432,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
             updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
+
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
         updateToggleLabelStyle(labelManualRecord, isManualStop);
     }
@@ -365,6 +447,7 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
             updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
         });
+
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
     }
@@ -470,7 +553,7 @@ function renderAll() {
 // ============================================================================
 
 function renderTask1() {
-    let container = document.getElementById("task1Container");
+    const container = document.getElementById("task1Container");
     if (!container) return;
 
     container.innerHTML = `
@@ -489,9 +572,19 @@ function renderTask1() {
         const currentXRomaji = item.x === "わたし" ? "watashi" : "tomodachi";
         const currentXMeaning = item.x === "わたし" ? "I" : "friend";
 
-        const formattedX = formatWord(currentXWord, currentXKanji, currentXRomaji, currentXMeaning);
-        const formattedY = formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning);
-        const isNeg = item.isNeg;
+        const formattedX = formatWord(
+            currentXWord,
+            currentXKanji,
+            currentXRomaji,
+            currentXMeaning
+        );
+
+        const formattedY = formatWord(
+            item.y,
+            item.yKanji,
+            item.yRomaji,
+            item.yMeaning
+        );
 
         createDrillRow(
             listDiv,
@@ -502,10 +595,9 @@ function renderTask1() {
             currentXKanji,
             item.y,
             item.yKanji,
-            isNeg,
+            item.isNeg,
             0.9,
-            `task1_${index}`,
-            false
+            `task1_${index}`
         );
     });
 }
@@ -515,7 +607,7 @@ function renderTask1() {
 // ============================================================================
 
 function renderTask2() {
-    let container = document.getElementById("task2Container");
+    const container = document.getElementById("task2Container");
     if (!container) return;
 
     container.innerHTML = `
@@ -590,8 +682,13 @@ function renderTask2() {
         previewY.className = "prompt-label translation-preview";
 
         if (practice1State.customSelects[rowKey]) {
-            if (practice1State.customSelects[rowKey].x) selectX.value = practice1State.customSelects[rowKey].x;
-            if (practice1State.customSelects[rowKey].y) selectY.value = practice1State.customSelects[rowKey].y;
+            if (practice1State.customSelects[rowKey].x) {
+                selectX.value = practice1State.customSelects[rowKey].x;
+            }
+
+            if (practice1State.customSelects[rowKey].y) {
+                selectY.value = practice1State.customSelects[rowKey].y;
+            }
         }
 
         const isCustomNeg = i % 2 === 0;
@@ -618,12 +715,18 @@ function renderTask2() {
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
+
         if (practice1State.savedResults[rowKey]) {
             resultSpan.textContent = practice1State.savedResults[rowKey].html;
             resultSpan.style.color = practice1State.savedResults[rowKey].color;
         } else {
-            resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
-            resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+            resultSpan.textContent = practice1State.audioUrls[rowKey]
+                ? "(Recorded) ✅"
+                : "(Not recorded yet)";
+
+            resultSpan.style.color = practice1State.audioUrls[rowKey]
+                ? "var(--text-primary)"
+                : "var(--text-secondary)";
         }
 
         topRow.appendChild(listenBtn);
@@ -667,17 +770,26 @@ function renderTask2() {
             if (!practice1State.customSelects[rowKey]) {
                 practice1State.customSelects[rowKey] = {};
             }
+
             practice1State.customSelects[rowKey].x = valX;
             practice1State.customSelects[rowKey].y = valY;
 
             if (valX && selectedOptX) {
-                previewX.innerHTML = formatCustomWord(valX, selectedOptX.getAttribute("data-kanji"), selectedOptX.getAttribute("data-eng"));
+                previewX.innerHTML = formatCustomWord(
+                    valX,
+                    selectedOptX.getAttribute("data-kanji"),
+                    selectedOptX.getAttribute("data-eng")
+                );
             } else {
                 previewX.innerHTML = "";
             }
 
             if (valY && selectedOptY) {
-                previewY.innerHTML = formatCustomWord(valY, selectedOptY.getAttribute("data-kanji"), selectedOptY.getAttribute("data-eng"));
+                previewY.innerHTML = formatCustomWord(
+                    valY,
+                    selectedOptY.getAttribute("data-kanji"),
+                    selectedOptY.getAttribute("data-eng")
+                );
             } else {
                 previewY.innerHTML = "";
             }
@@ -690,11 +802,14 @@ function renderTask2() {
 
                 listenBtn.onclick = () => {
                     setPlayingStateMultiple([listenBtn], "Playing...");
+
                     const kanjiX = selectedOptX.getAttribute("data-kanji") || valX;
                     const kanjiY = selectedOptY.getAttribute("data-kanji") || valY;
+
                     const modelSentence = isCustomNeg
                         ? `${kanjiX}は、${kanjiY}じゃ、ないです。`
                         : `${kanjiX}は、${kanjiY}です。`;
+
                     speakText(modelSentence, 0.9, () => stopAllPlayback());
                 };
             } else {
@@ -718,15 +833,31 @@ function renderTask2() {
             () => {
                 const optX = selectX.options[selectX.selectedIndex];
                 const optY = selectY.options[selectY.selectedIndex];
-                const kX = optX ? optX.getAttribute("data-kanji") || selectX.value : selectX.value;
-                const kY = optY ? optY.getAttribute("data-kanji") || selectY.value : selectY.value;
-                return isCustomNeg ? `${kX}は${kY}じゃないです` : `${kX}は${kY}です`;
+
+                const kX = optX
+                    ? optX.getAttribute("data-kanji") || selectX.value
+                    : selectX.value;
+
+                const kY = optY
+                    ? optY.getAttribute("data-kanji") || selectY.value
+                    : selectY.value;
+
+                return isCustomNeg
+                    ? `${kX}は${kY}じゃないです`
+                    : `${kX}は${kY}です`;
             },
             () => {
                 const optX = selectX.options[selectX.selectedIndex];
                 const optY = selectY.options[selectY.selectedIndex];
-                const kX = optX ? optX.getAttribute("data-kanji") || selectX.value : selectX.value;
-                const kY = optY ? optY.getAttribute("data-kanji") || selectY.value : selectY.value;
+
+                const kX = optX
+                    ? optX.getAttribute("data-kanji") || selectX.value
+                    : selectX.value;
+
+                const kY = optY
+                    ? optY.getAttribute("data-kanji") || selectY.value
+                    : selectY.value;
+
                 return isCustomNeg
                     ? `${kX}は、${kY}じゃ、ないです。`
                     : `${kX}は、${kY}です。`;
@@ -747,7 +878,7 @@ function renderTask2() {
 // ============================================================================
 
 function renderTask3() {
-    let container = document.getElementById("task3Container");
+    const container = document.getElementById("task3Container");
     if (!container) return;
 
     container.innerHTML = `
@@ -803,7 +934,7 @@ function renderTask3() {
             }
         }
 
-        // Y入力欄の右側に配置するモデル音ボタン
+        // Y入力欄の右側にモデル音ボタンを配置
         const listenBtn = document.createElement("button");
         listenBtn.className = "example-button custom-tip-wrap";
         listenBtn.innerHTML =
@@ -917,7 +1048,7 @@ function renderTask3() {
             corrListenBtn,
             corrTextSpan,
 
-            // 判定表示用の期待文
+            // 判定用の期待文
             () => {
                 const x = inputX.value.trim();
                 const y = inputY.value.trim();
@@ -927,7 +1058,7 @@ function renderTask3() {
                     : `${x}は${y}です`;
             },
 
-            // モデル音・訂正音声用の期待文
+            // モデル音声・訂正音声用の期待文
             () => {
                 const x = inputX.value.trim();
                 const y = inputY.value.trim();
@@ -978,9 +1109,11 @@ function createDrillRow(
 
     listenBtn.onclick = () => {
         setPlayingStateMultiple([listenBtn], "Playing...");
+
         const modelSentence = isNeg
             ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。`
             : `${targetKanjiX}は、${targetKanjiY}です。`;
+
         speakText(modelSentence, playRate, () => stopAllPlayback());
     };
 
@@ -1017,8 +1150,13 @@ function createDrillRow(
         resultSpan.textContent = practice1State.savedResults[rowKey].html;
         resultSpan.style.color = practice1State.savedResults[rowKey].color;
     } else {
-        resultSpan.textContent = practice1State.audioUrls[rowKey] ? "(Recorded) ✅" : "(Not recorded yet)";
-        resultSpan.style.color = practice1State.audioUrls[rowKey] ? "var(--text-primary)" : "var(--text-secondary)";
+        resultSpan.textContent = practice1State.audioUrls[rowKey]
+            ? "(Recorded) ✅"
+            : "(Not recorded yet)";
+
+        resultSpan.style.color = practice1State.audioUrls[rowKey]
+            ? "var(--text-primary)"
+            : "var(--text-secondary)";
     }
 
     topRow.appendChild(listenBtn);
@@ -1098,7 +1236,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 audio.onended = () => stopAllPlayback();
                 audio.onerror = () => stopAllPlayback();
 
-                audio.play().catch(e => stopAllPlayback());
+                audio.play().catch(() => stopAllPlayback());
             }
         };
 
@@ -1109,7 +1247,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 }
 
 // ============================================================================
-// Shared Recorder & Speech Recognition Architecture (Practice 2 Style)
+// Shared Recorder & Speech Recognition Architecture
 // ============================================================================
 
 function bindRecorderEvents(
@@ -1245,7 +1383,7 @@ function bindRecorderEvents(
             watchdog: null,
             mediaRecorder: null,
             audioChunks: [],
-            stream: stream,
+            stream,
             accumulatedTranscript: "",
             recognitionDone: false,
             recorderDone: false,
@@ -1261,11 +1399,9 @@ function bindRecorderEvents(
             if (currentSession.recognitionDone && currentSession.recorderDone) {
                 currentSession.processed = true;
 
-                const expectedText = getExpectedTextFn();
-
                 processResult(
                     currentSession.accumulatedTranscript,
-                    expectedText,
+                    getExpectedTextFn(),
                     getExpectedKanjiFn,
                     resultSpan,
                     correctionBox,
@@ -1334,7 +1470,7 @@ function bindRecorderEvents(
                 currentSession.accumulatedTranscript += rawTranscript;
             };
 
-            currentRecognition.onerror = (event) => {
+            currentRecognition.onerror = () => {
                 if (
                     currentSession.finished ||
                     session !== currentSession
@@ -1394,7 +1530,7 @@ function bindRecorderEvents(
 }
 
 // ============================================================================
-// Result Processing with Error Classification & Continuous Playback
+// Result Processing
 // ============================================================================
 
 function processResult(
@@ -1420,13 +1556,16 @@ function processResult(
         return;
     }
 
-    const normalizedTranscript = convertToHiragana(transcript);
+    let normalizedTranscript = "";
     let isCorrect = false;
 
     if (allowEitherStructure) {
-        // Drill 3：
-        // X・Yの語彙や表記は照合しない。
-        // 指定された文型を満たすかどうかだけを判定する。
+        // ------------------------------------------------------------
+        // Drill 3
+        // X・Yの入力語彙とは照合しない。
+        // スクリプトモードごとに異なる正規化・判定関数を使う。
+        // ------------------------------------------------------------
+
         const x = String(inputX || "").trim();
         const y = String(inputY || "").trim();
 
@@ -1436,17 +1575,20 @@ function processResult(
             return;
         }
 
-        // 正規化後の音声認識結果が、
-        // 「X は Y + 指定の述語」で構成されているかを確認する。
-        // 入力欄のX・Yとの一致は要求しない。
-        const structurePattern =
-            /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+        const structureResult = checkDrill3Structure(transcript);
 
-        isCorrect = structurePattern.test(normalizedTranscript);
+        normalizedTranscript = structureResult.normalizedTranscript;
+        isCorrect = structureResult.isCorrect;
     } else {
-        // Drill 1・2：既存の完全一致ベースの判定を維持する。
+        // ------------------------------------------------------------
+        // Drill 1・2
+        // 既存のひらがな正規化・完全一致ベースの判定を維持する。
+        // ------------------------------------------------------------
+
+        normalizedTranscript = normalizeHiraganaTranscript(transcript);
+
         const expected = String(expectedText || "").trim();
-        const normalizedExpected = convertToHiragana(expected);
+        const normalizedExpected = normalizeHiraganaTranscript(expected);
 
         const acceptableSentences = [
             normalizedExpected,
@@ -1457,7 +1599,7 @@ function processResult(
         ];
 
         const normalizedAcceptableSentences = acceptableSentences
-            .map(sentence => convertToHiragana(sentence))
+            .map(sentence => normalizeHiraganaTranscript(sentence))
             .filter(Boolean);
 
         isCorrect = normalizedAcceptableSentences.includes(
@@ -1465,15 +1607,14 @@ function processResult(
         );
     }
 
-    const displayedTranscript =
-        scriptMode === "hiragana"
-            ? normalizedTranscript
-            : transcript;
+    // 表示文字列はモードごとに切り替える。
+    const displayedTranscript = scriptMode === "hiragana"
+        ? normalizedTranscript
+        : transcript;
 
     const kanjiTextForSpeech = getExpectedKanjiFn();
 
     if (isCorrect) {
-        // 正解表示
         resultSpan.textContent = `${displayedTranscript} ✅`;
         resultSpan.style.color = "var(--text-primary)";
 
@@ -1492,14 +1633,13 @@ function processResult(
 
         correctionBox.style.display = "none";
     } else {
-        // Drill 3では語彙判定をしないため、
-        // Wrong word. は表示しない。
         let errorType;
 
         if (allowEitherStructure) {
+            // Drill 3は文型だけを判定する。Wrong word. は使わない。
             errorType = "⚠️ Wrong structure.";
         } else {
-            // Drill 1・2の既存エラー分類を維持する。
+            // Drill 1・2の既存エラー分類
             const hasTopicMarker = normalizedTranscript.includes("は");
 
             const hasValidEnding =
@@ -1512,9 +1652,7 @@ function processResult(
                     : "⚠️ Wrong word.";
         }
 
-        resultSpan.textContent =
-            `${errorType} ${displayedTranscript}`;
-
+        resultSpan.textContent = `${errorType} ${displayedTranscript}`;
         resultSpan.style.color = "var(--error-text)";
 
         if (rowKey) {
@@ -1561,7 +1699,7 @@ function processResult(
                     currentPlayingAudio = null;
                 };
 
-                audio.play().catch(e => {});
+                audio.play().catch(() => {});
             }
         });
     }
