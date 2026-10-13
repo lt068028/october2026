@@ -158,7 +158,10 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
+// ============================================================================
 // ひらがな正規化処理
+// ============================================================================
+
 function convertToHiragana(text) {
     if (!text) return "";
 
@@ -387,7 +390,7 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 // ============================================================================
-// Example Section（復元）
+// Example Section
 // ============================================================================
 
 function renderExampleSection() {
@@ -406,11 +409,9 @@ function renderExampleSection() {
         ? "私は、先生じゃないです。"
         : "わたしは、せんせいじゃないです。";
 
-    // ExampleをDrillタイトル用のinfo-panelから独立させる
     container.innerHTML = `
         <div class="example-box">
-            <div class="info-panel-desc">
-            </div>
+            <div class="info-panel-desc"></div>
 
             <div class="flex-row-center" style="margin-top: 3px;">
                 <span class="example-label-title">🟢Affirmative:</span>
@@ -457,7 +458,6 @@ function renderExampleSection() {
     }
 }
 
-
 function renderAll() {
     renderExampleSection();
     renderTask1();
@@ -468,6 +468,7 @@ function renderAll() {
 // ============================================================================
 // Drill 1: Basic Sentences
 // ============================================================================
+
 function renderTask1() {
     let container = document.getElementById("task1Container");
     if (!container) return;
@@ -512,6 +513,7 @@ function renderTask1() {
 // ============================================================================
 // Drill 2: Selectable Practice
 // ============================================================================
+
 function renderTask2() {
     let container = document.getElementById("task2Container");
     if (!container) return;
@@ -690,7 +692,9 @@ function renderTask2() {
                     setPlayingStateMultiple([listenBtn], "Playing...");
                     const kanjiX = selectedOptX.getAttribute("data-kanji") || valX;
                     const kanjiY = selectedOptY.getAttribute("data-kanji") || valY;
-                    const modelSentence = isCustomNeg ? `${kanjiX}は、${kanjiY}じゃ、ないです。` : `${kanjiX}は、${kanjiY}です。`;
+                    const modelSentence = isCustomNeg
+                        ? `${kanjiX}は、${kanjiY}じゃ、ないです。`
+                        : `${kanjiX}は、${kanjiY}です。`;
                     speakText(modelSentence, 0.9, () => stopAllPlayback());
                 };
             } else {
@@ -723,7 +727,9 @@ function renderTask2() {
                 const optY = selectY.options[selectY.selectedIndex];
                 const kX = optX ? optX.getAttribute("data-kanji") || selectX.value : selectX.value;
                 const kY = optY ? optY.getAttribute("data-kanji") || selectY.value : selectY.value;
-                return isCustomNeg ? `${kX}は、${kY}じゃ、ないです。` : `${kX}は、${kY}です。`;
+                return isCustomNeg
+                    ? `${kX}は、${kY}じゃ、ないです。`
+                    : `${kX}は、${kY}です。`;
             },
             0.9,
             rowKey,
@@ -739,6 +745,7 @@ function renderTask2() {
 // ============================================================================
 // Drill 3: Free Practice
 // ============================================================================
+
 function renderTask3() {
     let container = document.getElementById("task3Container");
     if (!container) return;
@@ -842,10 +849,12 @@ function renderTask3() {
             if (!practice1State.customSelects[rowKey]) {
                 practice1State.customSelects[rowKey] = {};
             }
+
             practice1State.customSelects[rowKey].x = inputX.value;
             practice1State.customSelects[rowKey].y = inputY.value;
 
             recordBtn.disabled = !(valX && valY);
+
             if (!valX || !valY) {
                 stopBtn.disabled = true;
             }
@@ -882,6 +891,7 @@ function renderTask3() {
 // ============================================================================
 // Drill Row Creation Helpers
 // ============================================================================
+
 function createDrillRow(
     container,
     indexLabel,
@@ -908,7 +918,9 @@ function createDrillRow(
 
     listenBtn.onclick = () => {
         setPlayingStateMultiple([listenBtn], "Playing...");
-        const modelSentence = isNeg ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。` : `${targetKanjiX}は、${targetKanjiY}です。`;
+        const modelSentence = isNeg
+            ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。`
+            : `${targetKanjiX}は、${targetKanjiY}です。`;
         speakText(modelSentence, playRate, () => stopAllPlayback());
     };
 
@@ -940,6 +952,7 @@ function createDrillRow(
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
+
     if (practice1State.savedResults[rowKey]) {
         resultSpan.textContent = practice1State.savedResults[rowKey].html;
         resultSpan.style.color = practice1State.savedResults[rowKey].color;
@@ -983,8 +996,12 @@ function createDrillRow(
         correctionBox,
         corrListenBtn,
         corrTextSpan,
-        () => isNeg ? `${targetX}は${targetY}じゃないです` : `${targetX}は${targetY}です`,
-        () => isNeg ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。` : `${targetKanjiX}は、${targetKanjiY}です。`,
+        () => isNeg
+            ? `${targetX}は${targetY}じゃないです`
+            : `${targetX}は${targetY}です`,
+        () => isNeg
+            ? `${targetKanjiX}は、${targetKanjiY}じゃ、ないです。`
+            : `${targetKanjiX}は、${targetKanjiY}です。`,
         playRate,
         rowKey,
         false,
@@ -998,6 +1015,7 @@ function createDrillRow(
 // ============================================================================
 // Saved Audio Playback Helper
 // ============================================================================
+
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     let playBtn = resultSpan.querySelector(".play-recording-btn");
 
@@ -1026,12 +1044,14 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         resultSpan.appendChild(playBtn);
     }
+
     return playBtn;
 }
 
 // ============================================================================
 // Shared Recorder & Speech Recognition Architecture (Practice 2 Style)
 // ============================================================================
+
 function bindRecorderEvents(
     recordBtn,
     stopBtn,
@@ -1314,8 +1334,9 @@ function bindRecorderEvents(
 }
 
 // ============================================================================
-// Result Processing with Error Classification & Continuous Playback (Practice 2 Style)
+// Result Processing with Error Classification & Continuous Playback
 // ============================================================================
+
 function processResult(
     rawTranscript,
     expectedText,
@@ -1352,6 +1373,8 @@ function processResult(
             return;
         }
 
+        // Drill 3: 入力語彙そのものは検査せず、指定の文型だけを判定する。
+        // 肯定文1パターン、否定文4パターンを許容する。
         acceptableSentences = [
             `${x}は${y}です`,
             `${x}は${y}じゃないです`,
@@ -1377,11 +1400,13 @@ function processResult(
         .filter(Boolean);
 
     const isCorrect = normalizedAcceptableSentences.includes(normalizedTranscript);
-    const displayedTranscript = scriptMode === "hiragana" ? normalizedTranscript : transcript;
+    const displayedTranscript =
+        scriptMode === "hiragana" ? normalizedTranscript : transcript;
+
     const kanjiTextForSpeech = getExpectedKanjiFn();
 
     if (isCorrect) {
-        // 正解時は、ひらがなで抽出したテキストの右に「✅」を出すだけ
+        // 正解は、認識されたテキストの右にチェックを表示する。
         resultSpan.textContent = `${displayedTranscript} ✅`;
         resultSpan.style.color = "var(--text-primary)";
 
@@ -1395,10 +1420,14 @@ function processResult(
         appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
         correctionBox.style.display = "none";
     } else {
-        // 不正解の場合：「語が違う」「構造が違う」の2パターンのルール分類
+        // 不正解時は、文型と語のどちらに問題があるかを分類する。
+        // これは入力語彙の妥当性を検証する処理ではない。
         let errorType = "⚠️ Wrong word.";
+
         const hasTopicMarker = normalizedTranscript.includes("は");
-        const hasValidEnding = /(です|ないです|ではないです|じゃありません|ではありません)$/.test(normalizedTranscript);
+        const hasValidEnding =
+            /(です|ないです|ではないです|じゃありません|ではありません)$/
+                .test(normalizedTranscript);
 
         if (!hasTopicMarker || !hasValidEnding) {
             errorType = "⚠️ Wrong structure.";
@@ -1429,12 +1458,13 @@ function processResult(
         correctionBox.style.display = "block";
     }
 
-    // モデル音、0秒おいて、録音音源が指定の再生スピードで再生される連続再生フロー
+    // モデル音声の後に録音音源を再生する。
     if (isAutoPlay) {
         speakText(kanjiTextForSpeech, playRate, () => {
             stopAllPlayback();
 
             const url = getUrlFn();
+
             if (url) {
                 const audio = new Audio(url);
                 currentPlayingAudio = audio;
@@ -1443,6 +1473,7 @@ function processResult(
                 audio.onended = () => {
                     currentPlayingAudio = null;
                 };
+
                 audio.onerror = () => {
                     currentPlayingAudio = null;
                 };
