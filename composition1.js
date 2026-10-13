@@ -1,5 +1,5 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (安定版 - Hiragana切替時のテキスト維持対応)
+// Composition 1: English ➡️ Japanese Approach (安定版 - 再録音時のテキストクリア & 録音中メッセージ対応)
 // ============================================================================
 
 const drill1Data = [
@@ -855,7 +855,7 @@ function processDrill1Result(
 }
 
 // ============================================================================
-// Drill 2: Self-Check Your Sounds (Hiragana切替時も抽出テキストを維持)
+// Drill 2: Self-Check Your Sounds (再録音時にテキストクリア・Hiragana時は専用メッセージ表示)
 // ============================================================================
 
 function createDrill2Row(container, indexLabel, playRate) {
@@ -897,7 +897,7 @@ function createDrill2Row(container, indexLabel, playRate) {
     resultSpan.className = "result-text";
 
     if (savedAudioUrls[rowIndex]) {
-        // Hiragana Onlyに切り替えても、保持された表示文字列があればそれを優先して維持する
+        // Hiragana Onlyモードであっても、保持されたテキストがあれば維持する。ただし再録音時はクリアされる
         if (drill2State.persistedDisplay) {
             resultSpan.textContent = drill2State.persistedDisplay;
         } else {
@@ -1094,11 +1094,21 @@ function bindDrill2RecorderEvents(
             return;
         }
 
+        // 再録音開始時は古い抽出テキストをクリアする
+        drill2State.transcript = "";
+        drill2State.persistedDisplay = "";
+
         recordBtn.disabled = true;
         stopBtn.disabled = true;
         stopBtn.classList.remove("stop-btn-active");
 
-        resultSpan.textContent = "Preparing microphone...";
+        const isKanjiMode = !useHiraganaOnly;
+
+        if (isKanjiMode) {
+            resultSpan.textContent = "Preparing microphone...";
+        } else {
+            resultSpan.textContent = "🎙️ (Hiragana mode: audio only)";
+        }
         resultSpan.style.color = "var(--accent-color)";
 
         let stream;
@@ -1125,7 +1135,6 @@ function bindDrill2RecorderEvents(
             return;
         }
 
-        const isKanjiMode = !useHiraganaOnly;
         let SpeechRecognition = null;
 
         if (isKanjiMode) {
@@ -1182,10 +1191,7 @@ function bindDrill2RecorderEvents(
                     drill2State.persistedDisplay = drill2State.transcript || "(Recorded)";
                     resultSpan.textContent = drill2State.persistedDisplay;
                 } else {
-                    // Hiraganaモードの場合は、既存の抽出済みテキストがあればそれを維持、なければ "(Recorded)" とする
-                    if (!drill2State.persistedDisplay) {
-                        drill2State.persistedDisplay = "(Recorded)";
-                    }
+                    drill2State.persistedDisplay = "(Recorded)";
                     resultSpan.textContent = drill2State.persistedDisplay;
                 }
 
@@ -1301,7 +1307,11 @@ function bindDrill2RecorderEvents(
                 session.recognitionDone = true;
             }
 
-            resultSpan.textContent = "Recording...";
+            if (isKanjiMode) {
+                resultSpan.textContent = "Recording...";
+            } else {
+                resultSpan.textContent = "🎙️ (Hiragana mode: audio only)";
+            }
             resultSpan.style.color = "var(--accent-color)";
 
             stopBtn.disabled = !isManualStop;
