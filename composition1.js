@@ -1,5 +1,5 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (安定版 - 再録音時のテキストクリア & 録音中メッセージ対応)
+// Composition 1: English ➡️ Japanese Approach (安定版 - Hiragana Only表示変更対応)
 // ============================================================================
 
 const drill1Data = [
@@ -855,7 +855,7 @@ function processDrill1Result(
 }
 
 // ============================================================================
-// Drill 2: Self-Check Your Sounds (再録音時にテキストクリア・Hiragana時は専用メッセージ表示)
+// Drill 2: Self-Check Your Sounds (Hiragana時は「🐣Only Hiragana:🎙️Audio only」を継続表示)
 // ============================================================================
 
 function createDrill2Row(container, indexLabel, playRate) {
@@ -897,8 +897,9 @@ function createDrill2Row(container, indexLabel, playRate) {
     resultSpan.className = "result-text";
 
     if (savedAudioUrls[rowIndex]) {
-        // Hiragana Onlyモードであっても、保持されたテキストがあれば維持する。ただし再録音時はクリアされる
-        if (drill2State.persistedDisplay) {
+        if (useHiraganaOnly) {
+            resultSpan.textContent = "🐣Only Hiragana:🎙️Audio only";
+        } else if (drill2State.persistedDisplay) {
             resultSpan.textContent = drill2State.persistedDisplay;
         } else {
             resultSpan.textContent = "(Recorded)";
@@ -1094,7 +1095,6 @@ function bindDrill2RecorderEvents(
             return;
         }
 
-        // 再録音開始時は古い抽出テキストをクリアする
         drill2State.transcript = "";
         drill2State.persistedDisplay = "";
 
@@ -1107,7 +1107,7 @@ function bindDrill2RecorderEvents(
         if (isKanjiMode) {
             resultSpan.textContent = "Preparing microphone...";
         } else {
-            resultSpan.textContent = "🎙️ (Hiragana mode: audio only)";
+            resultSpan.textContent = "🐣Only Hiragana:🎙️Audio only";
         }
         resultSpan.style.color = "var(--accent-color)";
 
@@ -1191,7 +1191,7 @@ function bindDrill2RecorderEvents(
                     drill2State.persistedDisplay = drill2State.transcript || "(Recorded)";
                     resultSpan.textContent = drill2State.persistedDisplay;
                 } else {
-                    drill2State.persistedDisplay = "(Recorded)";
+                    drill2State.persistedDisplay = "🐣Only Hiragana:🎙️Audio only";
                     resultSpan.textContent = drill2State.persistedDisplay;
                 }
 
@@ -1310,7 +1310,7 @@ function bindDrill2RecorderEvents(
             if (isKanjiMode) {
                 resultSpan.textContent = "Recording...";
             } else {
-                resultSpan.textContent = "🎙️ (Hiragana mode: audio only)";
+                resultSpan.textContent = "🐣Only Hiragana:🎙️Audio only";
             }
             resultSpan.style.color = "var(--accent-color)";
 
