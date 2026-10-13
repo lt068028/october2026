@@ -1,12 +1,12 @@
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (安定版 - Drill2 判定排除 & データ保持対応)
+// Composition 1: English ➡️ Japanese Approach (安定版 - Hiragana切替時のテキスト維持対応)
 // ============================================================================
 
 const drill1Data = [
     { en: "It's a nice day.", jaKanji: "天気がいいです", jaHira: "てんきが、いいです" },
     { en: "I want a watch.", jaKanji: "時計がほしいです", jaHira: "とけいが、ほしいです" },
     { en: "Work is fun.", jaKanji: "仕事は楽しいです", jaHira: "しごとは、たのしいです" },
-    { en: "Studying is interesting.", jaKanji: "勉強はおもしろいです", jaHira: "べんきょうは、おもしろい です" },
+    { en: "Studying is interesting.", jaKanji: "勉強はおもしろいです", jaHira: "べんきょうは、おもしろいです" },
     { en: "Don't you have time?", jaKanji: "時間がないですか", jaHira: "じかんが、ないですか" },
     { en: "Is the weather bad?", jaKanji: "天気が悪いですか", jaHira: "てんきが、わるいですか" },
     { en: "The weather is not good.", jaKanji: "天気が良くないです", jaHira: "てんきが、よくないです" },
@@ -22,7 +22,8 @@ const savedAudioUrls = {};
 const savedResults = {};
 const drill2State = {
     transcript: "",
-    inputVal: ""
+    inputVal: "",
+    persistedDisplay: ""
 };
 
 let preferredVoice = null;
@@ -854,7 +855,7 @@ function processDrill1Result(
 }
 
 // ============================================================================
-// Drill 2: Self-Check Your Sounds (漢字ON時はテキスト抽出表示・判定なし。Hiragana切替でも保持)
+// Drill 2: Self-Check Your Sounds (Hiragana切替時も抽出テキストを維持)
 // ============================================================================
 
 function createDrill2Row(container, indexLabel, playRate) {
@@ -896,8 +897,9 @@ function createDrill2Row(container, indexLabel, playRate) {
     resultSpan.className = "result-text";
 
     if (savedAudioUrls[rowIndex]) {
-        if (!useHiraganaOnly && drill2State.transcript) {
-            resultSpan.textContent = drill2State.transcript;
+        // Hiragana Onlyに切り替えても、保持された表示文字列があればそれを優先して維持する
+        if (drill2State.persistedDisplay) {
+            resultSpan.textContent = drill2State.persistedDisplay;
         } else {
             resultSpan.textContent = "(Recorded)";
         }
@@ -1177,10 +1179,14 @@ function bindDrill2RecorderEvents(
                     const transcript = session.accumulatedTranscript.trim();
                     const hiraText = convertToHiragana(transcript);
                     drill2State.transcript = hiraText || transcript;
-                    resultSpan.textContent = drill2State.transcript || "(Recorded)";
+                    drill2State.persistedDisplay = drill2State.transcript || "(Recorded)";
+                    resultSpan.textContent = drill2State.persistedDisplay;
                 } else {
-                    drill2State.transcript = "";
-                    resultSpan.textContent = "(Recorded)";
+                    // Hiraganaモードの場合は、既存の抽出済みテキストがあればそれを維持、なければ "(Recorded)" とする
+                    if (!drill2State.persistedDisplay) {
+                        drill2State.persistedDisplay = "(Recorded)";
+                    }
+                    resultSpan.textContent = drill2State.persistedDisplay;
                 }
 
                 resultSpan.style.color = "var(--text-primary)";
