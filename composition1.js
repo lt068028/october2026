@@ -1,6 +1,5 @@
-
 // ============================================================================
-// Composition 1: English ➡️ Japanese Approach (安定版)
+// Composition 1: English ➡️ Japanese Approach (安定版 - 漢字ON/Hiragana動作分岐対応)
 // ============================================================================
 
 const drill1Data = [
@@ -315,7 +314,6 @@ function renderDrill2Section() {
     listDiv.id = "drill2List";
     container.appendChild(listDiv);
 
-    // Drill 2 は1行のみ
     createDrill2Row(listDiv, `${drill1Data.length + 1}.`, 0.9);
 }
 
@@ -532,7 +530,6 @@ function bindDrill1RecorderEvents(
 
         stopAllPlayback();
 
-        // Drill 1 / Drill 2 の録音を同時に動かさない。
         if (activeRecognitionSession !== null) {
             const previousSession = activeRecognitionSession;
 
@@ -853,8 +850,7 @@ function processDrill1Result(
 }
 
 // ============================================================================
-// Drill 2: Self-Check Your Sounds
-// Recording only: no speech recognition, transcript extraction, or judgment.
+// Drill 2: Self-Check Your Sounds (漢字ON/Hiraganaモード動作分岐対応)
 // ============================================================================
 
 function createDrill2Row(container, indexLabel, playRate) {
@@ -870,7 +866,6 @@ function createDrill2Row(container, indexLabel, playRate) {
     indexSpan.textContent = indexLabel;
     indexSpan.style.fontWeight = "bold";
 
-    // Optional reference text only. It is not used for recognition or judgment.
     const inputEn = document.createElement("input");
     inputEn.type = "text";
     inputEn.className = "custom-input";
@@ -905,6 +900,7 @@ function createDrill2Row(container, indexLabel, playRate) {
         recordBtn,
         stopBtn,
         resultSpan,
+        inputEn,
         rowIndex,
         playRate
     );
@@ -916,6 +912,7 @@ function bindDrill2RecorderEvents(
     recordBtn,
     stopBtn,
     resultSpan,
+    inputEn,
     rowIndex,
     playRate = 0.9
 ) {
@@ -1029,11 +1026,9 @@ function bindDrill2RecorderEvents(
                 );
             }
         } else if (!session.finalized) {
-            // Do not create an empty recording if recording never started.
             finalizeSession(session, session.errorMessage || "");
         }
 
-        // Safety net in case a browser does not fire the recorder's stop event.
         if (!session.finalized) {
             session.watchdog = setTimeout(() => {
                 finalizeSession(
@@ -1049,7 +1044,6 @@ function bindDrill2RecorderEvents(
 
         stopAllPlayback();
 
-        // Enforce one active recording across Drill 1 and Drill 2.
         if (activeRecognitionSession !== null) {
             const previousSession = activeRecognitionSession;
 
@@ -1067,6 +1061,14 @@ function bindDrill2RecorderEvents(
                     } catch (e) {}
                 }
             }
+        }
+
+        // 漢字ONの場合は音声認識を併用し、Hiraganaモードの場合は録音専用とする
+        const isKanjiMode = !useHiraganaOnly;
+        let SpeechRecognition = null;
+
+        if (isKanjiMode) {
+            SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         }
 
         if (
@@ -1098,7 +1100,6 @@ function bindDrill2RecorderEvents(
             return;
         }
 
-        // Prevent a second session if another recording started during the permission prompt.
         if (activeRecognitionSession !== null) {
             stream.getTracks().forEach(track => {
                 try {
@@ -1117,17 +1118,21 @@ function bindDrill2RecorderEvents(
             stopRequested: false,
             errorMessage: "",
             mediaRecorder: null,
+            recognition: null,
             audioChunks: [],
             stream,
             autoStopTimer: null,
             watchdog: null,
-            forceStop: null
+            forceStop: null,
+            accumulatedTranscript: "",
+            recognitionDone: false,
+            recorderDone: false,
+            processed: false
         };
 
         localSession = session;
         activeRecognitionSession = session;
 
-        // If another drill takes over the microphone, stop this session and release it.
         session.forceStop = () => {
             if (
                 session.mediaRecorder &&
@@ -1137,8 +1142,42 @@ function bindDrill2RecorderEvents(
                     session.mediaRecorder.stop();
                 } catch (e) {}
             }
-
+            if (session.recognition) {
+                try {
+                    session.recognition.stop();
+                } catch (e) {}
+            }
             finalizeSession(session);
+        };
+
+        const tryProcessResult = () => {
+            if (session.errorMessage || session.processed) return;
+
+            if (session.recorderDone && (!isKanjiMode || session.recognitionDone)) {
+                session.processed = true;
+
+                if (isKanjiMode) {
+                    const refText = inputEn.value.trim();
+                    const transcript = session.accumulatedTranscript.trim();
+                    const hiraText = convertToHiragana(transcript);
+
+                    if (transcript) {
+                        resultSpan.textContent = `${hiraText || transcript} (Recorded) ✅`;
+                    } else {
+                        resultSpan.textContent = "Recorded ✅";
+                    }
+                } else {
+                    resultSpan.textContent = "Recorded ✅";
+                }
+
+                resultSpan.style.color = "var(--text-primary)";
+                ensurePlayButton();
+                finalizeSession(session);
+
+                if (isAutoPlay) {
+                    playSavedRecording();
+                }
+            }
         };
 
         try {
@@ -1174,8 +1213,6 @@ function bindDrill2RecorderEvents(
             recorder.addEventListener("stop", () => {
                 if (session.finalized) return;
 
-                clearSessionTimers(session);
-
                 const mimeType =
                     recorder.mimeType ||
                     (session.audioChunks[0] && session.audioChunks[0].type) ||
@@ -1185,15 +1222,6 @@ function bindDrill2RecorderEvents(
                     type: mimeType
                 });
 
-                if (!audioBlob.size) {
-                    finalizeSession(
-                        session,
-                        session.errorMessage || "No audio was recorded."
-                    );
-                    return;
-                }
-
-                // Revoke the old URL before replacing a saved recording.
                 if (savedAudioUrls[rowIndex]) {
                     URL.revokeObjectURL(savedAudioUrls[rowIndex]);
                 }
@@ -1201,19 +1229,46 @@ function bindDrill2RecorderEvents(
                 savedAudioUrls[rowIndex] = URL.createObjectURL(audioBlob);
                 delete savedResults[rowIndex];
 
-                resultSpan.textContent = "Recorded ✅";
-                resultSpan.style.color = "var(--text-primary)";
-                ensurePlayButton();
-
-                finalizeSession(session);
-
-                // Respect the shared Auto Play / Manual Play setting.
-                if (isAutoPlay) {
-                    playSavedRecording();
-                }
+                session.recorderDone = true;
+                tryProcessResult();
             });
 
             recorder.start();
+
+            if (isKanjiMode && SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                session.recognition = recognition;
+                recognition.lang = "ja-JP";
+                recognition.interimResults = false;
+                recognition.continuous = isManualStop;
+
+                recognition.onresult = (event) => {
+                    if (session.finalized || localSession !== session) return;
+                    let raw = "";
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) {
+                            raw += event.results[i][0].transcript;
+                        }
+                    }
+                    session.accumulatedTranscript += raw;
+                };
+
+                recognition.onerror = () => {
+                    if (session.finalized || localSession !== session) return;
+                    session.recognitionDone = true;
+                    tryProcessResult();
+                };
+
+                recognition.onend = () => {
+                    if (session.finalized) return;
+                    session.recognitionDone = true;
+                    tryProcessResult();
+                };
+
+                recognition.start();
+            } else {
+                session.recognitionDone = true;
+            }
 
             resultSpan.textContent = "Recording...";
             resultSpan.style.color = "var(--accent-color)";
@@ -1227,12 +1282,10 @@ function bindDrill2RecorderEvents(
             }
 
             if (isManualStop) {
-                // Manual Stop mode has a hard 15-second maximum.
                 session.autoStopTimer = setTimeout(() => {
                     stopSession(session, "timeout");
                 }, 15000);
             } else {
-                // Autostop mode records for 3 seconds.
                 session.autoStopTimer = setTimeout(() => {
                     stopSession(session, "autostop");
                 }, 3000);
@@ -1256,5 +1309,10 @@ function bindDrill2RecorderEvents(
 
         stopBtn.disabled = true;
         stopSession(localSession, "user");
+        if (localSession && localSession.recognition) {
+            try {
+                localSession.recognition.stop();
+            } catch (e) {}
+        }
     });
 }
