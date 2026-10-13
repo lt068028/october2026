@@ -1,3 +1,4 @@
+```css
 /* ==========================================
    Global Theme Variables
    ========================================== */
@@ -70,11 +71,11 @@ a:visited {
 
 @media (prefers-color-scheme: dark) {
     a {
-        color: #38bdf8; /* ダークモード：見やすい明るいスカイブルー */
+        color: #38bdf8;
     }
-    
+
     a:visited {
-        color: #c084fc; /* ダークモード：訪問済みと区別しやすい明るいパープル */
+        color: #c084fc;
     }
 }
 
@@ -93,6 +94,7 @@ a:visited {
     border-radius: 4px;
     transition: background-color 0.2s;
 }
+
 .top-right-back:hover {
     background-color: var(--bg-panel);
 }
@@ -110,7 +112,7 @@ a:visited {
 }
 
 .main-header h1 {
-    margin: 0; 
+    margin: 0;
     font-size: 24px;
 }
 
@@ -152,29 +154,71 @@ a:visited {
     border-radius: 0 8px 8px 0;
     margin-bottom: 15px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    background-color: #f0f8ff; 
+    background-color: #f0f8ff;
 }
 
-.info-panel-title { font-size: 1.15em; font-weight: bold; }
-.info-panel-desc { font-size: 15px; color: var(--text-primary); }
+.info-panel-title {
+    font-size: 1.15em;
+    font-weight: bold;
+}
 
-.info-panel-task1 { border-left: 5px solid #007bff; }
-.info-panel-task1 .info-panel-title { color: #007bff; }
+.info-panel-desc {
+    font-size: 15px;
+    color: var(--text-primary);
+}
 
-.info-panel-task2 { border-left: 5px solid #006fe6; }
-.info-panel-task2 .info-panel-title { color: #006fe6; }
+.info-panel-task1 {
+    border-left: 5px solid #007bff;
+}
 
-.info-panel-task3 { border-left: 5px solid #005bc2; }
-.info-panel-task3 .info-panel-title { color: #005bc2; }
+.info-panel-task1 .info-panel-title {
+    color: #007bff;
+}
+
+.info-panel-task2 {
+    border-left: 5px solid #006fe6;
+}
+
+.info-panel-task2 .info-panel-title {
+    color: #006fe6;
+}
+
+.info-panel-task3 {
+    border-left: 5px solid #005bc2;
+}
+
+.info-panel-task3 .info-panel-title {
+    color: #005bc2;
+}
 
 @media (prefers-color-scheme: dark) {
-    .info-panel { background-color: #0c3359; }
-    .info-panel-task1 { border-left-color: #3b82f6; }
-    .info-panel-task1 .info-panel-title { color: #3b82f6; }
-    .info-panel-task2 { border-left-color: #2563eb; }
-    .info-panel-task2 .info-panel-title { color: #2563eb; }
-    .info-panel-task3 { border-left-color: #1d4ed8; }
-    .info-panel-task3 .info-panel-title { color: #3b82f6; }
+    .info-panel {
+        background-color: #0c3359;
+    }
+
+    .info-panel-task1 {
+        border-left-color: #3b82f6;
+    }
+
+    .info-panel-task1 .info-panel-title {
+        color: #3b82f6;
+    }
+
+    .info-panel-task2 {
+        border-left-color: #2563eb;
+    }
+
+    .info-panel-task2 .info-panel-title {
+        color: #2563eb;
+    }
+
+    .info-panel-task3 {
+        border-left-color: #1d4ed8;
+    }
+
+    .info-panel-task3 .info-panel-title {
+        color: #3b82f6;
+    }
 }
 
 /* ==========================================
@@ -189,11 +233,20 @@ a:visited {
     position: relative;
     margin-top: 8px;
 }
+
 .example-box::before {
-    content: "Example"; position: absolute; top: -10px; left: 12px;
-    background-color: #fbc02d; color: #ffffff; font-size: 11px; font-weight: bold;
-    padding: 2px 8px; border-radius: 4px;
+    content: "Example";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background-color: #fbc02d;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
+
 .flex-row-center {
     display: flex;
     align-items: center;
@@ -201,14 +254,33 @@ a:visited {
     flex-wrap: wrap;
     gap: 10px;
 }
-.dashed-border { border-top: 1px dashed #fbc02d; }
-.example-label-title { font-weight: bold; color: #f57f17; }
+
+.dashed-border {
+    border-top: 1px dashed #fbc02d;
+}
+
+.example-label-title {
+    font-weight: bold;
+    color: #f57f17;
+}
 
 @media (prefers-color-scheme: dark) {
-    .example-box { background-color: #422006; border-color: #ca8a04; }
-    .example-box::before { background-color: #ca8a04; }
-    .dashed-border { border-top-color: #713f12; }
-    .example-label-title { color: #fde047; }
+    .example-box {
+        background-color: #422006;
+        border-color: #ca8a04;
+    }
+
+    .example-box::before {
+        background-color: #ca8a04;
+    }
+
+    .dashed-border {
+        border-top-color: #713f12;
+    }
+
+    .example-label-title {
+        color: #fde047;
+    }
 }
 
 /* ==========================================
@@ -221,15 +293,27 @@ a:visited {
     margin-bottom: 12px;
     border-radius: 6px;
 }
-.top-row {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-}
-.prompt-label { font-size: 16px; font-weight: 500; }
 
-.custom-select, .custom-input {
-    padding: 4px 8px; font-size: 14px; border-radius: 4px; 
-    border: 1px solid var(--border-color); 
-    background-color: var(--button-bg); color: var(--text-primary);
+.top-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.prompt-label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.custom-select,
+.custom-input {
+    padding: 4px 8px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--button-bg);
+    color: var(--text-primary);
 }
 
 .custom-input::placeholder {
@@ -243,65 +327,238 @@ a:visited {
 }
 
 .correction-box {
-    display: none; margin-top: 10px; padding: 10px 12px; background-color: var(--error-bg);
-    border: 1px solid var(--error-border); color: var(--error-text); border-radius: 4px; font-size: 14px;
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background-color: var(--error-bg);
+    border: 1px solid var(--error-border);
+    color: var(--error-text);
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 /* ==========================================
    Buttons & Switches
    ========================================== */
 .example-button {
-    padding: 4px 8px; font-size: 13px; background-color: var(--button-bg);
-    color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer;
+    padding: 4px 8px;
+    font-size: 13px;
+    background-color: var(--button-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    cursor: pointer;
 }
+
 .example-button:disabled {
-    background-color: var(--button-disabled-bg) !important; cursor: not-allowed !important; opacity: 0.55;
+    background-color: var(--button-disabled-bg) !important;
+    cursor: not-allowed !important;
+    opacity: 0.55;
 }
+
 .stop-btn-active {
-    background-color: var(--rec-active-bg) !important; color: var(--rec-active-text) !important;
+    background-color: var(--rec-active-bg) !important;
+    color: var(--rec-active-text) !important;
     border-color: var(--rec-active-bg) !important;
 }
 
-.switch { position: relative; display: inline-block; width: 36px; height: 20px; }
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--button-disabled-bg); transition: .3s; border-radius: 20px;
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 36px;
+    height: 20px;
 }
-.slider:before {
-    position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
-    background-color: white; transition: .3s; border-radius: 50%;
-}
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(16px); }
 
-.mode-label { font-size: 13px; color: var(--text-primary); }
-.active-mode { font-weight: bold; }
-.inactive-mode { color: var(--text-secondary); }
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--button-disabled-bg);
+    transition: .3s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(16px);
+}
+
+.mode-label {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.active-mode {
+    font-weight: bold;
+}
+
+.inactive-mode {
+    color: var(--text-secondary);
+}
 
 /* ==========================================
    Tooltips & Emojis
    ========================================== */
-.icon-emoji { transition: filter 0.3s, opacity 0.3s; display: inline-block; }
-.inactive-mode .icon-emoji { filter: grayscale(100%); opacity: 0.55; }
-.active-mode .icon-emoji { filter: none; opacity: 1; }
-
-.tooltip-wrap { position: relative; display: inline-block; border-bottom: 1px dotted var(--accent-color); cursor: help; }
-.tooltip-wrap .tooltip-tip, .custom-tip-box {
-    visibility: hidden; opacity: 0; background-color: var(--tooltip-bg); color: var(--tooltip-text);
-    text-align: center; padding: 4px 8px; border-radius: 4px; position: absolute; z-index: 20;
-    bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; transition: 0.2s; pointer-events: none;
+.icon-emoji {
+    transition: filter 0.3s, opacity 0.3s;
+    display: inline-block;
 }
-.tooltip-wrap:hover .tooltip-tip, .custom-tip-wrap:hover .custom-tip-box { visibility: visible; opacity: 1; }
-.custom-tip-wrap { position: relative; display: inline-block; }
+
+.inactive-mode .icon-emoji {
+    filter: grayscale(100%);
+    opacity: 0.55;
+}
+
+.active-mode .icon-emoji {
+    filter: none;
+    opacity: 1;
+}
+
+.tooltip-wrap {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted var(--accent-color);
+    cursor: help;
+}
+
+.tooltip-wrap .tooltip-tip,
+.custom-tip-box {
+    visibility: hidden;
+    opacity: 0;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    text-align: center;
+    padding: 4px 8px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 20;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 12px;
+    transition: 0.2s;
+    pointer-events: none;
+}
+
+.tooltip-wrap:hover .tooltip-tip,
+.custom-tip-wrap:hover .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+.custom-tip-wrap {
+    position: relative;
+    display: inline-block;
+}
 
 /* ==========================================
    Footer
    ========================================== */
 .voice-guide-footer {
-    margin-top: 30px; text-align: left; font-size: 13px; color: var(--text-secondary); position: relative; display: inline-block;
+    margin-top: 30px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    display: inline-block;
 }
-.guide-trigger { cursor: pointer; color: var(--accent-color); text-decoration: underline; font-weight: bold; }
+
+.guide-trigger {
+    cursor: pointer;
+    color: var(--accent-color);
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 .guide-box-popup {
-    margin-top: 6px; background-color: var(--tooltip-bg); color: var(--tooltip-text); padding: 8px 12px; border-radius: 4px; font-size: 12px; line-height: 1.4; position: absolute; z-index: 10; left: 0; white-space: nowrap; display: none;
+    margin-top: 6px;
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    position: absolute;
+    z-index: 10;
+    left: 0;
+    white-space: nowrap;
+    display: none;
 }
+
+/* ==========================================
+   AI Pronunciation Lab専用レイアウト
+   案D：タイトル左、ボタン右、説明文下段
+   他のページ・パネルには適用しない
+   ========================================== */
+.info-panel.ai-lab-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ai-lab-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.ai-lab-heading .info-panel-title {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ai-lab-action {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.ai-lab-action .example-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: bold;
+    padding: 8px 16px;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.ai-lab-action .example-button:visited {
+    color: var(--text-primary);
+}
+
+/* 狭い画面ではタイトルとボタンの折り返しを許可 */
+@media (max-width: 520px) {
+    .ai-lab-heading {
+        flex-wrap: wrap;
+    }
+}
+```
