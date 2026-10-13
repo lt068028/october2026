@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 2: Yes/No & Wh- Questions (Genki Lesson 2 - 完全修正版)
+// Practice 2: Yes/No & Wh- Questions (Genki Lesson 2 - 「せんこう」同音異義語完全網羅版)
 // ============================================================================
 
 const practice2Data = [
@@ -40,7 +40,6 @@ let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
-// 状態永続保持マップ
 const practice2State = {
     customSelects: {},
     audioUrls: {},
@@ -155,7 +154,7 @@ function stopAllPlayback() {
     restorePlayButtons();
 }
 
-// ひらがな正規化処理
+// ひらがな正規化処理 ＆ 「せんこう」関連の同音異義語網羅補正
 function convertToHiragana(text) {
     if (!text) return "";
 
@@ -181,6 +180,14 @@ function convertToHiragana(text) {
         "親友": "しんゆう",
         "同僚": "どうりょう",
         "専攻": "せんこう",
+        "千校": "せんこう",
+        "千項": "せんこう",
+        "先行": "せんこう",
+        "選考": "せんこう",
+        "線香": "せんこう",
+        "閃光": "せんこう",
+        "潜行": "せんこう",
+        "せんこう": "せんこう",
         "学生": "がくせい",
         "先生": "せんせい",
         "です": "です",
@@ -384,9 +391,6 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    // ------------------------------------------------------------------------
-    // Example: Drillタイトルより先に表示
-    // ------------------------------------------------------------------------
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
@@ -450,9 +454,6 @@ function renderDrill1Section() {
         speakText("いいえ、看護師じゃないです。", 0.9, () => stopAllPlayback());
     };
 
-    // ------------------------------------------------------------------------
-    // Drill 1タイトルと説明：Exampleの下に表示
-    // ------------------------------------------------------------------------
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
     infoPanel.style.marginTop = "25px";
@@ -466,9 +467,6 @@ function renderDrill1Section() {
 
     container.appendChild(infoPanel);
 
-    // ------------------------------------------------------------------------
-    // Practice rows
-    // ------------------------------------------------------------------------
     const listDiv = document.createElement("div");
     listDiv.id = "drill1List";
     container.appendChild(listDiv);
@@ -479,7 +477,6 @@ function renderDrill1Section() {
 }
 
 // ============================================================================
-// // ============================================================================
 // Render Drill 2 Section
 // ============================================================================
 function renderDrill2Section() {
@@ -497,12 +494,9 @@ function renderDrill2Section() {
 
     container.innerHTML = "";
 
-    // ------------------------------------------------------------------------
-    // Example: Drillタイトルより先に表示
-    // ------------------------------------------------------------------------
-const exBox = document.createElement("div");
-exBox.className = "example-box";
-exBox.style.marginTop = "40px";
+    const exBox = document.createElement("div");
+    exBox.className = "example-box";
+    exBox.style.marginTop = "40px";
 
     const wTarget = formatWord("あなた", "あなた", "anata", "you");
     const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
@@ -549,9 +543,6 @@ exBox.style.marginTop = "40px";
         speakText("わたしの専攻は、政治です。", 0.9, () => stopAllPlayback());
     };
 
-    // ------------------------------------------------------------------------
-    // Drill 2タイトルと説明：Exampleの下に表示
-    // ------------------------------------------------------------------------
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task2";
     infoPanel.style.marginTop = "20px";
@@ -565,9 +556,6 @@ exBox.style.marginTop = "40px";
 
     container.appendChild(infoPanel);
 
-    // ------------------------------------------------------------------------
-    // Practice rows
-    // ------------------------------------------------------------------------
     const listDiv = document.createElement("div");
     listDiv.id = "drill2List";
     container.appendChild(listDiv);
