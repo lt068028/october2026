@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pronunciation Practice 1</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* AI Pronunciation Lab 専用のフレックスボックスレイアウト調整 */
+        .ai-lab-panel {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            gap: 20px;
+        }
+        .ai-lab-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .ai-lab-action {
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -94,14 +111,14 @@
     <div id="drill1List"></div>
 
     <!-- =========================================================
-         AI Pronunciation Lab Section (ボックスを組み、左にタイトル/インストラクション、右中央にボタン)
+         AI Pronunciation Lab Section (フレックスボックス構造を明確化)
          ========================================================= -->
-    <div class="info-panel info-panel-task1" style="margin-top: 35px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-        <div style="display: flex; flex-direction: column; justify-content: center;">
+    <div class="info-panel info-panel-task1 ai-lab-panel" style="margin-top: 35px;">
+        <div class="ai-lab-content">
             <span class="info-panel-title">AI Pronunciation Lab</span>
             <span class="info-panel-desc">💡Open the AI session in a new window to receive personalized feedback.</span>
         </div>
-        <div style="flex-shrink: 0;">
+        <div class="ai-lab-action">
             <a href="ai_practice.html" target="_blank" rel="noopener noreferrer" class="example-button custom-tip-wrap" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: bold; padding: 8px 16px;">
                 <span>🚀Launch Lab</span>
                 <span class="custom-tip-box">Open AI practice in a new window.</span>
