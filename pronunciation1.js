@@ -6,7 +6,7 @@ const drill1Data = [
     { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
     { kanji: "萌々。桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
     { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
-    { kanji: "きる。きる", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
+    { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
     { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
     { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
     { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
@@ -150,7 +150,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
 }
 
 // ============================================================================
-// Initialization & DOM Setup (完全動的描画の統合)
+// Initialization & DOM Setup
 // ============================================================================
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
@@ -270,50 +270,6 @@ function renderDrill1Section() {
             0.9
         );
     });
-
-    // ========================================================================
-    // 追加: AI Pronunciation Lab の行（他の Drill と同じ .drill-row 構造）
-    // ========================================================================
-    const aiRowDiv = document.createElement("div");
-    aiRowDiv.className = "drill-row";
-
-    const topRow = document.createElement("div");
-    topRow.className = "top-row";
-
-    const iconSpan = document.createElement("button");
-    iconSpan.className = "example-button custom-tip-wrap";
-    iconSpan.innerHTML = '🤖<span class="custom-tip-box">AI Practice</span>';
-    iconSpan.style.pointerEvents = "none";
-
-    const indexSpan = document.createElement("span");
-    indexSpan.textContent = "AI.";
-    indexSpan.style.fontWeight = "bold";
-    indexSpan.style.marginRight = "6px";
-
-    const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = '<span style="font-weight: bold; color: var(--text-primary);">AIで練習しよう</span> ｜ Practice with AI in a new window';
-    promptSpan.style.minWidth = "380px";
-    promptSpan.style.paddingLeft = "4px";
-
-    const aiLinkBtn = document.createElement("a");
-    aiLinkBtn.className = "example-button custom-tip-wrap";
-    aiLinkBtn.href = "ai_practice.html"; // 実際のAI用ページのファイル名やURL
-    aiLinkBtn.target = "_blank";
-    aiLinkBtn.rel = "noopener noreferrer";
-    aiLinkBtn.innerHTML = '🚀ひらく<span class="custom-tip-box">Open AI practice in a new window.</span>';
-    aiLinkBtn.style.textDecoration = "none";
-    aiLinkBtn.style.display = "inline-flex";
-    aiLinkBtn.style.alignItems = "center";
-    aiLinkBtn.style.justifyContent = "center";
-
-    topRow.appendChild(iconSpan);
-    topRow.appendChild(indexSpan);
-    topRow.appendChild(promptSpan);
-    topRow.appendChild(aiLinkBtn);
-
-    aiRowDiv.appendChild(topRow);
-    container.appendChild(aiRowDiv);
 }
 
 // ----------------------------------------------------------------------------
