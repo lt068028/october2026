@@ -57,6 +57,28 @@ h1 {
 }
 
 /* ==========================================
+   Global Link Colors (Light & Dark Mode)
+   ========================================== */
+a {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #7c3aed;
+}
+
+@media (prefers-color-scheme: dark) {
+    a {
+        color: #38bdf8; /* ダークモード：見やすい明るいスカイブルー */
+    }
+    
+    a:visited {
+        color: #c084fc; /* ダークモード：訪問済みと区別しやすい明るいパープル */
+    }
+}
+
+/* ==========================================
    Top Back Link
    ========================================== */
 .top-right-back {
