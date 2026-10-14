@@ -3,21 +3,89 @@
 // ============================================================================
 
 const practice7Data = [
-    { 
-        x: "よる10じ", xKanji: "夜10時", xRomaji: "yoru jū-ji", xMeaning: "10 o'clock at night", 
-        y: "ねる", yKanji: "寝る", yRomaji: "neru", yMeaning: "to sleep / go to bed",
+    {
+        x: "よる10じ",
+        xKanji: "夜10時",
+        xRomaji: "yoru jū-ji",
+        xMeaning: "10 o'clock at night",
+        y: "ねる",
+        yKanji: "寝る",
+        yRomaji: "neru",
+        yMeaning: "to sleep / go to bed",
         pastSentence: "夜10時に寝ました。",
         pastSentenceHira: "よる10じに、ねました。",
         perfectSentence: "夜10時から寝ています。",
         perfectSentenceHira: "よる10じから、ねています。"
     },
-    { 
-        x: "さっき", xKanji: "さっき", xRomaji: "sakki", xMeaning: "a little while ago", 
-        y: "Tシャツをきる", yKanji: "Tシャツを着る", yRomaji: "tīshatsu o kiru", yMeaning: "to wear a T-shirt",
+    {
+        x: "さっき",
+        xKanji: "さっき",
+        xRomaji: "sakki",
+        xMeaning: "a little while ago",
+        y: "Tシャツをきる",
+        yKanji: "Tシャツを着る",
+        yRomaji: "tīshatsu o kiru",
+        yMeaning: "to wear a T-shirt",
         pastSentence: "さっきTシャツを着ました。",
         pastSentenceHira: "さっきTしゃつを、きました。",
         perfectSentence: "さっきからTシャツを着ています。",
         perfectSentenceHira: "さっきから、Tしゃつを、きています。"
+    },
+    {
+        x: "おしょうがつ",
+        xKanji: "お正月",
+        xRomaji: "oshōgatsu",
+        xMeaning: "New Year",
+        y: "ふとる",
+        yKanji: "太る",
+        yRomaji: "futoru",
+        yMeaning: "to gain weight",
+        pastSentence: "お正月に太りました。",
+        pastSentenceHira: "おしょうがつに、ふとりました。",
+        perfectSentence: "お正月から太っています。",
+        perfectSentenceHira: "おしょうがつから、ふとっています。"
+    },
+    {
+        x: "なつやすみ",
+        xKanji: "夏休み",
+        xRomaji: "natsuyasumi",
+        xMeaning: "summer vacation",
+        y: "やせる",
+        yKanji: "やせる",
+        yRomaji: "yaseru",
+        yMeaning: "to lose weight",
+        pastSentence: "夏休みにやせました。",
+        pastSentenceHira: "なつやすみに、やせました。",
+        perfectSentence: "夏休みからやせています。",
+        perfectSentenceHira: "なつやすみから、やせています。"
+    },
+    {
+        x: "かんじ50こ",
+        xKanji: "漢字50こ",
+        xRomaji: "kanji gojūkko",
+        xMeaning: "50 kanji characters",
+        y: "おぼえる",
+        yKanji: "覚える",
+        yRomaji: "oboeru",
+        yMeaning: "to memorize / remember",
+        pastSentence: "漢字を50こ覚えました。",
+        pastSentenceHira: "かんじを50こ、おぼえました。",
+        perfectSentence: "漢字を50こ覚えています。",
+        perfectSentenceHira: "かんじを50こ、おぼえています。"
+    },
+    {
+        x: "ているForm",
+        xKanji: "ているForm",
+        xRomaji: "te iru form",
+        xMeaning: "the te-iru form",
+        y: "しる",
+        yKanji: "知る",
+        yRomaji: "shiru",
+        yMeaning: "to learn of / know",
+        pastSentence: "ているフォームを知りました。",
+        pastSentenceHira: "ているふぉーむを、しりました。",
+        perfectSentence: "ているフォームを知っています。",
+        perfectSentenceHira: "ているふぉーむを、しっています。"
     }
 ];
 
@@ -227,78 +295,129 @@ function initSettingsPanel() {
         });
     }
 
-    // With漢字 / Hiragana Only
-    if (scriptControl) {
-        updateSegmentedSelection(scriptControl, scriptMode);
+function renderDrill1Section() {
+    let container = document.getElementById("drill1Container");
 
-        scriptControl.addEventListener("click", event => {
-            const button = event.target.closest("button[data-value]");
-
-            if (!button || !scriptControl.contains(button)) return;
-
-            const nextMode = button.dataset.value;
-
-            if (!["hiragana", "kanji"].includes(nextMode)) return;
-            if (nextMode === scriptMode) return;
-
-            scriptMode = nextMode;
-
-            updateSegmentedSelection(scriptControl, scriptMode);
-            renderAll();
-        });
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "drill1Container";
+        document.body.insertBefore(
+            container,
+            document.querySelector(".voice-guide-footer")
+        );
     }
 
-    // OFF / Vocab Hover / Vocab Display
-    if (hintControl) {
-        updateSegmentedSelection(hintControl, hintMode);
+    container.innerHTML = "";
 
-        hintControl.addEventListener("click", event => {
-            const button = event.target.closest("button[data-value]");
+    // Example: 朝5時／起きる
+    const exBox = document.createElement("div");
+    exBox.className = "example-box";
+    exBox.style.marginTop = "30px";
 
-            if (!button || !hintControl.contains(button)) return;
+    const w1 = formatWord(
+        "あさ5じ",
+        "朝5時",
+        "asa go-ji",
+        "5 o'clock in the morning"
+    );
 
-            const nextMode = button.dataset.value;
+    const w2 = formatWord(
+        "おきる",
+        "起きる",
+        "okiru",
+        "to wake up / get up"
+    );
 
-            if (!["off", "hover", "paren"].includes(nextMode)) return;
-            if (nextMode === hintMode) return;
+    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
 
-            hintMode = nextMode;
+    exBox.innerHTML = `
+        <div class="example-line flex-row-center"
+             style="margin-bottom: 8px;">
+            <strong class="example-label-title"
+                    style="min-width: 130px;">Past Tense:</strong>
+            ${w1} ／ ${w2}
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="exPastListen"
+                    type="button"
+                    class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px;
+                         margin:0 6px; border-radius:4px;
+                         background:#bae6fd; color:#0369a1;
+                         font-size:13px; font-weight:bold;">⏪ Past</span>
+            <span>${w1}に${verbStem}<strong>ました。</strong></span>
+        </div>
 
-            updateSegmentedSelection(hintControl, hintMode);
-            renderAll();
-        });
-    }
+        <div class="example-line dashed-border flex-row-center"
+             style="padding-top: 10px;">
+            <strong class="example-label-title"
+                    style="min-width: 130px;">Present Perfect:</strong>
+            ${w1} ／ ${w2}
+            <span style="font-size: 16px; margin: 0 4px;">👉</span>
+            <button id="exPerfListen"
+                    type="button"
+                    class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px;
+                         margin:0 6px; border-radius:4px;
+                         background:#dcfce7; color:#15803d;
+                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
+            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
+        </div>
+    `;
 
-    // Autostop: checked = ON
-    const toggleRecordMode =
-        document.getElementById("toggleRecordMode");
+    container.appendChild(exBox);
 
-    const labelAutoRecord =
-        document.getElementById("labelAutoRecord");
+    const pastListen = document.getElementById("exPastListen");
+    const perfectListen = document.getElementById("exPerfListen");
 
-    if (toggleRecordMode) {
-        toggleRecordMode.checked = !isManualStop;
+    pastListen.onclick = () => {
+        setPlayingStateMultiple([pastListen], "Playing...");
+        speakText(
+            "朝5時に起きました。",
+            0.9,
+            () => stopAllPlayback()
+        );
+    };
 
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+    perfectListen.onclick = () => {
+        setPlayingStateMultiple([perfectListen], "Playing...");
+        speakText(
+            "朝5時から起きています。",
+            0.9,
+            () => stopAllPlayback()
+        );
+    };
 
-        toggleRecordMode.addEventListener("change", event => {
-            isManualStop = !event.target.checked;
+    // Drill heading
+    const infoPanel = document.createElement("div");
+    infoPanel.className = "info-panel info-panel-task1";
+    infoPanel.style.marginTop = "25px";
 
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        });
-    }
+    infoPanel.innerHTML = `
+        <span class="info-panel-title">
+            Drill 1: Compare Past & Present Perfect
+        </span>
+        <span class="info-panel-desc">
+            💡 Compare past actions with ongoing states using ているform.
+        </span>
+    `;
 
-    // Autoplay: checked = ON
-    const togglePlaybackMode =
-        document.getElementById("togglePlaybackMode");
+    container.appendChild(infoPanel);
 
-    const labelAutoPlay =
-        document.getElementById("labelAutoPlay");
+    // Generate all six questions
+    const listDiv = document.createElement("div");
+    listDiv.id = "drill1List";
+    container.appendChild(listDiv);
 
-    if (togglePlaybackMode) {
-        togglePlaybackMode.checked = isAutoPlay;
-
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+    practice7Data.forEach((item, index) => {
+        createPractice7TableCard(
+            listDiv,
+            `${index + 1}.`,
+            item,
+            index,
+            0.9
+        );
+    });
+}
 
         togglePlaybackMode.addEventListener("change", event => {
             isAutoPlay = event.target.checked;
