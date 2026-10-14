@@ -120,76 +120,94 @@
     <!-- =========================================================
          Header & Settings
          ========================================================= -->
-    <div class="main-header">
-        <h1>Pronunciation Practice 1</h1>
+    <div class="main-header page-header">
+
+        <div class="page-heading">
+            <h1>Pronunciation Practice 1</h1>
+            <a href="index.html" class="back-link">↩️もどる</a>
+        </div>
 
         <div class="compact-settings">
-            <a href="index.html" class="back-link">↩️ もどる</a>
 
-            <!-- Script / Display Mode Toggle -->
-            <div class="control-item">
-                <span id="labelKanji" class="mode-label active-mode custom-tip-wrap">
-                    <span class="icon-emoji">🐤</span> With漢字
-                    <span class="custom-tip-box">Display text with kanji.</span>
-                </span>
+            <!-- Hiragana fixed; script selection unavailable -->
+            <div class="settings-row settings-segments-row">
+                <div class="control-item">
+                    <div
+                        id="scriptModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Script Mode: Hiragana only"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hiragana"
+                            aria-pressed="true"
+                            disabled
+                        >
+                            <span class="icon-emoji">🐣</span>Hiragana Only
+                            <span class="custom-tip-box">This practice uses Hiragana only.</span>
+                        </button>
 
-                <label class="switch">
-                    <input type="checkbox" id="toggleScriptMode">
-                    <span class="slider"></span>
-                </label>
-
-                <span id="labelHiragana" class="mode-label inactive-mode custom-tip-wrap">
-                    <span class="icon-emoji">🐣</span> Only Hiragana
-                    <span class="custom-tip-box">Display text in hiragana only.</span>
-                </span>
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="kanji"
+                            aria-pressed="false"
+                            disabled
+                        >
+                            <span class="icon-emoji">🐤</span>With漢字
+                            <span class="custom-tip-box">Kanji mode is unavailable for this practice.</span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Recording Toggle -->
-            <div class="control-item">
-                <span id="labelAutoRecord" class="mode-label inactive-mode custom-tip-wrap">
-                    <span class="icon-emoji">⏹️</span>Autostop
-                    <span class="custom-tip-box">
-                        Automatically stops recording when you stop speaking.
+            <div class="settings-row settings-auto-row">
+
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoRecord"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">ON: Automatically stops recording. OFF: Records until you click the stop button.</span>
                     </span>
-                </span>
 
-                <label class="switch">
-                    <input type="checkbox" id="toggleRecordMode" checked>
-                    <span class="slider"></span>
-                </label>
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="toggleRecordMode"
+                            aria-label="Autostop"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
 
-                <span id="labelManualRecord" class="mode-label active-mode custom-tip-wrap">
-                    <span class="icon-emoji">⏹️</span>Manual stop
-                    <span class="custom-tip-box">
-                        Records continuously until you click the stop button.
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoPlay"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">▶️</span>Autoplay
+                        <span class="custom-tip-box">ON: Plays your voice automatically after recording. OFF: Disables automatic playback.</span>
                     </span>
-                </span>
-            </div>
 
-            <!-- Playback Toggle -->
-            <div class="control-item">
-                <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
-                    <span class="icon-emoji">▶️</span>Autoplay
-                    <span class="custom-tip-box">
-                        Plays your voice automatically after recording.
-                    </span>
-                </span>
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="togglePlaybackMode"
+                            aria-label="Autoplay"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
 
-                <label class="switch">
-                    <input type="checkbox" id="togglePlaybackMode">
-                    <span class="slider"></span>
-                </label>
-
-                <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
-                    <span class="icon-emoji">⏯️</span>Manual play
-                    <span class="custom-tip-box">
-                        Disables automatic playback.
-                    </span>
-                </span>
             </div>
         </div>
     </div>
-
     <!-- =========================================================
          Temporary Area (Pitch Visualization Roadmap)
          ========================================================= -->
