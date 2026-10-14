@@ -172,7 +172,7 @@ function removeRecognitionPunctuation(text) {
     return String(text || "")
         .normalize("NFKC")
         .replace(
-            /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。，．！？!?：；…・"'“”‘’]/g,
+            /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。.,．！？!?：；…・"'“”‘’]/g,
             ""
         );
 }
@@ -489,12 +489,12 @@ function renderExampleSection() {
     const formattedTeacher = formatWord("せんせい", "先生", "sensei", "teacher");
 
     const affirmativeSentence = scriptMode === "kanji"
-        ? "私は、学生です。"
-        : "わたしは、がくせいです。";
+        ? "私<strong>は、</strong>学生<strong>です。</strong>"
+        : "わたし<strong>は、</strong>がくせい<strong>です。</strong>";
 
     const negativeSentence = scriptMode === "kanji"
-        ? "私は、先生じゃないです。"
-        : "わたしは、せんせいじゃないです。";
+        ? "私<strong>は、</strong>先生<strong>じゃないです。</strong>"
+        : "わたし<strong>は、</strong>せんせい<strong>じゃないです。</strong>";
 
     container.innerHTML = `
         <div class="example-box">
@@ -533,14 +533,14 @@ function renderExampleSection() {
     if (ex1Listen) {
         ex1Listen.addEventListener("click", () => {
             setPlayingStateMultiple([ex1Listen], "Playing...");
-            speakText(affirmativeSentence, 0.9, () => stopAllPlayback());
+            speakText(scriptMode === "kanji" ? "私は、学生です。" : "わたしは、がくせいです。", 0.9, () => stopAllPlayback());
         });
     }
 
     if (ex2Listen) {
         ex2Listen.addEventListener("click", () => {
             setPlayingStateMultiple([ex2Listen], "Playing...");
-            speakText(negativeSentence, 0.9, () => stopAllPlayback());
+            speakText(scriptMode === "kanji" ? "私は、先生じゃないです。" : "わたしは、せんせいじゃないです。", 0.9, () => stopAllPlayback());
         });
     }
 }
