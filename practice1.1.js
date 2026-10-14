@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 1: XはYです
+// Practice 1.1: XはYです
 // Hiragana Only / With Kanji 分離対応版
 // ============================================================================
 
@@ -45,6 +45,7 @@ let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
+// 変数名は構文エラーを防ぐため practice1State のまま維持
 const practice1State = {
     customSelects: {},
     audioUrls: {},
@@ -242,7 +243,7 @@ function convertToHiragana(text) {
 }
 
 // ============================================================================
-// Drill 3 専用の文型判定
+// 文型判定
 // ============================================================================
 
 function checkHiraganaStructure(transcript) {
@@ -1233,8 +1234,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
 // ============================================================================
 // Shared Recorder & Speech Recognition Architecture
-// Hiragana Only: MediaRecorder only; SpeechRecognition is never created.
-// With Kanji: MediaRecorder + SpeechRecognition.
 // ============================================================================
 
 function bindRecorderEvents(
@@ -1514,9 +1513,6 @@ function bindRecorderEvents(
 
         showAudioOnlyStatus(currentSession, false);
 
-        // ====================================================================
-        // Hiragana Only (Audio Only) モード録音完了後の自動再生処理
-        // ====================================================================
         if (isAutoPlay && audioUrl) {
             const kanjiTextForSpeech = getExpectedKanjiFn();
             speakText(kanjiTextForSpeech, playRate, () => {
@@ -1942,7 +1938,6 @@ function bindRecorderEvents(
 
 // ============================================================================
 // Result Processing
-// With Kanji のみがこの処理に到達する。
 // ============================================================================
 
 function processResult(
