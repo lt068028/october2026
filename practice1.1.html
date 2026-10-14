@@ -6,76 +6,140 @@
     <title>Practice 1.1: XはYです</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="practice1-page">
 
     <!-- =========================================================
          Header & Settings
          ========================================================= -->
     <div class="main-header">
         <h1>Practice 1.1: XはYです</h1>
-        
+
         <div class="compact-settings">
-            <a href="index.html" class="back-link">↩️ もどる</a>
+            <a href="index.html" class="back-link">↩️もどる</a>
 
-            <!-- Script Mode Toggle (With漢字 / Hiragana Only) -->
+            <!-- Script Mode: Hiragana Only / With漢字 -->
             <div class="control-item">
-                <span id="labelHiraganaOnly" class="mode-label active-mode custom-tip-wrap">
-                    <span class="icon-emoji">🐣</span>Hiragana Only
-                    <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
-                </span>
-                <label class="switch">
-                    <input type="checkbox" id="toggleScriptMode" checked>
-                    <span class="slider"></span>
-                </label>
-                <span id="labelWithKanji" class="mode-label inactive-mode custom-tip-wrap">
-                    <span class="icon-emoji">🐤</span>With漢字
-                    <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
-                </span>
+                <div
+                    id="scriptModeControl"
+                    class="segmented-control"
+                    role="group"
+                    aria-label="Script Mode"
+                >
+                    <button
+                        type="button"
+                        class="segmented-option custom-tip-wrap is-selected"
+                        data-value="hiragana"
+                        aria-pressed="true"
+                    >
+                        <span class="icon-emoji">🐣</span>Hiragana Only
+                        <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="segmented-option custom-tip-wrap"
+                        data-value="kanji"
+                        aria-pressed="false"
+                    >
+                        <span class="icon-emoji">🐤</span>With漢字
+                        <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Vocab Hint Toggle -->
+            <!-- Vocabulary: Vocab Hover / Display Vocab / OFF -->
             <div class="control-item">
-                <span id="labelHoverHint" class="mode-label active-mode custom-tip-wrap">
-                    <span class="icon-emoji">💬</span> Vocab Hint
-                    <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
-                </span>
-                <label class="switch">
-                    <input type="checkbox" id="toggleHintMode" checked>
-                    <span class="slider"></span>
-                </label>
-                <span id="labelParenHint" class="mode-label inactive-mode custom-tip-wrap">
-                    <span class="icon-emoji">🔡</span>Display Vocab
-                    <span class="custom-tip-box">Always shows word's meaning in parentheses.</span>
-                </span>
+                <div
+                    id="hintModeControl"
+                    class="segmented-control"
+                    role="group"
+                    aria-label="Vocabulary Display"
+                >
+                    <button
+                        type="button"
+                        class="segmented-option custom-tip-wrap is-selected"
+                        data-value="hover"
+                        aria-pressed="true"
+                    >
+                        <span class="icon-emoji">💬</span>Vocab Hover
+                        <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="segmented-option custom-tip-wrap"
+                        data-value="paren"
+                        aria-pressed="false"
+                    >
+                        <span class="icon-emoji">🔡</span>Display Vocab
+                        <span class="custom-tip-box">Always shows word pronunciation and meaning in parentheses.</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        class="segmented-option custom-tip-wrap"
+                        data-value="off"
+                        aria-pressed="false"
+                    >
+                        OFF
+                        <span class="custom-tip-box">Hides vocabulary pronunciation and meaning hints.</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Recording Toggle -->
-            <div class="control-item">
-                <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+            <!-- Recording Toggle: Autostop ON / OFF -->
+            <div class="control-item settings-onoff">
+                <span
+                    id="labelAutoRecord"
+                    class="mode-label active-mode custom-tip-wrap"
+                >
                     <span class="icon-emoji">⏹️</span>Autostop
                     <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
                 </span>
+
                 <label class="switch">
-                    <input type="checkbox" id="toggleRecordMode" checked>
+                    <input
+                        type="checkbox"
+                        id="toggleRecordMode"
+                        aria-label="Autostop"
+                        checked
+                    >
                     <span class="slider"></span>
                 </label>
-                <span id="labelManualRecord" class="mode-label inactive-mode custom-tip-wrap">
+
+                <span
+                    id="labelManualRecord"
+                    class="mode-label inactive-mode custom-tip-wrap"
+                >
                     <span class="icon-emoji">⏹️</span>Manual stop
                     <span class="custom-tip-box">Records continuously until you click the stop button.</span>
                 </span>
             </div>
 
-            <!-- Playback Toggle -->
-            <div class="control-item">
-                <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+            <!-- Playback Toggle: Autoplay ON / OFF -->
+            <div class="control-item settings-onoff">
+                <span
+                    id="labelAutoPlay"
+                    class="mode-label active-mode custom-tip-wrap"
+                >
                     <span class="icon-emoji">▶️</span>Autoplay
                     <span class="custom-tip-box">Plays the model and your voice automatically after recording.</span>
                 </span>
+
                 <label class="switch">
-                    <input type="checkbox" id="togglePlaybackMode" checked>
+                    <input
+                        type="checkbox"
+                        id="togglePlaybackMode"
+                        aria-label="Autoplay"
+                        checked
+                    >
                     <span class="slider"></span>
                 </label>
-                <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
+
+                <span
+                    id="labelManualPlay"
+                    class="mode-label inactive-mode custom-tip-wrap"
+                >
                     <span class="icon-emoji">⏯️</span>Manual play
                     <span class="custom-tip-box">Disables automatic playback.</span>
                 </span>
