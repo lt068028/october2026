@@ -8,10 +8,8 @@ const practice7Data = [
         y: "ねる", yKanji: "寝る", yRomaji: "neru", yMeaning: "to sleep / go to bed",
         pastSentence: "私は、夜10時に寝ました。",
         pastSentenceHira: "わたしは、よる10じに、ねました。",
-        pastKanji: "夜10時に寝まし",
         perfectSentence: "私は、夜10時から寝ています。",
-        perfectSentenceHira: "わたしは、よる10じから、ねています。",
-        perfectKanji: "夜10時から寝てい"
+        perfectSentenceHira: "わたしは、よる10じから、ねています。"
     }
 ];
 
@@ -203,7 +201,6 @@ function initSettingsPanel() {
     const labelWithKanji = document.getElementById("labelWithKanji");
 
     if (toggleScriptMode) {
-        // 初期状態の同期 (HTML側で checked になっているため scriptMode = "kanji")
         scriptMode = toggleScriptMode.checked ? "kanji" : "hiragana";
         updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
         updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
@@ -309,20 +306,13 @@ function renderDrill1Section() {
     const w1 = formatWord("よる10じ", "夜10時", "yoru jū-ji", "10 o'clock at night");
     const w2 = formatWord("ねる", "寝る", "neru", "to sleep");
 
-    const exPastQ = scriptMode === "kanji" 
-        ? "私は、<strong>夜10時に寝ました。</strong>" 
-        : "わたしは、<strong>よる10じに、ねました。</strong>";
-    const exPerfQ = scriptMode === "kanji" 
-        ? "私は、<strong>夜10時から寝ています。</strong>" 
-        : "わたしは、<strong>よる10じから、ねています。</strong>";
-
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
             <strong class="example-label-title">Past Tense:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPastListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}<strong>に</strong>${w2}<strong>ました。</strong></span>
+            <span>私は、${w1}<strong>に寝ました。</strong></span>
         </div>
 
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
@@ -330,7 +320,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPerfListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}<strong>から</strong>${w2}<strong>ていま​​す。</strong></span>
+            <span>私は、${w1}<strong>から寝ています。</strong></span>
         </div>
     `;
 
@@ -365,41 +355,51 @@ function renderDrill1Section() {
     container.appendChild(listDiv);
 
     practice7Data.forEach((item, index) => {
-        createPractice7Rows(listDiv, `${index + 1}.`, item, index, 0.9);
+        createPractice7GroupCard(listDiv, `${index + 1}.`, item, index, 0.9);
     });
 }
 
-function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
-    // 1番の行コンテナ
-    const itemContainer = document.createElement("div");
-    itemContainer.style.marginBottom = "20px";
+function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRate) {
+    // 1つの共通カード枠
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "drill-row";
+    cardDiv.style.display = "flex";
+    cardDiv.style.flexDirection = "column";
+    cardDiv.style.gap = "8px";
+
+    // キュー表示部分（共通のプロンプト行）
+    const headerRow = document.createElement("div");
+    headerRow.className = "top-row";
+    headerRow.style.borderBottom = "1px solid var(--border-color)";
+    headerRow.style.paddingBottom = "6px";
+    headerRow.style.marginBottom = "2px";
+
+    const indexSpan = document.createElement("span");
+    indexSpan.textContent = indexLabel;
+    indexSpan.style.fontWeight = "bold";
+
+    const promptSpan = document.createElement("span");
+    promptSpan.className = "prompt-label";
+    promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
+    promptSpan.style.fontWeight = "bold";
+
+    headerRow.appendChild(indexSpan);
+    headerRow.appendChild(promptSpan);
+    cardDiv.appendChild(headerRow);
 
     // ----------------------------------------------------
-    // 行 1: Past Tense
+    // 行 1: Past 
     // ----------------------------------------------------
-    const pastRowDiv = document.createElement("div");
-    pastRowDiv.className = "drill-row";
-    pastRowDiv.style.marginBottom = "4px";
+    const pastSubRow = document.createElement("div");
+    pastSubRow.className = "top-row";
 
-    const qRow1 = document.createElement("div");
-    qRow1.className = "top-row";
-
-    const indexSpan1 = document.createElement("span");
-    indexSpan1.textContent = indexLabel;
-    indexSpan1.style.fontWeight = "bold";
-
-    const promptSpan1 = document.createElement("span");
-    promptSpan1.className = "prompt-label";
-    promptSpan1.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    promptSpan1.style.minWidth = "220px";
-
-    const pastLabelBtn = document.createElement("button");
-    pastLabelBtn.className = "example-button";
-    pastLabelBtn.style.fontWeight = "bold";
-    pastLabelBtn.style.minWidth = "110px";
-    pastLabelBtn.style.backgroundColor = "#bae6fd";
-    pastLabelBtn.innerHTML = "📅 Past Tense";
-    pastLabelBtn.disabled = true;
+    const pastBtn = document.createElement("button");
+    pastBtn.className = "example-button";
+    pastBtn.style.fontWeight = "bold";
+    pastBtn.style.minWidth = "110px";
+    pastBtn.style.backgroundColor = "#bae6fd";
+    pastBtn.innerHTML = "⏪ Past";
+    pastBtn.disabled = true;
 
     const listenBtn1 = document.createElement("button");
     listenBtn1.className = "example-button custom-tip-wrap";
@@ -424,13 +424,11 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
         speakText(item.pastSentence, playRate, () => stopAllPlayback());
     };
 
-    qRow1.appendChild(indexSpan1);
-    qRow1.appendChild(promptSpan1);
-    qRow1.appendChild(pastLabelBtn);
-    qRow1.appendChild(listenBtn1);
-    qRow1.appendChild(recordBtn1);
-    qRow1.appendChild(stopBtn1);
-    qRow1.appendChild(resultSpan1);
+    pastSubRow.appendChild(pastBtn);
+    pastSubRow.appendChild(listenBtn1);
+    pastSubRow.appendChild(recordBtn1);
+    pastSubRow.appendChild(stopBtn1);
+    pastSubRow.appendChild(resultSpan1);
 
     const correctionBox1 = document.createElement("div");
     correctionBox1.className = "correction-box";
@@ -442,8 +440,10 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
     correctionBox1.appendChild(corrListenBtn1);
     correctionBox1.appendChild(corrTextSpan1);
 
-    pastRowDiv.appendChild(qRow1);
-    pastRowDiv.appendChild(correctionBox1);
+    const pastContainer = document.createElement("div");
+    pastContainer.appendChild(pastSubRow);
+    pastContainer.appendChild(correctionBox1);
+    cardDiv.appendChild(pastContainer);
 
     bindRecorderEvents(
         recordBtn1, stopBtn1, resultSpan1, correctionBox1, corrListenBtn1, corrTextSpan1,
@@ -454,24 +454,20 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
     );
 
     // ----------------------------------------------------
-    // 行 2: Present Perfect (真下)
+    // 行 2: Perfect (真下)
     // ----------------------------------------------------
-    const perfRowDiv = document.createElement("div");
-    perfRowDiv.className = "drill-row";
+    const perfSubRow = document.createElement("div");
+    perfSubRow.className = "top-row";
+    perfSubRow.style.borderTop = "1px dashed var(--border-color)";
+    perfSubRow.style.paddingTop = "6px";
 
-    const qRow2 = document.createElement("div");
-    qRow2.className = "top-row";
-
-    const emptyIndentSpan = document.createElement("span");
-    emptyIndentSpan.style.minWidth = "16px"; // インデント調整用
-
-    const perfLabelBtn = document.createElement("button");
-    perfLabelBtn.className = "example-button";
-    perfLabelBtn.style.fontWeight = "bold";
-    perfLabelBtn.style.minWidth = "110px";
-    perfLabelBtn.style.backgroundColor = "#4ade80";
-    perfLabelBtn.innerHTML = "⏳ Present Perf.";
-    perfLabelBtn.disabled = true;
+    const perfBtn = document.createElement("button");
+    perfBtn.className = "example-button";
+    perfBtn.style.fontWeight = "bold";
+    perfBtn.style.minWidth = "110px";
+    perfBtn.style.backgroundColor = "#4ade80";
+    perfBtn.innerHTML = "➡️ Perfect";
+    perfBtn.disabled = true;
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
@@ -496,12 +492,11 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
         speakText(item.perfectSentence, playRate, () => stopAllPlayback());
     };
 
-    qRow2.appendChild(emptyIndentSpan);
-    qRow2.appendChild(perfLabelBtn);
-    qRow2.appendChild(listenBtn2);
-    qRow2.appendChild(recordBtn2);
-    qRow2.appendChild(stopBtn2);
-    qRow2.appendChild(resultSpan2);
+    perfSubRow.appendChild(perfBtn);
+    perfSubRow.appendChild(listenBtn2);
+    perfSubRow.appendChild(recordBtn2);
+    perfSubRow.appendChild(stopBtn2);
+    perfSubRow.appendChild(resultSpan2);
 
     const correctionBox2 = document.createElement("div");
     correctionBox2.className = "correction-box";
@@ -513,8 +508,10 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
     correctionBox2.appendChild(corrListenBtn2);
     correctionBox2.appendChild(corrTextSpan2);
 
-    perfRowDiv.appendChild(qRow2);
-    perfRowDiv.appendChild(correctionBox2);
+    const perfContainer = document.createElement("div");
+    perfContainer.appendChild(perfSubRow);
+    perfContainer.appendChild(correctionBox2);
+    cardDiv.appendChild(perfContainer);
 
     bindRecorderEvents(
         recordBtn2, stopBtn2, resultSpan2, correctionBox2, corrListenBtn2, corrTextSpan2,
@@ -524,9 +521,7 @@ function createPractice7Rows(container, indexLabel, item, rowIndex, playRate) {
         `p7_drill_perf_${rowIndex}`
     );
 
-    itemContainer.appendChild(pastRowDiv);
-    itemContainer.appendChild(perfRowDiv);
-    container.appendChild(itemContainer);
+    container.appendChild(cardDiv);
 }
 
 function bindRecorderEvents(
