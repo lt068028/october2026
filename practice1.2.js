@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 2: Yes/No & Wh- Questions (Genki Lesson 2 - 「せんこう」同音異義語完全網羅版)
+// Practice 1.2: Yes/No & Wh- Questions (Genki Lesson 2 - 「せんこう」同音異義語完全網羅版)
 // ============================================================================
 
 const practice2Data = [
@@ -40,6 +40,7 @@ let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
+// 変数名は構文エラーを防ぐため practice2State のまま維持
 const practice2State = {
     customSelects: {},
     audioUrls: {},
