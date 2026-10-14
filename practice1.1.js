@@ -376,12 +376,22 @@ function initSettingsPanel() {
     const labelWithKanji = document.getElementById("labelWithKanji");
 
     if (toggleScriptMode) {
-        toggleScriptMode.checked = (scriptMode === "kanji");
-        updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
-        updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
+        // 初期状態：Hiragana Only（青・つまみ右）
+        toggleScriptMode.checked = (scriptMode === "hiragana");
+
+        updateToggleLabelStyle(
+            labelHiraganaOnly,
+            scriptMode === "hiragana"
+        );
+
+        updateToggleLabelStyle(
+            labelWithKanji,
+            scriptMode === "kanji"
+        );
 
         toggleScriptMode.addEventListener("change", (e) => {
-            scriptMode = e.target.checked ? "kanji" : "hiragana";
+            // ON = Hiragana Only、OFF = With漢字
+            scriptMode = e.target.checked ? "hiragana" : "kanji";
 
             updateToggleLabelStyle(
                 labelHiraganaOnly,
@@ -396,7 +406,6 @@ function initSettingsPanel() {
             renderAll();
         });
     }
-
     const toggleHintMode = document.getElementById("toggleHintMode");
     const labelHoverHint = document.getElementById("labelHoverHint");
     const labelParenHint = document.getElementById("labelParenHint");
