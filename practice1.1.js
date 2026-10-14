@@ -367,7 +367,23 @@ function
 // ============================================================================
 // Settings Panel
 // ============================================================================
+function formatCustomWord(word, kanji, meaning) {
+    const matchingKey = Object.keys(customDict).find(
+        key =>
+            customDict[key].meaning.toLowerCase() ===
+            String(meaning || "").toLowerCase()
+    );
 
+    const romaji = matchingKey
+        ? customDict[matchingKey].romaji
+        : meaning;
+
+    return formatWord(word, kanji, romaji, meaning);
+}
+
+// ============================================================================
+// Settings Panel
+// ============================================================================
 function initSettingsPanel() {
     const scriptControl =
         document.getElementById("scriptModeControl");
