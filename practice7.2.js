@@ -10,6 +10,14 @@ const practice7Data = [
         pastSentenceHira: "わたしは、よる10じに、ねました。",
         perfectSentence: "私は、夜10時から寝ています。",
         perfectSentenceHira: "わたしは、よる10じから、ねています。"
+    },
+    { 
+        x: "さっき", xKanji: "さっき", xRomaji: "sakki", xMeaning: "a little while ago", 
+        y: "Tシャツをきる", yKanji: "Tシャツを着る", yRomaji: "tīshatsu o kiru", yMeaning: "to wear a T-shirt",
+        pastSentence: "私は、さっきTシャツを着ました。",
+        pastSentenceHira: "わたしは、さっきTしゃつを、きました。",
+        perfectSentence: "私は、さっきからTシャツを着ています。",
+        perfectSentenceHira: "わたしは、さっきから、Tしゃつを、きています。"
     }
 ];
 
@@ -360,18 +368,20 @@ function renderDrill1Section() {
 }
 
 function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRate) {
-    // 2段構成の共通カード枠
     const cardDiv = document.createElement("div");
     cardDiv.className = "drill-row";
     cardDiv.style.display = "flex";
     cardDiv.style.flexDirection = "column";
-    cardDiv.style.gap = "8px";
+    cardDiv.style.gap = "6px";
 
     // ----------------------------------------------------
-    // 1段目: キュー ＋ Past行
+    // 1段目: キュー ＋ Past行 (間隔を詰めるため flex & gap を調整)
     // ----------------------------------------------------
     const row1 = document.createElement("div");
     row1.className = "top-row";
+    row1.style.display = "flex";
+    row1.style.alignItems = "center";
+    row1.style.gap = "8px";
 
     const indexSpan = document.createElement("span");
     indexSpan.textContent = indexLabel;
@@ -380,12 +390,11 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
     promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    promptSpan.style.minWidth = "220px";
+    promptSpan.style.flexShrink = "0";
 
     const pastBtn = document.createElement("button");
     pastBtn.className = "example-button";
     pastBtn.style.fontWeight = "bold";
-    pastBtn.style.minWidth = "110px";
     pastBtn.style.backgroundColor = "#bae6fd";
     pastBtn.innerHTML = "⏪ Past";
     pastBtn.disabled = true;
@@ -445,20 +454,24 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     );
 
     // ----------------------------------------------------
-    // 2段目: Perfect行（真下）
+    // 2段目: Perfect行（真下・インデント付き）
     // ----------------------------------------------------
     const row2 = document.createElement("div");
     row2.className = "top-row";
     row2.style.borderTop = "1px dashed var(--border-color)";
     row2.style.paddingTop = "6px";
+    row2.style.display = "flex";
+    row2.style.alignItems = "center";
+    row2.style.gap = "8px";
 
     const emptyIndentSpan = document.createElement("span");
-    emptyIndentSpan.style.minWidth = "224px"; // 番号とキュー分のスペースを空けて縦位置を合わせる
+    // 番号とキュー部分の幅を考慮して左側にスペースを確保
+    emptyIndentSpan.style.minWidth = "220px";
+    emptyIndentSpan.style.flexShrink = "0";
 
     const perfBtn = document.createElement("button");
     perfBtn.className = "example-button";
     perfBtn.style.fontWeight = "bold";
-    perfBtn.style.minWidth = "110px";
     perfBtn.style.backgroundColor = "#4ade80";
     perfBtn.innerHTML = "➡️ Perfect";
     perfBtn.disabled = true;
