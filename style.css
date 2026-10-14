@@ -325,34 +325,34 @@ input:checked + .slider:before { transform: translateX(16px); }
 /* ==========================================
    Segmented Controls
    ========================================== */
-
 .segmented-control {
     display: inline-flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: stretch;
-    gap: 4px;
-    padding: 4px;
+    gap: 2px;
+    padding: 3px;
     max-width: 100%;
     box-sizing: border-box;
     background-color: var(--button-disabled-bg);
     border: none;
-    border-radius: 14px;
+    border-radius: 10px;
 }
 
 .segmented-control .segmented-option {
     position: relative;
     display: inline-block;
     margin: 0;
-    padding: 10px 12px;
-    min-height: 40px;
+    padding: 4px 9px;
+    min-height: 26px;
     box-sizing: border-box;
     border: none;
-    border-radius: 10px;
+    border-radius: 7px;
     background-color: transparent;
     color: var(--text-secondary);
     font-family: inherit;
     font-size: 13px;
+    line-height: 18px;
     font-weight: normal;
     white-space: nowrap;
     cursor: pointer;
