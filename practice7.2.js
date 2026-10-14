@@ -25,7 +25,7 @@ const practice7Data = [
         y: "Tシャツをきる",
         yKanji: "Tシャツを着る",
         yRomaji: "tīshatsu o kiru",
-        yMeaning: "to wear a T-shirt",
+        yMeaning: "to put on / wear a T-shirt",
         pastSentence: "さっきTシャツを着ました。",
         pastSentenceHira: "さっきTしゃつを、きました。",
         perfectSentence: "さっきからTシャツを着ています。",
@@ -61,17 +61,31 @@ const practice7Data = [
     },
     {
         x: "かんじ50こ",
-        xKanji: "漢字50こ",
+        xKanji: "漢字50個",
         xRomaji: "kanji gojūkko",
         xMeaning: "50 kanji characters",
         y: "おぼえる",
         yKanji: "覚える",
         yRomaji: "oboeru",
         yMeaning: "to memorize / remember",
-        pastSentence: "漢字を50こ覚えました。",
+        pastSentence: "漢字を50個覚えました。",
         pastSentenceHira: "かんじを50こ、おぼえました。",
-        perfectSentence: "漢字を50こ覚えています。",
+        perfectSentence: "漢字を50個覚えています。",
         perfectSentenceHira: "かんじを50こ、おぼえています。"
+    },
+    {
+        x: "3ねんまえ",
+        xKanji: "3年前",
+        xRomaji: "san-nen mae",
+        xMeaning: "three years ago",
+        y: "けっこんする",
+        yKanji: "結婚する",
+        yRomaji: "kekkon suru",
+        yMeaning: "to get married",
+        pastSentence: "3年前に結婚しました。",
+        pastSentenceHira: "3ねんまえに、けっこんしました。",
+        perfectSentence: "結婚しています。",
+        perfectSentenceHira: "けっこんしています。"
     },
     {
         x: "ているForm",
@@ -205,7 +219,23 @@ function convertToHiragana(text) {
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // 読み上げ専用。表示文・判定文には反映しない。
+    const speechText = String(text ?? "")
+        .replace(/朝5時に(?=起き)/g, "朝5時に、")
+        .replace(/朝5時から(?=起き)/g, "朝5時から、")
+        .replace(/夜10時に(?=寝)/g, "夜10時に、")
+        .replace(/夜10時から(?=寝)/g, "夜10時から、")
+        .replace(/さっきから(?=Tシャツ)/g, "さっきから、")
+        .replace(/さっき(?=Tシャツ)/g, "さっき、")
+        .replace(/お正月に(?=太)/g, "お正月に、")
+        .replace(/お正月から(?=太)/g, "お正月から、")
+        .replace(/夏休みに(?=やせ)/g, "夏休みに、")
+        .replace(/夏休みから(?=やせ)/g, "夏休みから、")
+        .replace(/漢字を50個(?=覚え)/g, "漢字を50個、")
+        .replace(/3年前に(?=結婚)/g, "3年前に、")
+        .replace(/ているフォームを(?=知)/g, "ているフォームを、");
+
+    const utterance = new SpeechSynthesisUtterance(speechText);
     utterance.lang = "ja-JP";
     utterance.rate = rate;
 
