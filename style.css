@@ -558,3 +558,44 @@ input:checked + .slider:before { transform: translateX(16px); }
         gap: 8px;
     }
 }
+/* ==========================================
+   Shared Page Header
+   Title + Independent Back Link
+   ========================================== */
+
+.main-header.page-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: 12px;
+}
+
+.page-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+}
+
+.page-heading h1 {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.page-heading > .back-link {
+    flex: 0 0 auto;
+    margin: 0;
+    padding-top: 4px;
+    white-space: nowrap;
+}
+
+.page-header > .compact-settings {
+    align-self: flex-end;
+    max-width: 100%;
+    margin-left: auto;
+}
