@@ -1,6 +1,6 @@
 // ============================================================================
 // Practice 1.1: XはYです
-// Hiragana Only / With Kanji 分離対応版
+// Hiragana Only / With Kanji 分離対応版 (修正済み)
 // ============================================================================
 
 const taskData = [
@@ -41,11 +41,10 @@ const customDict = {
 
 let isManualStop = false;
 let hintMode = "hover";
-let scriptMode = "hiragana";
+let scriptMode = "hiragana"; // 全体設定（Drill 3などの表示用）
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
-// 変数名は構文エラーを防ぐため practice1State のまま維持
 const practice1State = {
     customSelects: {},
     audioUrls: {},
@@ -172,7 +171,7 @@ function removeRecognitionPunctuation(text) {
     return String(text || "")
         .normalize("NFKC")
         .replace(
-            /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。.,．！？!?：；…・"'“”‘’]/g,
+            /[\s.,\/#!$%\^&\*;:{}=\-_`~()（）「」『』【】［］〔〕〈〉《》、。.,．．！？!?：；…・"'“”‘’]/g,
             ""
         );
 }
@@ -248,9 +247,7 @@ function convertToHiragana(text) {
 
 function checkHiraganaStructure(transcript) {
     const normalized = normalizeHiraganaTranscript(transcript);
-
-    const pattern =
-        /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+    const pattern = /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
 
     return {
         normalizedTranscript: normalized,
@@ -260,9 +257,7 @@ function checkHiraganaStructure(transcript) {
 
 function checkKanjiStructure(transcript) {
     const normalized = normalizeKanjiTranscript(transcript);
-
-    const pattern =
-        /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
+    const pattern = /^.+は.+(?:ではないです|じゃないです|ではありません|じゃありません|です)$/;
 
     return {
         normalizedTranscript: normalized,
@@ -274,7 +269,6 @@ function checkDrill3Structure(transcript) {
     if (scriptMode === "hiragana") {
         return checkHiraganaStructure(transcript);
     }
-
     return checkKanjiStructure(transcript);
 }
 
@@ -556,8 +550,10 @@ function renderAll() {
 // 結果表示の初期状態
 // ============================================================================
 
-function setInitialResultDisplay(resultSpan, rowKey) {
-    if (scriptMode === "hiragana" && practice1State.audioUrls[rowKey]) {
+function setInitialResultDisplay(resultSpan, rowKey, isDrill1Or2 = false) {
+    // Drill 1と2は「ひらがなでも文字抽出できるように対応させた」要件に基づき、
+    // グローバルの scriptMode に影響されず、常に音声認識による文字抽出／判定を行わせるため、通常のステータス表示にする。
+    if (!isDrill1Or2 && scriptMode === "hiragana" && practice1State.audioUrls[rowKey]) {
         resultSpan.textContent = "🐣Only Hiragana:🎙️Audio only";
         resultSpan.style.color = "var(--text-primary)";
         appendPersistedPlayButton(resultSpan, rowKey, 0.9);
@@ -627,7 +623,8 @@ function renderTask1() {
             item.yKanji,
             item.isNeg,
             0.9,
-            `task1_${index}`
+            `task1_${index}`,
+            true // Drill 1は文字抽出を常に有効化
         );
     });
 }
@@ -745,7 +742,7 @@ function renderTask2() {
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
-        setInitialResultDisplay(resultSpan, rowKey);
+        setInitialResultDisplay(resultSpan, rowKey, true); // Drill 2用
 
         topRow.appendChild(listenBtn);
         topRow.appendChild(indexSpan);
@@ -884,7 +881,8 @@ function renderTask2() {
             rowKey,
             false,
             () => selectX.value,
-            () => selectY.value
+            () => selectY.value,
+            true // forceRecognition (Drill 2用)
         );
 
         listDiv.appendChild(rowDiv);
@@ -986,7 +984,7 @@ function renderTask3() {
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
-        setInitialResultDisplay(resultSpan, rowKey);
+        setInitialResultDisplay(resultSpan, rowKey, false);
 
         topRow.appendChild(indexSpan);
         topRow.appendChild(inputX);
@@ -1071,7 +1069,8 @@ function renderTask3() {
             rowKey,
             true,
             () => inputX.value.trim(),
-            () => inputY.value.trim()
+            () => inputY.value.trim(),
+            false // Drill 3は scriptMode に従う
         );
 
         listDiv.appendChild(rowDiv);
@@ -1093,7 +1092,8 @@ function createDrillRow(
     targetKanjiY,
     isNeg,
     playRate,
-    rowKey
+    rowKey,
+    forceRecognition = false
 ) {
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
@@ -1143,7 +1143,7 @@ function createDrillRow(
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
-    setInitialResultDisplay(resultSpan, rowKey);
+    setInitialResultDisplay(resultSpan, rowKey, forceRecognition);
 
     topRow.appendChild(listenBtn);
     topRow.appendChild(indexSpan);
@@ -1190,7 +1190,8 @@ function createDrillRow(
         rowKey,
         false,
         () => targetX,
-        () => targetY
+        () => targetY,
+        forceRecognition
     );
 
     container.appendChild(rowDiv);
@@ -1249,7 +1250,8 @@ function bindRecorderEvents(
     rowKey,
     allowEitherStructure = false,
     getXFn = () => "",
-    getYFn = () => ""
+    getYFn = () => "",
+    forceRecognition = false
 ) {
     let session = null;
 
@@ -1911,7 +1913,8 @@ function bindRecorderEvents(
             return;
         }
 
-        const recordingMode = scriptMode;
+        // Drill 1と2は強制的に認識モード（文字抽出）を維持。Drill 3のみ全体の scriptMode に従う
+        const recordingMode = forceRecognition ? "kanji" : scriptMode;
 
         if (recordingMode === "hiragana") {
             startAudioOnlyRecording(stream);
@@ -2003,7 +2006,7 @@ function processResult(
         );
     }
 
-    const displayedTranscript = scriptMode === "hiragana"
+    const displayedTranscript = scriptMode === "hiragana" && !allowEitherStructure
         ? normalizedTranscript
         : transcript;
 
