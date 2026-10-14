@@ -5,68 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pronunciation Practice 1</title>
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        /* ==========================================
-           Pronunciation Practice 1
-           AI Pronunciation Lab 専用レイアウト
-           共通CSS・JavaScriptは変更しない
-           ========================================== */
-
-        .pronunciation-practice-1 .ai-lab-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        /* タイトルとボタンを同じ行に配置 */
-        .pronunciation-practice-1 .ai-lab-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-        }
-
-        .pronunciation-practice-1 .ai-lab-heading .info-panel-title {
-            flex: 1 1 auto;
-            min-width: 0;
-        }
-
-        /* ボタンを右側に配置 */
-        .pronunciation-practice-1 .ai-lab-action {
-            flex: 0 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .pronunciation-practice-1 .ai-lab-action .example-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-weight: bold;
-            padding: 8px 16px;
-            white-space: nowrap;
-            text-decoration: none;
-        }
-
-        /* リンクの訪問済み色を抑え、ボタンの文字色を維持 */
-        .pronunciation-practice-1 .ai-lab-action .example-button,
-        .pronunciation-practice-1 .ai-lab-action .example-button:visited {
-            color: var(--text-primary);
-        }
-
-        /* 狭い画面ではタイトルとボタンの折り返しを許可 */
-        @media (max-width: 520px) {
-            .pronunciation-practice-1 .ai-lab-heading {
-                flex-wrap: wrap;
-            }
-        }
-    </style>
 </head>
-
-<body class="pronunciation-practice-1">
+<body>
 
     <!-- =========================================================
          Header & Settings
@@ -83,12 +23,10 @@
                     <span class="icon-emoji">🐤</span> With漢字
                     <span class="custom-tip-box">Display text with kanji.</span>
                 </span>
-
                 <label class="switch">
                     <input type="checkbox" id="toggleScriptMode">
                     <span class="slider"></span>
                 </label>
-
                 <span id="labelHiragana" class="mode-label inactive-mode custom-tip-wrap">
                     <span class="icon-emoji">🐣</span> Only Hiragana
                     <span class="custom-tip-box">Display text in hiragana only.</span>
@@ -101,12 +39,10 @@
                     <span class="icon-emoji">⏹️</span>Autostop
                     <span class="custom-tip-box">Automatically stops recording when you stop speaking.</span>
                 </span>
-
                 <label class="switch">
                     <input type="checkbox" id="toggleRecordMode" checked>
                     <span class="slider"></span>
                 </label>
-
                 <span id="labelManualRecord" class="mode-label active-mode custom-tip-wrap">
                     <span class="icon-emoji">⏹️</span>Manual stop
                     <span class="custom-tip-box">Records continuously until you click the stop button.</span>
@@ -119,12 +55,10 @@
                     <span class="icon-emoji">▶️</span>Autoplay
                     <span class="custom-tip-box">Plays your voice automatically after recording.</span>
                 </span>
-
                 <label class="switch">
                     <input type="checkbox" id="togglePlaybackMode">
                     <span class="slider"></span>
                 </label>
-
                 <span id="labelManualPlay" class="mode-label inactive-mode custom-tip-wrap">
                     <span class="icon-emoji">⏯️</span>Manual play
                     <span class="custom-tip-box">Disables automatic playback.</span>
@@ -140,7 +74,6 @@
         <div style="font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">
             Temporary Area (Pitch Visualization Roadmap)
         </div>
-
         <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary);">
             <li>Step 1: ピッチを表示する場所を作る</li>
             <li>Step 2: 声から音の高さを取り出す</li>
@@ -155,46 +88,10 @@
          Drill 1 Section
          ========================================================= -->
     <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-        <span class="info-panel-title">
-            Drill 1: Mimic and Compare (Listen &amp; Shadow)
-        </span>
-
-        <span class="info-panel-desc">
-            💡 Listen to the model, mimic the voice and speak aloud.
-        </span>
+        <span class="info-panel-title">Drill 1: Mimic and Compare (Listen & Shadow)</span>
+        <span class="info-panel-desc">💡 Listen to the model, mimic the voice and speak aloud.</span>
     </div>
-
     <div id="drill1List"></div>
-
-    <!-- =========================================================
-         AI Pronunciation Lab Section
-         タイトル左・ボタン右・説明文下段
-         ========================================================= -->
-    <div class="info-panel info-panel-task1 ai-lab-panel" style="margin-top: 35px;">
-
-        <div class="ai-lab-heading">
-            <span class="info-panel-title">AI Pronunciation Lab</span>
-
-            <div class="ai-lab-action">
-                <a
-                    href="ai_practice.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="example-button custom-tip-wrap"
-                >
-                    <span>🚀 Launch Lab</span>
-                    <span class="custom-tip-box">
-                        Open AI practice in a new window.
-                    </span>
-                </a>
-            </div>
-        </div>
-
-        <span class="info-panel-desc">
-            💡 Open the AI session in a new window to receive personalized feedback.
-        </span>
-
-    </div>
 
     <!-- =========================================================
          Footer
