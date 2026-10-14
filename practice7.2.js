@@ -306,7 +306,7 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    // Example Box
+    // Example Box (太字範囲：「＿は＿ました」「＿は＿ています」)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
@@ -320,7 +320,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPastListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}に<strong>寝ました。</strong></span>
+            <span><strong>私は、</strong>${w1}に寝<strong>ました。</strong></span>
         </div>
 
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
@@ -328,7 +328,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPerfListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}から<strong>寝ています。</strong></span>
+            <span><strong>私は、</strong>${w1}から寝<strong>ています。</strong></span>
         </div>
     `;
 
@@ -363,41 +363,57 @@ function renderDrill1Section() {
     container.appendChild(listDiv);
 
     practice7Data.forEach((item, index) => {
-        createPractice7GroupCard(listDiv, `${index + 1}.`, item, index, 0.9);
+        createPractice7TableCard(listDiv, `${index + 1}.`, item, index, 0.9);
     });
 }
 
-function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRate) {
+function createPractice7TableCard(container, indexLabel, item, rowIndex, playRate) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "drill-row";
-    cardDiv.style.display = "flex";
-    cardDiv.style.flexDirection = "column";
-    cardDiv.style.gap = "6px";
+
+    // テーブル構造によるレイアウト
+    const table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.borderCollapse = "collapse";
 
     // ----------------------------------------------------
-    // 1段目: キュー ＋ Past行 (間隔を詰めるため flex & gap を調整)
+    // 1行目: Past
     // ----------------------------------------------------
-    const row1 = document.createElement("div");
-    row1.className = "top-row";
-    row1.style.display = "flex";
-    row1.style.alignItems = "center";
-    row1.style.gap = "8px";
+    const tr1 = document.createElement("tr");
 
-    const indexSpan = document.createElement("span");
-    indexSpan.textContent = indexLabel;
-    indexSpan.style.fontWeight = "bold";
+    // 番号列 (両行分を結合)
+    const tdIndex = document.createElement("td");
+    tdIndex.rowSpan = 2;
+    tdIndex.textContent = indexLabel;
+    tdIndex.style.fontWeight = "bold";
+    tdIndex.style.verticalAlign = "middle";
+    tdIndex.style.width = "30px";
+    tdIndex.style.paddingRight = "4px";
 
-    const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    promptSpan.style.flexShrink = "0";
+    // キュー列 (両行分を結合)
+    const tdPrompt = document.createElement("td");
+    tdPrompt.rowSpan = 2;
+    tdPrompt.className = "prompt-label";
+    tdPrompt.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
+    tdPrompt.style.verticalAlign = "middle";
+    tdPrompt.style.width = "220px";
+    tdPrompt.style.paddingRight = "10px";
 
+    // Pastボタン列
+    const tdPastBtn = document.createElement("td");
+    tdPastBtn.style.width = "90px";
+    tdPastBtn.style.paddingBottom = "4px";
     const pastBtn = document.createElement("button");
     pastBtn.className = "example-button";
     pastBtn.style.fontWeight = "bold";
     pastBtn.style.backgroundColor = "#bae6fd";
     pastBtn.innerHTML = "⏪ Past";
     pastBtn.disabled = true;
+    tdPastBtn.appendChild(pastBtn);
+
+    // Past操作ボタン列（きく、とる、ていし、結果）
+    const tdPastControls = document.createElement("td");
+    tdPastControls.style.paddingBottom = "4px";
 
     const listenBtn1 = document.createElement("button");
     listenBtn1.className = "example-button custom-tip-wrap";
@@ -416,19 +432,23 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     resultSpan1.className = "result-text";
     resultSpan1.textContent = "(Not recorded yet)";
     resultSpan1.style.color = "var(--text-secondary)";
+    resultSpan1.style.marginLeft = "8px";
 
     listenBtn1.onclick = () => {
         setPlayingStateMultiple([listenBtn1], "Playing...");
         speakText(item.pastSentence, playRate, () => stopAllPlayback());
     };
 
-    row1.appendChild(indexSpan);
-    row1.appendChild(promptSpan);
-    row1.appendChild(pastBtn);
-    row1.appendChild(listenBtn1);
-    row1.appendChild(recordBtn1);
-    row1.appendChild(stopBtn1);
-    row1.appendChild(resultSpan1);
+    tdPastControls.appendChild(listenBtn1);
+    tdPastControls.appendChild(recordBtn1);
+    tdPastControls.appendChild(stopBtn1);
+    tdPastControls.appendChild(resultSpan1);
+
+    tr1.appendChild(tdIndex);
+    tr1.appendChild(tdPrompt);
+    tr1.appendChild(tdPastBtn);
+    tr1.appendChild(tdPastControls);
+    table.appendChild(tr1);
 
     const correctionBox1 = document.createElement("div");
     correctionBox1.className = "correction-box";
@@ -440,11 +460,6 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     correctionBox1.appendChild(corrListenBtn1);
     correctionBox1.appendChild(corrTextSpan1);
 
-    const pastContainer = document.createElement("div");
-    pastContainer.appendChild(row1);
-    pastContainer.appendChild(correctionBox1);
-    cardDiv.appendChild(pastContainer);
-
     bindRecorderEvents(
         recordBtn1, stopBtn1, resultSpan1, correctionBox1, corrListenBtn1, corrTextSpan1,
         () => item.pastSentenceHira,
@@ -454,27 +469,26 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     );
 
     // ----------------------------------------------------
-    // 2段目: Perfect行（真下・インデント付き）
+    // 2行目: Perfect
     // ----------------------------------------------------
-    const row2 = document.createElement("div");
-    row2.className = "top-row";
-    row2.style.borderTop = "1px dashed var(--border-color)";
-    row2.style.paddingTop = "6px";
-    row2.style.display = "flex";
-    row2.style.alignItems = "center";
-    row2.style.gap = "8px";
+    const tr2 = document.createElement("tr");
+    tr2.style.borderTop = "1px dashed var(--border-color)";
 
-    const emptyIndentSpan = document.createElement("span");
-    // 番号とキュー部分の幅を考慮して左側にスペースを確保
-    emptyIndentSpan.style.minWidth = "220px";
-    emptyIndentSpan.style.flexShrink = "0";
-
+    // Perfectボタン列
+    const tdPerfBtn = document.createElement("td");
+    tdPerfBtn.style.width = "90px";
+    tdPerfBtn.style.paddingTop = "4px";
     const perfBtn = document.createElement("button");
     perfBtn.className = "example-button";
     perfBtn.style.fontWeight = "bold";
     perfBtn.style.backgroundColor = "#4ade80";
     perfBtn.innerHTML = "➡️ Perfect";
     perfBtn.disabled = true;
+    tdPerfBtn.appendChild(perfBtn);
+
+    // Perfect操作ボタン列
+    const tdPerfControls = document.createElement("td");
+    tdPerfControls.style.paddingTop = "4px";
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
@@ -493,18 +507,21 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     resultSpan2.className = "result-text";
     resultSpan2.textContent = "(Not recorded yet)";
     resultSpan2.style.color = "var(--text-secondary)";
+    resultSpan2.style.marginLeft = "8px";
 
     listenBtn2.onclick = () => {
         setPlayingStateMultiple([listenBtn2], "Playing...");
         speakText(item.perfectSentence, playRate, () => stopAllPlayback());
     };
 
-    row2.appendChild(emptyIndentSpan);
-    row2.appendChild(perfBtn);
-    row2.appendChild(listenBtn2);
-    row2.appendChild(recordBtn2);
-    row2.appendChild(stopBtn2);
-    row2.appendChild(resultSpan2);
+    tdPerfControls.appendChild(listenBtn2);
+    tdPerfControls.appendChild(recordBtn2);
+    tdPerfControls.appendChild(stopBtn2);
+    tdPerfControls.appendChild(resultSpan2);
+
+    tr2.appendChild(tdPerfBtn);
+    tr2.appendChild(tdPerfControls);
+    table.appendChild(tr2);
 
     const correctionBox2 = document.createElement("div");
     correctionBox2.className = "correction-box";
@@ -516,11 +533,6 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     correctionBox2.appendChild(corrListenBtn2);
     correctionBox2.appendChild(corrTextSpan2);
 
-    const perfContainer = document.createElement("div");
-    perfContainer.appendChild(row2);
-    perfContainer.appendChild(correctionBox2);
-    cardDiv.appendChild(perfContainer);
-
     bindRecorderEvents(
         recordBtn2, stopBtn2, resultSpan2, correctionBox2, corrListenBtn2, corrTextSpan2,
         () => item.perfectSentenceHira,
@@ -529,6 +541,9 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
         `p7_drill_perf_${rowIndex}`
     );
 
+    cardDiv.appendChild(table);
+    cardDiv.appendChild(correctionBox1);
+    cardDiv.appendChild(correctionBox2);
     container.appendChild(cardDiv);
 }
 
