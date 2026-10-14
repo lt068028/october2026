@@ -306,7 +306,7 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    // Example Box (太字範囲：「＿は＿ました」「＿は＿ています」)
+    // Example Box (指定範囲のみ太字：「＿は」「＿ました」「＿は」「＿ています」)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
@@ -320,7 +320,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPastListen" class="example-button">🔊 きく</button>
-            <span><strong>私は、</strong>${w1}に寝<strong>ました。</strong></span>
+            <span>私<strong>は、</strong>${w1}に寝<strong>ました。</strong></span>
         </div>
 
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
@@ -328,7 +328,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPerfListen" class="example-button">🔊 きく</button>
-            <span><strong>私は、</strong>${w1}から寝<strong>ています。</strong></span>
+            <span>私<strong>は、</strong>${w1}から寝<strong>ています。</strong></span>
         </div>
     `;
 
