@@ -60,6 +60,20 @@ const practice7Data = [
         perfectSentenceHira: "なつやすみから、やせています。"
     },
     {
+        x: "3ねんまえ",
+        xKanji: "3年前",
+        xRomaji: "san-nen mae",
+        xMeaning: "three years ago",
+        y: "けっこんする",
+        yKanji: "結婚する",
+        yRomaji: "kekkon suru",
+        yMeaning: "to get married",
+        pastSentence: "3年前に結婚しました。",
+        pastSentenceHira: "3ねんまえに、けっこんしました。",
+        perfectSentence: "3年前から結婚しています。",
+        perfectSentenceHira: "3ねんまえから、けっこんしています。"
+    },
+    {
         x: "かんじ50こ",
         xKanji: "漢字50個",
         xRomaji: "kanji gojūkko",
@@ -72,20 +86,6 @@ const practice7Data = [
         pastSentenceHira: "かんじを50こ、おぼえました。",
         perfectSentence: "漢字を50個覚えています。",
         perfectSentenceHira: "かんじを50こ、おぼえています。"
-    },
-    {
-        x: "3ねんまえ",
-        xKanji: "3年前",
-        xRomaji: "san-nen mae",
-        xMeaning: "three years ago",
-        y: "けっこんする",
-        yKanji: "結婚する",
-        yRomaji: "kekkon suru",
-        yMeaning: "to get married",
-        pastSentence: "3年前に結婚しました。",
-        pastSentenceHira: "3ねんまえに、けっこんしました。",
-        perfectSentence: "結婚しています。",
-        perfectSentenceHira: "けっこんしています。"
     },
     {
         x: "ているForm",
@@ -400,7 +400,43 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 function renderAll() {
+    if (!document.getElementById("practice7KaraStyle")) {
+        const style = document.createElement("style");
+        style.id = "practice7KaraStyle";
+        style.textContent = `
+            #drill1Container .kara-highlight {
+                color: #B45309;
+                font-weight: bold;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #drill1Container .kara-highlight {
+                    color: #FBBF24;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
     renderDrill1Section();
+
+    const container = document.getElementById("drill1Container");
+    if (!container) return;
+
+    const instruction = container.querySelector(".info-panel-desc");
+    if (instruction) {
+        instruction.innerHTML = `
+            💡 Compare a past action with the state that continues now.
+            Use <strong class="kara-highlight">から</strong>
+            after a time expression to show when that state began.
+        `;
+    }
+
+    container.querySelectorAll(".example-box strong").forEach(element => {
+        if (element.textContent === "から") {
+            element.classList.add("kara-highlight");
+        }
+    });
 }
 
 // ============================================================================
@@ -706,219 +742,357 @@ function bindRecorderEvents(
     playRate,
     rowKey
 ) {
-    let session = null;
-    let lastAudioUrl = null;
+    practice7State.views ??= {};
 
-    function releaseSession(currentSession) {
-        if (!currentSession || currentSession.finished) return;
+    const view = {
+        recordBtn, stopBtn, resultSpan,
+        correctionBox, corrListenBtn, corrTextSpan
+    };
+    practice7State.views[rowKey] = view;
 
-        currentSession.finished = true;
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
-        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
-            try { currentSession.mediaRecorder.stop(); } catch (e) {}
-        }
-
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
-
-        if (session === currentSession) {
-            session = null;
-            recordBtn.disabled = false;
-            stopBtn.disabled = true;
-            stopBtn.classList.remove("stop-btn-active");
-        }
+    // 再描画後も、以前の抽出テキストと録音を復元する。
+    const saved = practice7State.savedResults[rowKey];
+    if (saved) {
+        resultSpan.textContent = saved.text;
+        resultSpan.style.color = saved.color;
+    }
+    if (practice7State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(resultSpan, rowKey, playRate);
     }
 
-    function requestStop(currentSession, abort = false, errorMessage = "") {
-        if (!currentSession || currentSession.finished) return;
+    function currentView() {
+        return practice7State.views[rowKey] || view;
+    }
 
-        if (errorMessage) {
-            currentSession.errorMessage = errorMessage;
-            resultSpan.textContent = errorMessage;
-            resultSpan.style.color = "var(--error-text)";
-        }
-
-        const currentRecognition = currentSession.recognition;
-        if (!currentRecognition) {
-            releaseSession(currentSession);
-            return;
-        }
-
-        if (currentSession.watchdog === null) {
-            currentSession.watchdog = setTimeout(() => {
-                releaseSession(currentSession);
-            }, 2500);
-        }
-
-        try {
-            if (abort) currentRecognition.abort();
-            else currentRecognition.stop();
-        } catch (err) {}
-
-        if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
-            try { currentSession.mediaRecorder.stop(); } catch (err) {}
-        }
+    const running = activeRecognitionSession;
+    if (running && running.rowKey === rowKey) {
+        recordBtn.disabled = true;
+        stopBtn.disabled = !running.manual || running.stopRequested;
+        stopBtn.classList.toggle(
+            "stop-btn-active",
+            running.manual && !running.stopRequested
+        );
+        resultSpan.textContent = "Recording...";
     }
 
     recordBtn.addEventListener("click", async () => {
-        if (recordBtn.disabled) return;
+        if (activeRecognitionSession || recordBtn.disabled) return;
 
-        stopAllPlayback();
+        const Recognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
 
-        if (activeRecognitionSession !== null) {
-            releaseSession(activeRecognitionSession);
-        }
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
+        if (!Recognition) {
             resultSpan.textContent = "Speech recognition is not supported.";
-            resultSpan.style.color = "var(--error-text)";
             return;
         }
+
+        stopAllPlayback();
+        recordBtn.disabled = true;
 
         let stream;
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-            resultSpan.textContent = "Microphone access denied.";
-            resultSpan.style.color = "var(--error-text)";
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+        } catch (error) {
+            currentView().recordBtn.disabled = false;
+            currentView().resultSpan.textContent =
+                "Microphone access denied.";
             return;
         }
 
-        if (lastAudioUrl) {
-            URL.revokeObjectURL(lastAudioUrl);
-            lastAudioUrl = null;
-        }
-
-        const currentSession = {
+        const session = {
+            rowKey,
+            manual: isManualStop,
             finished: false,
             stopRequested: false,
-            errorMessage: "",
-            recognition: null,
-            watchdog: null,
-            mediaRecorder: null,
-            audioChunks: [],
-            stream: stream,
-            accumulatedTranscript: "",
+            speechStarted: false,
             recognitionDone: false,
             recorderDone: false,
-            processed: false
+            transcript: "",
+            message: "",
+            chunks: [],
+            timers: [],
+            audioContext: null,
+            stream,
+            recognition: null,
+            mediaRecorder: null,
+            stop: null
         };
+        activeRecognitionSession = session;
 
-        session = currentSession;
-        activeRecognitionSession = currentSession;
+        function cleanMonitoring() {
+            session.timers.forEach(timer => {
+                clearTimeout(timer);
+                clearInterval(timer);
+            });
+            session.timers = [];
 
-        const tryProcessResult = () => {
-            if (currentSession.errorMessage || currentSession.processed) return;
+            if (session.audioContext) {
+                session.audioContext.close().catch(() => {});
+                session.audioContext = null;
+            }
+        }
 
-            if (currentSession.recognitionDone && currentSession.recorderDone) {
-                currentSession.processed = true;
-                const expectedText = getExpectedTextFn();
+        function finish() {
+            if (session.finished ||
+                !session.recognitionDone ||
+                !session.recorderDone) return;
 
+            session.finished = true;
+            cleanMonitoring();
+            stream.getTracks().forEach(track => track.stop());
+
+            if (activeRecognitionSession === session) {
+                activeRecognitionSession = null;
+            }
+
+            const v = currentView();
+            v.recordBtn.disabled = false;
+            v.stopBtn.disabled = true;
+            v.stopBtn.classList.remove("stop-btn-active");
+
+            if (session.transcript.trim()) {
                 processResult(
-                    currentSession.accumulatedTranscript,
-                    expectedText,
+                    session.transcript,
+                    getExpectedTextFn(),
                     getExpectedKanjiFn,
-                    resultSpan,
-                    correctionBox,
-                    corrListenBtn,
-                    corrTextSpan,
-                    () => lastAudioUrl,
+                    v.resultSpan,
+                    v.correctionBox,
+                    v.corrListenBtn,
+                    v.corrTextSpan,
+                    () => practice7State.audioUrls[rowKey],
                     playRate,
                     rowKey
                 );
+            } else {
+                v.resultSpan.textContent =
+                    session.message || "No speech recognized.";
+                v.resultSpan.style.color = "var(--text-secondary)";
+                v.correctionBox.style.display = "none";
+                if (practice7State.audioUrls[rowKey]) {
+                    appendPersistedPlayButton(
+                        v.resultSpan, rowKey, playRate
+                    );
+                }
             }
-        };
+
+            // 再生ボタンの文字を除き、結果そのものを保存する。
+            const resultCopy = v.resultSpan.cloneNode(true);
+            resultCopy.querySelectorAll("button").forEach(
+                button => button.remove()
+            );
+            practice7State.savedResults[rowKey] = {
+                text: resultCopy.textContent,
+                color: v.resultSpan.style.color
+            };
+        }
+
+        function stop(message = "") {
+            if (session.finished || session.stopRequested) return;
+
+            session.stopRequested = true;
+            session.message = message;
+            cleanMonitoring();
+
+            const v = currentView();
+            v.stopBtn.disabled = true;
+            v.stopBtn.classList.remove("stop-btn-active");
+
+            try {
+                session.recognition?.stop();
+            } catch (error) {
+                session.recognitionDone = true;
+            }
+
+            if (session.mediaRecorder?.state !== "inactive") {
+                try {
+                    session.mediaRecorder.stop();
+                } catch (error) {
+                    session.recorderDone = true;
+                }
+            }
+
+            // 音声認識から終了通知が来ない場合の後処理。
+            session.timers.push(setTimeout(() => {
+                try {
+                    session.recognition?.abort();
+                } catch (error) {}
+                session.recognitionDone = true;
+                stream.getTracks().forEach(track => track.stop());
+                finish();
+            }, 2500));
+
+            finish();
+        }
+        session.stop = stop;
 
         try {
-            const currentRecognition = new SpeechRecognition();
-            currentSession.recognition = currentRecognition;
-            currentRecognition.lang = "ja-JP";
-            currentRecognition.interimResults = false;
-            currentRecognition.continuous = isManualStop;
+            const recognition = new Recognition();
+            session.recognition = recognition;
+            recognition.lang = "ja-JP";
+            recognition.interimResults = true;
+            recognition.continuous = session.manual;
 
-            const mediaRecorder = new MediaRecorder(stream);
-            currentSession.mediaRecorder = mediaRecorder;
-
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data.size > 0) {
-                    currentSession.audioChunks.push(e.data);
-                }
+            recognition.onspeechstart = () => {
+                session.speechStarted = true;
             };
 
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(currentSession.audioChunks, { type: "audio/webm" });
-                lastAudioUrl = URL.createObjectURL(audioBlob);
+            recognition.onresult = event => {
+                if (session.finished) return;
 
-                if (rowKey) {
-                    practice7State.audioUrls[rowKey] = lastAudioUrl;
-                }
-
-                stream.getTracks().forEach(track => track.stop());
-                currentSession.recorderDone = true;
-                tryProcessResult();
-            };
-
-            currentRecognition.onresult = (event) => {
-                if (currentSession.finished || session !== currentSession || currentSession.errorMessage) return;
-                let rawTranscript = "";
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        rawTranscript += event.results[i][0].transcript;
+                for (let i = event.resultIndex;
+                     i < event.results.length; i++) {
+                    const result = event.results[i];
+                    if (result[0].transcript.trim()) {
+                        session.speechStarted = true;
+                    }
+                    if (result.isFinal) {
+                        session.transcript += result[0].transcript;
                     }
                 }
-                currentSession.accumulatedTranscript += rawTranscript;
             };
 
-            currentRecognition.onerror = () => {
-                if (currentSession.finished || session !== currentSession) return;
-                requestStop(currentSession, true, "Recognition error.");
+            recognition.onerror = event => {
+                if (session.finished || session.stopRequested) return;
+
+                // 発話前のブラウザ側の無音終了は、
+                // 独自の15秒タイマーまで再開を許可する。
+                if (event.error === "no-speech" &&
+                    !session.speechStarted) return;
+
+                session.recognitionDone = true;
+                stop("Recognition error.");
             };
 
-            currentRecognition.onend = () => {
-                currentSession.recognitionDone = true;
-                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
-                    try { currentSession.mediaRecorder.stop(); } catch (e) {}
+            recognition.onend = () => {
+                if (session.finished) return;
+
+                if (!session.stopRequested &&
+                    !session.speechStarted) {
+                    try {
+                        recognition.start();
+                        return;
+                    } catch (error) {
+                        session.recognitionDone = true;
+                        stop("Could not restart recognition.");
+                        return;
+                    }
                 }
-                tryProcessResult();
-                releaseSession(currentSession);
+
+                session.recognitionDone = true;
+                if (!session.stopRequested) stop();
+                finish();
             };
 
-            recordBtn.disabled = true;
-            stopBtn.disabled = !isManualStop;
+            const recorder = new MediaRecorder(stream);
+            session.mediaRecorder = recorder;
 
-            if (isManualStop) {
-                stopBtn.classList.add("stop-btn-active");
-            } else {
-                stopBtn.classList.remove("stop-btn-active");
+            recorder.ondataavailable = event => {
+                if (event.data.size) session.chunks.push(event.data);
+            };
+
+            recorder.onstop = () => {
+                if (session.chunks.length) {
+                    const blob = new Blob(session.chunks, {
+                        type: recorder.mimeType || "audio/webm"
+                    });
+
+                    const previousUrl =
+                        practice7State.audioUrls[rowKey];
+                    if (previousUrl) {
+                        URL.revokeObjectURL(previousUrl);
+                    }
+                    practice7State.audioUrls[rowKey] =
+                        URL.createObjectURL(blob);
+                }
+
+                session.recorderDone = true;
+                finish();
+            };
+
+            recorder.onerror = () => {
+                stop("Recording error.");
+            };
+
+            const v = currentView();
+            v.resultSpan.textContent = "Recording...";
+            v.resultSpan.style.color = "var(--accent-color)";
+            v.correctionBox.style.display = "none";
+            v.stopBtn.disabled = !session.manual;
+            v.stopBtn.classList.toggle(
+                "stop-btn-active", session.manual
+            );
+
+            recorder.start();
+            recognition.start();
+
+            // マイク音量でも発話開始を検出する。
+            // 音声認識の結果が出る前に話し始めた場合に対応。
+            try {
+                const AudioContextClass =
+                    window.AudioContext || window.webkitAudioContext;
+                const context = new AudioContextClass();
+                session.audioContext = context;
+
+                const source =
+                    context.createMediaStreamSource(stream);
+                const analyser = context.createAnalyser();
+                analyser.fftSize = 1024;
+                source.connect(analyser);
+
+                const samples =
+                    new Float32Array(analyser.fftSize);
+                let soundFrames = 0;
+
+                context.resume().catch(() => {});
+
+                session.timers.push(setInterval(() => {
+                    if (session.stopRequested ||
+                        session.speechStarted) return;
+
+                    analyser.getFloatTimeDomainData(samples);
+                    let sum = 0;
+                    for (const sample of samples) {
+                        sum += sample * sample;
+                    }
+                    const volume = Math.sqrt(sum / samples.length);
+                    soundFrames = volume > 0.015
+                        ? soundFrames + 1 : 0;
+
+                    if (soundFrames >= 3) {
+                        session.speechStarted = true;
+                    }
+                }, 100));
+            } catch (error) {
+                // 利用できない場合は音声認識の発話通知を使う。
             }
 
-            resultSpan.textContent = "Recording...";
-            resultSpan.style.color = "var(--accent-color)";
-            correctionBox.style.display = "none";
+            session.timers.push(setTimeout(() => {
+                if (!session.speechStarted) {
+                    stop("No speech detected within 15 seconds.");
+                }
+            }, 15000));
 
-            mediaRecorder.start();
-            currentRecognition.start();
-        } catch (err) {
-            requestStop(currentSession, true, "Could not start recording.");
+            session.timers.push(setTimeout(() => {
+                stop("Recording stopped after 20 seconds.");
+            }, 20000));
+        } catch (error) {
+            session.recognitionDone = true;
+            if (!session.mediaRecorder ||
+                session.mediaRecorder.state === "inactive") {
+                session.recorderDone = true;
+            }
+            stop("Could not start recording.");
         }
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished || session.stopRequested) return;
-        stopAllPlayback();
-        session.stopRequested = true;
-        stopBtn.disabled = true;
-        requestStop(session, false);
+        const session = activeRecognitionSession;
+        if (session?.rowKey === rowKey) {
+            stopAllPlayback();
+            session.stop();
+        }
     });
 }
 
