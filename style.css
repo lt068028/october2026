@@ -305,3 +305,206 @@ input:checked + .slider:before { transform: translateX(16px); }
 .guide-box-popup {
     margin-top: 6px; background-color: var(--tooltip-bg); color: var(--tooltip-text); padding: 8px 12px; border-radius: 4px; font-size: 12px; line-height: 1.4; position: absolute; z-index: 10; left: 0; white-space: nowrap; display: none;
 }
+
+/* ==========================================
+   Shared Settings UI
+   ========================================== */
+
+.compact-settings {
+    max-width: 100%;
+    margin-left: auto;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.compact-settings .control-item {
+    max-width: 100%;
+    justify-content: flex-end;
+}
+
+/* ==========================================
+   Segmented Controls
+   ========================================== */
+
+.segmented-control {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: stretch;
+    gap: 4px;
+    padding: 4px;
+    max-width: 100%;
+    box-sizing: border-box;
+    background-color: var(--button-disabled-bg);
+    border: none;
+    border-radius: 14px;
+}
+
+.segmented-control .segmented-option {
+    position: relative;
+    display: inline-block;
+    margin: 0;
+    padding: 10px 12px;
+    min-height: 40px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.segmented-control .segmented-option.is-selected {
+    background-color: #1976d2;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.segmented-option:not(.is-selected) .icon-emoji {
+    filter: grayscale(100%);
+    opacity: 0.55;
+}
+
+.segmented-option.is-selected .icon-emoji {
+    filter: none;
+    opacity: 1;
+}
+
+.segmented-control .segmented-option:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* ==========================================
+   ON / OFF Switches
+   Applies to settings-onoff controls
+   ========================================== */
+
+.settings-onoff .switch {
+    position: relative;
+    display: inline-block;
+    width: 76px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.settings-onoff .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.settings-onoff .slider {
+    position: absolute;
+    inset: 0;
+    background-color: #64748b;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-onoff .slider::before {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    transform: translateX(0);
+    transition: transform 0.2s;
+}
+
+/* OFF: knob left, text in the right-hand free area */
+
+.settings-onoff .slider::after {
+    content: "OFF";
+    position: absolute;
+    top: 0;
+    left: 28px;
+    right: auto;
+    width: 48px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 1;
+    pointer-events: none;
+}
+
+/* ON: knob right, text in the left-hand free area */
+
+.settings-onoff input:checked + .slider {
+    background-color: #1976d2;
+}
+
+.settings-onoff input:checked + .slider::before {
+    transform: translateX(44px);
+}
+
+.settings-onoff input:checked + .slider::after {
+    content: "ON";
+    left: 0;
+    right: auto;
+}
+
+.settings-onoff input:focus-visible + .slider {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.settings-onoff .active-mode {
+    color: var(--text-primary);
+    font-weight: bold;
+}
+
+.settings-onoff .inactive-mode {
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
+/* ==========================================
+   Inline Vocabulary
+   ========================================== */
+
+.vocab-inline {
+    color: var(--text-secondary);
+    font-size: 0.85em;
+}
+
+/* ==========================================
+   Settings Tooltips
+   ========================================== */
+
+.compact-settings .custom-tip-box {
+    left: auto;
+    right: 0;
+    transform: none;
+    width: max-content;
+    max-width: min(260px, 70vw);
+    white-space: normal;
+}
+
+.compact-settings .custom-tip-wrap:focus-visible .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .segmented-control .segmented-option,
+    .settings-onoff .slider,
+    .settings-onoff .slider::before {
+        transition: none;
+    }
+}
