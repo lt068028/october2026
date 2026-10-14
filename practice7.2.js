@@ -306,7 +306,7 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    // Example Box (指定範囲のみ太字：「＿は」「＿ました」「＿は」「＿ています」)
+    // Example Box (太字範囲：「＿は」「＿ました」「＿は」「＿ています」)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
@@ -377,7 +377,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     table.style.borderCollapse = "collapse";
 
     // ----------------------------------------------------
-    // 1行目: Past
+    // 1行目: Past (順序：きく ➡️ Past見出し ➡️ 録音ボタン等)
     // ----------------------------------------------------
     const tr1 = document.createElement("tr");
 
@@ -399,25 +399,26 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     tdPrompt.style.width = "220px";
     tdPrompt.style.paddingRight = "10px";
 
-    // Pastボタン列
-    const tdPastBtn = document.createElement("td");
-    tdPastBtn.style.width = "90px";
-    tdPastBtn.style.paddingBottom = "4px";
-    const pastBtn = document.createElement("button");
-    pastBtn.className = "example-button";
-    pastBtn.style.fontWeight = "bold";
-    pastBtn.style.backgroundColor = "#bae6fd";
-    pastBtn.innerHTML = "⏪ Past";
-    pastBtn.disabled = true;
-    tdPastBtn.appendChild(pastBtn);
-
-    // Past操作ボタン列（きく、とる、ていし、結果）
+    // Past行の操作ボタン列（「きく」を最初に配置）
     const tdPastControls = document.createElement("td");
     tdPastControls.style.paddingBottom = "4px";
+    tdPastControls.style.width = "auto";
 
     const listenBtn1 = document.createElement("button");
     listenBtn1.className = "example-button custom-tip-wrap";
     listenBtn1.innerHTML = '🔊きく<span class="custom-tip-box">Listen to past tense.</span>';
+
+    // Past見出し（ボタンではなくテキスト・バッジ風）
+    const pastLabel = document.createElement("span");
+    pastLabel.style.fontWeight = "bold";
+    pastLabel.style.display = "inline-block";
+    pastLabel.style.padding = "4px 8px";
+    pastLabel.style.margin = "0 8px";
+    pastLabel.style.borderRadius = "4px";
+    pastLabel.style.backgroundColor = "#bae6fd";
+    pastLabel.style.color = "#0369a1";
+    pastLabel.style.fontSize = "13px";
+    pastLabel.innerHTML = "⏪ Past";
 
     const recordBtn1 = document.createElement("button");
     recordBtn1.className = "example-button custom-tip-wrap";
@@ -440,13 +441,13 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     };
 
     tdPastControls.appendChild(listenBtn1);
+    tdPastControls.appendChild(pastLabel);
     tdPastControls.appendChild(recordBtn1);
     tdPastControls.appendChild(stopBtn1);
     tdPastControls.appendChild(resultSpan1);
 
     tr1.appendChild(tdIndex);
     tr1.appendChild(tdPrompt);
-    tr1.appendChild(tdPastBtn);
     tr1.appendChild(tdPastControls);
     table.appendChild(tr1);
 
@@ -469,30 +470,29 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     );
 
     // ----------------------------------------------------
-    // 2行目: Perfect
+    // 2行目: Perfect (順序：きく ➡️ Perfect見出し ➡️ 録音ボタン等)
     // ----------------------------------------------------
     const tr2 = document.createElement("tr");
     tr2.style.borderTop = "1px dashed var(--border-color)";
 
-    // Perfectボタン列
-    const tdPerfBtn = document.createElement("td");
-    tdPerfBtn.style.width = "90px";
-    tdPerfBtn.style.paddingTop = "4px";
-    const perfBtn = document.createElement("button");
-    perfBtn.className = "example-button";
-    perfBtn.style.fontWeight = "bold";
-    perfBtn.style.backgroundColor = "#4ade80";
-    perfBtn.innerHTML = "➡️ Perfect";
-    perfBtn.disabled = true;
-    tdPerfBtn.appendChild(perfBtn);
-
-    // Perfect操作ボタン列
     const tdPerfControls = document.createElement("td");
     tdPerfControls.style.paddingTop = "4px";
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
     listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to present perfect.</span>';
+
+    // Perfect見出し（ボタンではなくテキスト・バッジ風）
+    const perfLabel = document.createElement("span");
+    perfLabel.style.fontWeight = "bold";
+    perfLabel.style.display = "inline-block";
+    perfLabel.style.padding = "4px 8px";
+    perfLabel.style.margin = "0 8px";
+    perfLabel.style.borderRadius = "4px";
+    perfLabel.style.backgroundColor = "#dcfce7";
+    perfLabel.style.color = "#15803d";
+    perfLabel.style.fontSize = "13px";
+    perfLabel.innerHTML = "➡️ Perfect";
 
     const recordBtn2 = document.createElement("button");
     recordBtn2.className = "example-button custom-tip-wrap";
@@ -515,11 +515,11 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     };
 
     tdPerfControls.appendChild(listenBtn2);
+    tdPerfControls.appendChild(perfLabel);
     tdPerfControls.appendChild(recordBtn2);
     tdPerfControls.appendChild(stopBtn2);
     tdPerfControls.appendChild(resultSpan2);
 
-    tr2.appendChild(tdPerfBtn);
     tr2.appendChild(tdPerfControls);
     table.appendChild(tr2);
 
