@@ -20,7 +20,7 @@ const practice7Data = [
         pastSentenceHira: "わたしは、よる10じに、ねました。",
         pastKanji: "夜10時に寝",
         perfectSentence: "私は、夜10時から寝ています。",
-        perfectSentenceHira: "わたしは、よる10じから、ねていま​​す。",
+        perfectSentenceHira: "わたしは、よる10じから、ねています。",
         perfectKanji: "夜10時から寝てい"
     }
 ];
@@ -353,7 +353,7 @@ function renderDrill1Section() {
         speakText("私は、朝5時から起きています。", 0.9, () => stopAllPlayback());
     };
 
-    // Info Panel
+    // Info Panel with updated instruction
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
     infoPanel.style.marginTop = "25px";
@@ -361,7 +361,7 @@ function renderDrill1Section() {
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 1: ているform② present perfect & Past</span>
         <span class="info-panel-desc">
-            💡 Practice both Past Tense and Present Perfect using the prompt cues.
+            💡 Compare past actions with ongoing states using 「〜ています」. Switch between modes to practice both forms.
         </span>
     `;
 
@@ -393,7 +393,6 @@ function createPractice7Row(container, indexLabel, item, rowIndex, playRate) {
     promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
     promptSpan.style.minWidth = "240px";
 
-    // Toggle button for Past / Present Perfect mode in this row
     let currentMode = "past"; // "past" or "perfect"
 
     const modeToggleBtn = document.createElement("button");
