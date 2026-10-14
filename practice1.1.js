@@ -339,9 +339,22 @@ function setupFooterGuide() {
 // ============================================================================
 
 function formatWord(word, kanji, romaji, meaning) {
-    const displayWord = (scriptMode === "kanji" && kanji) ? kanji : word;
+    const displayWord =
+        (scriptMode === "kanji" && kanji) ? kanji : word;
+
     const hintStr = `${romaji}, ${meaning}`;
 
+    // OFF: Japanese word only
+    if (hintMode === "off") {
+        return `<span class="target-word">${displayWord}</span>`;
+    }
+
+    // Vocab Display: Always show vocabulary hints
+    if (hintMode === "paren") {
+        return `<span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span>`;
+    }
+
+    // Vocab Hover: Show vocabulary hints on hover
     return `
         <span class="tooltip-wrap">
             <span class="target-word">${displayWord}</span>
@@ -350,112 +363,118 @@ function formatWord(word, kanji, romaji, meaning) {
     `;
 }
 
-function formatCustomWord(word, kanji, meaning) {
-    const displayWord = (scriptMode === "kanji" && kanji) ? kanji : word;
-
-    const matchingKey = Object.keys(customDict).find(
-        key =>
-            customDict[key].meaning.toLowerCase() ===
-            String(meaning || "").toLowerCase()
-    );
-
-    const romaji = matchingKey
-        ? customDict[matchingKey].romaji
-        : meaning;
-
-    return formatWord(word, kanji, romaji, meaning);
-}
-
+function
 // ============================================================================
 // Settings Panel
 // ============================================================================
 
 function initSettingsPanel() {
-    const toggleScriptMode = document.getElementById("toggleScriptMode");
-    const labelHiraganaOnly = document.getElementById("labelHiraganaOnly");
-    const labelWithKanji = document.getElementById("labelWithKanji");
+    const scriptControl =
+        document.getElementById("scriptModeControl");
 
-    if (toggleScriptMode) {
-        // 初期状態：Hiragana Only（青・つまみ右）
-        toggleScriptMode.checked = (scriptMode === "hiragana");
+    const hintControl =
+        document.getElementById("hintModeControl");
 
-        updateToggleLabelStyle(
-            labelHiraganaOnly,
-            scriptMode === "hiragana"
-        );
+    function updateSegmentedSelection(control, selectedValue) {
+        if (!control) return;
 
-        updateToggleLabelStyle(
-            labelWithKanji,
-            scriptMode === "kanji"
-        );
+        control.querySelectorAll("button[data-value]").forEach(button => {
+            const selected = button.dataset.value === selectedValue;
 
-        toggleScriptMode.addEventListener("change", (e) => {
-            // ON = Hiragana Only、OFF = With漢字
-            scriptMode = e.target.checked ? "hiragana" : "kanji";
-
-            updateToggleLabelStyle(
-                labelHiraganaOnly,
-                scriptMode === "hiragana"
-            );
-
-            updateToggleLabelStyle(
-                labelWithKanji,
-                scriptMode === "kanji"
-            );
-
-            renderAll();
+            button.classList.toggle("is-selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
         });
     }
-    const toggleHintMode = document.getElementById("toggleHintMode");
-    const labelHoverHint = document.getElementById("labelHoverHint");
-    const labelParenHint = document.getElementById("labelParenHint");
 
-    if (toggleHintMode) {
-        toggleHintMode.checked = (hintMode === "paren");
-        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+    // ==========================================
+    // Hiragana Only / With漢字
+    // ==========================================
 
-        toggleHintMode.addEventListener("change", (e) => {
-            hintMode = e.target.checked ? "paren" : "hover";
+    if (scriptControl) {
+        updateSegmentedSelection(scriptControl, scriptMode);
 
-            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+        scriptControl.addEventListener("click", event => {
+            const button = event.target.closest("button[data-value]");
 
+            if (!button || !scriptControl.contains(button)) return;
+
+            const nextMode = button.dataset.value;
+
+            if (!["hiragana", "kanji"].includes(nextMode)) return;
+            if (nextMode === scriptMode) return;
+
+            scriptMode = nextMode;
+
+            updateSegmentedSelection(scriptControl, scriptMode);
             renderAll();
         });
     }
 
-    const toggleRecordMode = document.getElementById("toggleRecordMode");
-    const labelAutoRecord = document.getElementById("labelAutoRecord");
-    const labelManualRecord = document.getElementById("labelManualRecord");
+    // ==========================================
+    // OFF / Vocab Hover / Vocab Display
+    // ==========================================
+
+    if (hintControl) {
+        updateSegmentedSelection(hintControl, hintMode);
+
+        hintControl.addEventListener("click", event => {
+            const button = event.target.closest("button[data-value]");
+
+            if (!button || !hintControl.contains(button)) return;
+
+            const nextMode = button.dataset.value;
+
+            if (!["off", "hover", "paren"].includes(nextMode)) return;
+            if (nextMode === hintMode) return;
+
+            hintMode = nextMode;
+
+            updateSegmentedSelection(hintControl, hintMode);
+            renderAll();
+        });
+    }
+
+    // ==========================================
+    // Autostop: checked = ON
+    // ==========================================
+
+    const toggleRecordMode =
+        document.getElementById("toggleRecordMode");
+
+    const labelAutoRecord =
+        document.getElementById("labelAutoRecord");
 
     if (toggleRecordMode) {
-        toggleRecordMode.checked = isManualStop;
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
+        toggleRecordMode.checked = !isManualStop;
 
-        toggleRecordMode.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+
+        toggleRecordMode.addEventListener("change", event => {
+            isManualStop = !event.target.checked;
 
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
     }
 
-    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
-    const labelAutoPlay = document.getElementById("labelAutoPlay");
-    const labelManualPlay = document.getElementById("labelManualPlay");
+    // ==========================================
+    // Autoplay: checked = ON
+    // ==========================================
+
+    const togglePlaybackMode =
+        document.getElementById("togglePlaybackMode");
+
+    const labelAutoPlay =
+        document.getElementById("labelAutoPlay");
 
     if (togglePlaybackMode) {
-        togglePlaybackMode.checked = !isAutoPlay;
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+        togglePlaybackMode.checked = isAutoPlay;
 
-        togglePlaybackMode.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+
+        togglePlaybackMode.addEventListener("change", event => {
+            isAutoPlay = event.target.checked;
 
             updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
         });
     }
 }
