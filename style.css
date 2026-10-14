@@ -508,3 +508,53 @@ input:checked + .slider:before { transform: translateX(16px); }
         transition: none;
     }
 }
+/* ==========================================
+   Shared Settings — Two-Row Layout
+   ========================================== */
+
+.compact-settings .settings-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 100%;
+}
+
+.compact-settings .settings-row > .control-item {
+    flex: 0 0 auto;
+}
+
+.compact-settings .settings-auto-row {
+    gap: 18px;
+}
+
+.compact-settings .settings-segments-row .segmented-control {
+    flex-wrap: nowrap;
+}
+
+/* Keep each segment slim */
+
+.compact-settings .settings-segments-row .segmented-option {
+    min-height: 26px;
+    padding: 4px 9px;
+    border-radius: 7px;
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.compact-settings .settings-segments-row .segmented-control {
+    gap: 2px;
+    padding: 3px;
+    border-radius: 10px;
+}
+
+/* Narrow screens */
+
+@media (max-width: 600px) {
+    .compact-settings .settings-segments-row {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+}
