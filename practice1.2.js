@@ -400,16 +400,16 @@ function renderDrill1Section() {
     const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
 
     const exQ = scriptMode === "kanji"
-        ? "お父さんは、看護師ですか？"
-        : "おとうさんは、かんごしですか？";
+        ? "<strong>お父さんは、</strong>看護師<strong>ですか？</strong>"
+        : "<strong>おとうさんは、</strong>かんごし<strong>ですか？</strong>";
 
     const exYes = scriptMode === "kanji"
-        ? "はい、看護師です。"
-        : "はい、かんごしです。";
+        ? "<strong>はい、</strong>看護師<strong>です。</strong>"
+        : "<strong>はい、</strong>かんごし<strong>です。</strong>";
 
     const exNo = scriptMode === "kanji"
-        ? "いいえ、看護師じゃないです。"
-        : "いいえ、かんごしじゃないです。";
+        ? "<strong>いいえ、</strong>看護師<strong>じゃないです。</strong>"
+        : "<strong>いいえ、</strong>かんごし<strong>じゃないです。</strong>";
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
@@ -503,12 +503,12 @@ function renderDrill2Section() {
     const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
 
     const exQ2 = scriptMode === "kanji"
-        ? "あなたの専攻は、何ですか。"
-        : "あなたのせんこうは、なんですか。";
+        ? "<strong>あなたの</strong>専攻<strong>は、</strong>何<strong>ですか。</strong>"
+        : "<strong>あなたの</strong>せんこう<strong>は、</strong>なん<strong>ですか。</strong>";
 
     const exA2 = scriptMode === "kanji"
-        ? "わたしの専攻は、政治です。"
-        : "わたしのせんこうは、せいじです。";
+        ? "<strong>わたしの</strong>専攻<strong>は、</strong>政治<strong>です。</strong>"
+        : "<strong>わたしの</strong>せんこう<strong>は、</strong>せいじ<strong>です。</strong>";
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
