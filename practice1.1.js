@@ -1,6 +1,6 @@
 // ============================================================================
 // Practice 1.1: XはYです
-// Hiragana Only / With Kanji 分離対応版 (最終修正済み)
+// Hiragana Only / With Kanji 分離対応版 (修正済み)
 // ============================================================================
 
 const taskData = [
@@ -1585,13 +1585,8 @@ function bindRecorderEvents(
             };
 
             recordBtn.disabled = true;
-            stopBtn.disabled = !isManualStop;
-
-            if (isManualStop) {
-                stopBtn.classList.add("stop-btn-active");
-            } else {
-                stopBtn.classList.remove("stop-btn-active");
-            }
+            stopBtn.disabled = false; // 修正：自動停止モード時でも常に停止ボタンを有効化して強制停止できるようにする
+            stopBtn.classList.add("stop-btn-active");
 
             correctionBox.style.display = "none";
             showAudioOnlyStatus(currentSession, true);
@@ -1814,13 +1809,8 @@ function bindRecorderEvents(
             };
 
             recordBtn.disabled = true;
-            stopBtn.disabled = !isManualStop;
-
-            if (isManualStop) {
-                stopBtn.classList.add("stop-btn-active");
-            } else {
-                stopBtn.classList.remove("stop-btn-active");
-            }
+            stopBtn.disabled = false; // 修正：常時有効化していつでも手動停止できるようにする
+            stopBtn.classList.add("stop-btn-active");
 
             resultSpan.textContent = "Recording...";
             resultSpan.style.color = "var(--accent-color)";
