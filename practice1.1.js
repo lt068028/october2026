@@ -342,15 +342,6 @@ function formatWord(word, kanji, romaji, meaning) {
     const displayWord = (scriptMode === "kanji" && kanji) ? kanji : word;
     const hintStr = `${romaji}, ${meaning}`;
 
-    if (hintMode === "paren") {
-        return `
-            <span class="tooltip-wrap">
-                <span class="target-word">${displayWord}</span>
-                <span class="tooltip-tip">${hintStr}</span>
-            </span>
-        `;
-    }
-
     return `
         <span class="tooltip-wrap">
             <span class="target-word">${displayWord}</span>
@@ -963,113 +954,20 @@ function renderTask2() {
 }
 
 // ============================================================================
-        });
+// Drill 3: Free Input Practice (Stub)
+// ============================================================================
 
-        const recordBtn = document.createElement("button");
-        recordBtn.className = "example-button custom-tip-wrap";
-        recordBtn.innerHTML =
-            '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
-        recordBtn.disabled = true;
+function renderTask3() {
+    const container = document.getElementById("task3Container");
+    if (!container) return;
 
-        const stopBtn = document.createElement("button");
-        stopBtn.className = "example-button custom-tip-wrap";
-        stopBtn.innerHTML =
-            '⏹️<span class="custom-tip-box">Stop recording.</span>';
-        stopBtn.disabled = true;
-
-        const resultSpan = document.createElement("span");
-        resultSpan.className = "result-text";
-        setInitialResultDisplay(resultSpan, rowKey);
-
-        topRow.appendChild(indexSpan);
-        topRow.appendChild(inputX);
-        topRow.appendChild(labelHa);
-        topRow.appendChild(inputY);
-        topRow.appendChild(listenBtn);
-        topRow.appendChild(recordBtn);
-        topRow.appendChild(stopBtn);
-        topRow.appendChild(resultSpan);
-
-        if (practice1State.audioUrls[rowKey]) {
-            appendPersistedPlayButton(resultSpan, rowKey, 0.9);
-        }
-
-        const correctionBox = document.createElement("div");
-        correctionBox.className = "correction-box";
-        correctionBox.style.display = "none";
-
-        const corrListenBtn = document.createElement("button");
-        corrListenBtn.className = "example-button";
-        corrListenBtn.innerHTML = "🔊 きく";
-        corrListenBtn.style.marginRight = "8px";
-
-        const corrTextSpan = document.createElement("span");
-
-        correctionBox.appendChild(corrListenBtn);
-        correctionBox.appendChild(corrTextSpan);
-
-        rowDiv.appendChild(topRow);
-        rowDiv.appendChild(correctionBox);
-
-        const updateState = () => {
-            const valX = inputX.value.trim();
-            const valY = inputY.value.trim();
-
-            if (!practice1State.customSelects[rowKey]) {
-                practice1State.customSelects[rowKey] = {};
-            }
-
-            practice1State.customSelects[rowKey].x = inputX.value;
-            practice1State.customSelects[rowKey].y = inputY.value;
-
-            const hasBothInputs = Boolean(valX && valY);
-
-            recordBtn.disabled = !hasBothInputs;
-            listenBtn.disabled = !hasBothInputs;
-
-            if (!hasBothInputs) {
-                stopBtn.disabled = true;
-            }
-        };
-
-        inputX.addEventListener("input", updateState);
-        inputY.addEventListener("input", updateState);
-
-        updateState();
-
-        bindRecorderEvents(
-            recordBtn,
-            stopBtn,
-            resultSpan,
-            correctionBox,
-            corrListenBtn,
-            corrTextSpan,
-            () => {
-                const x = inputX.value.trim();
-                const y = inputY.value.trim();
-
-                return isNegative
-                    ? `${x}は${y}じゃないです`
-                    : `${x}は${y}です`;
-            },
-            () => {
-                const x = inputX.value.trim();
-                const y = inputY.value.trim();
-
-                return isNegative
-                    ? `${x}は、${y}じゃ、ないです。`
-                    : `${x}は、${y}です。`;
-            },
-            0.9,
-            rowKey,
-            true,
-            () => inputX.value.trim(),
-            () => inputY.value.trim(),
-            false
-        );
-
-        listDiv.appendChild(rowDiv);
-    }
+    container.innerHTML = `
+        <div class="info-panel" style="margin-top: 30px;">
+            <span class="info-panel-title">Drill 3: Free Input Practice</span>
+            <span class="info-panel-desc">💡 Type your own X and Y.</span>
+        </div>
+        <div id="task3List"></div>
+    `;
 }
 
 // ============================================================================
@@ -1517,7 +1415,7 @@ function bindRecorderEvents(
         showAudioOnlyStatus(currentSession, false);
 
         if (isAutoPlay && audioUrl) {
-            const kanjiTextForSpeech = getExpectedKanjiFn();
+            const kanjiTextForSpeech = typeof getExpectedKanjiFn === "function" ? getExpectedKanjiFn() : getExpectedKanjiFn;
             speakText(kanjiTextForSpeech, playRate, () => {
                 stopAllPlayback();
 
@@ -1589,7 +1487,7 @@ function bindRecorderEvents(
             };
 
             recordBtn.disabled = true;
-            stopBtn.disabled = false; // 修正：自動停止モード時でも常に停止ボタンを有効化して強制停止できるようにする
+            stopBtn.disabled = false;
             stopBtn.classList.add("stop-btn-active");
 
             correctionBox.style.display = "none";
@@ -1660,8 +1558,6 @@ function bindRecorderEvents(
                 currentSession.watchdog = null;
             }
 
-            // 録音データが確定してから結果処理を行う。
-            // エラー時は認識結果を判定せず、リソースだけ解放する。
             if (currentSession.errorMessage) {
                 releaseSession(currentSession);
                 return;
@@ -1669,7 +1565,7 @@ function bindRecorderEvents(
 
             processResult(
                 currentSession.accumulatedTranscript,
-                getExpectedTextFn(),
+                typeof getExpectedTextFn === "function" ? getExpectedTextFn() : getExpectedTextFn,
                 getExpectedKanjiFn,
                 resultSpan,
                 correctionBox,
@@ -1683,7 +1579,6 @@ function bindRecorderEvents(
                 getYFn()
             );
 
-            // 結果表示と録音URLの登録が済んだ後にセッションを解放する。
             releaseSession(currentSession);
         };
 
@@ -1696,7 +1591,6 @@ function bindRecorderEvents(
                 try {
                     recorder.stop();
                 } catch (err) {
-                    // stop() 失敗時も、既に inactive なら終了済みとして扱う。
                     if (recorder.state === "inactive") {
                         currentSession.recorderDone = true;
                         tryFinalize();
@@ -1737,8 +1631,6 @@ function bindRecorderEvents(
             };
 
             mediaRecorder.onstop = () => {
-                // onstop は最後の dataavailable の後に呼ばれる。
-                // ここで Blob と URL を確定してから recorderDone にする。
                 const chunks = currentSession.audioChunks || [];
                 if (chunks.length > 0) {
                     const mimeType = mediaRecorder.mimeType || "audio/webm";
@@ -1777,7 +1669,6 @@ function bindRecorderEvents(
             currentRecognition.onerror = event => {
                 if (currentSession.finished || session !== currentSession) return;
 
-                // ユーザーが停止した際の aborted は通常の停止として扱う。
                 if (event && event.error === "aborted" && currentSession.stopRequested) {
                     return;
                 }
@@ -1787,9 +1678,6 @@ function bindRecorderEvents(
             currentRecognition.onend = () => {
                 if (currentSession.finished || currentSession.recognitionDone) return;
 
-                // 終了順序の基準は音声認識の終了。
-                // 認識が終了した時点で録音を停止し、MediaRecorder の onstop
-                // で保存が確定するまで結果処理・セッション解放を行わない。
                 currentSession.recognitionDone = true;
                 stopRecorderAfterRecognition();
             };
@@ -1809,7 +1697,6 @@ function bindRecorderEvents(
             resultSpan.textContent = currentSession.errorMessage;
             resultSpan.style.color = "var(--error-text)";
 
-            // start() の例外で onend が発火しない場合に備え、同じ終了経路へ寄せる。
             if (!currentSession.recognition) {
                 currentSession.recognitionDone = true;
                 stopRecorderAfterRecognition();
@@ -1849,8 +1736,6 @@ function bindRecorderEvents(
             return;
         }
 
-        // 通常は recognition.onend が録音を停止する。
-        // ブラウザ側で onend が返らない場合のみ、タイムアウトで終了を補完する。
         if (currentSession.watchdog === null) {
             currentSession.watchdog = setTimeout(() => {
                 if (currentSession.finished) return;
@@ -1883,12 +1768,7 @@ function bindRecorderEvents(
         try {
             if (abort) recognition.abort();
             else recognition.stop();
-        } catch (err) {
-            // stop/abort が例外になっても、watchdog が終了を補完する。
-        }
-
-        // ここでは MediaRecorder を直接停止しない。
-        // 原則として recognition.onend が録音停止を開始する。
+        } catch (err) {}
     }
 
     recordBtn.addEventListener("click", async () => {
@@ -2021,7 +1901,7 @@ function processResult(
         ? normalizedTranscript
         : transcript;
 
-    const kanjiTextForSpeech = getExpectedKanjiFn();
+    const kanjiTextForSpeech = typeof getExpectedKanjiFn === "function" ? getExpectedKanjiFn() : getExpectedKanjiFn;
 
     if (isCorrect) {
         resultSpan.textContent = `${displayedTranscript} ✅`;
