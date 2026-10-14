@@ -343,7 +343,12 @@ function formatWord(word, kanji, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
 
     if (hintMode === "paren") {
-        return `<span class="target-word">${displayWord}</span> (${hintStr})`;
+        return `
+            <span class="tooltip-wrap">
+                <span class="target-word">${displayWord}</span>
+                <span class="tooltip-tip">${hintStr}</span>
+            </span>
+        `;
     }
 
     return `
@@ -374,157 +379,105 @@ function formatCustomWord(word, kanji, meaning) {
 // Settings Panel
 // ============================================================================
 
-
 function initSettingsPanel() {
-    // =========================================================
-    // Script Mode: Hiragana Only / With漢字
-    // チェックあり = Hiragana Only
-    // =========================================================
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelHiraganaOnly = document.getElementById("labelHiraganaOnly");
     const labelWithKanji = document.getElementById("labelWithKanji");
 
     if (toggleScriptMode) {
-        // 初期状態：Hiragana Only
-        toggleScriptMode.checked = (scriptMode === "hiragana");
-
-        updateToggleLabelStyle(
-            labelHiraganaOnly,
-            toggleScriptMode.checked
-        );
-        updateToggleLabelStyle(
-            labelWithKanji,
-            !toggleScriptMode.checked
-        );
+        toggleScriptMode.checked = (scriptMode === "kanji");
+        updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
+        updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
 
         toggleScriptMode.addEventListener("change", (e) => {
-            // チェックあり = Hiragana Only
-            scriptMode = e.target.checked ? "hiragana" : "kanji";
+            scriptMode = e.target.checked ? "kanji" : "hiragana";
 
             updateToggleLabelStyle(
                 labelHiraganaOnly,
-                e.target.checked
+                scriptMode === "hiragana"
             );
+
             updateToggleLabelStyle(
                 labelWithKanji,
-                !e.target.checked
+                scriptMode === "kanji"
             );
 
             renderAll();
         });
     }
 
-    // =========================================================
-    // Vocab Hint: Hover / Display Vocab
-    // チェックあり = Vocab Hint
-    // =========================================================
     const toggleHintMode = document.getElementById("toggleHintMode");
     const labelHoverHint = document.getElementById("labelHoverHint");
     const labelParenHint = document.getElementById("labelParenHint");
 
     if (toggleHintMode) {
-        // 初期状態：Vocab Hint
-        toggleHintMode.checked = (hintMode === "hover");
-
-        updateToggleLabelStyle(
-            labelHoverHint,
-            toggleHintMode.checked
-        );
-        updateToggleLabelStyle(
-            labelParenHint,
-            !toggleHintMode.checked
-        );
+        toggleHintMode.checked = (hintMode === "paren");
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
 
         toggleHintMode.addEventListener("change", (e) => {
-            // チェックあり = Hover Hint
-            hintMode = e.target.checked ? "hover" : "paren";
+            hintMode = e.target.checked ? "paren" : "hover";
 
-            updateToggleLabelStyle(
-                labelHoverHint,
-                e.target.checked
-            );
-            updateToggleLabelStyle(
-                labelParenHint,
-                !e.target.checked
-            );
+            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
 
             renderAll();
         });
     }
 
-    // =========================================================
-    // Recording: Autostop / Manual stop
-    // チェックあり = Autostop
-    // =========================================================
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
     const labelManualRecord = document.getElementById("labelManualRecord");
 
     if (toggleRecordMode) {
-        // 初期状態：Autostop
-        toggleRecordMode.checked = !isManualStop;
-
-        updateToggleLabelStyle(
-            labelAutoRecord,
-            toggleRecordMode.checked
-        );
-        updateToggleLabelStyle(
-            labelManualRecord,
-            !toggleRecordMode.checked
-        );
+        toggleRecordMode.checked = isManualStop;
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        updateToggleLabelStyle(labelManualRecord, isManualStop);
 
         toggleRecordMode.addEventListener("change", (e) => {
-            // チェックあり = 自動停止
-            isManualStop = !e.target.checked;
+            isManualStop = e.target.checked;
 
-            updateToggleLabelStyle(
-                labelAutoRecord,
-                e.target.checked
-            );
-            updateToggleLabelStyle(
-                labelManualRecord,
-                !e.target.checked
-            );
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+            updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
     }
 
-    // =========================================================
-    // Playback: Autoplay / Manual play
-    // チェックあり = Autoplay
-    // =========================================================
     const togglePlaybackMode = document.getElementById("togglePlaybackMode");
     const labelAutoPlay = document.getElementById("labelAutoPlay");
     const labelManualPlay = document.getElementById("labelManualPlay");
 
     if (togglePlaybackMode) {
-        // 初期状態：Autoplay
-        togglePlaybackMode.checked = isAutoPlay;
-
-        updateToggleLabelStyle(
-            labelAutoPlay,
-            togglePlaybackMode.checked
-        );
-        updateToggleLabelStyle(
-            labelManualPlay,
-            !togglePlaybackMode.checked
-        );
+        togglePlaybackMode.checked = !isAutoPlay;
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
 
         togglePlaybackMode.addEventListener("change", (e) => {
-            // チェックあり = 自動再生
-            isAutoPlay = e.target.checked;
+            isAutoPlay = !e.target.checked;
 
-            updateToggleLabelStyle(
-                labelAutoPlay,
-                e.target.checked
-            );
-            updateToggleLabelStyle(
-                labelManualPlay,
-                !e.target.checked
-            );
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
         });
     }
 }
 
+function updateToggleLabelStyle(labelEl, isActive) {
+    if (!labelEl) return;
+
+    labelEl.className =
+        `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
+
+    const emoji = labelEl.querySelector(".icon-emoji");
+
+    if (emoji) {
+        if (isActive) {
+            emoji.style.filter = "none";
+            emoji.style.opacity = "1";
+        } else {
+            emoji.style.filter = "grayscale(100%)";
+            emoji.style.opacity = "0.55";
+        }
+    }
+}
 
 // ============================================================================
 // Example Section
@@ -630,49 +583,122 @@ function renderTask1() {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="info-panel info-panel-task1" style="margin-top: 25px;">
+        <div class="info-panel" style="margin-top: 30px;">
             <span class="info-panel-title">Drill 1: Basic Sentences</span>
-            <span class="info-panel-desc">💡 Practice forming 🟢 affirmative and 🔴 negative statements.</span>
+            <span class="info-panel-desc">💡 Listen to the sentence and record your voice.</span>
         </div>
         <div id="task1List"></div>
     `;
 
     const listDiv = document.getElementById("task1List");
 
-    taskData.forEach((item, index) => {
-        const currentXWord = item.x;
-        const currentXKanji = item.xKanji;
-        const currentXRomaji = item.x === "わたし" ? "watashi" : "tomodachi";
-        const currentXMeaning = item.x === "わたし" ? "I" : "friend";
+    taskData.forEach((task, index) => {
+        const rowKey = `task1_${index}`;
+        const rowDiv = document.createElement("div");
+        rowDiv.className = "drill-row";
 
-        const formattedX = formatWord(
-            currentXWord,
-            currentXKanji,
-            currentXRomaji,
-            currentXMeaning
-        );
+        const topRow = document.createElement("div");
+        topRow.className = "top-row";
 
-        const formattedY = formatWord(
-            item.y,
-            item.yKanji,
-            item.yRomaji,
-            item.yMeaning
-        );
+        const listenBtn = document.createElement("button");
+        listenBtn.className = "example-button custom-tip-wrap";
+        listenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
 
-        createDrillRow(
-            listDiv,
-            `${index + 1}.`,
-            formattedX,
-            formattedY,
-            currentXWord,
-            currentXKanji,
-            item.y,
-            item.yKanji,
-            item.isNeg,
+        const indexSpan = document.createElement("span");
+        indexSpan.textContent = `${index + 1}.`;
+
+        const promptSpan = document.createElement("span");
+        promptSpan.className = "prompt-label";
+
+        const xText = formatWord(task.x, task.xKanji, "watashi", "I");
+        const yText = formatWord(task.y, task.yKanji, task.yRomaji, task.yMeaning);
+
+        promptSpan.innerHTML = `${xText} <strong>は</strong> ${yText}`;
+
+        const typeLabel = document.createElement("span");
+        typeLabel.className = "custom-tip-wrap";
+        typeLabel.style.fontSize = "16px";
+        typeLabel.style.marginLeft = "4px";
+        typeLabel.style.marginRight = "8px";
+        typeLabel.style.cursor = "pointer";
+        typeLabel.innerHTML = task.isNeg
+            ? `🔴<span class="custom-tip-box">Negative</span>`
+            : `🟢<span class="custom-tip-box">Affirmative</span>`;
+
+        const recordBtn = document.createElement("button");
+        recordBtn.className = "example-button custom-tip-wrap";
+        recordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+
+        const stopBtn = document.createElement("button");
+        stopBtn.className = "example-button custom-tip-wrap";
+        stopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+        stopBtn.disabled = true;
+
+        const resultSpan = document.createElement("span");
+        resultSpan.className = "result-text";
+        setInitialResultDisplay(resultSpan, rowKey);
+
+        topRow.appendChild(listenBtn);
+        topRow.appendChild(indexSpan);
+        topRow.appendChild(promptSpan);
+        topRow.appendChild(typeLabel);
+        topRow.appendChild(recordBtn);
+        topRow.appendChild(stopBtn);
+        topRow.appendChild(resultSpan);
+
+        if (practice1State.audioUrls[rowKey]) {
+            appendPersistedPlayButton(resultSpan, rowKey, 0.9);
+        }
+
+        const correctionBox = document.createElement("div");
+        correctionBox.className = "correction-box";
+        correctionBox.style.display = "none";
+
+        const corrListenBtn = document.createElement("button");
+        corrListenBtn.className = "example-button";
+        corrListenBtn.innerHTML = "🔊 きく";
+        corrListenBtn.style.marginRight = "8px";
+
+        const corrTextSpan = document.createElement("span");
+        correctionBox.appendChild(corrListenBtn);
+        correctionBox.appendChild(corrTextSpan);
+
+        rowDiv.appendChild(topRow);
+        rowDiv.appendChild(correctionBox);
+
+        listenBtn.addEventListener("click", () => {
+            setPlayingStateMultiple([listenBtn], "Playing...");
+
+            const sentence = task.isNeg
+                ? `${task.xKanji}は、${task.yKanji}じゃないです。`
+                : `${task.xKanji}は、${task.yKanji}です。`;
+
+            speakText(sentence, 0.9, () => stopAllPlayback());
+        });
+
+        const correctSentence = task.isNeg
+            ? `${task.xKanji}は${task.yKanji}じゃないです`
+            : `${task.xKanji}は${task.yKanji}です`;
+
+        const modelSentence = task.isNeg
+            ? `${task.xKanji}は、${task.yKanji}じゃないです。`
+            : `${task.xKanji}は、${task.yKanji}です。`;
+
+        bindRecorderEvents(
+            recordBtn,
+            stopBtn,
+            resultSpan,
+            correctionBox,
+            corrListenBtn,
+            corrTextSpan,
+            correctSentence,
+            modelSentence,
             0.9,
-            `task1_${index}`,
+            rowKey,
             true
         );
+
+        listDiv.appendChild(rowDiv);
     });
 }
 
@@ -685,7 +711,7 @@ function renderTask2() {
     if (!container) return;
 
     container.innerHTML = `
-        <div class="info-panel info-panel-task2" style="margin-top: 30px;">
+        <div class="info-panel" style="margin-top: 30px;">
             <span class="info-panel-title">Drill 2: Selectable Practice</span>
             <span class="info-panel-desc">💡 Choose words and form sentences.</span>
         </div>
@@ -937,84 +963,6 @@ function renderTask2() {
 }
 
 // ============================================================================
-// Drill 3: Free Practice
-// ============================================================================
-
-function renderTask3() {
-    const container = document.getElementById("task3Container");
-    if (!container) return;
-
-    container.innerHTML = `
-        <div class="info-panel info-panel-task3" style="margin-top: 30px;">
-            <span class="info-panel-title">Drill 3: Free Practice</span>
-            <span class="info-panel-desc">💡 Enter X and Y, then speak a sentence. You can use affirmative or negative sentences.</span>
-        </div>
-        <div id="task3List"></div>
-    `;
-
-    const listDiv = document.getElementById("task3List");
-
-    for (let k = 1; k <= 3; k++) {
-        const rowKey = `task3_${k}`;
-        const currentGlobalIndex = taskData.length + 3 + k;
-
-        const isNegative = k === 2;
-        const typeEmoji = isNegative ? "🔴" : "🟢";
-
-        const rowDiv = document.createElement("div");
-        rowDiv.className = "drill-row";
-
-        const topRow = document.createElement("div");
-        topRow.className = "top-row";
-
-        const indexSpan = document.createElement("span");
-        indexSpan.textContent = `${currentGlobalIndex}.`;
-        indexSpan.style.fontWeight = "bold";
-
-        const inputX = document.createElement("input");
-        inputX.type = "text";
-        inputX.className = "custom-input";
-        inputX.placeholder = "X";
-        inputX.style.width = "120px";
-
-        const labelHa = document.createElement("span");
-        labelHa.textContent = "は";
-
-        const inputY = document.createElement("input");
-        inputY.type = "text";
-        inputY.className = "custom-input";
-        inputY.placeholder = "Y";
-        inputY.style.width = "120px";
-
-        if (practice1State.customSelects[rowKey]) {
-            if (practice1State.customSelects[rowKey].x) {
-                inputX.value = practice1State.customSelects[rowKey].x;
-            }
-
-            if (practice1State.customSelects[rowKey].y) {
-                inputY.value = practice1State.customSelects[rowKey].y;
-            }
-        }
-
-        const listenBtn = document.createElement("button");
-        listenBtn.className = "example-button custom-tip-wrap";
-        listenBtn.innerHTML =
-            `${typeEmoji} 🔊きく` +
-            `<span class="custom-tip-box">Listen to the model sentence.</span>`;
-        listenBtn.disabled = true;
-
-        listenBtn.addEventListener("click", () => {
-            const x = inputX.value.trim();
-            const y = inputY.value.trim();
-
-            if (!x || !y) return;
-
-            const modelSentence = isNegative
-                ? `${x}は、${y}じゃ、ないです。`
-                : `${x}は、${y}です。`;
-
-            setPlayingStateMultiple([listenBtn], "Playing...");
-            speakText(modelSentence, 0.9, () => stopAllPlayback());
         });
 
         const recordBtn = document.createElement("button");
@@ -1671,8 +1619,9 @@ function bindRecorderEvents(
             window.SpeechRecognition || window.webkitSpeechRecognition;
 
         if (!SpeechRecognition) {
-            stream.getTracks().forEach(track => track.stop());
-
+            stream.getTracks().forEach(track => {
+                try { track.stop(); } catch (e) {}
+            });
             resultSpan.textContent = "Speech recognition is not supported.";
             resultSpan.style.color = "var(--error-text)";
             return;
@@ -1693,61 +1642,80 @@ function bindRecorderEvents(
             accumulatedTranscript: "",
             recognitionDone: false,
             recorderDone: false,
-            processed: false
+            processed: false,
+            tryFinalize: null
         };
 
         session = currentSession;
         activeRecognitionSession = currentSession;
 
-        const tryProcessResult = () => {
-            if (
-                currentSession.errorMessage ||
-                currentSession.processed ||
-                currentSession.finished
-            ) {
+        const tryFinalize = () => {
+            if (currentSession.finished || currentSession.processed) return;
+            if (!currentSession.recognitionDone || !currentSession.recorderDone) return;
+
+            currentSession.processed = true;
+
+            if (currentSession.watchdog !== null) {
+                clearTimeout(currentSession.watchdog);
+                currentSession.watchdog = null;
+            }
+
+            // 録音データが確定してから結果処理を行う。
+            // エラー時は認識結果を判定せず、リソースだけ解放する。
+            if (currentSession.errorMessage) {
+                releaseSession(currentSession);
                 return;
             }
 
-            if (
-                (currentSession.recognitionDone && currentSession.recorderDone) ||
-                (!currentRecognition.continuous && currentSession.recognitionDone)
-            ) {
-                currentSession.processed = true;
+            processResult(
+                currentSession.accumulatedTranscript,
+                getExpectedTextFn(),
+                getExpectedKanjiFn,
+                resultSpan,
+                correctionBox,
+                corrListenBtn,
+                corrTextSpan,
+                () => rowKey ? practice1State.audioUrls[rowKey] : null,
+                playRate,
+                rowKey,
+                allowEitherStructure,
+                getXFn(),
+                getYFn()
+            );
 
-                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
-                    try {
-                        currentSession.mediaRecorder.stop();
-                    } catch (e) {}
+            // 結果表示と録音URLの登録が済んだ後にセッションを解放する。
+            releaseSession(currentSession);
+        };
+
+        currentSession.tryFinalize = tryFinalize;
+
+        const stopRecorderAfterRecognition = () => {
+            const recorder = currentSession.mediaRecorder;
+
+            if (recorder && recorder.state !== "inactive") {
+                try {
+                    recorder.stop();
+                } catch (err) {
+                    // stop() 失敗時も、既に inactive なら終了済みとして扱う。
+                    if (recorder.state === "inactive") {
+                        currentSession.recorderDone = true;
+                        tryFinalize();
+                    }
                 }
-
-                processResult(
-                    currentSession.accumulatedTranscript,
-                    getExpectedTextFn(),
-                    getExpectedKanjiFn,
-                    resultSpan,
-                    correctionBox,
-                    corrListenBtn,
-                    corrTextSpan,
-                    () => rowKey ? practice1State.audioUrls[rowKey] : null,
-                    playRate,
-                    rowKey,
-                    allowEitherStructure,
-                    getXFn(),
-                    getYFn()
-                );
+            } else if (!currentSession.recorderDone) {
+                currentSession.recorderDone = true;
+                tryFinalize();
             }
         };
 
         try {
             const currentRecognition = new SpeechRecognition();
             currentSession.recognition = currentRecognition;
-
             currentRecognition.lang = "ja-JP";
             currentRecognition.interimResults = false;
             currentRecognition.continuous = isManualStop;
 
             let mediaRecorder;
-
             if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
                 mediaRecorder = new MediaRecorder(stream, {
                     mimeType: "audio/webm;codecs=opus"
@@ -1758,116 +1726,77 @@ function bindRecorderEvents(
 
             currentSession.mediaRecorder = mediaRecorder;
 
-            mediaRecorder.ondataavailable = (event) => {
+            mediaRecorder.ondataavailable = event => {
                 if (event.data && event.data.size > 0) {
                     currentSession.audioChunks.push(event.data);
                 }
             };
 
             mediaRecorder.onerror = () => {
-                requestRecognitionStop(
-                    currentSession,
-                    true,
-                    "Recording error."
-                );
+                requestRecognitionStop(currentSession, true, "Recording error.");
             };
 
             mediaRecorder.onstop = () => {
+                // onstop は最後の dataavailable の後に呼ばれる。
+                // ここで Blob と URL を確定してから recorderDone にする。
                 const chunks = currentSession.audioChunks || [];
-
                 if (chunks.length > 0) {
-                    const mimeType =
-                        currentSession.mediaRecorder &&
-                        currentSession.mediaRecorder.mimeType
-                            ? currentSession.mediaRecorder.mimeType
-                            : "audio/webm";
-
+                    const mimeType = mediaRecorder.mimeType || "audio/webm";
                     const audioBlob = new Blob(chunks, { type: mimeType });
 
                     if (audioBlob.size > 0 && rowKey) {
                         const audioUrl = URL.createObjectURL(audioBlob);
                         const previousUrl = practice1State.audioUrls[rowKey];
-
                         if (previousUrl && previousUrl !== audioUrl) {
                             URL.revokeObjectURL(previousUrl);
                         }
-
                         practice1State.audioUrls[rowKey] = audioUrl;
                     }
                 }
 
-                stream.getTracks().forEach(track => {
-                    try {
-                        track.stop();
-                    } catch (e) {}
-                });
-
                 currentSession.recorderDone = true;
-                tryProcessResult();
+                tryFinalize();
             };
 
-            currentRecognition.onresult = (event) => {
+            currentRecognition.onresult = event => {
                 if (
                     currentSession.finished ||
                     session !== currentSession ||
                     currentSession.errorMessage
-                ) {
-                    return;
-                }
+                ) return;
 
                 let rawTranscript = "";
-
-                for (
-                    let i = event.resultIndex;
-                    i < event.results.length;
-                    i++
-                ) {
+                for (let i = event.resultIndex; i < event.results.length; i++) {
                     if (event.results[i].isFinal) {
                         rawTranscript += event.results[i][0].transcript;
                     }
                 }
-
                 currentSession.accumulatedTranscript += rawTranscript;
             };
 
-            currentRecognition.onerror = () => {
-                if (
-                    currentSession.finished ||
-                    session !== currentSession
-                ) {
+            currentRecognition.onerror = event => {
+                if (currentSession.finished || session !== currentSession) return;
+
+                // ユーザーが停止した際の aborted は通常の停止として扱う。
+                if (event && event.error === "aborted" && currentSession.stopRequested) {
                     return;
                 }
-
-                requestRecognitionStop(
-                    currentSession,
-                    true,
-                    "Recognition error."
-                );
+                requestRecognitionStop(currentSession, true, "Recognition error.");
             };
 
             currentRecognition.onend = () => {
-                if (currentSession.finished) return;
+                if (currentSession.finished || currentSession.recognitionDone) return;
 
+                // 終了順序の基準は音声認識の終了。
+                // 認識が終了した時点で録音を停止し、MediaRecorder の onstop
+                // で保存が確定するまで結果処理・セッション解放を行わない。
                 currentSession.recognitionDone = true;
-
-                if (
-                    currentSession.mediaRecorder &&
-                    currentSession.mediaRecorder.state !== "inactive" &&
-                    isManualStop
-                ) {
-                    try {
-                        currentSession.mediaRecorder.stop();
-                    } catch (e) {}
-                }
-
-                tryProcessResult();
-                releaseSession(currentSession);
+                stopRecorderAfterRecognition();
             };
 
             recordBtn.disabled = true;
-            stopBtn.disabled = false; // 修正：常時有効化していつでも手動停止できるようにする
+            stopBtn.disabled = false;
             stopBtn.classList.add("stop-btn-active");
-
             resultSpan.textContent = "Recording...";
             resultSpan.style.color = "var(--accent-color)";
             correctionBox.style.display = "none";
@@ -1876,12 +1805,17 @@ function bindRecorderEvents(
             currentRecognition.start();
         } catch (err) {
             console.error("Recognition recording start error:", err);
+            currentSession.errorMessage = "Could not start recording.";
+            resultSpan.textContent = currentSession.errorMessage;
+            resultSpan.style.color = "var(--error-text)";
 
-            requestRecognitionStop(
-                currentSession,
-                true,
-                "Could not start recording."
-            );
+            // start() の例外で onend が発火しない場合に備え、同じ終了経路へ寄せる。
+            if (!currentSession.recognition) {
+                currentSession.recognitionDone = true;
+                stopRecorderAfterRecognition();
+            } else {
+                requestRecognitionStop(currentSession, true, currentSession.errorMessage);
+            }
         }
     }
 
@@ -1899,34 +1833,62 @@ function bindRecorderEvents(
         }
 
         const recognition = currentSession.recognition;
-
         if (!recognition) {
-            releaseSession(currentSession);
+            currentSession.recognitionDone = true;
+            const recorder = currentSession.mediaRecorder;
+            if (recorder && recorder.state !== "inactive") {
+                try { recorder.stop(); } catch (err) {}
+            } else {
+                currentSession.recorderDone = true;
+                if (typeof currentSession.tryFinalize === "function") {
+                    currentSession.tryFinalize();
+                } else {
+                    releaseSession(currentSession);
+                }
+            }
             return;
         }
 
+        // 通常は recognition.onend が録音を停止する。
+        // ブラウザ側で onend が返らない場合のみ、タイムアウトで終了を補完する。
         if (currentSession.watchdog === null) {
             currentSession.watchdog = setTimeout(() => {
-                releaseSession(currentSession);
-            }, 2500);
+                if (currentSession.finished) return;
+
+                if (!currentSession.recognitionDone) {
+                    currentSession.recognitionDone = true;
+                }
+
+                const recorder = currentSession.mediaRecorder;
+                if (recorder && recorder.state !== "inactive") {
+                    try {
+                        recorder.stop();
+                    } catch (err) {
+                        if (recorder.state === "inactive") {
+                            currentSession.recorderDone = true;
+                        }
+                    }
+                } else {
+                    currentSession.recorderDone = true;
+                }
+
+                if (typeof currentSession.tryFinalize === "function") {
+                    currentSession.tryFinalize();
+                } else {
+                    releaseSession(currentSession);
+                }
+            }, 5000);
         }
 
         try {
-            if (abort) {
-                recognition.abort();
-            } else {
-                recognition.stop();
-            }
-        } catch (err) {}
-
-        if (
-            currentSession.mediaRecorder &&
-            currentSession.mediaRecorder.state !== "inactive"
-        ) {
-            try {
-                currentSession.mediaRecorder.stop();
-            } catch (err) {}
+            if (abort) recognition.abort();
+            else recognition.stop();
+        } catch (err) {
+            // stop/abort が例外になっても、watchdog が終了を補完する。
         }
+
+        // ここでは MediaRecorder を直接停止しない。
+        // 原則として recognition.onend が録音停止を開始する。
     }
 
     recordBtn.addEventListener("click", async () => {
