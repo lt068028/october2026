@@ -865,17 +865,36 @@ function bindRecorderEvents(
                     playRate,
                     rowKey
                 );
+
             } else {
+                const previousResult =
+                    practice7State.savedResults[rowKey];
+
                 v.resultSpan.textContent =
                     session.message || "No speech recognized.";
                 v.resultSpan.style.color = "var(--text-secondary)";
                 v.correctionBox.style.display = "none";
+
+                if (previousResult) {
+                    v.resultSpan.appendChild(
+                        document.createElement("br")
+                    );
+
+                    const previousText = document.createElement("span");
+                    previousText.textContent = previousResult.text;
+                    previousText.style.color = previousResult.color;
+                    v.resultSpan.appendChild(previousText);
+                }
+
                 if (practice7State.audioUrls[rowKey]) {
                     appendPersistedPlayButton(
                         v.resultSpan, rowKey, playRate
                     );
                 }
-            }
+
+                // 以前の結果は上書きしない。
+                return;
+            }                
 
             // 再生ボタンの文字を除き、結果そのものを保存する。
             const resultCopy = v.resultSpan.cloneNode(true);
@@ -993,20 +1012,32 @@ function bindRecorderEvents(
             };
 
             recorder.onstop = () => {
-                if (session.chunks.length) {
+                const noSpeechTimeout =
+                    session.message ===
+                    "No speech detected within 15 seconds.";
+
+                const keepRecording =
+                    session.speechStarted &&
+                    !noSpeechTimeout &&
+                    session.chunks.length > 0;
+
+                if (keepRecording) {
                     const blob = new Blob(session.chunks, {
                         type: recorder.mimeType || "audio/webm"
                     });
 
                     const previousUrl =
                         practice7State.audioUrls[rowKey];
+
                     if (previousUrl) {
                         URL.revokeObjectURL(previousUrl);
                     }
+
                     practice7State.audioUrls[rowKey] =
                         URL.createObjectURL(blob);
                 }
 
+                session.chunks = [];
                 session.recorderDone = true;
                 finish();
             };
@@ -1108,51 +1139,90 @@ function processResult(
     playRate,
     rowKey
 ) {
-    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
-        resultSpan.textContent = rawTranscript + " (Too short)";
-        resultSpan.style.color = "var(--text-secondary)";
-        return;
+    // このページで使用する語句の表記を統一する。
+    // 否定・助詞・語尾は削除しない。
+    function normalizeForMatch(text) {
+        let normalized = String(text ?? "")
+            .normalize("NFKC")
+            .toLowerCase()
+            .replace(/[\s、。,.!?！？「」『』・]/g, "")
+            .replace(/[ァ-ヶ]/g, character =>
+                String.fromCharCode(character.charCodeAt(0) - 96)
+            );
+
+        const replacements = [
+            ["お正月", "おしょうがつ"],
+            ["夏休み", "なつやすみ"],
+            ["結婚", "けっこん"],
+            ["漢字", "かんじ"],
+            ["覚", "おぼ"],
+            ["知", "し"],
+            ["起", "お"],
+            ["寝", "ね"],
+            ["太", "ふと"],
+            ["朝", "あさ"],
+            ["夜", "よる"],
+            ["年前", "ねんまえ"],
+            ["時", "じ"],
+            ["個", "こ"],
+            ["三", "3"],
+            ["五十", "50"],
+            ["十", "10"],
+            ["五", "5"],
+            ["form", "ふぉーむ"]
+        ];
+
+        for (const [from, to] of replacements) {
+            normalized = normalized.split(from).join(to);
+        }
+
+        return normalized;
     }
 
-    const hiraText = convertToHiragana(rawTranscript);
-    const expectedHira = convertToHiragana(expectedText);
-    const isCorrect = hiraText.includes(expectedHira) || hiraText.length >= 2;
+    const transcript = String(rawTranscript ?? "").trim();
+    const modelText = getExpectedKanjiFn();
+    const normalizedTranscript = normalizeForMatch(transcript);
 
-    const displayedTranscript = scriptMode === "hiragana" ? hiraText : rawTranscript;
-    const kanjiTextForSpeech = getExpectedKanjiFn();
+    const isCorrect = normalizedTranscript.length > 0 && (
+        normalizedTranscript === normalizeForMatch(expectedText) ||
+        normalizedTranscript === normalizeForMatch(modelText)
+    );
+
+    // 認識された原文を保持して表示する。
+    resultSpan.textContent =
+        transcript + (isCorrect ? " ✅ " : " ");
+    resultSpan.style.color = isCorrect
+        ? "var(--text-primary)"
+        : "var(--error-text)";
+
+    if (practice7State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(resultSpan, rowKey, playRate);
+    }
 
     if (isCorrect) {
-        resultSpan.textContent = displayedTranscript + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-        appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
         correctionBox.style.display = "none";
     } else {
-        resultSpan.textContent = displayedTranscript + " ";
-        resultSpan.style.color = "var(--error-text)";
-        appendPersistedPlayButton(resultSpan, rowKey || "temp_res", playRate);
-
         corrTextSpan.textContent = "🔥 Keep going! Try once more!";
         corrListenBtn.style.display = "inline-block";
-
         corrListenBtn.onclick = () => {
             setPlayingStateMultiple([corrListenBtn], "Playing...");
-            speakText(kanjiTextForSpeech, 0.9, () => stopAllPlayback());
+            speakText(modelText, 0.9, () => stopAllPlayback());
         };
-
         correctionBox.style.display = "block";
     }
 
     if (isAutoPlay) {
-        speakText(kanjiTextForSpeech, playRate, () => {
+        speakText(modelText, playRate, () => {
             stopAllPlayback();
+
             const url = getUrlFn();
-            if (url) {
-                const audio = new Audio(url);
-                currentPlayingAudio = audio;
-                audio.playbackRate = 1.0;
-                audio.onended = () => { currentPlayingAudio = null; };
-                audio.play().catch(e => {});
-            }
+            if (!url) return;
+
+            const audio = new Audio(url);
+            currentPlayingAudio = audio;
+            audio.playbackRate = 1.0;
+            audio.onended = () => stopAllPlayback();
+            audio.play().catch(() => stopAllPlayback());
         });
     }
 }
