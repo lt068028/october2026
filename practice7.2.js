@@ -6,18 +6,18 @@ const practice7Data = [
     { 
         x: "よる10じ", xKanji: "夜10時", xRomaji: "yoru jū-ji", xMeaning: "10 o'clock at night", 
         y: "ねる", yKanji: "寝る", yRomaji: "neru", yMeaning: "to sleep / go to bed",
-        pastSentence: "私は、夜10時に寝ました。",
-        pastSentenceHira: "わたしは、よる10じに、ねました。",
-        perfectSentence: "私は、夜10時から寝ています。",
-        perfectSentenceHira: "わたしは、よる10じから、ねています。"
+        pastSentence: "夜10時に寝ました。",
+        pastSentenceHira: "よる10じに、ねました。",
+        perfectSentence: "夜10時から寝ています。",
+        perfectSentenceHira: "よる10じから、ねています。"
     },
     { 
         x: "さっき", xKanji: "さっき", xRomaji: "sakki", xMeaning: "a little while ago", 
         y: "Tシャツをきる", yKanji: "Tシャツを着る", yRomaji: "tīshatsu o kiru", yMeaning: "to wear a T-shirt",
-        pastSentence: "私は、さっきTシャツを着ました。",
-        pastSentenceHira: "わたしは、さっきTしゃつを、きました。",
-        perfectSentence: "私は、さっきからTシャツを着ています。",
-        perfectSentenceHira: "わたしは、さっきから、Tしゃつを、きています。"
+        pastSentence: "さっきTシャツを着ました。",
+        pastSentenceHira: "さっきTしゃつを、きました。",
+        perfectSentence: "さっきからTシャツを着ています。",
+        perfectSentenceHira: "さっきから、Tしゃつを、きています。"
     }
 ];
 
@@ -306,7 +306,7 @@ function renderDrill1Section() {
 
     container.innerHTML = "";
 
-    // Example Box (太字範囲：「＿は」「＿ました」「＿は」「＿ています」)
+    // Example Box (きくボタンの右に見出し、指定部分の太字化)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
@@ -316,19 +316,21 @@ function renderDrill1Section() {
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Past Tense:</strong>
+            <strong class="example-label-title" style="min-width: 130px;">Past Tense:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen" class="example-button">🔊 きく</button>
-            <span>私<strong>は、</strong>${w1}に寝<strong>ました。</strong></span>
+            <button id="exPastListen" class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px; margin:0 6px; border-radius:4px; background:#bae6fd; color:#0369a1; font-size:13px; font-weight:bold;">⏪ Past</span>
+            <span>${w1}に寝<strong>ました。</strong></span>
         </div>
 
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Present Perfect:</strong>
+            <strong class="example-label-title" style="min-width: 130px;">Present Perfect:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen" class="example-button">🔊 きく</button>
-            <span>私<strong>は、</strong>${w1}から寝<strong>ています。</strong></span>
+            <button id="exPerfListen" class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px; margin:0 6px; border-radius:4px; background:#dcfce7; color:#15803d; font-size:13px; font-weight:bold;">⏳ Perfect</span>
+            <span>${w1}<strong>から</strong>寝<strong>ています。</strong></span>
         </div>
     `;
 
@@ -336,12 +338,12 @@ function renderDrill1Section() {
 
     document.getElementById("exPastListen").onclick = () => {
         setPlayingStateMultiple([document.getElementById("exPastListen")], "Playing...");
-        speakText("私は、夜10時に寝ました。", 0.9, () => stopAllPlayback());
+        speakText("夜10実に寝ました。", 0.9, () => stopAllPlayback());
     };
 
     document.getElementById("exPerfListen").onclick = () => {
         setPlayingStateMultiple([document.getElementById("exPerfListen")], "Playing...");
-        speakText("私は、夜10時から寝ています。", 0.9, () => stopAllPlayback());
+        speakText("夜10時から寝ています。", 0.9, () => stopAllPlayback());
     };
 
     // Info Panel
@@ -371,17 +373,15 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     const cardDiv = document.createElement("div");
     cardDiv.className = "drill-row";
 
-    // テーブル構造によるレイアウト
     const table = document.createElement("table");
     table.style.width = "100%";
     table.style.borderCollapse = "collapse";
 
     // ----------------------------------------------------
-    // 1行目: Past (順序：きく ➡️ Past見出し ➡️ 録音ボタン等)
+    // 1行目: Past
     // ----------------------------------------------------
     const tr1 = document.createElement("tr");
 
-    // 番号列 (両行分を結合)
     const tdIndex = document.createElement("td");
     tdIndex.rowSpan = 2;
     tdIndex.textContent = indexLabel;
@@ -390,7 +390,6 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     tdIndex.style.width = "30px";
     tdIndex.style.paddingRight = "4px";
 
-    // キュー列 (両行分を結合)
     const tdPrompt = document.createElement("td");
     tdPrompt.rowSpan = 2;
     tdPrompt.className = "prompt-label";
@@ -399,21 +398,19 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     tdPrompt.style.width = "220px";
     tdPrompt.style.paddingRight = "10px";
 
-    // Past行の操作ボタン列（「きく」を最初に配置）
     const tdPastControls = document.createElement("td");
     tdPastControls.style.paddingBottom = "4px";
-    tdPastControls.style.width = "auto";
+    tdPastControls.style.whiteSpace = "nowrap";
 
     const listenBtn1 = document.createElement("button");
     listenBtn1.className = "example-button custom-tip-wrap";
     listenBtn1.innerHTML = '🔊きく<span class="custom-tip-box">Listen to past tense.</span>';
 
-    // Past見出し（ボタンではなくテキスト・バッジ風）
     const pastLabel = document.createElement("span");
     pastLabel.style.fontWeight = "bold";
     pastLabel.style.display = "inline-block";
     pastLabel.style.padding = "4px 8px";
-    pastLabel.style.margin = "0 8px";
+    pastLabel.style.margin = "0 6px";
     pastLabel.style.borderRadius = "4px";
     pastLabel.style.backgroundColor = "#bae6fd";
     pastLabel.style.color = "#0369a1";
@@ -429,11 +426,18 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     stopBtn1.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
     stopBtn1.disabled = true;
 
+    const rightWrapper1 = document.createElement("span");
+    rightWrapper1.style.float = "right";
+    rightWrapper1.style.display = "inline-flex";
+    rightWrapper1.style.alignItems = "center";
+
     const resultSpan1 = document.createElement("span");
     resultSpan1.className = "result-text";
     resultSpan1.textContent = "(Not recorded yet)";
     resultSpan1.style.color = "var(--text-secondary)";
     resultSpan1.style.marginLeft = "8px";
+
+    rightWrapper1.appendChild(resultSpan1);
 
     listenBtn1.onclick = () => {
         setPlayingStateMultiple([listenBtn1], "Playing...");
@@ -444,7 +448,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     tdPastControls.appendChild(pastLabel);
     tdPastControls.appendChild(recordBtn1);
     tdPastControls.appendChild(stopBtn1);
-    tdPastControls.appendChild(resultSpan1);
+    tdPastControls.appendChild(rightWrapper1);
 
     tr1.appendChild(tdIndex);
     tr1.appendChild(tdPrompt);
@@ -470,29 +474,29 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     );
 
     // ----------------------------------------------------
-    // 2行目: Perfect (順序：きく ➡️ Perfect見出し ➡️ 録音ボタン等)
+    // 2行目: Perfect
     // ----------------------------------------------------
     const tr2 = document.createElement("tr");
     tr2.style.borderTop = "1px dashed var(--border-color)";
 
     const tdPerfControls = document.createElement("td");
     tdPerfControls.style.paddingTop = "4px";
+    tdPerfControls.style.whiteSpace = "nowrap";
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
     listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to present perfect.</span>';
 
-    // Perfect見出し（ボタンではなくテキスト・バッジ風）
     const perfLabel = document.createElement("span");
     perfLabel.style.fontWeight = "bold";
     perfLabel.style.display = "inline-block";
     perfLabel.style.padding = "4px 8px";
-    perfLabel.style.margin = "0 8px";
+    perfLabel.style.margin = "0 6px";
     perfLabel.style.borderRadius = "4px";
     perfLabel.style.backgroundColor = "#dcfce7";
     perfLabel.style.color = "#15803d";
     perfLabel.style.fontSize = "13px";
-    perfLabel.innerHTML = "➡️ Perfect";
+    perfLabel.innerHTML = "⏳ Perfect";
 
     const recordBtn2 = document.createElement("button");
     recordBtn2.className = "example-button custom-tip-wrap";
@@ -503,11 +507,18 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     stopBtn2.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
     stopBtn2.disabled = true;
 
+    const rightWrapper2 = document.createElement("span");
+    rightWrapper2.style.float = "right";
+    rightWrapper2.style.display = "inline-flex";
+    rightWrapper2.style.alignItems = "center";
+
     const resultSpan2 = document.createElement("span");
     resultSpan2.className = "result-text";
     resultSpan2.textContent = "(Not recorded yet)";
     resultSpan2.style.color = "var(--text-secondary)";
     resultSpan2.style.marginLeft = "8px";
+
+    rightWrapper2.appendChild(resultSpan2);
 
     listenBtn2.onclick = () => {
         setPlayingStateMultiple([listenBtn2], "Playing...");
@@ -518,7 +529,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     tdPerfControls.appendChild(perfLabel);
     tdPerfControls.appendChild(recordBtn2);
     tdPerfControls.appendChild(stopBtn2);
-    tdPerfControls.appendChild(resultSpan2);
+    tdPerfControls.appendChild(rightWrapper2);
 
     tr2.appendChild(tdPerfControls);
     table.appendChild(tr2);
