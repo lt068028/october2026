@@ -269,13 +269,13 @@ function formatWord(word, kanji, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
 
     if (hintMode === "paren") {
-        return `<span class="target-word" style="font-weight: normal !important;">${displayWord}</span> <span style="font-weight: normal !important;">(${hintStr})</span>`;
+        return `<span class="target-word">${displayWord}</span> (${hintStr})`;
     }
 
     return `
-        <span class="tooltip-wrap" style="font-weight: normal !important;">
-            <span class="target-word" style="font-weight: normal !important;">${displayWord}</span>
-            <span class="tooltip-tip" style="font-weight: normal !important;">${hintStr}</span>
+        <span class="tooltip-wrap">
+            <span class="target-word">${displayWord}</span>
+            <span class="tooltip-tip">${hintStr}</span>
         </span>
     `;
 }
@@ -400,8 +400,8 @@ function renderDrill1Section() {
     const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
 
     const exQ = scriptMode === "kanji"
-        ? "<strong>お父さんは、</strong>看護師<strong>ですか？</strong>"
-        : "<strong>おとうさんは、</strong>かんごし<strong>ですか？</strong>";
+        ? "お父さん<strong>は、</strong>看護師<strong>ですか？</strong>"
+        : "おとうさん<strong>は、</strong>かんごし<strong>ですか？</strong>";
 
     const exYes = scriptMode === "kanji"
         ? "<strong>はい、</strong>看護師<strong>です。</strong>"
@@ -503,12 +503,12 @@ function renderDrill2Section() {
     const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
 
     const exQ2 = scriptMode === "kanji"
-        ? "<strong>あなたの</strong>専攻<strong>は、</strong>何<strong>ですか。</strong>"
-        : "<strong>あなたの</strong>せんこう<strong>は、</strong>なん<strong>ですか。</strong>";
+        ? "あなた<strong>の</strong>専攻<strong>は、</strong>何<strong>ですか。</strong>"
+        : "あなた<strong>の</strong>せんこう<strong>は、</strong>なん<strong>ですか。</strong>";
 
     const exA2 = scriptMode === "kanji"
-        ? "<strong>わたしの</strong>専攻<strong>は、</strong>政治<strong>です。</strong>"
-        : "<strong>わたしの</strong>せんこう<strong>は、</strong>せいじ<strong>です。</strong>";
+        ? "わたし<strong>の</strong>専攻<strong>は、</strong>政治<strong>です。</strong>"
+        : "わたし<strong>の</strong>せんこう<strong>は、</strong>せいじ<strong>です。</strong>";
 
     exBox.innerHTML = `
         <div class="example-line flex-row-center" style="margin-bottom: 8px;">
