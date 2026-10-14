@@ -380,6 +380,10 @@ function initSettingsPanel() {
     const labelWithKanji = document.getElementById("labelWithKanji");
 
     if (toggleScriptMode) {
+        toggleScriptMode.checked = (scriptMode === "kanji");
+        updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
+        updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
+
         toggleScriptMode.addEventListener("change", (e) => {
             scriptMode = e.target.checked ? "kanji" : "hiragana";
 
@@ -395,9 +399,6 @@ function initSettingsPanel() {
 
             renderAll();
         });
-
-        updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
-        updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
     }
 
     const toggleHintMode = document.getElementById("toggleHintMode");
@@ -405,6 +406,10 @@ function initSettingsPanel() {
     const labelParenHint = document.getElementById("labelParenHint");
 
     if (toggleHintMode) {
+        toggleHintMode.checked = (hintMode === "paren");
+        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
+        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+
         toggleHintMode.addEventListener("change", (e) => {
             hintMode = e.target.checked ? "paren" : "hover";
 
@@ -413,9 +418,6 @@ function initSettingsPanel() {
 
             renderAll();
         });
-
-        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
     }
 
     const toggleRecordMode = document.getElementById("toggleRecordMode");
@@ -423,15 +425,16 @@ function initSettingsPanel() {
     const labelManualRecord = document.getElementById("labelManualRecord");
 
     if (toggleRecordMode) {
+        toggleRecordMode.checked = isManualStop;
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        updateToggleLabelStyle(labelManualRecord, isManualStop);
+
         toggleRecordMode.addEventListener("change", (e) => {
             isManualStop = e.target.checked;
 
             updateToggleLabelStyle(labelAutoRecord, !isManualStop);
             updateToggleLabelStyle(labelManualRecord, isManualStop);
         });
-
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
     }
 
     const togglePlaybackMode = document.getElementById("togglePlaybackMode");
@@ -439,15 +442,16 @@ function initSettingsPanel() {
     const labelManualPlay = document.getElementById("labelManualPlay");
 
     if (togglePlaybackMode) {
+        togglePlaybackMode.checked = !isAutoPlay;
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+
         togglePlaybackMode.addEventListener("change", (e) => {
             isAutoPlay = !e.target.checked;
 
             updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
             updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
         });
-
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
     }
 }
 
