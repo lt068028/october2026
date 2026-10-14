@@ -453,26 +453,6 @@ function renderAll() {
         }
     });
 }
-    renderDrill1Section();
-
-    const container = document.getElementById("drill1Container");
-    if (!container) return;
-
-    const instruction = container.querySelector(".info-panel-desc");
-    if (instruction) {
-        instruction.innerHTML = `
-            💡 Compare a past action with the state that continues now.
-            Use <strong class="kara-highlight">から</strong>
-            after a time expression to show when that state began.
-        `;
-    }
-
-    container.querySelectorAll(".example-box strong").forEach(element => {
-        if (element.textContent === "から") {
-            element.classList.add("kara-highlight");
-        }
-    });
-}
 
 // ============================================================================
 // Render Drill 1 Section (Past & Present Perfect Practice)
