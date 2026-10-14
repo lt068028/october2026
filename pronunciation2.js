@@ -189,51 +189,84 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 function initSettingsPanel() {
-    const toggleRecordMode = document.getElementById("toggleRecordMode");
-    const labelAutoRecord = document.getElementById("labelAutoRecord");
-    const labelManualRecord = document.getElementById("labelManualRecord");
+    const scriptControl =
+        document.getElementById("scriptModeControl");
+
+    function updateScriptSelection() {
+        if (!scriptControl) return;
+
+        const selectedValue =
+            useHiraganaOnly ? "hiragana" : "kanji";
+
+        scriptControl.querySelectorAll("button[data-value]").forEach(button => {
+            const selected = button.dataset.value === selectedValue;
+
+            button.classList.toggle("is-selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+    }
+
+    if (scriptControl) {
+        updateScriptSelection();
+
+        scriptControl.addEventListener("click", event => {
+            const button = event.target.closest("button[data-value]");
+
+            if (!button || !scriptControl.contains(button)) return;
+
+            const nextMode = button.dataset.value;
+
+            if (!["hiragana", "kanji"].includes(nextMode)) return;
+
+            const nextHiraganaOnly = nextMode === "hiragana";
+
+            if (nextHiraganaOnly === useHiraganaOnly) return;
+
+            useHiraganaOnly = nextHiraganaOnly;
+
+            updateScriptSelection();
+
+            // Preserve the existing saved-result rendering behavior.
+            renderDrill1Section();
+        });
+    }
+
+    const toggleRecordMode =
+        document.getElementById("toggleRecordMode");
+
+    const labelAutoRecord =
+        document.getElementById("labelAutoRecord");
 
     if (toggleRecordMode) {
-        toggleRecordMode.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
-        });
+        toggleRecordMode.checked = !isManualStop;
+
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
+
+        toggleRecordMode.addEventListener("change", event => {
+            isManualStop = !event.target.checked;
+
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        });
     }
 
-    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
-    const labelAutoPlay = document.getElementById("labelAutoPlay");
-    const labelManualPlay = document.getElementById("labelManualPlay");
+    const togglePlaybackMode =
+        document.getElementById("togglePlaybackMode");
+
+    const labelAutoPlay =
+        document.getElementById("labelAutoPlay");
 
     if (togglePlaybackMode) {
-        togglePlaybackMode.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-        });
+        togglePlaybackMode.checked = isAutoPlay;
+
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-    }
 
-    const toggleScriptMode = document.getElementById("toggleScriptMode");
-    const labelKanji = document.getElementById("labelKanji");
-    const labelHiragana = document.getElementById("labelHiragana");
+        togglePlaybackMode.addEventListener("change", event => {
+            isAutoPlay = event.target.checked;
 
-    if (toggleScriptMode) {
-        toggleScriptMode.addEventListener("change", (e) => {
-            useHiraganaOnly = e.target.checked;
-            updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
-            updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
-            // 漢字／ひらがな切り替え時、保存された結果を保持したまま再描画
-            renderDrill1Section(); 
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         });
-        updateToggleLabelStyle(labelKanji, !useHiraganaOnly);
-        updateToggleLabelStyle(labelHiragana, useHiraganaOnly);
     }
 }
-
 function renderDrill1Section() {
     let container = document.getElementById("drill1List");
     if (!container) {
