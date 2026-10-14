@@ -401,24 +401,58 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 function renderAll() {
-    if (!document.getElementById("practice7KaraStyle")) {
-        const style = document.createElement("style");
-        style.id = "practice7KaraStyle";
-        style.textContent = `
-            #drill1Container .kara-highlight {
-                color: #B45309;
-                font-weight: bold;
-            }
+    let style = document.getElementById("practice7KaraStyle");
 
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .kara-highlight {
-                    color: #FBBF24;
-                }
-            }
-        `;
+    if (!style) {
+        style = document.createElement("style");
+        style.id = "practice7KaraStyle";
         document.head.appendChild(style);
     }
 
+    style.textContent = `
+        #drill1Container .grammar-highlight {
+            color: #B45309;
+            font-weight: bold;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #drill1Container .grammar-highlight {
+                color: #FBBF24;
+            }
+        }
+    `;
+
+    renderDrill1Section();
+
+    const container = document.getElementById("drill1Container");
+    if (!container) return;
+
+    const instruction = container.querySelector(".info-panel-desc");
+    if (instruction) {
+        instruction.innerHTML = `
+            💡 Compare a past action with the state that continues now.
+            Use <strong class="grammar-highlight">から</strong>
+            after a time expression to show when that state began.
+        `;
+    }
+
+    container.querySelectorAll(".example-box strong").forEach(element => {
+        const text = element.textContent;
+
+        if (text === "から") {
+            element.classList.add("grammar-highlight");
+        } else if (text === "ています。" || text === "ています") {
+            const highlighted = document.createElement("strong");
+            highlighted.className = "grammar-highlight";
+            highlighted.textContent = "ています";
+
+            element.replaceWith(
+                highlighted,
+                document.createTextNode(text.endsWith("。") ? "。" : "")
+            );
+        }
+    });
+}
     renderDrill1Section();
 
     const container = document.getElementById("drill1Container");
