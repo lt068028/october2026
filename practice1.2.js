@@ -269,13 +269,13 @@ function formatWord(word, kanji, romaji, meaning) {
     const hintStr = `${romaji}, ${meaning}`;
 
     if (hintMode === "paren") {
-        return `<span class="target-word" style="font-weight: normal;">${displayWord}</span> (${hintStr})`;
+        return `<span class="target-word" style="font-weight: normal !important;">${displayWord}</span> <span style="font-weight: normal !important;">(${hintStr})</span>`;
     }
 
     return `
-        <span class="tooltip-wrap" style="font-weight: normal;">
-            <span class="target-word" style="font-weight: normal;">${displayWord}</span>
-            <span class="tooltip-tip">${hintStr}</span>
+        <span class="tooltip-wrap" style="font-weight: normal !important;">
+            <span class="target-word" style="font-weight: normal !important;">${displayWord}</span>
+            <span class="tooltip-tip" style="font-weight: normal !important;">${hintStr}</span>
         </span>
     `;
 }
