@@ -374,105 +374,157 @@ function formatCustomWord(word, kanji, meaning) {
 // Settings Panel
 // ============================================================================
 
+
 function initSettingsPanel() {
+    // =========================================================
+    // Script Mode: Hiragana Only / With漢字
+    // チェックあり = Hiragana Only
+    // =========================================================
     const toggleScriptMode = document.getElementById("toggleScriptMode");
     const labelHiraganaOnly = document.getElementById("labelHiraganaOnly");
     const labelWithKanji = document.getElementById("labelWithKanji");
 
     if (toggleScriptMode) {
-        toggleScriptMode.checked = (scriptMode === "kanji");
-        updateToggleLabelStyle(labelHiraganaOnly, scriptMode === "hiragana");
-        updateToggleLabelStyle(labelWithKanji, scriptMode === "kanji");
+        // 初期状態：Hiragana Only
+        toggleScriptMode.checked = (scriptMode === "hiragana");
+
+        updateToggleLabelStyle(
+            labelHiraganaOnly,
+            toggleScriptMode.checked
+        );
+        updateToggleLabelStyle(
+            labelWithKanji,
+            !toggleScriptMode.checked
+        );
 
         toggleScriptMode.addEventListener("change", (e) => {
-            scriptMode = e.target.checked ? "kanji" : "hiragana";
+            // チェックあり = Hiragana Only
+            scriptMode = e.target.checked ? "hiragana" : "kanji";
 
             updateToggleLabelStyle(
                 labelHiraganaOnly,
-                scriptMode === "hiragana"
+                e.target.checked
             );
-
             updateToggleLabelStyle(
                 labelWithKanji,
-                scriptMode === "kanji"
+                !e.target.checked
             );
 
             renderAll();
         });
     }
 
+    // =========================================================
+    // Vocab Hint: Hover / Display Vocab
+    // チェックあり = Vocab Hint
+    // =========================================================
     const toggleHintMode = document.getElementById("toggleHintMode");
     const labelHoverHint = document.getElementById("labelHoverHint");
     const labelParenHint = document.getElementById("labelParenHint");
 
     if (toggleHintMode) {
-        toggleHintMode.checked = (hintMode === "paren");
-        updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-        updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+        // 初期状態：Vocab Hint
+        toggleHintMode.checked = (hintMode === "hover");
+
+        updateToggleLabelStyle(
+            labelHoverHint,
+            toggleHintMode.checked
+        );
+        updateToggleLabelStyle(
+            labelParenHint,
+            !toggleHintMode.checked
+        );
 
         toggleHintMode.addEventListener("change", (e) => {
-            hintMode = e.target.checked ? "paren" : "hover";
+            // チェックあり = Hover Hint
+            hintMode = e.target.checked ? "hover" : "paren";
 
-            updateToggleLabelStyle(labelHoverHint, hintMode === "hover");
-            updateToggleLabelStyle(labelParenHint, hintMode === "paren");
+            updateToggleLabelStyle(
+                labelHoverHint,
+                e.target.checked
+            );
+            updateToggleLabelStyle(
+                labelParenHint,
+                !e.target.checked
+            );
 
             renderAll();
         });
     }
 
+    // =========================================================
+    // Recording: Autostop / Manual stop
+    // チェックあり = Autostop
+    // =========================================================
     const toggleRecordMode = document.getElementById("toggleRecordMode");
     const labelAutoRecord = document.getElementById("labelAutoRecord");
     const labelManualRecord = document.getElementById("labelManualRecord");
 
     if (toggleRecordMode) {
-        toggleRecordMode.checked = isManualStop;
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
+        // 初期状態：Autostop
+        toggleRecordMode.checked = !isManualStop;
+
+        updateToggleLabelStyle(
+            labelAutoRecord,
+            toggleRecordMode.checked
+        );
+        updateToggleLabelStyle(
+            labelManualRecord,
+            !toggleRecordMode.checked
+        );
 
         toggleRecordMode.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
+            // チェックあり = 自動停止
+            isManualStop = !e.target.checked;
 
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
+            updateToggleLabelStyle(
+                labelAutoRecord,
+                e.target.checked
+            );
+            updateToggleLabelStyle(
+                labelManualRecord,
+                !e.target.checked
+            );
         });
     }
 
+    // =========================================================
+    // Playback: Autoplay / Manual play
+    // チェックあり = Autoplay
+    // =========================================================
     const togglePlaybackMode = document.getElementById("togglePlaybackMode");
     const labelAutoPlay = document.getElementById("labelAutoPlay");
     const labelManualPlay = document.getElementById("labelManualPlay");
 
     if (togglePlaybackMode) {
-        togglePlaybackMode.checked = !isAutoPlay;
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+        // 初期状態：Autoplay
+        togglePlaybackMode.checked = isAutoPlay;
+
+        updateToggleLabelStyle(
+            labelAutoPlay,
+            togglePlaybackMode.checked
+        );
+        updateToggleLabelStyle(
+            labelManualPlay,
+            !togglePlaybackMode.checked
+        );
 
         togglePlaybackMode.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
+            // チェックあり = 自動再生
+            isAutoPlay = e.target.checked;
 
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
+            updateToggleLabelStyle(
+                labelAutoPlay,
+                e.target.checked
+            );
+            updateToggleLabelStyle(
+                labelManualPlay,
+                !e.target.checked
+            );
         });
     }
 }
 
-function updateToggleLabelStyle(labelEl, isActive) {
-    if (!labelEl) return;
-
-    labelEl.className =
-        `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-
-    const emoji = labelEl.querySelector(".icon-emoji");
-
-    if (emoji) {
-        if (isActive) {
-            emoji.style.filter = "none";
-            emoji.style.opacity = "1";
-        } else {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.55";
-        }
-    }
-}
 
 // ============================================================================
 // Example Section
