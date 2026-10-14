@@ -233,6 +233,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
         .replace(/夏休みから(?=やせ)/g, "夏休みから、")
         .replace(/漢字を50個(?=覚え)/g, "漢字を50個、")
         .replace(/3年前に(?=結婚)/g, "3年前に、")
+        .replace(/3年前から(?=結婚)/g, "3年前から、")
         .replace(/ているフォームを(?=知)/g, "ているフォームを、");
 
     const utterance = new SpeechSynthesisUtterance(speechText);
