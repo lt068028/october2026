@@ -278,150 +278,75 @@ function formatWord(word, kanji, romaji, meaning) {
 }
 
 function initSettingsPanel() {
-    const scriptControl =
-        document.getElementById("scriptModeControl");
-
-    const hintControl =
-        document.getElementById("hintModeControl");
+    const scriptControl = document.getElementById("scriptModeControl");
+    const hintControl = document.getElementById("hintModeControl");
 
     function updateSegmentedSelection(control, selectedValue) {
         if (!control) return;
 
         control.querySelectorAll("button[data-value]").forEach(button => {
             const selected = button.dataset.value === selectedValue;
-
             button.classList.toggle("is-selected", selected);
             button.setAttribute("aria-pressed", String(selected));
         });
     }
 
-function renderDrill1Section() {
-    let container = document.getElementById("drill1Container");
+    if (scriptControl) {
+        updateSegmentedSelection(scriptControl, scriptMode);
 
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1Container";
-        document.body.insertBefore(
-            container,
-            document.querySelector(".voice-guide-footer")
-        );
+        scriptControl.addEventListener("click", event => {
+            const button = event.target.closest("button[data-value]");
+            if (!button || !scriptControl.contains(button)) return;
+
+            const value = button.dataset.value;
+            if (value !== "hiragana" && value !== "kanji") return;
+            if (value === scriptMode) return;
+
+            scriptMode = value;
+            updateSegmentedSelection(scriptControl, scriptMode);
+            renderAll();
+        });
     }
 
-    container.innerHTML = "";
+    if (hintControl) {
+        updateSegmentedSelection(hintControl, hintMode);
 
-    // Example: 朝5時／起きる
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "30px";
+        hintControl.addEventListener("click", event => {
+            const button = event.target.closest("button[data-value]");
+            if (!button || !hintControl.contains(button)) return;
 
-    const w1 = formatWord(
-        "あさ5じ",
-        "朝5時",
-        "asa go-ji",
-        "5 o'clock in the morning"
-    );
+            const value = button.dataset.value;
+            if (!["off", "hover", "paren"].includes(value)) return;
+            if (value === hintMode) return;
 
-    const w2 = formatWord(
-        "おきる",
-        "起きる",
-        "okiru",
-        "to wake up / get up"
-    );
+            hintMode = value;
+            updateSegmentedSelection(hintControl, hintMode);
+            renderAll();
+        });
+    }
 
-    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
+    const toggleRecordMode = document.getElementById("toggleRecordMode");
+    const labelAutoRecord = document.getElementById("labelAutoRecord");
 
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center"
-             style="margin-bottom: 8px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Past Tense:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen"
-                    type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#bae6fd; color:#0369a1;
-                         font-size:13px; font-weight:bold;">⏪ Past</span>
-            <span>${w1}に${verbStem}<strong>ました。</strong></span>
-        </div>
+    if (toggleRecordMode) {
+        toggleRecordMode.checked = !isManualStop;
+        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
 
-        <div class="example-line dashed-border flex-row-center"
-             style="padding-top: 10px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Present Perfect:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen"
-                    type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#dcfce7; color:#15803d;
-                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
-            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
-        </div>
-    `;
+        toggleRecordMode.addEventListener("change", event => {
+            isManualStop = !event.target.checked;
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        });
+    }
 
-    container.appendChild(exBox);
+    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
+    const labelAutoPlay = document.getElementById("labelAutoPlay");
 
-    const pastListen = document.getElementById("exPastListen");
-    const perfectListen = document.getElementById("exPerfListen");
-
-    pastListen.onclick = () => {
-        setPlayingStateMultiple([pastListen], "Playing...");
-        speakText(
-            "朝5時に起きました。",
-            0.9,
-            () => stopAllPlayback()
-        );
-    };
-
-    perfectListen.onclick = () => {
-        setPlayingStateMultiple([perfectListen], "Playing...");
-        speakText(
-            "朝5時から起きています。",
-            0.9,
-            () => stopAllPlayback()
-        );
-    };
-
-    // Drill heading
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">
-            Drill 1: Compare Past & Present Perfect
-        </span>
-        <span class="info-panel-desc">
-            💡 Compare past actions with ongoing states using ているform.
-        </span>
-    `;
-
-    container.appendChild(infoPanel);
-
-    // Generate all six questions
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill1List";
-    container.appendChild(listDiv);
-
-    practice7Data.forEach((item, index) => {
-        createPractice7TableCard(
-            listDiv,
-            `${index + 1}.`,
-            item,
-            index,
-            0.9
-        );
-    });
-}
+    if (togglePlaybackMode) {
+        togglePlaybackMode.checked = isAutoPlay;
+        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
 
         togglePlaybackMode.addEventListener("change", event => {
             isAutoPlay = event.target.checked;
-
             updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         });
     }
