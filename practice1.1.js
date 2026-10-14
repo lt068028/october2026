@@ -1,6 +1,6 @@
 // ============================================================================
 // Practice 1.1: XはYです
-// Hiragana Only / With Kanji 分離対応版 (修正済み)
+// Hiragana Only / With Kanji 分離対応版 (最終修正済み)
 // ============================================================================
 
 const taskData = [
@@ -41,7 +41,7 @@ const customDict = {
 
 let isManualStop = false;
 let hintMode = "hover";
-let scriptMode = "hiragana"; // 全体設定（Drill 3などの表示用）
+let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
@@ -550,16 +550,7 @@ function renderAll() {
 // 結果表示の初期状態
 // ============================================================================
 
-function setInitialResultDisplay(resultSpan, rowKey, isDrill1Or2 = false) {
-    // Drill 1と2は「ひらがなでも文字抽出できるように対応させた」要件に基づき、
-    // グローバルの scriptMode に影響されず、常に音声認識による文字抽出／判定を行わせるため、通常のステータス表示にする。
-    if (!isDrill1Or2 && scriptMode === "hiragana" && practice1State.audioUrls[rowKey]) {
-        resultSpan.textContent = "🐣Only Hiragana:🎙️Audio only";
-        resultSpan.style.color = "var(--text-primary)";
-        appendPersistedPlayButton(resultSpan, rowKey, 0.9);
-        return;
-    }
-
+function setInitialResultDisplay(resultSpan, rowKey) {
     if (practice1State.savedResults[rowKey]) {
         resultSpan.textContent = practice1State.savedResults[rowKey].html;
         resultSpan.style.color = practice1State.savedResults[rowKey].color;
@@ -624,7 +615,7 @@ function renderTask1() {
             item.isNeg,
             0.9,
             `task1_${index}`,
-            true // Drill 1は文字抽出を常に有効化
+            true
         );
     });
 }
@@ -742,7 +733,7 @@ function renderTask2() {
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
-        setInitialResultDisplay(resultSpan, rowKey, true); // Drill 2用
+        setInitialResultDisplay(resultSpan, rowKey);
 
         topRow.appendChild(listenBtn);
         topRow.appendChild(indexSpan);
@@ -882,7 +873,7 @@ function renderTask2() {
             false,
             () => selectX.value,
             () => selectY.value,
-            true // forceRecognition (Drill 2用)
+            true
         );
 
         listDiv.appendChild(rowDiv);
@@ -984,7 +975,7 @@ function renderTask3() {
 
         const resultSpan = document.createElement("span");
         resultSpan.className = "result-text";
-        setInitialResultDisplay(resultSpan, rowKey, false);
+        setInitialResultDisplay(resultSpan, rowKey);
 
         topRow.appendChild(indexSpan);
         topRow.appendChild(inputX);
@@ -1070,7 +1061,7 @@ function renderTask3() {
             true,
             () => inputX.value.trim(),
             () => inputY.value.trim(),
-            false // Drill 3は scriptMode に従う
+            false
         );
 
         listDiv.appendChild(rowDiv);
@@ -1143,7 +1134,7 @@ function createDrillRow(
 
     const resultSpan = document.createElement("span");
     resultSpan.className = "result-text";
-    setInitialResultDisplay(resultSpan, rowKey, forceRecognition);
+    setInitialResultDisplay(resultSpan, rowKey);
 
     topRow.appendChild(listenBtn);
     topRow.appendChild(indexSpan);
@@ -1320,6 +1311,12 @@ function bindRecorderEvents(
     }
 
     function showAudioOnlyStatus(currentSession, isRecording) {
+        if (forceRecognition) {
+            resultSpan.textContent = isRecording ? "Recording..." : "";
+            resultSpan.style.color = "var(--accent-color)";
+            return;
+        }
+
         resultSpan.textContent = isRecording
             ? AUDIO_ONLY_RECORDING_STATUS
             : AUDIO_ONLY_STATUS;
@@ -1661,10 +1658,16 @@ function bindRecorderEvents(
             }
 
             if (
-                currentSession.recognitionDone &&
-                currentSession.recorderDone
+                (currentSession.recognitionDone && currentSession.recorderDone) ||
+                (!currentRecognition.continuous && currentSession.recognitionDone)
             ) {
                 currentSession.processed = true;
+
+                if (currentSession.mediaRecorder && currentSession.mediaRecorder.state !== "inactive") {
+                    try {
+                        currentSession.mediaRecorder.stop();
+                    } catch (e) {}
+                }
 
                 processResult(
                     currentSession.accumulatedTranscript,
@@ -1798,7 +1801,8 @@ function bindRecorderEvents(
 
                 if (
                     currentSession.mediaRecorder &&
-                    currentSession.mediaRecorder.state !== "inactive"
+                    currentSession.mediaRecorder.state !== "inactive" &&
+                    isManualStop
                 ) {
                     try {
                         currentSession.mediaRecorder.stop();
@@ -1913,7 +1917,6 @@ function bindRecorderEvents(
             return;
         }
 
-        // Drill 1と2は強制的に認識モード（文字抽出）を維持。Drill 3のみ全体の scriptMode に従う
         const recordingMode = forceRecognition ? "kanji" : scriptMode;
 
         if (recordingMode === "hiragana") {
