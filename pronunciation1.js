@@ -254,81 +254,40 @@ function setupFooterGuide() {
 }
 
 function initSettingsPanel() {
-    const toggleRecordMode = document.getElementById("toggleRecordMode");
-    const labelAutoRecord = document.getElementById("labelAutoRecord");
-    const labelManualRecord = document.getElementById("labelManualRecord");
+    const toggleRecordMode =
+        document.getElementById("toggleRecordMode");
+
+    const labelAutoRecord =
+        document.getElementById("labelAutoRecord");
 
     if (toggleRecordMode) {
-        toggleRecordMode.checked = false;
-        isManualStop = false;
-
-        toggleRecordMode.addEventListener("change", (e) => {
-            isManualStop = e.target.checked;
-
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-            updateToggleLabelStyle(labelManualRecord, isManualStop);
-        });
+        toggleRecordMode.checked = !isManualStop;
 
         updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        updateToggleLabelStyle(labelManualRecord, isManualStop);
+
+        toggleRecordMode.addEventListener("change", event => {
+            isManualStop = !event.target.checked;
+
+            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
+        });
     }
 
-    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
-    const labelAutoPlay = document.getElementById("labelAutoPlay");
-    const labelManualPlay = document.getElementById("labelManualPlay");
+    const togglePlaybackMode =
+        document.getElementById("togglePlaybackMode");
+
+    const labelAutoPlay =
+        document.getElementById("labelAutoPlay");
 
     if (togglePlaybackMode) {
-        togglePlaybackMode.addEventListener("change", (e) => {
-            isAutoPlay = !e.target.checked;
-
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-            updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-        });
+        togglePlaybackMode.checked = isAutoPlay;
 
         updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        updateToggleLabelStyle(labelManualPlay, !isAutoPlay);
-    }
 
-    const toggleScriptMode = document.getElementById("toggleScriptMode");
-    const labelKanji = document.getElementById("labelKanji");
-    const labelHiragana = document.getElementById("labelHiragana");
+        togglePlaybackMode.addEventListener("change", event => {
+            isAutoPlay = event.target.checked;
 
-    const scriptControlItem = toggleScriptMode
-        ? toggleScriptMode.closest(".control-item")
-        : null;
-
-    if (toggleScriptMode) {
-        toggleScriptMode.checked = true;
-        toggleScriptMode.disabled = true;
-    }
-
-    if (scriptControlItem) {
-        scriptControlItem.style.opacity = "0.4";
-        scriptControlItem.style.pointerEvents = "none";
-    }
-
-    if (labelKanji) {
-        labelKanji.className =
-            "mode-label inactive-mode custom-tip-wrap";
-
-        const emoji = labelKanji.querySelector(".icon-emoji");
-
-        if (emoji) {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.4";
-        }
-    }
-
-    if (labelHiragana) {
-        labelHiragana.className =
-            "mode-label inactive-mode custom-tip-wrap";
-
-        const emoji = labelHiragana.querySelector(".icon-emoji");
-
-        if (emoji) {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.4";
-        }
+            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
+        });
     }
 }
 
