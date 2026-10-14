@@ -457,63 +457,86 @@ function renderDrill1Section() {
     if (!container) {
         container = document.createElement("div");
         container.id = "drill1Container";
-        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
+        document.body.insertBefore(
+            container,
+            document.querySelector(".voice-guide-footer")
+        );
     }
 
     container.innerHTML = "";
 
-    // Example Box (きくボタンの右に見出し、指定部分の太字化)
     const exBox = document.createElement("div");
     exBox.className = "example-box";
     exBox.style.marginTop = "30px";
 
-    const w1 = formatWord("よる10じ", "夜10時", "yoru jū-ji", "10 o'clock at night");
-    const w2 = formatWord("ねる", "寝る", "neru", "to sleep");
+    const w1 = formatWord(
+        "あさ5じ", "朝5時", "asa go-ji",
+        "5 o'clock in the morning"
+    );
+    const w2 = formatWord(
+        "おきる", "起きる", "okiru",
+        "to wake up / get up"
+    );
+    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
 
     exBox.innerHTML = `
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title" style="min-width: 130px;">Past Tense:</strong>
+        <div class="example-line flex-row-center"
+             style="margin-bottom: 8px;">
+            <strong class="example-label-title"
+                    style="min-width: 130px;">Past Tense:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen" class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px; margin:0 6px; border-radius:4px; background:#bae6fd; color:#0369a1; font-size:13px; font-weight:bold;">⏪ Past</span>
-            <span>${w1}に寝<strong>ました。</strong></span>
+            <button id="exPastListen" type="button"
+                    class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px;
+                         margin:0 6px; border-radius:4px;
+                         background:#bae6fd; color:#0369a1;
+                         font-size:13px; font-weight:bold;">⏪ Past</span>
+            <span>${w1}に${verbStem}<strong>ました。</strong></span>
         </div>
 
-        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title" style="min-width: 130px;">Present Perfect:</strong>
+        <div class="example-line dashed-border flex-row-center"
+             style="padding-top: 10px;">
+            <strong class="example-label-title"
+                    style="min-width: 130px;">Present Perfect:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen" class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px; margin:0 6px; border-radius:4px; background:#dcfce7; color:#15803d; font-size:13px; font-weight:bold;">⏳ Perfect</span>
-            <span>${w1}<strong>から</strong>寝<strong>ています。</strong></span>
+            <button id="exPerfListen" type="button"
+                    class="example-button">🔊きく</button>
+            <span style="display:inline-block; padding:4px 8px;
+                         margin:0 6px; border-radius:4px;
+                         background:#dcfce7; color:#15803d;
+                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
+            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
         </div>
     `;
 
     container.appendChild(exBox);
 
-    document.getElementById("exPastListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("exPastListen")], "Playing...");
-        speakText("夜10実に寝ました。", 0.9, () => stopAllPlayback());
+    const pastListen = document.getElementById("exPastListen");
+    const perfectListen = document.getElementById("exPerfListen");
+
+    pastListen.onclick = () => {
+        setPlayingStateMultiple([pastListen], "Playing...");
+        speakText("朝5時に起きました。", 0.9, () => stopAllPlayback());
     };
 
-    document.getElementById("exPerfListen").onclick = () => {
-        setPlayingStateMultiple([document.getElementById("exPerfListen")], "Playing...");
-        speakText("夜10時から寝ています。", 0.9, () => stopAllPlayback());
+    perfectListen.onclick = () => {
+        setPlayingStateMultiple([perfectListen], "Playing...");
+        speakText("朝5時から起きています。", 0.9, () => stopAllPlayback());
     };
 
-    // Info Panel
     const infoPanel = document.createElement("div");
     infoPanel.className = "info-panel info-panel-task1";
     infoPanel.style.marginTop = "25px";
-
     infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 1: Compare Past & Present Perfect</span>
+        <span class="info-panel-title">
+            Drill 1: Compare Past & Present Perfect
+        </span>
         <span class="info-panel-desc">
             💡 Compare past actions with ongoing states using ているform.
         </span>
     `;
-
     container.appendChild(infoPanel);
 
     const listDiv = document.createElement("div");
@@ -521,7 +544,9 @@ function renderDrill1Section() {
     container.appendChild(listDiv);
 
     practice7Data.forEach((item, index) => {
-        createPractice7TableCard(listDiv, `${index + 1}.`, item, index, 0.9);
+        createPractice7TableCard(
+            listDiv, `${index + 1}.`, item, index, 0.9
+        );
     });
 }
 
