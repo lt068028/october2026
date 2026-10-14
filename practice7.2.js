@@ -312,7 +312,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPastListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}<strong>に寝ました。</strong></span>
+            <span>私は、${w1}に<strong>寝ました。</strong></span>
         </div>
 
         <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
@@ -320,7 +320,7 @@ function renderDrill1Section() {
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPerfListen" class="example-button">🔊 きく</button>
-            <span>私は、${w1}<strong>から寝ています。</strong></span>
+            <span>私は、${w1}から<strong>寝ています。</strong></span>
         </div>
     `;
 
@@ -360,19 +360,18 @@ function renderDrill1Section() {
 }
 
 function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRate) {
-    // 1つの共通カード枠
+    // 2段構成の共通カード枠
     const cardDiv = document.createElement("div");
     cardDiv.className = "drill-row";
     cardDiv.style.display = "flex";
     cardDiv.style.flexDirection = "column";
     cardDiv.style.gap = "8px";
 
-    // キュー表示部分（共通のプロンプト行）
-    const headerRow = document.createElement("div");
-    headerRow.className = "top-row";
-    headerRow.style.borderBottom = "1px solid var(--border-color)";
-    headerRow.style.paddingBottom = "6px";
-    headerRow.style.marginBottom = "2px";
+    // ----------------------------------------------------
+    // 1段目: キュー ＋ Past行
+    // ----------------------------------------------------
+    const row1 = document.createElement("div");
+    row1.className = "top-row";
 
     const indexSpan = document.createElement("span");
     indexSpan.textContent = indexLabel;
@@ -381,17 +380,7 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     const promptSpan = document.createElement("span");
     promptSpan.className = "prompt-label";
     promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    promptSpan.style.fontWeight = "bold";
-
-    headerRow.appendChild(indexSpan);
-    headerRow.appendChild(promptSpan);
-    cardDiv.appendChild(headerRow);
-
-    // ----------------------------------------------------
-    // 行 1: Past 
-    // ----------------------------------------------------
-    const pastSubRow = document.createElement("div");
-    pastSubRow.className = "top-row";
+    promptSpan.style.minWidth = "220px";
 
     const pastBtn = document.createElement("button");
     pastBtn.className = "example-button";
@@ -424,11 +413,13 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
         speakText(item.pastSentence, playRate, () => stopAllPlayback());
     };
 
-    pastSubRow.appendChild(pastBtn);
-    pastSubRow.appendChild(listenBtn1);
-    pastSubRow.appendChild(recordBtn1);
-    pastSubRow.appendChild(stopBtn1);
-    pastSubRow.appendChild(resultSpan1);
+    row1.appendChild(indexSpan);
+    row1.appendChild(promptSpan);
+    row1.appendChild(pastBtn);
+    row1.appendChild(listenBtn1);
+    row1.appendChild(recordBtn1);
+    row1.appendChild(stopBtn1);
+    row1.appendChild(resultSpan1);
 
     const correctionBox1 = document.createElement("div");
     correctionBox1.className = "correction-box";
@@ -441,7 +432,7 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     correctionBox1.appendChild(corrTextSpan1);
 
     const pastContainer = document.createElement("div");
-    pastContainer.appendChild(pastSubRow);
+    pastContainer.appendChild(row1);
     pastContainer.appendChild(correctionBox1);
     cardDiv.appendChild(pastContainer);
 
@@ -454,12 +445,15 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     );
 
     // ----------------------------------------------------
-    // 行 2: Perfect (真下)
+    // 2段目: Perfect行（真下）
     // ----------------------------------------------------
-    const perfSubRow = document.createElement("div");
-    perfSubRow.className = "top-row";
-    perfSubRow.style.borderTop = "1px dashed var(--border-color)";
-    perfSubRow.style.paddingTop = "6px";
+    const row2 = document.createElement("div");
+    row2.className = "top-row";
+    row2.style.borderTop = "1px dashed var(--border-color)";
+    row2.style.paddingTop = "6px";
+
+    const emptyIndentSpan = document.createElement("span");
+    emptyIndentSpan.style.minWidth = "224px"; // 番号とキュー分のスペースを空けて縦位置を合わせる
 
     const perfBtn = document.createElement("button");
     perfBtn.className = "example-button";
@@ -492,11 +486,12 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
         speakText(item.perfectSentence, playRate, () => stopAllPlayback());
     };
 
-    perfSubRow.appendChild(perfBtn);
-    perfSubRow.appendChild(listenBtn2);
-    perfSubRow.appendChild(recordBtn2);
-    perfSubRow.appendChild(stopBtn2);
-    perfSubRow.appendChild(resultSpan2);
+    row2.appendChild(emptyIndentSpan);
+    row2.appendChild(perfBtn);
+    row2.appendChild(listenBtn2);
+    row2.appendChild(recordBtn2);
+    row2.appendChild(stopBtn2);
+    row2.appendChild(resultSpan2);
 
     const correctionBox2 = document.createElement("div");
     correctionBox2.className = "correction-box";
@@ -509,7 +504,7 @@ function createPractice7GroupCard(container, indexLabel, item, rowIndex, playRat
     correctionBox2.appendChild(corrTextSpan2);
 
     const perfContainer = document.createElement("div");
-    perfContainer.appendChild(perfSubRow);
+    perfContainer.appendChild(row2);
     perfContainer.appendChild(correctionBox2);
     cardDiv.appendChild(perfContainer);
 
