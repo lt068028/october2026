@@ -213,7 +213,10 @@ function convertToHiragana(text) {
 function speakText(text, rate = 0.9, onEndCallback) {
     setupPreferredVoice();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(
+        practice2SpeechText(text)
+    );
+
     utterance.lang = "ja-JP";
     utterance.rate = rate;
 
@@ -223,24 +226,49 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
     currentUtteranceRef = utterance;
 
-    utterance.onend = () => {
+    let completed = false;
+
+    const finish = () => {
+        if (
+            completed
+            || currentUtteranceRef !== utterance
+        ) {
+            return;
+        }
+
+        completed = true;
         currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+
+        if (onEndCallback) {
+            onEndCallback();
+        }
     };
 
-    utterance.onerror = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+    utterance.onend = finish;
+
+    utterance.onerror = event => {
+        if (
+            event.error === "canceled"
+            || event.error === "interrupted"
+        ) {
+            completed = true;
+
+            if (currentUtteranceRef === utterance) {
+                currentUtteranceRef = null;
+            }
+
+            return;
+        }
+
+        finish();
     };
 
     try {
         speechSynthesis.speak(utterance);
-    } catch (err) {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+    } catch (error) {
+        finish();
     }
 }
-
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     renderAll();
@@ -1394,12 +1422,28 @@ function practice2Normalize(text) {
 
 // 読み上げ専用。表示・判定用の文は変更しない。
 function practice2SpeechText(text) {
-    return String(text ?? "")
-        .replace(/^(はい|いいえ)[、,\s]*/, "$1、")
-        .replace(/は(?=[^、])/g, "は、");
-}
+    let value = String(text ?? "").trim();
+    let prefix = "";
 
-// 比較用の読みを作る。
+    // 「はい」の「は」を助詞として処理しない。
+    const response = value.match(/^(はい|いいえ)[、,\s]*/);
+
+    if (response) {
+        prefix = response[1] + "、";
+        value = value.slice(response[0].length);
+    }
+
+    // このページの文型「XはYです」の区切り。
+    value = value.replace(/は[、,\s]*/, "は、");
+
+    // 否定文の読み上げ用の区切り。
+    value = value.replace(
+        /じゃ[、,\s]*ないです/g,
+        "じゃ、ないです"
+    );
+
+    return prefix + value;
+}// 比較用の読みを作る。
 // 文末専用の「わ→は」が単語の途中に適用されることを防ぐ。
 function practice2DiffReading(text) {
     return practice2ToHiragana(String(text ?? "") + "\uE000")
