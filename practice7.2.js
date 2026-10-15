@@ -411,8 +411,8 @@ function renderAll() {
 
     style.textContent = `
         #drill1Container .grammar-highlight {
-            color: #B45309;
-            font-weight: bold;
+color: #CA8A04;
+font-weight: bold;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -792,8 +792,11 @@ function practice7Normalize(text) {
     return practice7ToHiragana(text)
         .toLowerCase()
         .replace(/[\s、。,.!?！？「」『』・]/g, "")
-        // 文末の終助詞だけを許容する。
-        .replace(/(?:よね|よ|ね)$/, "");
+        .replace(/(?:よね|よ|ね)$/, "")
+        .replace(
+            /^(おしょうがつ|なつやすみ|3ねんまえ)に/,
+            "$1"
+        );
 }
 
 function practice7DiffTokens(text) {
@@ -801,7 +804,6 @@ function practice7DiffTokens(text) {
     const chars = Array.from(value);
     const tokens = [];
 
-    // 判定用辞書と同じ変換を使い、表示位置を保持する。
     const units = [
         "お正月", "夏休み", "結婚", "漢字", "年前",
         "フォーム", "Form", "form",
@@ -811,13 +813,17 @@ function practice7DiffTokens(text) {
         "朝", "夜", "時", "個"
     ].sort((a, b) => b.length - a.length);
 
-    const suffix = value.match(/(?:よね|よ|ね)[。！？!?\s]*$/);
+    const suffix = value.match(
+        /(?:よね|よ|ね)[。！？!?\s]*$/
+    );
+
     const limit = suffix
         ? Array.from(value.slice(0, suffix.index)).length
         : chars.length;
 
     for (let index = 0; index < limit;) {
         const rest = chars.slice(index, limit).join("");
+
         const unit = units.find(word =>
             rest.startsWith(word)
         ) || chars[index];
@@ -837,6 +843,20 @@ function practice7DiffTokens(text) {
         }
 
         index += length;
+    }
+
+    // 省略可能な「に」は比較対象から外す。
+    // 元の表示文字・位置は変更しない。
+    const reading = tokens
+        .map(token => token.character)
+        .join("");
+
+    const optionalNi = reading.match(
+        /^(おしょうがつ|なつやすみ|3ねんまえ)に/
+    );
+
+    if (optionalNi) {
+        tokens.splice(optionalNi[0].length - 1, 1);
     }
 
     return { chars, tokens };
@@ -1460,11 +1480,16 @@ function bindRecorderEvents(
 
             recognition.lang = "ja-JP";
             recognition.interimResults = true;
-            recognition.continuous = manual;
+            recognition.continuous = true;
 
-            recognition.onspeechstart = () => {
+            session.lastSpeechAt = 0;
+
+            const noteSpeech = () => {
                 session.speechStarted = true;
+                session.lastSpeechAt = performance.now();
             };
+
+            recognition.onspeechstart = noteSpeech;
 
             recognition.onresult = event => {
                 if (session.finished || session.discard) {
@@ -1480,7 +1505,7 @@ function bindRecorderEvents(
                     const text = result[0].transcript;
 
                     if (text.trim()) {
-                        session.speechStarted = true;
+                        noteSpeech();
                     }
 
                     if (result.isFinal) {
@@ -1506,33 +1531,22 @@ function bindRecorderEvents(
             recognition.onend = () => {
                 if (session.finished) return;
 
-                if (
-                    !session.stopRequested &&
-                    (manual || !session.speechStarted)
-                ) {
-                    try {
-                        recognition.start();
-                        return;
-                    } catch (error) {
-                        session.recognitionDone = true;
-
-                        if (manual) return;
-
-                        stop(
-                            "Could not restart recognition.",
-                            true
-                        );
-                        return;
-                    }
+                if (session.stopRequested) {
+                    session.recognitionDone = true;
+                    finish();
+                    return;
                 }
 
-                session.recognitionDone = true;
-
-                if (!session.stopRequested) {
-                    stop();
+                // 文中の間で認識が終了しても録音を続ける。
+                try {
+                    recognition.start();
+                } catch (error) {
+                    session.recognitionDone = true;
+                    stop(
+                        "Could not restart recognition.",
+                        true
+                    );
                 }
-
-                finish();
             };
 
             const recorder = new MediaRecorder(stream);
@@ -1577,8 +1591,8 @@ function bindRecorderEvents(
 
                 const source =
                     context.createMediaStreamSource(stream);
-                const analyser = context.createAnalyser();
 
+                const analyser = context.createAnalyser();
                 analyser.fftSize = 1024;
                 source.connect(analyser);
 
@@ -1587,12 +1601,13 @@ function bindRecorderEvents(
                 );
 
                 let soundFrames = 0;
+
                 context.resume().catch(() => {});
 
                 session.timers.push(setInterval(() => {
                     if (
-                        session.stopRequested ||
-                        session.speechStarted
+                        session.finished ||
+                        session.stopRequested
                     ) {
                         return;
                     }
@@ -1608,15 +1623,35 @@ function bindRecorderEvents(
                     const volume =
                         Math.sqrt(sum / samples.length);
 
-                    soundFrames = volume > 0.015
-                        ? soundFrames + 1
-                        : 0;
+                    const now = performance.now();
 
-                    if (soundFrames >= 3) {
-                        session.speechStarted = true;
+                    if (volume > 0.015) {
+                        soundFrames++;
+
+                        if (soundFrames >= 3) {
+                            session.speechStarted = true;
+                        }
+
+                        if (session.speechStarted) {
+                            session.lastSpeechAt = now;
+                        }
+                    } else {
+                        soundFrames = 0;
+                    }
+
+                    if (
+                        !manual &&
+                        session.speechStarted &&
+                        session.lastSpeechAt > 0 &&
+                        now - session.lastSpeechAt >= 2000
+                    ) {
+                        stop();
                     }
                 }, 100));
-            } catch (error) {}
+            } catch (error) {
+                // 音量監視が使えなくても、
+                // 手動停止と20秒上限は維持する。
+            }
 
             session.timers.push(setTimeout(() => {
                 if (!session.speechStarted) {
