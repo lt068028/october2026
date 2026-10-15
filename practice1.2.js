@@ -1402,7 +1402,10 @@ function practice2SpeechText(text) {
 function practice2ShowResult(view, saved, rowKey, playRate) {
     const displayed = scriptMode === "hiragana"
         ? practice2ToHiragana(saved.rawTranscript)
-        : saved.rawTranscript;
+        : String(saved.rawTranscript ?? "").replace(
+            /千校|千項|先行|選考|線香|閃光|潜行|せんこう/g,
+            "専攻"
+        );
 
     view.resultSpan.textContent =
         displayed + (saved.isCorrect ? " ✅ " : " ");
