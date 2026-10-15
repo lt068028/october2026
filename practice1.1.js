@@ -726,35 +726,93 @@ function makeRow(
     return view;
 }
 
-function refreshRow(view) {
+function syncRecordingButtons() {
+    const blocked = busy();
     const session = activeRecognitionSession;
 
-    const running = session?.rowKey === view.rowKey;
+    const playing = new Set(
+        activePlayButtons.map(item => item.button)
+    );
 
-    const starting =
-        practice1State.startingRow === view.rowKey;
+    Object.values(practice1State.views).forEach(view => {
+        const running =
+            session?.rowKey === view.rowKey;
 
-    const locked = running || starting;
+        const starting =
+            practice1State.startingRow === view.rowKey;
 
-    view.listen.disabled = !view.ready() || locked;
-    view.record.disabled = !view.ready() || locked;
-
-    view.stop.disabled =
-        !running || !session.manual || session.stopRequested;
-
-    view.stop.classList.toggle(
-        "stop-btn-active",
-        Boolean(
+        const canStop = Boolean(
             running
             && session.manual
             && !session.stopRequested
-        )
-    );
+        );
 
-    view.row.querySelectorAll("input, select")
-        .forEach(input => {
-            input.disabled = locked;
+        // 録音中・マイク許可待ちは、全行の再生と録音を無効化する。
+        view.listen.disabled =
+            blocked
+            || !view.ready()
+            || playing.has(view.listen);
+
+        view.record.disabled =
+            blocked || !view.ready();
+
+        // Manualでは録音中の行の停止ボタンだけを有効にする。
+        view.stop.disabled = !canStop;
+
+        view.stop.classList.toggle(
+            "stop-btn-active",
+            canStop
+        );
+
+        view.correctionListen.disabled =
+            blocked
+            || playing.has(view.correctionListen);
+
+        view.result
+            .querySelectorAll(".recorded-play-button")
+            .forEach(button => {
+                button.disabled =
+                    blocked || playing.has(button);
+            });
+
+        // 録音対象のX・Yは、終了するまで変更できないようにする。
+        view.row.querySelectorAll("input, select")
+            .forEach(input => {
+                input.disabled = running || starting;
+            });
+    });
+
+    // Exampleのモデル再生も無効化する。
+    ["ex1Listen", "ex2Listen"].forEach(id => {
+        const button = document.getElementById(id);
+
+        if (button) {
+            button.disabled =
+                blocked || playing.has(button);
+        }
+    });
+
+    // 無効なボタンには禁止カーソルを表示する。
+    document.querySelectorAll(".example-button")
+        .forEach(button => {
+            button.style.setProperty(
+                "cursor",
+                button.disabled
+                    ? "not-allowed"
+                    : "pointer",
+                "important"
+            );
         });
+}
+
+function refreshRow(view) {
+    const session = activeRecognitionSession;
+
+    const running =
+        session?.rowKey === view.rowKey;
+
+    const starting =
+        practice1State.startingRow === view.rowKey;
 
     if (running || starting) {
         view.result.textContent = starting
@@ -766,6 +824,7 @@ function refreshRow(view) {
         view.result.style.color = "var(--accent-color)";
         view.correction.style.display = "none";
 
+        syncRecordingButtons();
         return;
     }
 
@@ -784,7 +843,7 @@ function displayResult(view, message = "") {
 
     } else if (saved?.rawTranscript !== undefined) {
         // 自由入力文の読みは推測しない。
-        // 表示モードを変更しても抽出済みテキストは保持する。
+        // 表示設定を変更しても抽出済みテキストは保持する。
         const display =
             scriptMode === "hiragana" && !saved.freeInput
                 ? normalizeHiraganaTranscript(
@@ -826,16 +885,22 @@ function displayResult(view, message = "") {
                 : "(Not recorded yet)";
     }
 
+    // 停止理由は文の判定色を引き継がせず、補足として表示する。
     if (message) {
-        view.result.prepend(
-            document.createTextNode(message + " ")
-        );
+        const notice = document.createElement("span");
+
+        notice.textContent = message + " ";
+        notice.style.color = "var(--text-secondary)";
+
+        view.result.prepend(notice);
     }
 
     appendPersistedPlayButton(
         view.result,
         view.rowKey
     );
+
+    syncRecordingButtons();
 }
 
 // ============================================================================
@@ -1729,8 +1794,7 @@ async function startRecording(initialView) {
         session.timers.push(
             setTimeout(() => {
                 stop(
-                    "Recording stopped after 20 seconds."
-                );
+                    "Auto-stopped after 20 seconds."                );
             }, 20000)
         );
 
