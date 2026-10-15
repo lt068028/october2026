@@ -783,8 +783,8 @@ function displayResult(view, message = "") {
         view.result.textContent = AUDIO_ONLY_MESSAGE;
 
     } else if (saved?.rawTranscript !== undefined) {
-        // 自由入力の読みは推測しない。
-        // 抽出済みテキスト自体は表示設定を変えても保持する。
+        // 自由入力文の読みは推測しない。
+        // 表示モードを変更しても抽出済みテキストは保持する。
         const display =
             scriptMode === "hiragana" && !saved.freeInput
                 ? normalizeHiraganaTranscript(
@@ -802,15 +802,11 @@ function displayResult(view, message = "") {
         if (!saved.isCorrect) {
             view.correction.style.display = "block";
 
-            const model =
-                scriptMode === "hiragana" && !saved.freeInput
-                    ? normalizeHiraganaTranscript(
-                        saved.modelText
-                    )
-                    : saved.modelText;
-
             view.correctionText.textContent =
-                `Expected: ${model}`;
+                "🔥 Keep going! Try once more!";
+
+            view.correctionListen.style.display =
+                "inline-block";
 
             view.correctionListen.onclick = () => {
                 playModel(
@@ -840,6 +836,40 @@ function displayResult(view, message = "") {
         view.result,
         view.rowKey
     );
+}
+
+// ============================================================================
+// Drill 3専用：入力したX・Yとの内容一致は求めず、指定の文型を判定する。
+// 句読点・空白は判定から除外し、文末のよ／ね／よねを許容する。
+// ============================================================================
+
+function matchesFreeSentence(transcript, negative) {
+    const normalized = practice1Normalize(transcript);
+
+    const negativeEnding = normalized.match(
+        /(?:じゃないです|ではないです|じゃありません|ではありません)$/
+    );
+
+    if (negative) {
+        if (!negativeEnding) return false;
+
+        const body = normalized.slice(
+            0,
+            -negativeEnding[0].length
+        );
+
+        // 「は」の前後に内容があることを確認する。
+        return /^.+は.+$/.test(body);
+    }
+
+    // 否定文を肯定文として通さない。
+    if (negativeEnding || !normalized.endsWith("です")) {
+        return false;
+    }
+
+    const body = normalized.slice(0, -2);
+
+    return /^.+は.+$/.test(body);
 }
 
 function section(
@@ -1372,10 +1402,15 @@ async function startRecording(initialView) {
                     expectedText: expected,
                     modelText: model,
 
-                    isCorrect: matchesSentence(
-                        session.transcript,
-                        expected
-                    )
+                    isCorrect: initialView.freeInput
+                        ? matchesFreeSentence(
+                            session.transcript,
+                            initialView.negative
+                        )
+                        : matchesSentence(
+                            session.transcript,
+                            expected
+                        ) 
                 };
 
             } else {
