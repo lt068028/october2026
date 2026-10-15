@@ -831,6 +831,406 @@ function refreshRow(view) {
     displayResult(view);
 }
 
+function practice1DiffReading(text) {
+    return normalizeHiraganaTranscript(text)
+        .toLowerCase();
+}
+
+function practice1DiffTokens(text) {
+    const chars = Array.from(
+        String(text ?? "").normalize("NFKC")
+    );
+
+    const tokens = chars
+        .map((char, index) => ({char, index}))
+        .filter(token =>
+            practice1DiffReading(token.char) !== ""
+        );
+
+    // 終助詞は表示に残し、比較対象からだけ外す。
+    const joined = tokens.map(token => token.char).join("");
+    const suffix = joined.match(/(?:よね|よ|ね)$/);
+
+    if (suffix) {
+        tokens.splice(tokens.length - suffix[0].length);
+    }
+
+    return {chars, tokens};
+}
+
+function practice1FindDiff(actual, reference) {
+    const a = practice1DiffTokens(actual);
+    const b = practice1DiffTokens(reference);
+
+    const n = a.tokens.length;
+    const m = b.tokens.length;
+
+    function spans(tokens) {
+        return tokens.map((_, start) => {
+            const readings = new Map();
+            let text = "";
+
+            for (
+                let end = start + 1;
+                end <= tokens.length;
+                end++
+            ) {
+                text += tokens[end - 1].char;
+                const reading = practice1DiffReading(text);
+
+                if (!reading) continue;
+
+                if (!readings.has(reading)) {
+                    readings.set(reading, []);
+                }
+
+                readings.get(reading).push(end);
+            }
+
+            return readings;
+        });
+    }
+
+    const aSpans = spans(a.tokens);
+    const bSpans = spans(b.tokens);
+
+    const costs = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(Infinity)
+    );
+
+    const steps = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(null)
+    );
+
+    costs[0][0] = 0;
+
+    function update(i, j, nextI, nextJ, extra, red) {
+        const cost = costs[i][j] + extra;
+
+        if (cost < costs[nextI][nextJ]) {
+            costs[nextI][nextJ] = cost;
+            steps[nextI][nextJ] = {i, j, red};
+        }
+    }
+
+    for (let i = 0; i <= n; i++) {
+        for (let j = 0; j <= m; j++) {
+            if (!Number.isFinite(costs[i][j])) continue;
+
+            if (i < n && j < m) {
+                const same =
+                    a.tokens[i].char === b.tokens[j].char;
+
+                update(
+                    i,
+                    j,
+                    i + 1,
+                    j + 1,
+                    same ? 0 : 1,
+                    !same
+                );
+
+                // 登録済みの漢字・読みの表記差は一致扱い。
+                for (
+                    const [reading, endsA]
+                    of aSpans[i]
+                ) {
+                    const endsB = bSpans[j].get(reading);
+
+                    if (!endsB) continue;
+
+                    for (const endA of endsA) {
+                        for (const endB of endsB) {
+                            update(
+                                i, j, endA, endB, 0, false
+                            );
+                        }
+                    }
+                }
+            }
+
+            if (i < n) {
+                update(i, j, i + 1, j, 1, true);
+            }
+
+            if (j < m) {
+                update(i, j, i, j + 1, 1, false);
+            }
+        }
+    }
+
+    const redIndexes = new Set();
+    const gaps = new Set();
+
+    let i = n;
+    let j = m;
+
+    while (i || j) {
+        const step = steps[i][j];
+
+        if (!step) break;
+
+        if (step.red) {
+            for (let k = step.i; k < i; k++) {
+                redIndexes.add(a.tokens[k].index);
+            }
+        }
+
+        // 連続した不足は、同じ位置の「＿」一つにまとめる。
+        if (step.i === i && step.j < j) {
+            const position = i < a.tokens.length
+                ? a.tokens[i].index
+                : a.tokens.length
+                    ? a.tokens[a.tokens.length - 1].index + 1
+                    : 0;
+
+            gaps.add(position);
+        }
+
+        i = step.i;
+        j = step.j;
+    }
+
+    // 不一致文字を含む語全体に赤字を広げる。
+    const wordSources = [
+        ...taskData.flatMap(item => [
+            item.x, item.xKanji, item.y, item.yKanji
+        ]),
+        ...Object.values(customDict).flatMap(item => [
+            item.hira, item.kanji
+        ]),
+        "会社員", "友だち", "子ども",
+        "姉妹", "医師", "看護婦"
+    ];
+
+    const words = [...new Set(
+        wordSources.filter(Boolean).flatMap(word => [
+            String(word).normalize("NFKC"),
+            normalizeHiraganaTranscript(word)
+        ])
+    )]
+        .filter(Boolean)
+        .sort((x, y) => y.length - x.length);
+
+    const compact = a.tokens.map(token => token.char).join("");
+    const ranges = [];
+    const covered = new Set();
+
+    let position = 0;
+
+    while (position < a.tokens.length) {
+        const rest = a.tokens.slice(position)
+            .map(token => token.char)
+            .join("");
+
+        const word = words.find(candidate =>
+            rest.startsWith(candidate)
+        );
+
+        if (!word) {
+            position++;
+            continue;
+        }
+
+        const end = position + Array.from(word).length;
+
+        ranges.push([position, end]);
+
+        for (let k = position; k < end; k++) {
+            covered.add(k);
+        }
+
+        position = end;
+    }
+
+    // 未登録語は、利用可能なら日本語の単語分割で補う。
+    if (
+        typeof Intl !== "undefined"
+        && Intl.Segmenter
+    ) {
+        const segmenter = new Intl.Segmenter("ja", {
+            granularity: "word"
+        });
+
+        for (const segment of segmenter.segment(compact)) {
+            if (!segment.isWordLike) continue;
+
+            const start = Array.from(
+                compact.slice(0, segment.index)
+            ).length;
+
+            const end =
+                start + Array.from(segment.segment).length;
+
+            let overlaps = false;
+
+            for (let k = start; k < end; k++) {
+                if (covered.has(k)) overlaps = true;
+            }
+
+            if (!overlaps) ranges.push([start, end]);
+        }
+    }
+
+    const originalRed = new Set(redIndexes);
+
+    ranges.forEach(([start, end]) => {
+        const mismatch = a.tokens.slice(start, end)
+            .some(token => originalRed.has(token.index));
+
+        if (mismatch) {
+            for (let k = start; k < end; k++) {
+                redIndexes.add(a.tokens[k].index);
+            }
+        }
+    });
+
+    return {
+        cost: costs[n][m],
+        chars: a.chars,
+        redIndexes,
+        gaps
+    };
+}
+
+function practice1ResultDiff(displayed, saved, view) {
+    let references;
+
+    if (saved.freeInput) {
+        // Drill 3では、入力されたX・Yとの内容一致を求めない。
+        // 抽出文自身のX・Yを残し、文型だけを比較する。
+        const tokens =
+            practice1DiffTokens(displayed).tokens;
+
+        const surface = tokens
+            .map(token => token.char)
+            .join("");
+
+        const ending = surface.match(
+            /(?:じゃないです|ではないです|じゃありません|ではありません|じゃない|ではない|でした|だった|です|だ)$/
+        );
+
+        let body = ending
+            ? surface.slice(0, -ending[0].length)
+            : surface;
+
+        if (!body.includes("は")) {
+            const words = [
+                ...taskData.flatMap(item => [
+                    item.x, item.xKanji
+                ]),
+                ...Object.values(customDict).flatMap(item => [
+                    item.hira, item.kanji
+                ])
+            ]
+                .filter(Boolean)
+                .sort((a, b) => b.length - a.length);
+
+            const first = words.find(word =>
+                body.startsWith(word)
+            );
+
+            let position = first ? first.length : 0;
+
+            if (
+                !position
+                && body
+                && typeof Intl !== "undefined"
+                && Intl.Segmenter
+            ) {
+                const segmenter = new Intl.Segmenter("ja", {
+                    granularity: "word"
+                });
+
+                const segment = [
+                    ...segmenter.segment(body)
+                ].find(item => item.isWordLike);
+
+                if (segment) {
+                    position =
+                        segment.index + segment.segment.length;
+                }
+            }
+
+            if (!position) position = body.length;
+
+            body =
+                body.slice(0, position)
+                + "は"
+                + body.slice(position);
+        }
+
+        // 不足スロット用の内部記号。画面には＿だけを表示する。
+        if (body.startsWith("は")) {
+            body = "¤" + body;
+        }
+
+        if (body.endsWith("は")) {
+            body += "¤";
+        }
+
+        references = view.negative
+            ? [
+                "じゃないです",
+                "ではないです",
+                "じゃありません",
+                "ではありません"
+            ].map(end => body + end)
+            : [body + "です"];
+
+    } else {
+        references = [
+            saved.expectedText,
+            saved.modelText
+        ].filter(text =>
+            typeof text === "string" && text.length
+        );
+
+        references = references.flatMap(text => {
+            const value =
+                removeRecognitionPunctuation(text);
+
+            const core = value.replace(
+                /(?:じゃないです|ではないです|じゃありません|ではありません)$/,
+                ""
+            );
+
+            return core === value
+                ? [value]
+                : [
+                    "じゃないです",
+                    "ではないです",
+                    "じゃありません",
+                    "ではありません"
+                ].map(end => core + end);
+        });
+
+        references = [...new Set(
+            references.flatMap(text => [
+                text,
+                normalizeHiraganaTranscript(text)
+            ])
+        )];
+    }
+
+    let best = null;
+
+    for (const reference of references) {
+        const diff = practice1FindDiff(
+            displayed,
+            reference
+        );
+
+        if (!best || diff.cost < best.cost) {
+            best = diff;
+        }
+    }
+
+    return best;
+}
+
 function displayResult(view, message = "") {
     const saved =
         practice1State.savedResults[view.rowKey];
@@ -842,23 +1242,67 @@ function displayResult(view, message = "") {
         view.result.textContent = AUDIO_ONLY_MESSAGE;
 
     } else if (saved?.rawTranscript !== undefined) {
-        // 自由入力文の読みは推測しない。
-        // 表示設定を変更しても抽出済みテキストは保持する。
-        const display =
+        const displayed =
             scriptMode === "hiragana" && !saved.freeInput
                 ? normalizeHiraganaTranscript(
                     saved.rawTranscript
                 )
                 : saved.rawTranscript;
 
-        view.result.textContent =
-            display + (saved.isCorrect ? " ✅" : "");
+        view.result.textContent = "";
+        view.result.style.color = "var(--text-primary)";
 
-        view.result.style.color = saved.isCorrect
-            ? "var(--text-primary)"
-            : "var(--error-text)";
+        if (saved.isCorrect) {
+            view.result.appendChild(
+                document.createTextNode(displayed + " ✅")
+            );
 
-        if (!saved.isCorrect) {
+        } else {
+            const diff = practice1ResultDiff(
+                displayed,
+                saved,
+                view
+            );
+
+            const red = text => {
+                const span = document.createElement("span");
+
+                span.textContent = text;
+                span.style.color = "var(--error-text)";
+
+                view.result.appendChild(span);
+            };
+
+            if (!diff) {
+                view.result.appendChild(
+                    document.createTextNode(displayed)
+                );
+            } else {
+                for (
+                    let index = 0;
+                    index <= diff.chars.length;
+                    index++
+                ) {
+                    if (diff.gaps.has(index)) {
+                        red("＿");
+                    }
+
+                    if (index === diff.chars.length) {
+                        break;
+                    }
+
+                    if (diff.redIndexes.has(index)) {
+                        red(diff.chars[index]);
+                    } else {
+                        view.result.appendChild(
+                            document.createTextNode(
+                                diff.chars[index]
+                            )
+                        );
+                    }
+                }
+            }
+
             view.correction.style.display = "block";
 
             view.correctionText.textContent =
@@ -885,7 +1329,6 @@ function displayResult(view, message = "") {
                 : "(Not recorded yet)";
     }
 
-    // 停止理由は文の判定色を引き継がせず、補足として表示する。
     if (message) {
         const notice = document.createElement("span");
 
