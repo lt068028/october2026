@@ -419,8 +419,131 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 function renderAll() {
+    practice2State.ui ??= {};
+    practice2State.generatedKeyIndex = 0;
+
+    stopAllPlayback();
     renderDrill1Section();
     renderDrill2Section();
+
+    function connectRows(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        const rows = container.querySelectorAll(".drill-row");
+
+        rows.forEach((row, index) => {
+            const key = `${containerId}_${index}`;
+            const state = practice2State.ui[key] ??= {
+                answerMode: null,
+                selectedValue: "",
+                textVisible: false
+            };
+
+            const buttons = Array.from(row.querySelectorAll("button"));
+            const yes = buttons.find(button =>
+                button.textContent.trim() === "🙆"
+            );
+            const no = buttons.find(button =>
+                button.textContent.trim() === "🙅"
+            );
+            const textButton = buttons.find(button =>
+                button.textContent.startsWith("👀Text") ||
+                button.textContent.startsWith("🕶️Hide")
+            );
+            const select = row.querySelector("select");
+
+            // 再描画前の選択を、元のハンドラーで復元する。
+            if (state.answerMode === "yes") yes?.click();
+            if (state.answerMode === "no") no?.click();
+
+            if (select && state.selectedValue) {
+                select.value = state.selectedValue;
+                select.dispatchEvent(new Event("change"));
+            }
+
+            if (state.textVisible &&
+                textButton && !textButton.disabled) {
+                textButton.click();
+            }
+
+            // 選択状態を、見た目と独立して保存する。
+            if (yes) {
+                const original = yes.onclick;
+                yes.onclick = event => {
+                    state.answerMode =
+                        state.answerMode === "yes" ? null : "yes";
+                    state.textVisible = false;
+                    original?.call(yes, event);
+                };
+            }
+
+            if (no) {
+                const original = no.onclick;
+                no.onclick = event => {
+                    state.answerMode =
+                        state.answerMode === "no" ? null : "no";
+                    state.textVisible = false;
+                    original?.call(no, event);
+                };
+            }
+
+            if (select) {
+                const original = select.onchange;
+                select.onchange = event => {
+                    state.selectedValue = select.value;
+                    state.textVisible = false;
+                    original?.call(select, event);
+                };
+            }
+
+            if (textButton) {
+                const original = textButton.onclick;
+                textButton.onclick = event => {
+                    state.textVisible = !state.textVisible;
+                    original?.call(textButton, event);
+                };
+            }
+
+            // 通常のモデル再生にも、読み上げ専用の読点を適用。
+            buttons.forEach(button => {
+                if (!button.textContent.startsWith("🔊きく")) return;
+
+                const original = button.onclick;
+                if (!original) return;
+
+                button.onclick = event => {
+                    if (activeRecognitionSession ||
+                        practice2State.startingRow) return;
+
+                    original.call(button, event);
+                };
+            });
+        });
+    }
+
+    connectRows("drill1Container");
+    connectRows("drill2Container");
+
+    const session = activeRecognitionSession;
+    const view = session
+        ? practice2State.views?.[session.rowKey]
+        : null;
+
+    if (view) {
+        view.recordBtn.disabled = true;
+        view.stopBtn.disabled =
+            !session.manual || session.stopRequested;
+        view.stopBtn.classList.toggle(
+            "stop-btn-active",
+            session.manual && !session.stopRequested
+        );
+    }
+
+    const preparing = practice2State.startingRow;
+    if (preparing && practice2State.views?.[preparing]) {
+        practice2State.views[preparing].recordBtn.disabled = true;
+    }
 }
 
 // ============================================================================
@@ -1166,31 +1289,123 @@ function createDrill2Row(container, indexLabel, target, playRate) {
     container.appendChild(rowDiv);
 }
 
-function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
-    let playBtn = resultSpan.querySelector(".play-recording-btn");
+// ============================================================================
+// Practice 1.2: Result conversion, matching and recording
+// ============================================================================
 
-    if (!playBtn) {
-        playBtn = document.createElement("button");
-        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-        playBtn.style.marginLeft = "8px";
-        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+function practice2ToHiragana(text) {
+    let value = String(text ?? "").normalize("NFKC");
 
-        playBtn.onclick = () => {
-            const recordedAudioUrl = practice2State.audioUrls[rowKey];
+    // 元の専攻用辞書を含む変換処理を維持する。
+    value = convertToHiragana(value);
 
-            if (recordedAudioUrl) {
-                setPlayingStateMultiple([playBtn], "Playing...");
+    // このページの問題データに登録された語句を追加変換する。
+    const pairs = [
+        ...practice2Data.flatMap(item => [
+            [item.xKanji, item.x],
+            [item.yKanji, item.y]
+        ]),
+        ...drill2Targets.flatMap(item => [
+            [item.possessiveKanji, item.possessive],
+            [item.labelKanji, item.label]
+        ]),
+        ...majorsData.map(item => [item.kanji, item.word]),
+        ["専攻", "せんこう"],
+        ["何", "なに"]
+    ].sort((a, b) => b[0].length - a[0].length);
 
-                const audio = new Audio(recordedAudioUrl);
-                currentPlayingAudio = audio;
-
-                audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => stopAllPlayback());
-            }
-        };
-
-        resultSpan.appendChild(playBtn);
+    for (const [from, to] of pairs) {
+        if (from) value = value.split(from).join(to);
     }
+
+    return value.replace(/[ァ-ヶ]/g, character =>
+        String.fromCharCode(character.charCodeAt(0) - 96)
+    );
+}
+
+function practice2Normalize(text) {
+    return practice2ToHiragana(text)
+        .toLowerCase()
+        .replace(/[\s、。,.!?！？「」『』・]/g, "")
+        .replace(/(?:よね|よ|ね)$/, "");
+}
+
+// 読み上げ専用。表示・判定用の文は変更しない。
+function practice2SpeechText(text) {
+    return String(text ?? "")
+        .replace(/^(はい|いいえ)[、,\s]*/, "$1、")
+        .replace(/は(?=[^、])/g, "は、");
+}
+
+function practice2ShowResult(view, saved, rowKey, playRate) {
+    const displayed = scriptMode === "hiragana"
+        ? practice2ToHiragana(saved.rawTranscript)
+        : saved.rawTranscript;
+
+    view.resultSpan.textContent =
+        displayed + (saved.isCorrect ? " ✅ " : " ");
+    view.resultSpan.style.color = saved.isCorrect
+        ? "var(--text-primary)"
+        : "var(--error-text)";
+
+    if (practice2State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(
+            view.resultSpan, rowKey, playRate
+        );
+    }
+
+    view.correctionBox.style.display =
+        saved.isCorrect ? "none" : "block";
+
+    if (!saved.isCorrect) {
+        view.corrTextSpan.textContent =
+            "🔥 Keep going! Try once more!";
+        view.corrListenBtn.style.display = "inline-block";
+        view.corrListenBtn.onclick = () => {
+            if (activeRecognitionSession ||
+                practice2State.startingRow) return;
+
+            setPlayingStateMultiple(
+                [view.corrListenBtn], "Playing..."
+            );
+            speakText(
+                practice2SpeechText(saved.modelText),
+                0.9,
+                () => stopAllPlayback()
+            );
+        };
+    }
+}
+
+function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
+    if (resultSpan.querySelector(".play-recording-btn")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className =
+        "example-button play-recording-btn custom-tip-wrap";
+    button.style.marginLeft = "8px";
+    button.innerHTML =
+        '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
+    button.onclick = () => {
+        if (activeRecognitionSession ||
+            practice2State.startingRow) return;
+
+        const url = practice2State.audioUrls[rowKey];
+        if (!url) return;
+
+        stopAllPlayback();
+        setPlayingStateMultiple([button], "Playing...");
+
+        const audio = new Audio(url);
+        currentPlayingAudio = audio;
+        audio.playbackRate = 1.0;
+        audio.onended = () => stopAllPlayback();
+        audio.play().catch(() => stopAllPlayback());
+    };
+
+    resultSpan.appendChild(button);
 }
 
 function bindRecorderEvents(
@@ -1205,267 +1420,408 @@ function bindRecorderEvents(
     playRate,
     rowKey
 ) {
-    let session = null;
-    let lastAudioUrl = null;
+    if (!rowKey) {
+        practice2State.generatedKeyIndex ??= 0;
+        const index = practice2State.generatedKeyIndex++;
+        const targetIndex = Math.floor(index / 2);
+        const part = index % 2 === 0 ? "q" : "a";
+        const target = drill2Targets[targetIndex];
 
-    function releaseSession(currentSession) {
-        if (!currentSession || currentSession.finished) return;
-
-        currentSession.finished = true;
-
-        if (currentSession.watchdog !== null) {
-            clearTimeout(currentSession.watchdog);
-            currentSession.watchdog = null;
-        }
-
-        if (
-            currentSession.mediaRecorder &&
-            currentSession.mediaRecorder.state !== "inactive"
-        ) {
-            try {
-                currentSession.mediaRecorder.stop();
-            } catch (e) {}
-        }
-
-        if (currentSession.stream) {
-            currentSession.stream.getTracks().forEach(track => track.stop());
-        }
-
-        if (activeRecognitionSession === currentSession) {
-            activeRecognitionSession = null;
-        }
-
-        if (session === currentSession) {
-            session = null;
-            recordBtn.disabled = false;
-            stopBtn.disabled = true;
-            stopBtn.classList.remove("stop-btn-active");
-        }
+        rowKey = `p2_drill2_${target?.label || targetIndex}_${part}`;
     }
 
-    function requestStop(currentSession, abort = false, errorMessage = "") {
-        if (!currentSession || currentSession.finished) return;
+    practice2State.views ??= {};
 
-        if (errorMessage) {
-            currentSession.errorMessage = errorMessage;
-            resultSpan.textContent = errorMessage;
-            resultSpan.style.color = "var(--error-text)";
-        }
+    const view = {
+        recordBtn, stopBtn, resultSpan,
+        correctionBox, corrListenBtn, corrTextSpan
+    };
+    practice2State.views[rowKey] = view;
 
-        const currentRecognition = currentSession.recognition;
+    const currentView = () =>
+        practice2State.views[rowKey] || view;
 
-        if (!currentRecognition) {
-            releaseSession(currentSession);
-            return;
-        }
+    const saved = practice2State.savedResults[rowKey];
+    if (saved?.rawTranscript !== undefined) {
+        practice2ShowResult(view, saved, rowKey, playRate);
+    } else if (saved) {
+        resultSpan.textContent = saved.text ?? saved.html ?? "";
+        resultSpan.style.color =
+            saved.color || "var(--text-primary)";
+    } else {
+        resultSpan.textContent = "(Not recorded yet)";
+        resultSpan.style.color = "var(--text-secondary)";
+    }
 
-        if (currentSession.watchdog === null) {
-            currentSession.watchdog = setTimeout(() => {
-                releaseSession(currentSession);
-            }, 2500);
-        }
+    if (practice2State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(resultSpan, rowKey, playRate);
+    }
 
-        try {
-            if (abort) {
-                currentRecognition.abort();
-            } else {
-                currentRecognition.stop();
-            }
-        } catch (err) {}
-
-        if (
-            currentSession.mediaRecorder &&
-            currentSession.mediaRecorder.state !== "inactive"
-        ) {
-            try {
-                currentSession.mediaRecorder.stop();
-            } catch (err) {}
-        }
+    const running = activeRecognitionSession;
+    if (running?.rowKey === rowKey) {
+        recordBtn.disabled = true;
+        stopBtn.disabled =
+            !running.manual || running.stopRequested;
+        stopBtn.classList.toggle(
+            "stop-btn-active",
+            running.manual && !running.stopRequested
+        );
+        resultSpan.textContent = "Recording...";
+    } else if (practice2State.startingRow === rowKey) {
+        recordBtn.disabled = true;
     }
 
     recordBtn.addEventListener("click", async () => {
-        if (recordBtn.disabled) return;
+        if (recordBtn.disabled ||
+            activeRecognitionSession ||
+            practice2State.startingRow) return;
 
+        const Recognition =
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
+
+        if (!Recognition) {
+            currentView().resultSpan.textContent =
+                "Speech recognition is not supported.";
+            return;
+        }
+
+        // 判定対象は録音開始時の選択で固定する。
+        const expectedText = getExpectedTextFn();
+        const modelText = getExpectedKanjiFn();
+
+        practice2State.startingRow = rowKey;
+        recordBtn.disabled = true;
         stopAllPlayback();
 
-        if (activeRecognitionSession !== null) {
-            releaseSession(activeRecognitionSession);
-        }
-
-        const SpeechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (!SpeechRecognition) {
-            resultSpan.textContent = "Speech recognition is not supported.";
-            resultSpan.style.color = "var(--error-text)";
-            return;
-        }
-
         let stream;
-
         try {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (err) {
-            resultSpan.textContent = "Microphone access denied.";
-            resultSpan.style.color = "var(--error-text)";
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: true
+            });
+        } catch (error) {
+            practice2State.startingRow = null;
+            currentView().recordBtn.disabled = false;
+            currentView().resultSpan.textContent =
+                "Microphone access denied.";
             return;
         }
+        practice2State.startingRow = null;
 
-        if (lastAudioUrl) {
-            URL.revokeObjectURL(lastAudioUrl);
-            lastAudioUrl = null;
-        }
-
-        const currentSession = {
-            finished: false,
+        const session = {
+            rowKey,
+            manual: isManualStop,
             stopRequested: false,
-            errorMessage: "",
-            recognition: null,
-            watchdog: null,
-            mediaRecorder: null,
-            audioChunks: [],
-            stream: stream,
-            accumulatedTranscript: "",
+            finished: false,
+            speechStarted: false,
             recognitionDone: false,
             recorderDone: false,
-            processed: false
+            discard: false,
+            transcript: "",
+            message: "",
+            chunks: [],
+            timers: [],
+            context: null,
+            recognition: null,
+            recorder: null,
+            stop: null
         };
+        activeRecognitionSession = session;
 
-        session = currentSession;
-        activeRecognitionSession = currentSession;
+        function clearMonitoring() {
+            session.timers.forEach(id => {
+                clearTimeout(id);
+                clearInterval(id);
+            });
+            session.timers = [];
 
-        const tryProcessResult = () => {
-            if (currentSession.errorMessage || currentSession.processed) return;
+            if (session.context) {
+                session.context.close().catch(() => {});
+                session.context = null;
+            }
+        }
 
-            if (currentSession.recognitionDone && currentSession.recorderDone) {
-                currentSession.processed = true;
+        function finish() {
+            if (session.finished ||
+                !session.recognitionDone ||
+                !session.recorderDone) return;
 
-                const expectedText = getExpectedTextFn();
+            session.finished = true;
+            clearMonitoring();
+            stream.getTracks().forEach(track => track.stop());
 
+            if (activeRecognitionSession === session) {
+                activeRecognitionSession = null;
+            }
+
+            const v = currentView();
+            v.recordBtn.disabled = false;
+            v.stopBtn.disabled = true;
+            v.stopBtn.classList.remove("stop-btn-active");
+
+            if (!session.discard &&
+                session.speechStarted &&
+                session.chunks.length) {
+                const blob = new Blob(session.chunks, {
+                    type: session.recorder.mimeType || "audio/webm"
+                });
+                const newUrl = URL.createObjectURL(blob);
+                const oldUrl = practice2State.audioUrls[rowKey];
+
+                practice2State.audioUrls[rowKey] = newUrl;
+                if (oldUrl) URL.revokeObjectURL(oldUrl);
+            }
+            session.chunks = [];
+
+            if (!session.discard && session.transcript.trim()) {
                 processResult(
-                    currentSession.accumulatedTranscript,
+                    session.transcript,
                     expectedText,
-                    getExpectedKanjiFn,
-                    resultSpan,
-                    correctionBox,
-                    corrListenBtn,
-                    corrTextSpan,
-                    () => lastAudioUrl,
+                    () => modelText,
+                    v.resultSpan,
+                    v.correctionBox,
+                    v.corrListenBtn,
+                    v.corrTextSpan,
+                    () => practice2State.audioUrls[rowKey],
                     playRate,
                     rowKey
                 );
+                return;
             }
-        };
 
-        try {
-            const currentRecognition = new SpeechRecognition();
-            currentSession.recognition = currentRecognition;
-            currentRecognition.lang = "ja-JP";
-            currentRecognition.interimResults = false;
-            currentRecognition.continuous = isManualStop;
+            const previous = practice2State.savedResults[rowKey];
+            if (previous?.rawTranscript !== undefined) {
+                practice2ShowResult(
+                    v, previous, rowKey, playRate
+                );
+                v.resultSpan.prepend(
+                    document.createTextNode(
+                        (session.message ||
+                            "No speech recognized.") + " "
+                    )
+                );
+            } else {
+                v.resultSpan.textContent =
+                    session.message || "No speech recognized.";
+                v.resultSpan.style.color = "var(--text-secondary)";
+                v.correctionBox.style.display = "none";
 
-            const mediaRecorder = new MediaRecorder(stream);
-            currentSession.mediaRecorder = mediaRecorder;
-
-            mediaRecorder.ondataavailable = (e) => {
-                if (e.data.size > 0) {
-                    currentSession.audioChunks.push(e.data);
+                if (previous) {
+                    v.resultSpan.appendChild(
+                        document.createTextNode(
+                            " " + (previous.text ?? previous.html ?? "")
+                        )
+                    );
                 }
-            };
 
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(currentSession.audioChunks, {
-                    type: "audio/webm"
-                });
+                if (practice2State.audioUrls[rowKey]) {
+                    appendPersistedPlayButton(
+                        v.resultSpan, rowKey, playRate
+                    );
+                }
+            }
+        }
 
-                lastAudioUrl = URL.createObjectURL(audioBlob);
+        function stop(message = "", discard = false) {
+            if (session.finished || session.stopRequested) return;
 
-                if (rowKey) {
-                    practice2State.audioUrls[rowKey] = lastAudioUrl;
+            session.stopRequested = true;
+            session.message = message;
+            session.discard = discard;
+            clearMonitoring();
+
+            const v = currentView();
+            v.stopBtn.disabled = true;
+            v.stopBtn.classList.remove("stop-btn-active");
+
+            try {
+                session.recognition.stop();
+            } catch (error) {
+                session.recognitionDone = true;
+            }
+
+            if (!session.recorder ||
+                session.recorder.state === "inactive") {
+                session.recorderDone = true;
+            } else {
+                try {
+                    session.recorder.stop();
+                } catch (error) {
+                    session.recorderDone = true;
+                }
+            }
+
+            session.timers.push(setTimeout(() => {
+                try {
+                    session.recognition.abort();
+                } catch (error) {}
+
+                session.recognitionDone = true;
+
+                if (!session.recorderDone) {
+                    session.discard = true;
+                    session.recorderDone = true;
                 }
 
                 stream.getTracks().forEach(track => track.stop());
+                finish();
+            }, 2500));
 
-                currentSession.recorderDone = true;
-                tryProcessResult();
+            finish();
+        }
+        session.stop = stop;
+
+        try {
+            const recognition = new Recognition();
+            session.recognition = recognition;
+            recognition.lang = "ja-JP";
+            recognition.interimResults = true;
+            recognition.continuous = session.manual;
+
+            recognition.onspeechstart = () => {
+                session.speechStarted = true;
             };
 
-            currentRecognition.onresult = (event) => {
-                if (
-                    currentSession.finished ||
-                    session !== currentSession ||
-                    currentSession.errorMessage
-                ) {
-                    return;
+            recognition.onresult = event => {
+                if (session.finished || session.discard) return;
+
+                for (let i = event.resultIndex;
+                     i < event.results.length; i++) {
+                    const result = event.results[i];
+
+                    if (result[0].transcript.trim()) {
+                        session.speechStarted = true;
+                    }
+                    if (result.isFinal) {
+                        session.transcript += result[0].transcript;
+                    }
                 }
+            };
 
-                let rawTranscript = "";
+            recognition.onerror = event => {
+                if (session.finished || session.stopRequested) return;
+                if (event.error === "no-speech") return;
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        rawTranscript += event.results[i][0].transcript;
+                session.recognitionDone = true;
+                stop("Recognition error.", true);
+            };
+
+            recognition.onend = () => {
+                if (session.finished) return;
+
+                if (!session.stopRequested &&
+                    (session.manual || !session.speechStarted)) {
+                    try {
+                        recognition.start();
+                        return;
+                    } catch (error) {
+                        session.recognitionDone = true;
+
+                        // 手動録音は20秒上限まで継続できる。
+                        if (session.manual) return;
+
+                        stop(
+                            "Could not restart recognition.",
+                            true
+                        );
+                        return;
                     }
                 }
 
-                currentSession.accumulatedTranscript += rawTranscript;
+                session.recognitionDone = true;
+                if (!session.stopRequested) stop();
+                finish();
             };
 
-            currentRecognition.onerror = (event) => {
-                if (
-                    currentSession.finished ||
-                    session !== currentSession
-                ) {
-                    return;
+            const recorder = new MediaRecorder(stream);
+            session.recorder = recorder;
+
+            recorder.ondataavailable = event => {
+                if (!session.finished && event.data.size) {
+                    session.chunks.push(event.data);
                 }
-
-                requestStop(currentSession, true, "Recognition error.");
+            };
+            recorder.onstop = () => {
+                session.recorderDone = true;
+                finish();
+            };
+            recorder.onerror = () => {
+                stop("Recording error.", true);
             };
 
-            currentRecognition.onend = () => {
-                currentSession.recognitionDone = true;
+            const v = currentView();
+            v.recordBtn.disabled = true;
+            v.stopBtn.disabled = !session.manual;
+            v.stopBtn.classList.toggle(
+                "stop-btn-active", session.manual
+            );
+            v.resultSpan.textContent = "Recording...";
+            v.resultSpan.style.color = "var(--accent-color)";
+            v.correctionBox.style.display = "none";
 
-                if (
-                    currentSession.mediaRecorder &&
-                    currentSession.mediaRecorder.state !== "inactive"
-                ) {
-                    try {
-                        currentSession.mediaRecorder.stop();
-                    } catch (e) {}
+            recorder.start();
+            recognition.start();
+
+            try {
+                const AudioContextClass =
+                    window.AudioContext || window.webkitAudioContext;
+                const context = new AudioContextClass();
+                session.context = context;
+
+                const source = context.createMediaStreamSource(stream);
+                const analyser = context.createAnalyser();
+                analyser.fftSize = 1024;
+                source.connect(analyser);
+
+                const samples = new Float32Array(analyser.fftSize);
+                let soundFrames = 0;
+                context.resume().catch(() => {});
+
+                session.timers.push(setInterval(() => {
+                    if (session.stopRequested ||
+                        session.speechStarted) return;
+
+                    analyser.getFloatTimeDomainData(samples);
+
+                    let sum = 0;
+                    for (const sample of samples) {
+                        sum += sample * sample;
+                    }
+
+                    const volume = Math.sqrt(sum / samples.length);
+                    soundFrames = volume > 0.015
+                        ? soundFrames + 1 : 0;
+
+                    if (soundFrames >= 3) {
+                        session.speechStarted = true;
+                    }
+                }, 100));
+            } catch (error) {}
+
+            session.timers.push(setTimeout(() => {
+                if (!session.speechStarted) {
+                    stop(
+                        "No speech detected within 15 seconds.",
+                        true
+                    );
                 }
+            }, 15000));
 
-                tryProcessResult();
-                releaseSession(currentSession);
-            };
-
-            recordBtn.disabled = true;
-            stopBtn.disabled = !isManualStop;
-
-            if (isManualStop) {
-                stopBtn.classList.add("stop-btn-active");
-            } else {
-                stopBtn.classList.remove("stop-btn-active");
-            }
-
-            resultSpan.textContent = "Recording...";
-            resultSpan.style.color = "var(--accent-color)";
-            correctionBox.style.display = "none";
-
-            mediaRecorder.start();
-            currentRecognition.start();
-        } catch (err) {
-            requestStop(currentSession, true, "Could not start recording.");
+            session.timers.push(setTimeout(() => {
+                stop("Recording stopped after 20 seconds.");
+            }, 20000));
+        } catch (error) {
+            session.recognitionDone = true;
+            stop("Could not start recording.", true);
         }
     });
 
     stopBtn.addEventListener("click", () => {
-        if (!session || session.finished || session.stopRequested) return;
-
-        stopAllPlayback();
-
-        session.stopRequested = true;
-        stopBtn.disabled = true;
-
-        requestStop(session, false);
+        const session = activeRecognitionSession;
+        if (session?.rowKey === rowKey) {
+            stopAllPlayback();
+            session.stop();
+        }
     });
 }
 
@@ -1481,88 +1837,51 @@ function processResult(
     playRate,
     rowKey
 ) {
-    if (rawTranscript.replace(/[\s.,]/g, "").length < 2) {
-        resultSpan.textContent = rawTranscript + " (Too short)";
-        resultSpan.style.color = "var(--text-secondary)";
-        return;
-    }
+    const transcript = String(rawTranscript ?? "").trim();
+    const modelText = getExpectedKanjiFn();
+    const normalized = practice2Normalize(transcript);
 
-    const hiraText = convertToHiragana(rawTranscript);
-    const expectedHira = convertToHiragana(expectedText);
+    const isCorrect = normalized.length > 0 && (
+        normalized === practice2Normalize(expectedText) ||
+        normalized === practice2Normalize(modelText)
+    );
 
-    const isCorrect =
-        hiraText.includes(expectedHira) || hiraText.length >= 2;
+    const saved = {
+        rawTranscript: transcript,
+        expectedText,
+        modelText,
+        isCorrect
+    };
+    practice2State.savedResults[rowKey] = saved;
 
-    const displayedTranscript =
-        scriptMode === "hiragana" ? hiraText : rawTranscript;
-
-    const kanjiTextForSpeech = getExpectedKanjiFn();
-
-    let targetPlayBtn = null;
-
-    if (isCorrect) {
-        resultSpan.textContent = displayedTranscript + " ✅ ";
-        resultSpan.style.color = "var(--text-primary)";
-
-        if (rowKey) {
-            practice2State.savedResults[rowKey] = {
-                html: resultSpan.textContent,
-                color: "var(--text-primary)"
-            };
-        }
-
-        targetPlayBtn = appendPersistedPlayButton(
-            resultSpan,
-            rowKey || "temp_res",
-            playRate
-        );
-
-        correctionBox.style.display = "none";
-    } else {
-        resultSpan.textContent = displayedTranscript + " ";
-        resultSpan.style.color = "var(--error-text)";
-
-        if (rowKey) {
-            practice2State.savedResults[rowKey] = {
-                html: resultSpan.textContent,
-                color: "var(--error-text)"
-            };
-        }
-
-        targetPlayBtn = appendPersistedPlayButton(
-            resultSpan,
-            rowKey || "temp_res",
-            playRate
-        );
-
-        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
-        corrListenBtn.style.display = "inline-block";
-
-        corrListenBtn.onclick = () => {
-            setPlayingStateMultiple([corrListenBtn], "Playing...");
-            speakText(kanjiTextForSpeech, 0.9, () => stopAllPlayback());
-        };
-
-        correctionBox.style.display = "block";
-    }
+    practice2ShowResult(
+        {
+            resultSpan, correctionBox,
+            corrListenBtn, corrTextSpan
+        },
+        saved,
+        rowKey,
+        playRate
+    );
 
     if (isAutoPlay) {
-        speakText(kanjiTextForSpeech, playRate, () => {
-            stopAllPlayback();
+        speakText(
+            practice2SpeechText(modelText),
+            playRate,
+            () => {
+                if (activeRecognitionSession ||
+                    practice2State.startingRow) return;
 
-            const url = getUrlFn();
+                stopAllPlayback();
+                const url = getUrlFn();
+                if (!url) return;
 
-            if (url) {
                 const audio = new Audio(url);
                 currentPlayingAudio = audio;
                 audio.playbackRate = 1.0;
-
-                audio.onended = () => {
-                    currentPlayingAudio = null;
-                };
-
-                audio.play().catch(e => {});
+                audio.onended = () => stopAllPlayback();
+                audio.play().catch(() => stopAllPlayback());
             }
-        });
+        );
     }
 }
