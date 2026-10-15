@@ -580,8 +580,33 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     const tdPrompt = document.createElement("td");
     tdPrompt.rowSpan = 2;
     tdPrompt.className = "prompt-label";
-    tdPrompt.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    tdPrompt.style.verticalAlign = "middle";
+    const cueParts = item.xKanji === "漢字50個"
+        ? [
+            formatWord(
+                "かんじ", "漢字",
+                "kanji", "kanji characters"
+            ),
+            formatWord(
+                "50こ", "50個",
+                "gojūkko", "50 items"
+            ),
+            formatWord(
+                item.y, item.yKanji,
+                item.yRomaji, item.yMeaning
+            )
+        ]
+        : [
+            formatWord(
+                item.x, item.xKanji,
+                item.xRomaji, item.xMeaning
+            ),
+            formatWord(
+                item.y, item.yKanji,
+                item.yRomaji, item.yMeaning
+            )
+        ];
+
+    tdPrompt.innerHTML = cueParts.join(" ／ ");    tdPrompt.style.verticalAlign = "middle";
     tdPrompt.style.width = "220px";
     tdPrompt.style.paddingRight = "10px";
 
@@ -759,14 +784,16 @@ function practice7ToHiragana(text) {
         ["夏休み", "なつやすみ"],
         ["結婚", "けっこん"],
         ["漢字", "かんじ"],
+        ["年前", "ねんまえ"],
         ["覚", "おぼ"],
         ["知", "し"],
         ["起", "お"],
         ["寝", "ね"],
+        ["着", "き"],
         ["太", "ふと"],
+        ["痩", "や"],
         ["朝", "あさ"],
         ["夜", "よる"],
-        ["年前", "ねんまえ"],
         ["時", "じ"],
         ["個", "こ"]
     ];
@@ -775,17 +802,19 @@ function practice7ToHiragana(text) {
         value = value.split(from).join(to);
     }
 
-    value = value
+    return value
+        .replace(/[ァ-ヶ]/g, character =>
+            String.fromCharCode(character.charCodeAt(0) - 96)
+        )
         .replace(/五十(?=こ)/g, "50")
         .replace(/十(?=じ)/g, "10")
         .replace(/五(?=じ)/g, "5")
         .replace(/三(?=ねんまえ)/g, "3")
-        .replace(/form/gi, "ふぉーむ")
-        .replace(/[ァ-ヶ]/g, character =>
-            String.fromCharCode(character.charCodeAt(0) - 96)
-        );
-
-    return value;
+        .replace(
+            /(?:t\s*しゃつ|てぃー\s*しゃつ|てぃ\s*しゃつ)/gi,
+            "Tしゃつ"
+        )
+        .replace(/ふぉーむ|form/gi, "Form");
 }
 
 function practice7Normalize(text) {
@@ -806,12 +835,19 @@ function practice7DiffTokens(text) {
 
     const units = [
         "お正月", "夏休み", "結婚", "漢字", "年前",
-        "フォーム", "Form", "form",
-        "五十個", "五十こ", "三年前",
-        "十時", "五時",
-        "覚", "知", "起", "寝", "太",
+        "おしょうがつ", "なつやすみ", "3ねんまえ",
+        "3年前",
+        "フォーム", "ふぉーむ", "Form", "form", "FORM",
+        "Tシャツ", "Tしゃつ", "tしゃつ",
+        "ティーシャツ", "てぃーしゃつ",
+        "ティシャツ", "てぃしゃつ",
+        "五十個", "五十こ", "三年前", "十時", "五時",
+        "覚", "知", "起", "寝", "着", "太", "痩",
         "朝", "夜", "時", "個"
     ].sort((a, b) => b.length - a.length);
+
+    const timeWord =
+        /^(おしょうがつ|なつやすみ|3ねんまえ)$/;
 
     const suffix = value.match(
         /(?:よね|よ|ね)[。！？!?\s]*$/
@@ -824,9 +860,14 @@ function practice7DiffTokens(text) {
     for (let index = 0; index < limit;) {
         const rest = chars.slice(index, limit).join("");
 
-        const unit = units.find(word =>
-            rest.startsWith(word)
-        ) || chars[index];
+        const spacedShirt = rest.match(
+            /^(?:t\s*しゃつ|t\s*シャツ|てぃー\s*しゃつ|ティー\s*シャツ)/i
+        );
+
+        const unit =
+            spacedShirt?.[0] ||
+            units.find(word => rest.startsWith(word)) ||
+            chars[index];
 
         const length = Array.from(unit).length;
 
@@ -834,7 +875,12 @@ function practice7DiffTokens(text) {
             .toLowerCase()
             .replace(/[\s、。,.!?！？「」『』・]/g, "");
 
-        for (const character of reading) {
+        // 時間表現の置き換えを欠落と誤認しない。
+        const comparisonUnits = timeWord.test(reading)
+            ? [reading]
+            : Array.from(reading);
+
+        for (const character of comparisonUnits) {
             tokens.push({
                 character,
                 start: index,
@@ -845,18 +891,12 @@ function practice7DiffTokens(text) {
         index += length;
     }
 
-    // 省略可能な「に」は比較対象から外す。
-    // 元の表示文字・位置は変更しない。
-    const reading = tokens
-        .map(token => token.character)
-        .join("");
-
-    const optionalNi = reading.match(
-        /^(おしょうがつ|なつやすみ|3ねんまえ)に/
-    );
-
-    if (optionalNi) {
-        tokens.splice(optionalNi[0].length - 1, 1);
+    // この３つの時間表現だけ「に」の省略を許容。
+    if (
+        timeWord.test(tokens[0]?.character || "") &&
+        tokens[1]?.character === "に"
+    ) {
+        tokens.splice(1, 1);
     }
 
     return { chars, tokens };
@@ -1005,10 +1045,20 @@ function practice7FindDiff(actual, reference) {
 }
 
 function practice7ShowResult(view, saved, rowKey, playRate) {
+    const normalized = practice7Normalize(saved.rawTranscript);
+
+    saved.isCorrect = normalized.length > 0 && [
+        saved.expectedText,
+        saved.modelText
+    ].some(text =>
+        typeof text === "string" &&
+        text.length > 0 &&
+        normalized === practice7Normalize(text)
+    );
+
     const displayed = scriptMode === "hiragana"
         ? practice7ToHiragana(saved.rawTranscript)
         : String(saved.rawTranscript ?? "");
-
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
 
