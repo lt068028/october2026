@@ -745,6 +745,94 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     container.appendChild(cardDiv);
 }
 
+// ============================================================================
+// Practice 7.2: Recognition, Recording & Result Display
+// ============================================================================
+
+// 実際の認識結果を、このページで扱う語句の範囲で変換する。
+// モデル文そのものへの置き換えは行わない。
+function practice7ToHiragana(text) {
+    let value = String(text ?? "").normalize("NFKC");
+
+    const dictionary = [
+        ["お正月", "おしょうがつ"],
+        ["夏休み", "なつやすみ"],
+        ["結婚", "けっこん"],
+        ["漢字", "かんじ"],
+        ["覚", "おぼ"],
+        ["知", "し"],
+        ["起", "お"],
+        ["寝", "ね"],
+        ["太", "ふと"],
+        ["朝", "あさ"],
+        ["夜", "よる"],
+        ["年前", "ねんまえ"],
+        ["時", "じ"],
+        ["個", "こ"]
+    ];
+
+    for (const [from, to] of dictionary) {
+        value = value.split(from).join(to);
+    }
+
+    value = value
+        .replace(/五十(?=こ)/g, "50")
+        .replace(/十(?=じ)/g, "10")
+        .replace(/五(?=じ)/g, "5")
+        .replace(/三(?=ねんまえ)/g, "3")
+        .replace(/form/gi, "ふぉーむ")
+        .replace(/[ァ-ヶ]/g, character =>
+            String.fromCharCode(character.charCodeAt(0) - 96)
+        );
+
+    return value;
+}
+
+function practice7Normalize(text) {
+    return practice7ToHiragana(text)
+        .toLowerCase()
+        .replace(/[\s、。,.!?！？「」『』・]/g, "")
+        // 文末の終助詞だけを許容する。
+        .replace(/(?:よね|よ|ね)$/, "");
+}
+
+function practice7ShowResult(view, saved, rowKey, playRate) {
+    const displayed = scriptMode === "hiragana"
+        ? practice7ToHiragana(saved.rawTranscript)
+        : saved.rawTranscript;
+
+    view.resultSpan.textContent =
+        displayed + (saved.isCorrect ? " ✅ " : " ");
+    view.resultSpan.style.color = saved.isCorrect
+        ? "var(--text-primary)"
+        : "var(--error-text)";
+
+    if (practice7State.audioUrls[rowKey]) {
+        appendPersistedPlayButton(
+            view.resultSpan, rowKey, playRate
+        );
+    }
+
+    view.correctionBox.style.display =
+        saved.isCorrect ? "none" : "block";
+
+    if (!saved.isCorrect) {
+        view.corrTextSpan.textContent =
+            "🔥 Keep going! Try once more!";
+        view.corrListenBtn.style.display = "inline-block";
+        view.corrListenBtn.onclick = () => {
+            setPlayingStateMultiple(
+                [view.corrListenBtn], "Playing..."
+            );
+            speakText(
+                saved.modelText,
+                0.9,
+                () => stopAllPlayback()
+            );
+        };
+    }
+}
+
 function bindRecorderEvents(
     recordBtn,
     stopBtn,
@@ -765,44 +853,60 @@ function bindRecorderEvents(
     };
     practice7State.views[rowKey] = view;
 
-    // 再描画後も、以前の抽出テキストと録音を復元する。
-    const saved = practice7State.savedResults[rowKey];
-    if (saved) {
-        resultSpan.textContent = saved.text;
-        resultSpan.style.color = saved.color;
-    }
-    if (practice7State.audioUrls[rowKey]) {
-        appendPersistedPlayButton(resultSpan, rowKey, playRate);
-    }
+    const currentView = () =>
+        practice7State.views[rowKey] || view;
 
-    function currentView() {
-        return practice7State.views[rowKey] || view;
+    const saved = practice7State.savedResults[rowKey];
+    if (saved?.rawTranscript !== undefined) {
+        practice7ShowResult(view, saved, rowKey, playRate);
+    } else if (saved) {
+        // 旧形式の保存結果も消さない。
+        resultSpan.textContent = saved.text || "";
+        resultSpan.style.color =
+            saved.color || "var(--text-primary)";
+
+        if (practice7State.audioUrls[rowKey]) {
+            appendPersistedPlayButton(
+                resultSpan, rowKey, playRate
+            );
+        }
     }
 
     const running = activeRecognitionSession;
-    if (running && running.rowKey === rowKey) {
+    if (running?.rowKey === rowKey) {
         recordBtn.disabled = true;
-        stopBtn.disabled = !running.manual || running.stopRequested;
+        stopBtn.disabled =
+            !running.manual || running.stopRequested;
         stopBtn.classList.toggle(
             "stop-btn-active",
             running.manual && !running.stopRequested
         );
         resultSpan.textContent = "Recording...";
+    } else if (practice7State.startingRow === rowKey) {
+        recordBtn.disabled = true;
     }
 
     recordBtn.addEventListener("click", async () => {
-        if (activeRecognitionSession || recordBtn.disabled) return;
+        if (recordBtn.disabled ||
+            activeRecognitionSession ||
+            practice7State.startingRow) return;
 
         const Recognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
+            window.SpeechRecognition ||
+            window.webkitSpeechRecognition;
 
         if (!Recognition) {
-            resultSpan.textContent = "Speech recognition is not supported.";
+            currentView().resultSpan.textContent =
+                "Speech recognition is not supported.";
             return;
         }
 
-        stopAllPlayback();
+        const expectedText = getExpectedTextFn();
+        const modelText = getExpectedKanjiFn();
+
+        practice7State.startingRow = rowKey;
         recordBtn.disabled = true;
+        stopAllPlayback();
 
         let stream;
         try {
@@ -810,42 +914,44 @@ function bindRecorderEvents(
                 audio: true
             });
         } catch (error) {
+            practice7State.startingRow = null;
             currentView().recordBtn.disabled = false;
             currentView().resultSpan.textContent =
                 "Microphone access denied.";
             return;
         }
+        practice7State.startingRow = null;
 
         const session = {
             rowKey,
             manual: isManualStop,
-            finished: false,
             stopRequested: false,
+            finished: false,
             speechStarted: false,
             recognitionDone: false,
             recorderDone: false,
+            discard: false,
             transcript: "",
             message: "",
             chunks: [],
             timers: [],
-            audioContext: null,
-            stream,
+            context: null,
             recognition: null,
-            mediaRecorder: null,
+            recorder: null,
             stop: null
         };
         activeRecognitionSession = session;
 
-        function cleanMonitoring() {
-            session.timers.forEach(timer => {
-                clearTimeout(timer);
-                clearInterval(timer);
+        function clearMonitoring() {
+            session.timers.forEach(id => {
+                clearTimeout(id);
+                clearInterval(id);
             });
             session.timers = [];
 
-            if (session.audioContext) {
-                session.audioContext.close().catch(() => {});
-                session.audioContext = null;
+            if (session.context) {
+                session.context.close().catch(() => {});
+                session.context = null;
             }
         }
 
@@ -855,7 +961,7 @@ function bindRecorderEvents(
                 !session.recorderDone) return;
 
             session.finished = true;
-            cleanMonitoring();
+            clearMonitoring();
             stream.getTracks().forEach(track => track.stop());
 
             if (activeRecognitionSession === session) {
@@ -867,11 +973,26 @@ function bindRecorderEvents(
             v.stopBtn.disabled = true;
             v.stopBtn.classList.remove("stop-btn-active");
 
-            if (session.transcript.trim()) {
+            // 新しい有効な録音がある場合だけ差し替える。
+            if (!session.discard &&
+                session.speechStarted &&
+                session.chunks.length) {
+                const blob = new Blob(session.chunks, {
+                    type: session.recorder.mimeType || "audio/webm"
+                });
+                const newUrl = URL.createObjectURL(blob);
+                const oldUrl = practice7State.audioUrls[rowKey];
+
+                practice7State.audioUrls[rowKey] = newUrl;
+                if (oldUrl) URL.revokeObjectURL(oldUrl);
+            }
+            session.chunks = [];
+
+            if (!session.discard && session.transcript.trim()) {
                 processResult(
                     session.transcript,
-                    getExpectedTextFn(),
-                    getExpectedKanjiFn,
+                    expectedText,
+                    () => modelText,
                     v.resultSpan,
                     v.correctionBox,
                     v.corrListenBtn,
@@ -880,25 +1001,35 @@ function bindRecorderEvents(
                     playRate,
                     rowKey
                 );
+                return;
+            }
 
+            // 無音・エラーで以前の結果を上書きしない。
+            const previous = practice7State.savedResults[rowKey];
+
+            if (previous?.rawTranscript !== undefined) {
+                practice7ShowResult(
+                    v, previous, rowKey, playRate
+                );
+                v.resultSpan.prepend(
+                    document.createTextNode(
+                        (session.message ||
+                            "No speech recognized.") + " "
+                    )
+                );
             } else {
-                const previousResult =
-                    practice7State.savedResults[rowKey];
-
                 v.resultSpan.textContent =
                     session.message || "No speech recognized.";
-                v.resultSpan.style.color = "var(--text-secondary)";
+                v.resultSpan.style.color =
+                    "var(--text-secondary)";
                 v.correctionBox.style.display = "none";
 
-                if (previousResult) {
+                if (previous?.text) {
                     v.resultSpan.appendChild(
-                        document.createElement("br")
+                        document.createTextNode(
+                            " " + previous.text
+                        )
                     );
-
-                    const previousText = document.createElement("span");
-                    previousText.textContent = previousResult.text;
-                    previousText.style.color = previousResult.color;
-                    v.resultSpan.appendChild(previousText);
                 }
 
                 if (practice7State.audioUrls[rowKey]) {
@@ -906,53 +1037,50 @@ function bindRecorderEvents(
                         v.resultSpan, rowKey, playRate
                     );
                 }
-
-                // 以前の結果は上書きしない。
-                return;
-            }                
-
-            // 再生ボタンの文字を除き、結果そのものを保存する。
-            const resultCopy = v.resultSpan.cloneNode(true);
-            resultCopy.querySelectorAll("button").forEach(
-                button => button.remove()
-            );
-            practice7State.savedResults[rowKey] = {
-                text: resultCopy.textContent,
-                color: v.resultSpan.style.color
-            };
+            }
         }
 
-        function stop(message = "") {
+        function stop(message = "", discard = false) {
             if (session.finished || session.stopRequested) return;
 
             session.stopRequested = true;
             session.message = message;
-            cleanMonitoring();
+            session.discard = discard;
+            clearMonitoring();
 
             const v = currentView();
             v.stopBtn.disabled = true;
             v.stopBtn.classList.remove("stop-btn-active");
 
             try {
-                session.recognition?.stop();
+                session.recognition.stop();
             } catch (error) {
                 session.recognitionDone = true;
             }
 
-            if (session.mediaRecorder?.state !== "inactive") {
+            if (!session.recorder ||
+                session.recorder.state === "inactive") {
+                session.recorderDone = true;
+            } else {
                 try {
-                    session.mediaRecorder.stop();
+                    session.recorder.stop();
                 } catch (error) {
                     session.recorderDone = true;
                 }
             }
 
-            // 音声認識から終了通知が来ない場合の後処理。
             session.timers.push(setTimeout(() => {
                 try {
-                    session.recognition?.abort();
+                    session.recognition.abort();
                 } catch (error) {}
+
                 session.recognitionDone = true;
+
+                if (!session.recorderDone) {
+                    session.discard = true;
+                    session.recorderDone = true;
+                }
+
                 stream.getTracks().forEach(track => track.stop());
                 finish();
             }, 2500));
@@ -973,11 +1101,12 @@ function bindRecorderEvents(
             };
 
             recognition.onresult = event => {
-                if (session.finished) return;
+                if (session.finished || session.discard) return;
 
                 for (let i = event.resultIndex;
                      i < event.results.length; i++) {
                     const result = event.results[i];
+
                     if (result[0].transcript.trim()) {
                         session.speechStarted = true;
                     }
@@ -990,26 +1119,33 @@ function bindRecorderEvents(
             recognition.onerror = event => {
                 if (session.finished || session.stopRequested) return;
 
-                // 発話前のブラウザ側の無音終了は、
-                // 独自の15秒タイマーまで再開を許可する。
-                if (event.error === "no-speech" &&
-                    !session.speechStarted) return;
+                if (event.error === "no-speech") return;
 
                 session.recognitionDone = true;
-                stop("Recognition error.");
+                stop("Recognition error.", true);
             };
 
             recognition.onend = () => {
                 if (session.finished) return;
 
                 if (!session.stopRequested &&
-                    !session.speechStarted) {
+                    (session.manual || !session.speechStarted)) {
+                    // Manual stopでは認識終了だけで録音を止めない。
                     try {
                         recognition.start();
                         return;
                     } catch (error) {
                         session.recognitionDone = true;
-                        stop("Could not restart recognition.");
+
+                        if (session.manual) {
+                            // 録音は手動停止・20秒上限まで続ける。
+                            return;
+                        }
+
+                        stop(
+                            "Could not restart recognition.",
+                            true
+                        );
                         return;
                     }
                 }
@@ -1020,77 +1156,48 @@ function bindRecorderEvents(
             };
 
             const recorder = new MediaRecorder(stream);
-            session.mediaRecorder = recorder;
+            session.recorder = recorder;
 
             recorder.ondataavailable = event => {
-                if (event.data.size) session.chunks.push(event.data);
-            };
-
-            recorder.onstop = () => {
-                const noSpeechTimeout =
-                    session.message ===
-                    "No speech detected within 15 seconds.";
-
-                const keepRecording =
-                    session.speechStarted &&
-                    !noSpeechTimeout &&
-                    session.chunks.length > 0;
-
-                if (keepRecording) {
-                    const blob = new Blob(session.chunks, {
-                        type: recorder.mimeType || "audio/webm"
-                    });
-
-                    const previousUrl =
-                        practice7State.audioUrls[rowKey];
-
-                    if (previousUrl) {
-                        URL.revokeObjectURL(previousUrl);
-                    }
-
-                    practice7State.audioUrls[rowKey] =
-                        URL.createObjectURL(blob);
+                if (!session.finished && event.data.size) {
+                    session.chunks.push(event.data);
                 }
-
-                session.chunks = [];
+            };
+            recorder.onstop = () => {
                 session.recorderDone = true;
                 finish();
             };
-
             recorder.onerror = () => {
-                stop("Recording error.");
+                stop("Recording error.", true);
             };
 
             const v = currentView();
-            v.resultSpan.textContent = "Recording...";
-            v.resultSpan.style.color = "var(--accent-color)";
-            v.correctionBox.style.display = "none";
+            v.recordBtn.disabled = true;
             v.stopBtn.disabled = !session.manual;
             v.stopBtn.classList.toggle(
                 "stop-btn-active", session.manual
             );
+            v.resultSpan.textContent = "Recording...";
+            v.resultSpan.style.color = "var(--accent-color)";
+            v.correctionBox.style.display = "none";
 
             recorder.start();
             recognition.start();
 
-            // マイク音量でも発話開始を検出する。
-            // 音声認識の結果が出る前に話し始めた場合に対応。
+            // 音量監視は発話開始検出の補助。
             try {
                 const AudioContextClass =
                     window.AudioContext || window.webkitAudioContext;
                 const context = new AudioContextClass();
-                session.audioContext = context;
+                session.context = context;
 
-                const source =
-                    context.createMediaStreamSource(stream);
+                const source = context.createMediaStreamSource(stream);
                 const analyser = context.createAnalyser();
                 analyser.fftSize = 1024;
                 source.connect(analyser);
 
-                const samples =
-                    new Float32Array(analyser.fftSize);
+                const samples = new Float32Array(analyser.fftSize);
                 let soundFrames = 0;
-
                 context.resume().catch(() => {});
 
                 session.timers.push(setInterval(() => {
@@ -1098,10 +1205,12 @@ function bindRecorderEvents(
                         session.speechStarted) return;
 
                     analyser.getFloatTimeDomainData(samples);
+
                     let sum = 0;
                     for (const sample of samples) {
                         sum += sample * sample;
                     }
+
                     const volume = Math.sqrt(sum / samples.length);
                     soundFrames = volume > 0.015
                         ? soundFrames + 1 : 0;
@@ -1110,13 +1219,14 @@ function bindRecorderEvents(
                         session.speechStarted = true;
                     }
                 }, 100));
-            } catch (error) {
-                // 利用できない場合は音声認識の発話通知を使う。
-            }
+            } catch (error) {}
 
             session.timers.push(setTimeout(() => {
                 if (!session.speechStarted) {
-                    stop("No speech detected within 15 seconds.");
+                    stop(
+                        "No speech detected within 15 seconds.",
+                        true
+                    );
                 }
             }, 15000));
 
@@ -1125,11 +1235,7 @@ function bindRecorderEvents(
             }, 20000));
         } catch (error) {
             session.recognitionDone = true;
-            if (!session.mediaRecorder ||
-                session.mediaRecorder.state === "inactive") {
-                session.recorderDone = true;
-            }
-            stop("Could not start recording.");
+            stop("Could not start recording.", true);
         }
     });
 
@@ -1154,82 +1260,40 @@ function processResult(
     playRate,
     rowKey
 ) {
-    // このページで使用する語句の表記を統一する。
-    // 否定・助詞・語尾は削除しない。
-    function normalizeForMatch(text) {
-        let normalized = String(text ?? "")
-            .normalize("NFKC")
-            .toLowerCase()
-            .replace(/[\s、。,.!?！？「」『』・]/g, "")
-            .replace(/[ァ-ヶ]/g, character =>
-                String.fromCharCode(character.charCodeAt(0) - 96)
-            );
-
-        const replacements = [
-            ["お正月", "おしょうがつ"],
-            ["夏休み", "なつやすみ"],
-            ["結婚", "けっこん"],
-            ["漢字", "かんじ"],
-            ["覚", "おぼ"],
-            ["知", "し"],
-            ["起", "お"],
-            ["寝", "ね"],
-            ["太", "ふと"],
-            ["朝", "あさ"],
-            ["夜", "よる"],
-            ["年前", "ねんまえ"],
-            ["時", "じ"],
-            ["個", "こ"],
-            ["三", "3"],
-            ["五十", "50"],
-            ["十", "10"],
-            ["五", "5"],
-            ["form", "ふぉーむ"]
-        ];
-
-        for (const [from, to] of replacements) {
-            normalized = normalized.split(from).join(to);
-        }
-
-        return normalized;
-    }
-
     const transcript = String(rawTranscript ?? "").trim();
     const modelText = getExpectedKanjiFn();
-    const normalizedTranscript = normalizeForMatch(transcript);
+    const normalized = practice7Normalize(transcript);
 
-    const isCorrect = normalizedTranscript.length > 0 && (
-        normalizedTranscript === normalizeForMatch(expectedText) ||
-        normalizedTranscript === normalizeForMatch(modelText)
+    const isCorrect = normalized.length > 0 && (
+        normalized === practice7Normalize(expectedText) ||
+        normalized === practice7Normalize(modelText)
     );
 
-    // 認識された原文を保持して表示する。
-    resultSpan.textContent =
-        transcript + (isCorrect ? " ✅ " : " ");
-    resultSpan.style.color = isCorrect
-        ? "var(--text-primary)"
-        : "var(--error-text)";
+    const saved = {
+        rawTranscript: transcript,
+        modelText,
+        expectedText,
+        isCorrect
+    };
+    practice7State.savedResults[rowKey] = saved;
 
-    if (practice7State.audioUrls[rowKey]) {
-        appendPersistedPlayButton(resultSpan, rowKey, playRate);
-    }
-
-    if (isCorrect) {
-        correctionBox.style.display = "none";
-    } else {
-        corrTextSpan.textContent = "🔥 Keep going! Try once more!";
-        corrListenBtn.style.display = "inline-block";
-        corrListenBtn.onclick = () => {
-            setPlayingStateMultiple([corrListenBtn], "Playing...");
-            speakText(modelText, 0.9, () => stopAllPlayback());
-        };
-        correctionBox.style.display = "block";
-    }
+    practice7ShowResult(
+        {
+            resultSpan, correctionBox,
+            corrListenBtn, corrTextSpan
+        },
+        saved,
+        rowKey,
+        playRate
+    );
 
     if (isAutoPlay) {
         speakText(modelText, playRate, () => {
-            stopAllPlayback();
+            // 新しい録音中に古い自動再生を開始しない。
+            if (activeRecognitionSession ||
+                practice7State.startingRow) return;
 
+            stopAllPlayback();
             const url = getUrlFn();
             if (!url) return;
 
@@ -1243,25 +1307,32 @@ function processResult(
 }
 
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
-    let playBtn = resultSpan.querySelector(".play-recording-btn");
+    if (resultSpan.querySelector(".play-recording-btn")) return;
 
-    if (!playBtn) {
-        playBtn = document.createElement("button");
-        playBtn.className = "example-button play-recording-btn custom-tip-wrap";
-        playBtn.style.marginLeft = "8px";
-        playBtn.innerHTML = '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className =
+        "example-button play-recording-btn custom-tip-wrap";
+    button.style.marginLeft = "8px";
+    button.innerHTML =
+        '▶️<span class="custom-tip-box">Play your recorded voice</span>';
 
-        playBtn.onclick = () => {
-            const recordedAudioUrl = practice7State.audioUrls[rowKey];
-            if (recordedAudioUrl) {
-                setPlayingStateMultiple([playBtn], "Playing...");
-                const audio = new Audio(recordedAudioUrl);
-                currentPlayingAudio = audio;
-                audio.onended = () => stopAllPlayback();
-                audio.play().catch(e => stopAllPlayback());
-            }
-        };
+    button.onclick = () => {
+        if (activeRecognitionSession ||
+            practice7State.startingRow) return;
 
-        resultSpan.appendChild(playBtn);
-    }
+        const url = practice7State.audioUrls[rowKey];
+        if (!url) return;
+
+        stopAllPlayback();
+        setPlayingStateMultiple([button], "Playing...");
+
+        const audio = new Audio(url);
+        currentPlayingAudio = audio;
+        audio.playbackRate = 1.0;
+        audio.onended = () => stopAllPlayback();
+        audio.play().catch(() => stopAllPlayback());
+    };
+
+    resultSpan.appendChild(button);
 }
