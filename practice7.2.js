@@ -763,7 +763,78 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
         playRate,
         `p7_drill_perf_${rowIndex}`
     );
+    // 「覚える」「知る」専用の意味変化メモ。
+    const meaningNotes = {
+        "覚える": {
+            kanji: ["覚えました", "覚えています"],
+            hiragana: ["おぼえました", "おぼえています"],
+            english: ["memorized", "remember"]
+        },
+        "知る": {
+            kanji: ["知りました", "知っています"],
+            hiragana: ["しりました", "しっています"],
+            english: ["learned", "know"]
+        }
+    };
 
+    const meaningNote = meaningNotes[item.yKanji];
+
+    if (meaningNote) {
+        if (!document.getElementById("practice7MeaningNoteStyle")) {
+            const noteStyle = document.createElement("style");
+            noteStyle.id = "practice7MeaningNoteStyle";
+
+            noteStyle.textContent = `
+                #drill1Container .meaning-change-note {
+                    color: #7C3AED;
+                    padding-top: 10px;
+                    padding-bottom: 4px;
+                    font-size: 14px;
+                    line-height: 1.6;
+                }
+
+                #drill1Container .meaning-change-note-title {
+                    font-size: 12px;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    #drill1Container .meaning-change-note {
+                        color: #C084FC;
+                    }
+                }
+            `;
+
+            document.head.appendChild(noteStyle);
+        }
+
+        const forms = scriptMode === "hiragana"
+            ? meaningNote.hiragana
+            : meaningNote.kanji;
+
+        const noteRow = document.createElement("tr");
+
+        // 番号・キューの２列分を空け、録音欄の下に配置。
+        const spacer = document.createElement("td");
+        spacer.colSpan = 2;
+
+        const noteCell = document.createElement("td");
+        noteCell.className = "meaning-change-note";
+
+        const title = document.createElement("div");
+        title.className = "meaning-change-note-title";
+        title.textContent = "✨ Notice the meaning change:";
+
+        const comparison = document.createElement("strong");
+        comparison.textContent =
+            `${forms[0]} = ${meaningNote.english[0]} / ` +
+            `${forms[1]} = ${meaningNote.english[1]}`;
+
+        noteCell.appendChild(title);
+        noteCell.appendChild(comparison);
+        noteRow.appendChild(spacer);
+        noteRow.appendChild(noteCell);
+        table.appendChild(noteRow);
+    }
     cardDiv.appendChild(table);
     cardDiv.appendChild(correctionBox1);
     cardDiv.appendChild(correctionBox2);
