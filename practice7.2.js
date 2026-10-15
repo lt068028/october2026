@@ -777,43 +777,78 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
         }
     };
 
+    // 保存された録音ファイルの有無で表示を更新する。
+    practice7State.refreshMeaningNotes = () => {
+        document.querySelectorAll(
+            "#drill1Container .meaning-change-row"
+        ).forEach(row => {
+            row.hidden = !(
+                practice7State.audioUrls[row.dataset.pastKey] ||
+                practice7State.audioUrls[row.dataset.perfectKey]
+            );
+        });
+    };
+
     const meaningNote = meaningNotes[item.yKanji];
 
     if (meaningNote) {
-        if (!document.getElementById("practice7MeaningNoteStyle")) {
-            const noteStyle = document.createElement("style");
+        let noteStyle = document.getElementById(
+            "practice7MeaningNoteStyle"
+        );
+
+        if (!noteStyle) {
+            noteStyle = document.createElement("style");
             noteStyle.id = "practice7MeaningNoteStyle";
-
-            noteStyle.textContent = `
-                #drill1Container .meaning-change-note {
-                    color: #7C3AED;
-                    padding-top: 10px;
-                    padding-bottom: 4px;
-                    font-size: 14px;
-                    line-height: 1.6;
-                }
-
-                #drill1Container .meaning-change-note-title {
-                    font-size: 12px;
-                }
-
-                @media (prefers-color-scheme: dark) {
-                    #drill1Container .meaning-change-note {
-                        color: #C084FC;
-                    }
-                }
-            `;
-
             document.head.appendChild(noteStyle);
         }
+
+        noteStyle.textContent = `
+            #drill1Container .meaning-change-row[hidden] {
+                display: none;
+            }
+
+            #drill1Container .meaning-change-note {
+                padding-top: 10px;
+                padding-bottom: 4px;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            #drill1Container .meaning-change-note-title {
+                color: var(--text-primary);
+                font-size: 12px;
+                font-weight: normal;
+            }
+
+            #drill1Container .meaning-change-comparison {
+                color: #7C3AED;
+                font-weight: bold;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #drill1Container .meaning-change-comparison {
+                    color: #C084FC;
+                }
+            }
+        `;
 
         const forms = scriptMode === "hiragana"
             ? meaningNote.hiragana
             : meaningNote.kanji;
 
-        const noteRow = document.createElement("tr");
+        const pastKey = `p7_drill_past_${rowIndex}`;
+        const perfectKey = `p7_drill_perf_${rowIndex}`;
 
-        // 番号・キューの２列分を空け、録音欄の下に配置。
+        const noteRow = document.createElement("tr");
+        noteRow.className = "meaning-change-row";
+        noteRow.dataset.pastKey = pastKey;
+        noteRow.dataset.perfectKey = perfectKey;
+
+        noteRow.hidden = !(
+            practice7State.audioUrls[pastKey] ||
+            practice7State.audioUrls[perfectKey]
+        );
+
         const spacer = document.createElement("td");
         spacer.colSpan = 2;
 
@@ -825,6 +860,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
         title.textContent = "✨ Notice the meaning change:";
 
         const comparison = document.createElement("strong");
+        comparison.className = "meaning-change-comparison";
         comparison.textContent =
             `${forms[0]} = ${meaningNote.english[0]} / ` +
             `${forms[1]} = ${meaningNote.english[1]}`;
@@ -1864,6 +1900,9 @@ function processResult(
 }
 
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
+        queueMicrotask(() => {
+        practice7State.refreshMeaningNotes?.();
+    });
     if (resultSpan.querySelector(".play-recording-btn")) return;
 
     const button = document.createElement("button");
