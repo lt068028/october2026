@@ -1955,17 +1955,12 @@ async function startRecording(initialView) {
             const url =
                 practice1State.audioUrls[rowKey];
 
-            if (audioOnly) {
-                playAudio(url);
-            } else {
-                speakText(
-                    model,
-                    0.9,
-                    () => playAudio(url)
-                );
-            }
-        }
-    }
+            speakText(
+                model,
+                0.9,
+                () => playAudio(url)
+            );
+        }    }
 
     function stop(message = "", discard = false) {
         if (session.finished || session.stopRequested) {
