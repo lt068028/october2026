@@ -1562,6 +1562,7 @@ function practice2FindDiff(actual, reference) {
     }
 
     const redIndexes = new Set();
+    const gaps = new Set();
 
     let i = n;
     let j = m;
@@ -1575,6 +1576,18 @@ function practice2FindDiff(actual, reference) {
             for (let k = step.i; k < i; k++) {
                 redIndexes.add(a.tokens[k].index);
             }
+        }
+
+        // 正解側だけに文字がある場合、その位置に不足印を置く。
+        // 連続した不足は同じ位置の「＿」一つにまとめる。
+        if (step.i === i && step.j < j) {
+            const position = i < a.tokens.length
+                ? a.tokens[i].index
+                : a.tokens.length
+                    ? a.tokens[a.tokens.length - 1].index + 1
+                    : 0;
+
+            gaps.add(position);
         }
 
         i = step.i;
@@ -1699,9 +1712,9 @@ function practice2FindDiff(actual, reference) {
     return {
         cost: costs[n][m],
         chars: a.chars,
-        redIndexes
+        redIndexes,
+        gaps
     };
-
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
@@ -1712,7 +1725,6 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
             "専攻"
         );
 
-    // 全文への赤字指定を解除する。
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
 
@@ -1753,21 +1765,39 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
             );
 
         } else {
-            best.chars.forEach((char, index) => {
+            const appendRed = text => {
+                const span = document.createElement("span");
+
+                span.textContent = text;
+                span.style.color = "var(--error-text)";
+
+                view.resultSpan.appendChild(span);
+            };
+
+            // 末尾の不足も含めて表示する。
+            for (
+                let index = 0;
+                index <= best.chars.length;
+                index++
+            ) {
+                if (best.gaps.has(index)) {
+                    appendRed("＿");
+                }
+
+                if (index === best.chars.length) {
+                    break;
+                }
+
+                const char = best.chars[index];
+
                 if (best.redIndexes.has(index)) {
-                    const span =
-                        document.createElement("span");
-
-                    span.textContent = char;
-                    span.style.color = "var(--error-text)";
-
-                    view.resultSpan.appendChild(span);
+                    appendRed(char);
                 } else {
                     view.resultSpan.appendChild(
                         document.createTextNode(char)
                     );
                 }
-            });
+            }
         }
 
         view.resultSpan.appendChild(
