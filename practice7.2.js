@@ -2016,6 +2016,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         document.head.appendChild(style);
     }
+    function updateHintControl() {
         const control = document.getElementById("hintModeControl");
         if (!control) return;
 
@@ -2025,7 +2026,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             button.setAttribute("aria-pressed", String(selected));
         });
     }
-
     function updateExample(container) {
         if (!englishCuesEnabled) return;
 
