@@ -1970,10 +1970,10 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         style.id = "practice7EnglishCueStyle";
         style.textContent = `
             #practice7Drill2Panel {
-                display: flex;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
                 align-items: center;
-                justify-content: space-between;
-                gap: 24px;
+                gap: 12px 24px;
                 margin-top: 28px;
                 padding: 22px;
                 border: 1px solid var(--border-color);
@@ -1982,23 +1982,33 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             }
 
             #practice7Drill2Panel .p7-drill2-copy {
-                flex: 1;
-                min-width: 0;
+                display: contents;
             }
 
-            #practice7Drill2Panel h2 {
-                margin: 0 0 10px;
+            #practice7Drill2Panel .info-panel-title {
+                grid-column: 1;
+                grid-row: 1;
+                display: block;
+                min-width: 0;
+                margin: 0;
                 font-size: 22px;
                 font-weight: bold;
                 line-height: 1.4;
             }
 
-            #practice7Drill2Panel p {
+            #practice7EnglishCueButton {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            #practice7Drill2Panel .info-panel-desc {
+                grid-column: 1 / -1;
+                grid-row: 2;
+                display: block;
                 margin: 0;
                 font-size: 14px;
                 line-height: 1.7;
             }
-
             #practice7EnglishCueButton {
                 flex-shrink: 0;
                 min-width: 190px;
@@ -2082,10 +2092,24 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             @media (max-width: 600px) {
                 #practice7Drill2Panel {
-                    flex-direction: column;
-                    align-items: stretch;
+                    gap: 12px;
+                    padding: 16px;
                 }
 
+                #practice7Drill2Panel .info-panel-title {
+                    font-size: 18px;
+                }
+
+                #practice7EnglishCueButton {
+                    width: auto;
+                    min-width: 0;
+                    min-height: 48px;
+                    max-width: 150px;
+                    padding: 10px 12px;
+                    font-size: 14px;
+                    white-space: normal;
+                }
+            }
                 #practice7EnglishCueButton {
                     width: 100%;
                     min-width: 0;
