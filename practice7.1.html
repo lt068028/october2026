@@ -6,31 +6,30 @@
 <title>Practice 7.1: ているform① present continuous</title>
 <link rel="stylesheet" href="style.css">
 <style>
-/* キュー列：固定幅を解除し、内容に必要な幅にする */
+/* キュー列：1行表示に必要な最小幅 */
 #drill1Container .prompt-label {
     width: 1% !important;
     padding-right: 4px !important;
-    white-space: normal;
+    white-space: nowrap !important;
     overflow-wrap: normal;
     word-break: normal;
 }
 
-/* 語句の途中では切らず、区切りで折り返す */
-#drill1Container .p71-cues {
-    white-space: normal;
+#drill1Container .p71-cues,
+#drill1Container .p71-cue-word,
+#drill1Container .p71-cue-separator {
+    white-space: nowrap;
     overflow-wrap: normal;
     word-break: normal;
 }
 
 #drill1Container .p71-cue-word {
     display: inline-block;
-    white-space: nowrap;
 }
 
-#drill1Container .p71-cue-separator {
-    white-space: nowrap;
+#drill1Container .p71-cues wbr {
+    display: none;
 }
-
 /* Example：ラベルとキューの間隔を縮める */
 #practice71Example .example-line {
     justify-content: flex-start;
@@ -59,8 +58,8 @@
 }
 
 #drill1Container .p71-present {
-    background: #fef08a;
-    color: #854d0e;
+    background: #fde047;
+    color: #713f12;
 }
 
 #drill1Container .p71-ongoing {
