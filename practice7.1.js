@@ -1800,12 +1800,22 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             });
         });
         const panel = document.createElement('div');
-        panel.className = 'info-panel info-panel-task1 p71-drill2';
-        panel.innerHTML = '<div class="p71-copy"><span class="info-panel-title">Drill 2: Practice with English cues</span><span class="info-panel-desc">💡 Practise making sentences with this lesson’s vocabulary, using English cues.</span></div>';
+        panel.className = 'info-panel info-panel-task1 drill-cue-panel';
+        panel.innerHTML = `
+            <span class="info-panel-title drill-cue-title">
+                Drill 2: Practice with English cues
+            </span>
+            <span class="info-panel-desc drill-cue-description">
+                💡 Practise making sentences with this lesson’s vocabulary, using English cues.
+            </span>
+        `;
+
         const button = document.createElement('button');
         button.id = 'practice71CueButton';
         button.type = 'button';
-        button.className = english ? 'p71-cue-button is-english' : 'p71-cue-button';
+        button.className = english
+            ? 'drill-cue-button is-english'
+            : 'drill-cue-button';
         button.setAttribute('aria-pressed',String(english));
         button.textContent = english ? 'Display Japanese cues' : 'Display English cues';
         button.onclick = () => {
