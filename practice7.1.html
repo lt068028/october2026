@@ -6,19 +6,86 @@
 <title>Practice 7.1: ているform① present continuous</title>
 <link rel="stylesheet" href="style.css">
 <style>
-#drill1Container .prompt-label{width:clamp(180px,30vw,360px)!important;white-space:normal;overflow-wrap:anywhere}
-#drill1Container .p71-tense{display:inline-block;padding:4px 8px;margin:0 6px;border-radius:4px;font-size:13px;font-weight:bold;white-space:nowrap}
-#drill1Container .p71-present{background:#bae6fd;color:#0369a1}
-#drill1Container .p71-ongoing{background:#dcfce7;color:#15803d}
-#drill1Container .p71-underlined{text-decoration:underline;text-decoration-color:#CA8A04;text-decoration-thickness:2px;text-underline-offset:4px;font-weight:bold}
-#drill1Container .p71-drill2{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;margin-top:28px}
-#drill1Container .p71-copy{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
-#practice71CueButton{flex-shrink:0;min-width:190px;min-height:62px;padding:16px 22px;border:2px solid #2563eb;border-radius:8px;background:#2563eb;color:#fff;font:inherit;font-weight:bold;cursor:pointer}
-#practice71CueButton.is-english{background:#dbeafe;color:#1e40af}
-#practice71CueButton:disabled{opacity:.5;cursor:not-allowed}
-#drill1Container .drill-row{overflow-x:auto}
-@media(prefers-color-scheme:dark){#drill1Container .p71-underlined{text-decoration-color:#FBBF24}#practice71CueButton{background:#93b4ff;border-color:#93b4ff;color:#142346}#practice71CueButton.is-english{background:#344966;color:#e5efff}}
-@media(max-width:600px){#drill1Container .p71-drill2{flex-direction:column;align-items:stretch}#practice71CueButton{width:100%;min-width:0}}
+/* キュー列：固定幅を解除し、内容に必要な幅にする */
+#drill1Container .prompt-label {
+    width: 1% !important;
+    padding-right: 4px !important;
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+/* 語句の途中では切らず、区切りで折り返す */
+#drill1Container .p71-cues {
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+#drill1Container .p71-cue-word {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+#drill1Container .p71-cue-separator {
+    white-space: nowrap;
+}
+
+/* Example：ラベルとキューの間隔を縮める */
+#practice71Example .example-line {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    column-gap: 4px;
+    row-gap: 6px;
+}
+
+#practice71Example .example-label-title {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Present / Ongoing */
+#drill1Container .p71-tense {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 0 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#drill1Container .p71-present {
+    background: #fef08a;
+    color: #854d0e;
+}
+
+#drill1Container .p71-ongoing {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+/* Example文中の対象語だけに付ける下線 */
+#practice71Example .p71-underlined {
+    text-decoration: underline;
+    text-decoration-color: #CA8A04;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    font-weight: bold;
+}
+
+#drill1Container .drill-row {
+    overflow-x: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+    #practice71Example .p71-underlined {
+        text-decoration-color: #FBBF24;
+    }
+}
 </style>
 </head>
 <body>
