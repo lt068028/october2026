@@ -1969,7 +1969,45 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const style = document.createElement("style");
         style.id = "practice7EnglishCueStyle";
         style.textContent = `
-            #drill1Container .p7-english-cue {
+            #practice7Drill2Panel.p7-copy-layout {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+            }
+
+            #practice7Drill2Panel.p7-copy-layout .p7-drill2-copy {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            #practice7Drill2Panel.p7-copy-layout .drill-cue-title,
+            #practice7Drill2Panel.p7-copy-layout .drill-cue-description {
+                display: block;
+                margin: 0;
+            }
+
+            #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: 190px;
+            }
+
+            @media (max-width: 600px) {
+                #practice7Drill2Panel.p7-copy-layout {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
+                    width: 100%;
+                    min-width: 0;
+                }
+            }            #drill1Container .p7-english-cue {
                 overflow-wrap: anywhere;
             }
 
@@ -2182,7 +2220,13 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             });
         });
 
-        panel.append(title, button, description);
+        panel.classList.add("p7-copy-layout");
+
+        const copy = document.createElement("div");
+        copy.className = "p7-drill2-copy";
+        copy.append(title, description);
+
+        panel.append(copy, button);
         container.appendChild(panel);
     }
     renderAll = function () {
