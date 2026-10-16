@@ -1,173 +1,61 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Practice 7.2: ているform② present perfect</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice 7.1: ているform① present continuous</title>
+<link rel="stylesheet" href="style.css">
+<style>
+#drill1Container .prompt-label{width:clamp(180px,30vw,360px)!important;white-space:normal;overflow-wrap:anywhere}
+#drill1Container .p71-tense{display:inline-block;padding:4px 8px;margin:0 6px;border-radius:4px;font-size:13px;font-weight:bold;white-space:nowrap}
+#drill1Container .p71-present{background:#bae6fd;color:#0369a1}
+#drill1Container .p71-ongoing{background:#dcfce7;color:#15803d}
+#drill1Container .p71-underlined{text-decoration:underline;text-decoration-color:#CA8A04;text-decoration-thickness:2px;text-underline-offset:4px;font-weight:bold}
+#drill1Container .p71-drill2{flex-direction:row;align-items:center;justify-content:space-between;gap:24px;margin-top:28px}
+#drill1Container .p71-copy{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+#practice71CueButton{flex-shrink:0;min-width:190px;min-height:62px;padding:16px 22px;border:2px solid #2563eb;border-radius:8px;background:#2563eb;color:#fff;font:inherit;font-weight:bold;cursor:pointer}
+#practice71CueButton.is-english{background:#dbeafe;color:#1e40af}
+#practice71CueButton:disabled{opacity:.5;cursor:not-allowed}
+#drill1Container .drill-row{overflow-x:auto}
+@media(prefers-color-scheme:dark){#drill1Container .p71-underlined{text-decoration-color:#FBBF24}#practice71CueButton{background:#93b4ff;border-color:#93b4ff;color:#142346}#practice71CueButton.is-english{background:#344966;color:#e5efff}}
+@media(max-width:600px){#drill1Container .p71-drill2{flex-direction:column;align-items:stretch}#practice71CueButton{width:100%;min-width:0}}
+</style>
 </head>
 <body>
-
-    <!-- =========================================================
-         Header & Settings
-         ========================================================= -->
-    <div class="main-header page-header">
-
-        <!-- Title + Independent Back Link -->
-        <div class="page-heading">
-            <h1>Practice 7.2: ているform② present perfect</h1>
-
-            <a
-                href="#"
-                class="back-link"
-                onclick="window.history.back(); return false;"
-            >↩️もどる</a>
-        </div>
-
-        <!-- Settings -->
-        <div class="compact-settings">
-
-            <!-- Row 1: Script Mode + Vocabulary -->
-            <div class="settings-row settings-segments-row">
-
-                <div class="control-item">
-                    <div
-                        id="scriptModeControl"
-                        class="segmented-control"
-                        role="group"
-                        aria-label="Script Mode"
-                    >
-                        <button
-                            type="button"
-                            class="segmented-option custom-tip-wrap"
-                            data-value="hiragana"
-                            aria-pressed="false"
-                        >
-                            <span class="icon-emoji">🐣</span>Hiragana Only
-                            <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="segmented-option custom-tip-wrap is-selected"
-                            data-value="kanji"
-                            aria-pressed="true"
-                        >
-                            <span class="icon-emoji">🐤</span>With漢字
-                            <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="control-item">
-                    <div
-                        id="hintModeControl"
-                        class="segmented-control"
-                        role="group"
-                        aria-label="Vocabulary Display"
-                    >
-                        <button
-                            type="button"
-                            class="segmented-option custom-tip-wrap"
-                            data-value="off"
-                            aria-pressed="false"
-                        >
-                            OFF
-                            <span class="custom-tip-box">Hides vocabulary pronunciation and meaning hints.</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="segmented-option custom-tip-wrap is-selected"
-                            data-value="hover"
-                            aria-pressed="true"
-                        >
-                            <span class="icon-emoji">💬</span>Vocab Hover
-                            <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
-                        </button>
-
-                        <button
-                            type="button"
-                            class="segmented-option custom-tip-wrap"
-                            data-value="paren"
-                            aria-pressed="false"
-                        >
-                            <span class="icon-emoji">🔡</span>Vocab Display
-                            <span class="custom-tip-box">Always shows word pronunciation and meaning in parentheses.</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Row 2: Autostop + Autoplay -->
-            <div class="settings-row settings-auto-row">
-
-                <div class="control-item settings-onoff">
-                    <span
-                        id="labelAutoRecord"
-                        class="mode-label active-mode custom-tip-wrap"
-                    >
-                        <span class="icon-emoji">⏹️</span>Autostop
-                        <span class="custom-tip-box">ON: Automatically stops recording when you stop speaking. OFF: Records until you click the stop button.</span>
-                    </span>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            id="toggleRecordMode"
-                            aria-label="Autostop"
-                            checked
-                        >
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="control-item settings-onoff">
-                    <span
-                        id="labelAutoPlay"
-                        class="mode-label active-mode custom-tip-wrap"
-                    >
-                        <span class="icon-emoji">▶️</span>Autoplay
-                        <span class="custom-tip-box">ON: Plays the model and your voice automatically after recording. OFF: Disables automatic playback.</span>
-                    </span>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            id="togglePlaybackMode"
-                            aria-label="Autoplay"
-                            checked
-                        >
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================================================
-         Drill 1 Section Container
-         ========================================================= -->
-    <div id="drill1Container"></div>
-
-    <!-- =========================================================
-         Footer
-         ========================================================= -->
-    <div class="voice-guide-footer">
-        🔊Want to change the voice?
-        <span id="guideTrigger" class="guide-trigger">
-            Check⚙️
-        </span>
-
-        <div id="guideBox" class="guide-box-popup" style="display: none;">
-            Win: Settings > Time & Language > Speech<br>
-            Mac/iOS: Settings > Accessibility > Spoken Content<br>
-            ChromeOS: Settings > Advanced > Accessibility > Text-to-Speech
-        </div>
-    </div>
-
-    <script src="practice7.2.js"></script>
+<div class="main-header page-header">
+ <div class="page-heading">
+  <h1>Practice 7.1: ているform① present continuous</h1>
+  <a href="index.html" class="back-link">↩️ もどる</a>
+ </div>
+ <div class="compact-settings">
+  <div class="control-item"><span class="mode-label">Script</span>
+   <div id="scriptModeControl" class="segmented-control">
+    <button class="segmented-option" type="button" data-value="hiragana" aria-pressed="false">Hiragana Only</button>
+    <button class="segmented-option" type="button" data-value="kanji" aria-pressed="true">With 漢字</button>
+   </div>
+  </div>
+  <div class="control-item"><span class="mode-label">Vocab</span>
+   <div id="hintModeControl" class="segmented-control">
+    <button class="segmented-option" type="button" data-value="hover" aria-pressed="true">Hover</button>
+    <button class="segmented-option" type="button" data-value="paren" aria-pressed="false">Display</button>
+    <button class="segmented-option" type="button" data-value="off" aria-pressed="false">OFF</button>
+   </div>
+  </div>
+  <div class="control-item">
+   <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">Autostop<span class="custom-tip-box">Stop after 2 seconds of silence following speech.</span></span>
+   <label class="switch"><input id="toggleRecordMode" type="checkbox" checked aria-label="Autostop"><span class="slider"></span></label>
+  </div>
+  <div class="control-item">
+   <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">Autoplay<span class="custom-tip-box">Play the model and then your recording.</span></span>
+   <label class="switch"><input id="togglePlaybackMode" type="checkbox" checked aria-label="Autoplay"><span class="slider"></span></label>
+  </div>
+ </div>
+</div>
+<div id="drill1Container"></div>
+<footer class="voice-guide-footer">
+ <button id="guideTrigger" class="example-button" type="button">ℹ️ Recording guide</button>
+ <div id="guideBox" style="display:none">Recording stops if no speech starts within 15 seconds. All recordings stop after 20 seconds. With Autostop off, use ⏹️ to stop manually. ✅ indicates a match between the recognized text and the expected sentence.</div>
+</footer>
+<script src="practice71.js"></script>
 </body>
 </html>
