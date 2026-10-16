@@ -1932,3 +1932,368 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     resultSpan.appendChild(button);
 }
+// ============================================================================
+// Practice 7.2: Drill 2 — Practice with English cues
+// ============================================================================
+
+(() => {
+    let englishCuesEnabled = false;
+    let previousHintMode = hintMode;
+
+    const englishCues = {
+        "寝る": ["22:00", "go to bed"],
+        "太る": ["New Year", "gain weight"],
+        "やせる": ["summer vacation", "lose weight"],
+        "結婚する": ["3 years ago", "get married"],
+        "Tシャツを着る": ["earlier", "put on a T-shirt"],
+        "覚える": ["kanji", "50", "memorize"],
+        "知る": ["ているForm", "learn of"]
+    };
+
+    // 「着る」を5番に移動。初回描画前に実行する。
+    const shirtIndex = practice7Data.findIndex(
+        item => item.yKanji === "Tシャツを着る"
+    );
+
+    if (shirtIndex !== -1 && shirtIndex !== 4) {
+        const [shirtItem] = practice7Data.splice(shirtIndex, 1);
+        practice7Data.splice(4, 0, shirtItem);
+    }
+
+    const originalRenderAll = renderAll;
+    const originalSyncRecordingUI = practice7SyncRecordingUI;
+
+    function installStyles() {
+        if (document.getElementById("practice7EnglishCueStyle")) return;
+
+        const style = document.createElement("style");
+        style.id = "practice7EnglishCueStyle";
+        style.textContent = `
+            #practice7Drill2Panel {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+                margin-top: 28px;
+                padding: 22px;
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                color: var(--text-primary);
+            }
+
+            #practice7Drill2Panel .p7-drill2-copy {
+                flex: 1;
+                min-width: 0;
+            }
+
+            #practice7Drill2Panel h2 {
+                margin: 0 0 10px;
+                font-size: 22px;
+                font-weight: bold;
+                line-height: 1.4;
+            }
+
+            #practice7Drill2Panel p {
+                margin: 0;
+                font-size: 14px;
+                line-height: 1.7;
+            }
+
+            #practice7EnglishCueButton {
+                flex-shrink: 0;
+                min-width: 190px;
+                min-height: 62px;
+                padding: 16px 22px;
+                border: 2px solid #2563eb;
+                border-radius: 8px;
+                background: #2563eb;
+                color: #ffffff;
+                font: inherit;
+                font-size: 16px;
+                font-weight: bold;
+                line-height: 1.4;
+                cursor: pointer;
+            }
+
+            #practice7EnglishCueButton.is-english {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            #practice7EnglishCueButton:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+            }
+
+            #drill1Container .p7-english-cue {
+                overflow-wrap: anywhere;
+            }
+
+            #drill1Container .p7-example-cue {
+                margin-bottom: 12px;
+                font-weight: bold;
+            }
+
+            #drill1Container .p7-underlined-cue {
+                text-decoration: underline;
+                text-underline-offset: 4px;
+                font-weight: bold;
+            }
+
+            #drill1Container .p7-shirt-note[hidden] {
+                display: none;
+            }
+
+            #drill1Container .p7-shirt-note td {
+                padding-top: 10px;
+                padding-bottom: 4px;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+
+            #drill1Container .p7-shirt-note small {
+                display: block;
+                color: var(--text-primary);
+                font-size: 12px;
+                font-weight: normal;
+            }
+
+            #drill1Container .p7-shirt-note strong {
+                color: #7c3aed;
+                font-weight: bold;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #practice7EnglishCueButton {
+                    border-color: #93b4ff;
+                    background: #93b4ff;
+                    color: #142346;
+                }
+
+                #practice7EnglishCueButton.is-english {
+                    background: #344966;
+                    color: #e5efff;
+                }
+
+                #drill1Container .p7-shirt-note strong {
+                    color: #c084fc;
+                }
+            }
+
+            @media (max-width: 600px) {
+                #practice7Drill2Panel {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                #practice7EnglishCueButton {
+                    width: 100%;
+                    min-width: 0;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function updateHintControl() {
+        const control = document.getElementById("hintModeControl");
+        if (!control) return;
+
+        control.querySelectorAll("button[data-value]").forEach(button => {
+            const selected = button.dataset.value === hintMode;
+            button.classList.toggle("is-selected", selected);
+            button.setAttribute("aria-pressed", String(selected));
+        });
+    }
+
+    function updateExample(container) {
+        if (!englishCuesEnabled) return;
+
+        const example = container.querySelector(".example-box");
+        if (!example) return;
+
+        const cue = document.createElement("div");
+        cue.className = "p7-example-cue";
+        cue.textContent = "05:00 ／ get up";
+        example.prepend(cue);
+
+        example.querySelectorAll(".example-line").forEach((line, index) => {
+            // 元のボタンを移動し、音声再生イベントを保持する。
+            const listenButton = line.querySelector("button");
+
+            const label = document.createElement("strong");
+            label.className = "example-label-title";
+            label.style.minWidth = "90px";
+            label.textContent = index === 0 ? "Past:" : "Perfect:";
+
+            const pattern = document.createElement("span");
+            pattern.innerHTML = index === 0
+                ? '<span class="p7-underlined-cue">05:00</span>に' +
+                  '<span class="p7-underlined-cue">get up</span>ました。'
+                : '<span class="p7-underlined-cue">05:00</span>から' +
+                  '<span class="p7-underlined-cue">get up</span>ています。';
+
+            line.replaceChildren(label, pattern);
+
+            if (listenButton) {
+                line.appendChild(listenButton);
+            }
+        });
+    }
+
+    function updatePracticeCues(container) {
+        if (!englishCuesEnabled) return;
+
+        container.querySelectorAll(
+            "#drill1List .prompt-label"
+        ).forEach((prompt, index) => {
+            const item = practice7Data[index];
+            const parts = englishCues[item?.yKanji];
+            if (!parts) return;
+
+            const cue = document.createElement("strong");
+            cue.className = "p7-english-cue";
+            cue.textContent = parts.join(" ／ ");
+            prompt.replaceChildren(cue);
+        });
+    }
+
+    function addShirtMeaningNote(container) {
+        const rowIndex = practice7Data.findIndex(
+            item => item.yKanji === "Tシャツを着る"
+        );
+
+        const cards = container.querySelectorAll("#drill1List .drill-row");
+        const table = cards[rowIndex]?.querySelector("table");
+        if (!table) return;
+
+        // 既存コードで追加済みの場合は重複させない。
+        if (table.querySelector(".meaning-change-row")) return;
+
+        const pastKey = `p7_drill_past_${rowIndex}`;
+        const perfectKey = `p7_drill_perf_${rowIndex}`;
+
+        const row = document.createElement("tr");
+        row.className = "meaning-change-row p7-shirt-note";
+        row.dataset.pastKey = pastKey;
+        row.dataset.perfectKey = perfectKey;
+        row.hidden = !(
+            practice7State.audioUrls[pastKey] ||
+            practice7State.audioUrls[perfectKey]
+        );
+
+        const spacer = document.createElement("td");
+        spacer.colSpan = 2;
+
+        const cell = document.createElement("td");
+        cell.className = "meaning-change-note";
+
+        const title = document.createElement("small");
+        title.textContent = "✨ Notice the meaning change:";
+
+        const comparison = document.createElement("strong");
+        comparison.className = "meaning-change-comparison";
+        comparison.textContent = scriptMode === "hiragana"
+            ? "きました = put on / きています = am wearing"
+            : "着ました = put on / 着ています = am wearing";
+
+        cell.append(title, comparison);
+        row.append(spacer, cell);
+        (table.tBodies[0] || table).appendChild(row);
+    }
+
+    function addDrill2Panel(container) {
+        const panel = document.createElement("section");
+        panel.id = "practice7Drill2Panel";
+        panel.setAttribute("aria-labelledby", "practice7Drill2Title");
+
+        const copy = document.createElement("div");
+        copy.className = "p7-drill2-copy";
+
+        const title = document.createElement("h2");
+        title.id = "practice7Drill2Title";
+        title.textContent = "Drill 2: Practice with English cues";
+
+        const description = document.createElement("p");
+        description.textContent =
+            "💡 Practise making sentences with this lesson’s vocabulary, using English cues.";
+
+        const button = document.createElement("button");
+        button.id = "practice7EnglishCueButton";
+        button.type = "button";
+        button.classList.toggle("is-english", englishCuesEnabled);
+        button.setAttribute("aria-pressed", String(englishCuesEnabled));
+        button.textContent = englishCuesEnabled
+            ? "Display Japanese cues"
+            : "Display English cues";
+
+        button.addEventListener("click", () => {
+            if (activeRecognitionSession || practice7State.startingRow) {
+                return;
+            }
+
+            stopAllPlayback();
+
+            if (!englishCuesEnabled) {
+                previousHintMode = hintMode;
+                englishCuesEnabled = true;
+                hintMode = "off";
+            } else {
+                englishCuesEnabled = false;
+                hintMode = previousHintMode;
+            }
+
+            // 抽出文・判定・訂正文をクリアする。
+            // 保存済み音声は、新しい録音が保存されるまで保持する。
+            practice7State.savedResults = {};
+
+            updateHintControl();
+            renderAll();
+
+            requestAnimationFrame(() => {
+                document.querySelector(
+                    "#drill1Container .example-box"
+                )?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start"
+                });
+            });
+        });
+
+        copy.append(title, description);
+        panel.append(copy, button);
+        container.appendChild(panel);
+    }
+
+    renderAll = function () {
+        originalRenderAll();
+
+        const container = document.getElementById("drill1Container");
+        if (!container) return;
+
+        installStyles();
+        updateExample(container);
+        updatePracticeCues(container);
+        addShirtMeaningNote(container);
+        addDrill2Panel(container);
+
+        practice7State.refreshMeaningNotes?.();
+        practice7SyncRecordingUI();
+    };
+
+    practice7SyncRecordingUI = function () {
+        originalSyncRecordingUI();
+
+        const button = document.getElementById(
+            "practice7EnglishCueButton"
+        );
+
+        if (button) {
+            button.disabled = Boolean(
+                activeRecognitionSession ||
+                practice7State.startingRow
+            );
+        }
+    };
+})();
