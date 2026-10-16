@@ -2039,3 +2039,160 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         if (button) button.disabled = Boolean(activeRecognitionSession || practice71State.startingRow);
     };
 })();
+
+// ============================================================================
+// Drill 1・1番：「英語を／英語で」の許容と補足表示
+// ============================================================================
+(() => {
+    const originalNormalize = practice71Normalize;
+    const originalShowResult = practice71ShowResult;
+
+    const useDe = text => String(text ?? "").replace(
+        /(英語|えいご)([\s、，,]*)を/g,
+        "$1$2で"
+    );
+
+    // 比較時だけ「英語で」を「英語を」と同じ形にする。
+    // 保存された抽出文は変更しない。
+    practice71Normalize = function (text) {
+        const comparisonText = String(text ?? "").replace(
+            /(英語|えいご)([\s、，,]*)で/g,
+            "$1$2を"
+        );
+        return originalNormalize(comparisonText);
+    };
+
+    practice71ShowResult = function (view, saved, rowKey, playRate) {
+        const isFirstQuestion =
+            /^p7_drill_(past|perf)_0$/.test(rowKey);
+
+        if (!isFirstQuestion) {
+            return originalShowResult(view, saved, rowKey, playRate);
+        }
+
+        const usesDe =
+            /(?:英語|えいご)[\s、，,]*で/.test(
+                String(saved.rawTranscript ?? "")
+            );
+
+        // 訂正用モデルも、認識された「英語で」を維持する。
+        const result = {
+            ...saved,
+            expectedText: usesDe
+                ? useDe(saved.expectedText)
+                : saved.expectedText,
+            modelText: usesDe
+                ? useDe(saved.modelText)
+                : saved.modelText
+        };
+
+        originalShowResult(view, result, rowKey, playRate);
+        saved.isCorrect = result.isCorrect;
+
+        if (!result.isCorrect) return;
+
+        if (!document.getElementById("practice71ParticleStyle")) {
+            const style = document.createElement("style");
+            style.id = "practice71ParticleStyle";
+            style.textContent = `
+                #drill1Container .p71-accepted-particle,
+                #drill1Container .p71-particle-note {
+                    color: #2563eb;
+                }
+
+                #drill1Container .p71-particle-note {
+                    display: block;
+                    margin-top: 6px;
+                    font-size: 14px;
+                    font-weight: normal;
+                    line-height: 1.5;
+                    white-space: normal;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    #drill1Container .p71-accepted-particle,
+                    #drill1Container .p71-particle-note {
+                        color: #60a5fa;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const recordingButton =
+            view.resultSpan.querySelector(".play-recording-btn");
+
+        const displayed = scriptMode === "hiragana"
+            ? practice71ToHiragana(saved.rawTranscript)
+            : String(saved.rawTranscript ?? "");
+
+        view.resultSpan.replaceChildren();
+
+        const match = usesDe
+            ? /(?:英語|えいご)[\s、，,]*(で)/.exec(displayed)
+            : null;
+
+        if (match) {
+            const particleIndex = match.index + match[0].length - 1;
+
+            view.resultSpan.appendChild(
+                document.createTextNode(
+                    displayed.slice(0, particleIndex)
+                )
+            );
+
+            const particle = document.createElement("span");
+            particle.className = "p71-accepted-particle";
+            particle.textContent = "で";
+            view.resultSpan.appendChild(particle);
+
+            view.resultSpan.appendChild(
+                document.createTextNode(
+                    displayed.slice(particleIndex + 1)
+                )
+            );
+        } else {
+            view.resultSpan.appendChild(
+                document.createTextNode(displayed)
+            );
+        }
+
+        view.resultSpan.appendChild(
+            document.createTextNode(" ✅ ")
+        );
+
+        const modelButton = document.createElement("button");
+        modelButton.type = "button";
+        modelButton.className = "example-button";
+        modelButton.textContent = "🔊きく";
+        modelButton.style.marginLeft = "4px";
+
+        modelButton.onclick = () => {
+            if (activeRecognitionSession ||
+                practice71State.startingRow) return;
+
+            stopAllPlayback();
+            setPlayingStateMultiple([modelButton], "Playing...");
+
+            speakText(
+                result.modelText,
+                playRate,
+                () => stopAllPlayback()
+            );
+        };
+
+        view.resultSpan.appendChild(modelButton);
+
+        if (recordingButton) {
+            view.resultSpan.appendChild(recordingButton);
+        }
+
+        if (usesDe) {
+            const note = document.createElement("span");
+            note.className = "p71-particle-note";
+            note.textContent =
+                "Both ‘を’ and ‘で’ are correct in this context.";
+            view.resultSpan.appendChild(note);
+        }
+    };
+})();
