@@ -2113,35 +2113,24 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const example = container.querySelector(".example-box");
         if (!example) return;
 
-        const cue = document.createElement("div");
-        cue.className = "p7-example-cue";
-        cue.textContent = "05:00 ／ get up";
-        example.prepend(cue);
-
         example.querySelectorAll(".example-line").forEach((line, index) => {
-            // 元のボタンを移動し、音声再生イベントを保持する。
-            const listenButton = line.querySelector("button");
+            // 元の日本語キューを、同じ位置で英語に変更する。
+            line.querySelectorAll(".target-word").forEach((word, wordIndex) => {
+                word.textContent = wordIndex === 0 ? "05:00" : "get up";
+                word.classList.add("p7-underlined-cue");
+            });
 
-            const label = document.createElement("strong");
-            label.className = "example-label-title";
-            label.style.minWidth = "90px";
-            label.textContent = index === 0 ? "Past:" : "Perfect:";
+            // ボタン・Past／Perfectラベルの位置は変更しない。
+            const sentence = line.lastElementChild;
+            if (!sentence || sentence.tagName !== "SPAN") return;
 
-            const pattern = document.createElement("span");
-            pattern.innerHTML = index === 0
-                ? '<span class="p7-underlined-cue">05:00</span>に' +
-                  '<span class="p7-underlined-cue">get up</span>ました。'
-                : '<span class="p7-underlined-cue">05:00</span>から' +
-                  '<span class="p7-underlined-cue">get up</span>ています。';
-
-            line.replaceChildren(label, pattern);
-
-            if (listenButton) {
-                line.appendChild(listenButton);
-            }
+            sentence.innerHTML = index === 0
+                ? '<span class="p7-underlined-cue">05:00</span> に ' +
+                  '<span class="p7-underlined-cue">get up</span> ました。'
+                : '<span class="p7-underlined-cue">05:00</span> から ' +
+                  '<span class="p7-underlined-cue">get up</span> ています。';
         });
     }
-
     function updatePracticeCues(container) {
         if (!englishCuesEnabled) return;
 
@@ -2206,16 +2195,19 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     function addDrill2Panel(container) {
         const panel = document.createElement("section");
         panel.id = "practice7Drill2Panel";
+        panel.className = "info-panel info-panel-task1";
         panel.setAttribute("aria-labelledby", "practice7Drill2Title");
 
         const copy = document.createElement("div");
         copy.className = "p7-drill2-copy";
 
-        const title = document.createElement("h2");
+        const title = document.createElement("span");
         title.id = "practice7Drill2Title";
+        title.className = "info-panel-title";
         title.textContent = "Drill 2: Practice with English cues";
 
-        const description = document.createElement("p");
+        const description = document.createElement("span");
+        description.className = "info-panel-desc";
         description.textContent =
             "💡 Practise making sentences with this lesson’s vocabulary, using English cues.";
 
@@ -2244,19 +2236,31 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 hintMode = previousHintMode;
             }
 
-            // 抽出文・判定・訂正文をクリアする。
-            // 保存済み音声は、新しい録音が保存されるまで保持する。
+            // 抽出文・判定・訂正文をクリアし、録音音声は保持する。
             practice7State.savedResults = {};
 
             updateHintControl();
             renderAll();
 
             requestAnimationFrame(() => {
-                document.querySelector(
+                const example = document.querySelector(
                     "#drill1Container .example-box"
-                )?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
+                );
+                if (!example) return;
+
+                const computed = getComputedStyle(example);
+                const fontSize = parseFloat(computed.fontSize) || 16;
+                const lineHeight =
+                    parseFloat(computed.lineHeight) || fontSize * 1.5;
+
+                const top =
+                    window.scrollY +
+                    example.getBoundingClientRect().top -
+                    lineHeight;
+
+                window.scrollTo({
+                    top: Math.max(0, top),
+                    behavior: "smooth"
                 });
             });
         });
@@ -2265,7 +2269,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         panel.append(copy, button);
         container.appendChild(panel);
     }
-
     renderAll = function () {
         originalRenderAll();
 
