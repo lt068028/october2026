@@ -1834,8 +1834,134 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-line),behavior:'smooth'});
             });
         };
-        panel.appendChild(button);
+        // Drill 2：左にタイトル＋指示文、右にボタン。
+        const copy = document.createElement('div');
+        copy.className = 'p71-drill2-copy';
+
+        while (panel.firstChild) {
+            copy.appendChild(panel.firstChild);
+        }
+
+        panel.id = 'practice71Drill2Panel';
+        panel.append(copy, button);
         container.appendChild(panel);
+
+        // 配置と確定配色を適用。
+        if (!document.getElementById('practice71LayoutStyle')) {
+            const style = document.createElement('style');
+            style.id = 'practice71LayoutStyle';
+            style.textContent = `
+                #practice71Drill2Panel {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 24px;
+                }
+
+                #practice71Drill2Panel .p71-drill2-copy {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                    flex: 1;
+                    min-width: 0;
+                }
+
+                #practice71Drill2Panel .drill-cue-title,
+                #practice71Drill2Panel .drill-cue-description {
+                    display: block;
+                    margin: 0;
+                }
+
+                #practice71Drill2Panel > .drill-cue-button {
+                    flex: 0 0 auto;
+                    width: auto;
+                    min-width: 190px;
+                }
+
+                #drill1Container .p71-tense.p71-present {
+                    background: #fde047;
+                    color: #713f12;
+                }
+
+                #drill1Container .p71-tense.p71-ongoing {
+                    background: #ffab70;
+                    color: #6b240b;
+                }
+
+                #drill1Container .p71-cues {
+                    white-space: nowrap;
+                }
+
+                #drill1Container .p71-cues wbr {
+                    display: none;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    #drill1Container .p71-tense.p71-present {
+                        background: #665710;
+                        color: #fef08a;
+                    }
+
+                    #drill1Container .p71-tense.p71-ongoing {
+                        background: #813d16;
+                        color: #ffdab5;
+                    }
+                }
+
+                @media (max-width: 600px) {
+                    #practice71Drill2Panel {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+
+                    #practice71Drill2Panel > .drill-cue-button {
+                        width: 100%;
+                        min-width: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        // 全キューを実測し、最長の1行表示幅に列を揃える。
+        const cueCells = Array.from(
+            list.querySelectorAll('.prompt-label')
+        );
+
+        let cueWidth = 0;
+
+        cueCells.forEach(cell => {
+            const measure = document.createElement('span');
+            measure.innerHTML = cell.innerHTML;
+
+            Object.assign(measure.style, {
+                position: 'absolute',
+                visibility: 'hidden',
+                display: 'inline-block',
+                width: 'max-content',
+                maxWidth: 'none',
+                whiteSpace: 'nowrap',
+                font: 'inherit',
+                pointerEvents: 'none'
+            });
+
+            cell.appendChild(measure);
+
+            cueWidth = Math.max(
+                cueWidth,
+                Math.ceil(measure.getBoundingClientRect().width)
+            );
+
+            measure.remove();
+        });
+
+        cueCells.forEach(cell => {
+            cell.style.setProperty('width', `${cueWidth}px`, 'important');
+            cell.style.setProperty('padding-right', '4px', 'important');
+            cell.style.setProperty('white-space', 'nowrap', 'important');
+        });
+
         practice71SyncRecordingUI();
     };
     const originalSync = practice71SyncRecordingUI;
