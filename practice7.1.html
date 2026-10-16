@@ -119,8 +119,16 @@
 </div>
 <div id="drill1Container"></div>
 <footer class="voice-guide-footer">
- <button id="guideTrigger" class="example-button" type="button">ℹ️ Recording guide</button>
- <div id="guideBox" style="display:none">Recording stops if no speech starts within 15 seconds. All recordings stop after 20 seconds. With Autostop off, use ⏹️ to stop manually. ✅ indicates a match between the recognized text and the expected sentence.</div>
+    🔊Want to change the voice?
+    <span id="guideTrigger" class="guide-trigger">
+        Check⚙️
+    </span>
+
+    <div id="guideBox" class="guide-box-popup" style="display: none;">
+        Win: Settings &gt; Time &amp; Language &gt; Speech<br>
+        Mac/iOS: Settings &gt; Accessibility &gt; Spoken Content<br>
+        ChromeOS: Settings &gt; Advanced &gt; Accessibility &gt; Text-to-Speech
+    </div>
 </footer>
 <script src="practice7.1.js"></script>
 </body>
