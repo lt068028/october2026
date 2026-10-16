@@ -1521,8 +1521,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     const word = (h, k, r, e) => ({ h, k, r, e });
     const data = [
         [
-            [word('へや','部屋','heya','room'), word('Nintendo Switch','Nintendo Switch','Nintendō Suitchi','Nintendo Switch'), word('プレイする','プレイする','purei suru','play')],
-            '部屋で、Nintendo Switchを、', 'プレイします', 'プレイしています'
+            [word('へや','部屋','heya','room'), word('Switch','Switch','suitchi','Switch'), word('プレイする','プレイする','purei suru','play')],
+            '部屋で、Switchを、', 'プレイします', 'プレイしています'
         ],
         [
             [word('がっこう','学校','gakkō','school'), word('せんせい','先生','sensei','teacher'), word('えいご','英語','eigo','English'), word('はなす','話す','hanasu','speak')],
@@ -1560,10 +1560,15 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     ];
 
     const originalToHiragana = practice71BaseToHiragana;
+
     practice71ToHiragana = function (text) {
         let value = String(text ?? '').normalize('NFKC');
-        value = value.replace(/(?:Nintendo\s*Switch|任天堂\s*スイッチ|ニンテンドー\s*スイッチ|ニンテンドウ\s*スイッチ)/gi, 'にんてんどーすいっち')
-            .replace(/スマートフォン|スマートホン/g, 'スマホ');
+
+        value = value.replace(
+            /(?:Nintendo\s*Switch|任天堂\s*スイッチ|ニンテンドー\s*スイッチ|ニンテンドウ\s*スイッチ|Switch)/gi,
+            'すいっち'
+        ).replace(/スマートフォン|スマートホン/g, 'スマホ');
+
         const dictionary = [
             ['映画館','えいがかん'], ['喫茶店','きっさてん'],
             ['学校','がっこう'], ['大学','だいがく'], ['先生','せんせい'],
@@ -1573,89 +1578,159 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             ['話','はな'], ['見','み'], ['浴','あ'], ['使','つか'],
             ['吸','す'], ['遊','あそ'], ['飲','の'], ['聞','き'], ['急','いそ']
         ];
-        dictionary.forEach(([from,to]) => { value = value.split(from).join(to); });
+
+        dictionary.forEach(([from, to]) => {
+            value = value.split(from).join(to);
+        });
+
         return originalToHiragana(value);
     };
 
     const flat = text => practice71ToHiragana(text)
-        .toLowerCase().replace(/[\s、。,.!?！？「」『』・]/g, '');
+        .toLowerCase()
+        .replace(/[\s、。,.!?！？「」『』・]/g, '');
 
-    practice71Data.splice(0, practice71Data.length, ...data.map((row, index) => {
-        const [words, clauses, present, ongoing] = row;
-        const last = words[words.length - 1];
-        const a = `いつも、${clauses}${present}。`;
-        const b = `いま、${clauses}${ongoing}。`;
-        return {
-            words, clauses, present, ongoing,
-            x: words[0].h, xKanji: words[0].k,
-            xRomaji: words[0].r, xMeaning: words[0].e,
-            y: last.h, yKanji: last.k,
-            yRomaji: last.r, yMeaning: last.e,
-            pastSentence: a, pastSentenceHira: practice71ToHiragana(a),
-            perfectSentence: b, perfectSentenceHira: practice71ToHiragana(b),
-            itemIndex: index
-        };
-    }));
+    practice71Data.splice(
+        0,
+        practice71Data.length,
+        ...data.map((row, index) => {
+            const [words, clauses, present, ongoing] = row;
+            const last = words[words.length - 1];
+            const a = `いつも、${clauses}${present}。`;
+            const b = `いま、${clauses}${ongoing}。`;
 
-    // 指定された助詞付きの語句を、順不同で過不足なく使ったか確認する。
+            return {
+                words,
+                clauses,
+                present,
+                ongoing,
+                x: words[0].h,
+                xKanji: words[0].k,
+                xRomaji: words[0].r,
+                xMeaning: words[0].e,
+                y: last.h,
+                yKanji: last.k,
+                yRomaji: last.r,
+                yMeaning: last.e,
+                pastSentence: a,
+                pastSentenceHira: practice71ToHiragana(a),
+                perfectSentence: b,
+                perfectSentenceHira: practice71ToHiragana(b),
+                itemIndex: index
+            };
+        })
+    );
+
+    // 助詞付き語句を、順不同で過不足なく使用したか確認する。
     practice71Normalize = function (text) {
         const value = flat(text);
+
         for (const item of practice71Data) {
-            const chunks = item.clauses.split('、').filter(Boolean).map(flat);
-            for (const [time, verb] of [['いつも',item.present], ['いま',item.ongoing]]) {
+            const chunks = item.clauses
+                .split('、')
+                .filter(Boolean)
+                .map(flat);
+
+            for (const [time, verb] of [
+                ['いつも', item.present],
+                ['いま', item.ongoing]
+            ]) {
                 const ending = flat(verb);
                 if (!value.endsWith(ending)) continue;
+
                 let rest = value.slice(0, -ending.length);
                 const remaining = [time, ...chunks];
+
                 while (rest && remaining.length) {
-                    const index = remaining.findIndex(chunk => rest.startsWith(chunk));
+                    const index = remaining.findIndex(
+                        chunk => rest.startsWith(chunk)
+                    );
+
                     if (index < 0) break;
+
                     rest = rest.slice(remaining[index].length);
                     remaining.splice(index, 1);
                 }
+
                 if (!rest && !remaining.length) {
                     return `${time}|${chunks.slice().sort().join('|')}|${ending}`;
                 }
             }
         }
+
         return value;
     };
 
-    // 読み上げの区切りと固有名詞の読みを固定する。
+    // 読み上げの区切りとSwitchの読みを指定する。
     speakText = function (text, rate = 0.9, onEndCallback) {
         setupPreferredVoice();
+
         const utterance = new SpeechSynthesisUtterance(
-            String(text ?? '').replace(/Nintendo\s*Switch/gi, 'ニンテンドースイッチ')
+            String(text ?? '').replace(
+                /(?:Nintendo\s*)?Switch/gi,
+                'スイッチ'
+            )
         );
+
         utterance.lang = 'ja-JP';
         utterance.rate = rate;
-        if (preferredVoice) utterance.voice = preferredVoice;
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
         currentUtteranceRef = utterance;
+
         const finish = () => {
             if (currentUtteranceRef !== utterance) return;
+
             currentUtteranceRef = null;
             onEndCallback?.();
         };
+
         utterance.onend = finish;
         utterance.onerror = finish;
-        try { speechSynthesis.speak(utterance); } catch (error) { finish(); }
+
+        try {
+            speechSynthesis.speak(utterance);
+        } catch (error) {
+            finish();
+        }
     };
 
     function cue(item) {
-        return item.words.map(w => english
-            ? `<span class="p71-underlined">${w.e}</span>`
-            : formatWord(w.h,w.k,w.r,w.e)
-        ).join(' ／ ');
+        const words = item.words.map(w => {
+            const content = english
+                ? w.e
+                : formatWord(w.h, w.k, w.r, w.e);
+
+            return `<span class="p71-cue-word">${content}</span>`;
+        });
+
+        return `<span class="p71-cues">${
+            words.join(
+                '<span class="p71-cue-separator">／</span><wbr>'
+            )
+        }</span>`;
     }
 
     function exampleSentence(item, ongoing) {
         if (!english) {
-            const text = ongoing ? item.perfectSentence : item.pastSentence;
-            return scriptMode === 'hiragana' ? practice71ToHiragana(text) : text;
+            const text = ongoing
+                ? item.perfectSentence
+                : item.pastSentence;
+
+            return scriptMode === 'hiragana'
+                ? practice71ToHiragana(text)
+                : text;
         }
-        const under = text => `<span class="p71-underlined">${text}</span>`;
-        return `${ongoing ? 'いま' : 'いつも'}、${under('room')} で、` +
-            `${under('Nintendo Switch')} を、${under('play')} ` +
+
+        const under = text =>
+            `<span class="p71-underlined">${text}</span>`;
+
+        return `${ongoing ? 'いま' : 'いつも'}、` +
+            `${under('room')} で、` +
+            `Switch を、${under('play')} ` +
             `${ongoing ? 'しています' : 'します'}。`;
     }
 
