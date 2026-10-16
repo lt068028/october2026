@@ -358,7 +358,183 @@ function renderDrill1Section() {
 // ----------------------------------------------------------------------------
 // Drill 1 Row Creation
 // ----------------------------------------------------------------------------
-function createDrill1Row(container, indexLabel, item, playRate) {
+const pronunciation1State = {
+    audioUrls: {},
+    views: {},
+    starting: null,
+    locked: new Map(),
+    playback: 0
+};
+
+function pronunciation1Busy() {
+    return Boolean(
+        activeRecognitionSession ||
+        pronunciation1State.starting !== null
+    );
+}
+
+function pronunciation1Sync() {
+    const controls = document.querySelectorAll(
+        "#drill1List button"
+    );
+
+    if (pronunciation1Busy()) {
+        controls.forEach(control => {
+            if (!pronunciation1State.locked.has(control)) {
+                pronunciation1State.locked.set(
+                    control,
+                    control.disabled
+                );
+            }
+
+            control.disabled = true;
+        });
+
+        const session = activeRecognitionSession;
+        const view = session &&
+            pronunciation1State.views[session.key];
+
+        if (view) {
+            const canStop =
+                session.manual && !session.stopping;
+
+            view.stopBtn.disabled = !canStop;
+            view.stopBtn.classList.toggle(
+                "stop-btn-active",
+                canStop
+            );
+        }
+    } else {
+        pronunciation1State.locked.forEach(
+            (disabled, control) => {
+                if (control.isConnected) {
+                    control.disabled = disabled;
+                }
+            }
+        );
+
+        pronunciation1State.locked.clear();
+    }
+
+    controls.forEach(control => {
+        control.style.setProperty(
+            "cursor",
+            control.disabled ? "not-allowed" : "pointer",
+            "important"
+        );
+    });
+}
+
+function pronunciation1Show(view, message = "") {
+    const { resultSpan, key } = view;
+    const hasAudio = Boolean(
+        pronunciation1State.audioUrls[key]
+    );
+
+    resultSpan.textContent = hasAudio
+        ? "Recorded "
+        : "(Not recorded yet) ";
+
+    resultSpan.style.color = hasAudio
+        ? "var(--text-primary)"
+        : "var(--text-secondary)";
+
+    if (hasAudio) {
+        const play = document.createElement("button");
+        play.type = "button";
+        play.className =
+            "example-button play-recording-btn custom-tip-wrap";
+        play.style.marginLeft = "8px";
+
+        play.innerHTML =
+            '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
+        play.onclick = () =>
+            pronunciation1Play(key, false);
+
+        resultSpan.appendChild(play);
+    }
+
+    if (message) {
+        const notice = document.createElement("span");
+        notice.textContent = message + " ";
+        notice.style.color = "var(--text-secondary)";
+        resultSpan.prepend(notice);
+    }
+
+    if (activeRecognitionSession?.key === key) {
+        resultSpan.textContent = "Recording...";
+        resultSpan.style.color = "var(--accent-color)";
+    } else if (pronunciation1State.starting === key) {
+        resultSpan.textContent = "Preparing microphone...";
+    }
+}
+
+function pronunciation1Play(
+    key,
+    model = true,
+    playOwnAfter = false
+) {
+    if (
+        pronunciation1Busy() ||
+        activePitchRecordingState
+    ) {
+        return;
+    }
+
+    const view = pronunciation1State.views[key];
+    const version = ++pronunciation1State.playback;
+
+    stopAllPlayback();
+
+    const url = pronunciation1State.audioUrls[key];
+
+    const playOwn = () => {
+        if (
+            version !== pronunciation1State.playback ||
+            pronunciation1Busy() ||
+            activePitchRecordingState ||
+            !url
+        ) {
+            return;
+        }
+
+        const audio = new Audio(url);
+        currentPlayingAudio = audio;
+        audio.playbackRate = 1;
+
+        const done = () => {
+            if (currentPlayingAudio === audio) {
+                currentPlayingAudio = null;
+            }
+        };
+
+        audio.onended = done;
+        audio.onerror = done;
+        audio.play().catch(done);
+    };
+
+    if (model) {
+        speakText(
+            view.item.kanji,
+            view.playRate,
+            () => {
+                if (playOwnAfter) playOwn();
+            }
+        );
+    } else {
+        playOwn();
+    }
+}
+
+function createDrill1Row(
+    container,
+    indexLabel,
+    item,
+    playRate
+) {
+    const key = indexLabel;
+
     const rowDiv = document.createElement("div");
     rowDiv.className = "drill-row";
 
@@ -366,295 +542,352 @@ function createDrill1Row(container, indexLabel, item, playRate) {
     topRow.className = "top-row";
 
     const listenBtn = document.createElement("button");
-
+    listenBtn.type = "button";
     listenBtn.className = "example-button custom-tip-wrap";
+
     listenBtn.innerHTML =
         '🔊きく<span class="custom-tip-box">Listen to the model sentence.</span>';
 
-    listenBtn.onclick = () => {
-        const recordBtnEl = rowDiv.querySelector(".play-recording-btn");
-
-        setPlayingStateMultiple(
-            [listenBtn, recordBtnEl],
-            "Playing..."
-        );
-
-        speakText(item.kanji, playRate, () => stopAllPlayback());
-    };
+    listenBtn.onclick = () => pronunciation1Play(key);
 
     const indexSpan = document.createElement("span");
-
     indexSpan.textContent = indexLabel;
     indexSpan.style.fontWeight = "bold";
     indexSpan.style.marginRight = "6px";
 
     const promptSpan = document.createElement("span");
-
     promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = renderPitchAccentHTML(item.text, item.color);
+    promptSpan.innerHTML =
+        renderPitchAccentHTML(item.text, item.color);
     promptSpan.style.minWidth = "380px";
     promptSpan.style.paddingLeft = "4px";
 
     const recordBtn = document.createElement("button");
-
+    recordBtn.type = "button";
     recordBtn.className = "example-button custom-tip-wrap";
+
     recordBtn.innerHTML =
         '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
 
     const stopBtn = document.createElement("button");
-
+    stopBtn.type = "button";
     stopBtn.className = "example-button custom-tip-wrap";
+
     stopBtn.innerHTML =
         '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
 
-    stopBtn.disabled = !isManualStop;
+    stopBtn.disabled = true;
 
     const resultSpan = document.createElement("span");
-
     resultSpan.className = "result-text";
-    resultSpan.textContent = "(Not recorded yet)";
-    resultSpan.style.color = "var(--text-secondary)";
 
-    topRow.appendChild(listenBtn);
-    topRow.appendChild(indexSpan);
-    topRow.appendChild(promptSpan);
-    topRow.appendChild(recordBtn);
-    topRow.appendChild(stopBtn);
-    topRow.appendChild(resultSpan);
-
-    rowDiv.appendChild(topRow);
-
-    bindDrill1RecorderEvents(
+    const view = {
+        key,
+        item,
+        playRate,
+        listenBtn,
         recordBtn,
         stopBtn,
-        resultSpan,
-        item.kanji,
-        playRate
+        resultSpan
+    };
+
+    pronunciation1State.views[key] = view;
+
+    recordBtn.onclick = () => pronunciation1Record(key);
+
+    stopBtn.onclick = () => {
+        const session = activeRecognitionSession;
+
+        if (session?.key === key && session.manual) {
+            session.stop();
+        }
+    };
+
+    topRow.append(
+        listenBtn,
+        indexSpan,
+        promptSpan,
+        recordBtn,
+        stopBtn,
+        resultSpan
     );
 
+    rowDiv.appendChild(topRow);
     container.appendChild(rowDiv);
+
+    pronunciation1Show(view);
+    queueMicrotask(pronunciation1Sync);
 }
 
-function bindDrill1RecorderEvents(
-    recordBtn,
-    stopBtn,
-    resultSpan,
-    expectedKanjiText,
-    playRate = 0.9
-) {
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let lastAudioUrl = null;
-    let stream = null;
-    let isRecording = false;
+async function pronunciation1Record(key) {
+    if (
+        pronunciation1Busy() ||
+        activePitchRecordingState
+    ) {
+        return;
+    }
 
-    const appendPlayButton = () => {
-        let playBtn = resultSpan.querySelector(".play-recording-btn");
+    const current = () => pronunciation1State.views[key];
+    const manual = isManualStop;
 
-        if (!playBtn) {
-            playBtn = document.createElement("button");
+    if (
+        !navigator.mediaDevices?.getUserMedia ||
+        !window.MediaRecorder
+    ) {
+        pronunciation1Show(
+            current(),
+            "Recording is not supported."
+        );
+        return;
+    }
 
-            playBtn.className =
-                "example-button play-recording-btn custom-tip-wrap";
+    ++pronunciation1State.playback;
+    stopAllPlayback();
 
-            playBtn.style.marginLeft = "8px";
+    pronunciation1State.starting = key;
+    pronunciation1Sync();
+    pronunciation1Show(current());
 
-            playBtn.innerHTML =
-                '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+    let stream;
 
-            playBtn.onclick = () => {
-                if (!lastAudioUrl) return;
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+    } catch (error) {
+        pronunciation1State.starting = null;
+        pronunciation1Sync();
 
-                const rowContainer = resultSpan.closest(".drill-row");
+        pronunciation1Show(
+            current(),
+            "Microphone access denied."
+        );
 
-                const modelListenBtn = rowContainer
-                    ? rowContainer.querySelector(".example-button")
-                    : null;
+        pronunciation1Sync();
+        return;
+    }
 
-                setPlayingStateMultiple(
-                    [modelListenBtn, playBtn],
-                    "Playing..."
-                );
+    pronunciation1State.starting = null;
 
-                const audio = new Audio(lastAudioUrl);
-
-                currentPlayingAudio = audio;
-
-                audio.onended = () => stopAllPlayback();
-
-                audio.play().catch(e => {
-                    console.warn("Playback failed", e);
-                    stopAllPlayback();
-                });
-            };
-
-            resultSpan.appendChild(playBtn);
-        }
+    const session = {
+        key,
+        manual,
+        stopping: false,
+        finished: false,
+        discard: false,
+        speech: false,
+        lastSound: 0,
+        chunks: [],
+        timers: [],
+        context: null,
+        recorder: null,
+        message: "",
+        stop: null
     };
 
-    const stopRecording = () => {
-        if (!isRecording) return;
+    activeRecognitionSession = session;
 
-        isRecording = false;
+    function clear() {
+        session.timers.forEach(id => {
+            clearTimeout(id);
+            clearInterval(id);
+        });
 
-        if (mediaRecorder && mediaRecorder.state !== "inactive") {
-            mediaRecorder.stop();
+        session.timers = [];
+
+        if (session.context) {
+            session.context.close().catch(() => {});
+            session.context = null;
+        }
+    }
+
+    function finish() {
+        if (session.finished) return;
+
+        session.finished = true;
+        clear();
+
+        stream.getTracks().forEach(track => track.stop());
+
+        if (activeRecognitionSession === session) {
+            activeRecognitionSession = null;
         }
 
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            stream = null;
-        }
+        current().stopBtn.classList.remove("stop-btn-active");
+        pronunciation1Sync();
 
-        recordBtn.disabled = false;
-        stopBtn.disabled = true;
-        stopBtn.classList.remove("stop-btn-active");
-    };
+        const valid =
+            !session.discard &&
+            session.speech &&
+            session.chunks.some(chunk => chunk.size > 0);
 
-    recordBtn.addEventListener("click", async () => {
-        if (recordBtn.disabled) return;
-
-        stopAllPlayback();
-
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                audio: true
+        if (valid) {
+            const blob = new Blob(session.chunks, {
+                type:
+                    session.recorder.mimeType ||
+                    "audio/webm"
             });
-        } catch (err) {
-            resultSpan.textContent = "Microphone access denied.";
-            resultSpan.style.color = "var(--error-text)";
+
+            const url = URL.createObjectURL(blob);
+            const old = pronunciation1State.audioUrls[key];
+
+            pronunciation1State.audioUrls[key] = url;
+
+            if (old) {
+                URL.revokeObjectURL(old);
+            }
+        }
+
+        session.chunks = [];
+
+        pronunciation1Show(
+            current(),
+            session.message ||
+                (!valid ? "No speech recognized." : "")
+        );
+
+        pronunciation1Sync();
+
+        if (valid && isAutoPlay) {
+            pronunciation1Play(key, true, true);
+        }
+    }
+
+    function stop(message = "", discard = false) {
+        if (session.stopping || session.finished) return;
+
+        session.stopping = true;
+        session.message = message;
+        session.discard = discard;
+
+        clear();
+        pronunciation1Sync();
+
+        if (
+            !session.recorder ||
+            session.recorder.state === "inactive"
+        ) {
+            finish();
             return;
         }
 
-        if (lastAudioUrl) {
-            URL.revokeObjectURL(lastAudioUrl);
-            lastAudioUrl = null;
+        session.timers.push(setTimeout(() => {
+            session.discard = true;
+            finish();
+        }, 2500));
+
+        try {
+            session.recorder.stop();
+        } catch (error) {
+            session.discard = true;
+            finish();
         }
-
-        audioChunks = [];
-        mediaRecorder = new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = (e) => {
-            if (e.data.size > 0) {
-                audioChunks.push(e.data);
-            }
-        };
-
-        mediaRecorder.onstop = () => {
-            const mimeType =
-                mediaRecorder.mimeType || "audio/webm";
-
-            const audioBlob = new Blob(audioChunks, {
-                type: mimeType
-            });
-
-            lastAudioUrl = URL.createObjectURL(audioBlob);
-
-            resultSpan.textContent = "Recorded ";
-            resultSpan.style.color = "var(--text-primary)";
-
-            appendPlayButton();
-
-            if (isAutoPlay) {
-                runAutoPlaySequence(
-                    resultSpan,
-                    expectedKanjiText,
-                    playRate,
-                    () => lastAudioUrl
-                );
-            }
-        };
-
-        mediaRecorder.start();
-        isRecording = true;
-
-        recordBtn.disabled = true;
-        stopBtn.disabled = !isManualStop;
-
-        if (isManualStop) {
-            stopBtn.classList.add("stop-btn-active");
-        } else {
-            stopBtn.classList.remove("stop-btn-active");
-        }
-
-        resultSpan.textContent = "Recording...";
-        resultSpan.style.color = "var(--accent-color)";
-
-        if (!isManualStop) {
-            setTimeout(() => {
-                if (isRecording) {
-                    stopRecording();
-                }
-            }, 2500);
-        }
-    });
-
-    stopBtn.addEventListener("click", () => {
-        if (!isRecording) return;
-
-        stopAllPlayback();
-        stopRecording();
-    });
-}
-
-function runAutoPlaySequence(
-    resultSpan,
-    expectedKanjiText,
-    playRate,
-    getUrlFn
-) {
-    if (!isAutoPlay) return;
-
-    const rowContainer = resultSpan.closest(".drill-row");
-
-    const modelListenBtn = rowContainer
-        ? rowContainer.querySelector(".example-button")
-        : null;
-
-    const playBtn = resultSpan.querySelector(".play-recording-btn");
-    const recordedAudioUrl = getUrlFn();
-
-    if (!recordedAudioUrl || !playBtn) return;
-
-    setPlayingStateMultiple(
-        [modelListenBtn, playBtn],
-        "Playing..."
-    );
-
-    const utterance = new SpeechSynthesisUtterance(expectedKanjiText);
-
-    utterance.lang = "ja-JP";
-    utterance.rate = playRate;
-
-    if (preferredVoice) {
-        utterance.voice = preferredVoice;
     }
 
-    currentUtteranceRef = utterance;
+    session.stop = stop;
 
-    utterance.onend = () => {
-        currentUtteranceRef = null;
+    try {
+        const recorder = new MediaRecorder(stream);
+        session.recorder = recorder;
 
-        currentPlayTimeoutId = setTimeout(() => {
-            const audio = new Audio(recordedAudioUrl);
+        recorder.ondataavailable = event => {
+            if (
+                !session.finished &&
+                event.data.size > 0
+            ) {
+                session.chunks.push(event.data);
+            }
+        };
 
-            currentPlayingAudio = audio;
-            audio.playbackRate = 1.0;
+        recorder.onstop = finish;
 
-            audio.onended = () => stopAllPlayback();
+        recorder.onerror = () => {
+            stop("Recording error.", true);
+        };
 
-            audio.play().catch(e => {
-                console.warn("Auto playback failed", e);
-                stopAllPlayback();
-            });
-        }, 100);
-    };
+        pronunciation1Show(current());
+        pronunciation1Sync();
 
-    utterance.onerror = () => stopAllPlayback();
+        recorder.start();
 
-    currentPlayTimeoutId = setTimeout(() => {
-        speechSynthesis.speak(utterance);
-    }, 500);
+        const Context =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        const context = new Context();
+        session.context = context;
+
+        const source =
+            context.createMediaStreamSource(stream);
+
+        const analyser = context.createAnalyser();
+        analyser.fftSize = 1024;
+        source.connect(analyser);
+
+        const samples = new Float32Array(
+            analyser.fftSize
+        );
+
+        let frames = 0;
+
+        context.resume().catch(() => {});
+
+        session.timers.push(setInterval(() => {
+            if (
+                session.stopping ||
+                session.finished
+            ) {
+                return;
+            }
+
+            analyser.getFloatTimeDomainData(samples);
+
+            let sum = 0;
+
+            for (const sample of samples) {
+                sum += sample * sample;
+            }
+
+            const now = performance.now();
+
+            if (Math.sqrt(sum / samples.length) > 0.015) {
+                frames++;
+
+                if (frames >= 3) {
+                    session.speech = true;
+                }
+
+                if (session.speech) {
+                    session.lastSound = now;
+                }
+            } else {
+                frames = 0;
+            }
+
+            if (
+                !manual &&
+                session.speech &&
+                now - session.lastSound >= 2000
+            ) {
+                stop();
+            }
+        }, 100));
+
+        session.timers.push(setTimeout(() => {
+            if (!session.speech) {
+                stop(
+                    "No speech detected within 15 seconds.",
+                    true
+                );
+            }
+        }, 15000));
+
+        session.timers.push(setTimeout(() => {
+            stop("Auto-stopped after 20 seconds.");
+        }, 20000));
+    } catch (error) {
+        stop("Could not start recording.", true);
+    }
 }
 
 // ============================================================================
