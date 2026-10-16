@@ -2194,9 +2194,47 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         installStyles();
         updateExample(container);
         updatePracticeCues(container);
+
+        // 最長キューの幅に、全行のキュー列を揃える。
+        const cueCells = Array.from(
+            container.querySelectorAll("#drill1List .prompt-label")
+        );
+
+        let cueWidth = 0;
+
+        cueCells.forEach(cell => {
+            const measure = document.createElement("span");
+            measure.innerHTML = cell.innerHTML;
+
+            Object.assign(measure.style, {
+                position: "absolute",
+                visibility: "hidden",
+                display: "inline-block",
+                width: "max-content",
+                maxWidth: "none",
+                whiteSpace: "nowrap",
+                font: "inherit",
+                pointerEvents: "none"
+            });
+
+            cell.appendChild(measure);
+
+            cueWidth = Math.max(
+                cueWidth,
+                Math.ceil(measure.getBoundingClientRect().width)
+            );
+
+            measure.remove();
+        });
+
+        cueCells.forEach(cell => {
+            cell.style.setProperty("width", `${cueWidth}px`, "important");
+            cell.style.setProperty("padding-right", "4px", "important");
+            cell.style.setProperty("white-space", "nowrap", "important");
+        });
+
         addShirtMeaningNote(container);
         addDrill2Panel(container);
-
         practice7State.refreshMeaningNotes?.();
         practice7SyncRecordingUI();
     };
