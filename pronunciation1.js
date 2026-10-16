@@ -471,9 +471,7 @@ function pronunciation1Show(view, message = "") {
 }
 
 
-
-function createDrill1Row(
-    container,function pronunciation1Play(
+function pronunciation1Play(
     key,
     model = true,
     playOwnAfter = false
@@ -632,10 +630,14 @@ function createDrill1Row(
         afterModel();
     }
 }
+
+function createDrill1Row(
+    container,
     indexLabel,
     item,
     playRate
-) {
+) 
+{
     const key = indexLabel;
 
     const rowDiv = document.createElement("div");
