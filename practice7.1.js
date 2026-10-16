@@ -2543,4 +2543,3 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     applyStage();
 })();
-})();
