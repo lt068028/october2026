@@ -289,6 +289,51 @@ function initSettingsPanel() {
             updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
         });
     }
+    // このページではWith漢字を選択不可にする。
+    const kanjiOption = document.querySelector(
+        '#scriptModeControl [data-value="kanji"]'
+    );
+
+    if (kanjiOption) {
+        kanjiOption.disabled = true;
+        kanjiOption.setAttribute("aria-disabled", "true");
+        kanjiOption.setAttribute("aria-pressed", "false");
+        kanjiOption.classList.remove("is-selected");
+        kanjiOption.classList.add("pronunciation-kanji-disabled");
+    }
+
+    if (!document.getElementById("pronunciationDisabledStyle")) {
+        const style = document.createElement("style");
+        style.id = "pronunciationDisabledStyle";
+
+        style.textContent = `
+            #scriptModeControl
+            .segmented-option.pronunciation-kanji-disabled:disabled {
+                color: #707b8a !important;
+                background: #939eac !important;
+                opacity: 1 !important;
+                cursor: not-allowed !important;
+                box-shadow: none !important;
+                font-weight: normal !important;
+            }
+
+            #scriptModeControl
+            .pronunciation-kanji-disabled .icon-emoji {
+                filter: grayscale(100%) !important;
+                opacity: 1 !important;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #scriptModeControl
+                .segmented-option.pronunciation-kanji-disabled:disabled {
+                    color: #94a3b8 !important;
+                    background: #718096 !important;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
 }
 
 function updateToggleLabelStyle(labelEl, isActive) {
@@ -933,17 +978,17 @@ async function pronunciation1Record(key) {
             analyser.fftSize
         );
 
-        let frames = 0;
+        // 短い発音も検出する。
+        // 400ms以内の音量検出を合計し、100ms分で発話開始とする。
+        const soundSamples = [];
+        let previousCheck = performance.now();
 
-        context.resume().catch(() => {});
+        context.resume().catch(error => {
+            console.warn("AudioContext resume failed:", error);
+        });
 
         session.timers.push(setInterval(() => {
-            if (
-                session.stopping ||
-                session.finished
-            ) {
-                return;
-            }
+            if (session.stopping || session.finished) return;
 
             analyser.getFloatTimeDomainData(samples);
 
@@ -954,19 +999,42 @@ async function pronunciation1Record(key) {
             }
 
             const now = performance.now();
+            const elapsed = Math.min(
+                Math.max(now - previousCheck, 0),
+                40
+            );
 
-            if (Math.sqrt(sum / samples.length) > 0.015) {
-                frames++;
+            previousCheck = now;
 
-                if (frames >= 3) {
+            const rms = Math.sqrt(sum / samples.length);
+            const hasSound = rms > 0.015;
+
+            soundSamples.push({
+                time: now,
+                duration: hasSound ? elapsed : 0
+            });
+
+            while (
+                soundSamples.length &&
+                now - soundSamples[0].time > 400
+            ) {
+                soundSamples.shift();
+            }
+
+            if (!session.speech) {
+                const soundDuration = soundSamples.reduce(
+                    (total, sample) => total + sample.duration,
+                    0
+                );
+
+                if (soundDuration >= 100) {
                     session.speech = true;
-                }
-
-                if (session.speech) {
                     session.lastSound = now;
                 }
-            } else {
-                frames = 0;
+            }
+
+            if (session.speech && hasSound) {
+                session.lastSound = now;
             }
 
             if (
@@ -976,7 +1044,7 @@ async function pronunciation1Record(key) {
             ) {
                 stop();
             }
-        }, 100));
+        }, 20));
 
         session.timers.push(setTimeout(() => {
             if (!session.speech) {
