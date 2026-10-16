@@ -2041,158 +2041,506 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 })();
 
 // ============================================================================
-// Drill 1・1番：「英語を／英語で」の許容と補足表示
+// Practice 7.1：基本キュー／で・と／英語キュー
 // ============================================================================
 (() => {
-    const originalNormalize = practice71Normalize;
-    const originalShowResult = practice71ShowResult;
+    let stage = 1;
+    let previousHint = hintMode;
 
-    const useDe = text => String(text ?? "").replace(
-        /(英語|えいご)([\s、，,]*)を/g,
-        "$1$2で"
-    );
+    const baseRender = renderAll;
+    const baseNormalize = practice71Normalize;
+    const baseShowResult = practice71ShowResult;
+    const baseSync = practice71SyncRecordingUI;
+    const baseFormatWord = formatWord;
+    const baseToHiragana = practice71ToHiragana;
 
-    // 比較時だけ「英語で」を「英語を」と同じ形にする。
-    // 保存された抽出文は変更しない。
-    practice71Normalize = function (text) {
-        const comparisonText = String(text ?? "").replace(
-            /(英語|えいご)([\s、，,]*)で/g,
-            "$1$2を"
+    const w = (h, k, r, e) => ({ h, k, r, e });
+    const originalItems = practice71Data.slice();
+
+    // Example：見る
+    // Drill：浴びる、プレイする、話す、使う、吸う、
+    //        遊ぶ、飲む、聞く、急ぐ
+    const order = [2, 3, 0, 1, 4, 5, 6, 7, 8, 9];
+    const items = order.map(index => ({
+        ...originalItems[index]
+    }));
+
+    const basicIndexes = [
+        [1, 2], [1, 2], [1, 2], [2, 3], [1, 2],
+        [1, 2], [2], [1, 2], [1, 2], [0]
+    ];
+
+    const basicClauses = [
+        '映画を、',
+        'シャワーを、',
+        'Switchを、',
+        '英語を、',
+        'スマホを、',
+        'タバコを、',
+        '',
+        'コーヒーを、',
+        '先生に、',
+        ''
+    ];
+
+    items.forEach((item, index) => {
+        item.basicWords = basicIndexes[index].map(
+            i => item.words[i]
         );
-        return originalNormalize(comparisonText);
+        item.basicClauses = basicClauses[index];
+        item.expandedWords = item.words.slice();
+        item.expandedClauses = item.clauses;
+    });
+
+    items[2].expandedWords.splice(
+        1, 0,
+        w('いもうと', '妹', 'imōto', 'younger sister')
+    );
+    items[2].expandedClauses =
+        '部屋で、妹と、Switchを、';
+
+    items[3].expandedWords[1] =
+        w('クラスメート', 'クラスメート',
+          'kurasumēto', 'classmate');
+
+    items[3].expandedClauses =
+        '学校で、クラスメートと、英語を、';
+
+    // 各段階の抽出文・録音を別々に保持する。
+    const records = {
+        1: {
+            savedResults: practice71State.savedResults,
+            audioUrls: practice71State.audioUrls
+        },
+        2: { savedResults: {}, audioUrls: {} },
+        3: { savedResults: {}, audioUrls: {} }
     };
 
-    practice71ShowResult = function (view, saved, rowKey, playRate) {
-        const isFirstQuestion =
-            /^p7_drill_(past|perf)_0$/.test(rowKey);
+    practice71ToHiragana = text => baseToHiragana(
+        String(text ?? '').replace(/妹/g, 'いもうと')
+    );
 
-        if (!isFirstQuestion) {
-            return originalShowResult(view, saved, rowKey, playRate);
+    formatWord = function (h, k, r, e) {
+        if (stage !== 3) {
+            return baseFormatWord(h, k, r, e);
         }
 
-        const usesDe =
+        const span = document.createElement('span');
+        span.textContent = e;
+        return span.innerHTML;
+    };
+
+    function applyStage() {
+        practice71Data.splice(
+            0,
+            practice71Data.length,
+            ...items.map((item, index) => {
+                const words = stage === 1
+                    ? item.basicWords
+                    : item.expandedWords;
+
+                const clauses = stage === 1
+                    ? item.basicClauses
+                    : item.expandedClauses;
+
+                const first = words[0];
+                const last = words[words.length - 1];
+
+                const present =
+                    `いつも、${clauses}${item.present}。`;
+
+                const ongoing =
+                    `いま、${clauses}${item.ongoing}。`;
+
+                return {
+                    ...item,
+                    words,
+                    clauses,
+                    itemIndex: index,
+                    x: first.h,
+                    xKanji: first.k,
+                    xRomaji: first.r,
+                    xMeaning: first.e,
+                    y: last.h,
+                    yKanji: last.k,
+                    yRomaji: last.r,
+                    yMeaning: last.e,
+                    pastSentence: present,
+                    pastSentenceHira:
+                        practice71ToHiragana(present),
+                    perfectSentence: ongoing,
+                    perfectSentenceHira:
+                        practice71ToHiragana(ongoing)
+                };
+            })
+        );
+    }
+
+    // 「英語を／英語で」を比較時だけ同じ形にする。
+    practice71Normalize = text => baseNormalize(
+        String(text ?? '').replace(
+            /(英語|えいご)([\s、，,]*)で/g,
+            '$1$2を'
+        )
+    );
+
+    // 「英語を／英語で」の対象は並べ替え後の3番。
+    practice71ShowResult = function (
+        view, saved, rowKey, playRate
+    ) {
+        const target =
+            /^p7_drill_(past|perf)_2$/.test(rowKey);
+
+        const usesDe = target &&
             /(?:英語|えいご)[\s、，,]*で/.test(
-                String(saved.rawTranscript ?? "")
+                String(saved.rawTranscript ?? '')
             );
 
-        // 訂正用モデルも、認識された「英語で」を維持する。
-        const result = {
-            ...saved,
-            expectedText: usesDe
-                ? useDe(saved.expectedText)
-                : saved.expectedText,
-            modelText: usesDe
-                ? useDe(saved.modelText)
-                : saved.modelText
-        };
+        const withDe = text => String(text ?? '').replace(
+            /(英語|えいご)([\s、，,]*)を/g,
+            '$1$2で'
+        );
 
-        originalShowResult(view, result, rowKey, playRate);
+        const result = usesDe ? {
+            ...saved,
+            expectedText: withDe(saved.expectedText),
+            modelText: withDe(saved.modelText)
+        } : saved;
+
+        baseShowResult(view, result, rowKey, playRate);
         saved.isCorrect = result.isCorrect;
 
-        if (!result.isCorrect) return;
+        if (!target || !result.isCorrect) return;
 
-        if (!document.getElementById("practice71ParticleStyle")) {
-            const style = document.createElement("style");
-            style.id = "practice71ParticleStyle";
-            style.textContent = `
-                #drill1Container .p71-accepted-particle,
-                #drill1Container .p71-particle-note {
-                    color: #2563eb;
-                }
+        const recording = view.resultSpan.querySelector(
+            '.play-recording-btn'
+        );
 
-                #drill1Container .p71-particle-note {
-                    display: block;
-                    margin-top: 6px;
-                    font-size: 14px;
-                    font-weight: normal;
-                    line-height: 1.5;
-                    white-space: normal;
-                }
-
-                @media (prefers-color-scheme: dark) {
-                    #drill1Container .p71-accepted-particle,
-                    #drill1Container .p71-particle-note {
-                        color: #60a5fa;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        const recordingButton =
-            view.resultSpan.querySelector(".play-recording-btn");
-
-        const displayed = scriptMode === "hiragana"
+        const displayed = scriptMode === 'hiragana'
             ? practice71ToHiragana(saved.rawTranscript)
-            : String(saved.rawTranscript ?? "");
+            : String(saved.rawTranscript ?? '');
 
         view.resultSpan.replaceChildren();
 
         const match = usesDe
-            ? /(?:英語|えいご)[\s、，,]*(で)/.exec(displayed)
+            ? /(?:英語|えいご)[\s、，,]*で/.exec(displayed)
             : null;
 
         if (match) {
-            const particleIndex = match.index + match[0].length - 1;
+            const index =
+                match.index + match[0].length - 1;
 
-            view.resultSpan.appendChild(
+            const particle = document.createElement('span');
+            particle.className = 'p71-accepted-particle';
+            particle.textContent = 'で';
+
+            view.resultSpan.append(
                 document.createTextNode(
-                    displayed.slice(0, particleIndex)
-                )
-            );
-
-            const particle = document.createElement("span");
-            particle.className = "p71-accepted-particle";
-            particle.textContent = "で";
-            view.resultSpan.appendChild(particle);
-
-            view.resultSpan.appendChild(
+                    displayed.slice(0, index)
+                ),
+                particle,
                 document.createTextNode(
-                    displayed.slice(particleIndex + 1)
+                    displayed.slice(index + 1)
                 )
             );
         } else {
-            view.resultSpan.appendChild(
+            view.resultSpan.append(
                 document.createTextNode(displayed)
             );
         }
 
-        view.resultSpan.appendChild(
-            document.createTextNode(" ✅ ")
+        view.resultSpan.append(
+            document.createTextNode(' ✅ ')
         );
 
-        const modelButton = document.createElement("button");
-        modelButton.type = "button";
-        modelButton.className = "example-button";
-        modelButton.textContent = "🔊きく";
-        modelButton.style.marginLeft = "4px";
+        const listen = document.createElement('button');
+        listen.type = 'button';
+        listen.className = 'example-button';
+        listen.textContent = '🔊きく';
 
-        modelButton.onclick = () => {
+        listen.onclick = () => {
             if (activeRecognitionSession ||
                 practice71State.startingRow) return;
 
             stopAllPlayback();
-            setPlayingStateMultiple([modelButton], "Playing...");
-
+            setPlayingStateMultiple([listen], 'Playing...');
             speakText(
                 result.modelText,
                 playRate,
-                () => stopAllPlayback()
+                stopAllPlayback
             );
         };
 
-        view.resultSpan.appendChild(modelButton);
+        view.resultSpan.append(listen);
 
-        if (recordingButton) {
-            view.resultSpan.appendChild(recordingButton);
+        if (recording) {
+            view.resultSpan.append(recording);
         }
 
         if (usesDe) {
-            const note = document.createElement("span");
-            note.className = "p71-particle-note";
+            const note = document.createElement('span');
+            note.className = 'p71-particle-note';
             note.textContent =
-                "Both ‘を’ and ‘で’ are correct in this context.";
-            view.resultSpan.appendChild(note);
+                'Both ‘を’ and ‘で’ are correct in this context.';
+            view.resultSpan.append(note);
         }
     };
+
+    function selectStage(next) {
+        if (activeRecognitionSession ||
+            practice71State.startingRow) return;
+
+        stopAllPlayback();
+
+        records[stage] = {
+            savedResults: practice71State.savedResults,
+            audioUrls: practice71State.audioUrls
+        };
+
+        if (next === 3 && stage !== 3) {
+            previousHint = hintMode;
+            hintMode = 'off';
+        } else if (stage === 3 && next !== 3) {
+            hintMode = previousHint;
+        }
+
+        stage = next;
+
+        practice71State.savedResults =
+            records[stage].savedResults;
+
+        practice71State.audioUrls =
+            records[stage].audioUrls;
+
+        renderAll();
+
+        document.getElementById(
+            'practice71Example'
+        )?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+
+    function makePanel(
+        number, title, description, text, active, next
+    ) {
+        const panel = document.createElement('section');
+        panel.className =
+            'info-panel info-panel-task1 ' +
+            'drill-cue-panel p71-stage-panel';
+
+        const copy = document.createElement('div');
+        copy.className = 'p71-stage-copy';
+
+        const heading = document.createElement('span');
+        heading.className = 'info-panel-title';
+        heading.textContent = title;
+
+        const desc = document.createElement('span');
+        desc.className = 'info-panel-desc';
+        desc.textContent = description;
+
+        copy.append(heading, desc);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.id = `practice71Stage${number}Button`;
+        button.className = 'drill-cue-button';
+        button.classList.toggle('is-english', active);
+        button.setAttribute('aria-pressed', String(active));
+        button.textContent = text;
+        button.onclick = () => selectStage(next);
+
+        panel.append(copy, button);
+        return panel;
+    }
+
+    function installStageStyles() {
+        if (document.getElementById(
+            'practice71StageStyle'
+        )) return;
+
+        const style = document.createElement('style');
+        style.id = 'practice71StageStyle';
+        style.textContent = `
+            #drill1Container .info-panel.p71-stage-panel {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+            }
+
+            #drill1Container .p71-stage-copy {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            #drill1Container .p71-stage-copy > span {
+                display: block;
+                margin: 0;
+            }
+
+            #drill1Container .p71-stage-panel > .drill-cue-button {
+                flex: 0 0 auto;
+                width: auto;
+                min-width: 190px;
+            }
+
+            #drill1Container .p71-accepted-particle,
+            #drill1Container .p71-particle-note {
+                color: #2563eb;
+            }
+
+            #drill1Container .p71-particle-note {
+                display: block;
+                margin-top: 6px;
+                font-size: 14px;
+                font-weight: normal;
+                line-height: 1.5;
+                white-space: normal;
+            }
+
+            @media (prefers-color-scheme: dark) {
+                #drill1Container .p71-accepted-particle,
+                #drill1Container .p71-particle-note {
+                    color: #60a5fa;
+                }
+            }
+
+            @media (max-width: 600px) {
+                #drill1Container .info-panel.p71-stage-panel {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                #drill1Container .p71-stage-panel > .drill-cue-button {
+                    width: 100%;
+                    min-width: 0;
+                }
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    renderAll = function () {
+        applyStage();
+        installStageStyles();
+        baseRender();
+
+        const container =
+            document.getElementById('drill1Container');
+
+        document.getElementById(
+            'practice71Drill2Panel'
+        )?.remove();
+
+        const titles = {
+            1: 'Drill 1: Compare Present & Ongoing — Basic cues',
+            2: 'Drill 2: Add a place or a person — で・と',
+            3: 'Drill 3: Practice with English cues'
+        };
+
+        const heading = container.querySelector(
+            '.info-panel:not(.drill-cue-panel) .info-panel-title'
+        );
+
+        if (heading) {
+            heading.textContent = titles[stage];
+        }
+
+        const desc = heading?.parentElement.querySelector(
+            '.info-panel-desc'
+        );
+
+        if (desc) {
+            desc.textContent = stage === 1
+                ? '💡 Use all the cues. Begin with いつも or いま.'
+                : stage === 2
+                    ? '💡 Use all the cues. Add で for a place and と for a companion. Keep 先生に with 聞く. 急ぐ has no extra cues.'
+                    : '💡 Use all the English cues to make Japanese sentences. Begin with いつも or いま.';
+        }
+
+        if (stage === 3) {
+            container.querySelectorAll(
+                '#practice71Example .example-line'
+            ).forEach((line, index) => {
+                const sentence = line.lastElementChild;
+
+                const start = index
+                    ? (scriptMode === 'hiragana' ? 'いま' : '今')
+                    : 'いつも';
+
+                sentence.innerHTML =
+                    `<span class="p71-grammar-highlight">${start}</span>、` +
+                    '<span class="p71-underlined">cinema</span> で、' +
+                    '<span class="p71-underlined">movie</span> を、' +
+                    '<span class="p71-underlined">watch</span> ' +
+                    `<span class="p71-grammar-highlight">${index ? 'ています' : 'ます'}</span>。`;
+            });
+        }
+
+        container.append(
+            makePanel(
+                2,
+                titles[2],
+                '💡 Add Japanese cues for a place or a companion to the same exercises.',
+                stage === 2
+                    ? 'Display basic cues'
+                    : 'Display expanded cues',
+                stage === 2,
+                stage === 2 ? 1 : 2
+            ),
+            makePanel(
+                3,
+                titles[3],
+                '💡 Practise the expanded sentences using English cues.',
+                stage === 3
+                    ? 'Display Japanese cues'
+                    : 'Display English cues',
+                stage === 3,
+                stage === 3 ? 2 : 3
+            )
+        );
+
+        document.querySelectorAll(
+            '#hintModeControl button[data-value]'
+        ).forEach(button => {
+            const selected =
+                button.dataset.value === hintMode;
+
+            button.classList.toggle(
+                'is-selected', selected
+            );
+
+            button.setAttribute(
+                'aria-pressed', String(selected)
+            );
+        });
+
+        practice71SyncRecordingUI();
+    };
+
+    practice71SyncRecordingUI = function () {
+        baseSync();
+
+        const blocked = Boolean(
+            activeRecognitionSession ||
+            practice71State.startingRow
+        );
+
+        document.querySelectorAll(
+            '.p71-stage-panel button'
+        ).forEach(button => {
+            button.disabled = blocked;
+        });
+    };
+
+    applyStage();
+})();
 })();
