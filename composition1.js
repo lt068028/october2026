@@ -637,10 +637,14 @@ function compositionShow(view, message = "") {
         append(saved.isCorrect ? " ✅ " : " ");
 
         if (saved.isCorrect && diff.blue.size) {
-            append(
-                " (Both 'ga' and 'wa' are correct in this context)",
-                "#38bdf8"
-            );
+            const explanation = document.createElement("span");
+            explanation.textContent =
+                "(Both 'ga' and 'wa' are correct in this context)";
+            explanation.style.display = "block";
+            explanation.style.fontSize = "11px";
+            explanation.style.color = "#38bdf8";
+
+            resultSpan.appendChild(explanation);
         }
 
         if (!saved.isCorrect) {
