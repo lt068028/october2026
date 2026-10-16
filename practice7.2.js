@@ -438,13 +438,12 @@ font-weight: bold;
 
     container.querySelectorAll(".example-box strong").forEach(element => {
         const text = element.textContent;
+        const grammar = text.replace(/。$/, "");
 
-        if (text === "から") {
-            element.classList.add("grammar-highlight");
-        } else if (text === "ています。" || text === "ています") {
+        if (["から", "ました", "ています"].includes(grammar)) {
             const highlighted = document.createElement("strong");
             highlighted.className = "grammar-highlight";
-            highlighted.textContent = "ています";
+            highlighted.textContent = grammar;
 
             element.replaceWith(
                 highlighted,
@@ -2083,10 +2082,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             sentence.innerHTML = index === 0
                 ? '<span class="p7-underlined-cue">05:00</span> に ' +
-                  '<span class="p7-underlined-cue">get up</span> ました。'
-                : '<span class="p7-underlined-cue">05:00</span> から ' +
-                  '<span class="p7-underlined-cue">get up</span> ています。';
-        });
+                  '<span class="p7-underlined-cue">get up</span> ' +
+                  '<strong class="grammar-highlight">ました</strong>。'
+                : '<span class="p7-underlined-cue">05:00</span> ' +
+                  '<strong class="grammar-highlight">から</strong> ' +
+                  '<span class="p7-underlined-cue">get up</span> ' +
+                  '<strong class="grammar-highlight">ています</strong>。';        });
     }
     function updatePracticeCues(container) {
         if (!englishCuesEnabled) return;
