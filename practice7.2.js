@@ -1969,72 +1969,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const style = document.createElement("style");
         style.id = "practice7EnglishCueStyle";
         style.textContent = `
-            #practice7Drill2Panel {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                align-items: center;
-                gap: 12px 24px;
-                margin-top: 28px;
-                padding: 22px;
-                border: 1px solid var(--border-color);
-                border-radius: 10px;
-                color: var(--text-primary);
-            }
-
-            #practice7Drill2Panel .p7-drill2-copy {
-                display: contents;
-            }
-
-            #practice7Drill2Panel .info-panel-title {
-                grid-column: 1;
-                grid-row: 1;
-                display: block;
-                min-width: 0;
-                margin: 0;
-                font-size: 22px;
-                font-weight: bold;
-                line-height: 1.4;
-            }
-
-            #practice7EnglishCueButton {
-                grid-column: 2;
-                grid-row: 1;
-            }
-
-            #practice7Drill2Panel .info-panel-desc {
-                grid-column: 1 / -1;
-                grid-row: 2;
-                display: block;
-                margin: 0;
-                font-size: 14px;
-                line-height: 1.7;
-            }
-            #practice7EnglishCueButton {
-                flex-shrink: 0;
-                min-width: 190px;
-                min-height: 62px;
-                padding: 16px 22px;
-                border: 2px solid #2563eb;
-                border-radius: 8px;
-                background: #2563eb;
-                color: #ffffff;
-                font: inherit;
-                font-size: 16px;
-                font-weight: bold;
-                line-height: 1.4;
-                cursor: pointer;
-            }
-
-            #practice7EnglishCueButton.is-english {
-                background: #dbeafe;
-                color: #1e40af;
-            }
-
-            #practice7EnglishCueButton:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
             #drill1Container .p7-english-cue {
                 overflow-wrap: anywhere;
             }
@@ -2074,53 +2008,14 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             }
 
             @media (prefers-color-scheme: dark) {
-                #practice7EnglishCueButton {
-                    border-color: #93b4ff;
-                    background: #93b4ff;
-                    color: #142346;
-                }
-
-                #practice7EnglishCueButton.is-english {
-                    background: #344966;
-                    color: #e5efff;
-                }
-
                 #drill1Container .p7-shirt-note strong {
                     color: #c084fc;
-                }
-            }
-
-            @media (max-width: 600px) {
-                #practice7Drill2Panel {
-                    gap: 12px;
-                    padding: 16px;
-                }
-
-                #practice7Drill2Panel .info-panel-title {
-                    font-size: 18px;
-                }
-
-                #practice7EnglishCueButton {
-                    width: auto;
-                    min-width: 0;
-                    min-height: 48px;
-                    max-width: 150px;
-                    padding: 10px 12px;
-                    font-size: 14px;
-                    white-space: normal;
-                }
-            }
-                #practice7EnglishCueButton {
-                    width: 100%;
-                    min-width: 0;
                 }
             }
         `;
 
         document.head.appendChild(style);
     }
-
-    function updateHintControl() {
         const control = document.getElementById("hintModeControl");
         if (!control) return;
 
@@ -2219,25 +2114,23 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     function addDrill2Panel(container) {
         const panel = document.createElement("section");
         panel.id = "practice7Drill2Panel";
-        panel.className = "info-panel info-panel-task1";
+        panel.className = "info-panel info-panel-task1 drill-cue-panel";
         panel.setAttribute("aria-labelledby", "practice7Drill2Title");
-
-        const copy = document.createElement("div");
-        copy.className = "p7-drill2-copy";
 
         const title = document.createElement("span");
         title.id = "practice7Drill2Title";
-        title.className = "info-panel-title";
+        title.className = "info-panel-title drill-cue-title";
         title.textContent = "Drill 2: Practice with English cues";
 
         const description = document.createElement("span");
-        description.className = "info-panel-desc";
+        description.className = "info-panel-desc drill-cue-description";
         description.textContent =
             "💡 Practise making sentences with this lesson’s vocabulary, using English cues.";
 
         const button = document.createElement("button");
         button.id = "practice7EnglishCueButton";
         button.type = "button";
+        button.className = "drill-cue-button";
         button.classList.toggle("is-english", englishCuesEnabled);
         button.setAttribute("aria-pressed", String(englishCuesEnabled));
         button.textContent = englishCuesEnabled
@@ -2289,8 +2182,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             });
         });
 
-        copy.append(title, description);
-        panel.append(copy, button);
+        panel.append(title, button, description);
         container.appendChild(panel);
     }
     renderAll = function () {
