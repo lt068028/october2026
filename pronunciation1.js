@@ -11,7 +11,7 @@ const drill1Data = [
     { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
     { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
     { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
-    { kanji: "牡蠣。かき。", hira: "かき、かき", text: "かき、かき", color: "#22d3ee" },
+    { kanji: "牡蠣。かき。", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
     { kanji: "鶴。釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
     { kanji: "雨。飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
 ];
@@ -470,32 +470,73 @@ function pronunciation1Show(view, message = "") {
     }
 }
 
-function pronunciation1Play(
+
+
+function createDrill1Row(
+    container,function pronunciation1Play(
     key,
     model = true,
     playOwnAfter = false
 ) {
+    if (pronunciation1Busy()) return;
+
     if (
-        pronunciation1Busy() ||
+        typeof activePitchRecordingState !== "undefined" &&
         activePitchRecordingState
     ) {
         return;
     }
 
     const view = pronunciation1State.views[key];
+    if (!view) return;
+
     const version = ++pronunciation1State.playback;
 
     stopAllPlayback();
 
     const url = pronunciation1State.audioUrls[key];
+    const buttons = [
+        view.rowDiv?.querySelector("button"),
+        view.resultSpan?.querySelector(".play-recording-btn")
+    ].filter(Boolean);
+
+    // rowDivを保持していない場合にもモデルボタンを取得する。
+    const row = view.resultSpan?.closest(".drill-row");
+    const modelButton = row?.querySelector("button");
+
+    if (modelButton && !buttons.includes(modelButton)) {
+        buttons.unshift(modelButton);
+    }
+
+    activePlayButtons = buttons;
+
+    buttons.forEach(button => {
+        button.dataset.originalHtml = button.innerHTML;
+        button.disabled = true;
+        button.textContent = "Playing...";
+        button.style.setProperty(
+            "cursor",
+            "not-allowed",
+            "important"
+        );
+    });
+
+    const isCurrent = () =>
+        version === pronunciation1State.playback &&
+        !pronunciation1Busy();
+
+    const finish = () => {
+        if (!isCurrent()) return;
+
+        restorePlayButtons();
+        pronunciation1Sync();
+    };
 
     const playOwn = () => {
-        if (
-            version !== pronunciation1State.playback ||
-            pronunciation1Busy() ||
-            activePitchRecordingState ||
-            !url
-        ) {
+        if (!isCurrent()) return;
+
+        if (!url) {
+            finish();
             return;
         }
 
@@ -507,28 +548,90 @@ function pronunciation1Play(
             if (currentPlayingAudio === audio) {
                 currentPlayingAudio = null;
             }
+
+            finish();
         };
 
         audio.onended = done;
-        audio.onerror = done;
-        audio.play().catch(done);
+
+        audio.onerror = () => {
+            console.warn("Recorded audio playback failed.");
+            done();
+        };
+
+        audio.play().catch(error => {
+            console.warn("Recorded audio playback failed:", error);
+            done();
+        });
     };
 
-    if (model) {
-        speakText(
-            view.item.kanji,
-            view.playRate,
-            () => {
-                if (playOwnAfter) playOwn();
-            }
-        );
-    } else {
+    if (!model) {
         playOwn();
+        return;
+    }
+
+    if (
+        !("speechSynthesis" in window) ||
+        !("SpeechSynthesisUtterance" in window)
+    ) {
+        if (playOwnAfter) {
+            playOwn();
+        } else {
+            finish();
+        }
+
+        return;
+    }
+
+    setupPreferredVoice();
+
+    const utterance = new SpeechSynthesisUtterance(
+        view.item.kanji
+    );
+
+    utterance.lang = "ja-JP";
+    utterance.rate = view.playRate ?? 0.9;
+
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
+    }
+
+    currentUtteranceRef = utterance;
+
+    let completed = false;
+
+    const afterModel = () => {
+        if (completed) return;
+        completed = true;
+
+        if (currentUtteranceRef === utterance) {
+            currentUtteranceRef = null;
+        }
+
+        if (!isCurrent()) return;
+
+        if (playOwnAfter) {
+            playOwn();
+        } else {
+            finish();
+        }
+    };
+
+    utterance.onend = afterModel;
+
+    utterance.onerror = event => {
+        console.warn("Model audio playback failed:", event.error);
+        afterModel();
+    };
+
+    try {
+        speechSynthesis.resume();
+        speechSynthesis.speak(utterance);
+    } catch (error) {
+        console.warn("Model audio playback failed:", error);
+        afterModel();
     }
 }
-
-function createDrill1Row(
-    container,
     indexLabel,
     item,
     playRate
