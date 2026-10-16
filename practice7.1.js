@@ -1715,19 +1715,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     }
 
 
-    function refreshHintButtons() {
-        document.querySelectorAll('#hintModeControl button[data-value]').forEach(button => {
-            const selected = button.dataset.value === hintMode;
-            button.classList.toggle('is-selected',selected);
-            button.setAttribute('aria-pressed',String(selected));
-        });
-    }
-
-    renderAll = function () {
-        let container = document.getElementById('drill1Container');
-        if (!container) {
-            container = document.createElement('div');
-           function exampleSentence(item, ongoing) {
+    function exampleSentence(item, ongoing) {
         if (!document.getElementById('practice71GrammarStyle')) {
             const style = document.createElement('style');
             style.id = 'practice71GrammarStyle';
@@ -1793,7 +1781,23 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         }
 
         return sentence;
-    }     container.id = 'drill1Container';
+    }
+
+    function refreshHintButtons() {
+        document.querySelectorAll(
+            '#hintModeControl button[data-value]'
+        ).forEach(button => {
+            const selected = button.dataset.value === hintMode;
+            button.classList.toggle('is-selected', selected);
+            button.setAttribute('aria-pressed', String(selected));
+        });
+    }
+
+    renderAll = function () {
+        let container = document.getElementById('drill1Container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'drill1Container';
             document.body.insertBefore(container, document.querySelector('.voice-guide-footer'));
         }
         container.replaceChildren();
