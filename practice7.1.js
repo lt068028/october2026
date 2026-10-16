@@ -1714,25 +1714,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         }</span>`;
     }
 
-    function exampleSentence(item, ongoing) {
-        if (!english) {
-            const text = ongoing
-                ? item.perfectSentence
-                : item.pastSentence;
-
-            return scriptMode === 'hiragana'
-                ? practice71ToHiragana(text)
-                : text;
-        }
-
-        const under = text =>
-            `<span class="p71-underlined">${text}</span>`;
-
-        return `${ongoing ? 'いま' : 'いつも'}、` +
-            `${under('room')} で、` +
-            `Switch を、${under('play')} ` +
-            `${ongoing ? 'しています' : 'します'}。`;
-    }
 
     function refreshHintButtons() {
         document.querySelectorAll('#hintModeControl button[data-value]').forEach(button => {
@@ -1746,7 +1727,73 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         let container = document.getElementById('drill1Container');
         if (!container) {
             container = document.createElement('div');
-            container.id = 'drill1Container';
+           function exampleSentence(item, ongoing) {
+        if (!document.getElementById('practice71GrammarStyle')) {
+            const style = document.createElement('style');
+            style.id = 'practice71GrammarStyle';
+            style.textContent = `
+                #practice71Example .p71-grammar-highlight {
+                    color: #CA8A04;
+                    font-weight: bold;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    #practice71Example .p71-grammar-highlight {
+                        color: #FBBF24;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        const highlight = text =>
+            `<span class="p71-grammar-highlight">${text}</span>`;
+
+        let sentence;
+
+        if (!english) {
+            const text = ongoing
+                ? item.perfectSentence
+                : item.pastSentence;
+
+            sentence = scriptMode === 'hiragana'
+                ? practice71ToHiragana(text)
+                : text;
+        } else {
+            const under = text =>
+                `<span class="p71-underlined">${text}</span>`;
+
+            sentence =
+                `${ongoing ? 'いま' : 'いつも'}、` +
+                `${under('room')} で、` +
+                `Switch を、${under('play')} ` +
+                `${ongoing ? 'しています' : 'します'}。`;
+        }
+
+        if (ongoing) {
+            sentence = sentence.replace(
+                /^(?:いま|今)/,
+                () => highlight(scriptMode === 'hiragana' ? 'いま' : '今')
+            );
+
+            sentence = sentence.replace(
+                /ています(?=[。．.!！]?$)/,
+                () => highlight('ています')
+            );
+        } else {
+            sentence = sentence.replace(
+                /^いつも/,
+                () => highlight('いつも')
+            );
+
+            sentence = sentence.replace(
+                /ます(?=[。．.!！]?$)/,
+                () => highlight('ます')
+            );
+        }
+
+        return sentence;
+    }     container.id = 'drill1Container';
             document.body.insertBefore(container, document.querySelector('.voice-guide-footer'));
         }
         container.replaceChildren();
@@ -1794,10 +1841,27 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     label.className = `p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}`;
                     label.removeAttribute('style');
                 }
+                const stopButton = control.querySelectorAll('button')[2];
+
+                if (stopButton) {
+                    const startHint = document.createElement('span');
+                    startHint.className = 'p71-start-hint';
+                    startHint.textContent = ongoing
+                        ? (scriptMode === 'hiragana' ? 'いま…' : '今…')
+                        : 'いつも…';
+
+                    startHint.style.marginLeft = '8px';
+                    startHint.style.fontWeight = 'bold';
+                    startHint.style.whiteSpace = 'nowrap';
+
+                    stopButton.insertAdjacentElement('afterend', startHint);
+                }
+
                 row.querySelectorAll('.custom-tip-box').forEach(tip => {
-                    tip.textContent = tip.textContent.replace(/past tense/gi,'present form').replace(/present perfect/gi,'ongoing action');
-                });
-            });
+                    tip.textContent = tip.textContent
+                        .replace(/past tense/gi, 'present form')
+                        .replace(/present perfect/gi, 'ongoing action');
+                });            });
         });
         const panel = document.createElement('div');
         panel.className = 'info-panel info-panel-task1 drill-cue-panel';
