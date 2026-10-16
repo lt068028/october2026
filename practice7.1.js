@@ -1,107 +1,9 @@
 // ============================================================================
-// Practice 7.2: ているform② present perfect
+// Practice 7.1: ているform① present continuous
 // ============================================================================
 
-const practice7Data = [
-    {
-        x: "よる10じ",
-        xKanji: "夜10時",
-        xRomaji: "yoru jū-ji",
-        xMeaning: "10 o'clock at night",
-        y: "ねる",
-        yKanji: "寝る",
-        yRomaji: "neru",
-        yMeaning: "to sleep / go to bed",
-        pastSentence: "夜10時に寝ました。",
-        pastSentenceHira: "よる10じに、ねました。",
-        perfectSentence: "夜10時から寝ています。",
-        perfectSentenceHira: "よる10じから、ねています。"
-    },
-    {
-        x: "さっき",
-        xKanji: "さっき",
-        xRomaji: "sakki",
-        xMeaning: "a little while ago",
-        y: "Tシャツをきる",
-        yKanji: "Tシャツを着る",
-        yRomaji: "tīshatsu o kiru",
-        yMeaning: "to put on / wear a T-shirt",
-        pastSentence: "さっきTシャツを着ました。",
-        pastSentenceHira: "さっきTしゃつを、きました。",
-        perfectSentence: "さっきからTシャツを着ています。",
-        perfectSentenceHira: "さっきから、Tしゃつを、きています。"
-    },
-    {
-        x: "おしょうがつ",
-        xKanji: "お正月",
-        xRomaji: "oshōgatsu",
-        xMeaning: "New Year",
-        y: "ふとる",
-        yKanji: "太る",
-        yRomaji: "futoru",
-        yMeaning: "to gain weight",
-        pastSentence: "お正月に太りました。",
-        pastSentenceHira: "おしょうがつに、ふとりました。",
-        perfectSentence: "お正月から太っています。",
-        perfectSentenceHira: "おしょうがつから、ふとっています。"
-    },
-    {
-        x: "なつやすみ",
-        xKanji: "夏休み",
-        xRomaji: "natsuyasumi",
-        xMeaning: "summer vacation",
-        y: "やせる",
-        yKanji: "やせる",
-        yRomaji: "yaseru",
-        yMeaning: "to lose weight",
-        pastSentence: "夏休みにやせました。",
-        pastSentenceHira: "なつやすみに、やせました。",
-        perfectSentence: "夏休みからやせています。",
-        perfectSentenceHira: "なつやすみから、やせています。"
-    },
-    {
-        x: "3ねんまえ",
-        xKanji: "3年前",
-        xRomaji: "san-nen mae",
-        xMeaning: "three years ago",
-        y: "けっこんする",
-        yKanji: "結婚する",
-        yRomaji: "kekkon suru",
-        yMeaning: "to get married",
-        pastSentence: "3年前に結婚しました。",
-        pastSentenceHira: "3ねんまえに、けっこんしました。",
-        perfectSentence: "3年前から結婚しています。",
-        perfectSentenceHira: "3ねんまえから、けっこんしています。"
-    },
-    {
-        x: "かんじ50こ",
-        xKanji: "漢字50個",
-        xRomaji: "kanji gojūkko",
-        xMeaning: "50 kanji characters",
-        y: "おぼえる",
-        yKanji: "覚える",
-        yRomaji: "oboeru",
-        yMeaning: "to memorize / remember",
-        pastSentence: "漢字を50個覚えました。",
-        pastSentenceHira: "かんじを50こ、おぼえました。",
-        perfectSentence: "漢字を50個覚えています。",
-        perfectSentenceHira: "かんじを50こ、おぼえています。"
-    },
-    {
-        x: "ているForm",
-        xKanji: "ているForm",
-        xRomaji: "te iru form",
-        xMeaning: "the te-iru form",
-        y: "しる",
-        yKanji: "知る",
-        yRomaji: "shiru",
-        yMeaning: "to learn of / know",
-        pastSentence: "ているフォームを知りました。",
-        pastSentenceHira: "ているふぉーむを、しりました。",
-        perfectSentence: "ているフォームを知っています。",
-        perfectSentenceHira: "ているふぉーむを、しっています。"
-    }
-];
+const practice71Data = [];
+let renderAll, speakText, practice71ToHiragana, practice71Normalize;
 
 let isManualStop = false;
 let hintMode = "hover";
@@ -109,7 +11,7 @@ let scriptMode = "kanji"; // デフォルトはWith漢字
 let isAutoPlay = true;
 let activeRecognitionSession = null;
 
-const practice7State = {
+const practice71State = {
     audioUrls: {},
     savedResults: {}
 };
@@ -216,53 +118,6 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-function speakText(text, rate = 0.9, onEndCallback) {
-    setupPreferredVoice();
-
-    // 読み上げ専用。表示文・判定文には反映しない。
-    const speechText = String(text ?? "")
-        .replace(/朝5時に(?=起き)/g, "朝5時に、")
-        .replace(/朝5時から(?=起き)/g, "朝5時から、")
-        .replace(/夜10時に(?=寝)/g, "夜10時に、")
-        .replace(/夜10時から(?=寝)/g, "夜10時から、")
-        .replace(/さっきから(?=Tシャツ)/g, "さっきから、")
-        .replace(/さっき(?=Tシャツ)/g, "さっき、")
-        .replace(/お正月に(?=太)/g, "お正月に、")
-        .replace(/お正月から(?=太)/g, "お正月から、")
-        .replace(/夏休みに(?=やせ)/g, "夏休みに、")
-        .replace(/夏休みから(?=やせ)/g, "夏休みから、")
-        .replace(/漢字を50個(?=覚え)/g, "漢字を50個、")
-        .replace(/3年前に(?=結婚)/g, "3年前に、")
-        .replace(/3年前から(?=結婚)/g, "3年前から、")
-        .replace(/ているフォームを(?=知)/g, "ているフォームを、");
-
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.lang = "ja-JP";
-    utterance.rate = rate;
-
-    if (preferredVoice) {
-        utterance.voice = preferredVoice;
-    }
-
-    currentUtteranceRef = utterance;
-
-    utterance.onend = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-
-    utterance.onerror = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-
-    try {
-        speechSynthesis.speak(utterance);
-    } catch (err) {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    }
-}
 
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
@@ -400,163 +255,7 @@ function updateToggleLabelStyle(labelEl, isActive) {
     }
 }
 
-function renderAll() {
-    let style = document.getElementById("practice7KaraStyle");
-
-    if (!style) {
-        style = document.createElement("style");
-        style.id = "practice7KaraStyle";
-        document.head.appendChild(style);
-    }
-
-    style.textContent = `
-        #drill1Container .grammar-highlight {
-color: #CA8A04;
-font-weight: bold;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            #drill1Container .grammar-highlight {
-                color: #FBBF24;
-            }
-        }
-    `;
-
-    renderDrill1Section();
-
-    const container = document.getElementById("drill1Container");
-    if (!container) return;
-
-    const instruction = container.querySelector(".info-panel-desc");
-    if (instruction) {
-        instruction.innerHTML = `
-            💡 Compare a past action with the state that continues now.
-            Use <strong class="grammar-highlight">から</strong>
-            after a time expression to show when that state began.
-        `;
-    }
-
-    container.querySelectorAll(".example-box strong").forEach(element => {
-        const text = element.textContent;
-
-        if (text === "から") {
-            element.classList.add("grammar-highlight");
-        } else if (text === "ています。" || text === "ています") {
-            const highlighted = document.createElement("strong");
-            highlighted.className = "grammar-highlight";
-            highlighted.textContent = "ています";
-
-            element.replaceWith(
-                highlighted,
-                document.createTextNode(text.endsWith("。") ? "。" : "")
-            );
-        }
-    });
-}
-
-// ============================================================================
-// Render Drill 1 Section (Past & Present Perfect Practice)
-// ============================================================================
-function renderDrill1Section() {
-    let container = document.getElementById("drill1Container");
-
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1Container";
-        document.body.insertBefore(
-            container,
-            document.querySelector(".voice-guide-footer")
-        );
-    }
-
-    container.innerHTML = "";
-
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "30px";
-
-    const w1 = formatWord(
-        "あさ5じ", "朝5時", "asa go-ji",
-        "5 o'clock in the morning"
-    );
-    const w2 = formatWord(
-        "おきる", "起きる", "okiru",
-        "to wake up / get up"
-    );
-    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
-
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center"
-             style="margin-bottom: 8px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Past Tense:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#bae6fd; color:#0369a1;
-                         font-size:13px; font-weight:bold;">⏪ Past</span>
-            <span>${w1}に${verbStem}<strong>ました。</strong></span>
-        </div>
-
-        <div class="example-line dashed-border flex-row-center"
-             style="padding-top: 10px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Present Perfect:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#dcfce7; color:#15803d;
-                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
-            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
-        </div>
-    `;
-
-    container.appendChild(exBox);
-
-    const pastListen = document.getElementById("exPastListen");
-    const perfectListen = document.getElementById("exPerfListen");
-
-    pastListen.onclick = () => {
-        setPlayingStateMultiple([pastListen], "Playing...");
-        speakText("朝5時に起きました。", 0.9, () => stopAllPlayback());
-    };
-
-    perfectListen.onclick = () => {
-        setPlayingStateMultiple([perfectListen], "Playing...");
-        speakText("朝5時から起きています。", 0.9, () => stopAllPlayback());
-    };
-
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">
-            Drill 1: Compare Past & Present Perfect
-        </span>
-        <span class="info-panel-desc">
-            💡 Compare past actions with ongoing states using ているform.
-        </span>
-    `;
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill1List";
-    container.appendChild(listDiv);
-
-    practice7Data.forEach((item, index) => {
-        createPractice7TableCard(
-            listDiv, `${index + 1}.`, item, index, 0.9
-        );
-    });
-}
-
-function createPractice7TableCard(container, indexLabel, item, rowIndex, playRate) {
+function createPractice71TableCard(container, indexLabel, item, rowIndex, playRate) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "drill-row";
 
@@ -763,114 +462,6 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
         playRate,
         `p7_drill_perf_${rowIndex}`
     );
-    // 「覚える」「知る」専用の意味変化メモ。
-    const meaningNotes = {
-        "覚える": {
-            kanji: ["覚えました", "覚えています"],
-            hiragana: ["おぼえました", "おぼえています"],
-            english: ["memorized", "remember"]
-        },
-        "知る": {
-            kanji: ["知りました", "知っています"],
-            hiragana: ["しりました", "しっています"],
-            english: ["learned", "know"]
-        }
-    };
-
-    // 保存された録音ファイルの有無で表示を更新する。
-    practice7State.refreshMeaningNotes = () => {
-        document.querySelectorAll(
-            "#drill1Container .meaning-change-row"
-        ).forEach(row => {
-            row.hidden = !(
-                practice7State.audioUrls[row.dataset.pastKey] ||
-                practice7State.audioUrls[row.dataset.perfectKey]
-            );
-        });
-    };
-
-    const meaningNote = meaningNotes[item.yKanji];
-
-    if (meaningNote) {
-        let noteStyle = document.getElementById(
-            "practice7MeaningNoteStyle"
-        );
-
-        if (!noteStyle) {
-            noteStyle = document.createElement("style");
-            noteStyle.id = "practice7MeaningNoteStyle";
-            document.head.appendChild(noteStyle);
-        }
-
-        noteStyle.textContent = `
-            #drill1Container .meaning-change-row[hidden] {
-                display: none;
-            }
-
-            #drill1Container .meaning-change-note {
-                padding-top: 10px;
-                padding-bottom: 4px;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            #drill1Container .meaning-change-note-title {
-                color: var(--text-primary);
-                font-size: 12px;
-                font-weight: normal;
-            }
-
-            #drill1Container .meaning-change-comparison {
-                color: #7C3AED;
-                font-weight: bold;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .meaning-change-comparison {
-                    color: #C084FC;
-                }
-            }
-        `;
-
-        const forms = scriptMode === "hiragana"
-            ? meaningNote.hiragana
-            : meaningNote.kanji;
-
-        const pastKey = `p7_drill_past_${rowIndex}`;
-        const perfectKey = `p7_drill_perf_${rowIndex}`;
-
-        const noteRow = document.createElement("tr");
-        noteRow.className = "meaning-change-row";
-        noteRow.dataset.pastKey = pastKey;
-        noteRow.dataset.perfectKey = perfectKey;
-
-        noteRow.hidden = !(
-            practice7State.audioUrls[pastKey] ||
-            practice7State.audioUrls[perfectKey]
-        );
-
-        const spacer = document.createElement("td");
-        spacer.colSpan = 2;
-
-        const noteCell = document.createElement("td");
-        noteCell.className = "meaning-change-note";
-
-        const title = document.createElement("div");
-        title.className = "meaning-change-note-title";
-        title.textContent = "✨ Notice the meaning change:";
-
-        const comparison = document.createElement("strong");
-        comparison.className = "meaning-change-comparison";
-        comparison.textContent =
-            `${forms[0]} = ${meaningNote.english[0]} / ` +
-            `${forms[1]} = ${meaningNote.english[1]}`;
-
-        noteCell.appendChild(title);
-        noteCell.appendChild(comparison);
-        noteRow.appendChild(spacer);
-        noteRow.appendChild(noteCell);
-        table.appendChild(noteRow);
-    }
     cardDiv.appendChild(table);
     cardDiv.appendChild(correctionBox1);
     cardDiv.appendChild(correctionBox2);
@@ -878,12 +469,12 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
 }
 
 // ============================================================================
-// Practice 7.2: Recognition, Recording & Result Display
+// Practice 7.1: Recognition, Recording & Result Display
 // ============================================================================
 
 // 実際の認識結果を、このページで扱う語句の範囲で変換する。
 // モデル文そのものへの置き換えは行わない。
-function practice7ToHiragana(text) {
+function practice71BaseToHiragana(text) {
     let value = String(text ?? "").normalize("NFKC");
 
     const dictionary = [
@@ -924,18 +515,7 @@ function practice7ToHiragana(text) {
         .replace(/ふぉーむ|form/gi, "Form");
 }
 
-function practice7Normalize(text) {
-    return practice7ToHiragana(text)
-        .toLowerCase()
-        .replace(/[\s、。,.!?！？「」『』・]/g, "")
-        .replace(/(?:よね|よ|ね)$/, "")
-        .replace(
-            /^(おしょうがつ|なつやすみ|3ねんまえ)に/,
-            "$1"
-        );
-}
-
-function practice7DiffTokens(text) {
+function practice71DiffTokens(text) {
     const value = String(text ?? "").normalize("NFKC");
     const chars = Array.from(value);
     const tokens = [];
@@ -978,7 +558,7 @@ function practice7DiffTokens(text) {
 
         const length = Array.from(unit).length;
 
-        const reading = practice7ToHiragana(unit)
+        const reading = practice71ToHiragana(unit)
             .toLowerCase()
             .replace(/[\s、。,.!?！？「」『』・]/g, "");
 
@@ -1009,9 +589,9 @@ function practice7DiffTokens(text) {
     return { chars, tokens };
 }
 
-function practice7FindDiff(actual, reference) {
-    const a = practice7DiffTokens(actual);
-    const b = practice7DiffTokens(reference);
+function practice71FindDiff(actual, reference) {
+    const a = practice71DiffTokens(actual);
+    const b = practice71DiffTokens(reference);
 
     const rows = a.tokens.length;
     const columns = b.tokens.length;
@@ -1151,8 +731,8 @@ function practice7FindDiff(actual, reference) {
     };
 }
 
-function practice7ShowResult(view, saved, rowKey, playRate) {
-    const normalized = practice7Normalize(saved.rawTranscript);
+function practice71ShowResult(view, saved, rowKey, playRate) {
+    const normalized = practice71Normalize(saved.rawTranscript);
 
     saved.isCorrect = normalized.length > 0 && [
         saved.expectedText,
@@ -1160,11 +740,11 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
     ].some(text =>
         typeof text === "string" &&
         text.length > 0 &&
-        normalized === practice7Normalize(text)
+        normalized === practice71Normalize(text)
     );
 
     const displayed = scriptMode === "hiragana"
-        ? practice7ToHiragana(saved.rawTranscript)
+        ? practice71ToHiragana(saved.rawTranscript)
         : String(saved.rawTranscript ?? "");
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
@@ -1182,14 +762,14 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
                 )
                 .flatMap(text => [
                     text,
-                    practice7ToHiragana(text)
+                    practice71ToHiragana(text)
                 ])
         )];
 
         let best = null;
 
         for (const reference of references) {
-            const diff = practice7FindDiff(
+            const diff = practice71FindDiff(
                 displayed,
                 reference
             );
@@ -1239,7 +819,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
         );
     }
 
-    if (practice7State.audioUrls[rowKey]) {
+    if (practice71State.audioUrls[rowKey]) {
         appendPersistedPlayButton(
             view.resultSpan, rowKey, playRate
         );
@@ -1257,7 +837,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
         view.corrListenBtn.onclick = () => {
             if (
                 activeRecognitionSession ||
-                practice7State.startingRow
+                practice71State.startingRow
             ) {
                 return;
             }
@@ -1275,13 +855,13 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
         };
     }
 }
-function practice7SyncRecordingUI() {
+function practice71SyncRecordingUI() {
     const blocked = Boolean(
-        activeRecognitionSession || practice7State.startingRow
+        activeRecognitionSession || practice71State.startingRow
     );
 
-    practice7State.lockedControls ??= new Map();
-    const locked = practice7State.lockedControls;
+    practice71State.lockedControls ??= new Map();
+    const locked = practice71State.lockedControls;
 
     const controls = document.querySelectorAll(
         "#drill1Container button, #drill1Container select, " +
@@ -1298,7 +878,7 @@ function practice7SyncRecordingUI() {
 
         const session = activeRecognitionSession;
         const view = session
-            ? practice7State.views?.[session.rowKey]
+            ? practice71State.views?.[session.rowKey]
             : null;
 
         if (view) {
@@ -1329,7 +909,7 @@ function practice7SyncRecordingUI() {
     });
 }
 
-function practice7ShowNotice(resultSpan, message) {
+function practice71ShowNotice(resultSpan, message) {
     if (!message) return;
 
     const notice = document.createElement("span");
@@ -1350,24 +930,24 @@ function bindRecorderEvents(
     playRate,
     rowKey
 ) {
-    practice7State.views ??= {};
+    practice71State.views ??= {};
 
     const view = {
         recordBtn, stopBtn, resultSpan,
         correctionBox, corrListenBtn, corrTextSpan
     };
 
-    practice7State.views[rowKey] = view;
+    practice71State.views[rowKey] = view;
 
     const currentView = () =>
-        practice7State.views[rowKey] || view;
+        practice71State.views[rowKey] || view;
 
     const restoreResult = message => {
         const v = currentView();
-        const saved = practice7State.savedResults[rowKey];
+        const saved = practice71State.savedResults[rowKey];
 
         if (saved?.rawTranscript !== undefined) {
-            practice7ShowResult(
+            practice71ShowResult(
                 v, saved, rowKey, playRate
             );
         } else {
@@ -1377,14 +957,14 @@ function bindRecorderEvents(
                 "var(--text-secondary)";
             v.correctionBox.style.display = "none";
 
-            if (practice7State.audioUrls[rowKey]) {
+            if (practice71State.audioUrls[rowKey]) {
                 appendPersistedPlayButton(
                     v.resultSpan, rowKey, playRate
                 );
             }
         }
 
-        practice7ShowNotice(v.resultSpan, message);
+        practice71ShowNotice(v.resultSpan, message);
     };
 
     restoreResult("");
@@ -1393,18 +973,18 @@ function bindRecorderEvents(
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
-    } else if (practice7State.startingRow === rowKey) {
+    } else if (practice71State.startingRow === rowKey) {
         resultSpan.textContent = "Preparing microphone...";
     }
 
     // 再描画後の新しいボタンにも録音中の制御を適用する。
-    queueMicrotask(practice7SyncRecordingUI);
+    queueMicrotask(practice71SyncRecordingUI);
 
     recordBtn.addEventListener("click", async () => {
         if (
             recordBtn.disabled ||
             activeRecognitionSession ||
-            practice7State.startingRow
+            practice71State.startingRow
         ) {
             return;
         }
@@ -1434,8 +1014,8 @@ function bindRecorderEvents(
         const manual = isManualStop;
 
         stopAllPlayback();
-        practice7State.startingRow = rowKey;
-        practice7SyncRecordingUI();
+        practice71State.startingRow = rowKey;
+        practice71SyncRecordingUI();
 
         let stream;
 
@@ -1444,14 +1024,14 @@ function bindRecorderEvents(
                 audio: true
             });
         } catch (error) {
-            practice7State.startingRow = null;
-            practice7SyncRecordingUI();
+            practice71State.startingRow = null;
+            practice71SyncRecordingUI();
             restoreResult("Microphone access denied.");
-            practice7SyncRecordingUI();
+            practice71SyncRecordingUI();
             return;
         }
 
-        practice7State.startingRow = null;
+        practice71State.startingRow = null;
 
         const session = {
             rowKey,
@@ -1519,7 +1099,7 @@ function bindRecorderEvents(
             const v = currentView();
             v.stopBtn.classList.remove("stop-btn-active");
 
-            practice7SyncRecordingUI();
+            practice71SyncRecordingUI();
 
             const valid =
                 !session.discard &&
@@ -1535,9 +1115,9 @@ function bindRecorderEvents(
 
                 const newUrl = URL.createObjectURL(blob);
                 const oldUrl =
-                    practice7State.audioUrls[rowKey];
+                    practice71State.audioUrls[rowKey];
 
-                practice7State.audioUrls[rowKey] = newUrl;
+                practice71State.audioUrls[rowKey] = newUrl;
 
                 if (oldUrl) {
                     URL.revokeObjectURL(oldUrl);
@@ -1555,12 +1135,12 @@ function bindRecorderEvents(
                     v.correctionBox,
                     v.corrListenBtn,
                     v.corrTextSpan,
-                    () => practice7State.audioUrls[rowKey],
+                    () => practice71State.audioUrls[rowKey],
                     playRate,
                     rowKey
                 );
 
-                practice7ShowNotice(
+                practice71ShowNotice(
                     v.resultSpan,
                     session.message
                 );
@@ -1570,7 +1150,7 @@ function bindRecorderEvents(
                 );
             }
 
-            practice7SyncRecordingUI();
+            practice71SyncRecordingUI();
         }
 
         function stop(message = "", discard = false) {
@@ -1585,7 +1165,7 @@ function bindRecorderEvents(
             session.message = message;
             session.discard = discard;
             clearMonitoring();
-            practice7SyncRecordingUI();
+            practice71SyncRecordingUI();
 
             if (session.recognition) {
                 try {
@@ -1733,7 +1313,7 @@ function bindRecorderEvents(
                 "var(--accent-color)";
             v.correctionBox.style.display = "none";
 
-            practice7SyncRecordingUI();
+            practice71SyncRecordingUI();
 
             recorder.start();
             recognition.start();
@@ -1855,11 +1435,11 @@ function processResult(
 ) {
     const transcript = String(rawTranscript ?? "").trim();
     const modelText = getExpectedKanjiFn();
-    const normalized = practice7Normalize(transcript);
+    const normalized = practice71Normalize(transcript);
 
     const isCorrect = normalized.length > 0 && (
-        normalized === practice7Normalize(expectedText) ||
-        normalized === practice7Normalize(modelText)
+        normalized === practice71Normalize(expectedText) ||
+        normalized === practice71Normalize(modelText)
     );
 
     const saved = {
@@ -1868,9 +1448,9 @@ function processResult(
         expectedText,
         isCorrect
     };
-    practice7State.savedResults[rowKey] = saved;
+    practice71State.savedResults[rowKey] = saved;
 
-    practice7ShowResult(
+    practice71ShowResult(
         {
             resultSpan, correctionBox,
             corrListenBtn, corrTextSpan
@@ -1884,7 +1464,7 @@ function processResult(
         speakText(modelText, playRate, () => {
             // 新しい録音中に古い自動再生を開始しない。
             if (activeRecognitionSession ||
-                practice7State.startingRow) return;
+                practice71State.startingRow) return;
 
             stopAllPlayback();
             const url = getUrlFn();
@@ -1901,7 +1481,7 @@ function processResult(
 
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         queueMicrotask(() => {
-        practice7State.refreshMeaningNotes?.();
+        practice71State.refreshMeaningNotes?.();
     });
     if (resultSpan.querySelector(".play-recording-btn")) return;
 
@@ -1915,9 +1495,9 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     button.onclick = () => {
         if (activeRecognitionSession ||
-            practice7State.startingRow) return;
+            practice71State.startingRow) return;
 
-        const url = practice7State.audioUrls[rowKey];
+        const url = practice71State.audioUrls[rowKey];
         if (!url) return;
 
         stopAllPlayback();
@@ -1979,8 +1559,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         [[word('いそぐ','急ぐ','isogu','hurry')], '', '急ぎます', '急いでいます']
     ];
 
-    const originalToHiragana = practice7ToHiragana;
-    practice7ToHiragana = function (text) {
+    const originalToHiragana = practice71BaseToHiragana;
+    practice71ToHiragana = function (text) {
         let value = String(text ?? '').normalize('NFKC');
         value = value.replace(/(?:Nintendo\s*Switch|任天堂\s*スイッチ|ニンテンドー\s*スイッチ|ニンテンドウ\s*スイッチ)/gi, 'にんてんどーすいっち')
             .replace(/スマートフォン|スマートホン/g, 'スマホ');
@@ -1997,10 +1577,10 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         return originalToHiragana(value);
     };
 
-    const flat = text => practice7ToHiragana(text)
+    const flat = text => practice71ToHiragana(text)
         .toLowerCase().replace(/[\s、。,.!?！？「」『』・]/g, '');
 
-    practice7Data.splice(0, practice7Data.length, ...data.map((row, index) => {
+    practice71Data.splice(0, practice71Data.length, ...data.map((row, index) => {
         const [words, clauses, present, ongoing] = row;
         const last = words[words.length - 1];
         const a = `いつも、${clauses}${present}。`;
@@ -2011,16 +1591,16 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             xRomaji: words[0].r, xMeaning: words[0].e,
             y: last.h, yKanji: last.k,
             yRomaji: last.r, yMeaning: last.e,
-            pastSentence: a, pastSentenceHira: practice7ToHiragana(a),
-            perfectSentence: b, perfectSentenceHira: practice7ToHiragana(b),
+            pastSentence: a, pastSentenceHira: practice71ToHiragana(a),
+            perfectSentence: b, perfectSentenceHira: practice71ToHiragana(b),
             itemIndex: index
         };
     }));
 
     // 指定された助詞付きの語句を、順不同で過不足なく使ったか確認する。
-    practice7Normalize = function (text) {
+    practice71Normalize = function (text) {
         const value = flat(text);
-        for (const item of practice7Data) {
+        for (const item of practice71Data) {
             const chunks = item.clauses.split('、').filter(Boolean).map(flat);
             for (const [time, verb] of [['いつも',item.present], ['いま',item.ongoing]]) {
                 const ending = flat(verb);
@@ -2071,7 +1651,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     function exampleSentence(item, ongoing) {
         if (!english) {
             const text = ongoing ? item.perfectSentence : item.pastSentence;
-            return scriptMode === 'hiragana' ? practice7ToHiragana(text) : text;
+            return scriptMode === 'hiragana' ? practice71ToHiragana(text) : text;
         }
         const under = text => `<span class="p71-underlined">${text}</span>`;
         return `${ongoing ? 'いま' : 'いつも'}、${under('room')} で、` +
@@ -2095,9 +1675,9 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             document.body.insertBefore(container, document.querySelector('.voice-guide-footer'));
         }
         container.replaceChildren();
-        practice7State.views = {};
-        practice7State.refreshMeaningNotes = () => {};
-        const item = practice7Data[0];
+        practice71State.views = {};
+        practice71State.refreshMeaningNotes = () => {};
+        const item = practice71Data[0];
         const example = document.createElement('div');
         example.className = 'example-box';
         example.id = 'practice71Example';
@@ -2125,8 +1705,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const list = document.createElement('div');
         list.id = 'drill1List';
         container.appendChild(list);
-        practice7Data.slice(1).forEach((item,index) => {
-            createPractice7TableCard(list,`${index+1}.`,item,index,0.9);
+        practice71Data.slice(1).forEach((item,index) => {
+            createPractice71TableCard(list,`${index+1}.`,item,index,0.9);
             const card = list.lastElementChild;
             card.querySelector('.prompt-label').innerHTML = cue(item);
             const rows = card.querySelectorAll('tr');
@@ -2154,12 +1734,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         button.setAttribute('aria-pressed',String(english));
         button.textContent = english ? 'Display Japanese cues' : 'Display English cues';
         button.onclick = () => {
-            if (activeRecognitionSession || practice7State.startingRow) return;
+            if (activeRecognitionSession || practice71State.startingRow) return;
             stopAllPlayback();
             if (!english) { previousHint = hintMode; hintMode = 'off'; }
             else hintMode = previousHint;
             english = !english;
-            practice7State.savedResults = {};
+            practice71State.savedResults = {};
             refreshHintButtons();
             renderAll();
             requestAnimationFrame(() => {
@@ -2171,12 +1751,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         };
         panel.appendChild(button);
         container.appendChild(panel);
-        practice7SyncRecordingUI();
+        practice71SyncRecordingUI();
     };
-    const originalSync = practice7SyncRecordingUI;
-    practice7SyncRecordingUI = function () {
+    const originalSync = practice71SyncRecordingUI;
+    practice71SyncRecordingUI = function () {
         originalSync();
         const button = document.getElementById('practice71CueButton');
-        if (button) button.disabled = Boolean(activeRecognitionSession || practice7State.startingRow);
+        if (button) button.disabled = Boolean(activeRecognitionSession || practice71State.startingRow);
     };
 })();
