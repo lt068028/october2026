@@ -456,8 +456,8 @@ function tag(r) {
         `<span class="p73-tense p73-${r.tag}">` +
         (
             r.tag === "past"
-                ? "⏪ Past"
-                : "⏪ Past Continuous"
+                ? "⏪Past"
+                : "◀️Past Ongoing"
         ) +
         `</span>`
     );
