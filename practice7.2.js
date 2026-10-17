@@ -496,7 +496,7 @@ function renderDrill1Section() {
             <span style="display:inline-block; padding:4px 8px;
                          margin:0 6px; border-radius:4px;
                          background:#bae6fd; color:#0369a1;
-                         font-size:13px; font-weight:bold;">⏪ Past</span>
+                         font-size:13px; font-weight:bold;">⏪Past</span>
             <span>${w1}に${verbStem}<strong>ました。</strong></span>
         </div>
 
@@ -626,7 +626,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     pastLabel.style.backgroundColor = "#bae6fd";
     pastLabel.style.color = "#0369a1";
     pastLabel.style.fontSize = "13px";
-    pastLabel.innerHTML = "⏪ Past";
+    pastLabel.innerHTML = "⏪Past";
 
     const recordBtn1 = document.createElement("button");
     recordBtn1.className = "example-button custom-tip-wrap";
