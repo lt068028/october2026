@@ -1,2301 +1,1390 @@
 // ============================================================================
-// Practice 7.2: ているform② present perfect
+// Practice 7.3: ているform③ past tense
 // ============================================================================
 
-const practice7Data = [
+(() => {
+"use strict";
+
+const W = (kanji, hira, romaji, meaning) => ({
+    kanji, hira, romaji, meaning
+});
+
+const words = {
+    yesterday: W("昨日", "きのう", "kinō", "yesterday"),
+    mother: W("母", "はは", "haha", "my mother"),
+    phone: W("電話する", "でんわする", "denwa suru", "to call"),
+    afternoon: W(
+        "昨日の午後", "きのうのごご",
+        "kinō no gogo", "yesterday afternoon"
+    ),
+    morning10: W(
+        "昨日の朝10時", "きのうのあさ10じ",
+        "kinō no asa jū-ji", "yesterday at 10 a.m."
+    ),
+    afternoon2: W(
+        "昨日の午後2時", "きのうのごご2じ",
+        "kinō no gogo ni-ji", "yesterday at 2 p.m."
+    ),
+    night8: W(
+        "昨日の夜8時", "きのうのよる8じ",
+        "kinō no yoru hachi-ji", "yesterday at 8 p.m."
+    ),
+    morning: W(
+        "昨日の午前中", "きのうのごぜんちゅう",
+        "kinō no gozenchū", "yesterday morning"
+    ),
+    night9: W(
+        "昨日の夜9時", "きのうのよる9じ",
+        "kinō no yoru ku-ji", "yesterday at 9 p.m."
+    ),
+    letter: W("手紙", "てがみ", "tegami", "letter"),
+    write: W("書く", "かく", "kaku", "to write"),
+    pool: W("プール", "プール", "pūru", "pool"),
+    swim: W("泳ぐ", "およぐ", "oyogu", "to swim"),
+    karaoke: W("カラオケ", "カラオケ", "karaoke", "karaoke"),
+    sing: W("歌う", "うたう", "utau", "to sing"),
+    do: W("する", "する", "suru", "to do"),
+    wait: W("待つ", "まつ", "matsu", "to wait"),
+    help: W("手伝う", "てつだう", "tetsudau", "to help"),
+    sister: W("妹", "いもうと", "imōto", "younger sister"),
+    english: W("英語", "えいご", "eigo", "English"),
+    teach: W("教える", "おしえる", "oshieru", "to teach"),
+    kanji: W("漢字", "かんじ", "kanji", "kanji"),
+    memorize: W("覚える", "おぼえる", "oboeru", "to memorize"),
+    until: W("いつまで", "いつまで", "itsu made", "until when"),
+    sleep: W("寝る", "ねる", "neru", "to sleep"),
+    nine: W(
+        "朝9時まで", "あさ9じまで",
+        "asa ku-ji made", "until 9 a.m."
+    ),
+    company: W(
+        "あの会社", "あのかいしゃ",
+        "ano kaisha", "that company"
+    ),
+    work: W("働く", "はたらく", "hataraku", "to work"),
+    lastyear: W(
+        "去年まで", "きょねんまで",
+        "kyonen made", "until last year"
+    ),
+    tokyo: W("東京", "とうきょう", "Tōkyō", "Tokyo"),
+    live: W("住む", "すむ", "sumu", "to live"),
+    three: W(
+        "3年前まで", "3ねんまえまで",
+        "san-nen mae made", "until three years ago"
+    ),
+    marry: W(
+        "結婚する", "けっこんする",
+        "kekkon suru", "to get married"
+    ),
+    bicycle: W("自転車", "じてんしゃ", "jitensha", "bicycle"),
+    borrow: W("借りる", "かりる", "kariru", "to borrow"),
+    untilYesterday: W(
+        "昨日まで", "きのうまで",
+        "kinō made", "until yesterday"
+    ),
+    homework: W(
+        "宿題のこと", "しゅくだいのこと",
+        "shukudai no koto", "the homework"
+    ),
+    forget: W("忘れる", "わすれる", "wasureru", "to forget"),
+    earlier: W(
+        "さっきまで", "さっきまで",
+        "sakki made", "until a moment ago"
+    )
+};
+
+const row = (
+    label, cues, text, hira, marks = [], tag = ""
+) => ({
+    label, cues, text, hira, marks, tag
+});
+
+const pair = (a, b) => [a, b];
+
+const sections = [
     {
-        x: "よる10じ",
-        xKanji: "夜10時",
-        xRomaji: "yoru jū-ji",
-        xMeaning: "10 o'clock at night",
-        y: "ねる",
-        yKanji: "寝る",
-        yRomaji: "neru",
-        yMeaning: "to sleep / go to bed",
-        pastSentence: "夜10時に寝ました。",
-        pastSentenceHira: "よる10じに、ねました。",
-        perfectSentence: "夜10時から寝ています。",
-        perfectSentenceHira: "よる10じから、ねています。"
+        title: "Drill 1: Compare Past & Past Continuous",
+        instruction:
+            "💡 Compare a completed past action with an action " +
+            "in progress at a past time.",
+
+        example: pair(
+            row(
+                "Past Tense:",
+                ["yesterday", "mother", "phone"],
+                "昨日、母に電話しました。",
+                "きのう、ははにでんわしました。",
+                ["ました"],
+                "past"
+            ),
+            row(
+                "Past Continuous:",
+                ["afternoon", "mother", "phone"],
+                "昨日の午後、母に電話していました。",
+                "きのうのごご、ははにでんわしていました。",
+                ["昨日の午後", "きのうのごご", "ていました"],
+                "ongoing"
+            )
+        ),
+
+        items: [
+            pair(
+                row(
+                    "Past:",
+                    ["yesterday", "letter", "write"],
+                    "昨日、手紙を書きました。",
+                    "きのう、てがみをかきました。",
+                    [],
+                    "past"
+                ),
+                row(
+                    "Past Continuous:",
+                    ["morning10", "letter", "write"],
+                    "昨日の朝10時、手紙を書いていました。",
+                    "きのうのあさ10じ、てがみをかいていました。",
+                    [],
+                    "ongoing"
+                )
+            ),
+            pair(
+                row(
+                    "Past:",
+                    ["yesterday", "pool", "swim"],
+                    "昨日、プールで泳ぎました。",
+                    "きのう、プールでおよぎました。",
+                    [],
+                    "past"
+                ),
+                row(
+                    "Past Continuous:",
+                    ["afternoon2", "pool", "swim"],
+                    "昨日の午後2時、プールで泳いでいました。",
+                    "きのうのごご2じ、プールでおよいでいました。",
+                    [],
+                    "ongoing"
+                )
+            ),
+            pair(
+                row(
+                    "Past:",
+                    ["yesterday", "karaoke", "sing"],
+                    "昨日、カラオケで歌いました。",
+                    "きのう、カラオケでうたいました。",
+                    [],
+                    "past"
+                ),
+                row(
+                    "Past Continuous:",
+                    ["night8", "karaoke", "sing"],
+                    "昨日の夜8時、カラオケで歌っていました。",
+                    "きのうのよる8じ、カラオケでうたっていました。",
+                    [],
+                    "ongoing"
+                )
+            )
+        ]
     },
+
     {
-        x: "さっき",
-        xKanji: "さっき",
-        xRomaji: "sakki",
-        xMeaning: "a little while ago",
-        y: "Tシャツをきる",
-        yKanji: "Tシャツを着る",
-        yRomaji: "tīshatsu o kiru",
-        yMeaning: "to put on / wear a T-shirt",
-        pastSentence: "さっきTシャツを着ました。",
-        pastSentenceHira: "さっきTしゃつを、きました。",
-        perfectSentence: "さっきからTシャツを着ています。",
-        perfectSentenceHira: "さっきから、Tしゃつを、きています。"
+        title: "Drill 2: What were you doing?",
+        instruction:
+            "💡 Ask what someone was doing at the given time, " +
+            "then answer using the cues.",
+
+        example: pair(
+            row(
+                "Question:",
+                ["night8", "do"],
+                "昨日の夜8時、何をしていましたか。",
+                "きのうのよる8じ、なにをしていましたか。",
+                [
+                    "昨日の夜8時",
+                    "きのうのよる8じ",
+                    "ていましたか"
+                ]
+            ),
+            row(
+                "Response:",
+                ["night8", "wait"],
+                "昨日の夜8時、友だちを待っていました。",
+                "きのうのよる8じ、ともだちをまっていました。",
+                [
+                    "昨日の夜8時",
+                    "きのうのよる8じ",
+                    "ていました"
+                ]
+            )
+        ),
+
+        items: [
+            pair(
+                row(
+                    "Question:",
+                    ["morning", "do"],
+                    "昨日の午前中、何をしていましたか。",
+                    "きのうのごぜんちゅう、なにをしていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["morning", "mother", "help"],
+                    "昨日の午前中、母を手伝っていました。",
+                    "きのうのごぜんちゅう、ははをてつだっていました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["afternoon", "do"],
+                    "昨日の午後、何をしていましたか。",
+                    "きのうのごご、なにをしていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["afternoon", "sister", "english", "teach"],
+                    "昨日の午後、妹に英語を教えていました。",
+                    "きのうのごご、いもうとにえいごをおしえていました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["night9", "do"],
+                    "昨日の夜9時、何をしていましたか。",
+                    "きのうのよる9じ、なにをしていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["night9", "kanji", "memorize"],
+                    "昨日の夜9時、漢字を覚えていました。",
+                    "きのうのよる9じ、かんじをおぼえていました。"
+                )
+            )
+        ]
     },
+
     {
-        x: "おしょうがつ",
-        xKanji: "お正月",
-        xRomaji: "oshōgatsu",
-        xMeaning: "New Year",
-        y: "ふとる",
-        yKanji: "太る",
-        yRomaji: "futoru",
-        yMeaning: "to gain weight",
-        pastSentence: "お正月に太りました。",
-        pastSentenceHira: "おしょうがつに、ふとりました。",
-        perfectSentence: "お正月から太っています。",
-        perfectSentenceHira: "おしょうがつから、ふとっています。"
-    },
-    {
-        x: "なつやすみ",
-        xKanji: "夏休み",
-        xRomaji: "natsuyasumi",
-        xMeaning: "summer vacation",
-        y: "やせる",
-        yKanji: "やせる",
-        yRomaji: "yaseru",
-        yMeaning: "to lose weight",
-        pastSentence: "夏休みにやせました。",
-        pastSentenceHira: "なつやすみに、やせました。",
-        perfectSentence: "夏休みからやせています。",
-        perfectSentenceHira: "なつやすみから、やせています。"
-    },
-    {
-        x: "3ねんまえ",
-        xKanji: "3年前",
-        xRomaji: "san-nen mae",
-        xMeaning: "three years ago",
-        y: "けっこんする",
-        yKanji: "結婚する",
-        yRomaji: "kekkon suru",
-        yMeaning: "to get married",
-        pastSentence: "3年前に結婚しました。",
-        pastSentenceHira: "3ねんまえに、けっこんしました。",
-        perfectSentence: "3年前から結婚しています。",
-        perfectSentenceHira: "3ねんまえから、けっこんしています。"
-    },
-    {
-        x: "かんじ50こ",
-        xKanji: "漢字50個",
-        xRomaji: "kanji gojūkko",
-        xMeaning: "50 kanji characters",
-        y: "おぼえる",
-        yKanji: "覚える",
-        yRomaji: "oboeru",
-        yMeaning: "to memorize / remember",
-        pastSentence: "漢字を50個覚えました。",
-        pastSentenceHira: "かんじを50こ、おぼえました。",
-        perfectSentence: "漢字を50個覚えています。",
-        perfectSentenceHira: "かんじを50こ、おぼえています。"
-    },
-    {
-        x: "ているForm",
-        xKanji: "ているForm",
-        xRomaji: "te iru form",
-        xMeaning: "the te-iru form",
-        y: "しる",
-        yKanji: "知る",
-        yRomaji: "shiru",
-        yMeaning: "to learn of / know",
-        pastSentence: "ているフォームを知りました。",
-        pastSentenceHira: "ているふぉーむを、しりました。",
-        perfectSentence: "ているフォームを知っています。",
-        perfectSentenceHira: "ているふぉーむを、しっています。"
+        title: "Drill 3: Until when?",
+        instruction:
+            "💡 Ask when an activity or state ended. " +
+            "Answer using まで and ていました.",
+
+        example: pair(
+            row(
+                "Question:",
+                ["until", "sleep"],
+                "いつまで寝ていましたか。",
+                "いつまでねていましたか。",
+                ["いつまで", "ていましたか"]
+            ),
+            row(
+                "Response:",
+                ["nine", "sleep"],
+                "朝9時まで寝ていました。",
+                "あさ9じまでねていました。",
+                ["まで", "ていました"]
+            )
+        ),
+
+        items: [
+            pair(
+                row(
+                    "Question:",
+                    ["until", "company", "work"],
+                    "いつまであの会社で働いていましたか。",
+                    "いつまであのかいしゃではたらいていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["lastyear", "company", "work"],
+                    "去年まで、あの会社で働いていました。",
+                    "きょねんまで、あのかいしゃではたらいていました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["until", "tokyo", "live"],
+                    "いつまで東京に住んでいましたか。",
+                    "いつまでとうきょうにすんでいましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["three", "tokyo", "live"],
+                    "3年前まで、東京に住んでいました。",
+                    "3ねんまえまで、とうきょうにすんでいました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["until", "marry"],
+                    "いつまで結婚していましたか。",
+                    "いつまでけっこんしていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["lastyear", "marry"],
+                    "去年まで結婚していました。",
+                    "きょねんまでけっこんしていました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["until", "bicycle", "borrow"],
+                    "いつまで自転車を借りていましたか。",
+                    "いつまでじてんしゃをかりていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["untilYesterday", "bicycle", "borrow"],
+                    "昨日まで自転車を借りていました。",
+                    "きのうまでじてんしゃをかりていました。"
+                )
+            ),
+            pair(
+                row(
+                    "Question:",
+                    ["until", "homework", "forget"],
+                    "いつまで宿題のことを忘れていましたか。",
+                    "いつまでしゅくだいのことをわすれていましたか。"
+                ),
+                row(
+                    "Response:",
+                    ["earlier", "homework", "forget"],
+                    "さっきまで、宿題のことを忘れていました。",
+                    "さっきまで、しゅくだいのことをわすれていました。"
+                )
+            )
+        ]
     }
 ];
 
-let isManualStop = false;
+let scriptMode = "kanji";
 let hintMode = "hover";
-let scriptMode = "kanji"; // デフォルトはWith漢字
-let isAutoPlay = true;
-let activeRecognitionSession = null;
+let manual = false;
+let autoplay = true;
+let session = null;
+let preparing = false;
+let playingAudio = null;
+let utterance = null;
+let playButton = null;
 
-const practice7State = {
-    audioUrls: {},
-    savedResults: {}
-};
+const saved = new Map();
+const views = new Map();
+const $ = id => document.getElementById(id);
 
-let preferredVoice = null;
+const escape = s => String(s).replace(
+    /[&<>"']/g,
+    c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c])
+);
 
-function setupPreferredVoice() {
-    try {
-        const voices = speechSynthesis.getVoices();
-        if (!voices || voices.length === 0) return;
+// ============================================================================
+// Vocabulary and example formatting
+// ============================================================================
 
-        let selected = voices.find(v =>
-            v.name && v.lang &&
-            v.name.toLowerCase().includes("chrome os") &&
-            v.lang.includes("ja")
-        );
-
-        if (!selected) {
-            selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
-        }
-        if (!selected) {
-            selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
-        }
-        if (!selected) {
-            selected = voices.find(v =>
-                v.name && v.lang &&
-                v.name.toLowerCase().includes("google") &&
-                v.lang.includes("ja")
-            );
-        }
-        if (!selected) {
-            selected = voices.find(v => v.lang && v.lang.includes("ja"));
-        }
-
-        if (selected) preferredVoice = selected;
-    } catch (e) {
-        console.warn("Voice setup error:", e);
-    }
-}
-
-if (typeof speechSynthesis !== "undefined") {
-    setupPreferredVoice();
-    if (speechSynthesis.onvoiceschanged !== undefined) {
-        speechSynthesis.onvoiceschanged = () => setupPreferredVoice();
-    }
-}
-
-let currentPlayingAudio = null;
-let currentPlayTimeoutId = null;
-let activePlayButtons = [];
-let currentUtteranceRef = null;
-
-function setPlayingStateMultiple(buttons, text) {
-    stopAllPlayback();
-    activePlayButtons = buttons;
-
-    buttons.forEach(btn => {
-        if (!btn) return;
-        if (!btn.dataset.originalHtml) {
-            btn.dataset.originalHtml = btn.innerHTML;
-        }
-        btn.disabled = true;
-        btn.textContent = text;
-    });
-}
-
-function restorePlayButtons() {
-    activePlayButtons.forEach(btn => {
-        if (!btn) return;
-        btn.disabled = false;
-        if (btn.dataset.originalHtml) {
-            btn.innerHTML = btn.dataset.originalHtml;
-        } else {
-            btn.innerHTML = "Play";
-        }
-    });
-    activePlayButtons = [];
-}
-
-function stopAllPlayback() {
-    if (currentPlayTimeoutId) {
-        clearTimeout(currentPlayTimeoutId);
-        currentPlayTimeoutId = null;
-    }
-
-    try {
-        speechSynthesis.cancel();
-    } catch (e) {}
-
-    currentUtteranceRef = null;
-
-    if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
-        currentPlayingAudio = null;
-    }
-
-    restorePlayButtons();
-}
-
-function convertToHiragana(text) {
-    if (!text) return "";
-    let cleaned = text.replace(/[.,\/$%\^&\*;:{}=\-_`~()（）「」。、\s]/g, "");
-    cleaned = cleaned.replace(/わ$/g, "は");
-    return cleaned;
-}
-
-function speakText(text, rate = 0.9, onEndCallback) {
-    setupPreferredVoice();
-
-    // 読み上げ専用。表示文・判定文には反映しない。
-    const speechText = String(text ?? "")
-        .replace(/朝5時に(?=起き)/g, "朝5時に、")
-        .replace(/朝5時から(?=起き)/g, "朝5時から、")
-        .replace(/夜10時に(?=寝)/g, "夜10時に、")
-        .replace(/夜10時から(?=寝)/g, "夜10時から、")
-        .replace(/さっきから(?=Tシャツ)/g, "さっきから、")
-        .replace(/さっき(?=Tシャツ)/g, "さっき、")
-        .replace(/お正月に(?=太)/g, "お正月に、")
-        .replace(/お正月から(?=太)/g, "お正月から、")
-        .replace(/夏休みに(?=やせ)/g, "夏休みに、")
-        .replace(/夏休みから(?=やせ)/g, "夏休みから、")
-        .replace(/漢字を50個(?=覚え)/g, "漢字を50個、")
-        .replace(/3年前に(?=結婚)/g, "3年前に、")
-        .replace(/3年前から(?=結婚)/g, "3年前から、")
-        .replace(/ているフォームを(?=知)/g, "ているフォームを、");
-
-    const utterance = new SpeechSynthesisUtterance(speechText);
-    utterance.lang = "ja-JP";
-    utterance.rate = rate;
-
-    if (preferredVoice) {
-        utterance.voice = preferredVoice;
-    }
-
-    currentUtteranceRef = utterance;
-
-    utterance.onend = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-
-    utterance.onerror = () => {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    };
-
-    try {
-        speechSynthesis.speak(utterance);
-    } catch (err) {
-        currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    initSettingsPanel();
-    renderAll();
-    setupFooterGuide();
-});
-
-function setupFooterGuide() {
-    const trigger = document.getElementById("guideTrigger");
-    const box = document.getElementById("guideBox");
-
-    if (trigger && box) {
-        trigger.addEventListener("click", (e) => {
-            e.stopPropagation();
-            box.style.display = box.style.display === "none" ? "block" : "none";
-        });
-
-        document.addEventListener("click", () => {
-            box.style.display = "none";
-        });
-    }
-}
-
-function formatWord(word, kanji, romaji, meaning) {
-    const displayWord =
-        (scriptMode === "kanji" && kanji) ? kanji : word;
-
-    const hintStr = `${romaji}, ${meaning}`;
+function word(key) {
+    const w = words[key];
+    const text = escape(
+        scriptMode === "kanji" ? w.kanji : w.hira
+    );
+    const hint = escape(w.romaji + ", " + w.meaning);
 
     if (hintMode === "off") {
-        return `<span class="target-word">${displayWord}</span>`;
+        return `<span class="target-word">${text}</span>`;
     }
 
     if (hintMode === "paren") {
-        return `<span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span>`;
-    }
-
-    return `
-        <span class="tooltip-wrap">
-            <span class="target-word">${displayWord}</span>
-            <span class="tooltip-tip">${hintStr}</span>
-        </span>
-    `;
-}
-
-function initSettingsPanel() {
-    const scriptControl = document.getElementById("scriptModeControl");
-    const hintControl = document.getElementById("hintModeControl");
-
-    function updateSegmentedSelection(control, selectedValue) {
-        if (!control) return;
-
-        control.querySelectorAll("button[data-value]").forEach(button => {
-            const selected = button.dataset.value === selectedValue;
-            button.classList.toggle("is-selected", selected);
-            button.setAttribute("aria-pressed", String(selected));
-        });
-    }
-
-    if (scriptControl) {
-        updateSegmentedSelection(scriptControl, scriptMode);
-
-        scriptControl.addEventListener("click", event => {
-            const button = event.target.closest("button[data-value]");
-            if (!button || !scriptControl.contains(button)) return;
-
-            const value = button.dataset.value;
-            if (value !== "hiragana" && value !== "kanji") return;
-            if (value === scriptMode) return;
-
-            scriptMode = value;
-            updateSegmentedSelection(scriptControl, scriptMode);
-            renderAll();
-        });
-    }
-
-    if (hintControl) {
-        updateSegmentedSelection(hintControl, hintMode);
-
-        hintControl.addEventListener("click", event => {
-            const button = event.target.closest("button[data-value]");
-            if (!button || !hintControl.contains(button)) return;
-
-            const value = button.dataset.value;
-            if (!["off", "hover", "paren"].includes(value)) return;
-            if (value === hintMode) return;
-
-            hintMode = value;
-            updateSegmentedSelection(hintControl, hintMode);
-            renderAll();
-        });
-    }
-
-    const toggleRecordMode = document.getElementById("toggleRecordMode");
-    const labelAutoRecord = document.getElementById("labelAutoRecord");
-
-    if (toggleRecordMode) {
-        toggleRecordMode.checked = !isManualStop;
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-
-        toggleRecordMode.addEventListener("change", event => {
-            isManualStop = !event.target.checked;
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        });
-    }
-
-    const togglePlaybackMode = document.getElementById("togglePlaybackMode");
-    const labelAutoPlay = document.getElementById("labelAutoPlay");
-
-    if (togglePlaybackMode) {
-        togglePlaybackMode.checked = isAutoPlay;
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-
-        togglePlaybackMode.addEventListener("change", event => {
-            isAutoPlay = event.target.checked;
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        });
-    }
-}
-
-function updateToggleLabelStyle(labelEl, isActive) {
-    if (!labelEl) return;
-
-    labelEl.className = `mode-label ${isActive ? "active-mode" : "inactive-mode"} custom-tip-wrap`;
-    const emoji = labelEl.querySelector(".icon-emoji");
-
-    if (emoji) {
-        if (isActive) {
-            emoji.style.filter = "none";
-            emoji.style.opacity = "1";
-        } else {
-            emoji.style.filter = "grayscale(100%)";
-            emoji.style.opacity = "0.55";
-        }
-    }
-}
-
-function renderAll() {
-    let style = document.getElementById("practice7KaraStyle");
-
-    if (!style) {
-        style = document.createElement("style");
-        style.id = "practice7KaraStyle";
-        document.head.appendChild(style);
-    }
-
-    style.textContent = `
-        #drill1Container .grammar-highlight {
-color: #CA8A04;
-font-weight: bold;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            #drill1Container .grammar-highlight {
-                color: #FBBF24;
-            }
-        }
-    `;
-
-    renderDrill1Section();
-
-    const container = document.getElementById("drill1Container");
-    if (!container) return;
-
-    const instruction = container.querySelector(".info-panel-desc");
-    if (instruction) {
-        instruction.innerHTML = `
-            💡 Compare a past action with the state that continues now.
-            Use <strong class="grammar-highlight">から</strong>
-            after a time expression to show when that state began.
-        `;
-    }
-
-    container.querySelectorAll(".example-box strong").forEach(element => {
-        const text = element.textContent;
-        const grammar = text.replace(/。$/, "");
-
-        if (["から", "ました", "ています"].includes(grammar)) {
-            const highlighted = document.createElement("strong");
-            highlighted.className = "grammar-highlight";
-            highlighted.textContent = grammar;
-
-            element.replaceWith(
-                highlighted,
-                document.createTextNode(text.endsWith("。") ? "。" : "")
-            );
-        }
-    });
-}
-
-// ============================================================================
-// Render Drill 1 Section (Past & Present Perfect Practice)
-// ============================================================================
-function renderDrill1Section() {
-    let container = document.getElementById("drill1Container");
-
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1Container";
-        document.body.insertBefore(
-            container,
-            document.querySelector(".voice-guide-footer")
+        return (
+            `<span class="target-word">${text}</span>` +
+            `<span class="vocab-inline">(${hint})</span>`
         );
     }
 
-    container.innerHTML = "";
-
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "30px";
-
-    const w1 = formatWord(
-        "あさ5じ", "朝5時", "asa go-ji",
-        "5 o'clock in the morning"
+    return (
+        `<span class="tooltip-wrap">` +
+        `<span class="target-word">${text}</span>` +
+        `<span class="tooltip-tip">${hint}</span>` +
+        `</span>`
     );
-    const w2 = formatWord(
-        "おきる", "起きる", "okiru",
-        "to wake up / get up"
-    );
-    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
-
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center"
-             style="margin-bottom: 8px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Past Tense:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#bae6fd; color:#0369a1;
-                         font-size:13px; font-weight:bold;">⏪ Past</span>
-            <span>${w1}に${verbStem}<strong>ました。</strong></span>
-        </div>
-
-        <div class="example-line dashed-border flex-row-center"
-             style="padding-top: 10px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Present Perfect:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#dcfce7; color:#15803d;
-                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
-            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
-        </div>
-    `;
-
-    container.appendChild(exBox);
-
-    const pastListen = document.getElementById("exPastListen");
-    const perfectListen = document.getElementById("exPerfListen");
-
-    pastListen.onclick = () => {
-        setPlayingStateMultiple([pastListen], "Playing...");
-        speakText("朝5時に起きました。", 0.9, () => stopAllPlayback());
-    };
-
-    perfectListen.onclick = () => {
-        setPlayingStateMultiple([perfectListen], "Playing...");
-        speakText("朝5時から起きています。", 0.9, () => stopAllPlayback());
-    };
-
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">
-            Drill 1: Compare Past & Present Perfect
-        </span>
-        <span class="info-panel-desc">
-            💡 Compare past actions with ongoing states using ているform.
-        </span>
-    `;
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill1List";
-    container.appendChild(listDiv);
-
-    practice7Data.forEach((item, index) => {
-        createPractice7TableCard(
-            listDiv, `${index + 1}.`, item, index, 0.9
-        );
-    });
 }
 
-function createPractice7TableCard(container, indexLabel, item, rowIndex, playRate) {
-    const cardDiv = document.createElement("div");
-    cardDiv.className = "drill-row";
+function sentence(r, example = false) {
+    const text = scriptMode === "kanji" ? r.text : r.hira;
 
-    const table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
+    if (!example) return escape(text);
 
-    // ----------------------------------------------------
-    // 1行目: Past
-    // ----------------------------------------------------
-    const tr1 = document.createElement("tr");
-
-    const tdIndex = document.createElement("td");
-    tdIndex.rowSpan = 2;
-    tdIndex.textContent = indexLabel;
-    tdIndex.style.fontWeight = "bold";
-    tdIndex.style.verticalAlign = "middle";
-    tdIndex.style.width = "30px";
-    tdIndex.style.paddingRight = "4px";
-
-    const tdPrompt = document.createElement("td");
-    tdPrompt.rowSpan = 2;
-    tdPrompt.className = "prompt-label";
-    const cueParts = item.xKanji === "漢字50個"
-        ? [
-            formatWord(
-                "かんじ", "漢字",
-                "kanji", "kanji characters"
-            ),
-            formatWord(
-                "50こ", "50個",
-                "gojūkko", "50 items"
-            ),
-            formatWord(
-                item.y, item.yKanji,
-                item.yRomaji, item.yMeaning
-            )
-        ]
-        : [
-            formatWord(
-                item.x, item.xKanji,
-                item.xRomaji, item.xMeaning
-            ),
-            formatWord(
-                item.y, item.yKanji,
-                item.yRomaji, item.yMeaning
-            )
-        ];
-
-    tdPrompt.innerHTML = cueParts.join(" ／ ");    tdPrompt.style.verticalAlign = "middle";
-    tdPrompt.style.width = "220px";
-    tdPrompt.style.paddingRight = "10px";
-
-    const tdPastControls = document.createElement("td");
-    tdPastControls.style.paddingBottom = "4px";
-    tdPastControls.style.whiteSpace = "nowrap";
-
-    const listenBtn1 = document.createElement("button");
-    listenBtn1.className = "example-button custom-tip-wrap";
-    listenBtn1.innerHTML = '🔊きく<span class="custom-tip-box">Listen to past tense.</span>';
-
-    const pastLabel = document.createElement("span");
-    pastLabel.style.fontWeight = "bold";
-    pastLabel.style.display = "inline-block";
-    pastLabel.style.padding = "4px 8px";
-    pastLabel.style.margin = "0 6px";
-    pastLabel.style.borderRadius = "4px";
-    pastLabel.style.backgroundColor = "#bae6fd";
-    pastLabel.style.color = "#0369a1";
-    pastLabel.style.fontSize = "13px";
-    pastLabel.innerHTML = "⏪ Past";
-
-    const recordBtn1 = document.createElement("button");
-    recordBtn1.className = "example-button custom-tip-wrap";
-    recordBtn1.innerHTML = '⏺️とる<span class="custom-tip-box">Record past tense.</span>';
-
-    const stopBtn1 = document.createElement("button");
-    stopBtn1.className = "example-button custom-tip-wrap";
-    stopBtn1.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
-    stopBtn1.disabled = true;
-
-    const rightWrapper1 = document.createElement("span");
-    rightWrapper1.style.float = "right";
-    rightWrapper1.style.display = "inline-flex";
-    rightWrapper1.style.alignItems = "center";
-
-    const resultSpan1 = document.createElement("span");
-    resultSpan1.className = "result-text";
-    resultSpan1.textContent = "(Not recorded yet)";
-    resultSpan1.style.color = "var(--text-secondary)";
-    resultSpan1.style.marginLeft = "8px";
-
-    rightWrapper1.appendChild(resultSpan1);
-
-    listenBtn1.onclick = () => {
-        setPlayingStateMultiple([listenBtn1], "Playing...");
-        speakText(item.pastSentence, playRate, () => stopAllPlayback());
-    };
-
-    tdPastControls.appendChild(listenBtn1);
-    tdPastControls.appendChild(pastLabel);
-    tdPastControls.appendChild(recordBtn1);
-    tdPastControls.appendChild(stopBtn1);
-    tdPastControls.appendChild(rightWrapper1);
-
-    tr1.appendChild(tdIndex);
-    tr1.appendChild(tdPrompt);
-    tr1.appendChild(tdPastControls);
-    table.appendChild(tr1);
-
-    const correctionBox1 = document.createElement("div");
-    correctionBox1.className = "correction-box";
-    const corrListenBtn1 = document.createElement("button");
-    corrListenBtn1.className = "example-button";
-    corrListenBtn1.innerHTML = "🔊 きく";
-    corrListenBtn1.style.marginRight = "8px";
-    const corrTextSpan1 = document.createElement("span");
-    correctionBox1.appendChild(corrListenBtn1);
-    correctionBox1.appendChild(corrTextSpan1);
-
-    bindRecorderEvents(
-        recordBtn1, stopBtn1, resultSpan1, correctionBox1, corrListenBtn1, corrTextSpan1,
-        () => item.pastSentenceHira,
-        () => item.pastSentence,
-        playRate,
-        `p7_drill_past_${rowIndex}`
+    const marks = [...r.marks].sort(
+        (a, b) => b.length - a.length
     );
 
-    // ----------------------------------------------------
-    // 2行目: Perfect
-    // ----------------------------------------------------
-    const tr2 = document.createElement("tr");
-    tr2.style.borderTop = "1px dashed var(--border-color)";
+    if (!marks.length) return escape(text);
 
-    const tdPerfControls = document.createElement("td");
-    tdPerfControls.style.paddingTop = "4px";
-    tdPerfControls.style.whiteSpace = "nowrap";
-
-    const listenBtn2 = document.createElement("button");
-    listenBtn2.className = "example-button custom-tip-wrap";
-    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to present perfect.</span>';
-
-    const perfLabel = document.createElement("span");
-    perfLabel.style.fontWeight = "bold";
-    perfLabel.style.display = "inline-block";
-    perfLabel.style.padding = "4px 8px";
-    perfLabel.style.margin = "0 6px";
-    perfLabel.style.borderRadius = "4px";
-    perfLabel.style.backgroundColor = "#dcfce7";
-    perfLabel.style.color = "#15803d";
-    perfLabel.style.fontSize = "13px";
-    perfLabel.innerHTML = "⏳ Perfect";
-
-    const recordBtn2 = document.createElement("button");
-    recordBtn2.className = "example-button custom-tip-wrap";
-    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record present perfect.</span>';
-
-    const stopBtn2 = document.createElement("button");
-    stopBtn2.className = "example-button custom-tip-wrap";
-    stopBtn2.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
-    stopBtn2.disabled = true;
-
-    const rightWrapper2 = document.createElement("span");
-    rightWrapper2.style.float = "right";
-    rightWrapper2.style.display = "inline-flex";
-    rightWrapper2.style.alignItems = "center";
-
-    const resultSpan2 = document.createElement("span");
-    resultSpan2.className = "result-text";
-    resultSpan2.textContent = "(Not recorded yet)";
-    resultSpan2.style.color = "var(--text-secondary)";
-    resultSpan2.style.marginLeft = "8px";
-
-    rightWrapper2.appendChild(resultSpan2);
-
-    listenBtn2.onclick = () => {
-        setPlayingStateMultiple([listenBtn2], "Playing...");
-        speakText(item.perfectSentence, playRate, () => stopAllPlayback());
-    };
-
-    tdPerfControls.appendChild(listenBtn2);
-    tdPerfControls.appendChild(perfLabel);
-    tdPerfControls.appendChild(recordBtn2);
-    tdPerfControls.appendChild(stopBtn2);
-    tdPerfControls.appendChild(rightWrapper2);
-
-    tr2.appendChild(tdPerfControls);
-    table.appendChild(tr2);
-
-    const correctionBox2 = document.createElement("div");
-    correctionBox2.className = "correction-box";
-    const corrListenBtn2 = document.createElement("button");
-    corrListenBtn2.className = "example-button";
-    corrListenBtn2.innerHTML = "🔊 きく";
-    corrListenBtn2.style.marginRight = "8px";
-    const corrTextSpan2 = document.createElement("span");
-    correctionBox2.appendChild(corrListenBtn2);
-    correctionBox2.appendChild(corrTextSpan2);
-
-    bindRecorderEvents(
-        recordBtn2, stopBtn2, resultSpan2, correctionBox2, corrListenBtn2, corrTextSpan2,
-        () => item.perfectSentenceHira,
-        () => item.perfectSentence,
-        playRate,
-        `p7_drill_perf_${rowIndex}`
+    const regex = new RegExp(
+        marks.map(
+            x => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        ).join("|"),
+        "g"
     );
-    // 「覚える」「知る」専用の意味変化メモ。
-    const meaningNotes = {
-        "覚える": {
-            kanji: ["覚えました", "覚えています"],
-            hiragana: ["おぼえました", "おぼえています"],
-            english: ["memorized", "remember"]
-        },
-        "知る": {
-            kanji: ["知りました", "知っています"],
-            hiragana: ["しりました", "しっています"],
-            english: ["learned", "know"]
-        }
-    };
 
-    // 保存された録音ファイルの有無で表示を更新する。
-    practice7State.refreshMeaningNotes = () => {
-        document.querySelectorAll(
-            "#drill1Container .meaning-change-row"
-        ).forEach(row => {
-            row.hidden = !(
-                practice7State.audioUrls[row.dataset.pastKey] ||
-                practice7State.audioUrls[row.dataset.perfectKey]
-            );
-        });
-    };
+    let output = "";
+    let offset = 0;
 
-    const meaningNote = meaningNotes[item.yKanji];
+    for (const match of text.matchAll(regex)) {
+        output +=
+            escape(text.slice(offset, match.index)) +
+            `<strong class="p73-gold">` +
+            escape(match[0]) +
+            `</strong>`;
 
-    if (meaningNote) {
-        let noteStyle = document.getElementById(
-            "practice7MeaningNoteStyle"
-        );
-
-        if (!noteStyle) {
-            noteStyle = document.createElement("style");
-            noteStyle.id = "practice7MeaningNoteStyle";
-            document.head.appendChild(noteStyle);
-        }
-
-        noteStyle.textContent = `
-            #drill1Container .meaning-change-row[hidden] {
-                display: none;
-            }
-
-            #drill1Container .meaning-change-note {
-                padding-top: 10px;
-                padding-bottom: 4px;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            #drill1Container .meaning-change-note-title {
-                color: var(--text-primary);
-                font-size: 12px;
-                font-weight: normal;
-            }
-
-            #drill1Container .meaning-change-comparison {
-                color: #7C3AED;
-                font-weight: bold;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .meaning-change-comparison {
-                    color: #C084FC;
-                }
-            }
-        `;
-
-        const forms = scriptMode === "hiragana"
-            ? meaningNote.hiragana
-            : meaningNote.kanji;
-
-        const pastKey = `p7_drill_past_${rowIndex}`;
-        const perfectKey = `p7_drill_perf_${rowIndex}`;
-
-        const noteRow = document.createElement("tr");
-        noteRow.className = "meaning-change-row";
-        noteRow.dataset.pastKey = pastKey;
-        noteRow.dataset.perfectKey = perfectKey;
-
-        noteRow.hidden = !(
-            practice7State.audioUrls[pastKey] ||
-            practice7State.audioUrls[perfectKey]
-        );
-
-        const spacer = document.createElement("td");
-        spacer.colSpan = 2;
-
-        const noteCell = document.createElement("td");
-        noteCell.className = "meaning-change-note";
-
-        const title = document.createElement("div");
-        title.className = "meaning-change-note-title";
-        title.textContent = "✨ Notice the meaning change:";
-
-        const comparison = document.createElement("strong");
-        comparison.className = "meaning-change-comparison";
-        comparison.textContent =
-            `${forms[0]} = ${meaningNote.english[0]} / ` +
-            `${forms[1]} = ${meaningNote.english[1]}`;
-
-        noteCell.appendChild(title);
-        noteCell.appendChild(comparison);
-        noteRow.appendChild(spacer);
-        noteRow.appendChild(noteCell);
-        table.appendChild(noteRow);
+        offset = match.index + match[0].length;
     }
-    cardDiv.appendChild(table);
-    cardDiv.appendChild(correctionBox1);
-    cardDiv.appendChild(correctionBox2);
-    container.appendChild(cardDiv);
+
+    return output + escape(text.slice(offset));
+}
+
+function tag(r) {
+    if (!r.tag) return "";
+
+    return (
+        `<span class="p73-tense p73-${r.tag}">` +
+        (
+            r.tag === "past"
+                ? "⏪ Past"
+                : "⏪ Past Continuous"
+        ) +
+        `</span>`
+    );
+}
+
+function button(text, fn) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "example-button";
+    b.textContent = text;
+    b.onclick = fn;
+    return b;
 }
 
 // ============================================================================
-// Practice 7.2: Recognition, Recording & Result Display
+// Model and recording playback
 // ============================================================================
 
-// 実際の認識結果を、このページで扱う語句の範囲で変換する。
-// モデル文そのものへの置き換えは行わない。
-function practice7ToHiragana(text) {
-    let value = String(text ?? "").normalize("NFKC");
-
-    const dictionary = [
-        ["お正月", "おしょうがつ"],
-        ["夏休み", "なつやすみ"],
-        ["結婚", "けっこん"],
-        ["漢字", "かんじ"],
-        ["年前", "ねんまえ"],
-        ["覚", "おぼ"],
-        ["知", "し"],
-        ["起", "お"],
-        ["寝", "ね"],
-        ["着", "き"],
-        ["太", "ふと"],
-        ["痩", "や"],
-        ["朝", "あさ"],
-        ["夜", "よる"],
-        ["時", "じ"],
-        ["個", "こ"]
-    ];
-
-    for (const [from, to] of dictionary) {
-        value = value.split(from).join(to);
+function stopPlayback() {
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
     }
 
-    return value
-        .replace(/[ァ-ヶ]/g, character =>
-            String.fromCharCode(character.charCodeAt(0) - 96)
+    if (playingAudio) {
+        playingAudio.pause();
+        playingAudio = null;
+    }
+
+    if (playButton) {
+        playButton.disabled = false;
+        playButton.textContent = playButton.dataset.label;
+        playButton = null;
+    }
+
+    utterance = null;
+}
+
+function speak(text, b, done) {
+    stopPlayback();
+
+    if (!window.speechSynthesis) {
+        if (done) done();
+        return;
+    }
+
+    const voices = window.speechSynthesis.getVoices();
+
+    const voice = [
+        "chrome os", "keita", "nanami", "google"
+    ].map(name =>
+        voices.find(v =>
+            v.lang.startsWith("ja") &&
+            v.name.toLowerCase().includes(name)
         )
-        .replace(/五十(?=こ)/g, "50")
-        .replace(/十(?=じ)/g, "10")
-        .replace(/五(?=じ)/g, "5")
-        .replace(/三(?=ねんまえ)/g, "3")
-        .replace(
-            /(?:t\s*しゃつ|てぃー\s*しゃつ|てぃ\s*しゃつ)/gi,
-            "Tしゃつ"
-        )
-        .replace(/ふぉーむ|form/gi, "Form");
-}
-
-function practice7Normalize(text) {
-    return practice7ToHiragana(text)
-        .toLowerCase()
-        .replace(/[\s、。,.!?！？「」『』・]/g, "")
-        .replace(/(?:よね|よ|ね)$/, "")
-        .replace(
-            /^(おしょうがつ|なつやすみ|3ねんまえ)に/,
-            "$1"
-        );
-}
-
-function practice7DiffTokens(text) {
-    const value = String(text ?? "").normalize("NFKC");
-    const chars = Array.from(value);
-    const tokens = [];
-
-    const units = [
-        "お正月", "夏休み", "結婚", "漢字", "年前",
-        "おしょうがつ", "なつやすみ", "3ねんまえ",
-        "3年前",
-        "フォーム", "ふぉーむ", "Form", "form", "FORM",
-        "Tシャツ", "Tしゃつ", "tしゃつ",
-        "ティーシャツ", "てぃーしゃつ",
-        "ティシャツ", "てぃしゃつ",
-        "五十個", "五十こ", "三年前", "十時", "五時",
-        "覚", "知", "起", "寝", "着", "太", "痩",
-        "朝", "夜", "時", "個"
-    ].sort((a, b) => b.length - a.length);
-
-    const timeWord =
-        /^(おしょうがつ|なつやすみ|3ねんまえ)$/;
-
-    const suffix = value.match(
-        /(?:よね|よ|ね)[。！？!?\s]*$/
+    ).find(Boolean) || voices.find(
+        v => v.lang.startsWith("ja")
     );
 
-    const limit = suffix
-        ? Array.from(value.slice(0, suffix.index)).length
-        : chars.length;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ja-JP";
+    u.rate = 0.9;
 
-    for (let index = 0; index < limit;) {
-        const rest = chars.slice(index, limit).join("");
+    if (voice) u.voice = voice;
 
-        const spacedShirt = rest.match(
-            /^(?:t\s*しゃつ|t\s*シャツ|てぃー\s*しゃつ|ティー\s*シャツ)/i
-        );
-
-        const unit =
-            spacedShirt?.[0] ||
-            units.find(word => rest.startsWith(word)) ||
-            chars[index];
-
-        const length = Array.from(unit).length;
-
-        const reading = practice7ToHiragana(unit)
-            .toLowerCase()
-            .replace(/[\s、。,.!?！？「」『』・]/g, "");
-
-        // 時間表現の置き換えを欠落と誤認しない。
-        const comparisonUnits = timeWord.test(reading)
-            ? [reading]
-            : Array.from(reading);
-
-        for (const character of comparisonUnits) {
-            tokens.push({
-                character,
-                start: index,
-                end: index + length
-            });
-        }
-
-        index += length;
+    if (b) {
+        playButton = b;
+        b.dataset.label = b.textContent;
+        b.disabled = true;
+        b.textContent = "Playing...";
     }
 
-    // この３つの時間表現だけ「に」の省略を許容。
-    if (
-        timeWord.test(tokens[0]?.character || "") &&
-        tokens[1]?.character === "に"
-    ) {
-        tokens.splice(1, 1);
-    }
+    utterance = u;
 
-    return { chars, tokens };
-}
-
-function practice7FindDiff(actual, reference) {
-    const a = practice7DiffTokens(actual);
-    const b = practice7DiffTokens(reference);
-
-    const rows = a.tokens.length;
-    const columns = b.tokens.length;
-
-    const costs = Array.from(
-        { length: rows + 1 },
-        () => Array(columns + 1).fill(0)
-    );
-
-    for (let i = 0; i <= rows; i++) {
-        costs[i][0] = i;
-    }
-
-    for (let j = 0; j <= columns; j++) {
-        costs[0][j] = j;
-    }
-
-    for (let i = 1; i <= rows; i++) {
-        for (let j = 1; j <= columns; j++) {
-            const same =
-                a.tokens[i - 1].character ===
-                b.tokens[j - 1].character;
-
-            costs[i][j] = Math.min(
-                costs[i - 1][j - 1] + (same ? 0 : 1),
-                costs[i - 1][j] + 1,
-                costs[i][j - 1] + 1
-            );
-        }
-    }
-
-    const redIndexes = new Set();
-    const gaps = new Set();
-
-    const markToken = token => {
-        for (
-            let index = token.start;
-            index < token.end;
-            index++
-        ) {
-            redIndexes.add(index);
-        }
+    const finish = () => {
+        if (utterance !== u) return;
+        stopPlayback();
+        if (done) done();
     };
 
-    let i = rows;
-    let j = columns;
+    u.onend = finish;
+    u.onerror = finish;
 
-    while (i > 0 || j > 0) {
-        if (i > 0 && j > 0) {
-            const same =
-                a.tokens[i - 1].character ===
-                b.tokens[j - 1].character;
+    window.speechSynthesis.speak(u);
+}
 
-            if (
-                costs[i][j] ===
-                costs[i - 1][j - 1] + (same ? 0 : 1)
-            ) {
-                if (!same) {
-                    markToken(a.tokens[i - 1]);
-                }
+function playRecording(key, b) {
+    const value = saved.get(key);
 
-                i--;
-                j--;
-                continue;
-            }
-        }
+    if (!value?.url || session || preparing) return;
 
-        if (
-            j > 0 &&
-            costs[i][j] === costs[i][j - 1] + 1
-        ) {
-            const position = i < rows
-                ? a.tokens[i].start
-                : rows > 0
-                    ? a.tokens[rows - 1].end
-                    : 0;
+    stopPlayback();
 
-            gaps.add(position);
-            j--;
-            continue;
-        }
+    playingAudio = new Audio(value.url);
+    playingAudio.playbackRate = 1;
 
-        if (i > 0) {
-            markToken(a.tokens[i - 1]);
-            i--;
-        }
+    if (b) {
+        playButton = b;
+        b.dataset.label = b.textContent;
+        b.disabled = true;
+        b.textContent = "Playing...";
     }
 
-    // 不一致文字を含む語全体へ赤字範囲を広げる。
-    if (
-        typeof Intl !== "undefined" &&
-        typeof Intl.Segmenter === "function"
-    ) {
-        const originalRed = new Set(redIndexes);
-        const segmenter = new Intl.Segmenter("ja", {
-            granularity: "word"
+    playingAudio.onended = stopPlayback;
+    playingAudio.onerror = stopPlayback;
+    playingAudio.play().catch(stopPlayback);
+}
+
+// ============================================================================
+// Rendering
+// ============================================================================
+
+function render() {
+    stopPlayback();
+    views.clear();
+
+    const root = $("drill1Container");
+    root.replaceChildren();
+
+    sections.forEach((section, si) => {
+        const example = document.createElement("div");
+        example.className = "example-box p73-example";
+
+        section.example.forEach((r, ri) => {
+            const line = document.createElement("div");
+
+            line.className =
+                "example-line flex-row-center" +
+                (ri ? " dashed-border" : "");
+
+            line.innerHTML =
+                `<strong class="example-label-title">` +
+                r.label +
+                `</strong>` +
+                `<span class="p73-cues">` +
+                r.cues.map(word).join("／") +
+                `</span><span>👉</span>`;
+
+            const listen = button("🔊きく", () => {
+                if (!session && !preparing) {
+                    speak(r.text, listen);
+                }
+            });
+
+            line.append(listen);
+
+            const model = document.createElement("span");
+            model.className = "p73-example-model";
+            model.innerHTML = tag(r) + sentence(r, true);
+
+            line.append(model);
+            example.append(line);
         });
 
-        const value = a.chars.join("");
+        root.append(example);
 
-        for (const part of segmenter.segment(value)) {
-            if (!part.isWordLike) continue;
+        const panel = document.createElement("div");
+        panel.className = "info-panel info-panel-task1";
 
-            const start = Array.from(
-                value.slice(0, part.index)
-            ).length;
+        panel.innerHTML =
+            `<span class="info-panel-title">` +
+            section.title +
+            `</span><span class="info-panel-desc">` +
+            section.instruction +
+            `</span>`;
 
-            const end =
-                start + Array.from(part.segment).length;
+        root.append(panel);
 
-            let mismatched = false;
+        const table = document.createElement("table");
+        table.className = "p73-table";
 
-            for (let index = start; index < end; index++) {
-                if (originalRed.has(index)) {
-                    mismatched = true;
-                    break;
-                }
-            }
+        const body = document.createElement("tbody");
+        table.append(body);
 
-            if (mismatched) {
-                for (
-                    let index = start;
-                    index < end;
-                    index++
-                ) {
-                    redIndexes.add(index);
-                }
-            }
-        }
-    }
+        section.items.forEach((rows, index) => {
+            rows.forEach((r, ri) => {
+                const key = `${si}-${index}-${ri}`;
+                const tr = document.createElement("tr");
+                tr.className = "drill-row";
 
-    return {
-        cost: costs[rows][columns],
-        chars: a.chars,
-        redIndexes,
-        gaps
-    };
-}
-
-function practice7ShowResult(view, saved, rowKey, playRate) {
-    const normalized = practice7Normalize(saved.rawTranscript);
-
-    saved.isCorrect = normalized.length > 0 && [
-        saved.expectedText,
-        saved.modelText
-    ].some(text =>
-        typeof text === "string" &&
-        text.length > 0 &&
-        normalized === practice7Normalize(text)
-    );
-
-    const displayed = scriptMode === "hiragana"
-        ? practice7ToHiragana(saved.rawTranscript)
-        : String(saved.rawTranscript ?? "");
-    view.resultSpan.textContent = "";
-    view.resultSpan.style.color = "var(--text-primary)";
-
-    if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
-    } else {
-        const references = [...new Set(
-            [saved.expectedText, saved.modelText]
-                .filter(text =>
-                    typeof text === "string" &&
-                    text.length > 0
-                )
-                .flatMap(text => [
-                    text,
-                    practice7ToHiragana(text)
-                ])
-        )];
-
-        let best = null;
-
-        for (const reference of references) {
-            const diff = practice7FindDiff(
-                displayed,
-                reference
-            );
-
-            if (!best || diff.cost < best.cost) {
-                best = diff;
-            }
-        }
-
-        const appendRed = text => {
-            const span = document.createElement("span");
-            span.textContent = text;
-            span.style.color = "var(--error-text)";
-            view.resultSpan.appendChild(span);
-        };
-
-        if (best) {
-            for (
-                let index = 0;
-                index <= best.chars.length;
-                index++
-            ) {
-                if (best.gaps.has(index)) {
-                    appendRed("＿");
+                if (!ri) {
+                    const num = document.createElement("td");
+                    num.rowSpan = 2;
+                    num.className = "p73-number";
+                    num.textContent = (index + 1) + ".";
+                    tr.append(num);
                 }
 
-                if (index === best.chars.length) break;
+                const label = document.createElement("td");
+                label.className = "p73-label";
+                label.textContent = r.label;
+                tr.append(label);
 
-                const character = best.chars[index];
+                const cue = document.createElement("td");
+                cue.className = "prompt-label";
+                cue.innerHTML = r.cues.map(word).join("／");
+                tr.append(cue);
 
-                if (best.redIndexes.has(index)) {
-                    appendRed(character);
-                } else {
-                    view.resultSpan.appendChild(
-                        document.createTextNode(character)
-                    );
-                }
-            }
-        } else {
-            view.resultSpan.appendChild(
-                document.createTextNode(displayed)
-            );
-        }
+                const controls = document.createElement("td");
+                controls.className = "p73-controls";
 
-        view.resultSpan.appendChild(
-            document.createTextNode(" ")
-        );
-    }
-
-    if (practice7State.audioUrls[rowKey]) {
-        appendPersistedPlayButton(
-            view.resultSpan, rowKey, playRate
-        );
-    }
-
-    view.correctionBox.style.display =
-        saved.isCorrect ? "none" : "block";
-
-    if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
-
-        view.corrListenBtn.style.display = "inline-block";
-
-        view.corrListenBtn.onclick = () => {
-            if (
-                activeRecognitionSession ||
-                practice7State.startingRow
-            ) {
-                return;
-            }
-
-            setPlayingStateMultiple(
-                [view.corrListenBtn],
-                "Playing..."
-            );
-
-            speakText(
-                saved.modelText,
-                0.9,
-                () => stopAllPlayback()
-            );
-        };
-    }
-}
-function practice7SyncRecordingUI() {
-    const blocked = Boolean(
-        activeRecognitionSession || practice7State.startingRow
-    );
-
-    practice7State.lockedControls ??= new Map();
-    const locked = practice7State.lockedControls;
-
-    const controls = document.querySelectorAll(
-        "#drill1Container button, #drill1Container select, " +
-        "#drill1Container input"
-    );
-
-    if (blocked) {
-        controls.forEach(control => {
-            if (!locked.has(control)) {
-                locked.set(control, control.disabled);
-            }
-            control.disabled = true;
-        });
-
-        const session = activeRecognitionSession;
-        const view = session
-            ? practice7State.views?.[session.rowKey]
-            : null;
-
-        if (view) {
-            const canStop =
-                session.manual && !session.stopRequested;
-
-            view.stopBtn.disabled = !canStop;
-            view.stopBtn.classList.toggle(
-                "stop-btn-active",
-                canStop
-            );
-        }
-    } else {
-        locked.forEach((disabled, control) => {
-            if (control.isConnected) {
-                control.disabled = disabled;
-            }
-        });
-        locked.clear();
-    }
-
-    controls.forEach(control => {
-        control.style.setProperty(
-            "cursor",
-            control.disabled ? "not-allowed" : "pointer",
-            "important"
-        );
-    });
-}
-
-function practice7ShowNotice(resultSpan, message) {
-    if (!message) return;
-
-    const notice = document.createElement("span");
-    notice.textContent = message + " ";
-    notice.style.color = "var(--text-secondary)";
-    resultSpan.prepend(notice);
-}
-
-function bindRecorderEvents(
-    recordBtn,
-    stopBtn,
-    resultSpan,
-    correctionBox,
-    corrListenBtn,
-    corrTextSpan,
-    getExpectedTextFn,
-    getExpectedKanjiFn,
-    playRate,
-    rowKey
-) {
-    practice7State.views ??= {};
-
-    const view = {
-        recordBtn, stopBtn, resultSpan,
-        correctionBox, corrListenBtn, corrTextSpan
-    };
-
-    practice7State.views[rowKey] = view;
-
-    const currentView = () =>
-        practice7State.views[rowKey] || view;
-
-    const restoreResult = message => {
-        const v = currentView();
-        const saved = practice7State.savedResults[rowKey];
-
-        if (saved?.rawTranscript !== undefined) {
-            practice7ShowResult(
-                v, saved, rowKey, playRate
-            );
-        } else {
-            v.resultSpan.textContent =
-                saved?.text || "(Not recorded yet)";
-            v.resultSpan.style.color =
-                "var(--text-secondary)";
-            v.correctionBox.style.display = "none";
-
-            if (practice7State.audioUrls[rowKey]) {
-                appendPersistedPlayButton(
-                    v.resultSpan, rowKey, playRate
-                );
-            }
-        }
-
-        practice7ShowNotice(v.resultSpan, message);
-    };
-
-    restoreResult("");
-
-    if (activeRecognitionSession?.rowKey === rowKey) {
-        resultSpan.textContent = "Recording...";
-        resultSpan.style.color = "var(--accent-color)";
-        correctionBox.style.display = "none";
-    } else if (practice7State.startingRow === rowKey) {
-        resultSpan.textContent = "Preparing microphone...";
-    }
-
-    // 再描画後の新しいボタンにも録音中の制御を適用する。
-    queueMicrotask(practice7SyncRecordingUI);
-
-    recordBtn.addEventListener("click", async () => {
-        if (
-            recordBtn.disabled ||
-            activeRecognitionSession ||
-            practice7State.startingRow
-        ) {
-            return;
-        }
-
-        const Recognition =
-            window.SpeechRecognition ||
-            window.webkitSpeechRecognition;
-
-        if (!Recognition) {
-            restoreResult(
-                "Speech recognition is not supported."
-            );
-            return;
-        }
-
-        if (
-            !navigator.mediaDevices?.getUserMedia ||
-            !window.MediaRecorder
-        ) {
-            restoreResult("Recording is not supported.");
-            return;
-        }
-
-        // 録音開始時の問題文・設定を固定する。
-        const expectedText = getExpectedTextFn();
-        const modelText = getExpectedKanjiFn();
-        const manual = isManualStop;
-
-        stopAllPlayback();
-        practice7State.startingRow = rowKey;
-        practice7SyncRecordingUI();
-
-        let stream;
-
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                audio: true
-            });
-        } catch (error) {
-            practice7State.startingRow = null;
-            practice7SyncRecordingUI();
-            restoreResult("Microphone access denied.");
-            practice7SyncRecordingUI();
-            return;
-        }
-
-        practice7State.startingRow = null;
-
-        const session = {
-            rowKey,
-            manual,
-            stopRequested: false,
-            finished: false,
-            speechStarted: false,
-            recognitionDone: false,
-            recorderDone: false,
-            discard: false,
-            transcript: "",
-            message: "",
-            chunks: [],
-            timers: [],
-            context: null,
-            recognition: null,
-            recorder: null,
-            stop: null
-        };
-
-        activeRecognitionSession = session;
-
-        function clearMonitoring() {
-            session.timers.forEach(id => {
-                clearTimeout(id);
-                clearInterval(id);
-            });
-            session.timers = [];
-
-            if (session.context) {
-                session.context.close().catch(() => {});
-                session.context = null;
-            }
-        }
-
-        function finish() {
-            if (
-                session.finished ||
-                !session.recognitionDone ||
-                !session.recorderDone
-            ) {
-                return;
-            }
-
-            session.finished = true;
-            clearMonitoring();
-
-            stream.getTracks().forEach(track => track.stop());
-
-            if (session.recognition) {
-                session.recognition.onend = null;
-                session.recognition.onresult = null;
-                session.recognition.onerror = null;
-                session.recognition.onspeechstart = null;
-
-                try {
-                    session.recognition.abort();
-                } catch (error) {}
-            }
-
-            if (activeRecognitionSession === session) {
-                activeRecognitionSession = null;
-            }
-
-            const v = currentView();
-            v.stopBtn.classList.remove("stop-btn-active");
-
-            practice7SyncRecordingUI();
-
-            const valid =
-                !session.discard &&
-                session.speechStarted &&
-                session.chunks.some(chunk => chunk.size > 0);
-
-            if (valid) {
-                const blob = new Blob(session.chunks, {
-                    type:
-                        session.recorder.mimeType ||
-                        "audio/webm"
+                const listen = button("🔊きく", () => {
+                    if (!session && !preparing) {
+                        speak(r.text, listen);
+                    }
                 });
 
-                const newUrl = URL.createObjectURL(blob);
-                const oldUrl =
-                    practice7State.audioUrls[rowKey];
+                controls.append(listen);
 
-                practice7State.audioUrls[rowKey] = newUrl;
+                if (r.tag) {
+                    const t = document.createElement("span");
+                    t.innerHTML = tag(r);
+                    controls.append(t);
+                }
 
-                if (oldUrl) {
-                    URL.revokeObjectURL(oldUrl);
+                const rec = button("🎤", () => record(key, r));
+                rec.setAttribute("aria-label", "Record");
+
+                const stop = button("⏹️", () => {
+                    if (session?.key === key) session.stop();
+                });
+
+                stop.setAttribute(
+                    "aria-label", "Stop recording"
+                );
+                stop.disabled = true;
+
+                const result = document.createElement("span");
+                result.className = "result-text";
+
+                const correction = document.createElement("div");
+                correction.className = "correction-box";
+                correction.hidden = true;
+
+                controls.append(rec, stop, result, correction);
+                tr.append(controls);
+                body.append(tr);
+
+                views.set(key, {
+                    r, rec, stop, result, correction
+                });
+
+                showResult(key);
+            });
+        });
+
+        const wrap = document.createElement("div");
+        wrap.className = "p73-table-wrap";
+        wrap.append(table);
+        root.append(wrap);
+    });
+
+    sync();
+}
+
+// ============================================================================
+// Recognition normalization
+// ============================================================================
+
+const dictionary = [
+    ["午前中", "ごぜんちゅう"],
+    ["自転車", "じてんしゃ"],
+    ["友達", "ともだち"],
+    ["友だち", "ともだち"],
+    ["昨日", "きのう"],
+    ["午後", "ごご"],
+    ["手紙", "てがみ"],
+    ["電話", "でんわ"],
+    ["手伝", "てつだ"],
+    ["英語", "えいご"],
+    ["漢字", "かんじ"],
+    ["会社", "かいしゃ"],
+    ["東京", "とうきょう"],
+    ["結婚", "けっこん"],
+    ["宿題", "しゅくだい"],
+    ["去年", "きょねん"],
+    ["年前", "ねんまえ"],
+    ["覚", "おぼ"],
+    ["教", "おし"],
+    ["働", "はたら"],
+    ["住", "す"],
+    ["借", "か"],
+    ["忘", "わす"],
+    ["書", "か"],
+    ["泳", "およ"],
+    ["歌", "うた"],
+    ["待", "ま"],
+    ["寝", "ね"],
+    ["母", "はは"],
+    ["妹", "いもうと"],
+    ["何", "なに"],
+    ["朝", "あさ"],
+    ["夜", "よる"],
+    ["時", "じ"]
+];
+
+function hira(text) {
+    let s = String(text).normalize("NFKC");
+
+    for (const [a, b] of dictionary) {
+        s = s.split(a).join(b);
+    }
+
+    return s.replace(
+        /[ァ-ヶ]/g,
+        c => String.fromCharCode(c.charCodeAt(0) - 96)
+    );
+}
+
+function normalize(text) {
+    return hira(text)
+        .replace(/三(?=ねんまえ)/g, "3")
+        .replace(/十(?=じ)/g, "10")
+        .replace(/二(?=じ)/g, "2")
+        .replace(/八(?=じ)/g, "8")
+        .replace(/九(?=じ)/g, "9")
+        .replace(/くじ|きゅうじ/g, "9じ")
+        .replace(/はちじ/g, "8じ")
+        .replace(/じゅうじ/g, "10じ")
+        .replace(/にじ/g, "2じ")
+        .replace(/さんねんまえ/g, "3ねんまえ")
+        .replace(/[\s、。,.!?！？「」『』]/g, "");
+}
+
+// ============================================================================
+// Result display and recording controls
+// ============================================================================
+
+function showResult(key, notice = "") {
+    const v = views.get(key);
+    if (!v) return;
+
+    const value = saved.get(key);
+
+    v.result.replaceChildren();
+    v.correction.replaceChildren();
+    v.correction.hidden = true;
+
+    if (session?.key === key) {
+        v.result.textContent = "Recording...";
+        return;
+    }
+
+    if (value?.raw) {
+        const text = document.createElement("span");
+
+        text.textContent =
+            (
+                scriptMode === "hiragana"
+                    ? hira(value.raw)
+                    : value.raw
+            ) +
+            (value.correct ? " ✅" : "");
+
+        v.result.append(text);
+
+        if (value.url) {
+            const play = button(
+                "▶️", () => playRecording(key, play)
+            );
+
+            play.setAttribute(
+                "aria-label", "Play your recording"
+            );
+
+            v.result.append(play);
+        }
+
+        if (!value.correct) {
+            v.correction.hidden = false;
+
+            const model = button("🔊きく", () => {
+                if (!session && !preparing) {
+                    speak(v.r.text, model);
+                }
+            });
+
+            const t = document.createElement("span");
+
+            t.textContent =
+                scriptMode === "kanji"
+                    ? v.r.text
+                    : v.r.hira;
+
+            v.correction.append(model, t);
+        }
+    } else {
+        v.result.textContent = "(Not recorded yet)";
+
+        if (value?.url) {
+            const play = button(
+                "▶️", () => playRecording(key, play)
+            );
+            v.result.append(play);
+        }
+    }
+
+    if (notice) {
+        const n = document.createElement("span");
+        n.className = "p73-notice";
+        n.textContent = notice;
+        v.result.append(n);
+    }
+}
+
+function sync() {
+    const blocked = Boolean(session || preparing);
+
+    $("drill1Container")
+        .querySelectorAll("button")
+        .forEach(b => {
+            b.disabled = blocked;
+        });
+
+    views.forEach((v, key) => {
+        const canStop =
+            session?.key === key &&
+            session.manual &&
+            !session.stopping;
+
+        v.stop.disabled = !canStop;
+
+        v.stop.classList.toggle(
+            "stop-btn-active",
+            Boolean(canStop)
+        );
+    });
+}
+
+async function record(key, r) {
+    if (session || preparing) return;
+
+    const Recognition =
+        window.SpeechRecognition ||
+        window.webkitSpeechRecognition;
+
+    if (!Recognition || !window.MediaRecorder) {
+        showResult(
+            key,
+            "Speech recognition or recording is not supported."
+        );
+        return;
+    }
+
+    stopPlayback();
+    preparing = true;
+    sync();
+
+    views.get(key).result.textContent =
+        "Preparing microphone...";
+
+    let stream;
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            audio: true
+        });
+    } catch (e) {
+        preparing = false;
+        showResult(key, "Microphone access denied.");
+        sync();
+        return;
+    }
+
+    preparing = false;
+
+    const s = {
+        key,
+        manual,
+        stopping: false,
+        finished: false,
+        heard: false,
+        raw: "",
+        interim: "",
+        chunks: [],
+        timers: [],
+        recognitionDone: false,
+        recorderDone: false,
+        discard: false,
+        notice: "",
+        context: null
+    };
+
+    session = s;
+
+    const clear = () => {
+        s.timers.forEach(id => {
+            clearTimeout(id);
+            clearInterval(id);
+        });
+
+        s.timers = [];
+
+        if (s.context) {
+            s.context.close().catch(() => {});
+            s.context = null;
+        }
+    };
+
+    const finish = () => {
+        if (
+            s.finished ||
+            !s.recognitionDone ||
+            !s.recorderDone
+        ) {
+            return;
+        }
+
+        s.finished = true;
+        clear();
+
+        stream.getTracks().forEach(t => t.stop());
+
+        if (s.recognition) {
+            s.recognition.onend = null;
+            s.recognition.onresult = null;
+            s.recognition.onerror = null;
+
+            try {
+                s.recognition.abort();
+            } catch (e) {}
+        }
+
+        session = null;
+
+        if (s.interim?.trim()) {
+            s.raw += s.interim;
+        }
+
+        const previous = saved.get(key) || {};
+
+        if (
+            !s.discard &&
+            s.heard &&
+            s.chunks.length
+        ) {
+            const url = URL.createObjectURL(
+                new Blob(s.chunks, {
+                    type: s.recorder.mimeType || "audio/webm"
+                })
+            );
+
+            if (previous.url) {
+                URL.revokeObjectURL(previous.url);
+            }
+
+            saved.set(key, {
+                url,
+                raw: s.raw.trim(),
+                correct:
+                    Boolean(s.raw.trim()) &&
+                    normalize(s.raw) === normalize(r.hira)
+            });
+        }
+
+        s.chunks = [];
+
+        showResult(
+            key,
+            s.notice ||
+            (!s.raw.trim() ? "No speech recognized." : "")
+        );
+
+        sync();
+
+        if (
+            autoplay &&
+            !s.discard &&
+            s.raw.trim()
+        ) {
+            speak(r.text, null, () => {
+                if (!session && !preparing) {
+                    playRecording(key);
+                }
+            });
+        }
+    };
+
+    s.stop = (notice = "", discard = false) => {
+        if (s.stopping || s.finished) return;
+
+        s.stopping = true;
+        s.notice = notice;
+        s.discard = discard || !s.heard;
+
+        clear();
+        sync();
+
+        try {
+            s.recognition.stop();
+        } catch (e) {
+            s.recognitionDone = true;
+        }
+
+        if (
+            !s.recorder ||
+            s.recorder.state === "inactive"
+        ) {
+            s.recorderDone = true;
+        } else {
+            try {
+                s.recorder.stop();
+            } catch (e) {
+                s.recorderDone = true;
+                s.discard = true;
+            }
+        }
+
+        s.timers.push(
+            setTimeout(() => {
+                s.recognitionDone = true;
+
+                if (!s.recorderDone) {
+                    s.recorderDone = true;
+                    s.discard = true;
+                }
+
+                finish();
+            }, 2500)
+        );
+
+        finish();
+    };
+
+    try {
+        const recognition = new Recognition();
+        s.recognition = recognition;
+
+        recognition.lang = "ja-JP";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        let interim = "";
+        let lastSound = Date.now();
+
+        const heard = () => {
+            s.heard = true;
+            lastSound = Date.now();
+        };
+
+        recognition.onspeechstart = heard;
+
+        recognition.onresult = e => {
+            if (s.finished || s.discard) return;
+
+            interim = "";
+
+            for (
+                let i = e.resultIndex;
+                i < e.results.length;
+                i++
+            ) {
+                const text = e.results[i][0].transcript;
+
+                if (text.trim()) heard();
+
+                if (e.results[i].isFinal) {
+                    s.raw += text;
+                } else {
+                    interim += text;
                 }
             }
 
-            session.chunks = [];
+            s.interim = interim;
+        };
 
-            if (valid && session.transcript.trim()) {
-                processResult(
-                    session.transcript,
-                    expectedText,
-                    () => modelText,
-                    v.resultSpan,
-                    v.correctionBox,
-                    v.corrListenBtn,
-                    v.corrTextSpan,
-                    () => practice7State.audioUrls[rowKey],
-                    playRate,
-                    rowKey
-                );
-
-                practice7ShowNotice(
-                    v.resultSpan,
-                    session.message
-                );
-            } else {
-                restoreResult(
-                    session.message || "No speech recognized."
-                );
-            }
-
-            practice7SyncRecordingUI();
-        }
-
-        function stop(message = "", discard = false) {
+        recognition.onerror = e => {
             if (
-                session.finished ||
-                session.stopRequested
+                s.stopping ||
+                e.error === "no-speech"
             ) {
                 return;
             }
 
-            session.stopRequested = true;
-            session.message = message;
-            session.discard = discard;
-            clearMonitoring();
-            practice7SyncRecordingUI();
+            s.recognitionDone = true;
+            s.stop("Recognition error.", true);
+        };
 
-            if (session.recognition) {
-                try {
-                    session.recognition.stop();
-                } catch (error) {
-                    session.recognitionDone = true;
-                }
-            } else {
-                session.recognitionDone = true;
-            }
+        recognition.onend = () => {
+            s.recognitionDone = true;
 
-            if (
-                !session.recorder ||
-                session.recorder.state === "inactive"
-            ) {
-                session.recorderDone = true;
-            } else {
-                try {
-                    session.recorder.stop();
-                } catch (error) {
-                    session.discard = true;
-                    session.recorderDone = true;
-                }
-            }
-
-            session.timers.push(setTimeout(() => {
-                try {
-                    session.recognition?.abort();
-                } catch (error) {}
-
-                session.recognitionDone = true;
-
-                if (!session.recorderDone) {
-                    session.discard = true;
-                    session.recorderDone = true;
-                }
-
+            if (s.stopping) {
                 finish();
-            }, 2500));
-
-            finish();
-        }
-
-        session.stop = stop;
-
-        try {
-            const recognition = new Recognition();
-            session.recognition = recognition;
-
-            recognition.lang = "ja-JP";
-            recognition.interimResults = true;
-            recognition.continuous = true;
-
-            session.lastSpeechAt = 0;
-
-            const noteSpeech = () => {
-                session.speechStarted = true;
-                session.lastSpeechAt = performance.now();
-            };
-
-            recognition.onspeechstart = noteSpeech;
-
-            recognition.onresult = event => {
-                if (session.finished || session.discard) {
-                    return;
-                }
-
-                for (
-                    let index = event.resultIndex;
-                    index < event.results.length;
-                    index++
-                ) {
-                    const result = event.results[index];
-                    const text = result[0].transcript;
-
-                    if (text.trim()) {
-                        noteSpeech();
-                    }
-
-                    if (result.isFinal) {
-                        session.transcript += text;
-                    }
-                }
-            };
-
-            recognition.onerror = event => {
-                if (
-                    session.finished ||
-                    session.stopRequested
-                ) {
-                    return;
-                }
-
-                if (event.error === "no-speech") return;
-
-                session.recognitionDone = true;
-                stop("Recognition error.", true);
-            };
-
-            recognition.onend = () => {
-                if (session.finished) return;
-
-                if (session.stopRequested) {
-                    session.recognitionDone = true;
-                    finish();
-                    return;
-                }
-
-                // 文中の間で認識が終了しても録音を続ける。
-                try {
-                    recognition.start();
-                } catch (error) {
-                    session.recognitionDone = true;
-                    stop(
-                        "Could not restart recognition.",
-                        true
-                    );
-                }
-            };
-
-            const recorder = new MediaRecorder(stream);
-            session.recorder = recorder;
-
-            recorder.ondataavailable = event => {
-                if (
-                    !session.finished &&
-                    event.data.size > 0
-                ) {
-                    session.chunks.push(event.data);
-                }
-            };
-
-            recorder.onstop = () => {
-                session.recorderDone = true;
-                finish();
-            };
-
-            recorder.onerror = () => {
-                stop("Recording error.", true);
-            };
-
-            const v = currentView();
-            v.resultSpan.textContent = "Recording...";
-            v.resultSpan.style.color =
-                "var(--accent-color)";
-            v.correctionBox.style.display = "none";
-
-            practice7SyncRecordingUI();
-
-            recorder.start();
-            recognition.start();
+                return;
+            }
 
             try {
-                const AudioContextClass =
-                    window.AudioContext ||
-                    window.webkitAudioContext;
-
-                const context = new AudioContextClass();
-                session.context = context;
-
-                const source =
-                    context.createMediaStreamSource(stream);
-
-                const analyser = context.createAnalyser();
-                analyser.fftSize = 1024;
-                source.connect(analyser);
-
-                const samples = new Float32Array(
-                    analyser.fftSize
+                recognition.start();
+                s.recognitionDone = false;
+            } catch (e) {
+                s.stop(
+                    "Could not restart recognition.",
+                    true
                 );
+            }
+        };
 
-                let soundFrames = 0;
+        const recorder = new MediaRecorder(stream);
+        s.recorder = recorder;
 
-                context.resume().catch(() => {});
+        recorder.ondataavailable = e => {
+            if (!s.finished && e.data.size) {
+                s.chunks.push(e.data);
+            }
+        };
 
-                session.timers.push(setInterval(() => {
-                    if (
-                        session.finished ||
-                        session.stopRequested
-                    ) {
-                        return;
-                    }
+        recorder.onstop = () => {
+            s.recorderDone = true;
+
+            if (!s.stopping) {
+                s.stop("Recording stopped.");
+            }
+
+            finish();
+        };
+
+        recorder.onerror = () => {
+            s.stop("Recording error.", true);
+        };
+
+        showResult(key);
+        sync();
+
+        recorder.start();
+        recognition.start();
+
+        try {
+            const Context =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            const context = new Context();
+            s.context = context;
+
+            context.resume().catch(() => {});
+
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 1024;
+
+            context
+                .createMediaStreamSource(stream)
+                .connect(analyser);
+
+            const samples = new Float32Array(
+                analyser.fftSize
+            );
+
+            let frames = 0;
+
+            s.timers.push(
+                setInterval(() => {
+                    if (s.stopping) return;
 
                     analyser.getFloatTimeDomainData(samples);
 
                     let sum = 0;
 
-                    for (const sample of samples) {
-                        sum += sample * sample;
+                    for (const n of samples) {
+                        sum += n * n;
                     }
 
-                    const volume =
-                        Math.sqrt(sum / samples.length);
+                    const sound =
+                        Math.sqrt(sum / samples.length) > 0.015;
 
-                    const now = performance.now();
+                    frames = sound ? frames + 1 : 0;
 
-                    if (volume > 0.015) {
-                        soundFrames++;
-
-                        if (soundFrames >= 3) {
-                            session.speechStarted = true;
-                        }
-
-                        if (session.speechStarted) {
-                            session.lastSpeechAt = now;
-                        }
-                    } else {
-                        soundFrames = 0;
+                    if (sound && s.heard) {
+                        lastSound = Date.now();
                     }
 
-                    if (
-                        !manual &&
-                        session.speechStarted &&
-                        session.lastSpeechAt > 0 &&
-                        now - session.lastSpeechAt >= 2000
-                    ) {
-                        stop();
-                    }
-                }, 100));
-            } catch (error) {
-                // 音量監視が使えなくても、
-                // 手動停止と20秒上限は維持する。
-            }
+                    if (frames >= 3) heard();
+                }, 100)
+            );
+        } catch (e) {}
 
-            session.timers.push(setTimeout(() => {
-                if (!session.speechStarted) {
-                    stop(
+        // Autostop：発話後の無音2秒
+        s.timers.push(
+            setInterval(() => {
+                if (
+                    !s.manual &&
+                    s.heard &&
+                    Date.now() - lastSound >= 2000
+                ) {
+                    s.stop();
+                }
+            }, 100)
+        );
+
+        // 発話開始前の無音15秒：新しい録音を保存しない
+        s.timers.push(
+            setTimeout(() => {
+                if (!s.heard) {
+                    s.stop(
                         "No speech detected within 15 seconds.",
                         true
                     );
                 }
-            }, 15000));
-
-            session.timers.push(setTimeout(() => {
-                stop("Auto-stopped after 20 seconds.");
-            }, 20000));
-        } catch (error) {
-            session.recognitionDone = true;
-            stop("Could not start recording.", true);
-        }
-    });
-
-    stopBtn.addEventListener("click", () => {
-        const session = activeRecognitionSession;
-
-        if (
-            session?.rowKey === rowKey &&
-            session.manual
-        ) {
-            stopAllPlayback();
-            session.stop();
-        }
-    });
-}
-
-function processResult(
-    rawTranscript,
-    expectedText,
-    getExpectedKanjiFn,
-    resultSpan,
-    correctionBox,
-    corrListenBtn,
-    corrTextSpan,
-    getUrlFn,
-    playRate,
-    rowKey
-) {
-    const transcript = String(rawTranscript ?? "").trim();
-    const modelText = getExpectedKanjiFn();
-    const normalized = practice7Normalize(transcript);
-
-    const isCorrect = normalized.length > 0 && (
-        normalized === practice7Normalize(expectedText) ||
-        normalized === practice7Normalize(modelText)
-    );
-
-    const saved = {
-        rawTranscript: transcript,
-        modelText,
-        expectedText,
-        isCorrect
-    };
-    practice7State.savedResults[rowKey] = saved;
-
-    practice7ShowResult(
-        {
-            resultSpan, correctionBox,
-            corrListenBtn, corrTextSpan
-        },
-        saved,
-        rowKey,
-        playRate
-    );
-
-    if (isAutoPlay) {
-        speakText(modelText, playRate, () => {
-            // 新しい録音中に古い自動再生を開始しない。
-            if (activeRecognitionSession ||
-                practice7State.startingRow) return;
-
-            stopAllPlayback();
-            const url = getUrlFn();
-            if (!url) return;
-
-            const audio = new Audio(url);
-            currentPlayingAudio = audio;
-            audio.playbackRate = 1.0;
-            audio.onended = () => stopAllPlayback();
-            audio.play().catch(() => stopAllPlayback());
-        });
-    }
-}
-
-function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
-        queueMicrotask(() => {
-        practice7State.refreshMeaningNotes?.();
-    });
-    if (resultSpan.querySelector(".play-recording-btn")) return;
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className =
-        "example-button play-recording-btn custom-tip-wrap";
-    button.style.marginLeft = "8px";
-    button.innerHTML =
-        '▶️<span class="custom-tip-box">Play your recorded voice</span>';
-
-    button.onclick = () => {
-        if (activeRecognitionSession ||
-            practice7State.startingRow) return;
-
-        const url = practice7State.audioUrls[rowKey];
-        if (!url) return;
-
-        stopAllPlayback();
-        setPlayingStateMultiple([button], "Playing...");
-
-        const audio = new Audio(url);
-        currentPlayingAudio = audio;
-        audio.playbackRate = 1.0;
-        audio.onended = () => stopAllPlayback();
-        audio.play().catch(() => stopAllPlayback());
-    };
-
-    resultSpan.appendChild(button);
-}
-// ============================================================================
-// Practice 7.2: Drill 2 — Practice with English cues
-// ============================================================================
-
-(() => {
-    let englishCuesEnabled = false;
-    let previousHintMode = hintMode;
-
-    const englishCues = {
-        "寝る": ["22:00", "go to bed"],
-        "太る": ["New Year", "gain weight"],
-        "やせる": ["summer vacation", "lose weight"],
-        "結婚する": ["3 years ago", "get married"],
-        "Tシャツを着る": ["earlier", "put on a T-shirt"],
-        "覚える": ["kanji", "50", "memorize"],
-        "知る": ["ているForm", "learn of"]
-    };
-
-    // 「着る」を5番に移動。初回描画前に実行する。
-    const shirtIndex = practice7Data.findIndex(
-        item => item.yKanji === "Tシャツを着る"
-    );
-
-    if (shirtIndex !== -1 && shirtIndex !== 4) {
-        const [shirtItem] = practice7Data.splice(shirtIndex, 1);
-        practice7Data.splice(4, 0, shirtItem);
-    }
-
-    const originalRenderAll = renderAll;
-    const originalSyncRecordingUI = practice7SyncRecordingUI;
-
-    function installStyles() {
-        if (document.getElementById("practice7EnglishCueStyle")) return;
-
-        const style = document.createElement("style");
-        style.id = "practice7EnglishCueStyle";
-        style.textContent = `
-            #practice7Drill2Panel.p7-copy-layout {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                gap: 24px;
-            }
-
-            #practice7Drill2Panel.p7-copy-layout .p7-drill2-copy {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                flex: 1;
-                min-width: 0;
-            }
-
-            #practice7Drill2Panel.p7-copy-layout .drill-cue-title,
-            #practice7Drill2Panel.p7-copy-layout .drill-cue-description {
-                display: block;
-                margin: 0;
-            }
-
-            #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
-                flex: 0 0 auto;
-                width: auto;
-                min-width: 190px;
-            }
-
-            @media (max-width: 600px) {
-                #practice7Drill2Panel.p7-copy-layout {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
-                    width: 100%;
-                    min-width: 0;
-                }
-            }            #drill1Container .p7-english-cue {
-                overflow-wrap: anywhere;
-            }
-
-            #drill1Container .p7-example-cue {
-                margin-bottom: 12px;
-                font-weight: bold;
-            }
-
-            #drill1Container .p7-underlined-cue {
-                text-decoration: underline;
-                text-underline-offset: 4px;
-                font-weight: bold;
-            }
-
-            #drill1Container .p7-shirt-note[hidden] {
-                display: none;
-            }
-
-            #drill1Container .p7-shirt-note td {
-                padding-top: 10px;
-                padding-bottom: 4px;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            #drill1Container .p7-shirt-note small {
-                display: block;
-                color: var(--text-primary);
-                font-size: 12px;
-                font-weight: normal;
-            }
-
-            #drill1Container .p7-shirt-note strong {
-                color: #7c3aed;
-                font-weight: bold;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .p7-shirt-note strong {
-                    color: #c084fc;
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
-    }
-    function updateHintControl() {
-        const control = document.getElementById("hintModeControl");
-        if (!control) return;
-
-        control.querySelectorAll("button[data-value]").forEach(button => {
-            const selected = button.dataset.value === hintMode;
-            button.classList.toggle("is-selected", selected);
-            button.setAttribute("aria-pressed", String(selected));
-        });
-    }
-    function updateExample(container) {
-        if (!englishCuesEnabled) return;
-
-        const example = container.querySelector(".example-box");
-        if (!example) return;
-
-        example.querySelectorAll(".example-line").forEach((line, index) => {
-            // 元の日本語キューを、同じ位置で英語に変更する。
-            line.querySelectorAll(".target-word").forEach((word, wordIndex) => {
-                word.textContent = wordIndex === 0 ? "05:00" : "get up";
-                word.classList.add("p7-underlined-cue");
-            });
-
-            // ボタン・Past／Perfectラベルの位置は変更しない。
-            const sentence = line.lastElementChild;
-            if (!sentence || sentence.tagName !== "SPAN") return;
-
-            sentence.innerHTML = index === 0
-                ? '<span class="p7-underlined-cue">05:00</span> に ' +
-                  '<span class="p7-underlined-cue">get up</span> ' +
-                  '<strong class="grammar-highlight">ました</strong>。'
-                : '<span class="p7-underlined-cue">05:00</span> ' +
-                  '<strong class="grammar-highlight">から</strong> ' +
-                  '<span class="p7-underlined-cue">get up</span> ' +
-                  '<strong class="grammar-highlight">ています</strong>。';        });
-    }
-    function updatePracticeCues(container) {
-        if (!englishCuesEnabled) return;
-
-        container.querySelectorAll(
-            "#drill1List .prompt-label"
-        ).forEach((prompt, index) => {
-            const item = practice7Data[index];
-            const parts = englishCues[item?.yKanji];
-            if (!parts) return;
-
-            const cue = document.createElement("strong");
-            cue.className = "p7-english-cue";
-            cue.textContent = parts.join(" ／ ");
-            prompt.replaceChildren(cue);
-        });
-    }
-
-    function addShirtMeaningNote(container) {
-        const rowIndex = practice7Data.findIndex(
-            item => item.yKanji === "Tシャツを着る"
+            }, 15000)
         );
 
-        const cards = container.querySelectorAll("#drill1List .drill-row");
-        const table = cards[rowIndex]?.querySelector("table");
-        if (!table) return;
-
-        // 既存コードで追加済みの場合は重複させない。
-        if (table.querySelector(".meaning-change-row")) return;
-
-        const pastKey = `p7_drill_past_${rowIndex}`;
-        const perfectKey = `p7_drill_perf_${rowIndex}`;
-
-        const row = document.createElement("tr");
-        row.className = "meaning-change-row p7-shirt-note";
-        row.dataset.pastKey = pastKey;
-        row.dataset.perfectKey = perfectKey;
-        row.hidden = !(
-            practice7State.audioUrls[pastKey] ||
-            practice7State.audioUrls[perfectKey]
+        // Autostop・手動停止の共通上限
+        s.timers.push(
+            setTimeout(() => {
+                s.stop("Auto-stopped after 20 seconds.");
+            }, 20000)
         );
-
-        const spacer = document.createElement("td");
-        spacer.colSpan = 2;
-
-        const cell = document.createElement("td");
-        cell.className = "meaning-change-note";
-
-        const title = document.createElement("small");
-        title.textContent = "✨ Notice the meaning change:";
-
-        const comparison = document.createElement("strong");
-        comparison.className = "meaning-change-comparison";
-        comparison.textContent = scriptMode === "hiragana"
-            ? "きました = put on / きています = am wearing"
-            : "着ました = put on / 着ています = am wearing";
-
-        cell.append(title, comparison);
-        row.append(spacer, cell);
-        (table.tBodies[0] || table).appendChild(row);
+    } catch (e) {
+        s.recognitionDone = true;
+        s.stop("Could not start recording.", true);
     }
+}
 
-    function addDrill2Panel(container) {
-        const panel = document.createElement("section");
-        panel.id = "practice7Drill2Panel";
-        panel.className = "info-panel info-panel-task1 drill-cue-panel";
-        panel.setAttribute("aria-labelledby", "practice7Drill2Title");
+// ============================================================================
+// Settings and footer
+// ============================================================================
 
-        const title = document.createElement("span");
-        title.id = "practice7Drill2Title";
-        title.className = "info-panel-title drill-cue-title";
-        title.textContent = "Drill 2: Practice with English cues";
+function init() {
+    const segmentedSettings = [
+        [
+            "scriptModeControl",
+            () => scriptMode,
+            v => scriptMode = v
+        ],
+        [
+            "hintModeControl",
+            () => hintMode,
+            v => hintMode = v
+        ]
+    ];
 
-        const description = document.createElement("span");
-        description.className = "info-panel-desc drill-cue-description";
-        description.textContent =
-            "💡 Practise making sentences with this lesson’s vocabulary, using English cues.";
+    for (const [id, get, set] of segmentedSettings) {
+        const control = $(id);
+        if (!control) continue;
 
-        const button = document.createElement("button");
-        button.id = "practice7EnglishCueButton";
-        button.type = "button";
-        button.className = "drill-cue-button";
-        button.classList.toggle("is-english", englishCuesEnabled);
-        button.setAttribute("aria-pressed", String(englishCuesEnabled));
-        button.textContent = englishCuesEnabled
-            ? "Display Japanese cues"
-            : "Display English cues";
+        const update = () => {
+            control
+                .querySelectorAll("button[data-value]")
+                .forEach(b => {
+                    const selected =
+                        b.dataset.value === get();
 
-        button.addEventListener("click", () => {
-            if (activeRecognitionSession || practice7State.startingRow) {
+                    b.classList.toggle(
+                        "is-selected", selected
+                    );
+
+                    b.setAttribute(
+                        "aria-pressed", String(selected)
+                    );
+                });
+        };
+
+        update();
+
+        control.addEventListener("click", e => {
+            const b = e.target.closest(
+                "button[data-value]"
+            );
+
+            if (
+                !b ||
+                !control.contains(b) ||
+                b.dataset.value === get()
+            ) {
                 return;
             }
 
-            stopAllPlayback();
+            set(b.dataset.value);
+            update();
 
-            if (!englishCuesEnabled) {
-                previousHintMode = hintMode;
-                englishCuesEnabled = true;
-                hintMode = "off";
-            } else {
-                englishCuesEnabled = false;
-                hintMode = previousHintMode;
-            }
-
-            // 抽出文・判定・訂正文をクリアし、録音音声は保持する。
-            practice7State.savedResults = {};
-
-            updateHintControl();
-            renderAll();
-
-            requestAnimationFrame(() => {
-                const example = document.querySelector(
-                    "#drill1Container .example-box"
-                );
-                if (!example) return;
-
-                const computed = getComputedStyle(example);
-                const fontSize = parseFloat(computed.fontSize) || 16;
-                const lineHeight =
-                    parseFloat(computed.lineHeight) || fontSize * 1.5;
-
-                const top =
-                    window.scrollY +
-                    example.getBoundingClientRect().top -
-                    lineHeight;
-
-                window.scrollTo({
-                    top: Math.max(0, top),
-                    behavior: "smooth"
-                });
-            });
+            // savedの抽出文・録音URLは消去しない。
+            render();
         });
-
-        panel.classList.add("p7-copy-layout");
-
-        const copy = document.createElement("div");
-        copy.className = "p7-drill2-copy";
-        copy.append(title, description);
-
-        panel.append(copy, button);
-        container.appendChild(panel);
     }
-    renderAll = function () {
-        originalRenderAll();
 
-        const container = document.getElementById("drill1Container");
-        if (!container) return;
+    const toggleSettings = [
+        [
+            "toggleRecordMode",
+            "labelAutoRecord",
+            on => manual = !on
+        ],
+        [
+            "togglePlaybackMode",
+            "labelAutoPlay",
+            on => autoplay = on
+        ]
+    ];
 
-        installStyles();
-        updateExample(container);
-        updatePracticeCues(container);
+    for (const [id, label, change] of toggleSettings) {
+        const input = $(id);
+        if (!input) continue;
 
-        // 最長キューの幅に、全行のキュー列を揃える。
-        const cueCells = Array.from(
-            container.querySelectorAll("#drill1List .prompt-label")
-        );
+        input.checked = true;
 
-        let cueWidth = 0;
+        input.addEventListener("change", () => {
+            change(input.checked);
 
-        cueCells.forEach(cell => {
-            const measure = document.createElement("span");
-            measure.innerHTML = cell.innerHTML;
-
-            Object.assign(measure.style, {
-                position: "absolute",
-                visibility: "hidden",
-                display: "inline-block",
-                width: "max-content",
-                maxWidth: "none",
-                whiteSpace: "nowrap",
-                font: "inherit",
-                pointerEvents: "none"
-            });
-
-            cell.appendChild(measure);
-
-            cueWidth = Math.max(
-                cueWidth,
-                Math.ceil(measure.getBoundingClientRect().width)
+            $(label)?.classList.toggle(
+                "active-mode", input.checked
             );
 
-            measure.remove();
-        });
-
-        cueCells.forEach(cell => {
-            cell.style.setProperty("width", `${cueWidth}px`, "important");
-            cell.style.setProperty("padding-right", "4px", "important");
-            cell.style.setProperty("white-space", "nowrap", "important");
-        });
-
-        addShirtMeaningNote(container);
-        addDrill2Panel(container);
-        practice7State.refreshMeaningNotes?.();
-        practice7SyncRecordingUI();
-    };
-
-    practice7SyncRecordingUI = function () {
-        originalSyncRecordingUI();
-
-        const button = document.getElementById(
-            "practice7EnglishCueButton"
-        );
-
-        if (button) {
-            button.disabled = Boolean(
-                activeRecognitionSession ||
-                practice7State.startingRow
+            $(label)?.classList.toggle(
+                "inactive-mode", !input.checked
             );
+        });
+    }
+
+    $("guideTrigger")?.addEventListener("click", e => {
+        e.stopPropagation();
+
+        $("guideBox").style.display =
+            $("guideBox").style.display === "none"
+                ? "block"
+                : "none";
+    });
+
+    document.addEventListener("click", () => {
+        if ($("guideBox")) {
+            $("guideBox").style.display = "none";
         }
-    };
+    });
+
+    render();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+} else {
+    init();
+}
+
 })();
