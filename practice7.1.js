@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 7.1: ているform① present continuous
+// Practice 7.1: ているform① Habit continuous
 // ============================================================================
 
 const practice71Data = [];
@@ -396,7 +396,7 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
-    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to present perfect.</span>';
+    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to Habit perfect.</span>';
 
     const perfLabel = document.createElement("span");
     perfLabel.style.fontWeight = "bold";
@@ -411,7 +411,7 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
 
     const recordBtn2 = document.createElement("button");
     recordBtn2.className = "example-button custom-tip-wrap";
-    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record present perfect.</span>';
+    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record Habit perfect.</span>';
 
     const stopBtn2 = document.createElement("button");
     stopBtn2.className = "example-button custom-tip-wrap";
@@ -1513,7 +1513,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     resultSpan.appendChild(button);
 }
 // ============================================================================
-// Practice 7.1: ているform① present continuous
+// Practice 7.1: ているform① Habit continuous
 // ============================================================================
 (() => {
     let english = false;
@@ -1594,15 +1594,15 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         0,
         practice71Data.length,
         ...data.map((row, index) => {
-            const [words, clauses, present, ongoing] = row;
+            const [words, clauses, Habit, ongoing] = row;
             const last = words[words.length - 1];
-            const a = `いつも、${clauses}${present}。`;
+            const a = `いつも、${clauses}${Habit}。`;
             const b = `いま、${clauses}${ongoing}。`;
 
             return {
                 words,
                 clauses,
-                present,
+                Habit,
                 ongoing,
                 x: words[0].h,
                 xKanji: words[0].k,
@@ -1632,7 +1632,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 .map(flat);
 
             for (const [time, verb] of [
-                ['いつも', item.present],
+                ['いつも', item.Habit],
                 ['いま', item.ongoing]
             ]) {
                 const ending = flat(verb);
@@ -1810,23 +1810,23 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         example.style.marginTop = '30px';
         example.innerHTML = [false,true].map(ongoing => `
             <div class="example-line flex-row-center ${ongoing ? 'dashed-border' : ''}" style="padding:10px 0">
-                <strong class="example-label-title" style="min-width:130px">${ongoing ? 'Ongoing:' : 'Present:'}</strong>
+                <strong class="example-label-title" style="min-width:130px">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
                 ${cue(item)} <span>👉</span>
-                <button type="button" class="example-button" data-model="${ongoing ? 'ongoing' : 'present'}">🔊きく</button>
-                <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}">${ongoing ? '▶️ Ongoing' : '🔁 Present'}</span>
+                <button type="button" class="example-button" data-model="${ongoing ? 'ongoing' : 'Habit'}">🔊きく</button>
+                <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️ Ongoing' : '🔁 Habit'}</span>
                 <span>${exampleSentence(item,ongoing)}</span>
             </div>`).join('');
         example.querySelectorAll('button[data-model]').forEach(button => {
             button.onclick = () => {
                 setPlayingStateMultiple([button],'Playing...');
-                speakText(button.dataset.model === 'present' ? item.pastSentence : item.perfectSentence,0.9,stopAllPlayback);
+                speakText(button.dataset.model === 'Habit' ? item.pastSentence : item.perfectSentence,0.9,stopAllPlayback);
             };
         });
         container.appendChild(example);
         const info = document.createElement('div');
         info.className = 'info-panel info-panel-task1';
         info.style.marginTop = '25px';
-        info.innerHTML = '<span class="info-panel-title">Drill 1: Compare Present &amp; Ongoing</span><span class="info-panel-desc">💡 Compare what you usually do with what you are doing now: いつも ↔️ いま.</span>';
+        info.innerHTML = '<span class="info-panel-title">Drill 1: Compare Habit &amp; Ongoing</span><span class="info-panel-desc">💡 Compare what you usually do with what you are doing now: いつも ↔️ いま.</span>';
         container.appendChild(info);
         const list = document.createElement('div');
         list.id = 'drill1List';
@@ -1841,8 +1841,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const control = row.lastElementChild;
                 const label = Array.from(control.children).find(el => el.tagName === 'SPAN');
                 if (label) {
-                    label.textContent = ongoing ? '▶️ Ongoing' : '🔁 Present';
-                    label.className = `p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}`;
+                    label.textContent = ongoing ? '▶️ Ongoing' : '🔁 Habit';
+                    label.className = `p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}`;
                     label.removeAttribute('style');
                 }
                 const stopButton = control.querySelectorAll('button')[2];
@@ -1863,8 +1863,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
                 row.querySelectorAll('.custom-tip-box').forEach(tip => {
                     tip.textContent = tip.textContent
-                        .replace(/past tense/gi, 'present form')
-                        .replace(/present perfect/gi, 'ongoing action');
+                        .replace(/past tense/gi, 'Habit form')
+                        .replace(/Habit perfect/gi, 'ongoing action');
                 });            });
         });
         const panel = document.createElement('div');
@@ -1947,7 +1947,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     min-width: 190px;
                 }
 
-                #drill1Container .p71-tense.p71-present {
+                #drill1Container .p71-tense.p71-Habit {
                     background: #fde047;
                     color: #713f12;
                 }
@@ -1966,7 +1966,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 }
 
                 @media (prefers-color-scheme: dark) {
-                    #drill1Container .p71-tense.p71-present {
+                    #drill1Container .p71-tense.p71-Habit {
                         background: #665710;
                         color: #fef08a;
                     }
@@ -2146,8 +2146,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const first = words[0];
                 const last = words[words.length - 1];
 
-                const present =
-                    `いつも、${clauses}${item.present}。`;
+                const Habit =
+                    `いつも、${clauses}${item.Habit}。`;
 
                 const ongoing =
                     `いま、${clauses}${item.ongoing}。`;
@@ -2165,9 +2165,9 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     yKanji: last.k,
                     yRomaji: last.r,
                     yMeaning: last.e,
-                    pastSentence: present,
+                    pastSentence: Habit,
                     pastSentenceHira:
-                        practice71ToHiragana(present),
+                        practice71ToHiragana(Habit),
                     perfectSentence: ongoing,
                     perfectSentenceHira:
                         practice71ToHiragana(ongoing)
@@ -2441,7 +2441,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         )?.remove();
 
         const titles = {
-            1: 'Drill 1: Compare Present & Ongoing — Basic cues',
+            1: 'Drill 1: Compare Habit & Ongoing — Basic cues',
             2: 'Drill 2: Add a place or a person — で・と',
             3: 'Drill 3: Practice with English cues'
         };
