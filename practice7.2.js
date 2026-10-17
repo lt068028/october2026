@@ -1,5 +1,5 @@
 // ============================================================================
-// Practice 7.2: ているform② present perfect
+// Practice 7.2: ているform② Present State
 // ============================================================================
 
 const practice7Data = [
@@ -454,7 +454,7 @@ font-weight: bold;
 }
 
 // ============================================================================
-// Render Drill 1 Section (Past & Present Perfect Practice)
+// Render Drill 1 Section (Past & Present State Practice)
 // ============================================================================
 function renderDrill1Section() {
     let container = document.getElementById("drill1Container");
@@ -503,7 +503,7 @@ function renderDrill1Section() {
         <div class="example-line dashed-border flex-row-center"
              style="padding-top: 10px;">
             <strong class="example-label-title"
-                    style="min-width: 130px;">Present Perfect:</strong>
+                    style="min-width: 130px;">Present State:</strong>
             ${w1} ／ ${w2}
             <span style="font-size: 16px; margin: 0 4px;">👉</span>
             <button id="exPerfListen" type="button"
@@ -511,7 +511,7 @@ function renderDrill1Section() {
             <span style="display:inline-block; padding:4px 8px;
                          margin:0 6px; border-radius:4px;
                          background:#dcfce7; color:#15803d;
-                         font-size:13px; font-weight:bold;">⏳ Perfect</span>
+                         font-size:13px; font-weight:bold;">⏳Present State</span>
             <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
         </div>
     `;
@@ -536,7 +536,7 @@ function renderDrill1Section() {
     infoPanel.style.marginTop = "25px";
     infoPanel.innerHTML = `
         <span class="info-panel-title">
-            Drill 1: Compare Past & Present Perfect
+            Drill 1: Compare Past & Present State
         </span>
         <span class="info-panel-desc">
             💡 Compare past actions with ongoing states using ているform.
@@ -696,7 +696,7 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
 
     const listenBtn2 = document.createElement("button");
     listenBtn2.className = "example-button custom-tip-wrap";
-    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to present perfect.</span>';
+    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to Present State.</span>';
 
     const perfLabel = document.createElement("span");
     perfLabel.style.fontWeight = "bold";
@@ -707,11 +707,11 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
     perfLabel.style.backgroundColor = "#dcfce7";
     perfLabel.style.color = "#15803d";
     perfLabel.style.fontSize = "13px";
-    perfLabel.innerHTML = "⏳ Perfect";
+    perfLabel.innerHTML = "⏳Present State";
 
     const recordBtn2 = document.createElement("button");
     recordBtn2.className = "example-button custom-tip-wrap";
-    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record present perfect.</span>';
+    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record Present State.</span>';
 
     const stopBtn2 = document.createElement("button");
     stopBtn2.className = "example-button custom-tip-wrap";
