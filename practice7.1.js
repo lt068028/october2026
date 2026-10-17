@@ -1813,7 +1813,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 <strong class="example-label-title" style="min-width:130px">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
                 ${cue(item)} <span>👉</span>
                 <button type="button" class="example-button" data-model="${ongoing ? 'ongoing' : 'Habit'}">🔊きく</button>
-                <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️ Ongoing' : '🔁 Habit'}</span>
+                <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
                 <span>${exampleSentence(item,ongoing)}</span>
             </div>`).join('');
         example.querySelectorAll('button[data-model]').forEach(button => {
@@ -1841,7 +1841,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const control = row.lastElementChild;
                 const label = Array.from(control.children).find(el => el.tagName === 'SPAN');
                 if (label) {
-                    label.textContent = ongoing ? '▶️ Ongoing' : '🔁 Habit';
+                    label.textContent = ongoing ? '▶️Ongoing' : '🔁Habit';
                     label.className = `p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}`;
                     label.removeAttribute('style');
                 }
