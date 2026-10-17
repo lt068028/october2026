@@ -573,27 +573,200 @@ function render() {
     stopPlayback();
     views.clear();
 
+    words.do = W(
+        "何をする",
+        "なにをする",
+        "nani o suru",
+        "what to do"
+    );
+
+    let style = document.getElementById("practice73LayoutStyle");
+
+    if (!style) {
+        style = document.createElement("style");
+        style.id = "practice73LayoutStyle";
+        document.head.append(style);
+    }
+
+    style.textContent = `
+        #drill1Container .p73-example {
+            overflow-x: auto;
+        }
+
+        #drill1Container .p73-example-table,
+        #drill1Container .p73-table {
+            display: table !important;
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        #drill1Container .p73-example-table tr,
+        #drill1Container .p73-table tr.drill-row {
+            display: table-row !important;
+        }
+
+        #drill1Container .p73-example-table td,
+        #drill1Container .p73-table td {
+            display: table-cell !important;
+            vertical-align: middle;
+            padding: 6px 4px;
+        }
+
+        #drill1Container .p73-example-table tr + tr td {
+            border-top: 1px dashed var(--border-color, #b8a971);
+            padding-top: 10px;
+        }
+
+        #drill1Container .p73-example-kind,
+        #drill1Container .p73-example-cues,
+        #drill1Container .p73-example-arrow,
+        #drill1Container .p73-example-listen,
+        #drill1Container .p73-example-tag {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        #drill1Container .p73-example-kind {
+            font-weight: bold;
+            background: none;
+            color: var(--text-primary);
+        }
+
+        #drill1Container .p73-example-model {
+            line-height: 1.8;
+        }
+
+        #drill1Container .p73-example-tag .p73-tense {
+            margin: 0;
+        }
+
+        #drill1Container .p73-example .p73-gold {
+            color: #CA8A04;
+            font-weight: bold;
+        }
+
+        #drill1Container .p73-table .prompt-label {
+            width: 1% !important;
+            min-width: 0 !important;
+            white-space: nowrap !important;
+            padding-right: 4px !important;
+        }
+
+        #drill1Container .p73-control-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #drill1Container .p73-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        #drill1Container .p73-actions button {
+            margin: 0;
+        }
+
+        #drill1Container .p73-result-wrap {
+            margin-left: auto;
+            padding-left: 12px;
+            text-align: right;
+            min-width: 0;
+        }
+
+        #drill1Container .p73-result-wrap .result-text {
+            margin: 0;
+            overflow-wrap: anywhere;
+        }
+
+        #drill1Container .p73-controls .correction-box {
+            text-align: right;
+        }
+
+        #drill1Container .p73-state {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            #drill1Container .p73-example .p73-gold {
+                color: #FBBF24;
+            }
+
+            #drill1Container .p73-state {
+                background: #14532d;
+                color: #bbf7d0;
+            }
+        }
+    `;
+
     const root = $("drill1Container");
     root.replaceChildren();
 
+    function badge(r, sectionIndex) {
+        if (r.tag === "past") {
+            return tag(r);
+        }
+
+        const state =
+            sectionIndex === 2 &&
+            r.cues.some(key =>
+                ["live", "marry", "borrow", "forget"].includes(key)
+            );
+
+        const className = state
+            ? "p73-state"
+            : "p73-ongoing";
+
+        const label = state
+            ? "⏳Past State"
+            : "◀️Past Ongoing";
+
+        return (
+            `<span class="p73-tense ${className}">` +
+            label +
+            `</span>`
+        );
+    }
+
     sections.forEach((section, si) => {
+        // ====================================================
+        // Example：種類・キュー・👉・きく・分類・全文の6列
+        // ====================================================
+
         const example = document.createElement("div");
         example.className = "example-box p73-example";
 
-        section.example.forEach((r, ri) => {
-            const line = document.createElement("div");
+        const exampleTable = document.createElement("table");
+        exampleTable.className = "p73-example-table";
 
-            line.className =
-                "example-line flex-row-center" +
-                (ri ? " dashed-border" : "");
+        const exampleBody = document.createElement("tbody");
+        exampleTable.append(exampleBody);
 
-            line.innerHTML =
-                `<strong class="example-label-title">` +
-                r.label +
-                `</strong>` +
-                `<span class="p73-cues">` +
-                r.cues.map(word).join("／") +
-                `</span><span>👉</span>`;
+        section.example.forEach(r => {
+            const tr = document.createElement("tr");
+
+            const kind = document.createElement("td");
+            kind.className = "p73-example-kind";
+            kind.textContent = r.label.replace(
+                "Past Continuous",
+                "Past Ongoing"
+            );
+
+            const cue = document.createElement("td");
+            cue.className = "p73-example-cues";
+            cue.innerHTML = r.cues.map(word).join("／");
+
+            const arrow = document.createElement("td");
+            arrow.className = "p73-example-arrow";
+            arrow.textContent = "👉";
+
+            const listenCell = document.createElement("td");
+            listenCell.className = "p73-example-listen";
 
             const listen = button("🔊きく", () => {
                 if (!session && !preparing) {
@@ -601,29 +774,56 @@ function render() {
                 }
             });
 
-            line.append(listen);
+            listenCell.append(listen);
 
-            const model = document.createElement("span");
+            const type = document.createElement("td");
+            type.className = "p73-example-tag";
+            type.innerHTML = badge(r, si);
+
+            const model = document.createElement("td");
             model.className = "p73-example-model";
-            model.innerHTML = tag(r) + sentence(r, true);
+            model.innerHTML = sentence(r, true);
 
-            line.append(model);
-            example.append(line);
+            tr.append(
+                kind,
+                cue,
+                arrow,
+                listenCell,
+                type,
+                model
+            );
+
+            exampleBody.append(tr);
         });
 
+        example.append(exampleTable);
         root.append(example);
+
+        // ====================================================
+        // Drill見出し・Instruction
+        // ====================================================
 
         const panel = document.createElement("div");
         panel.className = "info-panel info-panel-task1";
 
+        const title = section.title.replace(
+            "Past Continuous",
+            "Past Ongoing"
+        );
+
         panel.innerHTML =
             `<span class="info-panel-title">` +
-            section.title +
-            `</span><span class="info-panel-desc">` +
-            section.instruction +
+            escape(title) +
+            `</span>` +
+            `<span class="info-panel-desc">` +
+            escape(section.instruction) +
             `</span>`;
 
         root.append(panel);
+
+        // ====================================================
+        // Drill：番号・キュー・操作と抽出文
+        // ====================================================
 
         const table = document.createElement("table");
         table.className = "p73-table";
@@ -634,6 +834,7 @@ function render() {
         section.items.forEach((rows, index) => {
             rows.forEach((r, ri) => {
                 const key = `${si}-${index}-${ri}`;
+
                 const tr = document.createElement("tr");
                 tr.className = "drill-row";
 
@@ -645,11 +846,6 @@ function render() {
                     tr.append(num);
                 }
 
-                const label = document.createElement("td");
-                label.className = "p73-label";
-                label.textContent = r.label;
-                tr.append(label);
-
                 const cue = document.createElement("td");
                 cue.className = "prompt-label";
                 cue.innerHTML = r.cues.map(word).join("／");
@@ -658,45 +854,79 @@ function render() {
                 const controls = document.createElement("td");
                 controls.className = "p73-controls";
 
+                const line = document.createElement("div");
+                line.className = "p73-control-line";
+
+                const actions = document.createElement("span");
+                actions.className = "p73-actions";
+
                 const listen = button("🔊きく", () => {
                     if (!session && !preparing) {
                         speak(r.text, listen);
                     }
                 });
 
-                controls.append(listen);
+                const type = document.createElement("span");
+                type.innerHTML = badge(r, si);
 
-                if (r.tag) {
-                    const t = document.createElement("span");
-                    t.innerHTML = tag(r);
-                    controls.append(t);
-                }
+                const rec = button(
+                    "🎙️とる",
+                    () => record(key, r)
+                );
 
-                const rec = button("🎤", () => record(key, r));
                 rec.setAttribute("aria-label", "Record");
 
                 const stop = button("⏹️", () => {
-                    if (session?.key === key) session.stop();
+                    if (session?.key === key) {
+                        session.stop();
+                    }
                 });
 
                 stop.setAttribute(
-                    "aria-label", "Stop recording"
+                    "aria-label",
+                    "Stop recording"
                 );
+
                 stop.disabled = true;
+
+                actions.append(
+                    listen,
+                    type,
+                    rec,
+                    stop
+                );
+
+                const resultWrap = document.createElement("span");
+                resultWrap.className = "p73-result-wrap";
 
                 const result = document.createElement("span");
                 result.className = "result-text";
+
+                resultWrap.append(result);
+
+                line.append(
+                    actions,
+                    resultWrap
+                );
 
                 const correction = document.createElement("div");
                 correction.className = "correction-box";
                 correction.hidden = true;
 
-                controls.append(rec, stop, result, correction);
+                controls.append(
+                    line,
+                    correction
+                );
+
                 tr.append(controls);
                 body.append(tr);
 
                 views.set(key, {
-                    r, rec, stop, result, correction
+                    r,
+                    rec,
+                    stop,
+                    result,
+                    correction
                 });
 
                 showResult(key);
