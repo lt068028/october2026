@@ -180,7 +180,13 @@ a:visited {
 /* ==========================================
    Example Box
    ========================================== */
+/* ページごとにExample番号を1から付ける */
+body {
+    counter-reset: practice-example;
+}
+
 .example-box {
+    counter-increment: practice-example;
     background-color: #fff9c4;
     border: 1px solid #fbc02d;
     padding: 24px 16px 16px 16px;
@@ -189,10 +195,18 @@ a:visited {
     position: relative;
     margin-top: 8px;
 }
+
 .example-box::before {
-    content: "Example"; position: absolute; top: -10px; left: 12px;
-    background-color: #fbc02d; color: #ffffff; font-size: 11px; font-weight: bold;
-    padding: 2px 8px; border-radius: 4px;
+    content: "Example" counter(practice-example);
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    background-color: #fbc02d;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 .flex-row-center {
     display: flex;
