@@ -1808,14 +1808,70 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         example.className = 'example-box';
         example.id = 'practice71Example';
         example.style.marginTop = '30px';
-        example.innerHTML = [false,true].map(ongoing => `
-            <div class="example-line flex-row-center ${ongoing ? 'dashed-border' : ''}" style="padding:10px 0">
-                <strong class="example-label-title" style="min-width:130px">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
-                ${cue(item)} <span>👉</span>
-                <button type="button" class="example-button" data-model="${ongoing ? 'ongoing' : 'Habit'}">🔊きく</button>
-                <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
-                <span>${exampleSentence(item,ongoing)}</span>
-            </div>`).join('');
+        example.innerHTML = `
+            <style>
+                #practice71Example .p71-example-grid {
+                    display: grid;
+                    grid-template-columns:
+                        repeat(5, max-content) minmax(0, 1fr);
+                    align-items: center;
+                    column-gap: 4px;
+                    row-gap: 10px;
+                    padding: 10px 0;
+                }
+
+                #practice71Example .p71-example-grid > .example-line {
+                    display: contents !important;
+                }
+
+                #practice71Example .p71-example-grid > .example-line + .example-line::before {
+                    content: "";
+                    grid-column: 1 / -1;
+                    border-top: 1px dashed #fbc02d;
+                }
+
+                #practice71Example .p71-example-grid .example-label-title {
+                    width: auto !important;
+                    min-width: 0 !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    white-space: nowrap;
+                }
+
+                #practice71Example .p71-example-grid > .example-line > .example-button {
+                    justify-self: start;
+                    margin: 0;
+                    white-space: nowrap;
+                }
+
+                #practice71Example .p71-example-model {
+                    min-width: 0;
+                    overflow-wrap: normal;
+                    word-break: normal;
+                }
+
+                @media (prefers-color-scheme: dark) {
+                    #practice71Example .p71-example-grid > .example-line + .example-line::before {
+                        border-top-color: #713f12;
+                    }
+                }
+            </style>
+
+            <div class="p71-example-grid">
+                ${[false, true].map(ongoing => `
+                    <div class="example-line">
+                        <strong class="example-label-title">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
+                        ${cue(item)}
+                        <span>👉</span>
+                        <button type="button"
+                                class="example-button"
+                                data-model="${ongoing ? 'ongoing' : 'Habit'}">🔊きく</button>
+                        <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
+                        <span class="p71-example-model">${exampleSentence(item, ongoing)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        `;
         example.querySelectorAll('button[data-model]').forEach(button => {
             button.onclick = () => {
                 setPlayingStateMultiple([button],'Playing...');
