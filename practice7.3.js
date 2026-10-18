@@ -1673,7 +1673,7 @@ async function record(key, r) {
 // ============================================================================
 // Example番号・区切りの余白・Drill4
 // ============================================================================
-
+// Example番号・区切りの余白・Drill4
 let practice73EnglishCues = false;
 const practice73RenderBeforeDrill4 = render;
 
@@ -1685,11 +1685,16 @@ function practice73EnglishCue(key) {
 }
 
 render = function () {
+    sections[2].title =
+        "Drill 3: Until when did that state continue?";
+
     practice73RenderBeforeDrill4();
 
     const root = $("drill1Container");
 
-    let style = document.getElementById("practice73Drill4Style");
+    let style = document.getElementById(
+        "practice73Drill4Style"
+    );
 
     if (!style) {
         style = document.createElement("style");
@@ -1698,11 +1703,8 @@ render = function () {
     }
 
     style.textContent = `
-        #drill1Container .p73-example-heading {
-            margin: 0 0 10px;
-            font-size: inherit;
-            font-weight: bold;
-            color: var(--text-primary);
+        #drill1Container .p73-example::before {
+            content: attr(data-example-label) !important;
         }
 
         #drill1Container .p73-example.p73-new-section {
@@ -1710,57 +1712,67 @@ render = function () {
         }
 
         #drill1Container #practice73Drill4Panel {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
+            display: flex;
+            flex-direction: row;
             align-items: center;
-            gap: 10px 24px;
+            justify-content: space-between;
+            gap: 24px;
             margin-top: 32px;
         }
 
-        #drill1Container #practice73Drill4Panel .drill-cue-title {
-            grid-column: 1;
-            grid-row: 1;
-            margin: 0;
+        #drill1Container #practice73Drill4Panel .p73-drill4-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
             min-width: 0;
         }
 
+        #drill1Container #practice73Drill4Panel .drill-cue-title,
         #drill1Container #practice73Drill4Panel .drill-cue-description {
-            grid-column: 1 / -1;
-            grid-row: 2;
+            display: block;
             margin: 0;
         }
 
-        #drill1Container #practice73Drill4Panel .drill-cue-button {
-            grid-column: 2;
-            grid-row: 1;
-            justify-self: end;
+        #drill1Container #practice73Drill4Panel > .drill-cue-button {
+            flex: 0 0 auto;
+            width: auto;
+            min-width: 190px;
+            align-self: center;
         }
 
         @media (max-width: 600px) {
             #drill1Container #practice73Drill4Panel {
-                grid-template-columns:
-                    minmax(0, 1fr) minmax(0, 150px);
-                gap: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #drill1Container #practice73Drill4Panel > .drill-cue-button {
+                width: 100%;
+                min-width: 0;
             }
         }
     `;
 
-    // Example番号と、新しい内容に入る前の余白。
+    // 既存のExample表示を番号付きにする。
     root.querySelectorAll(".p73-example").forEach((example, index) => {
-        const heading = document.createElement("h2");
-        heading.className = "p73-example-heading";
-        heading.textContent = `Example ${index + 1}`;
+        example.querySelectorAll(
+            ".p73-example-heading"
+        ).forEach(element => element.remove());
 
-        example.prepend(heading);
+        example.dataset.exampleLabel = `Example ${index + 1}`;
+
         example.classList.toggle(
             "p73-new-section",
             index > 0
         );
     });
 
-    // 英語表示はDrill1〜3の全問題キューに適用。
+    // Drill1〜3の全問題・返答キューを英語にする。
     if (practice73EnglishCues) {
-        const tables = root.querySelectorAll("table.p73-table");
+        const tables = root.querySelectorAll(
+            "table.p73-table"
+        );
 
         sections.forEach((section, index) => {
             const cells = tables[index].querySelectorAll(
@@ -1786,13 +1798,14 @@ render = function () {
 
     const title = document.createElement("span");
     title.id = "practice73Drill4Title";
-    title.className = "info-panel-title drill-cue-title";
-    title.textContent = "Drill 4: Practice with English cues";
+    title.className =
+        "info-panel-title drill-cue-title";
+    title.textContent =
+        "Drill 4: Practice with English cues";
 
     const description = document.createElement("span");
     description.className =
         "info-panel-desc drill-cue-description";
-
     description.textContent =
         "💡 Practise all questions and responses in Drills 1–3 using English cues.";
 
@@ -1824,12 +1837,17 @@ render = function () {
         render();
     });
 
-    panel.append(title, toggle, description);
+    // 左：タイトル＋Instruction
+    // 右：左側全体の高さの中央にボタン
+    const copy = document.createElement("div");
+    copy.className = "p73-drill4-copy";
+    copy.append(title, description);
+
+    panel.append(copy, toggle);
     root.append(panel);
 
     sync();
 };
-
 function init() {
     const segmentedSettings = [
         [
