@@ -2456,63 +2456,64 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     ) return;
 
                     stopAllPlayback();
-                    speechStyle = value;
+                const Habit = speechStyle === 'formal'
+                    ? item.Habit
+                    : speechStyle === 'informal'
+                        ? plainHabit[index] + 'よ'
+                        : casualHabit[index];
 
-                    // 録音・抽出文はそのまま保持する。
-                    renderAll();
+                const ongoing = speechStyle === 'formal'
+                    ? item.ongoing
+                    : speechStyle === 'informal'
+                        ? plainOngoing[index] + 'よ'
+                        : casualOngoing[index];
+
+                const a = `いつも、${clauses}${Habit}。`;
+                const b = `いま、${clauses}${ongoing}。`;
+
+                const first = words[0];
+                const last = words[words.length - 1];
+
+                return {
+                    ...item,
+                    words,
+                    clauses,
+                    Habit,
+                    ongoing,
+                    itemIndex: index,
+                    x: first.h,
+                    xKanji: first.k,
+                    xRomaji: first.r,
+                    xMeaning: first.e,
+                    y: last.h,
+                    yKanji: last.k,
+                    yRomaji: last.r,
+                    yMeaning: last.e,
+                    pastSentence: a,
+                    pastSentenceHira:
+                        practice71ToHiragana(a),
+                    perfectSentence: b,
+                    perfectSentenceHira:
+                        practice71ToHiragana(b)
                 };
-
-                control.append(button);
-            });
-
-            item.append(control);
-        }
-
-        // Hiragana／漢字 → 文体 → Vocab
-        scriptItem.after(item);
-
-        // 語彙ボタン：Hover／Display／OFFに統一する。
-        const hintControl = document.getElementById(
-            "hintModeControl"
+            })
         );
+    }
 
-        const hintLabels = {
-            hover: "💬Hover",
-            paren: "🔡Display",
-            off: "OFF"
-        };
+    function styleExampleSentence(ongoing) {
+        const item = practice71Data[0];
 
-        hintControl?.querySelectorAll(
-            "button[data-value]"
-        ).forEach(button => {
-            const label = hintLabels[button.dataset.value];
-            if (!label) return;
-
-            const tip = button.querySelector(
-                ".custom-tip-box"
-            );
-
-            button.replaceChildren(
-                document.createTextNode(label)
-            );
-
-            if (tip) button.append(tip);
-        });
-
-        syncStyleButtons();    }
-
-    function installResultLayout() {
-        if (document.getElementById(
-            "practice7ResultLayoutStyle"
-        )) return;
-
-        const style = document.createElement("style");
-        style.id = "practice7ResultLayoutStyle";
-        style.textContent = `
-            #drill1List .p7-controls {
-                white-space: normal !important;
-                vertical-align: middle;
-            }
+        const suffix = ongoing
+            ? {
+                formal: 'ています',
+                informal: 'ているよ',
+                casual: 'てるよ'
+            }[speechStyle]
+            : {
+                formal: 'ます',
+                informal: 'るよ',
+                casual: 'るよ'
+            }[speechStyle];
 
             #drill1List .p7-result-wrap {
                 display: block !important;
@@ -2553,14 +2554,22 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     }
 
     function updateExampleStyle() {
-        const example = document.querySelector(
-            "#drill1Container .example-box"
+    // 「英語を／英語で」を比較時だけ同じ形にする。
+    // Informalの文末「よ」は、あってもなくても許容する。
+    practice71Normalize = text => {
+        let value = String(text ?? '').replace(
+            /(英語|えいご)([\s、，,]*)で/g,
+            '$1$2を'
         );
 
-        if (!example) return;
+        if (speechStyle === 'informal') {
+            value = value
+                .replace(/[\s、。．,.!?！？]+$/g, '')
+                .replace(/よ?$/, 'よ');
+        }
 
-        example.querySelectorAll(
-            ".example-line"
+        return baseNormalize(value);
+    };
         ).forEach(line => {
             const sentence = line.lastElementChild;
             if (!sentence || sentence.tagName !== "SPAN") return;
