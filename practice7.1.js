@@ -837,8 +837,8 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
         view.corrTextSpan.textContent =
             "🔥 Keep going! Try once more!";
 
-        view.corrListenBtn.style.display = "inline-block";
-
+        view.corrListenBtn.style.display = "none";
+        view.correctionBox.style.textAlign = "right";
         view.corrListenBtn.onclick = () => {
             if (
                 activeRecognitionSession ||
