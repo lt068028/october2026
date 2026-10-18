@@ -2192,9 +2192,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 hintMode = previousHintMode;
             }
 
-            // 抽出文・判定・訂正文をクリアし、録音音声は保持する。
-            practice7State.savedResults = {};
-
+            // キュー変更でも抽出文・判定・録音音声を保持する。
+            
             updateHintControl();
             renderAll();
 
@@ -2297,5 +2296,354 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 practice7State.startingRow
             );
         }
+    };
+})();
+
+// ============================================================================
+// 共通設定：Formal / Informal / Casual
+// ============================================================================
+(() => {
+    let speechStyle = "formal";
+
+    const sentenceFields = [
+        "pastSentence",
+        "pastSentenceHira",
+        "perfectSentence",
+        "perfectSentenceHira"
+    ];
+
+    // 元のFormal文は変更せずに保存する。
+    const formalSentences = practice7Data.map(item =>
+        Object.fromEntries(
+            sentenceFields.map(field => [field, item[field]])
+        )
+    );
+
+    function convertSentence(text) {
+        if (speechStyle === "formal") return text;
+
+        let value = String(text);
+
+        const pastEndings = [
+            ["寝ました", "寝た"],
+            ["ねました", "ねた"],
+            ["着ました", "着た"],
+            ["きました", "きた"],
+            ["太りました", "太った"],
+            ["ふとりました", "ふとった"],
+            ["やせました", "やせた"],
+            ["結婚しました", "結婚した"],
+            ["けっこんしました", "けっこんした"],
+            ["覚えました", "覚えた"],
+            ["おぼえました", "おぼえた"],
+            ["知りました", "知った"],
+            ["しりました", "しった"],
+            ["起きました", "起きた"],
+            ["おきました", "おきた"]
+        ];
+
+        pastEndings.forEach(([formal, plain]) => {
+            value = value.replace(formal, plain);
+        });
+
+        value = value.replace(/ています/g, "ている");
+
+        if (speechStyle === "casual") {
+            value = value
+                .replace(/ている/g, "てる")
+                .replace(/を/g, "")
+                .replace(/。$/, "よ。");
+        }
+
+        return value;
+    }
+
+    function applySentences() {
+        practice7Data.forEach((item, index) => {
+            sentenceFields.forEach(field => {
+                item[field] = convertSentence(
+                    formalSentences[index][field]
+                );
+            });
+        });
+    }
+
+    function isRecording() {
+        return Boolean(
+            activeRecognitionSession ||
+            practice7State.startingRow
+        );
+    }
+
+    function syncStyleButtons() {
+        document.querySelectorAll(
+            "#speechStyleControl button[data-value]"
+        ).forEach(button => {
+            const selected =
+                button.dataset.value === speechStyle;
+
+            button.classList.toggle("is-selected", selected);
+            button.setAttribute(
+                "aria-pressed",
+                String(selected)
+            );
+            button.disabled = isRecording();
+        });
+    }
+
+    function installSettings() {
+        const scriptItem = document.getElementById(
+            "scriptModeControl"
+        )?.closest(".control-item");
+
+        if (!scriptItem) return;
+
+        let item = document.getElementById(
+            "speechStyleControl"
+        )?.closest(".control-item");
+
+        if (!item) {
+            item = document.createElement("div");
+            item.className =
+                "control-item speech-style-item";
+
+            const control = document.createElement("div");
+            control.id = "speechStyleControl";
+            control.className = "segmented-control";
+            control.setAttribute("role", "group");
+            control.setAttribute(
+                "aria-label",
+                "Speech style"
+            );
+
+            const options = [
+                [
+                    "formal",
+                    "🏢Formal",
+                    "Polite speech for work or unfamiliar people."
+                ],
+                [
+                    "informal",
+                    "🏠Informal",
+                    "Plain forms used in writing"
+                ],
+                [
+                    "casual",
+                    "🫂Casual",
+                    "Relaxed speech with family and friends."
+                ]
+            ];
+
+            options.forEach(([value, label, description]) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className =
+                    "segmented-option custom-tip-wrap";
+                button.dataset.value = value;
+                button.append(
+                    document.createTextNode(label)
+                );
+
+                const tip = document.createElement("span");
+                tip.className = "custom-tip-box";
+                tip.textContent = description;
+                button.append(tip);
+
+                button.onclick = () => {
+                    if (
+                        isRecording() ||
+                        speechStyle === value
+                    ) return;
+
+                    stopAllPlayback();
+                    speechStyle = value;
+
+                    // 録音・抽出文はそのまま保持する。
+                    renderAll();
+                };
+
+                control.append(button);
+            });
+
+            item.append(control);
+        }
+
+        // Hiragana／漢字 → 文体 → Vocab
+        scriptItem.after(item);
+        syncStyleButtons();
+    }
+
+    function installResultLayout() {
+        if (document.getElementById(
+            "practice7ResultLayoutStyle"
+        )) return;
+
+        const style = document.createElement("style");
+        style.id = "practice7ResultLayoutStyle";
+        style.textContent = `
+            #drill1List .p7-controls {
+                white-space: normal !important;
+                vertical-align: middle;
+            }
+
+            #drill1List .p7-result-wrap {
+                display: block !important;
+                float: none !important;
+                clear: both;
+                width: 100%;
+                min-width: 0;
+                box-sizing: border-box;
+                margin-top: 6px;
+                text-align: right;
+                white-space: normal;
+            }
+
+            #drill1List .p7-result-wrap > .result-text {
+                display: inline-block;
+                max-width: 100%;
+                margin-left: 0 !important;
+                white-space: normal;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+        `;
+
+        document.head.append(style);
+    }
+
+    function updateResultLayout() {
+        document.querySelectorAll(
+            "#drill1List .result-text"
+        ).forEach(result => {
+            result.parentElement?.classList.add(
+                "p7-result-wrap"
+            );
+            result.closest("td")?.classList.add(
+                "p7-controls"
+            );
+        });
+    }
+
+    function updateExampleStyle() {
+        const example = document.querySelector(
+            "#drill1Container .example-box"
+        );
+
+        if (!example) return;
+
+        example.querySelectorAll(
+            ".example-line"
+        ).forEach(line => {
+            const sentence = line.lastElementChild;
+            if (!sentence || sentence.tagName !== "SPAN") return;
+
+            // 既存の語彙Hoverやゴールド表示は維持する。
+            sentence.querySelectorAll("strong").forEach(strong => {
+                const value = strong.textContent;
+
+                if (value.startsWith("ました")) {
+                    const ending = speechStyle === "formal"
+                        ? "ました"
+                        : speechStyle === "casual"
+                            ? "たよ"
+                            : "た";
+
+                    strong.textContent =
+                        ending + (value.endsWith("。") ? "。" : "");
+                }
+
+                if (value.startsWith("ています")) {
+                    const ending = speechStyle === "formal"
+                        ? "ています"
+                        : speechStyle === "casual"
+                            ? "てるよ"
+                            : "ている";
+
+                    strong.textContent =
+                        ending + (value.endsWith("。") ? "。" : "");
+                }
+            });
+        });
+
+        const examples = [
+            ["exPastListen", "朝5時に起きました。"],
+            ["exPerfListen", "朝5時から起きています。"]
+        ];
+
+        examples.forEach(([id, formal]) => {
+            const button = document.getElementById(id);
+            if (!button) return;
+
+            const model = convertSentence(formal);
+
+            button.onclick = () => {
+                setPlayingStateMultiple(
+                    [button],
+                    "Playing..."
+                );
+                speakText(
+                    model,
+                    0.9,
+                    () => stopAllPlayback()
+                );
+            };
+        });
+    }
+
+    // 再描画では録音時の判定を維持する。
+    // 新しい録音の判定はprocessResultで確定する。
+    const originalShowResult = practice7ShowResult;
+
+    practice7ShowResult = function (
+        view, saved, rowKey, playRate
+    ) {
+        if (typeof saved.isCorrect !== "boolean") {
+            return originalShowResult(
+                view, saved, rowKey, playRate
+            );
+        }
+
+        const recordedJudgment = saved.isCorrect;
+        const descriptor = Object.getOwnPropertyDescriptor(
+            saved,
+            "isCorrect"
+        );
+
+        Object.defineProperty(saved, "isCorrect", {
+            configurable: true,
+            enumerable: true,
+            get: () => recordedJudgment,
+            set: () => {}
+        });
+
+        try {
+            return originalShowResult(
+                view, saved, rowKey, playRate
+            );
+        } finally {
+            Object.defineProperty(
+                saved,
+                "isCorrect",
+                descriptor
+            );
+        }
+    };
+
+    const previousRender = renderAll;
+
+    renderAll = function () {
+        applySentences();
+        previousRender();
+        installSettings();
+        installResultLayout();
+        updateResultLayout();
+        updateExampleStyle();
+    };
+
+    const previousSync = practice7SyncRecordingUI;
+
+    practice7SyncRecordingUI = function () {
+        previousSync();
+        syncStyleButtons();
     };
 })();
