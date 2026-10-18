@@ -1074,45 +1074,22 @@ let activePitchRecordingState = null;
 function initPitchLab() {
     const lab = document.getElementById("pitchLab");
     const grid = lab?.querySelector(".pitch-lab-grid");
-
     if (!grid || lab.querySelector("#pitchPairSelect")) return;
 
-    const symbols = [
-        ["🥢", "🌉"],
-        ["🦵", "🍑"],
-        ["⬇️", "👋"],
-        ["✂️", "👕"],
-        ["", "🧵"],
-        ["🌸", ""],
-        ["", ""],
-        ["🦪", ""],
-        ["🐦", "🎣"],
-        ["🌧️", "🍬"]
-    ];
+    const pitchColor = "#e879f9";
 
-    const pairs = drill1Data.map((item, index) => {
-        const words = item.text.split("｜").map(
-            text => text.trim()
-        );
-
-        return {
-            id: String(index),
-            label: `${index + 1}. ${words.map((text, side) =>
-                (symbols[index]?.[side] || "") + text
-            ).join(" / ")}`,
-            words: words.map((text, side) => ({
-                text: (symbols[index]?.[side] || "") + text
-            }))
-        };
-    });
+    const pairs = drill1Data.map((item, index) => ({
+        id: String(index),
+        label: `${index + 1}. ${item.text}`,
+        words: item.text.split("｜").map(text => text.trim()),
+        free: false
+    }));
 
     pairs.push({
         id: "free",
         label: "Free practice",
-        words: [
-            { text: "First recording" },
-            { text: "Second recording" }
-        ]
+        words: ["First recording", "Second recording"],
+        free: true
     });
 
     const picker = document.createElement("div");
@@ -1140,15 +1117,38 @@ function initPitchLab() {
     const cache = new Map();
     let selectedId = pairs[0].id;
 
-    function makeCard(word, pairId, side) {
+    function redraw(state) {
+        if (state.f0Frames?.length) {
+            drawPitchCurve(state, state.f0Frames);
+        } else {
+            drawPitchPlaceholder(
+                state,
+                state.isRecording
+                    ? "Recording..."
+                    : "Record your voice to begin."
+            );
+        }
+    }
+
+    function makeCard(word, pair, side) {
         const card = document.createElement("section");
         card.className = "pitch-card";
-        card.dataset.pitchSide = `${pairId}-${side}`;
+        card.dataset.pitchSide = `${pair.id}-${side}`;
 
         const heading = document.createElement("h3");
         heading.className = "pitch-word-label";
         heading.style.margin = "0";
-        heading.textContent = word.text;
+        heading.style.lineHeight = "2";
+
+        if (pair.free) {
+            heading.textContent = word;
+        } else {
+            // Drillと同じ処理で上線・下線・矢印を表示する。
+            heading.innerHTML = renderPitchAccentHTML(
+                word,
+                pitchColor
+            );
+        }
 
         const controls = document.createElement("div");
         controls.className = "pitch-controls";
@@ -1185,12 +1185,10 @@ function initPitchLab() {
         canvas.className = "pitch-canvas";
         canvas.setAttribute(
             "aria-label",
-            `Recorded pitch: ${word.text}`
+            `Recorded pitch: ${word}`
         );
 
-        controls.append(
-            recordBtn, stopBtn, playBtn, statusEl
-        );
+        controls.append(recordBtn, stopBtn, playBtn, statusEl);
         card.append(heading, controls, canvas);
 
         const state = {
@@ -1225,33 +1223,14 @@ function initPitchLab() {
 
         if (typeof ResizeObserver !== "undefined") {
             state.observer = new ResizeObserver(() => {
-                if (
-                    !canvas.isConnected ||
-                    !canvas.clientWidth
-                ) {
-                    return;
+                if (canvas.isConnected && canvas.clientWidth) {
+                    redraw(state);
                 }
-
-                redraw(state);
             });
-
             state.observer.observe(canvas);
         }
 
         return state;
-    }
-
-    function redraw(state) {
-        if (state.f0Frames?.length) {
-            drawPitchCurve(state, state.f0Frames);
-        } else {
-            drawPitchPlaceholder(
-                state,
-                state.isRecording
-                    ? "Recording..."
-                    : "Record your voice to begin."
-            );
-        }
     }
 
     function showPair(id) {
@@ -1262,16 +1241,13 @@ function initPitchLab() {
             cache.set(
                 id,
                 pair.words.map((word, side) =>
-                    makeCard(word, id, side)
+                    makeCard(word, pair, side)
                 )
             );
         }
 
         const states = cache.get(id);
-
-        grid.replaceChildren(
-            ...states.map(state => state.card)
-        );
+        grid.replaceChildren(...states.map(state => state.card));
 
         selectedId = id;
         select.value = id;
