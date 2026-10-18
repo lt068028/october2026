@@ -1670,9 +1670,6 @@ async function record(key, r) {
 // ============================================================================
 // Settings and footer
 // ============================================================================
-// ============================================================================
-// Example番号・区切りの余白・Drill4
-// ============================================================================
 // Example番号・区切りの余白・Drill4
 let practice73EnglishCues = false;
 const practice73RenderBeforeDrill4 = render;
@@ -1685,6 +1682,7 @@ function practice73EnglishCue(key) {
 }
 
 render = function () {
+    // 今回変更するのはDrill3の見出しのみ。
     sections[2].title =
         "Drill 3: Until when did that state continue?";
 
@@ -1703,8 +1701,11 @@ render = function () {
     }
 
     style.textContent = `
-        #drill1Container .p73-example::before {
-            content: attr(data-example-label) !important;
+        #drill1Container .p73-example-heading {
+            margin: 0 0 10px;
+            font-size: inherit;
+            font-weight: bold;
+            color: var(--text-primary);
         }
 
         #drill1Container .p73-example.p73-new-section {
@@ -1712,55 +1713,47 @@ render = function () {
         }
 
         #drill1Container #practice73Drill4Panel {
-            display: flex;
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
             align-items: center;
-            justify-content: space-between;
-            gap: 24px;
+            gap: 10px 24px;
             margin-top: 32px;
         }
 
-        #drill1Container #practice73Drill4Panel .p73-drill4-copy {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            flex: 1;
+        #drill1Container #practice73Drill4Panel .drill-cue-title {
+            grid-column: 1;
+            grid-row: 1;
+            margin: 0;
             min-width: 0;
         }
 
-        #drill1Container #practice73Drill4Panel .drill-cue-title,
         #drill1Container #practice73Drill4Panel .drill-cue-description {
-            display: block;
+            grid-column: 1 / -1;
+            grid-row: 2;
             margin: 0;
         }
 
-        #drill1Container #practice73Drill4Panel > .drill-cue-button {
-            flex: 0 0 auto;
-            width: auto;
-            min-width: 190px;
-            align-self: center;
+        #drill1Container #practice73Drill4Panel .drill-cue-button {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: end;
         }
 
         @media (max-width: 600px) {
             #drill1Container #practice73Drill4Panel {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            #drill1Container #practice73Drill4Panel > .drill-cue-button {
-                width: 100%;
-                min-width: 0;
+                grid-template-columns:
+                    minmax(0, 1fr) minmax(0, 150px);
+                gap: 10px 12px;
             }
         }
     `;
 
-    // 既存のExample表示を番号付きにする。
     root.querySelectorAll(".p73-example").forEach((example, index) => {
-        example.querySelectorAll(
-            ".p73-example-heading"
-        ).forEach(element => element.remove());
+        const heading = document.createElement("h2");
+        heading.className = "p73-example-heading";
+        heading.textContent = `Example ${index + 1}`;
 
-        example.dataset.exampleLabel = `Example ${index + 1}`;
+        example.prepend(heading);
 
         example.classList.toggle(
             "p73-new-section",
@@ -1768,7 +1761,6 @@ render = function () {
         );
     });
 
-    // Drill1〜3の全問題・返答キューを英語にする。
     if (practice73EnglishCues) {
         const tables = root.querySelectorAll(
             "table.p73-table"
@@ -1798,14 +1790,14 @@ render = function () {
 
     const title = document.createElement("span");
     title.id = "practice73Drill4Title";
-    title.className =
-        "info-panel-title drill-cue-title";
+    title.className = "info-panel-title drill-cue-title";
     title.textContent =
         "Drill 4: Practice with English cues";
 
     const description = document.createElement("span");
     description.className =
         "info-panel-desc drill-cue-description";
+
     description.textContent =
         "💡 Practise all questions and responses in Drills 1–3 using English cues.";
 
@@ -1837,17 +1829,12 @@ render = function () {
         render();
     });
 
-    // 左：タイトル＋Instruction
-    // 右：左側全体の高さの中央にボタン
-    const copy = document.createElement("div");
-    copy.className = "p73-drill4-copy";
-    copy.append(title, description);
-
-    panel.append(copy, toggle);
+    panel.append(title, toggle, description);
     root.append(panel);
 
     sync();
 };
+
 function init() {
     const segmentedSettings = [
         [
@@ -1874,11 +1861,13 @@ function init() {
                         b.dataset.value === get();
 
                     b.classList.toggle(
-                        "is-selected", selected
+                        "is-selected",
+                        selected
                     );
 
                     b.setAttribute(
-                        "aria-pressed", String(selected)
+                        "aria-pressed",
+                        String(selected)
                     );
                 });
         };
@@ -1901,7 +1890,7 @@ function init() {
             set(b.dataset.value);
             update();
 
-            // savedの抽出文・録音URLは消去しない。
+            // 抽出文・録音URLは保持。
             render();
         });
     }
@@ -1929,11 +1918,13 @@ function init() {
             change(input.checked);
 
             $(label)?.classList.toggle(
-                "active-mode", input.checked
+                "active-mode",
+                input.checked
             );
 
             $(label)?.classList.toggle(
-                "inactive-mode", !input.checked
+                "inactive-mode",
+                !input.checked
             );
         });
     }
