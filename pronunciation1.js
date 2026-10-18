@@ -1072,9 +1072,9 @@ async function pronunciation1Record(key) {
 let activePitchRecordingState = null;
 
 function initPitchLab() {
-    const cards = document.querySelectorAll(".pitch-card[data-pitch-side]");
-
-    if (!cards.length) return;
+    const cards = document.querySelectorAll(
+        ".pitch-card[data-pitch-side]"
+    );
 
     cards.forEach(card => {
         const state = {
@@ -1083,26 +1083,22 @@ function initPitchLab() {
             recordBtn: card.querySelector(".pitch-record"),
             stopBtn: card.querySelector(".pitch-stop"),
             playBtn: card.querySelector(".pitch-play"),
-            analyzeBtn: card.querySelector(".pitch-analyze"),
             statusEl: card.querySelector(".pitch-status"),
-            summaryEl: card.querySelector(".pitch-summary"),
             canvas: card.querySelector(".pitch-canvas"),
-
             recorder: null,
             stream: null,
             chunks: [],
             audioBlob: null,
             audioUrl: null,
             isRecording: false,
-            f0Frames: null,
-            medianF0: null
+            isAnalyzing: false,
+            f0Frames: null
         };
 
         if (
             !state.recordBtn ||
             !state.stopBtn ||
             !state.playBtn ||
-            !state.analyzeBtn ||
             !state.canvas
         ) {
             return;
@@ -1110,7 +1106,6 @@ function initPitchLab() {
 
         state.stopBtn.disabled = true;
         state.playBtn.disabled = true;
-        state.analyzeBtn.disabled = true;
 
         state.recordBtn.addEventListener("click", () => {
             startPitchRecording(state);
@@ -1124,10 +1119,7 @@ function initPitchLab() {
             playPitchRecording(state);
         });
 
-        state.analyzeBtn.addEventListener("click", () => {
-            analyzePitchRecording(state);
-        });
-
+        setPitchStatus(state, "Not recorded yet");
         drawPitchPlaceholder(state, "Record your voice to begin.");
 
         if (typeof ResizeObserver !== "undefined") {
@@ -1135,7 +1127,12 @@ function initPitchLab() {
                 if (state.f0Frames && state.f0Frames.length) {
                     drawPitchCurve(state, state.f0Frames);
                 } else {
-                    drawPitchPlaceholder(state, "No F0 data yet.");
+                    drawPitchPlaceholder(
+                        state,
+                        state.isRecording
+                            ? "Recording..."
+                            : "Record your voice to begin."
+                    );
                 }
             });
 
@@ -1144,43 +1141,33 @@ function initPitchLab() {
     });
 }
 
-// ----------------------------------------------------------------------------
-// Start recording
-// ----------------------------------------------------------------------------
 async function startPitchRecording(state) {
-    if (state.isRecording) return;
+    if (state.isRecording || state.isAnalyzing) return;
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia ||
+        typeof MediaRecorder === "undefined"
+    ) {
         setPitchStatus(
             state,
-            "Microphone recording is not supported in this browser or context."
+            "Recording is not supported in this browser."
         );
         return;
     }
 
-    if (typeof MediaRecorder === "undefined") {
-        setPitchStatus(
-            state,
-            "MediaRecorder is not supported in this browser."
-        );
-        return;
-    }
-
-    if (activePitchRecordingState && activePitchRecordingState !== state) {
-        setPitchStatus(
-            state,
-            "Stop the other Pitch Lab recording first."
-        );
+    if (activePitchRecordingState) {
+        setPitchStatus(state, "Stop the other recording first.");
         return;
     }
 
     stopAllPlayback();
-
     state.recordBtn.disabled = true;
+    activePitchRecordingState = state;
     setPitchStatus(state, "Requesting microphone access...");
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        state.stream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 echoCancellation: false,
                 noiseSuppression: false,
@@ -1188,33 +1175,16 @@ async function startPitchRecording(state) {
             }
         });
 
-        // Another card may have been activated while permission was pending.
-        if (activePitchRecordingState && activePitchRecordingState !== state) {
-            stream.getTracks().forEach(track => track.stop());
-            state.recordBtn.disabled = false;
-
-            setPitchStatus(
-                state,
-                "Another Pitch Lab recording is active."
-            );
-            return;
-        }
-
-        state.stream = stream;
         state.chunks = [];
         state.audioBlob = null;
         state.f0Frames = null;
-        state.medianF0 = null;
 
         if (state.audioUrl) {
             URL.revokeObjectURL(state.audioUrl);
             state.audioUrl = null;
         }
 
-        state.summaryEl.textContent = "Median F0: —";
-        drawPitchPlaceholder(state, "Recording...");
-
-        state.recorder = new MediaRecorder(stream);
+        state.recorder = new MediaRecorder(state.stream);
 
         state.recorder.addEventListener("dataavailable", event => {
             if (event.data && event.data.size > 0) {
@@ -1227,39 +1197,41 @@ async function startPitchRecording(state) {
         }, { once: true });
 
         state.recorder.start();
-
         state.isRecording = true;
-        activePitchRecordingState = state;
 
-        state.recordBtn.disabled = true;
         state.stopBtn.disabled = false;
         state.playBtn.disabled = true;
-        state.analyzeBtn.disabled = true;
 
-        setPitchStatus(
-            state,
-            "Recording... Speak はし naturally, then click Stop."
-        );
+        drawPitchPlaceholder(state, "Recording...");
+        setPitchStatus(state, "Recording...");
     } catch (error) {
         console.error("Pitch Lab microphone error:", error);
 
+        if (state.stream) {
+            state.stream.getTracks().forEach(track => track.stop());
+            state.stream = null;
+        }
+
+        if (activePitchRecordingState === state) {
+            activePitchRecordingState = null;
+        }
+
         state.recordBtn.disabled = false;
+        state.playBtn.disabled = !state.audioBlob;
 
         setPitchStatus(
             state,
-            "Microphone access failed. Check browser permissions and try again."
+            "Microphone access failed. Check browser permissions."
         );
     }
 }
 
-// ----------------------------------------------------------------------------
-// Stop recording
-// ----------------------------------------------------------------------------
 function stopPitchRecording(state) {
     if (!state.isRecording) return;
 
     state.isRecording = false;
     state.stopBtn.disabled = true;
+    setPitchStatus(state, "Finishing recording...");
 
     if (state.recorder && state.recorder.state !== "inactive") {
         state.recorder.stop();
@@ -1269,27 +1241,26 @@ function stopPitchRecording(state) {
         state.stream.getTracks().forEach(track => track.stop());
         state.stream = null;
     }
+}
 
+function finishPitchRecording(state) {
     if (activePitchRecordingState === state) {
         activePitchRecordingState = null;
     }
 
-    state.recordBtn.disabled = false;
-    setPitchStatus(state, "Finishing recording...");
-}
+    state.isRecording = false;
+    state.stopBtn.disabled = true;
 
-// ----------------------------------------------------------------------------
-// Finalize recording
-// ----------------------------------------------------------------------------
-function finishPitchRecording(state) {
-    const mimeType =
-        state.recorder && state.recorder.mimeType
-            ? state.recorder.mimeType
-            : "audio/webm";
+    const mimeType = state.recorder?.mimeType || "audio/webm";
+    state.audioBlob = new Blob(state.chunks, { type: mimeType });
 
-    state.audioBlob = new Blob(state.chunks, {
-        type: mimeType
-    });
+    if (!state.audioBlob.size) {
+        state.audioBlob = null;
+        state.recordBtn.disabled = false;
+        state.playBtn.disabled = true;
+        setPitchStatus(state, "No audio recorded. Try again.");
+        return;
+    }
 
     if (state.audioUrl) {
         URL.revokeObjectURL(state.audioUrl);
@@ -1297,68 +1268,61 @@ function finishPitchRecording(state) {
 
     state.audioUrl = URL.createObjectURL(state.audioBlob);
 
-    state.playBtn.disabled = false;
-    state.analyzeBtn.disabled = false;
-    state.recordBtn.disabled = false;
-    state.stopBtn.disabled = true;
-
-    setPitchStatus(
-        state,
-        `Recording ready (${(state.audioBlob.size / 1024).toFixed(1)} KB).`
-    );
-
-    // Automatically estimate F0 after recording.
+    // 停止後に自動解析する。解析ボタンは不要。
     analyzePitchRecording(state);
 }
 
-// ----------------------------------------------------------------------------
-// Playback recording
-// ----------------------------------------------------------------------------
 function playPitchRecording(state) {
-    if (!state.audioUrl || !state.audioBlob) return;
+    if (
+        !state.audioUrl ||
+        !state.audioBlob ||
+        state.isRecording ||
+        state.isAnalyzing
+    ) {
+        return;
+    }
 
-    // Keep Pitch Lab playback separate from the existing Drill 1 controls.
     stopAllPlayback();
 
     const audio = new Audio(state.audioUrl);
     state.playBtn.disabled = true;
+    state.recordBtn.disabled = true;
 
     let restored = false;
 
-    const restoreButton = () => {
+    const restore = () => {
         if (restored) return;
         restored = true;
         state.playBtn.disabled = !state.audioBlob;
+        state.recordBtn.disabled = false;
     };
 
-    audio.addEventListener("ended", restoreButton, { once: true });
-    audio.addEventListener("error", restoreButton, { once: true });
+    audio.addEventListener("ended", () => {
+        restore();
+        setPitchStatus(state, "Ready");
+    }, { once: true });
+
+    audio.addEventListener("error", () => {
+        restore();
+        setPitchStatus(state, "Playback failed. Try again.");
+    }, { once: true });
 
     audio.play().then(() => {
-        setPitchStatus(state, "Playing your recording...");
+        setPitchStatus(state, "Playing...");
     }).catch(error => {
         console.warn("Pitch Lab playback failed:", error);
-
-        setPitchStatus(
-            state,
-            "Playback failed. Try recording again."
-        );
-
-        restoreButton();
+        restore();
+        setPitchStatus(state, "Playback failed. Try again.");
     });
 }
 
-// ----------------------------------------------------------------------------
-// Analyze F0 from the recorded audio
-// ----------------------------------------------------------------------------
 async function analyzePitchRecording(state) {
-    if (!state.audioBlob) {
-        setPitchStatus(state, "Record your voice first.");
-        return;
-    }
+    if (!state.audioBlob || state.isAnalyzing) return;
 
-    state.analyzeBtn.disabled = true;
-    setPitchStatus(state, "Analyzing F0...");
+    state.isAnalyzing = true;
+    state.recordBtn.disabled = true;
+    state.playBtn.disabled = true;
+    setPitchStatus(state, "Drawing pitch...");
 
     let audioContext = null;
 
@@ -1377,72 +1341,46 @@ async function analyzePitchRecording(state) {
         }
 
         const arrayBuffer = await state.audioBlob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const audioBuffer = await audioContext.decodeAudioData(
+            arrayBuffer
+        );
 
-        const monoSamples = mixAudioToMono(audioBuffer);
         const frames = estimateF0Frames(
-            monoSamples,
+            mixAudioToMono(audioBuffer),
             audioBuffer.sampleRate
         );
 
-        state.f0Frames = frames;
+        const hasPitch = frames.some(
+            frame => Number.isFinite(frame.f0) && frame.f0 > 0
+        );
 
-        const validF0 = frames
-            .map(frame => frame.f0)
-            .filter(value => Number.isFinite(value) && value > 0);
-
-        if (!validF0.length) {
-            state.medianF0 = null;
-            state.summaryEl.textContent = "Median F0: unavailable";
-
-            drawPitchPlaceholder(
-                state,
-                "No reliable voiced frames detected."
-            );
-
-            setPitchStatus(
-                state,
-                "F0 could not be estimated. Try a clear, short recording."
-            );
-
+        if (!hasPitch) {
+            state.f0Frames = null;
+            drawPitchPlaceholder(state, "Pitch not detected.");
+            setPitchStatus(state, "Pitch not detected. Try again.");
             return;
         }
 
-        state.medianF0 = calculateMedian(validF0);
-
-        state.summaryEl.textContent =
-            `Median F0: ${Math.round(state.medianF0)} Hz`;
-
+        state.f0Frames = frames;
         drawPitchCurve(state, frames);
-
-        const voicedPercent = Math.round(
-            validF0.length / Math.max(frames.length, 1) * 100
-        );
-
-        setPitchStatus(
-            state,
-            `F0 estimated. Voiced frames: ${voicedPercent}%.`
-        );
+        setPitchStatus(state, "Ready");
     } catch (error) {
-        console.error("Pitch Lab F0 analysis error:", error);
-
-        setPitchStatus(
-            state,
-            "F0 analysis failed. Try recording again in a supported browser."
-        );
+        console.error("Pitch Lab analysis error:", error);
+        setPitchStatus(state, "Could not draw pitch. Try again.");
     } finally {
         if (audioContext && audioContext.state !== "closed") {
             try {
                 await audioContext.close();
-            } catch (e) {
-                console.warn("Could not close AudioContext:", e);
+            } catch (error) {
+                console.warn("Could not close AudioContext:", error);
             }
         }
 
-        state.analyzeBtn.disabled = !state.audioBlob;
+        state.isAnalyzing = false;
+        state.recordBtn.disabled = false;
+        state.playBtn.disabled = !state.audioBlob;
     }
 }
-
 // ----------------------------------------------------------------------------
 // Convert multichannel audio to mono
 // ----------------------------------------------------------------------------
