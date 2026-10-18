@@ -2459,13 +2459,13 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const Habit = speechStyle === 'formal'
                     ? item.Habit
                     : speechStyle === 'informal'
-                        ? plainHabit[index]
+                        ? plainHabit[index] + 'よ'
                         : casualHabit[index];
 
                 const ongoing = speechStyle === 'formal'
                     ? item.ongoing
                     : speechStyle === 'informal'
-                        ? plainOngoing[index]
+                        ? plainOngoing[index] + 'よ'
                         : casualOngoing[index];
 
                 const a = `いつも、${clauses}${Habit}。`;
@@ -2506,12 +2506,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const suffix = ongoing
             ? {
                 formal: 'ています',
-                informal: 'ている',
+                informal: 'ているよ',
                 casual: 'てるよ'
             }[speechStyle]
             : {
                 formal: 'ます',
-                informal: 'る',
+                informal: 'るよ',
                 casual: 'るよ'
             }[speechStyle];
 
@@ -2553,14 +2553,21 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
     }
 
-    // 「英語を／英語で」を比較時だけ同じ形にする。
-    practice71Normalize = text => baseNormalize(
-        String(text ?? '').replace(
+    // 比較時だけ表記をそろえる。抽出文は変更しない。
+    practice71Normalize = text => {
+        let value = String(text ?? '').replace(
             /(英語|えいご)([\s、，,]*)で/g,
             '$1$2を'
-        )
-    );
+        );
 
+        if (speechStyle === 'informal') {
+            value = value
+                .replace(/[\s、。．,.!?！？]+$/g, '')
+                .replace(/よ?$/, 'よ');
+        }
+
+        return baseNormalize(value);
+    };
     // 「英語を／英語で」の対象は並べ替え後の3番。
     practice71ShowResult = function (
         view, saved, rowKey, playRate
