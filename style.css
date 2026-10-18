@@ -256,44 +256,45 @@ body {
     margin-left: auto;
 }
 
-/* 共通：録音操作と結果表示 */
-.recording-controls {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 8px;
-    min-width: 0;
-    width: 100%;
-    white-space: normal;
-}
+        cueCells.forEach(cell => {
+            cell.style.setProperty(
+                'width', `${cueWidth}px`, 'important'
+            );
+            cell.style.setProperty(
+                'padding-right', '4px', 'important'
+            );
+            cell.style.setProperty(
+                'white-space', 'nowrap', 'important'
+            );
 
-/* 操作ボタンは一まとまりで保持する */
-.recording-controls > .recording-actions {
-    flex: 0 0 auto;
-    white-space: nowrap;
-}
+            const table = cell.closest('table');
+            if (!table) return;
 
-/* 同じ行に収まれば右端、収まらなければ次の行の右端 */
-.recording-controls > .recording-result {
-    display: block !important;
-    float: none !important;
-    clear: none;
-    flex: 0 0 auto;
-    width: auto;
-    min-width: 0;
-    max-width: 100%;
-    margin: 0 0 0 auto;
-    box-sizing: border-box;
-    text-align: right;
-    white-space: normal;
-}
+            table.classList.add('recording-table');
 
-.recording-controls > .recording-result > .result-text {
-    display: inline;
-    margin-left: 0 !important;
-    white-space: normal;
-    overflow-wrap: anywhere;
-}
+            let columns = table.querySelector(
+                'colgroup.recording-columns'
+            );
+
+            if (!columns) {
+                columns = document.createElement('colgroup');
+                columns.className = 'recording-columns';
+
+                for (let index = 0; index < 3; index++) {
+                    columns.appendChild(
+                        document.createElement('col')
+                    );
+                }
+
+                table.prepend(columns);
+            }
+
+            // 番号・最長キューの幅を確保し、
+            // 操作と結果には残りの幅を割り当てる。
+            columns.children[0].style.width = '34px';
+            columns.children[1].style.width =
+                `${cueWidth + 4}px`;
+        });
 
 .correction-box {
     display: none; margin-top: 10px; padding: 10px 12px; background-color: var(--error-bg);
