@@ -602,64 +602,56 @@ render = function () {
     style.textContent = `
         #drill1Container .p73-example {
             min-width: 0;
-            overflow-x: visible;
+            overflow: visible;
         }
 
         #drill1Container .p73-example table.p73-example-table {
             width: 100% !important;
             min-width: 0 !important;
-            table-layout: fixed !important;
+            table-layout: auto !important;
+            border-collapse: collapse;
         }
 
         #drill1Container .p73-example table.p73-example-table td {
+            width: 1%;
             min-width: 0 !important;
-            white-space: normal !important;
-            overflow-wrap: anywhere;
+            padding-left: 4px;
+            padding-right: 4px;
+            vertical-align: middle;
+            white-space: nowrap !important;
+            overflow-wrap: normal;
             word-break: normal;
         }
 
-        #drill1Container .p73-example table.p73-example-table td:nth-child(1) {
-            width: 12%;
-        }
-
-        #drill1Container .p73-example table.p73-example-table td:nth-child(2) {
-            width: 23%;
-        }
-
-        #drill1Container .p73-example table.p73-example-table td:nth-child(3) {
-            width: 4%;
+        #drill1Container .p73-example table.p73-example-table td:first-child {
             padding-left: 0;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:last-child {
+            width: auto;
             padding-right: 0;
-        }
-
-        #drill1Container .p73-example table.p73-example-table td:nth-child(4) {
-            width: 10%;
-        }
-
-        #drill1Container .p73-example table.p73-example-table td:nth-child(5) {
-            width: 17%;
-        }
-
-        #drill1Container .p73-example table.p73-example-table td:nth-child(6) {
-            width: 34%;
+            white-space: normal !important;
         }
 
         #drill1Container .p73-example table.p73-example-table .p73-tense {
+            display: inline-block;
             box-sizing: border-box;
-            max-width: 100%;
-            white-space: normal;
-            overflow-wrap: anywhere;
+            padding: 4px 8px;
+            margin: 0 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow-wrap: normal;
         }
 
         #drill1Container .p73-example table.p73-example-table button {
-            box-sizing: border-box;
-            min-width: 0;
-            max-width: 100%;
-            white-space: normal;
-            overflow-wrap: anywhere;
+            width: auto;
+            max-width: none;
+            white-space: nowrap;
+            overflow-wrap: normal;
         }
     `;
-
     document.head.append(style);
 };
 
