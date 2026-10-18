@@ -1670,6 +1670,165 @@ async function record(key, r) {
 // ============================================================================
 // Settings and footer
 // ============================================================================
+// ============================================================================
+// Example番号・区切りの余白・Drill4
+// ============================================================================
+
+let practice73EnglishCues = false;
+const practice73RenderBeforeDrill4 = render;
+
+function practice73EnglishCue(key) {
+    if (key === "do") return "what to do";
+    if (key === "hold") return "have / own";
+
+    return words[key].meaning.replace(/^to\s+/, "");
+}
+
+render = function () {
+    practice73RenderBeforeDrill4();
+
+    const root = $("drill1Container");
+
+    let style = document.getElementById("practice73Drill4Style");
+
+    if (!style) {
+        style = document.createElement("style");
+        style.id = "practice73Drill4Style";
+        document.head.append(style);
+    }
+
+    style.textContent = `
+        #drill1Container .p73-example-heading {
+            margin: 0 0 10px;
+            font-size: inherit;
+            font-weight: bold;
+            color: var(--text-primary);
+        }
+
+        #drill1Container .p73-example.p73-new-section {
+            margin-top: 44px !important;
+        }
+
+        #drill1Container #practice73Drill4Panel {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 10px 24px;
+            margin-top: 32px;
+        }
+
+        #drill1Container #practice73Drill4Panel .drill-cue-title {
+            grid-column: 1;
+            grid-row: 1;
+            margin: 0;
+            min-width: 0;
+        }
+
+        #drill1Container #practice73Drill4Panel .drill-cue-description {
+            grid-column: 1 / -1;
+            grid-row: 2;
+            margin: 0;
+        }
+
+        #drill1Container #practice73Drill4Panel .drill-cue-button {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: end;
+        }
+
+        @media (max-width: 600px) {
+            #drill1Container #practice73Drill4Panel {
+                grid-template-columns:
+                    minmax(0, 1fr) minmax(0, 150px);
+                gap: 10px 12px;
+            }
+        }
+    `;
+
+    // Example番号と、新しい内容に入る前の余白。
+    root.querySelectorAll(".p73-example").forEach((example, index) => {
+        const heading = document.createElement("h2");
+        heading.className = "p73-example-heading";
+        heading.textContent = `Example ${index + 1}`;
+
+        example.prepend(heading);
+        example.classList.toggle(
+            "p73-new-section",
+            index > 0
+        );
+    });
+
+    // 英語表示はDrill1〜3の全問題キューに適用。
+    if (practice73EnglishCues) {
+        const tables = root.querySelectorAll("table.p73-table");
+
+        sections.forEach((section, index) => {
+            const cells = tables[index].querySelectorAll(
+                "td.prompt-label"
+            );
+
+            section.items.flat().forEach((r, rowIndex) => {
+                cells[rowIndex].textContent =
+                    r.cues.map(practice73EnglishCue).join("／");
+            });
+        });
+    }
+
+    const panel = document.createElement("section");
+    panel.id = "practice73Drill4Panel";
+    panel.className =
+        "info-panel info-panel-task1 drill-cue-panel";
+
+    panel.setAttribute(
+        "aria-labelledby",
+        "practice73Drill4Title"
+    );
+
+    const title = document.createElement("span");
+    title.id = "practice73Drill4Title";
+    title.className = "info-panel-title drill-cue-title";
+    title.textContent = "Drill 4: Practice with English cues";
+
+    const description = document.createElement("span");
+    description.className =
+        "info-panel-desc drill-cue-description";
+
+    description.textContent =
+        "💡 Practise all questions and responses in Drills 1–3 using English cues.";
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.id = "practice73EnglishCueButton";
+    toggle.className = "drill-cue-button";
+
+    toggle.classList.toggle(
+        "is-english",
+        practice73EnglishCues
+    );
+
+    toggle.setAttribute(
+        "aria-pressed",
+        String(practice73EnglishCues)
+    );
+
+    toggle.textContent = practice73EnglishCues
+        ? "Display Japanese Cues"
+        : "Display English Cues";
+
+    toggle.addEventListener("click", () => {
+        if (session || preparing) return;
+
+        practice73EnglishCues = !practice73EnglishCues;
+
+        // 抽出文・判定結果・録音URLは保持。
+        render();
+    });
+
+    panel.append(title, toggle, description);
+    root.append(panel);
+
+    sync();
+};
 
 function init() {
     const segmentedSettings = [
