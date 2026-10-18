@@ -2733,81 +2733,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         return panel;
     }
 
-    function installStageStyles() {
-        if (document.getElementById(
-            'practice71StageStyle'
-        )) return;
-
-        const style = document.createElement('style');
-        style.id = 'practice71StageStyle';
-        style.textContent = `
-            #drill1Container .info-panel.p71-stage-panel {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                gap: 24px;
-            }
-
-            #drill1Container .p71-stage-copy {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                flex: 1;
-                min-width: 0;
-            }
-
-            #drill1Container .p71-stage-copy > span {
-                display: block;
-                margin: 0;
-            }
-
-            #drill1Container .p71-stage-panel > .drill-cue-button {
-                flex: 0 0 auto;
-                width: auto;
-                min-width: 190px;
-            }
-
-            #drill1Container .p71-accepted-particle,
-            #drill1Container .p71-particle-note {
-                color: #2563eb;
-            }
-
-            #drill1Container .p71-particle-note {
-                display: block;
-                margin-top: 6px;
-                font-size: 14px;
-                font-weight: normal;
-                line-height: 1.5;
-                white-space: normal;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .p71-accepted-particle,
-                #drill1Container .p71-particle-note {
-                    color: #60a5fa;
-                }
-            }
-
-            @media (max-width: 600px) {
-                #drill1Container .info-panel.p71-stage-panel {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                #drill1Container .p71-stage-panel > .drill-cue-button {
-                    width: 100%;
-                    min-width: 0;
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
-    }
-
     renderAll = function () {
         applyStage();
-        installStageStyles();
         baseRender();
 
         const container =
