@@ -731,6 +731,7 @@ function practice71FindDiff(actual, reference) {
     };
 }
 
+function practice71ShowResult(view, saved, rowKey, playRate) {
     // モード変更による再描画では、録音時の判定を保持する。
     // 新しい録音の判定はprocessResult側で保存される。
     if (typeof saved.isCorrect !== 'boolean') {
