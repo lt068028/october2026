@@ -251,9 +251,48 @@ body {
     opacity: 0.6;
 }
 
-/* 結果表示部分を右寄せにする指定 */
+/* 結果テキスト */
 .result-text {
     margin-left: auto;
+}
+
+/* 共通：録音操作と結果表示 */
+.recording-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    min-width: 0;
+    width: 100%;
+    white-space: normal;
+}
+
+/* 操作ボタンは一まとまりで保持する */
+.recording-controls > .recording-actions {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+/* 同じ行に収まれば右端、収まらなければ次の行の右端 */
+.recording-controls > .recording-result {
+    display: block !important;
+    float: none !important;
+    clear: none;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 0 auto;
+    box-sizing: border-box;
+    text-align: right;
+    white-space: normal;
+}
+
+.recording-controls > .recording-result > .result-text {
+    display: inline;
+    margin-left: 0 !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .correction-box {
