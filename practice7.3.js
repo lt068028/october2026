@@ -1907,6 +1907,66 @@ render = function () {
     panel.append(title, toggle, description);
     root.append(panel);
 
+    // 各Drill内のキュー列を、最長キューに必要な幅へ統一する。
+    root.querySelectorAll("table.p73-table").forEach(sectionTable => {
+        const cards = Array.from(
+            sectionTable.querySelectorAll("table.p73-question-table")
+        );
+
+        let cueWidth = 0;
+
+        cards.forEach(table => {
+            table.querySelectorAll("td.prompt-label").forEach(cue => {
+                const measure = document.createElement("span");
+                measure.innerHTML = cue.innerHTML;
+
+                // Hoverの説明文は列幅の計算に含めない。
+                measure.querySelectorAll(".custom-tip-box").forEach(
+                    tip => tip.remove()
+                );
+
+                Object.assign(measure.style, {
+                    position: "absolute",
+                    visibility: "hidden",
+                    display: "inline-block",
+                    width: "max-content",
+                    maxWidth: "none",
+                    whiteSpace: "nowrap",
+                    padding: "0",
+                    margin: "0",
+                    border: "0",
+                    pointerEvents: "none"
+                });
+
+                cue.append(measure);
+                cueWidth = Math.max(
+                    cueWidth,
+                    measure.getBoundingClientRect().width
+                );
+                measure.remove();
+            });
+        });
+
+        cards.forEach(table => {
+            const columns = document.createElement("colgroup");
+
+            // 番号列、キュー列、操作・抽出文の列。
+            [38, Math.ceil(cueWidth) + 8, null].forEach(width => {
+                const column = document.createElement("col");
+
+                if (width !== null) {
+                    column.style.width = `${width}px`;
+                }
+
+                columns.append(column);
+            });
+
+            table.prepend(columns);
+            table.style.width = "100%";
+            table.style.tableLayout = "fixed";
+        });
+    });
+
     sync();
 };
 
