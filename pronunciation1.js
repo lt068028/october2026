@@ -1072,19 +1072,135 @@ async function pronunciation1Record(key) {
 let activePitchRecordingState = null;
 
 function initPitchLab() {
-    const cards = document.querySelectorAll(
-        ".pitch-card[data-pitch-side]"
-    );
+    const lab = document.getElementById("pitchLab");
+    const grid = lab?.querySelector(".pitch-lab-grid");
 
-    cards.forEach(card => {
+    if (!grid || lab.querySelector("#pitchPairSelect")) return;
+
+    const symbols = [
+        ["🥢", "🌉"],
+        ["🦵", "🍑"],
+        ["⬇️", "👋"],
+        ["✂️", "👕"],
+        ["", "🧵"],
+        ["🌸", ""],
+        ["", ""],
+        ["🦪", ""],
+        ["🐦", "🎣"],
+        ["🌧️", "🍬"]
+    ];
+
+    const pairs = drill1Data.map((item, index) => {
+        const words = item.text.split("｜").map(
+            text => text.trim()
+        );
+
+        return {
+            id: String(index),
+            label: `${index + 1}. ${words.map((text, side) =>
+                (symbols[index]?.[side] || "") + text
+            ).join(" / ")}`,
+            words: words.map((text, side) => ({
+                text: (symbols[index]?.[side] || "") + text
+            }))
+        };
+    });
+
+    pairs.push({
+        id: "free",
+        label: "Free practice",
+        words: [
+            { text: "First recording" },
+            { text: "Second recording" }
+        ]
+    });
+
+    const picker = document.createElement("div");
+    picker.style.marginTop = "14px";
+
+    const label = document.createElement("label");
+    label.className = "pitch-word-label";
+    label.htmlFor = "pitchPairSelect";
+    label.textContent = "Choose a pair";
+
+    const select = document.createElement("select");
+    select.id = "pitchPairSelect";
+    select.className = "pitch-word-input";
+
+    pairs.forEach(pair => {
+        const option = document.createElement("option");
+        option.value = pair.id;
+        option.textContent = pair.label;
+        select.append(option);
+    });
+
+    picker.append(label, select);
+    grid.before(picker);
+
+    const cache = new Map();
+    let selectedId = pairs[0].id;
+
+    function makeCard(word, pairId, side) {
+        const card = document.createElement("section");
+        card.className = "pitch-card";
+        card.dataset.pitchSide = `${pairId}-${side}`;
+
+        const heading = document.createElement("h3");
+        heading.className = "pitch-word-label";
+        heading.style.margin = "0";
+        heading.textContent = word.text;
+
+        const controls = document.createElement("div");
+        controls.className = "pitch-controls";
+
+        function makeButton(text, className, accessibleLabel) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `example-button ${className}`;
+            button.textContent = text;
+            button.setAttribute("aria-label", accessibleLabel);
+            return button;
+        }
+
+        const recordBtn = makeButton(
+            "🎙️とる", "pitch-record", "Record"
+        );
+        const stopBtn = makeButton(
+            "⏹️", "pitch-stop", "Stop recording"
+        );
+        const playBtn = makeButton(
+            "▶️", "pitch-play", "Play your recording"
+        );
+
+        stopBtn.disabled = true;
+        playBtn.disabled = true;
+
+        const statusEl = document.createElement("span");
+        statusEl.className = "pitch-status";
+        statusEl.setAttribute("role", "status");
+        statusEl.setAttribute("aria-live", "polite");
+        statusEl.textContent = "Not recorded yet";
+
+        const canvas = document.createElement("canvas");
+        canvas.className = "pitch-canvas";
+        canvas.setAttribute(
+            "aria-label",
+            `Recorded pitch: ${word.text}`
+        );
+
+        controls.append(
+            recordBtn, stopBtn, playBtn, statusEl
+        );
+        card.append(heading, controls, canvas);
+
         const state = {
             card,
             side: card.dataset.pitchSide,
-            recordBtn: card.querySelector(".pitch-record"),
-            stopBtn: card.querySelector(".pitch-stop"),
-            playBtn: card.querySelector(".pitch-play"),
-            statusEl: card.querySelector(".pitch-status"),
-            canvas: card.querySelector(".pitch-canvas"),
+            recordBtn,
+            stopBtn,
+            playBtn,
+            statusEl,
+            canvas,
             recorder: null,
             stream: null,
             chunks: [],
@@ -1095,50 +1211,90 @@ function initPitchLab() {
             f0Frames: null
         };
 
-        if (
-            !state.recordBtn ||
-            !state.stopBtn ||
-            !state.playBtn ||
-            !state.canvas
-        ) {
-            return;
-        }
-
-        state.stopBtn.disabled = true;
-        state.playBtn.disabled = true;
-
-        state.recordBtn.addEventListener("click", () => {
+        recordBtn.addEventListener("click", () => {
             startPitchRecording(state);
         });
 
-        state.stopBtn.addEventListener("click", () => {
+        stopBtn.addEventListener("click", () => {
             stopPitchRecording(state);
         });
 
-        state.playBtn.addEventListener("click", () => {
+        playBtn.addEventListener("click", () => {
             playPitchRecording(state);
         });
 
-        setPitchStatus(state, "Not recorded yet");
-        drawPitchPlaceholder(state, "Record your voice to begin.");
-
         if (typeof ResizeObserver !== "undefined") {
-            const observer = new ResizeObserver(() => {
-                if (state.f0Frames && state.f0Frames.length) {
-                    drawPitchCurve(state, state.f0Frames);
-                } else {
-                    drawPitchPlaceholder(
-                        state,
-                        state.isRecording
-                            ? "Recording..."
-                            : "Record your voice to begin."
-                    );
+            state.observer = new ResizeObserver(() => {
+                if (
+                    !canvas.isConnected ||
+                    !canvas.clientWidth
+                ) {
+                    return;
                 }
+
+                redraw(state);
             });
 
-            observer.observe(state.canvas);
+            state.observer.observe(canvas);
         }
+
+        return state;
+    }
+
+    function redraw(state) {
+        if (state.f0Frames?.length) {
+            drawPitchCurve(state, state.f0Frames);
+        } else {
+            drawPitchPlaceholder(
+                state,
+                state.isRecording
+                    ? "Recording..."
+                    : "Record your voice to begin."
+            );
+        }
+    }
+
+    function showPair(id) {
+        const pair = pairs.find(item => item.id === id);
+        if (!pair) return;
+
+        if (!cache.has(id)) {
+            cache.set(
+                id,
+                pair.words.map((word, side) =>
+                    makeCard(word, id, side)
+                )
+            );
+        }
+
+        const states = cache.get(id);
+
+        grid.replaceChildren(
+            ...states.map(state => state.card)
+        );
+
+        selectedId = id;
+        select.value = id;
+        states.forEach(redraw);
+    }
+
+    select.addEventListener("change", () => {
+        const busy = Array.from(cache.values()).flat().some(
+            state =>
+                state.isRecording ||
+                state.isAnalyzing ||
+                activePitchRecordingState === state
+        );
+
+        if (busy) {
+            select.value = selectedId;
+            return;
+        }
+
+        showPair(select.value);
     });
+
+    showPair(selectedId);
 }
 
 async function startPitchRecording(state) {
