@@ -494,6 +494,174 @@ function stopPlayback() {
 
     utterance = null;
 }
+// ============================================================================
+// 7.3：Drill3・読み上げ・Example幅の調整
+// ============================================================================
+
+words.car = W("車", "くるま", "kuruma", "car");
+words.hold = W("持つ", "もつ", "motsu", "to have / own");
+
+sections[2].instruction =
+    "💡 Until when did that state continue?";
+
+sections[2].items[0] = pair(
+    row(
+        "Question:",
+        ["until", "car", "hold"],
+        "いつまで車を持っていましたか。",
+        "いつまでくるまをもっていましたか。"
+    ),
+    row(
+        "Response:",
+        ["lastyear", "car", "hold"],
+        "去年まで、車を持っていました。",
+        "きょねんまで、くるまをもっていました。"
+    )
+);
+
+// 車・持つの抽出文も、表示切替と判定に対応。
+const practice73OriginalHira = hira;
+
+hira = function (text) {
+    return practice73OriginalHira(
+        String(text ?? "")
+            .replace(/車/g, "くるま")
+            .replace(/持/g, "も")
+    );
+};
+
+// 表示文・判定文を変えず、読み上げ時だけ読点を追加。
+function practice73SpeechText(text) {
+    let value = String(text ?? "");
+
+    value = value.replace(
+        /^いつまで[、,\s]*/,
+        "いつまで、"
+    );
+
+    const verb = value.match(
+        /(電話し|書き|書い|泳ぎ|泳い|歌い|歌っ|待っ|手伝っ|教え|覚え|寝|働い|住ん|結婚し|借り|忘れ|持っ|し)(?:ました|ていました|でいました)/
+    );
+
+    if (verb && verb.index > 0) {
+        const before = value
+            .slice(0, verb.index)
+            .replace(/[、,\s]+$/, "");
+
+        value =
+            before +
+            "、" +
+            value.slice(verb.index);
+    }
+
+    return value;
+}
+
+const practice73OriginalSpeak = speak;
+
+speak = function (text, b, done) {
+    return practice73OriginalSpeak(
+        practice73SpeechText(text),
+        b,
+        done
+    );
+};
+
+const practice73OriginalRender = render;
+
+render = function () {
+    practice73OriginalRender();
+
+    const root = $("drill1Container");
+
+    // Until when?はExample・問題ともPast Stateに統一。
+    const examples = root.querySelectorAll(".p73-example");
+    const tables = root.querySelectorAll("table.p73-table");
+
+    [examples[2], tables[2]].forEach(container => {
+        container?.querySelectorAll(".p73-tense").forEach(label => {
+            label.classList.remove(
+                "p73-ongoing",
+                "p73-past"
+            );
+
+            label.classList.add("p73-state");
+            label.textContent = "⏳Past State";
+        });
+    });
+
+    let style = document.getElementById(
+        "practice73ExampleWidthStyle"
+    );
+
+    if (!style) {
+        style = document.createElement("style");
+        style.id = "practice73ExampleWidthStyle";
+    }
+
+    style.textContent = `
+        #drill1Container .p73-example {
+            min-width: 0;
+            overflow-x: visible;
+        }
+
+        #drill1Container .p73-example table.p73-example-table {
+            width: 100% !important;
+            min-width: 0 !important;
+            table-layout: fixed !important;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td {
+            min-width: 0 !important;
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(1) {
+            width: 12%;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(2) {
+            width: 23%;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(3) {
+            width: 4%;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(4) {
+            width: 10%;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(5) {
+            width: 17%;
+        }
+
+        #drill1Container .p73-example table.p73-example-table td:nth-child(6) {
+            width: 34%;
+        }
+
+        #drill1Container .p73-example table.p73-example-table .p73-tense {
+            box-sizing: border-box;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+
+        #drill1Container .p73-example table.p73-example-table button {
+            box-sizing: border-box;
+            min-width: 0;
+            max-width: 100%;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+    `;
+
+    document.head.append(style);
+};
 
 function speak(text, b, done) {
     stopPlayback();
