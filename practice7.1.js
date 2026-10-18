@@ -2102,20 +2102,17 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 (() => {
     let stage = 1;
     let previousHint = hintMode;
+    let speechStyle = 'formal';
 
     const baseRender = renderAll;
     const baseNormalize = practice71Normalize;
     const baseShowResult = practice71ShowResult;
-    const baseSync = practice71SyncRecordingUI;
+    const originalSync = practice71SyncRecordingUI;
     const baseFormatWord = formatWord;
     const baseToHiragana = practice71ToHiragana;
 
     const w = (h, k, r, e) => ({ h, k, r, e });
     const originalItems = practice71Data.slice();
-
-    // Example：見る
-    // Drill：浴びる、プレイする、話す、使う、吸う、
-    //        遊ぶ、飲む、聞く、急ぐ
     const order = [2, 3, 0, 1, 4, 5, 6, 7, 8, 9];
     const items = order.map(index => ({
         ...originalItems[index]
@@ -2152,24 +2149,100 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         1, 0,
         w('いもうと', '妹', 'imōto', 'younger sister')
     );
-    items[2].expandedClauses =
-        '部屋で、妹と、Switchを、';
+    items[2].expandedClauses = '部屋で、妹と、Switchを、';
 
-    items[3].expandedWords[1] =
-        w('クラスメート', 'クラスメート',
-          'kurasumēto', 'classmate');
-
+    items[3].expandedWords[1] = w(
+        'クラスメート', 'クラスメート',
+        'kurasumēto', 'classmate'
+    );
     items[3].expandedClauses =
         '学校で、クラスメートと、英語を、';
 
-    // 各段階の抽出文・録音を別々に保持する。
-    const records = {
-        1: {
-            savedResults: practice71State.savedResults,
-            audioUrls: practice71State.audioUrls
-        },
+    // Example：見る。
+    // 問題：浴びる、プレイする、話す、使う、吸う、
+    //       遊ぶ、飲む、聞く、急ぐ。
+    const plainHabit = [
+        '見る', '浴びる', 'プレイする', '話す', '使う',
+        '吸う', '遊ぶ', '飲む', '聞く', '急ぐ'
+    ];
+
+    const plainOngoing = [
+        '見ている',
+        '浴びている',
+        'プレイしている',
+        '話している',
+        '使っている',
+        '吸っている',
+        '遊んでいる',
+        '飲んでいる',
+        '聞いている',
+        '急いでいる'
+    ];
+
+    const casualHabit = [
+        '見るよ', '浴びるよ', 'プレイするよ',
+        '話すよ', '使うよ', '吸うよ', '遊ぶよ',
+        '飲むよ', '聞くよ', '急ぐよ'
+    ];
+
+    const casualOngoing = [
+        '見てるよ',
+        '浴びてるよ',
+        'プレイしてるよ',
+        '話してるよ',
+        '使ってるよ',
+        '吸ってるよ',
+        '遊んでるよ',
+        '飲んでるよ',
+        '聞いてるよ',
+        '急いでるよ'
+    ];
+
+    // Casualの助詞省略は各問題に明示する。
+    const casualBasic = [
+        '映画、',
+        'シャワー、',
+        'Switch、',
+        '英語、',
+        'スマホ、',
+        'タバコ、',
+        '',
+        'コーヒー、',
+        '先生に、',
+        ''
+    ];
+
+    const casualExpanded = [
+        '映画館で、映画、',
+        '家で、シャワー、',
+        '部屋で、妹と、Switch、',
+        '学校で、クラスメートと、英語、',
+        '電車で、スマホ、',
+        '外で、タバコ、',
+        '公園で、友達と、',
+        '喫茶店で、コーヒー、',
+        '大学で、先生に、',
+        ''
+    ];
+
+    // 3文体×3段階の抽出文・録音を個別に保持する。
+    const emptyRecords = () => ({
+        1: { savedResults: {}, audioUrls: {} },
         2: { savedResults: {}, audioUrls: {} },
         3: { savedResults: {}, audioUrls: {} }
+    });
+
+    const styleRecords = {
+        formal: emptyRecords(),
+        informal: emptyRecords(),
+        casual: emptyRecords()
+    };
+
+    let records = styleRecords.formal;
+
+    records[1] = {
+        savedResults: practice71State.savedResults,
+        audioUrls: practice71State.audioUrls
     };
 
     practice71ToHiragana = text => baseToHiragana(
@@ -2186,7 +2259,116 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         return span.innerHTML;
     };
 
+    function blocked() {
+        return Boolean(
+            activeRecognitionSession ||
+            practice71State.startingRow
+        );
+    }
+
+    function syncSpeechStyle() {
+        document.querySelectorAll(
+            '#speechStyleControl button[data-value]'
+        ).forEach(button => {
+            const selected =
+                button.dataset.value === speechStyle;
+
+            button.classList.toggle('is-selected', selected);
+            button.setAttribute(
+                'aria-pressed',
+                String(selected)
+            );
+            button.disabled = blocked();
+        });
+    }
+
+    const baseSync = function () {
+        originalSync();
+        syncSpeechStyle();
+    };
+
+    function installSpeechStyle() {
+        if (document.getElementById('speechStyleControl')) {
+            syncSpeechStyle();
+            return;
+        }
+
+        const script = document.getElementById(
+            'scriptModeControl'
+        );
+        const anchor = script?.closest('.control-item');
+        if (!anchor) return;
+
+        const item = document.createElement('div');
+        item.className = 'control-item speech-style-item';
+
+        const control = document.createElement('div');
+        control.id = 'speechStyleControl';
+        control.className = 'segmented-control';
+        control.setAttribute('role', 'group');
+        control.setAttribute('aria-label', 'Speech style');
+
+        [
+            [
+                'formal',
+                '🏢Formal',
+                'Polite forms: 見ます / 見ています.'
+            ],
+            [
+                'informal',
+                '🏠Informal',
+                'Plain forms: 見る / 見ている.'
+            ],
+            [
+                'casual',
+                '🫂Casual',
+                'Conversation: 映画見るよ / 映画見てるよ.'
+            ]
+        ].forEach(([value, label, description]) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className =
+                'segmented-option custom-tip-wrap';
+            button.dataset.value = value;
+            button.append(document.createTextNode(label));
+
+            const tip = document.createElement('span');
+            tip.className = 'custom-tip-box';
+            tip.textContent = description;
+            button.append(tip);
+
+            button.onclick = () => {
+                if (blocked() || speechStyle === value) return;
+
+                stopAllPlayback();
+
+                records[stage] = {
+                    savedResults: practice71State.savedResults,
+                    audioUrls: practice71State.audioUrls
+                };
+
+                speechStyle = value;
+                records = styleRecords[value];
+
+                practice71State.savedResults =
+                    records[stage].savedResults;
+                practice71State.audioUrls =
+                    records[stage].audioUrls;
+
+                renderAll();
+            };
+
+            control.append(button);
+        });
+
+        item.append(control);
+        anchor.before(item);
+        syncSpeechStyle();
+    }
+
     function applyStage() {
+        installSpeechStyle();
+
         practice71Data.splice(
             0,
             practice71Data.length,
@@ -2195,23 +2377,42 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     ? item.basicWords
                     : item.expandedWords;
 
-                const clauses = stage === 1
-                    ? item.basicClauses
-                    : item.expandedClauses;
+                const clauses = speechStyle === 'casual'
+                    ? (
+                        stage === 1
+                            ? casualBasic[index]
+                            : casualExpanded[index]
+                    )
+                    : (
+                        stage === 1
+                            ? item.basicClauses
+                            : item.expandedClauses
+                    );
+
+                const Habit = speechStyle === 'formal'
+                    ? item.Habit
+                    : speechStyle === 'informal'
+                        ? plainHabit[index]
+                        : casualHabit[index];
+
+                const ongoing = speechStyle === 'formal'
+                    ? item.ongoing
+                    : speechStyle === 'informal'
+                        ? plainOngoing[index]
+                        : casualOngoing[index];
+
+                const a = `いつも、${clauses}${Habit}。`;
+                const b = `いま、${clauses}${ongoing}。`;
 
                 const first = words[0];
                 const last = words[words.length - 1];
-
-                const Habit =
-                    `いつも、${clauses}${item.Habit}。`;
-
-                const ongoing =
-                    `いま、${clauses}${item.ongoing}。`;
 
                 return {
                     ...item,
                     words,
                     clauses,
+                    Habit,
+                    ongoing,
                     itemIndex: index,
                     x: first.h,
                     xKanji: first.k,
@@ -2221,15 +2422,68 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     yKanji: last.k,
                     yRomaji: last.r,
                     yMeaning: last.e,
-                    pastSentence: Habit,
+                    pastSentence: a,
                     pastSentenceHira:
-                        practice71ToHiragana(Habit),
-                    perfectSentence: ongoing,
+                        practice71ToHiragana(a),
+                    perfectSentence: b,
                     perfectSentenceHira:
-                        practice71ToHiragana(ongoing)
+                        practice71ToHiragana(b)
                 };
             })
         );
+    }
+
+    function styleExampleSentence(ongoing) {
+        const item = practice71Data[0];
+
+        const suffix = ongoing
+            ? {
+                formal: 'ています',
+                informal: 'ている',
+                casual: 'てるよ'
+            }[speechStyle]
+            : {
+                formal: 'ます',
+                informal: 'る',
+                casual: 'るよ'
+            }[speechStyle];
+
+        const gold = text =>
+            `<span class="p71-grammar-highlight">${text}</span>`;
+
+        const start = ongoing
+            ? (scriptMode === 'hiragana' ? 'いま' : '今')
+            : 'いつも';
+
+        if (stage === 3) {
+            const under = text =>
+                `<span class="p71-underlined">${text}</span>`;
+
+            return gold(start) + '、' +
+                under('cinema') + ' で、' +
+                under('movie') +
+                (speechStyle === 'casual' ? '、' : ' を、') +
+                under('watch') + ' ' +
+                gold(suffix) + '。';
+        }
+
+        let text = ongoing
+            ? item.perfectSentence
+            : item.pastSentence;
+
+        if (scriptMode === 'hiragana') {
+            text = practice71ToHiragana(text);
+        }
+
+        return text
+            .replace(
+                /^(?:いつも|いま|今)/,
+                () => gold(start)
+            )
+            .replace(
+                new RegExp(suffix + '。$'),
+                () => gold(suffix) + '。'
+            );
     }
 
     // 「英語を／英語で」を比較時だけ同じ形にする。
@@ -2522,25 +2776,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     : '💡 Use all the English cues to make Japanese sentences. Begin with いつも or いま.';
         }
 
-        if (stage === 3) {
-            container.querySelectorAll(
-                '#practice71Example .example-line'
-            ).forEach((line, index) => {
-                const sentence = line.lastElementChild;
-
-                const start = index
-                    ? (scriptMode === 'hiragana' ? 'いま' : '今')
-                    : 'いつも';
-
-                sentence.innerHTML =
-                    `<span class="p71-grammar-highlight">${start}</span>、` +
-                    '<span class="p71-underlined">cinema</span> で、' +
-                    '<span class="p71-underlined">movie</span> を、' +
-                    '<span class="p71-underlined">watch</span> ' +
-                    `<span class="p71-grammar-highlight">${index ? 'ています' : 'ます'}</span>。`;
-            });
-        }
-
+        container.querySelectorAll(
+            '#practice71Example .example-line'
+        ).forEach((line, index) => {
+            line.lastElementChild.innerHTML =
+                styleExampleSentence(Boolean(index));
+        });
         container.append(
             makePanel(
                 2,
