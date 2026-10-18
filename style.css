@@ -796,3 +796,87 @@ input:checked + .slider:before { transform: translateX(16px); }
         overflow-wrap: anywhere;
     }
 }
+/* ==========================================
+   Practice 7.1
+   ========================================== */
+
+/* キューは語句の途中で切らず、1行表示する */
+#drill1Container:has(#practice71Example) .prompt-label {
+    padding-right: 4px !important;
+    white-space: nowrap !important;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+#drill1Container .p71-cues,
+#drill1Container .p71-cue-word,
+#drill1Container .p71-cue-separator {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: normal;
+}
+
+#drill1Container .p71-cue-word {
+    display: inline-block;
+}
+
+#drill1Container .p71-cues wbr {
+    display: none;
+}
+
+/* Exampleのラベルとキュー */
+#practice71Example .example-line {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    column-gap: 4px;
+    row-gap: 6px;
+}
+
+#practice71Example .example-label-title {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 0 auto;
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* 文の種類を示すラベル */
+#drill1Container .p71-tense {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 0 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+#drill1Container .p71-present {
+    background: #fde047;
+    color: #713f12;
+}
+
+#drill1Container .p71-ongoing {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+/* Example文中の対象語 */
+#practice71Example .p71-underlined {
+    text-decoration: underline;
+    text-decoration-color: #CA8A04;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    font-weight: bold;
+}
+
+@media (prefers-color-scheme: dark) {
+    #practice71Example .p71-underlined {
+        text-decoration-color: #FBBF24;
+    }
+}
+
+/* 共通：各問題を個別のスクロール領域にしない */
+.drill-row {
+    overflow: visible;
+}
