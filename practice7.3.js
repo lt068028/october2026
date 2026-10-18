@@ -1114,10 +1114,6 @@ function render() {
             display: none !important;
         }
 
-        #drill1Container .p73-example::before {
-            content: "Example" !important;
-        }
-
         #drill1Container .p73-card-list-wrap {
             overflow: visible !important;
         }
@@ -1834,7 +1830,6 @@ render = function () {
         heading.textContent = `Example ${index + 1}`;
 
         example.prepend(heading);
-
         example.classList.toggle(
             "p73-new-section",
             index > 0
