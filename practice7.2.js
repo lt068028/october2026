@@ -2470,8 +2470,36 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         // Hiragana／漢字 → 文体 → Vocab
         scriptItem.after(item);
-        syncStyleButtons();
-    }
+
+        // 語彙ボタン：Hover／Display／OFFに統一する。
+        const hintControl = document.getElementById(
+            "hintModeControl"
+        );
+
+        const hintLabels = {
+            hover: "💬Hover",
+            paren: "🔡Display",
+            off: "OFF"
+        };
+
+        hintControl?.querySelectorAll(
+            "button[data-value]"
+        ).forEach(button => {
+            const label = hintLabels[button.dataset.value];
+            if (!label) return;
+
+            const tip = button.querySelector(
+                ".custom-tip-box"
+            );
+
+            button.replaceChildren(
+                document.createTextNode(label)
+            );
+
+            if (tip) button.append(tip);
+        });
+
+        syncStyleButtons();    }
 
     function installResultLayout() {
         if (document.getElementById(
