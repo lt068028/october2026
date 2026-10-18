@@ -1106,7 +1106,95 @@ function render() {
         wrap.append(table);
         root.append(wrap);
     });
+    // 質問・返答の2行を、7.2と同じ角丸カードで囲む。
+    let cardStyle = document.getElementById(
+        "practice73CardRestoreStyle"
+    );
 
+    if (!cardStyle) {
+        cardStyle = document.createElement("style");
+        cardStyle.id = "practice73CardRestoreStyle";
+        document.head.append(cardStyle);
+    }
+
+    cardStyle.textContent = `
+        #drill1Container .p73-example .p73-example-heading {
+            display: none !important;
+        }
+
+        #drill1Container .p73-example::before {
+            content: "Example" !important;
+        }
+
+        #drill1Container .p73-card-list-wrap {
+            overflow: visible !important;
+        }
+
+        #drill1Container .p73-table > tbody > tr > td.p73-card-cell {
+            padding: 0 !important;
+            border: 0;
+        }
+
+        #drill1Container div.p73-question-card.drill-row {
+            display: block !important;
+            overflow: visible !important;
+        }
+
+        #drill1Container .p73-question-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        #drill1Container .p73-question-table > tbody > tr {
+            display: table-row !important;
+            background: transparent;
+            border: 0;
+        }
+    `;
+
+    root.querySelectorAll("table.p73-table").forEach(table => {
+        const body = table.tBodies[0];
+        const rows = Array.from(body.children);
+
+        table.parentElement.classList.add(
+            "p73-card-list-wrap"
+        );
+
+        body.replaceChildren();
+
+        for (
+            let index = 0;
+            index < rows.length;
+            index += 2
+        ) {
+            const card = document.createElement("div");
+            card.className = "drill-row p73-question-card";
+
+            const innerTable = document.createElement("table");
+            innerTable.className = "p73-question-table";
+
+            const innerBody = document.createElement("tbody");
+
+            rows.slice(index, index + 2).forEach(row => {
+                row.classList.remove("drill-row");
+                innerBody.append(row);
+            });
+
+            innerTable.append(innerBody);
+            card.append(innerTable);
+
+            const cardRow = document.createElement("tr");
+            const cardCell = document.createElement("td");
+
+            cardCell.className = "p73-card-cell";
+            cardCell.colSpan = 3;
+            cardCell.append(card);
+
+            cardRow.append(cardCell);
+            body.append(cardRow);
+        }
+    });
     sync();
 }
 
