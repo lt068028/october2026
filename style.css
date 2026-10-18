@@ -463,8 +463,17 @@ input:checked + .slider:before { transform: translateX(16px); }
     bottom: 125%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; transition: 0.2s; pointer-events: none;
 }
 .tooltip-wrap:hover .tooltip-tip, .custom-tip-wrap:hover .custom-tip-box { visibility: visible; opacity: 1; }
-.custom-tip-wrap { position: relative; display: inline-block; }
+.custom-tip-wrap {
+    position: relative;
+    display: inline-block;
+}
 
+/* 録音再生ボタンの説明は、右端をボタンに合わせる */
+.play-recording-btn > .custom-tip-box {
+    left: auto;
+    right: 0;
+    transform: none;
+}
 /* ==========================================
    Footer
    ========================================== */
