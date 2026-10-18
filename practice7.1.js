@@ -2289,15 +2289,33 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         document.querySelectorAll(
             '#drill1List .result-text'
         ).forEach(result => {
-            result.parentElement.classList.add(
-                'p71-result-wrap'
-            );
-            result.closest('td')?.classList.add(
-                'p71-controls'
-            );
-            result.closest('table')?.classList.add(
-                'p71-practice-table'
-            );
+            const cell = result.closest('td');
+            if (!cell) return;
+
+            // 作成済みの行は再構成しない。
+            if (cell.querySelector('.recording-controls')) {
+                return;
+            }
+
+            const resultWrap = result.parentElement;
+            resultWrap.classList.add('recording-result');
+
+            const layout = document.createElement('div');
+            layout.className = 'recording-controls';
+
+            const actions = document.createElement('div');
+            actions.className = 'recording-actions';
+
+            // 操作ボタンと結果欄を、それぞれまとめる。
+            // 既存要素を移動するため、クリック処理は保持される。
+            Array.from(cell.childNodes).forEach(node => {
+                if (node !== resultWrap) {
+                    actions.appendChild(node);
+                }
+            });
+
+            layout.append(actions, resultWrap);
+            cell.appendChild(layout);
         });
     }
 
@@ -2307,48 +2325,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     };
 
     function installSpeechStyle() {
-        if (!document.getElementById(
-            'practice71ResultLayoutStyle'
-        )) {
-            const style = document.createElement('style');
-            style.id = 'practice71ResultLayoutStyle';
-
-            style.textContent = `
-                #drill1List .p71-practice-table {
-                    width: 100%;
-                    table-layout: auto;
-                }
-
-                #drill1List .p71-controls {
-                    white-space: normal !important;
-                    vertical-align: middle;
-                }
-
-                #drill1List .p71-result-wrap {
-                    display: block !important;
-                    float: none !important;
-                    clear: both;
-                    width: 100%;
-                    min-width: 0;
-                    box-sizing: border-box;
-                    margin-top: 6px;
-                    text-align: right;
-                    white-space: normal;
-                }
-
-                #drill1List .p71-result-wrap > .result-text {
-                    display: inline-block;
-                    max-width: 100%;
-                    margin-left: 0 !important;
-                    white-space: normal;
-                    overflow-wrap: anywhere;
-                    text-align: right;
-                }
-            `;
-
-            document.head.appendChild(style);
-        }
-
         const script = document.getElementById(
             'scriptModeControl'
         );
