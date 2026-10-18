@@ -1074,48 +1074,166 @@ let activePitchRecordingState = null;
 function initPitchLab() {
     const lab = document.getElementById("pitchLab");
     const grid = lab?.querySelector(".pitch-lab-grid");
-    if (!grid || lab.querySelector("#pitchPairSelect")) return;
 
-    const pitchColor = "#e879f9";
+    if (!grid || lab.querySelector("#pitchPairSelect")) return;
 
     const pairs = drill1Data.map((item, index) => ({
         id: String(index),
-        label: `${index + 1}. ${item.text}`,
         words: item.text.split("｜").map(text => text.trim()),
         free: false
     }));
 
     pairs.push({
         id: "free",
-        label: "Free practice",
         words: ["First recording", "Second recording"],
         free: true
     });
 
-    const picker = document.createElement("div");
-    picker.style.marginTop = "14px";
+    const style = document.createElement("style");
+    style.textContent = `
+        #pitchLab .pitch-pair-picker {
+            position: relative;
+            margin-top: 14px;
+        }
 
-    const label = document.createElement("label");
-    label.className = "pitch-word-label";
-    label.htmlFor = "pitchPairSelect";
-    label.textContent = "Choose a pair";
+        #pitchLab .pitch-pair-summary,
+        #pitchLab .pitch-pair-choice {
+            box-sizing: border-box;
+            width: 100%;
+            margin: 0;
+            padding: 10px 28px 10px 12px;
+            border: 1px solid var(--lab-border);
+            border-radius: 4px;
+            background: var(--lab-input);
+            color: var(--lab-text);
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
 
-    const select = document.createElement("select");
-    select.id = "pitchPairSelect";
-    select.className = "pitch-word-input";
+        #pitchLab .pitch-pair-summary {
+            list-style: none;
+            position: relative;
+        }
 
-    pairs.forEach(pair => {
-        const option = document.createElement("option");
-        option.value = pair.id;
-        option.textContent = pair.label;
-        select.append(option);
-    });
+        #pitchLab .pitch-pair-summary::-webkit-details-marker {
+            display: none;
+        }
 
-    picker.append(label, select);
+        #pitchLab .pitch-pair-summary::after {
+            content: "▾";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--lab-text);
+        }
+
+        #pitchLab .pitch-pair-content {
+            display: grid;
+            grid-template-columns:
+                minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 12px;
+            line-height: 2;
+        }
+
+        #pitchLab .pitch-pair-content > span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        #pitchLab .pitch-pair-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            margin-top: 4px;
+            padding: 4px;
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--lab-border);
+            border-radius: 4px;
+            background: var(--lab-input);
+        }
+
+        #pitchLab .pitch-pair-choice {
+            border: 0;
+            padding: 8px;
+        }
+
+        #pitchLab .pitch-pair-choice:hover,
+        #pitchLab .pitch-pair-choice[aria-current="true"] {
+            background: var(--lab-button);
+        }
+
+        #pitchLab .pitch-pair-summary:focus-visible {
+            outline: 3px solid var(--lab-border);
+            outline-offset: 3px;
+        }
+
+        #pitchLab .pitch-card .pitch-controls {
+            margin-top: 0;
+        }
+    `;
+    lab.append(style);
+
+    const picker = document.createElement("details");
+    picker.className = "pitch-pair-picker";
+
+    const summary = document.createElement("summary");
+    summary.id = "pitchPairSelect";
+    summary.className = "pitch-pair-summary";
+    summary.setAttribute("aria-label", "Choose a word pair");
+
+    const options = document.createElement("div");
+    options.className = "pitch-pair-options";
+
+    picker.append(summary, options);
     grid.before(picker);
 
     const cache = new Map();
+    const choices = [];
     let selectedId = pairs[0].id;
+
+    function pairContent(pair) {
+        const content = document.createElement("span");
+        content.className = "pitch-pair-content";
+
+        pair.words.forEach((word, index) => {
+            if (index) {
+                const separator = document.createElement("span");
+                separator.textContent = "↔️";
+                separator.setAttribute("aria-hidden", "true");
+                content.append(separator);
+            }
+
+            const part = document.createElement("span");
+
+            if (pair.free) {
+                part.textContent = word;
+            } else {
+                part.innerHTML = renderPitchAccentHTML(
+                    word,
+                    "#e879f9"
+                );
+            }
+
+            content.append(part);
+        });
+
+        return content;
+    }
+
+    function busy() {
+        return Array.from(cache.values()).flat().some(
+            state =>
+                state.isRecording ||
+                state.isAnalyzing ||
+                activePitchRecordingState === state
+        );
+    }
 
     function redraw(state) {
         if (state.f0Frames?.length) {
@@ -1134,41 +1252,27 @@ function initPitchLab() {
         const card = document.createElement("section");
         card.className = "pitch-card";
         card.dataset.pitchSide = `${pair.id}-${side}`;
-
-        const heading = document.createElement("h3");
-        heading.className = "pitch-word-label";
-        heading.style.margin = "0";
-        heading.style.lineHeight = "2";
-
-        if (pair.free) {
-            heading.textContent = word;
-        } else {
-            // Drillと同じ処理で上線・下線・矢印を表示する。
-            heading.innerHTML = renderPitchAccentHTML(
-                word,
-                pitchColor
-            );
-        }
+        card.setAttribute("aria-label", word);
 
         const controls = document.createElement("div");
         controls.className = "pitch-controls";
 
-        function makeButton(text, className, accessibleLabel) {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = `example-button ${className}`;
-            button.textContent = text;
-            button.setAttribute("aria-label", accessibleLabel);
-            return button;
+        function button(text, className, label) {
+            const element = document.createElement("button");
+            element.type = "button";
+            element.className = `example-button ${className}`;
+            element.textContent = text;
+            element.setAttribute("aria-label", `${label}: ${word}`);
+            return element;
         }
 
-        const recordBtn = makeButton(
+        const recordBtn = button(
             "🎙️とる", "pitch-record", "Record"
         );
-        const stopBtn = makeButton(
+        const stopBtn = button(
             "⏹️", "pitch-stop", "Stop recording"
         );
-        const playBtn = makeButton(
+        const playBtn = button(
             "▶️", "pitch-play", "Play your recording"
         );
 
@@ -1189,7 +1293,7 @@ function initPitchLab() {
         );
 
         controls.append(recordBtn, stopBtn, playBtn, statusEl);
-        card.append(heading, controls, canvas);
+        card.append(controls, canvas);
 
         const state = {
             card,
@@ -1227,50 +1331,105 @@ function initPitchLab() {
                     redraw(state);
                 }
             });
+
             state.observer.observe(canvas);
         }
 
         return state;
     }
 
-    function showPair(id) {
-        const pair = pairs.find(item => item.id === id);
-        if (!pair) return;
-
-        if (!cache.has(id)) {
+    function showPair(pair) {
+        if (!cache.has(pair.id)) {
             cache.set(
-                id,
+                pair.id,
                 pair.words.map((word, side) =>
                     makeCard(word, pair, side)
                 )
             );
         }
 
-        const states = cache.get(id);
-        grid.replaceChildren(...states.map(state => state.card));
+        selectedId = pair.id;
+        summary.replaceChildren(pairContent(pair));
 
-        selectedId = id;
-        select.value = id;
+        summary.setAttribute(
+            "aria-label",
+            "Choose a word pair: " +
+            (pair.free ? "Free practice" : pair.words.join(" / "))
+        );
+
+        choices.forEach((choice, index) => {
+            choice.setAttribute(
+                "aria-current",
+                String(pairs[index].id === selectedId)
+            );
+        });
+
+        const states = cache.get(pair.id);
+        grid.replaceChildren(...states.map(state => state.card));
         states.forEach(redraw);
     }
 
-    select.addEventListener("change", () => {
-        const busy = Array.from(cache.values()).flat().some(
-            state =>
-                state.isRecording ||
-                state.isAnalyzing ||
-                activePitchRecordingState === state
-        );
+    pairs.forEach(pair => {
+        const choice = document.createElement("button");
+        choice.type = "button";
+        choice.className = "pitch-pair-choice";
 
-        if (busy) {
-            select.value = selectedId;
-            return;
+        if (pair.free) {
+            choice.textContent = "Free practice";
+        } else {
+            choice.append(pairContent(pair));
         }
 
-        showPair(select.value);
+        choice.addEventListener("click", () => {
+            if (busy()) return;
+
+            showPair(pair);
+            picker.open = false;
+            summary.focus();
+        });
+
+        choices.push(choice);
+        options.append(choice);
     });
 
-    showPair(selectedId);
+    picker.addEventListener("keydown", event => {
+        if (event.key === "Escape") {
+            picker.open = false;
+            summary.focus();
+            event.preventDefault();
+        } else if (
+            event.key === "ArrowDown" ||
+            event.key === "ArrowUp"
+        ) {
+            event.preventDefault();
+            picker.open = true;
+
+            let index = choices.indexOf(document.activeElement);
+
+            if (index < 0) {
+                index = pairs.findIndex(
+                    pair => pair.id === selectedId
+                );
+            } else {
+                const direction =
+                    event.key === "ArrowDown" ? 1 : -1;
+
+                index = (
+                    index + direction + choices.length
+                ) % choices.length;
+            }
+
+            choices[index].focus();
+        }
+    });
+
+    document.addEventListener("click", event => {
+        if (!picker.contains(event.target)) {
+            picker.open = false;
+        }
+    });
+
+    showPair(pairs[0]);
 }
 
 async function startPitchRecording(state) {
