@@ -208,120 +208,134 @@
             </div>
         </div>
     </div>
-    <!-- =========================================================
-         Temporary Area (Pitch Visualization Roadmap)
-         ========================================================= -->
-    <div class="example-box">
-        <div style="font-weight: bold; margin-bottom: 6px; color: var(--text-primary);">
-            Temporary Area (Pitch Visualization Roadmap)
-        </div>
+    <!-- Pitch Lab -->
+    <style>
+        .pitch-lab-box {
+            position: relative;
+            margin-top: 8px;
+            padding: 24px 16px 16px;
+            border: 1px solid #60a5fa;
+            border-radius: 6px;
+            background: #eff6ff;
+            color: var(--text-primary);
+        }
 
-        <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--text-secondary);">
-            <li>Step 1: ピッチを表示する場所を作る</li>
-            <li>Step 2: 声から音の高さを取り出す</li>
-            <li>Step 3: 音の高さのデータを整える</li>
-            <li>Step 4: お手本のピッチを表示する</li>
-            <li>Step 5: 自分のピッチを重ねて比較する</li>
-            <li>Step 6: 必要なら、ピッチ以外の評価にLLM/APIを使うことを検討</li>
-        </ul>
+        .pitch-lab-box::before {
+            content: "Lab";
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #2563eb;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: bold;
+        }
 
-        <!-- =====================================================
-             Pitch Lab: Independent Recording Cards
-             ===================================================== -->
+        .pitch-lab-box .pitch-lab {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        .pitch-lab-box .pitch-lab-description {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .pitch-lab-box .pitch-controls {
+            align-items: center;
+        }
+
+        .pitch-lab-box .pitch-status {
+            min-height: 0;
+            margin: 0 0 0 4px;
+            font-size: 14px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .pitch-lab-box {
+                background: #172554;
+                border-color: #60a5fa;
+            }
+
+            .pitch-lab-box::before {
+                background: #93c5fd;
+                color: #172554;
+            }
+        }
+    </style>
+
+    <div class="pitch-lab-box">
         <div class="pitch-lab">
             <h3 class="pitch-lab-title">
-                Pitch Lab: Record and Visualize F0
+                Watch Your Pitch Rise and Fall
             </h3>
 
             <p class="pitch-lab-description">
-                Record each word separately. Stop recording to extract
-                and display its pitch contour. The graph shows estimated
-                fundamental frequency (F0), not speech-recognition results.
+                💡Record each word, then stop. Watch where your pitch rises or falls.
             </p>
 
             <div class="pitch-lab-grid">
-
-                <!-- Card 1: はし — chopstick -->
                 <section class="pitch-card" data-pitch-side="chopstick">
                     <h4>は↘し — chopstick</h4>
-
                     <p class="pitch-card-note">
                         Target: pitch falls after は
                     </p>
 
                     <div class="pitch-controls">
-                        <button type="button" class="example-button pitch-record">
-                            ⏺️ Record
-                        </button>
-
-                        <button type="button" class="example-button pitch-stop" disabled>
-                            ⏹️ Stop
-                        </button>
-
-                        <button type="button" class="example-button pitch-play" disabled>
-                            ▶️ Play
-                        </button>
-
-                        <button type="button" class="example-button pitch-analyze" disabled>
-                            📈 Analyze F0
-                        </button>
+                        <button type="button"
+                                class="example-button pitch-record"
+                                aria-label="Record">🎙とる</button>
+                        <button type="button"
+                                class="example-button pitch-stop"
+                                aria-label="Stop recording"
+                                disabled>⏹️</button>
+                        <button type="button"
+                                class="example-button pitch-play"
+                                aria-label="Play your recording"
+                                disabled>▶️</button>
+                        <span class="pitch-status"
+                              role="status"
+                              aria-live="polite">Not recorded yet</span>
                     </div>
 
-                    <p class="pitch-status" aria-live="polite">
-                        Not recorded yet
-                    </p>
-
-                    <p class="pitch-summary">
-                        Median F0: —
-                    </p>
-
-                    <canvas
-                        class="pitch-canvas"
-                        aria-label="F0 pitch contour for chopstick">
-                    </canvas>
+                    <canvas class="pitch-canvas"
+                            aria-label="Pitch contour for chopstick"></canvas>
                 </section>
 
-                <!-- Card 2: はし — bridge -->
                 <section class="pitch-card" data-pitch-side="bridge">
                     <h4>は↗し — bridge</h4>
-
                     <p class="pitch-card-note">
                         Target: pitch rises after は
                     </p>
 
                     <div class="pitch-controls">
-                        <button type="button" class="example-button pitch-record">
-                            ⏺️ Record
-                        </button>
-
-                        <button type="button" class="example-button pitch-stop" disabled>
-                            ⏹️ Stop
-                        </button>
-
-                        <button type="button" class="example-button pitch-play" disabled>
-                            ▶️ Play
-                        </button>
-
-                        <button type="button" class="example-button pitch-analyze" disabled>
-                            📈 Analyze F0
-                        </button>
+                        <button type="button"
+                                class="example-button pitch-record"
+                                aria-label="Record">🎙とる</button>
+                        <button type="button"
+                                class="example-button pitch-stop"
+                                aria-label="Stop recording"
+                                disabled>⏹️</button>
+                        <button type="button"
+                                class="example-button pitch-play"
+                                aria-label="Play your recording"
+                                disabled>▶️</button>
+                        <span class="pitch-status"
+                              role="status"
+                              aria-live="polite">Not recorded yet</span>
                     </div>
 
-                    <p class="pitch-status" aria-live="polite">
-                        Not recorded yet
-                    </p>
-
-                    <p class="pitch-summary">
-                        Median F0: —
-                    </p>
-
-                    <canvas
-                        class="pitch-canvas"
-                        aria-label="F0 pitch contour for bridge">
-                    </canvas>
+                    <canvas class="pitch-canvas"
+                            aria-label="Pitch contour for bridge"></canvas>
                 </section>
-
             </div>
+        </div>
+    </div> 
+</div>
 
             <p class="pitch-lab-footnote">
                 F0 estimates can be unreliable during silence, unvoiced
