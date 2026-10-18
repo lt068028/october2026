@@ -2560,12 +2560,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             '$1$2を'
         );
 
-        if (speechStyle === 'informal') {
-            value = value
-                .replace(/[\s、。．,.!?！？]+$/g, '')
-                .replace(/よ?$/, 'よ');
-        }
-
+        // 文末の「よ」は全モード共通で任意とする。
+        value = value
+            .replace(/[\s、。．,.!?！？]+$/g, '')
+            .replace(/よ?$/, 'よ');
+        
         return baseNormalize(value);
     };
     // 「英語を／英語で」の対象は並べ替え後の3番。
