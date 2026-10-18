@@ -1,4 +1,76 @@
 /* ==========================================
+   キュー切替パネル
+   左：タイトル＋説明／右：中央にボタン
+   ========================================== */
+
+/* p71-stage-* は既存7.1との接続用クラス */
+.info-panel.drill-cue-panel:has(> .p71-stage-copy),
+.info-panel.drill-cue-panel:has(> .drill-cue-copy) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.drill-cue-panel > .p71-stage-copy,
+.drill-cue-panel > .drill-cue-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 0;
+}
+
+.drill-cue-panel > .p71-stage-copy > span,
+.drill-cue-panel > .drill-cue-copy > span {
+    display: block;
+    margin: 0;
+}
+
+.drill-cue-panel:has(> .p71-stage-copy) > .drill-cue-button,
+.drill-cue-panel:has(> .drill-cue-copy) > .drill-cue-button {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 190px;
+}
+
+@media (max-width: 600px) {
+    .info-panel.drill-cue-panel:has(> .p71-stage-copy),
+    .info-panel.drill-cue-panel:has(> .drill-cue-copy) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .drill-cue-panel:has(> .p71-stage-copy) > .drill-cue-button,
+    .drill-cue-panel:has(> .drill-cue-copy) > .drill-cue-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+/* Practice 7.1：許容する助詞と補足メッセージ */
+#drill1Container .p71-accepted-particle,
+#drill1Container .p71-particle-note {
+    color: #2563eb;
+}
+
+#drill1Container .p71-particle-note {
+    display: block;
+    margin-top: 6px;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.5;
+    white-space: normal;
+}
+
+@media (prefers-color-scheme: dark) {
+    #drill1Container .p71-accepted-particle,
+    #drill1Container .p71-particle-note {
+        color: #60a5fa;
+    }
+}
+/* ==========================================
    Global Theme Variables
    ========================================== */
 :root {
