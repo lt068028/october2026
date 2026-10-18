@@ -2086,11 +2086,44 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
 
         cueCells.forEach(cell => {
-            cell.style.setProperty('width', `${cueWidth}px`, 'important');
-            cell.style.setProperty('padding-right', '4px', 'important');
-            cell.style.setProperty('white-space', 'nowrap', 'important');
-        });
+            cell.style.setProperty(
+                'width', `${cueWidth}px`, 'important'
+            );
+            cell.style.setProperty(
+                'padding-right', '4px', 'important'
+            );
+            cell.style.setProperty(
+                'white-space', 'nowrap', 'important'
+            );
 
+            const table = cell.closest('table');
+            if (!table) return;
+
+            table.classList.add('recording-table');
+
+            let columns = table.querySelector(
+                'colgroup.recording-columns'
+            );
+
+            if (!columns) {
+                columns = document.createElement('colgroup');
+                columns.className = 'recording-columns';
+
+                for (let index = 0; index < 3; index++) {
+                    columns.appendChild(
+                        document.createElement('col')
+                    );
+                }
+
+                table.prepend(columns);
+            }
+
+            // 番号・最長キューの幅を確保し、
+            // 操作と結果には残りの幅を割り当てる。
+            columns.children[0].style.width = '34px';
+            columns.children[1].style.width =
+                `${cueWidth + 4}px`;
+        });
         practice71SyncRecordingUI();
     };
     const originalSync = practice71SyncRecordingUI;
