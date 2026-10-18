@@ -731,18 +731,22 @@ function practice71FindDiff(actual, reference) {
     };
 }
 
-function practice71ShowResult(view, saved, rowKey, playRate) {
-    const normalized = practice71Normalize(saved.rawTranscript);
+    // モード変更による再描画では、録音時の判定を保持する。
+    // 新しい録音の判定はprocessResult側で保存される。
+    if (typeof saved.isCorrect !== 'boolean') {
+        const normalized = practice71Normalize(
+            saved.rawTranscript
+        );
 
-    saved.isCorrect = normalized.length > 0 && [
-        saved.expectedText,
-        saved.modelText
-    ].some(text =>
-        typeof text === "string" &&
-        text.length > 0 &&
-        normalized === practice71Normalize(text)
-    );
-
+        saved.isCorrect = normalized.length > 0 && [
+            saved.expectedText,
+            saved.modelText
+        ].some(text =>
+            typeof text === 'string' &&
+            text.length > 0 &&
+            normalized === practice71Normalize(text)
+        );
+    }
     const displayed = scriptMode === "hiragana"
         ? practice71ToHiragana(saved.rawTranscript)
         : String(saved.rawTranscript ?? "");
@@ -2225,11 +2229,16 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         ''
     ];
 
-    // 3文体×3段階の抽出文・録音を個別に保持する。
+    // モードにかかわらず、同じ問題の抽出文・録音を表示する。
+    const sharedRecord = {
+        savedResults: practice71State.savedResults,
+        audioUrls: practice71State.audioUrls
+    };
+
     const emptyRecords = () => ({
-        1: { savedResults: {}, audioUrls: {} },
-        2: { savedResults: {}, audioUrls: {} },
-        3: { savedResults: {}, audioUrls: {} }
+        1: sharedRecord,
+        2: sharedRecord,
+        3: sharedRecord
     });
 
     const styleRecords = {
@@ -2239,11 +2248,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     };
 
     let records = styleRecords.formal;
-
-    records[1] = {
-        savedResults: practice71State.savedResults,
-        audioUrls: practice71State.audioUrls
-    };
 
     practice71ToHiragana = text => baseToHiragana(
         String(text ?? '').replace(/妹/g, 'いもうと')
@@ -2280,6 +2284,20 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
             button.disabled = blocked();
         });
+
+        document.querySelectorAll(
+            '#drill1List .result-text'
+        ).forEach(result => {
+            result.parentElement.classList.add(
+                'p71-result-wrap'
+            );
+            result.closest('td')?.classList.add(
+                'p71-controls'
+            );
+            result.closest('table')?.classList.add(
+                'p71-practice-table'
+            );
+        });
     }
 
     const baseSync = function () {
@@ -2288,9 +2306,46 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     };
 
     function installSpeechStyle() {
-        if (document.getElementById('speechStyleControl')) {
-            syncSpeechStyle();
-            return;
+        if (!document.getElementById(
+            'practice71ResultLayoutStyle'
+        )) {
+            const style = document.createElement('style');
+            style.id = 'practice71ResultLayoutStyle';
+
+            style.textContent = `
+                #drill1List .p71-practice-table {
+                    width: 100%;
+                    table-layout: auto;
+                }
+
+                #drill1List .p71-controls {
+                    white-space: normal !important;
+                    vertical-align: middle;
+                }
+
+                #drill1List .p71-result-wrap {
+                    display: block !important;
+                    float: none !important;
+                    clear: both;
+                    width: 100%;
+                    min-width: 0;
+                    box-sizing: border-box;
+                    margin-top: 6px;
+                    text-align: right;
+                    white-space: normal;
+                }
+
+                #drill1List .p71-result-wrap > .result-text {
+                    display: inline-block;
+                    max-width: 100%;
+                    margin-left: 0 !important;
+                    white-space: normal;
+                    overflow-wrap: anywhere;
+                    text-align: right;
+                }
+            `;
+
+            document.head.appendChild(style);
         }
 
         const script = document.getElementById(
@@ -2298,6 +2353,16 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         );
         const anchor = script?.closest('.control-item');
         if (!anchor) return;
+
+        const existing = document.getElementById(
+            'speechStyleControl'
+        );
+
+        if (existing) {
+            anchor.after(existing.closest('.control-item'));
+            syncSpeechStyle();
+            return;
+        }
 
         const item = document.createElement('div');
         item.className = 'control-item speech-style-item';
@@ -2312,17 +2377,17 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             [
                 'formal',
                 '🏢Formal',
-                'Polite forms: 見ます / 見ています.'
+                'Polite speech for work or unfamiliar people.'
             ],
             [
                 'informal',
                 '🏠Informal',
-                'Plain forms: 見る / 見ている.'
+                'Plain forms used in writing'
             ],
             [
                 'casual',
                 '🫂Casual',
-                'Conversation: 映画見るよ / 映画見てるよ.'
+                'Relaxed speech with family and friends.'
             ]
         ].forEach(([value, label, description]) => {
             const button = document.createElement('button');
@@ -2342,18 +2407,9 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
                 stopAllPlayback();
 
-                records[stage] = {
-                    savedResults: practice71State.savedResults,
-                    audioUrls: practice71State.audioUrls
-                };
-
+                // 文体だけを変更し、保存先を切り替えない。
                 speechStyle = value;
                 records = styleRecords[value];
-
-                practice71State.savedResults =
-                    records[stage].savedResults;
-                practice71State.audioUrls =
-                    records[stage].audioUrls;
 
                 renderAll();
             };
@@ -2362,10 +2418,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
 
         item.append(control);
-        anchor.before(item);
+
+        // Hiragana／漢字 → 文体 → Vocabの順。
+        anchor.after(item);
         syncSpeechStyle();
     }
-
     function applyStage() {
         installSpeechStyle();
 
