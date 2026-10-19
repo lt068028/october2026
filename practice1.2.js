@@ -639,745 +639,1149 @@ function practice2ShowNotice(resultSpan, message) {
 // ============================================================================
 // Render Drill 1 Section
 // ============================================================================
-function renderDrill1Section() {
-    let container = document.getElementById("drill1Container");
+// Practice 1.2：共通UI・文体・判定
+(() => {
+    let speechStyle = "formal";
 
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1Container";
+    const busy = () => Boolean(
+        activeRecognitionSession || practice2State.startingRow
+    );
 
-        document.body.insertBefore(
-            container,
-            document.getElementById("drill2Container") || document.body.lastChild
+    const negativeForms = [
+        "じゃないです",
+        "ではないです",
+        "じゃありません",
+        "ではありません",
+        "じゃない",
+        "ではない"
+    ];
+
+    const word = (hira, kanji) =>
+        scriptMode === "kanji" ? kanji : hira;
+
+    const node = (tag, className = "", text = "") => {
+        const element = document.createElement(tag);
+        element.className = className;
+        element.textContent = text;
+        return element;
+    };
+
+    const button = (label, tip, action) => {
+        const element = node(
+            "button",
+            "example-button custom-tip-wrap",
+            label
         );
+
+        element.type = "button";
+        element.append(node("span", "custom-tip-box", tip));
+
+        element.onclick = () => {
+            if (!busy()) action?.();
+        };
+
+        return element;
+    };
+
+    const question = (subject, predicate) => {
+        const topic = speechStyle === "casual" ? "、" : "は、";
+        const ending = speechStyle === "formal" ? "ですか？" : "？";
+
+        return `${subject}${topic}${predicate}${ending}`;
+    };
+
+    const statement = (subject, predicate) => {
+        const topic = speechStyle === "casual" ? "、" : "は、";
+
+        const ending = {
+            formal: "です。",
+            informal: "だ。",
+            casual: "だよ。"
+        }[speechStyle];
+
+        return `${subject}${topic}${predicate}${ending}`;
+    };
+
+    const response = (predicate, yes) => {
+        const prefix = speechStyle === "casual"
+            ? (yes ? "うん、" : "ううん、")
+            : (yes ? "はい、" : "いいえ、");
+
+        const ending = yes
+            ? {
+                formal: "です。",
+                informal: "だ。",
+                casual: "だよ。"
+            }[speechStyle]
+            : {
+                formal: "じゃないです。",
+                informal: "じゃない。",
+                casual: "じゃないよ。"
+            }[speechStyle];
+
+        return prefix + predicate + ending;
+    };
+
+    // 比較専用。表示文・録音データは変更しない。
+    const normalize = text =>
+        practice2Normalize(text)
+            .replace(/なん(?=ですか$|$)/, "なに");
+
+    function references(text, style) {
+        const value = normalize(text);
+
+        const ending = negativeForms.find(form =>
+            value.endsWith(form)
+        );
+
+        let values = ending
+            ? negativeForms
+                .slice(0, style === "formal" ? 4 : 6)
+                .map(form =>
+                    value.slice(0, -ending.length) + form
+                )
+            : [value];
+
+        if (style === "casual") {
+            values = values.flatMap(value => [
+                value,
+                value
+                    .replace(/^ううん/, "いいえ")
+                    .replace(/^うん/, "はい")
+            ]);
+
+            const subjects = [
+                ...practice2Data.flatMap(item => [
+                    item.x,
+                    item.xKanji
+                ]),
+                ...drill2Targets.flatMap(item => [
+                    item.label + "の専攻",
+                    item.labelKanji + "の専攻"
+                ]),
+                "お父さん",
+                "あなたの専攻",
+                "わたしの専攻"
+            ];
+
+            values = values.flatMap(value => {
+                const subject = subjects
+                    .map(normalize)
+                    .find(subject => value.startsWith(subject));
+
+                if (!subject) return [value];
+
+                const rest = value
+                    .slice(subject.length)
+                    .replace(/^は/, "");
+
+                return [
+                    subject + rest,
+                    subject + "は" + rest
+                ];
+            });
+        }
+
+        return [...new Set(values)];
     }
 
-    container.innerHTML = "";
+    const matches = (actual, expected, style) => {
+        const value = normalize(actual);
 
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "30px";
-
-    const w1 = formatWord("おとうさん", "お父さん", "otōsan", "father");
-    const w2 = formatWord("かんごし", "看護師", "kangoshi", "nurse");
-
-    const exQ = scriptMode === "kanji"
-        ? "お父さん<strong>は、</strong>看護師<strong>ですか？</strong>"
-        : "おとうさん<strong>は、</strong>かんごし<strong>ですか？</strong>";
-
-    const exYes = scriptMode === "kanji"
-        ? "<strong>はい、</strong>看護師<strong>です。</strong>"
-        : "<strong>はい、</strong>かんごし<strong>です。</strong>";
-
-    const exNo = scriptMode === "kanji"
-        ? "<strong>いいえ、</strong>看護師<strong>じゃないです。</strong>"
-        : "<strong>いいえ、</strong>かんごし<strong>じゃないです。</strong>";
-
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex1Listen" class="example-button">🔊 きく</button>
-            <span>${exQ}</span>
-        </div>
-
-        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Response:</strong>
-            <button id="exYesListen" class="example-button" style="margin-right: 4px;">🔊 🙆</button>
-            <span>${exYes}</span> ／
-            <button id="exNoListen" class="example-button" style="margin-left: 4px; margin-right: 4px;">🔊 🙅</button>
-            <span>${exNo}</span>
-        </div>
-    `;
-
-    container.appendChild(exBox);
-
-    document.getElementById("ex1Listen").onclick = () => {
-        setPlayingStateMultiple(
-            [document.getElementById("ex1Listen")],
-            "Playing..."
-        );
-        speakText("お父さんは、看護師ですか？", 0.9, () => stopAllPlayback());
+        return value.length > 0
+            && references(expected, style).includes(value);
     };
 
-    document.getElementById("exYesListen").onclick = () => {
-        setPlayingStateMultiple(
-            [document.getElementById("exYesListen")],
-            "Playing..."
+    // 保存時だけ判定する。
+    // 設定変更時に、保存済み録音の判定をやり直さない。
+    processResult = function(
+        rawTranscript,
+        expectedText,
+        getModel,
+        resultSpan,
+        correctionBox,
+        corrListenBtn,
+        corrTextSpan,
+        getUrl,
+        rate,
+        key
+    ) {
+        const modelText = getModel();
+
+        const saved = {
+            rawTranscript: String(rawTranscript ?? "").trim(),
+            expectedText,
+            modelText,
+            speechStyle,
+            isCorrect:
+                matches(rawTranscript, expectedText, speechStyle)
+                || matches(rawTranscript, modelText, speechStyle)
+        };
+
+        practice2State.savedResults[key] = saved;
+
+        practice2ShowResult(
+            {
+                resultSpan,
+                correctionBox,
+                corrListenBtn,
+                corrTextSpan
+            },
+            saved,
+            key,
+            rate
         );
-        speakText("はい、看護師です。", 0.9, () => stopAllPlayback());
+
+        if (isAutoPlay) {
+            speakText(
+                practice2SpeechText(modelText),
+                rate,
+                () => {
+                    if (busy()) return;
+
+                    stopAllPlayback();
+
+                    const url = getUrl();
+                    if (!url) return;
+
+                    const audio = new Audio(url);
+                    currentPlayingAudio = audio;
+                    audio.playbackRate = 1;
+                    audio.onended = () => stopAllPlayback();
+
+                    audio.play().catch(() => stopAllPlayback());
+                }
+            );
+        }
     };
 
-    document.getElementById("exNoListen").onclick = () => {
-        setPlayingStateMultiple(
-            [document.getElementById("exNoListen")],
-            "Playing..."
-        );
-        speakText("いいえ、看護師じゃないです。", 0.9, () => stopAllPlayback());
-    };
+    practice2ShowResult = function(view, saved, key, rate) {
+        const displayed = scriptMode === "hiragana"
+            ? practice2ToHiragana(saved.rawTranscript)
+            : String(saved.rawTranscript ?? "");
 
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
+        view.resultSpan.replaceChildren();
+        view.resultSpan.style.color = "var(--text-primary)";
 
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 1: Yes/No Questions</span>
-        <span class="info-panel-desc">
-            💡 Form a question from the prompts and practice both affirmative and negative responses.
-        </span>
-    `;
-
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill1List";
-    container.appendChild(listDiv);
-
-    practice2Data.forEach((item, index) => {
-        createPractice2Row(listDiv, `${index + 1}.`, item, index, 0.9);
-    });
-}
-
-// ============================================================================
-// Render Drill 2 Section
-// ============================================================================
-function renderDrill2Section() {
-    let container = document.getElementById("drill2Container");
-
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill2Container";
-
-        document.body.insertBefore(
-            container,
-            document.querySelector(".voice-guide-footer")
-        );
-    }
-
-    container.innerHTML = "";
-
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "40px";
-
-    const wTarget = formatWord("あなた", "あなた", "anata", "you");
-    const wMaj = formatWord("せんこう", "専攻", "senkō", "major");
-
-    const exQ2 = scriptMode === "kanji"
-        ? "あなた<strong>の</strong>専攻<strong>は、</strong>何<strong>ですか。</strong>"
-        : "あなた<strong>の</strong>せんこう<strong>は、</strong>なん<strong>ですか。</strong>";
-
-    const exA2 = scriptMode === "kanji"
-        ? "わたし<strong>の</strong>専攻<strong>は、</strong>政治<strong>です。</strong>"
-        : "わたし<strong>の</strong>せんこう<strong>は、</strong>せいじ<strong>です。</strong>";
-
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center" style="margin-bottom: 8px;">
-            <strong class="example-label-title">Question:</strong>
-            ${wTarget} ／ ${wMaj}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="ex2QListen" class="example-button">🔊 きく</button>
-            <span>${exQ2}</span>
-        </div>
-
-        <div class="example-line dashed-border flex-row-center" style="padding-top: 10px;">
-            <strong class="example-label-title">Response:</strong>
-            <button id="ex2AListen" class="example-button" style="margin-right: 4px;">🔊 きく</button>
-            <span>${exA2}</span>
-        </div>
-    `;
-
-    container.appendChild(exBox);
-
-    document.getElementById("ex2QListen").onclick = () => {
-        setPlayingStateMultiple(
-            [document.getElementById("ex2QListen")],
-            "Playing..."
-        );
-        speakText("あなたの専攻は何ですか。", 0.9, () => stopAllPlayback());
-    };
-
-    document.getElementById("ex2AListen").onclick = () => {
-        setPlayingStateMultiple(
-            [document.getElementById("ex2AListen")],
-            "Playing..."
-        );
-        speakText("わたしの専攻は、政治です。", 0.9, () => stopAllPlayback());
-    };
-
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task2";
-    infoPanel.style.marginTop = "20px";
-
-    infoPanel.innerHTML = `
-        <span class="info-panel-title">Drill 2: Wh- Questions</span>
-        <span class="info-panel-desc">
-            💡 Ask about majors using Wh- questions. Select your major from the dropdown menu and reply using the possessive form.
-        </span>
-    `;
-
-    container.appendChild(infoPanel);
-
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill2List";
-    container.appendChild(listDiv);
-
-    drill2Targets.forEach((target, index) => {
-        createDrill2Row(listDiv, `${index + 1}.`, target, 0.9);
-    });
-}
-
-function createPractice2Row(container, indexLabel, item, rowIndex, playRate) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "drill-row";
-    rowDiv.dataset.rowIndex = `p2_drill1_${rowIndex}`;
-
-    const theme = rowColorThemes[rowIndex % rowColorThemes.length];
-
-    const qRow = document.createElement("div");
-    qRow.className = "top-row";
-    qRow.style.marginBottom = "6px";
-
-    const qListenBtn = document.createElement("button");
-    qListenBtn.className = "example-button custom-tip-wrap";
-    qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-
-    qListenBtn.onclick = () => {
-        setPlayingStateMultiple([qListenBtn], "Playing...");
-
-        const xText = scriptMode === "kanji" ? item.xKanji : item.x;
-        const yText = scriptMode === "kanji" ? item.yKanji : item.y;
-
-        speakText(`${xText}は、${yText}ですか？`, playRate, () => stopAllPlayback());
-    };
-
-    const indexSpan = document.createElement("span");
-    indexSpan.textContent = indexLabel;
-    indexSpan.style.fontWeight = "bold";
-
-    const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = `${formatWord(item.x, item.xKanji, item.xRomaji, item.xMeaning)} ／ ${formatWord(item.y, item.yKanji, item.yRomaji, item.yMeaning)}`;
-    promptSpan.style.minWidth = "220px";
-
-    const qRecordBtn = document.createElement("button");
-    qRecordBtn.className = "example-button custom-tip-wrap";
-    qRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
-
-    const qStopBtn = document.createElement("button");
-    qStopBtn.className = "example-button custom-tip-wrap";
-    qStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    qStopBtn.disabled = true;
-
-    const qResultSpan = document.createElement("span");
-    qResultSpan.className = "result-text";
-    qResultSpan.textContent = practice2State.audioUrls[`p2_drill1_q_${rowIndex}`]
-        ? "(Recorded) ✅"
-        : "(Not recorded yet)";
-
-    qResultSpan.style.color = practice2State.audioUrls[`p2_drill1_q_${rowIndex}`]
-        ? "var(--text-primary)"
-        : "var(--text-secondary)";
-
-    qRow.appendChild(qListenBtn);
-    qRow.appendChild(indexSpan);
-    qRow.appendChild(promptSpan);
-    qRow.appendChild(qRecordBtn);
-    qRow.appendChild(qStopBtn);
-    qRow.appendChild(qResultSpan);
-
-    if (practice2State.audioUrls[`p2_drill1_q_${rowIndex}`]) {
-        appendPersistedPlayButton(qResultSpan, `p2_drill1_q_${rowIndex}`, playRate);
-    }
-
-    const aRow = document.createElement("div");
-    aRow.className = "top-row";
-    aRow.style.paddingLeft = "24px";
-    aRow.style.borderTop = "1px dashed var(--border-color)";
-    aRow.style.paddingTop = "6px";
-
-    let selectedMode = null;
-
-    const yesBtn = document.createElement("button");
-    yesBtn.className = "example-button";
-    yesBtn.style.minWidth = "40px";
-    yesBtn.innerHTML = "🙆";
-    yesBtn.style.backgroundColor = theme.unselected;
-    yesBtn.style.fontWeight = "bold";
-
-    const noBtn = document.createElement("button");
-    noBtn.className = "example-button";
-    noBtn.style.minWidth = "40px";
-    noBtn.innerHTML = "🙅";
-    noBtn.style.backgroundColor = theme.unselected;
-    noBtn.style.fontWeight = "bold";
-    noBtn.style.marginLeft = "4px";
-
-    const aListenBtn = document.createElement("button");
-    aListenBtn.className = "example-button custom-tip-wrap";
-    aListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct sample sentence.</span>';
-    aListenBtn.disabled = true;
-    aListenBtn.style.opacity = "0.4";
-
-    const showTextBtn = document.createElement("button");
-    showTextBtn.className = "example-button custom-tip-wrap";
-    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
-    showTextBtn.disabled = true;
-    showTextBtn.style.opacity = "0.4";
-    showTextBtn.style.marginLeft = "4px";
-
-    const aPromptLabel = document.createElement("span");
-    aPromptLabel.className = "prompt-label";
-    aPromptLabel.style.minWidth = "220px";
-    aPromptLabel.style.color = "var(--text-secondary)";
-    aPromptLabel.textContent = "";
-
-    let isTextVisible = false;
-
-    const aRecordBtn = document.createElement("button");
-    aRecordBtn.className = "example-button custom-tip-wrap";
-    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Choose 🙆 or 🙅.</span>';
-    aRecordBtn.disabled = true;
-
-    const aStopBtn = document.createElement("button");
-    aStopBtn.className = "example-button custom-tip-wrap";
-    aStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
-    aStopBtn.disabled = true;
-
-    const aResultSpan = document.createElement("span");
-    aResultSpan.className = "result-text";
-    aResultSpan.textContent = practice2State.audioUrls[`p2_drill1_a_${rowIndex}`]
-        ? "(Recorded) ✅"
-        : "(Not recorded yet)";
-
-    aResultSpan.style.color = practice2State.audioUrls[`p2_drill1_a_${rowIndex}`]
-        ? "var(--text-primary)"
-        : "var(--text-secondary)";
-
-    showTextBtn.onclick = () => {
-        if (!selectedMode) return;
-
-        isTextVisible = !isTextVisible;
-        const wordY = (scriptMode === "kanji") ? item.yKanji : item.y;
-
-        if (isTextVisible) {
-            aPromptLabel.style.color = "var(--text-primary)";
-
-            aPromptLabel.innerHTML = selectedMode === "yes"
-                ? `はい、${wordY}です。`
-                : `いいえ、${wordY}じゃないです。`;
-
-            showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
+        if (saved.isCorrect) {
+            view.resultSpan.append(
+                document.createTextNode(displayed + " ✅ ")
+            );
         } else {
-            aPromptLabel.style.color = "var(--text-secondary)";
-            aPromptLabel.textContent = "";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
-        }
-    };
+            const candidates = [
+                saved.expectedText,
+                saved.modelText
+            ]
+                .filter(Boolean)
+                .flatMap(text =>
+                    references(
+                        text,
+                        saved.speechStyle || "formal"
+                    )
+                )
+                .flatMap(text => [
+                    text,
+                    text.replace(/なに(?=ですか$|$)/, "なん")
+                ]);
 
-    yesBtn.onclick = () => {
-        if (selectedMode === "yes") {
-            selectedMode = null;
-            isTextVisible = false;
+            let best = null;
 
-            yesBtn.style.backgroundColor = theme.unselected;
-            yesBtn.style.opacity = "1";
-            noBtn.style.backgroundColor = theme.unselected;
-            noBtn.style.opacity = "1";
+            for (const reference of candidates) {
+                const diff = practice2FindDiff(
+                    displayed,
+                    reference
+                );
 
-            aPromptLabel.textContent = "";
-            aListenBtn.disabled = true;
-            aListenBtn.style.opacity = "0.4";
-            showTextBtn.disabled = true;
-            showTextBtn.style.opacity = "0.4";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
-            aRecordBtn.disabled = true;
+                if (!best || diff.cost < best.cost) {
+                    best = diff;
+                }
+            }
 
-            return;
-        }
+            if (!best) {
+                view.resultSpan.append(
+                    document.createTextNode(displayed)
+                );
+            } else {
+                const red = text => {
+                    const span = node("span", "", text);
+                    span.style.color = "var(--error-text)";
+                    view.resultSpan.append(span);
+                };
 
-        selectedMode = "yes";
-        isTextVisible = false;
+                for (let i = 0; i <= best.chars.length; i++) {
+                    if (best.gaps.has(i)) red("＿");
 
-        yesBtn.style.backgroundColor = theme.yesActive;
-        yesBtn.style.opacity = "1";
-        noBtn.style.backgroundColor = theme.unselected;
-        noBtn.style.opacity = "0.55";
+                    if (i === best.chars.length) break;
 
-        aPromptLabel.textContent = "";
-        aListenBtn.disabled = false;
-        aListenBtn.style.opacity = "1";
-        showTextBtn.disabled = false;
-        showTextBtn.style.opacity = "1";
-        aRecordBtn.disabled = false;
-    };
+                    if (best.redIndexes.has(i)) {
+                        red(best.chars[i]);
+                    } else {
+                        view.resultSpan.append(
+                            document.createTextNode(
+                                best.chars[i]
+                            )
+                        );
+                    }
+                }
+            }
 
-    noBtn.onclick = () => {
-        if (selectedMode === "no") {
-            selectedMode = null;
-            isTextVisible = false;
-
-            noBtn.style.backgroundColor = theme.unselected;
-            noBtn.style.opacity = "1";
-            yesBtn.style.backgroundColor = theme.unselected;
-            yesBtn.style.opacity = "1";
-
-            aPromptLabel.textContent = "";
-            aListenBtn.disabled = true;
-            aListenBtn.style.opacity = "0.4";
-            showTextBtn.disabled = true;
-            showTextBtn.style.opacity = "0.4";
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
-            aRecordBtn.disabled = true;
-
-            return;
+            view.resultSpan.append(
+                document.createTextNode(" ")
+            );
         }
 
-        selectedMode = "no";
-        isTextVisible = false;
+        if (practice2State.audioUrls[key]) {
+            appendPersistedPlayButton(
+                view.resultSpan,
+                key,
+                rate
+            );
+        }
 
-        noBtn.style.backgroundColor = theme.noActive;
-        noBtn.style.opacity = "1";
-        yesBtn.style.backgroundColor = theme.unselected;
-        yesBtn.style.opacity = "0.55";
+        view.corrListenBtn.hidden = true;
+        view.corrListenBtn.style.display = "none";
 
-        aPromptLabel.textContent = "";
-        aListenBtn.disabled = false;
-        aListenBtn.style.opacity = "1";
-        showTextBtn.disabled = false;
-        showTextBtn.style.opacity = "1";
-        aRecordBtn.disabled = false;
+        view.correctionBox.style.display =
+            saved.isCorrect ? "none" : "block";
+
+        view.corrTextSpan.textContent = saved.isCorrect
+            ? ""
+            : "🔥Keep going! Try once more!";
     };
 
-    aListenBtn.onclick = () => {
-        if (!selectedMode) return;
+    function listen(getText, label = "🔊きく") {
+        const element = button(
+            label,
+            "Listen to the model sentence.",
+            () => {
+                const text = getText();
+                if (!text) return;
 
-        setPlayingStateMultiple([aListenBtn], "Playing...");
+                setPlayingStateMultiple(
+                    [element],
+                    "Playing..."
+                );
 
-        const wordYKanji = item.yKanji;
+                speakText(
+                    practice2SpeechText(text),
+                    0.9,
+                    () => stopAllPlayback()
+                );
+            }
+        );
 
-        const modelAns = selectedMode === "yes"
-            ? `はい、${wordYKanji}です。`
-            : `いいえ、${wordYKanji}じゃないです。`;
-
-        speakText(modelAns, playRate, () => stopAllPlayback());
-    };
-
-    aRow.appendChild(yesBtn);
-    aRow.appendChild(noBtn);
-    aRow.appendChild(aListenBtn);
-    aRow.appendChild(showTextBtn);
-    aRow.appendChild(aPromptLabel);
-    aRow.appendChild(aRecordBtn);
-    aRow.appendChild(aStopBtn);
-    aRow.appendChild(aResultSpan);
-
-    if (practice2State.audioUrls[`p2_drill1_a_${rowIndex}`]) {
-        appendPersistedPlayButton(aResultSpan, `p2_drill1_a_${rowIndex}`, playRate);
+        return element;
     }
 
-    const correctionBox = document.createElement("div");
-    correctionBox.className = "correction-box";
+    function modelText(getText) {
+        const span = node("span");
+        const text = getText();
 
-    const corrListenBtn = document.createElement("button");
-    corrListenBtn.className = "example-button";
-    corrListenBtn.innerHTML = "🔊 きく";
-    corrListenBtn.style.marginRight = "8px";
+        const pattern =
+            /(じゃないです|じゃないよ|じゃない|ですか|だよ|です|だ|はい|いいえ|ううん|うん|は、)/g;
 
-    const corrTextSpan = document.createElement("span");
+        let position = 0;
 
-    correctionBox.appendChild(corrListenBtn);
-    correctionBox.appendChild(corrTextSpan);
+        for (const match of text.matchAll(pattern)) {
+            span.append(
+                document.createTextNode(
+                    text.slice(position, match.index)
+                )
+            );
 
-    rowDiv.appendChild(qRow);
-    rowDiv.appendChild(aRow);
-    rowDiv.appendChild(correctionBox);
-
-    bindRecorderEvents(
-        qRecordBtn,
-        qStopBtn,
-        qResultSpan,
-        correctionBox,
-        corrListenBtn,
-        corrTextSpan,
-        () => scriptMode === "kanji"
-            ? `${item.xKanji}は${item.yKanji}ですか`
-            : `${item.x}は${item.y}ですか`,
-        () => `${item.xKanji}は${item.yKanji}ですか`,
-        playRate,
-        `p2_drill1_q_${rowIndex}`
-    );
-
-    bindRecorderEvents(
-        aRecordBtn,
-        aStopBtn,
-        aResultSpan,
-        correctionBox,
-        corrListenBtn,
-        corrTextSpan,
-        () => {
-            const yWord = scriptMode === "kanji" ? item.yKanji : item.y;
-
-            return selectedMode === "yes"
-                ? `はい、${yWord}です。`
-                : `いいえ、${yWord}じゃないです。`;
-        },
-        () => {
-            return selectedMode === "yes"
-                ? `はい、${item.yKanji}です。`
-                : `いいえ、${item.yKanji}じゃないです。`;
-        },
-        playRate,
-        `p2_drill1_a_${rowIndex}`
-    );
-
-    container.appendChild(rowDiv);
-}
-
-function createDrill2Row(container, indexLabel, target, playRate) {
-    const rowDiv = document.createElement("div");
-    rowDiv.className = "drill-row";
-
-    const qRow = document.createElement("div");
-    qRow.className = "top-row";
-    qRow.style.marginBottom = "6px";
-
-    const qListenBtn = document.createElement("button");
-    qListenBtn.className = "example-button custom-tip-wrap";
-    qListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the question.</span>';
-
-    qListenBtn.onclick = () => {
-        setPlayingStateMultiple([qListenBtn], "Playing...");
-        speakText(`${target.labelKanji}の専攻は何ですか。`, playRate, () => stopAllPlayback());
-    };
-
-    const indexSpan = document.createElement("span");
-    indexSpan.textContent = indexLabel;
-    indexSpan.style.fontWeight = "bold";
-
-    const tLabelDisplay = formatWord(
-        target.label,
-        target.labelKanji,
-        target.labelRomaji,
-        target.labelMeaning
-    );
-
-    const senkouDisplay = formatWord("せんこう", "専攻", "senkō", "major");
-
-    const promptSpan = document.createElement("span");
-    promptSpan.className = "prompt-label";
-    promptSpan.innerHTML = `${tLabelDisplay} ／ ${senkouDisplay}`;
-    promptSpan.style.minWidth = "220px";
-
-    const qRecordBtn = document.createElement("button");
-    qRecordBtn.className = "example-button custom-tip-wrap";
-    qRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Record your question.</span>';
-
-    const qStopBtn = document.createElement("button");
-    qStopBtn.className = "example-button custom-tip-wrap";
-    qStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
-    qStopBtn.disabled = true;
-
-    const qResultSpan = document.createElement("span");
-    qResultSpan.className = "result-text";
-    qResultSpan.textContent = "(Not recorded yet)";
-    qResultSpan.style.color = "var(--text-secondary)";
-
-    qRow.appendChild(qListenBtn);
-    qRow.appendChild(indexSpan);
-    qRow.appendChild(promptSpan);
-    qRow.appendChild(qRecordBtn);
-    qRow.appendChild(qStopBtn);
-    qRow.appendChild(qResultSpan);
-
-    const aRow = document.createElement("div");
-    aRow.className = "top-row";
-    aRow.style.paddingLeft = "24px";
-    aRow.style.borderTop = "1px dashed var(--border-color)";
-    aRow.style.paddingTop = "6px";
-
-    const aPromptPrefix = document.createElement("span");
-    aPromptPrefix.className = "prompt-label";
-    aPromptPrefix.innerHTML = `${tLabelDisplay} ／ ${senkouDisplay} ／ `;
-    aPromptPrefix.style.minWidth = "180px";
-    aPromptPrefix.style.marginRight = "2px";
-
-    const selectEl = document.createElement("select");
-    selectEl.className = "custom-select custom-tip-wrap";
-    selectEl.style.fontSize = "13px";
-    selectEl.style.marginLeft = "0px";
-    selectEl.style.marginRight = "8px";
-    selectEl.innerHTML = '<option value="" disabled selected>📋Select</option>';
-
-    const selectTip = document.createElement("span");
-    selectTip.className = "custom-tip-wrap";
-    selectTip.style.display = "inline-block";
-    selectTip.innerHTML = '<span class="custom-tip-box">Select a major from the list to answer.</span>';
-    selectTip.appendChild(selectEl);
-
-    majorsData.forEach(m => {
-        const opt = document.createElement("option");
-        opt.value = m.word;
-
-        const displayMajor = (scriptMode === "kanji") ? m.kanji : m.word;
-        opt.textContent = displayMajor;
-        opt.title = `${m.romaji}, ${m.meaning}`;
-
-        selectEl.appendChild(opt);
-    });
-
-    const aListenBtn = document.createElement("button");
-    aListenBtn.className = "example-button custom-tip-wrap";
-    aListenBtn.innerHTML = '🔊きく<span class="custom-tip-box">Listen to the correct answer.</span>';
-    aListenBtn.disabled = true;
-    aListenBtn.style.opacity = "0.4";
-
-    const showTextBtn = document.createElement("button");
-    showTextBtn.className = "example-button custom-tip-wrap";
-    showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
-    showTextBtn.disabled = true;
-    showTextBtn.style.opacity = "0.4";
-    showTextBtn.style.marginLeft = "4px";
-
-    const aPromptLabel = document.createElement("span");
-    aPromptLabel.className = "prompt-label";
-    aPromptLabel.style.minWidth = "200px";
-    aPromptLabel.style.color = "var(--text-secondary)";
-    aPromptLabel.textContent = "";
-
-    let isTextVisible = false;
-    let selectedMajor = null;
-    let selectedMajorKanji = null;
-
-    const aRecordBtn = document.createElement("button");
-    aRecordBtn.className = "example-button custom-tip-wrap";
-    aRecordBtn.innerHTML = '⏺️とる<span class="custom-tip-box">Select a major first.</span>';
-    aRecordBtn.disabled = true;
-
-    const aStopBtn = document.createElement("button");
-    aStopBtn.className = "example-button custom-tip-wrap";
-    aStopBtn.innerHTML = '⏹️<span class="custom-tip-box">Stop recording.</span>';
-    aStopBtn.disabled = true;
-
-    const aResultSpan = document.createElement("span");
-    aResultSpan.className = "result-text";
-    aResultSpan.textContent = "(Not recorded yet)";
-    aResultSpan.style.color = "var(--text-secondary)";
-
-    selectEl.onchange = () => {
-        selectedMajor = selectEl.value;
-
-        const found = majorsData.find(m => m.word === selectedMajor);
-        selectedMajorKanji = found ? found.kanji : selectedMajor;
-
-        isTextVisible = false;
-
-        aListenBtn.disabled = false;
-        aListenBtn.style.opacity = "1";
-        showTextBtn.disabled = false;
-        showTextBtn.style.opacity = "1";
-        aRecordBtn.disabled = false;
-
-        aPromptLabel.style.color = "var(--text-secondary)";
-        aPromptLabel.textContent = "";
-
-        const tip = aRecordBtn.querySelector(".custom-tip-box");
-        if (tip) tip.textContent = "Start recording your voice.";
-    };
-
-    showTextBtn.onclick = () => {
-        if (!selectedMajor) return;
-
-        isTextVisible = !isTextVisible;
-
-        const poss = (scriptMode === "kanji")
-            ? target.possessiveKanji
-            : target.possessive;
-
-        const maj = (scriptMode === "kanji")
-            ? selectedMajorKanji
-            : selectedMajor;
-
-        if (isTextVisible) {
-            aPromptLabel.style.color = "var(--text-primary)";
-            aPromptLabel.innerHTML = `${poss}専攻は${maj}です。`;
-
-            showTextBtn.innerHTML = '🕶️Hide<span class="custom-tip-box">Hide model answer text.</span>';
-        } else {
-            aPromptLabel.style.color = "var(--text-secondary)";
-            aPromptLabel.textContent = "";
-
-            showTextBtn.innerHTML = '👀Text<span class="custom-tip-box">Text to show.</span>';
+            span.append(node("strong", "", match[0]));
+            position = match.index + match[0].length;
         }
+
+        span.append(
+            document.createTextNode(text.slice(position))
+        );
+
+        return span;
+    }
+
+    function example(container, lines) {
+        const box = node("div", "example-box");
+        const table = node("table", "drill-example-table");
+        const body = node("tbody");
+
+        for (
+            const [label, cue, getText, buttonLabel]
+            of lines
+        ) {
+            const row = node("tr");
+
+            const labelCell = node("td");
+            labelCell.append(
+                node("strong", "example-label-title", label)
+            );
+
+            const cueCell = node("td");
+            cueCell.innerHTML = cue;
+
+            const arrowCell = node("td", "", "👉");
+
+            const listenCell = node("td");
+            listenCell.append(
+                listen(getText, buttonLabel)
+            );
+
+            const textCell = node("td");
+            textCell.append(modelText(getText));
+
+            row.append(
+                labelCell,
+                cueCell,
+                arrowCell,
+                listenCell,
+                textCell
+            );
+
+            body.append(row);
+        }
+
+        table.append(body);
+        box.append(table);
+        container.append(box);
+    }
+
+    function card(container, number) {
+        const box = node("div", "drill-row");
+        const table = node("table", "recording-table");
+        const columns = node("colgroup");
+
+        columns.append(
+            node("col"),
+            node("col"),
+            node("col")
+        );
+
+        columns.children[0].style.width = "34px";
+
+        const body = node("tbody");
+        table.append(columns, body);
+        box.append(table);
+        container.append(box);
+
+        return {body, number};
+    }
+
+    function recordingRow(
+        card,
+        part,
+        cue,
+        key,
+        getText,
+        enabled = true
+    ) {
+        const row = node("tr");
+
+        const numberCell = node(
+            "td",
+            "drill-number-cell",
+            part === "q" ? card.number : ""
+        );
+
+        const cueCell = node("td", "drill-cue-cell");
+
+        if (typeof cue === "string") {
+            cueCell.innerHTML = cue;
+        } else {
+            cueCell.append(cue);
+        }
+
+        const cell = node("td");
+        const controls = node("div", "recording-controls");
+        const actions = node("div", "recording-actions");
+
+        const listenBtn = listen(getText);
+
+        const recordBtn = button(
+            "🎙️とる",
+            "Record your voice."
+        );
+
+        const stopBtn = button(
+            "⏹️",
+            "Stop recording."
+        );
+
+        listenBtn.disabled = !enabled;
+        recordBtn.disabled = !enabled;
+        stopBtn.disabled = true;
+
+        const resultSpan = node(
+            "span",
+            "result-text",
+            "(Not recorded yet)"
+        );
+
+        const result = node("span", "recording-result");
+        result.append(resultSpan);
+
+        actions.append(
+            listenBtn,
+            recordBtn,
+            stopBtn
+        );
+
+        controls.append(actions, result);
+
+        const correctionBox = node(
+            "div",
+            "correction-box"
+        );
+
+        const corrListenBtn = node("button");
+        corrListenBtn.hidden = true;
+
+        const corrTextSpan = node("span");
+
+        correctionBox.append(
+            corrListenBtn,
+            corrTextSpan
+        );
+
+        cell.append(controls, correctionBox);
+
+        row.append(
+            numberCell,
+            cueCell,
+            cell
+        );
+
+        card.body.append(row);
+
+        bindRecorderEvents(
+            recordBtn,
+            stopBtn,
+            resultSpan,
+            correctionBox,
+            corrListenBtn,
+            corrTextSpan,
+            getText,
+            getText,
+            0.9,
+            key
+        );
+
+        return {
+            actions,
+            listenBtn,
+            recordBtn
+        };
+    }
+
+    function textToggle(actions, getText, enabled) {
+        const answer = node("span");
+
+        const toggle = button(
+            "👀Text",
+            "Show or hide the model answer.",
+            () => {
+                const visible =
+                    enabled.textVisible = !enabled.textVisible;
+
+                answer.textContent = visible
+                    ? getText()
+                    : "";
+
+                toggle.firstChild.textContent = visible
+                    ? "🕶️Hide"
+                    : "👀Text";
+
+                alignColumns();
+            }
+        );
+
+        toggle.disabled = !enabled.ready;
+
+        if (enabled.textVisible && enabled.ready) {
+            answer.textContent = getText();
+            toggle.firstChild.textContent = "🕶️Hide";
+        }
+
+        actions.append(toggle, answer);
+    }
+
+    function section(id, title, instruction) {
+        const container = document.getElementById(id);
+        container.replaceChildren();
+
+        const panel = node(
+            "div",
+            "info-panel info-panel-task1"
+        );
+
+        panel.append(
+            node("span", "info-panel-title", title),
+            node("span", "info-panel-desc", instruction)
+        );
+
+        return {container, panel};
+    }
+
+    function renderSections() {
+        practice2State.ui ??= {};
+
+        const first = section(
+            "drill1Container",
+            "Drill 1: Yes/No Questions",
+            "💡Form a question from the prompts and practice both affirmative and negative responses."
+        );
+
+        const father = formatWord(
+            "おとうさん",
+            "お父さん",
+            "otōsan",
+            "father"
+        );
+
+        const nurse = formatWord(
+            "かんごし",
+            "看護師",
+            "kangoshi",
+            "nurse"
+        );
+
+        example(first.container, [
+            [
+                "Question:",
+                father + "／" + nurse,
+                () => question(
+                    word("おとうさん", "お父さん"),
+                    word("かんごし", "看護師")
+                )
+            ],
+            [
+                "Response:",
+                nurse,
+                () => response(
+                    word("かんごし", "看護師"),
+                    true
+                ),
+                "🔊🙆"
+            ],
+            [
+                "Response:",
+                nurse,
+                () => response(
+                    word("かんごし", "看護師"),
+                    false
+                ),
+                "🔊🙅"
+            ]
+        ]);
+
+        first.container.append(first.panel);
+
+        practice2Data.forEach((item, index) => {
+            const state = practice2State.ui[
+                `drill1Container_${index}`
+            ] ??= {
+                answerMode: null,
+                textVisible: false
+            };
+
+            const current = card(
+                first.container,
+                `${index + 1}.`
+            );
+
+            const y = () => word(item.y, item.yKanji);
+
+            const cue =
+                formatWord(
+                    item.x,
+                    item.xKanji,
+                    item.xRomaji,
+                    item.xMeaning
+                )
+                + "／"
+                + formatWord(
+                    item.y,
+                    item.yKanji,
+                    item.yRomaji,
+                    item.yMeaning
+                );
+
+            recordingRow(
+                current,
+                "q",
+                cue,
+                `p2_drill1_q_${index}`,
+                () => question(
+                    word(item.x, item.xKanji),
+                    y()
+                )
+            );
+
+            const choices = node("span");
+
+            for (
+                const [mode, label]
+                of [["yes", "🙆"], ["no", "🙅"]]
+            ) {
+                const choice = button(
+                    label,
+                    mode === "yes"
+                        ? "Affirmative response"
+                        : "Negative response",
+                    () => {
+                        state.answerMode =
+                            state.answerMode === mode
+                                ? null
+                                : mode;
+
+                        state.textVisible = false;
+                        renderAll();
+                    }
+                );
+
+                choice.setAttribute(
+                    "aria-pressed",
+                    String(state.answerMode === mode)
+                );
+
+                choice.classList.toggle(
+                    "is-selected",
+                    state.answerMode === mode
+                );
+
+                const theme = rowColorThemes[
+                    index % rowColorThemes.length
+                ];
+
+                choice.style.backgroundColor =
+                    state.answerMode === mode
+                        ? (
+                            mode === "yes"
+                                ? theme.yesActive
+                                : theme.noActive
+                        )
+                        : theme.unselected;
+
+                choices.append(choice);
+            }
+
+            const getText = () => state.answerMode
+                ? response(y(), state.answerMode === "yes")
+                : "";
+
+            const answer = recordingRow(
+                current,
+                "a",
+                choices,
+                `p2_drill1_a_${index}`,
+                getText,
+                Boolean(state.answerMode)
+            );
+
+            textToggle(answer.actions, getText, {
+                get textVisible() {
+                    return state.textVisible;
+                },
+                set textVisible(value) {
+                    state.textVisible = value;
+                },
+                ready: Boolean(state.answerMode)
+            });
+        });
+
+        const second = section(
+            "drill2Container",
+            "Drill 2: Wh- Questions",
+            "💡Ask about majors. Select a major from the dropdown menu and reply using the possessive form."
+        );
+
+        example(second.container, [
+            [
+                "Question:",
+                formatWord(
+                    "あなた",
+                    "あなた",
+                    "anata",
+                    "you"
+                )
+                + "／"
+                + formatWord(
+                    "せんこう",
+                    "専攻",
+                    "senkō",
+                    "major"
+                ),
+                () => question(
+                    word(
+                        "あなたのせんこう",
+                        "あなたの専攻"
+                    ),
+                    word("なん", "何")
+                )
+            ],
+            [
+                "Response:",
+                formatWord(
+                    "せいじ",
+                    "政治",
+                    "seiji",
+                    "politics"
+                ),
+                () => statement(
+                    word(
+                        "わたしのせんこう",
+                        "わたしの専攻"
+                    ),
+                    word("せいじ", "政治")
+                )
+            ]
+        ]);
+
+        second.container.append(second.panel);
+
+        drill2Targets.forEach((target, index) => {
+            const state = practice2State.ui[
+                `drill2Container_${index}`
+            ] ??= {
+                selectedValue: "",
+                textVisible: false
+            };
+
+            const current = card(
+                second.container,
+                `${index + 1}.`
+            );
+
+            const subject = () => word(
+                target.possessive + "せんこう",
+                target.possessiveKanji + "専攻"
+            );
+
+            const cue =
+                formatWord(
+                    target.label,
+                    target.labelKanji,
+                    target.labelRomaji,
+                    target.labelMeaning
+                )
+                + "／"
+                + formatWord(
+                    "せんこう",
+                    "専攻",
+                    "senkō",
+                    "major"
+                );
+
+            const key = `p2_drill2_${target.label}`;
+
+            recordingRow(
+                current,
+                "q",
+                cue,
+                `${key}_q`,
+                () => question(
+                    subject(),
+                    word("なん", "何")
+                )
+            );
+
+            const choices = node("span");
+            choices.innerHTML = cue + "／";
+
+            const select = node(
+                "select",
+                "custom-select"
+            );
+
+            const placeholder = node(
+                "option",
+                "",
+                "📋Select"
+            );
+
+            placeholder.value = "";
+            placeholder.disabled = true;
+            select.append(placeholder);
+
+            majorsData.forEach(major => {
+                const option = node(
+                    "option",
+                    "",
+                    word(major.word, major.kanji)
+                );
+
+                option.value = major.word;
+                option.title =
+                    `${major.romaji}, ${major.meaning}`;
+
+                select.append(option);
+            });
+
+            select.value = state.selectedValue;
+
+            select.onchange = () => {
+                if (busy()) return;
+
+                state.selectedValue = select.value;
+                state.textVisible = false;
+                renderAll();
+            };
+
+            choices.append(select);
+
+            const getText = () => {
+                const major = majorsData.find(major =>
+                    major.word === state.selectedValue
+                );
+
+                return major
+                    ? statement(
+                        subject(),
+                        word(major.word, major.kanji)
+                    )
+                    : "";
+            };
+
+            const answer = recordingRow(
+                current,
+                "a",
+                choices,
+                `${key}_a`,
+                getText,
+                Boolean(state.selectedValue)
+            );
+
+            textToggle(answer.actions, getText, {
+                get textVisible() {
+                    return state.textVisible;
+                },
+                set textVisible(value) {
+                    state.textVisible = value;
+                },
+                ready: Boolean(state.selectedValue)
+            });
+        });
+    }
+
+    function installSettings() {
+        const anchor = document
+            .getElementById("scriptModeControl")
+            ?.closest(".control-item");
+
+        if (
+            anchor
+            && !document.getElementById("speechStyleControl")
+        ) {
+            const item = node("div", "control-item");
+            const control = node(
+                "div",
+                "segmented-control"
+            );
+
+            control.id = "speechStyleControl";
+            control.setAttribute("role", "group");
+            control.setAttribute(
+                "aria-label",
+                "Speech Style"
+            );
+
+            for (const [value, label, tip] of [
+                [
+                    "formal",
+                    "👔Formal",
+                    "Polite speech for work or unfamiliar people."
+                ],
+                [
+                    "informal",
+                    "✏️Informal",
+                    "Plain forms used in writing"
+                ],
+                [
+                    "casual",
+                    "💬Casual",
+                    "Relaxed speech with family and friends."
+                ]
+            ]) {
+                const option = node(
+                    "button",
+                    "segmented-option custom-tip-wrap",
+                    label
+                );
+
+                option.type = "button";
+                option.dataset.value = value;
+
+                option.append(
+                    node("span", "custom-tip-box", tip)
+                );
+
+                option.onclick = () => {
+                    if (busy() || speechStyle === value) {
+                        return;
+                    }
+
+                    speechStyle = value;
+                    renderAll();
+                };
+
+                control.append(option);
+            }
+
+            item.append(control);
+            anchor.after(item);
+        }
+
+        document.querySelectorAll(
+            "#speechStyleControl button"
+        ).forEach(option => {
+            const selected =
+                option.dataset.value === speechStyle;
+
+            option.classList.toggle(
+                "is-selected",
+                selected
+            );
+
+            option.setAttribute(
+                "aria-pressed",
+                String(selected)
+            );
+        });
+
+        for (const [value, label] of [
+            ["hover", "💬Hover"],
+            ["paren", "🔡Display"]
+        ]) {
+            const option = document.querySelector(
+                `#hintModeControl [data-value="${value}"]`
+            );
+
+            if (!option) continue;
+
+            const tip = option.querySelector(
+                ".custom-tip-box"
+            );
+
+            option.replaceChildren(
+                document.createTextNode(label)
+            );
+
+            if (tip) option.append(tip);
+        }
+
+        const tip = document.querySelector(
+            "#labelAutoRecord > .custom-tip-box"
+        );
+
+        if (tip) {
+            tip.textContent =
+                "ON: Stop after 2 seconds of silence following speech. OFF: Use the stop button. All recordings stop after 20 seconds.";
+        }
+    }
+
+    function alignColumns() {
+        for (const id of [
+            "drill1Container",
+            "drill2Container"
+        ]) {
+            const tables = [
+                ...document.querySelectorAll(
+                    `#${id} .recording-table`
+                )
+            ];
+
+            let width = 0;
+
+            for (const table of tables) {
+                for (
+                    const cell
+                    of table.querySelectorAll(
+                        ".drill-cue-cell"
+                    )
+                ) {
+                    const measure = node("span");
+
+                    cell.childNodes.forEach(child =>
+                        measure.append(
+                            child.cloneNode(true)
+                        )
+                    );
+
+                    measure.querySelectorAll(
+                        ".tooltip-tip, .custom-tip-box"
+                    ).forEach(tip => tip.remove());
+
+                    // 内容幅の測定専用。固定の外観は共通CSSを使用。
+                    Object.assign(measure.style, {
+                        position: "absolute",
+                        visibility: "hidden",
+                        display: "inline-block",
+                        width: "max-content",
+                        whiteSpace: "nowrap",
+                        font: "inherit"
+                    });
+
+                    cell.append(measure);
+
+                    width = Math.max(
+                        width,
+                        Math.ceil(
+                            measure
+                                .getBoundingClientRect()
+                                .width
+                        )
+                    );
+
+                    measure.remove();
+                }
+            }
+
+            tables.forEach(table => {
+                table.querySelector(
+                    "colgroup"
+                ).children[1].style.width =
+                    `${width + 8}px`;
+            });
+        }
+    }
+
+    const originalSync = practice2SyncRecordingUI;
+
+    practice2SyncRecordingUI = function() {
+        originalSync();
+
+        document.querySelectorAll(
+            ".compact-settings .segmented-option, " +
+            ".compact-settings input"
+        ).forEach(control => {
+            control.disabled = busy();
+        });
     };
 
-    aListenBtn.onclick = () => {
-        if (!selectedMajor) return;
+    document.addEventListener("click", event => {
+        if (
+            busy()
+            && event.target.closest(
+                ".compact-settings .segmented-option"
+            )
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
 
-        setPlayingStateMultiple([aListenBtn], "Playing...");
-        speakText(`${target.possessiveKanji}専攻は${selectedMajorKanji}です。`, playRate, () => stopAllPlayback());
+    renderAll = function() {
+        if (busy()) return;
+
+        stopAllPlayback();
+
+        practice2State.views = {};
+
+        installSettings();
+        renderSections();
+        alignColumns();
+        practice2SyncRecordingUI();
     };
-
-    aRow.appendChild(aPromptPrefix);
-    aRow.appendChild(selectTip);
-    aRow.appendChild(aListenBtn);
-    aRow.appendChild(showTextBtn);
-    aRow.appendChild(aPromptLabel);
-    aRow.appendChild(aRecordBtn);
-    aRow.appendChild(aStopBtn);
-    aRow.appendChild(aResultSpan);
-
-    const correctionBox = document.createElement("div");
-    correctionBox.className = "correction-box";
-
-    const corrListenBtn = document.createElement("button");
-    corrListenBtn.className = "example-button";
-    corrListenBtn.innerHTML = "🔊 きく";
-    corrListenBtn.style.marginRight = "8px";
-
-    const corrTextSpan = document.createElement("span");
-
-    correctionBox.appendChild(corrListenBtn);
-    correctionBox.appendChild(corrTextSpan);
-
-    rowDiv.appendChild(qRow);
-    rowDiv.appendChild(aRow);
-    rowDiv.appendChild(correctionBox);
-
-    const tLabel = scriptMode === "kanji" ? target.labelKanji : target.label;
-    const tLabelKanji = target.labelKanji;
-    const poss = scriptMode === "kanji" ? target.possessiveKanji : target.possessive;
-    const possKanji = target.possessiveKanji;
-
-    bindRecorderEvents(
-        qRecordBtn,
-        qStopBtn,
-        qResultSpan,
-        correctionBox,
-        corrListenBtn,
-        corrTextSpan,
-        () => `${tLabel}の専攻は何ですか`,
-        () => `${tLabelKanji}の専攻は何ですか`,
-        playRate,
-        ""
-    );
-
-    bindRecorderEvents(
-        aRecordBtn,
-        aStopBtn,
-        aResultSpan,
-        correctionBox,
-        corrListenBtn,
-        corrTextSpan,
-        () => `${poss}専攻は${scriptMode === "kanji" ? selectedMajorKanji : selectedMajor}です`,
-        () => `${possKanji}専攻は${selectedMajorKanji}です`,
-        playRate,
-        ""
-    );
-
-    container.appendChild(rowDiv);
-}
+})();
 
 // ============================================================================
 // Practice 1.2: Result conversion, matching and recording
@@ -1637,121 +2041,7 @@ function practice2FindDiff(actual, reference) {
         i = step.i;
         j = step.j;
     }
-    // 不一致文字を含む語全体に赤字を広げる。
-    const wordSources = [
-        ...practice2Data.flatMap(item => [
-            item.xKanji,
-            item.x,
-            item.yKanji,
-            item.y
-        ]),
-        ...drill2Targets.flatMap(item => [
-            item.labelKanji,
-            item.label
-        ]),
-        ...majorsData.flatMap(item => [
-            item.kanji,
-            item.word
-        ]),
-        "お母さん", "お父さん", "お兄さん", "お姉さん",
-        "弟", "妹", "会社員", "自営業", "高校生", "看護師",
-        "主婦", "政治", "経済", "歴史", "日本語", "友達",
-        "親友", "同僚", "専攻", "学生", "先生"
-    ];
 
-    const words = [...new Set(
-        wordSources.filter(Boolean).flatMap(word => [
-            String(word).normalize("NFKC"),
-            practice2ToHiragana(word)
-        ])
-    )]
-        .filter(Boolean)
-        .sort((x, y) => y.length - x.length);
-
-    const compact = a.tokens
-        .map(token => token.char)
-        .join("");
-
-    const ranges = [];
-    const covered = new Set();
-
-    let position = 0;
-
-    // 登録語は長い語を優先する。
-    while (position < a.tokens.length) {
-        const rest = a.tokens.slice(position)
-            .map(token => token.char)
-            .join("");
-
-        const word = words.find(candidate =>
-            rest.startsWith(candidate)
-        );
-
-        if (!word) {
-            position++;
-            continue;
-        }
-
-        const end =
-            position + Array.from(word).length;
-
-        ranges.push([position, end]);
-
-        for (let k = position; k < end; k++) {
-            covered.add(k);
-        }
-
-        position = end;
-    }
-
-    // 未登録語は、利用可能なら日本語の単語分割で補う。
-    if (
-        typeof Intl !== "undefined"
-        && Intl.Segmenter
-    ) {
-        const segmenter = new Intl.Segmenter("ja", {
-            granularity: "word"
-        });
-
-        for (const segment of segmenter.segment(compact)) {
-            if (!segment.isWordLike) continue;
-
-            const start = Array.from(
-                compact.slice(0, segment.index)
-            ).length;
-
-            const end =
-                start + Array.from(segment.segment).length;
-
-            let overlaps = false;
-
-            for (let k = start; k < end; k++) {
-                if (covered.has(k)) {
-                    overlaps = true;
-                }
-            }
-
-            if (!overlaps) {
-                ranges.push([start, end]);
-            }
-        }
-    }
-
-    const originalRed = new Set(redIndexes);
-
-    ranges.forEach(([start, end]) => {
-        const mismatch = a.tokens
-            .slice(start, end)
-            .some(token =>
-                originalRed.has(token.index)
-            );
-
-        if (mismatch) {
-            for (let k = start; k < end; k++) {
-                redIndexes.add(a.tokens[k].index);
-            }
-        }
-    });
 
     return {
         cost: costs[n][m],
