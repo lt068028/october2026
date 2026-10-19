@@ -680,48 +680,7 @@ function practice71FindDiff(actual, reference) {
         }
     }
 
-    // 不一致文字を含む語全体へ赤字範囲を広げる。
-    if (
-        typeof Intl !== "undefined" &&
-        typeof Intl.Segmenter === "function"
-    ) {
-        const originalRed = new Set(redIndexes);
-        const segmenter = new Intl.Segmenter("ja", {
-            granularity: "word"
-        });
 
-        const value = a.chars.join("");
-
-        for (const part of segmenter.segment(value)) {
-            if (!part.isWordLike) continue;
-
-            const start = Array.from(
-                value.slice(0, part.index)
-            ).length;
-
-            const end =
-                start + Array.from(part.segment).length;
-
-            let mismatched = false;
-
-            for (let index = start; index < end; index++) {
-                if (originalRed.has(index)) {
-                    mismatched = true;
-                    break;
-                }
-            }
-
-            if (mismatched) {
-                for (
-                    let index = start;
-                    index < end;
-                    index++
-                ) {
-                    redIndexes.add(index);
-                }
-            }
-        }
-    }
 
     return {
         cost: costs[rows][columns],
@@ -2386,17 +2345,17 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         [
             [
                 'formal',
-                '🏢Formal',
+                '👔Formal',
                 'Polite speech for work or unfamiliar people.'
             ],
             [
                 'informal',
-                '🏠Informal',
+                '✏️Informal',
                 'Plain forms used in writing'
             ],
             [
                 'casual',
-                '🫂Casual',
+                '💬Casual',
                 'Relaxed speech with family and friends.'
             ]
         ].forEach(([value, label, description]) => {
@@ -2417,7 +2376,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
                 stopAllPlayback();
 
-                // 文体だけを変更し、保存先を切り替えない。
+                // 保存済みの録音・抽出文は保持する。
                 speechStyle = value;
                 records = styleRecords[value];
 
@@ -2429,10 +2388,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         item.append(control);
 
-        // Hiragana／漢字 → 文体 → Vocabの順。
+        // 文字表示 → 文体 → 語彙表示
         anchor.after(item);
         syncSpeechStyle();
     }
+
     function applyStage() {
         installSpeechStyle();
 
@@ -2459,13 +2419,13 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const Habit = speechStyle === 'formal'
                     ? item.Habit
                     : speechStyle === 'informal'
-                        ? plainHabit[index] + 'よ'
+                        ? plainHabit[index]
                         : casualHabit[index];
 
                 const ongoing = speechStyle === 'formal'
                     ? item.ongoing
                     : speechStyle === 'informal'
-                        ? plainOngoing[index] + 'よ'
+                        ? plainOngoing[index]
                         : casualOngoing[index];
 
                 const a = `いつも、${clauses}${Habit}。`;
@@ -2506,12 +2466,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const suffix = ongoing
             ? {
                 formal: 'ています',
-                informal: 'ているよ',
+                informal: 'ている',
                 casual: 'てるよ'
             }[speechStyle]
             : {
                 formal: 'ます',
-                informal: 'るよ',
+                informal: 'る',
                 casual: 'るよ'
             }[speechStyle];
 
@@ -2560,11 +2520,14 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             '$1$2を'
         );
 
-        // 文末の「よ」は全モード共通で任意とする。
+        // 全スタイルで文末の「よ」を任意とする。
         value = value
             .replace(/[\s、。．,.!?！？]+$/g, '')
-            .replace(/よ?$/, 'よ');
-        
+            .replace(/よ$/, '');
+
+        // 各スタイルのモデル語尾に合わせて比較する。
+        if (speechStyle === 'casual') value += 'よ';
+
         return baseNormalize(value);
     };
     // 「英語を／英語で」の対象は並べ替え後の3番。
