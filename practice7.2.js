@@ -1099,48 +1099,6 @@ function practice7FindDiff(actual, reference) {
         }
     }
 
-    // 不一致文字を含む語全体へ赤字範囲を広げる。
-    if (
-        typeof Intl !== "undefined" &&
-        typeof Intl.Segmenter === "function"
-    ) {
-        const originalRed = new Set(redIndexes);
-        const segmenter = new Intl.Segmenter("ja", {
-            granularity: "word"
-        });
-
-        const value = a.chars.join("");
-
-        for (const part of segmenter.segment(value)) {
-            if (!part.isWordLike) continue;
-
-            const start = Array.from(
-                value.slice(0, part.index)
-            ).length;
-
-            const end =
-                start + Array.from(part.segment).length;
-
-            let mismatched = false;
-
-            for (let index = start; index < end; index++) {
-                if (originalRed.has(index)) {
-                    mismatched = true;
-                    break;
-                }
-            }
-
-            if (mismatched) {
-                for (
-                    let index = start;
-                    index < end;
-                    index++
-                ) {
-                    redIndexes.add(index);
-                }
-            }
-        }
-    }
 
     return {
         cost: costs[rows][columns],
@@ -2303,7 +2261,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     };
 })();
 
-// ============================================================================
 // 共通設定：Formal / Informal / Casual
 (() => {
     let speechStyle = 'formal';
@@ -2348,16 +2305,25 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             value = value.replace(from, to);
         });
 
-        value = value.replace(/ています/g, 'ている');
+        // 文末の活用だけを変える。
+        value = value.replace(
+            /ています(?=[。．.!！]?$)/g,
+            'ている'
+        );
 
         if (speechStyle === 'casual') {
             value = value
-                .replace(/ている/g, 'てる')
+                .replace(
+                    /ている(?=[。．.!！]?$)/g,
+                    'てる'
+                )
                 .replace(/を/g, '');
+
+            return value.replace(/。$/, 'よ。');
         }
 
-        // Informal・Casualのモデルには「よ」を付ける。
-        return value.replace(/。$/, 'よ。');
+        // Informalには終助詞を付けない。
+        return value;
     }
 
     function blocked() {
@@ -2374,11 +2340,10 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             const selected =
                 button.dataset.value === speechStyle;
 
-            button.classList.toggle(
-                'is-selected', selected
-            );
+            button.classList.toggle('is-selected', selected);
             button.setAttribute(
-                'aria-pressed', String(selected)
+                'aria-pressed',
+                String(selected)
             );
             button.disabled = blocked();
         });
@@ -2405,7 +2370,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             control.className = 'segmented-control';
             control.setAttribute('role', 'group');
             control.setAttribute(
-                'aria-label', 'Speech style'
+                'aria-label',
+                'Speech style'
             );
 
             [
@@ -2416,12 +2382,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 ],
                 [
                     'informal',
-                    '🏠Informal',
+                    '✏️Informal',
                     'Plain forms used in writing'
                 ],
                 [
                     'casual',
-                    '🫂Casual',
+                    '💬Casual',
                     'Relaxed speech with family and friends.'
                 ]
             ].forEach(([value, label, description]) => {
@@ -2449,8 +2415,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
                     stopAllPlayback();
                     speechStyle = value;
-
-                    // 録音・抽出文の保存先は変更しない。
                     renderAll();
                 };
 
@@ -2460,7 +2424,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             item.append(control);
         }
 
-        // 文字表示 → 文体 → 語彙表示
         anchor.after(item);
 
         const labels = {
@@ -2567,14 +2530,16 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     if (text.startsWith('ました')) {
                         ending = speechStyle === 'formal'
                             ? 'ました'
-                            : 'たよ';
+                            : speechStyle === 'informal'
+                                ? 'た'
+                                : 'たよ';
                     } else if (
                         text.startsWith('ています')
                     ) {
                         ending = speechStyle === 'formal'
                             ? 'ています'
                             : speechStyle === 'informal'
-                                ? 'ているよ'
+                                ? 'ている'
                                 : 'てるよ';
                     } else {
                         return;
@@ -2596,7 +2561,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             button.onclick = () => {
                 setPlayingStateMultiple(
-                    [button], 'Playing...'
+                    [button],
+                    'Playing...'
                 );
 
                 speakText(
@@ -2614,8 +2580,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         view, saved, rowKey, playRate
     ) {
         originalShow(view, saved, rowKey, playRate);
-
-        // キュー横の「きく」と重複させない。
         view.corrListenBtn.style.display = 'none';
     };
 
