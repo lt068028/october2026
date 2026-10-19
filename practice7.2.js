@@ -2377,7 +2377,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             [
                 [
                     'formal',
-                    '🏢Formal',
+                    '👔Formal',
                     'Polite speech for work or unfamiliar people.'
                 ],
                 [
