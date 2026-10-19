@@ -639,6 +639,196 @@ function practice2ShowNotice(resultSpan, message) {
 // ============================================================================
 // Render Drill 1 Section
 // ============================================================================
+// 共通UI：セクション間隔・モデル音声・質問キュー
+(() => {
+    const originalSpeechText = practice2SpeechText;
+
+    const pairs = [
+        ...practice2Data.flatMap(item => [
+            [item.x, item.xKanji],
+            [item.y, item.yKanji]
+        ]),
+        ...drill2Targets.flatMap(item => [
+            [item.possessive, item.possessiveKanji],
+            [item.label, item.labelKanji]
+        ]),
+        ...majorsData.map(item => [
+            item.word,
+            item.kanji
+        ]),
+        ["おとうさん", "お父さん"],
+        ["かんごし", "看護師"],
+        ["せんこう", "専攻"]
+    ]
+        .filter(([from, to]) =>
+            from && to && from !== to
+        )
+        .sort((a, b) => b[0].length - a[0].length);
+
+    // 表示モードにかかわらず、読み上げ用は漢字表記に統一する。
+    // 表示文・抽出文・判定用テキストは変更しない。
+    practice2SpeechText = function(text) {
+        let value = String(text ?? "");
+
+        for (const [from, to] of pairs) {
+            value = value.split(from).join(to);
+        }
+
+        value = value.replace(
+            /なん(?=ですか|[？?。]|$)/g,
+            "何"
+        );
+
+        return originalSpeechText(value);
+    };
+
+    function finishLayout() {
+        const first = document.getElementById(
+            "drill1Container"
+        );
+
+        const second = document.getElementById(
+            "drill2Container"
+        );
+
+        first?.classList.add("practice-section");
+        second?.classList.add("practice-section");
+
+        if (!second) return;
+
+        // Example2：上下行を同じ5列にする。
+        const example = second.querySelector(
+            ".drill-example-table"
+        );
+
+        const response = example
+            ?.querySelector("tbody")
+            ?.children[1];
+
+        const merged = response?.children[1];
+
+        if (merged?.colSpan === 4) {
+            const label = response.children[0];
+            const listen = merged.querySelector("button");
+
+            const model = Array.from(
+                merged.children
+            ).find(element =>
+                element.tagName === "SPAN"
+            );
+
+            if (listen && model) {
+                const cells = Array.from(
+                    {length: 4},
+                    () => document.createElement("td")
+                );
+
+                cells[2].append(listen);
+                cells[3].append(model);
+
+                response.replaceChildren(
+                    label,
+                    ...cells
+                );
+            }
+        }
+
+        // Drill2の質問キューに「何」を追加する。
+        const tables = Array.from(
+            second.querySelectorAll(".recording-table")
+        );
+
+        for (const table of tables) {
+            const cue = table.querySelector(
+                ".drill-cue-cell"
+            );
+
+            if (!cue || cue.dataset.whCueAdded) continue;
+
+            const what = document.createElement("span");
+
+            what.innerHTML = formatWord(
+                "なに",
+                "何",
+                "nani",
+                "what"
+            );
+
+            cue.append(
+                document.createTextNode("／"),
+                what
+            );
+
+            cue.dataset.whCueAdded = "true";
+        }
+
+        // 追加後のキュー幅で聞くボタンの列をそろえる。
+        let width = 0;
+
+        for (const table of tables) {
+            for (
+                const cell of table.querySelectorAll(
+                    ".drill-cue-cell"
+                )
+            ) {
+                const measure = document.createElement("span");
+
+                cell.childNodes.forEach(child =>
+                    measure.append(child.cloneNode(true))
+                );
+
+                measure.querySelectorAll(
+                    ".tooltip-tip, .custom-tip-box"
+                ).forEach(tip => tip.remove());
+
+                // 内容幅の測定専用。
+                Object.assign(measure.style, {
+                    position: "absolute",
+                    visibility: "hidden",
+                    display: "inline-block",
+                    width: "max-content",
+                    whiteSpace: "nowrap",
+                    font: "inherit"
+                });
+
+                cell.append(measure);
+
+                width = Math.max(
+                    width,
+                    Math.ceil(
+                        measure.getBoundingClientRect().width
+                    )
+                );
+
+                measure.remove();
+            }
+        }
+
+        tables.forEach(table => {
+            table.querySelector(
+                "colgroup"
+            ).children[1].style.width = `${width + 8}px`;
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const originalRender = renderAll;
+
+        renderAll = function() {
+            if (
+                activeRecognitionSession
+                || practice2State.startingRow
+            ) {
+                return;
+            }
+
+            originalRender();
+            finishLayout();
+        };
+
+        finishLayout();
+    });
+})();
 // Practice 1.2：共通UI・文体・判定
 (() => {
     let speechStyle = "formal";
