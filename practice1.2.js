@@ -681,7 +681,7 @@ function practice2ShowNotice(resultSpan, message) {
         for (const candidate of [
             "ううん",
             "うんん",
-            "うーん",
+            "うんーん",
             "ううーん"
         ]) {
             const button = document.createElement("button");
