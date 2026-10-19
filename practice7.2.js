@@ -1151,17 +1151,21 @@ function practice7FindDiff(actual, reference) {
 }
 
 function practice7ShowResult(view, saved, rowKey, playRate) {
-    const normalized = practice7Normalize(saved.rawTranscript);
+    // 設定変更による再描画では、録音時の判定を保持する。
+    if (typeof saved.isCorrect !== "boolean") {
+        const normalized = practice7Normalize(
+            saved.rawTranscript
+        );
 
-    saved.isCorrect = normalized.length > 0 && [
-        saved.expectedText,
-        saved.modelText
-    ].some(text =>
-        typeof text === "string" &&
-        text.length > 0 &&
-        normalized === practice7Normalize(text)
-    );
-
+        saved.isCorrect = normalized.length > 0 && [
+            saved.expectedText,
+            saved.modelText
+        ].some(text =>
+            typeof text === "string" &&
+            text.length > 0 &&
+            normalized === practice7Normalize(text)
+        );
+    }
     const displayed = scriptMode === "hiragana"
         ? practice7ToHiragana(saved.rawTranscript)
         : String(saved.rawTranscript ?? "");
