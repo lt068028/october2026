@@ -993,99 +993,6 @@ function practice1FindDiff(actual, reference) {
         j = step.j;
     }
 
-    // 不一致文字を含む語全体に赤字を広げる。
-    const wordSources = [
-        ...taskData.flatMap(item => [
-            item.x, item.xKanji, item.y, item.yKanji
-        ]),
-        ...Object.values(customDict).flatMap(item => [
-            item.hira, item.kanji
-        ]),
-        "会社員", "友だち", "子ども",
-        "姉妹", "医師", "看護婦"
-    ];
-
-    const words = [...new Set(
-        wordSources.filter(Boolean).flatMap(word => [
-            String(word).normalize("NFKC"),
-            normalizeHiraganaTranscript(word)
-        ])
-    )]
-        .filter(Boolean)
-        .sort((x, y) => y.length - x.length);
-
-    const compact = a.tokens.map(token => token.char).join("");
-    const ranges = [];
-    const covered = new Set();
-
-    let position = 0;
-
-    while (position < a.tokens.length) {
-        const rest = a.tokens.slice(position)
-            .map(token => token.char)
-            .join("");
-
-        const word = words.find(candidate =>
-            rest.startsWith(candidate)
-        );
-
-        if (!word) {
-            position++;
-            continue;
-        }
-
-        const end = position + Array.from(word).length;
-
-        ranges.push([position, end]);
-
-        for (let k = position; k < end; k++) {
-            covered.add(k);
-        }
-
-        position = end;
-    }
-
-    // 未登録語は、利用可能なら日本語の単語分割で補う。
-    if (
-        typeof Intl !== "undefined"
-        && Intl.Segmenter
-    ) {
-        const segmenter = new Intl.Segmenter("ja", {
-            granularity: "word"
-        });
-
-        for (const segment of segmenter.segment(compact)) {
-            if (!segment.isWordLike) continue;
-
-            const start = Array.from(
-                compact.slice(0, segment.index)
-            ).length;
-
-            const end =
-                start + Array.from(segment.segment).length;
-
-            let overlaps = false;
-
-            for (let k = start; k < end; k++) {
-                if (covered.has(k)) overlaps = true;
-            }
-
-            if (!overlaps) ranges.push([start, end]);
-        }
-    }
-
-    const originalRed = new Set(redIndexes);
-
-    ranges.forEach(([start, end]) => {
-        const mismatch = a.tokens.slice(start, end)
-            .some(token => originalRed.has(token.index));
-
-        if (mismatch) {
-            for (let k = start; k < end; k++) {
-                redIndexes.add(a.tokens[k].index);
-            }
-        }
-    });
 
     return {
         cost: costs[n][m],
@@ -2304,3 +2211,466 @@ window.addEventListener("pagehide", () => {
 
     practice1State.audioUrls = {};
 });
+// 共通仕様：文体・録音結果の配置
+(() => {
+    let speechStyle = 'formal';
+
+    const negativeEndings = style => style === 'formal'
+        ? [
+            'じゃないです',
+            'ではないです',
+            'じゃありません',
+            'ではありません'
+        ]
+        : ['ではない', 'じゃない'];
+
+    const endings = (style, negative) => negative
+        ? negativeEndings(style)
+        : [style === 'formal' ? 'です' : 'だ'];
+
+    modelSentence = function (x, y, negative) {
+        const topic = speechStyle === 'casual'
+            ? '、'
+            : 'は、';
+
+        const end = negative
+            ? speechStyle === 'formal'
+                ? 'じゃないです'
+                : speechStyle === 'informal'
+                    ? 'ではない'
+                    : 'じゃないよ'
+            : speechStyle === 'formal'
+                ? 'です'
+                : speechStyle === 'informal'
+                    ? 'だ'
+                    : 'だよ';
+
+        return `${x}${topic}${y}${end}。`;
+    };
+
+    expectedSentence = (x, y, negative) =>
+        modelSentence(x, y, negative);
+
+    matchesSentence = function (transcript, expectedText) {
+        const actual = practice1Normalize(transcript);
+        const expected = practice1Normalize(expectedText);
+
+        if (!actual || !expected) return false;
+
+        const allNegative = [
+            'じゃないです',
+            'ではないです',
+            'じゃありません',
+            'ではありません',
+            'ではない',
+            'じゃない'
+        ];
+
+        const ending = allNegative.find(
+            end => expected.endsWith(end)
+        );
+
+        const core = ending
+            ? expected.slice(0, -ending.length)
+            : '';
+
+        const allowed = ending
+            ? (
+                ending.endsWith('です') ||
+                ending.endsWith('ません')
+                    ? negativeEndings('formal')
+                    : negativeEndings('informal')
+            ).map(end => core + end)
+            : [expected];
+
+        if (allowed.includes(actual)) return true;
+        if (speechStyle !== 'casual') return false;
+
+        // Casualでは主題の「は」の有無も許容する。
+        for (let i = 1; i < actual.length; i++) {
+            if (
+                actual[i] === 'は' &&
+                allowed.includes(
+                    actual.slice(0, i) +
+                    actual.slice(i + 1)
+                )
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function splitSubject(body) {
+        const candidates = [...new Set([
+            ...taskData.flatMap(item => [
+                item.x,
+                item.xKanji
+            ]),
+            ...Object.values(customDict).flatMap(item => [
+                item.hira,
+                item.kanji
+            ])
+        ].filter(Boolean).map(practice1Normalize))]
+            .sort((a, b) => b.length - a.length);
+
+        const known = candidates.find(x =>
+            body.startsWith(x) && body.length > x.length
+        );
+
+        if (known) return known;
+
+        if (
+            typeof Intl !== 'undefined' &&
+            Intl.Segmenter
+        ) {
+            const parts = [
+                ...new Intl.Segmenter('ja', {
+                    granularity: 'word'
+                }).segment(body)
+            ].filter(part => part.isWordLike);
+
+            if (parts.length >= 2) {
+                return parts[0].segment;
+            }
+        }
+
+        return '';
+    }
+
+    const originalFreeMatch = matchesFreeSentence;
+
+    matchesFreeSentence = function (transcript, negative) {
+        if (speechStyle === 'formal') {
+            return originalFreeMatch(transcript, negative);
+        }
+
+        const text = practice1Normalize(transcript);
+
+        const neg = negativeEndings('informal').find(
+            end => text.endsWith(end)
+        );
+
+        if (
+            negative
+                ? !neg
+                : Boolean(neg) || !text.endsWith('だ')
+        ) {
+            return false;
+        }
+
+        const body = text.slice(
+            0,
+            -(negative ? neg.length : 1)
+        );
+
+        if (
+            !negative &&
+            /(?:じゃない|ではない)$/.test(body)
+        ) {
+            return false;
+        }
+
+        if (/^.+は.+$/.test(body)) return true;
+
+        return speechStyle === 'casual' &&
+            Boolean(splitSubject(body));
+    };
+
+    const originalDiff = practice1ResultDiff;
+
+    practice1ResultDiff = function (displayed, saved, view) {
+        if (!saved.freeInput) {
+            return originalDiff(displayed, saved, view);
+        }
+
+        const expected = practice1Normalize(
+            saved.expectedText || saved.modelText
+        );
+
+        const formal = /(?:です|ません)$/.test(expected);
+
+        if (formal) {
+            return originalDiff(displayed, saved, view);
+        }
+
+        const actual = practice1Normalize(displayed);
+
+        const suffix = actual.match(
+            /(?:じゃないです|ではないです|じゃありません|ではありません|ではない|じゃない|でした|だった|です|だ)$/
+        );
+
+        let body = suffix
+            ? actual.slice(0, -suffix[0].length)
+            : actual;
+
+        // 内容は抽出文自身を使い、文型だけを比較する。
+        if (
+            expected.includes('は') &&
+            !body.includes('は')
+        ) {
+            const subject = splitSubject(body);
+
+            const position = subject
+                ? subject.length
+                : body.length;
+
+            body =
+                body.slice(0, position) +
+                'は' +
+                body.slice(position);
+        }
+
+        if (body.startsWith('は')) body = '¤' + body;
+        if (body.endsWith('は')) body += '¤';
+
+        return endings('informal', view.negative)
+            .map(end =>
+                practice1FindDiff(displayed, body + end)
+            )
+            .sort((a, b) => a.cost - b.cost)[0];
+    };
+
+    const originalMakeRow = makeRow;
+
+    makeRow = function (...args) {
+        const view = originalMakeRow(...args);
+        const top = view.row.querySelector('.top-row');
+
+        const index = top.children[1];
+        const type = top.children[3];
+
+        const actions = makeElement(
+            'div',
+            'recording-actions'
+        );
+
+        actions.append(
+            index,
+            view.prompts,
+            view.listen,
+            type,
+            view.record,
+            view.stop
+        );
+
+        const wrap = makeElement(
+            'span',
+            'recording-result'
+        );
+
+        wrap.append(view.result);
+
+        top.className = 'recording-controls';
+        top.replaceChildren(actions, wrap);
+
+        view.record.textContent = '🎙️とる';
+        view.correctionListen.style.display = 'none';
+
+        return view;
+    };
+
+    const originalDisplay = displayResult;
+
+    displayResult = function (view, message = '') {
+        originalDisplay(view, message);
+
+        view.correctionListen.style.display = 'none';
+
+        const play = view.result.querySelector(
+            '.recorded-play-button'
+        );
+
+        if (play) {
+            play.classList.add(
+                'play-recording-btn',
+                'custom-tip-wrap'
+            );
+
+            const tip = document.createElement('span');
+            tip.className = 'custom-tip-box';
+            tip.textContent = 'Play your recorded voice';
+
+            play.append(tip);
+        }
+    };
+
+    const originalSync = syncRecordingButtons;
+
+    syncRecordingButtons = function () {
+        originalSync();
+
+        document.querySelectorAll(
+            '.compact-settings .segmented-option'
+        ).forEach(button => {
+            button.disabled = busy();
+        });
+    };
+
+    function installSpeechStyle() {
+        const anchor = document.getElementById(
+            'scriptModeControl'
+        )?.closest('.control-item');
+
+        if (!anchor) return;
+
+        let item = document.getElementById(
+            'speechStyleControl'
+        )?.closest('.control-item');
+
+        if (!item) {
+            item = makeElement('div', 'control-item');
+
+            const control = makeElement(
+                'div',
+                'segmented-control'
+            );
+
+            control.id = 'speechStyleControl';
+            control.setAttribute('role', 'group');
+            control.setAttribute(
+                'aria-label',
+                'Speech style'
+            );
+
+            [
+                [
+                    'formal',
+                    '👔Formal',
+                    'Polite speech for work or unfamiliar people.'
+                ],
+                [
+                    'informal',
+                    '✏️Informal',
+                    'Plain forms used in writing'
+                ],
+                [
+                    'casual',
+                    '💬Casual',
+                    'Relaxed speech with family and friends.'
+                ]
+            ].forEach(([value, label, description]) => {
+                const button = makeElement(
+                    'button',
+                    'segmented-option custom-tip-wrap',
+                    label
+                );
+
+                button.dataset.value = value;
+
+                const tip = makeElement(
+                    'span',
+                    'custom-tip-box',
+                    description
+                );
+
+                button.append(tip);
+
+                button.onclick = () => {
+                    if (
+                        busy() ||
+                        speechStyle === value
+                    ) return;
+
+                    speechStyle = value;
+                    renderAll();
+                };
+
+                control.append(button);
+            });
+
+            item.append(control);
+        }
+
+        anchor.after(item);
+
+        item.querySelectorAll('button[data-value]')
+            .forEach(button => {
+                const selected =
+                    button.dataset.value === speechStyle;
+
+                button.classList.toggle(
+                    'is-selected',
+                    selected
+                );
+
+                button.setAttribute(
+                    'aria-pressed',
+                    String(selected)
+                );
+            });
+    }
+
+    function updateExample() {
+        const subject = scriptMode === 'kanji'
+            ? '私'
+            : 'わたし';
+
+        const nouns = scriptMode === 'kanji'
+            ? ['学生', '先生']
+            : ['がくせい', 'せんせい'];
+
+        ['ex1Listen', 'ex2Listen'].forEach((id, index) => {
+            const button = document.getElementById(id);
+            const line = button?.parentElement;
+
+            if (!line) return;
+
+            const sentence = line.lastElementChild;
+
+            const text = modelSentence(
+                subject,
+                nouns[index],
+                Boolean(index)
+            );
+
+            const end = text.slice(
+                text.indexOf(nouns[index]) +
+                nouns[index].length
+            );
+
+            sentence.innerHTML =
+                escapeHtml(subject) +
+                '<strong>' +
+                (speechStyle === 'casual' ? '、' : 'は、') +
+                '</strong>' +
+                escapeHtml(nouns[index]) +
+                '<strong>' +
+                escapeHtml(end) +
+                '</strong>';
+        });
+
+        if (speechStyle === 'casual') {
+            document.querySelectorAll(
+                '#task3Container .prompt-content > span'
+            ).forEach(span => {
+                if (span.textContent === 'は') {
+                    span.textContent = '／';
+                }
+            });
+        }
+    }
+
+    // 録音中の設定変更を、既存処理より先に止める。
+    document.addEventListener('click', event => {
+        if (
+            busy() &&
+            event.target.closest?.(
+                '.compact-settings .segmented-option'
+            )
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
+
+    const originalRender = renderAll;
+
+    renderAll = function () {
+        originalRender();
+        installSpeechStyle();
+        updateExample();
+        syncRecordingButtons();
+    };
+})();
