@@ -40,8 +40,9 @@
         for (const candidate of [
             "ううん",
             "うんん",
-            "うーん",
-            "ううーん"
+            "うんんー",
+            "うーんー",
+            "ううーんー"
         ]) {
             const button = document.createElement("button");
 
