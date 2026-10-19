@@ -1005,10 +1005,38 @@ function practice2ShowNotice(resultSpan, message) {
         const table = node("table", "drill-example-table");
         const body = node("tbody");
 
-        for (
-            const [label, cue, getText, buttonLabel]
-            of lines
-        ) {
+        let responseCell = null;
+
+        for (const [label, cue, getText, buttonLabel] of lines) {
+            if (label === "Response:") {
+                if (!responseCell) {
+                    const row = node("tr");
+                    const labelCell = node("td");
+
+                    labelCell.append(
+                        node("strong", "example-label-title", label)
+                    );
+
+                    responseCell = node("td");
+                    responseCell.colSpan = 4;
+
+                    row.append(labelCell, responseCell);
+                    body.append(row);
+                } else {
+                    responseCell.append(
+                        document.createTextNode(" ↔️ ")
+                    );
+                }
+
+                responseCell.append(
+                    listen(getText, buttonLabel),
+                    document.createTextNode(" "),
+                    modelText(getText)
+                );
+
+                continue;
+            }
+
             const row = node("tr");
 
             const labelCell = node("td");
