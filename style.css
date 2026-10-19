@@ -961,3 +961,13 @@ input:checked + .slider:before { transform: translateX(16px); }
 .drill-row {
     overflow: visible;
 }
+/* 共通：意味の変化を示す補足欄 */
+.meaning-change-note {
+    text-align: right;
+}
+
+.meaning-change-note-title,
+.meaning-change-comparison {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
