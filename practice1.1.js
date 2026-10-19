@@ -2211,33 +2211,37 @@ window.addEventListener("pagehide", () => {
 
     practice1State.audioUrls = {};
 });
-// 共通仕様：文体・録音結果の配置
+// 共通仕様：文体・判定・列配置
 (() => {
     let speechStyle = 'formal';
 
-    const negativeEndings = style => style === 'formal'
-        ? [
-            'じゃないです',
-            'ではないです',
-            'じゃありません',
-            'ではありません'
-        ]
-        : ['ではない', 'じゃない'];
+    const politeNegative = [
+        'じゃないです',
+        'ではないです',
+        'じゃありません',
+        'ではありません'
+    ];
 
-    const endings = (style, negative) => negative
-        ? negativeEndings(style)
-        : [style === 'formal' ? 'です' : 'だ'];
+    const allNegative = [
+        ...politeNegative,
+        'じゃない',
+        'ではない'
+    ];
+
+    const negativeEndings = style =>
+        style === 'formal' ? politeNegative : allNegative;
+
+    const endingOf = text =>
+        allNegative.find(end => text.endsWith(end));
 
     modelSentence = function (x, y, negative) {
-        const topic = speechStyle === 'casual'
-            ? '、'
-            : 'は、';
+        const topic = speechStyle === 'casual' ? '、' : 'は、';
 
         const end = negative
             ? speechStyle === 'formal'
                 ? 'じゃないです'
                 : speechStyle === 'informal'
-                    ? 'ではない'
+                    ? 'じゃない'
                     : 'じゃないよ'
             : speechStyle === 'formal'
                 ? 'です'
@@ -2257,30 +2261,12 @@ window.addEventListener("pagehide", () => {
 
         if (!actual || !expected) return false;
 
-        const allNegative = [
-            'じゃないです',
-            'ではないです',
-            'じゃありません',
-            'ではありません',
-            'ではない',
-            'じゃない'
-        ];
-
-        const ending = allNegative.find(
-            end => expected.endsWith(end)
-        );
-
-        const core = ending
-            ? expected.slice(0, -ending.length)
-            : '';
+        const ending = endingOf(expected);
 
         const allowed = ending
-            ? (
-                ending.endsWith('です') ||
-                ending.endsWith('ません')
-                    ? negativeEndings('formal')
-                    : negativeEndings('informal')
-            ).map(end => core + end)
+            ? negativeEndings(speechStyle).map(end =>
+                expected.slice(0, -ending.length) + end
+            )
             : [expected];
 
         if (allowed.includes(actual)) return true;
@@ -2291,8 +2277,7 @@ window.addEventListener("pagehide", () => {
             if (
                 actual[i] === 'は' &&
                 allowed.includes(
-                    actual.slice(0, i) +
-                    actual.slice(i + 1)
+                    actual.slice(0, i) + actual.slice(i + 1)
                 )
             ) {
                 return true;
@@ -2305,12 +2290,10 @@ window.addEventListener("pagehide", () => {
     function splitSubject(body) {
         const candidates = [...new Set([
             ...taskData.flatMap(item => [
-                item.x,
-                item.xKanji
+                item.x, item.xKanji
             ]),
             ...Object.values(customDict).flatMap(item => [
-                item.hira,
-                item.kanji
+                item.hira, item.kanji
             ])
         ].filter(Boolean).map(practice1Normalize))]
             .sort((a, b) => b.length - a.length);
@@ -2347,10 +2330,7 @@ window.addEventListener("pagehide", () => {
         }
 
         const text = practice1Normalize(transcript);
-
-        const neg = negativeEndings('informal').find(
-            end => text.endsWith(end)
-        );
+        const neg = endingOf(text);
 
         if (
             negative
@@ -2361,8 +2341,7 @@ window.addEventListener("pagehide", () => {
         }
 
         const body = text.slice(
-            0,
-            -(negative ? neg.length : 1)
+            0, -(negative ? neg.length : 1)
         );
 
         if (
@@ -2381,17 +2360,34 @@ window.addEventListener("pagehide", () => {
     const originalDiff = practice1ResultDiff;
 
     practice1ResultDiff = function (displayed, saved, view) {
-        if (!saved.freeInput) {
-            return originalDiff(displayed, saved, view);
-        }
-
         const expected = practice1Normalize(
             saved.expectedText || saved.modelText
         );
 
-        const formal = /(?:です|ません)$/.test(expected);
+        const expectedNeg = endingOf(expected);
 
-        if (formal) {
+        if (!saved.freeInput) {
+            if (!expectedNeg) {
+                return originalDiff(displayed, saved, view);
+            }
+
+            const core = expected.slice(
+                0, -expectedNeg.length
+            );
+
+            return allNegative.flatMap(end => {
+                const text = core + end;
+
+                return [
+                    text,
+                    normalizeHiraganaTranscript(text)
+                ];
+            }).map(ref =>
+                practice1FindDiff(displayed, ref)
+            ).sort((a, b) => a.cost - b.cost)[0];
+        }
+
+        if (/(?:です|ません)$/.test(expected)) {
             return originalDiff(displayed, saved, view);
         }
 
@@ -2405,13 +2401,11 @@ window.addEventListener("pagehide", () => {
             ? actual.slice(0, -suffix[0].length)
             : actual;
 
-        // 内容は抽出文自身を使い、文型だけを比較する。
         if (
             expected.includes('は') &&
             !body.includes('は')
         ) {
             const subject = splitSubject(body);
-
             const position = subject
                 ? subject.length
                 : body.length;
@@ -2425,45 +2419,88 @@ window.addEventListener("pagehide", () => {
         if (body.startsWith('は')) body = '¤' + body;
         if (body.endsWith('は')) body += '¤';
 
-        return endings('informal', view.negative)
-            .map(end =>
-                practice1FindDiff(displayed, body + end)
-            )
-            .sort((a, b) => a.cost - b.cost)[0];
+        const endings = view.negative
+            ? allNegative
+            : ['だ'];
+
+        return endings.map(end =>
+            practice1FindDiff(displayed, body + end)
+        ).sort((a, b) => a.cost - b.cost)[0];
     };
 
     const originalMakeRow = makeRow;
 
     makeRow = function (...args) {
         const view = originalMakeRow(...args);
-        const top = view.row.querySelector('.top-row');
+        const old = view.row.querySelector('.top-row');
 
-        const index = top.children[1];
-        const type = top.children[3];
+        const number = old.children[1];
+        const type = old.children[3];
+
+        const table = makeElement(
+            'table', 'recording-table'
+        );
+
+        const columns = document.createElement('colgroup');
+
+        for (let i = 0; i < 3; i++) {
+            columns.append(document.createElement('col'));
+        }
+
+        columns.children[0].style.width = '34px';
+        table.append(columns);
+
+        const body = document.createElement('tbody');
+        const tr = document.createElement('tr');
+
+        const numberCell = makeElement(
+            'td', 'drill-number-cell'
+        );
+        numberCell.append(number);
+
+        const cue = makeElement(
+            'td', 'drill-cue-cell prompt-label'
+        );
+
+        // 🔴🟢はキューの直後に置く。
+        cue.append(
+            view.prompts,
+            document.createTextNode(' '),
+            type
+        );
+
+        const controls = document.createElement('td');
+
+        const layout = makeElement(
+            'div', 'recording-controls'
+        );
 
         const actions = makeElement(
-            'div',
-            'recording-actions'
+            'div', 'recording-actions'
         );
 
         actions.append(
-            index,
-            view.prompts,
             view.listen,
-            type,
             view.record,
             view.stop
         );
 
-        const wrap = makeElement(
-            'span',
-            'recording-result'
+        const result = makeElement(
+            'span', 'recording-result'
         );
+        result.append(view.result);
 
-        wrap.append(view.result);
+        layout.append(actions, result);
+        controls.append(layout);
 
-        top.className = 'recording-controls';
-        top.replaceChildren(actions, wrap);
+        tr.append(numberCell, cue, controls);
+        body.append(tr);
+        table.append(body);
+
+        view.row.replaceChildren(
+            table,
+            view.correction
+        );
 
         view.record.textContent = '🎙️とる';
         view.correctionListen.style.display = 'none';
@@ -2488,9 +2525,11 @@ window.addEventListener("pagehide", () => {
                 'custom-tip-wrap'
             );
 
-            const tip = document.createElement('span');
-            tip.className = 'custom-tip-box';
-            tip.textContent = 'Play your recorded voice';
+            const tip = makeElement(
+                'span',
+                'custom-tip-box',
+                'Play your recorded voice'
+            );
 
             play.append(tip);
         }
@@ -2523,15 +2562,13 @@ window.addEventListener("pagehide", () => {
             item = makeElement('div', 'control-item');
 
             const control = makeElement(
-                'div',
-                'segmented-control'
+                'div', 'segmented-control'
             );
 
             control.id = 'speechStyleControl';
             control.setAttribute('role', 'group');
             control.setAttribute(
-                'aria-label',
-                'Speech style'
+                'aria-label', 'Speech style'
             );
 
             [
@@ -2559,13 +2596,13 @@ window.addEventListener("pagehide", () => {
 
                 button.dataset.value = value;
 
-                const tip = makeElement(
-                    'span',
-                    'custom-tip-box',
-                    description
+                button.append(
+                    makeElement(
+                        'span',
+                        'custom-tip-box',
+                        description
+                    )
                 );
-
-                button.append(tip);
 
                 button.onclick = () => {
                     if (
@@ -2591,8 +2628,7 @@ window.addEventListener("pagehide", () => {
                     button.dataset.value === speechStyle;
 
                 button.classList.toggle(
-                    'is-selected',
-                    selected
+                    'is-selected', selected
                 );
 
                 button.setAttribute(
@@ -2611,12 +2647,27 @@ window.addEventListener("pagehide", () => {
             ? ['学生', '先生']
             : ['がくせい', 'せんせい'];
 
+        const example = document.querySelector(
+            '#exampleSectionContainer .example-box'
+        );
+
+        if (!example) return;
+
+        const table = makeElement(
+            'table', 'drill-example-table'
+        );
+
+        const body = document.createElement('tbody');
+        table.append(body);
+
         ['ex1Listen', 'ex2Listen'].forEach((id, index) => {
-            const button = document.getElementById(id);
-            const line = button?.parentElement;
+            const listen = document.getElementById(id);
+            const line = listen?.parentElement;
 
             if (!line) return;
 
+            const label = line.firstElementChild;
+            const arrow = listen.previousElementSibling;
             const sentence = line.lastElementChild;
 
             const text = modelSentence(
@@ -2639,7 +2690,35 @@ window.addEventListener("pagehide", () => {
                 '<strong>' +
                 escapeHtml(end) +
                 '</strong>';
+
+            const cueNodes = [];
+
+            for (
+                let node = label.nextSibling;
+                node && node !== arrow;
+                node = node.nextSibling
+            ) {
+                cueNodes.push(node);
+            }
+
+            const tr = document.createElement('tr');
+
+            const cells = Array.from(
+                { length: 5 },
+                () => document.createElement('td')
+            );
+
+            cells[0].append(label);
+            cells[1].append(...cueNodes);
+            cells[2].append(arrow);
+            cells[3].append(listen);
+            cells[4].append(sentence);
+
+            tr.append(...cells);
+            body.append(tr);
         });
+
+        example.replaceChildren(table);
 
         if (speechStyle === 'casual') {
             document.querySelectorAll(
@@ -2652,7 +2731,76 @@ window.addEventListener("pagehide", () => {
         }
     }
 
-    // 録音中の設定変更を、既存処理より先に止める。
+    function alignCueColumns() {
+        [
+            'task1Container',
+            'task2Container',
+            'task3Container'
+        ].forEach(id => {
+            const tables = Array.from(
+                document.querySelectorAll(
+                    `#${id} table.recording-table`
+                )
+            );
+
+            let width = 0;
+
+            tables.forEach(table => {
+                const cell = table.querySelector(
+                    '.drill-cue-cell'
+                );
+
+                const measure = makeElement('span');
+
+                measure.append(
+                    ...Array.from(
+                        cell.childNodes,
+                        node => node.cloneNode(true)
+                    )
+                );
+
+                measure.querySelectorAll(
+                    '.tooltip-tip,.custom-tip-box'
+                ).forEach(tip => tip.remove());
+
+                Object.assign(measure.style, {
+                    position: 'absolute',
+                    visibility: 'hidden',
+                    display: 'inline-block',
+                    width: 'max-content',
+                    whiteSpace: 'nowrap',
+                    font: 'inherit'
+                });
+
+                cell.append(measure);
+
+                width = Math.max(
+                    width,
+                    Math.ceil(
+                        measure.getBoundingClientRect().width
+                    )
+                );
+
+                measure.remove();
+            });
+
+            tables.forEach(table => {
+                table.querySelector('colgroup')
+                    .children[1].style.width =
+                        `${width + 8}px`;
+            });
+        });
+    }
+
+    document.addEventListener('change', event => {
+        if (
+            !busy() &&
+            event.target.closest?.('#task2Container')
+        ) {
+            alignCueColumns();
+        }
+    });
+
     document.addEventListener('click', event => {
         if (
             busy() &&
@@ -2671,6 +2819,7 @@ window.addEventListener("pagehide", () => {
         originalRender();
         installSpeechStyle();
         updateExample();
+        alignCueColumns();
         syncRecordingButtons();
     };
 })();
