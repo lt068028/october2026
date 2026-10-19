@@ -2301,74 +2301,62 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
 // ============================================================================
 // 共通設定：Formal / Informal / Casual
-// ============================================================================
 (() => {
-    let speechStyle = "formal";
+    let speechStyle = 'formal';
 
-    const sentenceFields = [
-        "pastSentence",
-        "pastSentenceHira",
-        "perfectSentence",
-        "perfectSentenceHira"
+    const fields = [
+        'pastSentence',
+        'pastSentenceHira',
+        'perfectSentence',
+        'perfectSentenceHira'
     ];
 
-    // 元のFormal文は変更せずに保存する。
-    const formalSentences = practice7Data.map(item =>
+    const originals = practice7Data.map(item =>
         Object.fromEntries(
-            sentenceFields.map(field => [field, item[field]])
+            fields.map(key => [key, item[key]])
         )
     );
 
-    function convertSentence(text) {
-        if (speechStyle === "formal") return text;
+    function convert(text) {
+        if (speechStyle === 'formal') return text;
 
         let value = String(text);
 
-        const pastEndings = [
-            ["寝ました", "寝た"],
-            ["ねました", "ねた"],
-            ["着ました", "着た"],
-            ["きました", "きた"],
-            ["太りました", "太った"],
-            ["ふとりました", "ふとった"],
-            ["やせました", "やせた"],
-            ["結婚しました", "結婚した"],
-            ["けっこんしました", "けっこんした"],
-            ["覚えました", "覚えた"],
-            ["おぼえました", "おぼえた"],
-            ["知りました", "知った"],
-            ["しりました", "しった"],
-            ["起きました", "起きた"],
-            ["おきました", "おきた"]
+        const endings = [
+            ['寝ました', '寝た'],
+            ['ねました', 'ねた'],
+            ['着ました', '着た'],
+            ['きました', 'きた'],
+            ['太りました', '太った'],
+            ['ふとりました', 'ふとった'],
+            ['やせました', 'やせた'],
+            ['結婚しました', '結婚した'],
+            ['けっこんしました', 'けっこんした'],
+            ['覚えました', '覚えた'],
+            ['おぼえました', 'おぼえた'],
+            ['知りました', '知った'],
+            ['しりました', 'しった'],
+            ['起きました', '起きた'],
+            ['おきました', 'おきた']
         ];
 
-        pastEndings.forEach(([formal, plain]) => {
-            value = value.replace(formal, plain);
+        endings.forEach(([from, to]) => {
+            value = value.replace(from, to);
         });
 
-        value = value.replace(/ています/g, "ている");
+        value = value.replace(/ています/g, 'ている');
 
-        if (speechStyle === "casual") {
+        if (speechStyle === 'casual') {
             value = value
-                .replace(/ている/g, "てる")
-                .replace(/を/g, "")
-                .replace(/。$/, "よ。");
+                .replace(/ている/g, 'てる')
+                .replace(/を/g, '');
         }
 
-        return value;
+        // Informal・Casualのモデルには「よ」を付ける。
+        return value.replace(/。$/, 'よ。');
     }
 
-    function applySentences() {
-        practice7Data.forEach((item, index) => {
-            sentenceFields.forEach(field => {
-                item[field] = convertSentence(
-                    formalSentences[index][field]
-                );
-            });
-        });
-    }
-
-    function isRecording() {
+    function blocked() {
         return Boolean(
             activeRecognitionSession ||
             practice7State.startingRow
@@ -2377,247 +2365,236 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     function syncStyleButtons() {
         document.querySelectorAll(
-            "#speechStyleControl button[data-value]"
+            '#speechStyleControl button[data-value]'
         ).forEach(button => {
             const selected =
                 button.dataset.value === speechStyle;
 
-            button.classList.toggle("is-selected", selected);
-            button.setAttribute(
-                "aria-pressed",
-                String(selected)
+            button.classList.toggle(
+                'is-selected', selected
             );
-            button.disabled = isRecording();
+            button.setAttribute(
+                'aria-pressed', String(selected)
+            );
+            button.disabled = blocked();
         });
     }
 
     function installSettings() {
-        const scriptItem = document.getElementById(
-            "scriptModeControl"
-        )?.closest(".control-item");
+        const anchor = document.getElementById(
+            'scriptModeControl'
+        )?.closest('.control-item');
 
-        if (!scriptItem) return;
+        if (!anchor) return;
 
         let item = document.getElementById(
-            "speechStyleControl"
-        )?.closest(".control-item");
+            'speechStyleControl'
+        )?.closest('.control-item');
 
         if (!item) {
-            item = document.createElement("div");
+            item = document.createElement('div');
             item.className =
-                "control-item speech-style-item";
+                'control-item speech-style-item';
 
-            const control = document.createElement("div");
-            control.id = "speechStyleControl";
-            control.className = "segmented-control";
-            control.setAttribute("role", "group");
+            const control = document.createElement('div');
+            control.id = 'speechStyleControl';
+            control.className = 'segmented-control';
+            control.setAttribute('role', 'group');
             control.setAttribute(
-                "aria-label",
-                "Speech style"
+                'aria-label', 'Speech style'
             );
 
-            const options = [
+            [
                 [
-                    "formal",
-                    "🏢Formal",
-                    "Polite speech for work or unfamiliar people."
+                    'formal',
+                    '🏢Formal',
+                    'Polite speech for work or unfamiliar people.'
                 ],
                 [
-                    "informal",
-                    "🏠Informal",
-                    "Plain forms used in writing"
+                    'informal',
+                    '🏠Informal',
+                    'Plain forms used in writing'
                 ],
                 [
-                    "casual",
-                    "🫂Casual",
-                    "Relaxed speech with family and friends."
+                    'casual',
+                    '🫂Casual',
+                    'Relaxed speech with family and friends.'
                 ]
-            ];
+            ].forEach(([value, label, description]) => {
+                const button =
+                    document.createElement('button');
 
-            options.forEach(([value, label, description]) => {
-                const button = document.createElement("button");
-                button.type = "button";
+                button.type = 'button';
                 button.className =
-                    "segmented-option custom-tip-wrap";
+                    'segmented-option custom-tip-wrap';
                 button.dataset.value = value;
                 button.append(
                     document.createTextNode(label)
                 );
 
-                const tip = document.createElement("span");
-                tip.className = "custom-tip-box";
+                const tip = document.createElement('span');
+                tip.className = 'custom-tip-box';
                 tip.textContent = description;
                 button.append(tip);
 
                 button.onclick = () => {
                     if (
-                        isRecording() ||
+                        blocked() ||
                         speechStyle === value
                     ) return;
 
                     stopAllPlayback();
-                const Habit = speechStyle === 'formal'
-                    ? item.Habit
-                    : speechStyle === 'informal'
-                        ? plainHabit[index] + 'よ'
-                        : casualHabit[index];
+                    speechStyle = value;
 
-                const ongoing = speechStyle === 'formal'
-                    ? item.ongoing
-                    : speechStyle === 'informal'
-                        ? plainOngoing[index] + 'よ'
-                        : casualOngoing[index];
-
-                const a = `いつも、${clauses}${Habit}。`;
-                const b = `いま、${clauses}${ongoing}。`;
-
-                const first = words[0];
-                const last = words[words.length - 1];
-
-                return {
-                    ...item,
-                    words,
-                    clauses,
-                    Habit,
-                    ongoing,
-                    itemIndex: index,
-                    x: first.h,
-                    xKanji: first.k,
-                    xRomaji: first.r,
-                    xMeaning: first.e,
-                    y: last.h,
-                    yKanji: last.k,
-                    yRomaji: last.r,
-                    yMeaning: last.e,
-                    pastSentence: a,
-                    pastSentenceHira:
-                        practice71ToHiragana(a),
-                    perfectSentence: b,
-                    perfectSentenceHira:
-                        practice71ToHiragana(b)
+                    // 録音・抽出文の保存先は変更しない。
+                    renderAll();
                 };
-            })
-        );
-    }
 
-    function styleExampleSentence(ongoing) {
-        const item = practice71Data[0];
+                control.append(button);
+            });
 
-        const suffix = ongoing
-            ? {
-                formal: 'ています',
-                informal: 'ているよ',
-                casual: 'てるよ'
-            }[speechStyle]
-            : {
-                formal: 'ます',
-                informal: 'るよ',
-                casual: 'るよ'
-            }[speechStyle];
-
-            #drill1List .p7-result-wrap {
-                display: block !important;
-                float: none !important;
-                clear: both;
-                width: 100%;
-                min-width: 0;
-                box-sizing: border-box;
-                margin-top: 6px;
-                text-align: right;
-                white-space: normal;
-            }
-
-            #drill1List .p7-result-wrap > .result-text {
-                display: inline-block;
-                max-width: 100%;
-                margin-left: 0 !important;
-                white-space: normal;
-                overflow-wrap: anywhere;
-                text-align: right;
-            }
-        `;
-
-        document.head.append(style);
-    }
-
-    function updateResultLayout() {
-        document.querySelectorAll(
-            "#drill1List .result-text"
-        ).forEach(result => {
-            result.parentElement?.classList.add(
-                "p7-result-wrap"
-            );
-            result.closest("td")?.classList.add(
-                "p7-controls"
-            );
-        });
-    }
-
-    function updateExampleStyle() {
-    // 「英語を／英語で」を比較時だけ同じ形にする。
-    // Informalの文末「よ」は、あってもなくても許容する。
-    practice71Normalize = text => {
-        let value = String(text ?? '').replace(
-            /(英語|えいご)([\s、，,]*)で/g,
-            '$1$2を'
-        );
-
-        if (speechStyle === 'informal') {
-            value = value
-                .replace(/[\s、。．,.!?！？]+$/g, '')
-                .replace(/よ?$/, 'よ');
+            item.append(control);
         }
 
-        return baseNormalize(value);
-    };
-        ).forEach(line => {
-            const sentence = line.lastElementChild;
-            if (!sentence || sentence.tagName !== "SPAN") return;
+        // 文字表示 → 文体 → 語彙表示
+        anchor.after(item);
 
-            // 既存の語彙Hoverやゴールド表示は維持する。
-            sentence.querySelectorAll("strong").forEach(strong => {
-                const value = strong.textContent;
+        const labels = {
+            hover: '💬Hover',
+            paren: '🔡Display',
+            off: 'OFF'
+        };
 
-                if (value.startsWith("ました")) {
-                    const ending = speechStyle === "formal"
-                        ? "ました"
-                        : speechStyle === "casual"
-                            ? "たよ"
-                            : "た";
+        document.querySelectorAll(
+            '#hintModeControl button[data-value]'
+        ).forEach(button => {
+            const label = labels[button.dataset.value];
+            if (!label) return;
 
-                    strong.textContent =
-                        ending + (value.endsWith("。") ? "。" : "");
-                }
+            const tip = button.querySelector(
+                '.custom-tip-box'
+            );
 
-                if (value.startsWith("ています")) {
-                    const ending = speechStyle === "formal"
-                        ? "ています"
-                        : speechStyle === "casual"
-                            ? "てるよ"
-                            : "ている";
+            button.replaceChildren(
+                document.createTextNode(label)
+            );
 
-                    strong.textContent =
-                        ending + (value.endsWith("。") ? "。" : "");
-                }
-            });
+            if (tip) button.append(tip);
         });
 
-        const examples = [
-            ["exPastListen", "朝5時に起きました。"],
-            ["exPerfListen", "朝5時から起きています。"]
-        ];
+        syncStyleButtons();
+    }
 
-        examples.forEach(([id, formal]) => {
+    function updateLayout() {
+        document.querySelectorAll(
+            '#drill1List .result-text'
+        ).forEach(result => {
+            const cell = result.closest('td');
+
+            if (
+                !cell ||
+                cell.querySelector('.recording-controls')
+            ) return;
+
+            const wrap = result.parentElement;
+            wrap.classList.add('recording-result');
+
+            const layout = document.createElement('div');
+            layout.className = 'recording-controls';
+
+            const actions = document.createElement('div');
+            actions.className = 'recording-actions';
+
+            Array.from(cell.childNodes).forEach(node => {
+                if (node !== wrap) actions.append(node);
+            });
+
+            layout.append(actions, wrap);
+            cell.append(layout);
+        });
+
+        document.querySelectorAll(
+            '#drill1List .prompt-label'
+        ).forEach(cell => {
+            const table = cell.closest('table');
+            if (!table) return;
+
+            table.classList.add('recording-table');
+
+            let cols = table.querySelector(
+                'colgroup.recording-columns'
+            );
+
+            if (!cols) {
+                cols = document.createElement('colgroup');
+                cols.className = 'recording-columns';
+
+                for (let i = 0; i < 3; i++) {
+                    cols.append(
+                        document.createElement('col')
+                    );
+                }
+
+                table.prepend(cols);
+            }
+
+            cols.children[0].style.width = '34px';
+            cols.children[1].style.width =
+                `${(parseFloat(cell.style.width) || 0) + 4}px`;
+        });
+    }
+
+    function updateExample() {
+        document.querySelectorAll(
+            '#drill1Container .example-box .example-line'
+        ).forEach(line => {
+            const sentence = line.lastElementChild;
+
+            if (
+                !sentence ||
+                sentence.tagName !== 'SPAN'
+            ) return;
+
+            sentence.querySelectorAll('strong')
+                .forEach(strong => {
+                    const text = strong.textContent;
+                    let ending;
+
+                    if (text.startsWith('ました')) {
+                        ending = speechStyle === 'formal'
+                            ? 'ました'
+                            : 'たよ';
+                    } else if (
+                        text.startsWith('ています')
+                    ) {
+                        ending = speechStyle === 'formal'
+                            ? 'ています'
+                            : speechStyle === 'informal'
+                                ? 'ているよ'
+                                : 'てるよ';
+                    } else {
+                        return;
+                    }
+
+                    strong.textContent = ending +
+                        (text.endsWith('。') ? '。' : '');
+                });
+        });
+
+        [
+            ['exPastListen', '朝5時に起きました。'],
+            ['exPerfListen', '朝5時から起きています。']
+        ].forEach(([id, text]) => {
             const button = document.getElementById(id);
             if (!button) return;
 
-            const model = convertSentence(formal);
+            const model = convert(text);
 
             button.onclick = () => {
                 setPlayingStateMultiple(
-                    [button],
-                    "Playing..."
+                    [button], 'Playing...'
                 );
+
                 speakText(
                     model,
                     0.9,
@@ -2627,60 +2604,38 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
     }
 
-    // 再描画では録音時の判定を維持する。
-    // 新しい録音の判定はprocessResultで確定する。
-    const originalShowResult = practice7ShowResult;
+    const originalShow = practice7ShowResult;
 
     practice7ShowResult = function (
         view, saved, rowKey, playRate
     ) {
-        if (typeof saved.isCorrect !== "boolean") {
-            return originalShowResult(
-                view, saved, rowKey, playRate
-            );
-        }
+        originalShow(view, saved, rowKey, playRate);
 
-        const recordedJudgment = saved.isCorrect;
-        const descriptor = Object.getOwnPropertyDescriptor(
-            saved,
-            "isCorrect"
-        );
-
-        Object.defineProperty(saved, "isCorrect", {
-            configurable: true,
-            enumerable: true,
-            get: () => recordedJudgment,
-            set: () => {}
-        });
-
-        try {
-            return originalShowResult(
-                view, saved, rowKey, playRate
-            );
-        } finally {
-            Object.defineProperty(
-                saved,
-                "isCorrect",
-                descriptor
-            );
-        }
+        // キュー横の「きく」と重複させない。
+        view.corrListenBtn.style.display = 'none';
     };
 
-    const previousRender = renderAll;
+    const originalRender = renderAll;
 
     renderAll = function () {
-        applySentences();
-        previousRender();
+        practice7Data.forEach((item, index) => {
+            fields.forEach(key => {
+                item[key] = convert(
+                    originals[index][key]
+                );
+            });
+        });
+
+        originalRender();
         installSettings();
-        installResultLayout();
-        updateResultLayout();
-        updateExampleStyle();
+        updateLayout();
+        updateExample();
     };
 
-    const previousSync = practice7SyncRecordingUI;
+    const originalSync = practice7SyncRecordingUI;
 
     practice7SyncRecordingUI = function () {
-        previousSync();
+        originalSync();
         syncStyleButtons();
     };
 })();
