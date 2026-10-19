@@ -1,3 +1,8 @@
+/* 共通：メッセージが空の訂正欄は表示しない */
+.correction-box:has(> span):not(:has(> span:not(:empty))) {
+    display: none !important;
+}
+
 /* 共通：番号・キュー列 */
 .recording-table .drill-number-cell {
     vertical-align: middle;
