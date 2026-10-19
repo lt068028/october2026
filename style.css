@@ -1,3 +1,13 @@
+/* 共通：Exampleから対応するDrillまで */
+.practice-section > .example-box + .info-panel {
+    margin-top: 24px;
+}
+
+/* 共通：前のDrillから次のExampleを含むセクションまで */
+.practice-section + .practice-section {
+    margin-top: 40px;
+}
+
 /* 共通：メッセージが空の訂正欄は表示しない */
 .correction-box:has(> span):not(:has(> span:not(:empty))) {
     display: none !important;
