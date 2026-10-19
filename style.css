@@ -1,3 +1,27 @@
+/* 共通：不正解メッセージ */
+.recording-controls + .correction-box[hidden] {
+    display: none !important;
+}
+
+.recording-controls + .correction-box:not([hidden]) {
+    display: block;
+    text-align: right;
+}
+
+/* Past State：通常用は候補A */
+#drill1Container .p73-state {
+    background: #86efac;
+    color: #14532d;
+}
+
+/* Past State：ダーク用 */
+@media (prefers-color-scheme: dark) {
+    #drill1Container .p73-state {
+        background: #14532d;
+        color: #bbf7d0;
+    }
+}
+
 /* ==========================================
    Practice 7.3：教材固有の表示
    共通の設定・録音UIは既存の共通クラスを使用
