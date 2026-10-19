@@ -639,6 +639,119 @@ function practice2ShowNotice(resultSpan, message) {
 // ============================================================================
 // Render Drill 1 Section
 // ============================================================================
+// Example1：否定音の比較／Drill2：モデル音声の「は」
+(() => {
+    const previousSpeechText = practice2SpeechText;
+
+    // 専攻についてのモデル音声では「は」を発音する。
+    practice2SpeechText = function(text) {
+        const value = String(text ?? "").replace(
+            /(専攻|せんこう)[、,\s]*(?:は[、,\s]*)?/g,
+            "$1は、"
+        );
+
+        return previousSpeechText(value);
+    };
+
+    function addComparison() {
+        const body = document.querySelector(
+            "#drill1Container .drill-example-table tbody"
+        );
+
+        if (
+            !body
+            || body.querySelector(".no-sound-comparison")
+        ) {
+            return;
+        }
+
+        const row = document.createElement("tr");
+        row.className = "no-sound-comparison";
+
+        const labelCell = document.createElement("td");
+        const label = document.createElement("strong");
+
+        label.className = "example-label-title";
+        label.textContent = "Compare No:";
+        labelCell.append(label);
+
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+
+        for (const candidate of [
+            "ううん",
+            "うんん",
+            "うーん",
+            "ううーん"
+        ]) {
+            const button = document.createElement("button");
+
+            button.type = "button";
+            button.className =
+                "example-button custom-tip-wrap";
+
+            button.textContent = "🔊" + candidate;
+
+            const tip = document.createElement("span");
+            tip.className = "custom-tip-box";
+            tip.textContent =
+                candidate + "、看護師じゃないよ。";
+
+            button.append(tip);
+
+            button.onclick = () => {
+                if (
+                    activeRecognitionSession
+                    || practice2State.startingRow
+                ) {
+                    return;
+                }
+
+                stopAllPlayback();
+
+                setPlayingStateMultiple(
+                    [button],
+                    "Playing..."
+                );
+
+                speakText(
+                    practice2SpeechText(
+                        candidate + "、看護師じゃないよ。"
+                    ),
+                    0.9,
+                    () => stopAllPlayback()
+                );
+            };
+
+            cell.append(
+                button,
+                document.createTextNode(" ")
+            );
+        }
+
+        row.append(labelCell, cell);
+        body.append(row);
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const previousRender = renderAll;
+
+        renderAll = function() {
+            if (
+                activeRecognitionSession
+                || practice2State.startingRow
+            ) {
+                return;
+            }
+
+            previousRender();
+            addComparison();
+        };
+
+        addComparison();
+    });
+})();
+
 // 共通UI：セクション間隔・モデル音声・質問キュー
 (() => {
     const originalSpeechText = practice2SpeechText;
