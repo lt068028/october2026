@@ -522,16 +522,16 @@ body {
     flex-shrink: 0;
 }
 
-/* 操作部分の右に残った幅を結果欄に割り当てる */
+/* 短い結果は同じ行、長い結果は操作部分の下へ移す */
 .recording-controls > .recording-result {
     display: block !important;
     float: none !important;
     clear: none;
-    flex: 1 1 0;
-    width: auto;
+    flex: 0 0 auto;
+    width: max-content;
     min-width: 0;
     max-width: 100%;
-    margin: 0;
+    margin: 0 0 0 auto;
     box-sizing: border-box;
     text-align: right;
     white-space: normal;
