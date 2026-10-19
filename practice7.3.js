@@ -697,10 +697,13 @@ function markPlaying(b) {
 }
 
 function speechText(text) {
-    let value = String(text).replace(
-        /^いつまで[、,\s]*/,
-        'いつまで、'
-    );
+    let value = String(text)
+        .replace(/夜(?:9|９|九)時/g, 'よるくじ')
+        .replace(/よる(?:9|９|九)じ/g, 'よるくじ')
+        .replace(
+            /^いつまで[、,\s]*/,
+            'いつまで、'
+        );
 
     const verb = value.match(
         /(電話し|書き|書い|泳ぎ|泳い|歌い|歌っ|待っ|手伝っ|教え|覚え|寝|働い|住ん|結婚し|借り|忘れ|持っ|し)(?:ました|ていました|でいました|ていた|でいた|てた|でた|た|だ)/
