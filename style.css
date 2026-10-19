@@ -1,3 +1,55 @@
+/* 共通：番号・キュー列 */
+.recording-table .drill-number-cell {
+    vertical-align: middle;
+    padding-right: 4px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.recording-table .drill-cue-cell {
+    vertical-align: middle;
+    padding-right: 4px;
+    white-space: nowrap;
+}
+
+/* 共通：Exampleの各要素を列でそろえる */
+.drill-example-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.drill-example-table > tbody > tr > td {
+    padding: 6px 4px;
+    vertical-align: middle;
+}
+
+.drill-example-table > tbody > tr > td:not(:last-child) {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.drill-example-table > tbody > tr > td:first-child {
+    padding-left: 0;
+}
+
+.drill-example-table > tbody > tr > td:last-child {
+    padding-right: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.drill-example-table .example-label-title {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.drill-example-table > tbody > tr + tr > td {
+    border-top: 1px dashed var(--border-color);
+    padding-top: 10px;
+}
 /* 共通：不正解メッセージ */
 .recording-controls + .correction-box[hidden] {
     display: none !important;
