@@ -2001,7 +2001,15 @@ function qa73Model(cues, kind) {
 const qa73BaseNormalize = normalize;
 
 normalize = function (text) {
-    const value = qa73BaseNormalize(text);
+    let value = qa73BaseNormalize(text);
+
+    // 「会う」の相手を示す「友達に／友達と」を同じ判定にする。
+    if (
+        /あって(?:いました|いませんでした|いた|いなかった|た|なかった)/
+            .test(value)
+    ) {
+        value = value.replace(/ともだちと/g, 'ともだちに');
+    }
 
     // 質問文は既存の判定を使用する。
     if (
@@ -2010,7 +2018,6 @@ normalize = function (text) {
     ) {
         return value;
     }
-
     for (const [verbKey, data] of Object.entries(qa73Verbs)) {
         const stem = hira(data[0]);
 
@@ -2219,6 +2226,8 @@ render = function () {
         text.innerHTML = sentence(r);
 
         answers.append(listen, text);
+    });
+
     response.append(label, answers);
     eb.append(response);
     example.append(et);
