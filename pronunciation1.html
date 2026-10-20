@@ -5,191 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pronunciation Practice 1</title>
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        #pitchLab {
-            --lab-background: #faf5ff;
-            --lab-border: #a855f7;
-            --lab-text: #30203c;
-            --lab-secondary: #62536d;
-            --lab-badge: #7e22ce;
-            --lab-badge-text: #ffffff;
-            --lab-card: #ffffff;
-            --lab-input: #ffffff;
-            --lab-line: #d8c9e2;
-            --lab-button: #f3e8ff;
-            --lab-placeholder: #786783;
-
-            /* グラフ描画処理から参照される色 */
-            --text-primary: var(--lab-text);
-            --text-secondary: var(--lab-secondary);
-            --bg-main: var(--lab-card);
-            --bg-row: var(--lab-card);
-            --border-color: var(--lab-line);
-
-            position: relative;
-            margin-top: 36px;
-            padding: 24px 16px 16px;
-            border: 1px solid var(--lab-border);
-            border-radius: 6px;
-            background: var(--lab-background);
-            color: var(--lab-text);
-        }
-
-        #pitchLab::before {
-            content: "Lab";
-            position: absolute;
-            top: -10px;
-            left: 12px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: var(--lab-badge);
-            color: var(--lab-badge-text);
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        #pitchLab .pitch-lab-title {
-            margin: 0 0 8px;
-            font-size: 18px;
-            color: var(--lab-text);
-        }
-
-        #pitchLab .pitch-lab-description {
-            margin: 0;
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--lab-text);
-        }
-
-        #pitchLab .pitch-lab-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-            margin-top: 16px;
-        }
-
-        #pitchLab .pitch-card {
-            min-width: 0;
-            padding: 14px;
-            border: 1px solid var(--lab-line);
-            border-radius: 8px;
-            background: var(--lab-card);
-            color: var(--lab-text);
-        }
-
-        #pitchLab .pitch-word-label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--lab-text);
-        }
-
-        #pitchLab .pitch-word-input {
-            display: block;
-            box-sizing: border-box;
-            width: 100%;
-            min-width: 0;
-            margin: 0;
-            padding: 8px 10px;
-            border: 1px solid var(--lab-line);
-            border-radius: 4px;
-            background: var(--lab-input);
-            color: var(--lab-text);
-            font: inherit;
-            font-size: 16px;
-        }
-
-        #pitchLab .pitch-word-input::placeholder {
-            color: var(--lab-placeholder);
-            opacity: 1;
-        }
-
-        #pitchLab .pitch-controls {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 12px;
-        }
-
-        #pitchLab .pitch-controls .example-button {
-            min-height: 32px;
-            margin: 0;
-            border: 1px solid var(--lab-border);
-            background: var(--lab-button);
-            color: var(--lab-text);
-            white-space: nowrap;
-        }
-
-        #pitchLab .pitch-controls button:disabled {
-            opacity: 0.45;
-            cursor: not-allowed;
-        }
-
-        #pitchLab .pitch-status {
-            min-width: 0;
-            margin: 0 0 0 4px;
-            font-size: 14px;
-            color: var(--lab-secondary);
-            overflow-wrap: anywhere;
-        }
-
-        #pitchLab .pitch-canvas {
-            display: block;
-            box-sizing: border-box;
-            width: 100%;
-            height: 190px;
-            margin-top: 12px;
-            border: 1px solid var(--lab-line);
-            border-radius: 4px;
-            background: var(--lab-card);
-        }
-
-        #pitchLab .pitch-word-input:focus-visible,
-        #pitchLab button:focus-visible {
-            outline: 3px solid var(--lab-border);
-            outline-offset: 3px;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            #pitchLab {
-                color-scheme: dark;
-                --lab-background: #2e163e;
-                --lab-border: #c084fc;
-                --lab-text: #f3e8ff;
-                --lab-secondary: #e2d3ed;
-                --lab-badge: #d8b4fe;
-                --lab-badge-text: #3b0764;
-                --lab-card: #211827;
-                --lab-input: #302238;
-                --lab-line: #80628e;
-                --lab-button: #493056;
-                --lab-placeholder: #cbb8d6;
-            }
-        }
-
-        @media (max-width: 680px) {
-            #pitchLab .pitch-lab-grid {
-                grid-template-columns: 1fr;
-            }
-
-            #pitchLab .pitch-card {
-                padding: 12px;
-            }
-        }
-    </style>
 </head>
 <body>
 
     <div class="main-header page-header">
+
         <div class="page-heading">
             <h1>Pronunciation Practice 1</h1>
             <a href="index.html" class="back-link">↩️もどる</a>
         </div>
 
         <div class="compact-settings">
+
             <div class="settings-row settings-segments-row">
                 <div class="control-item">
                     <div
@@ -203,6 +30,7 @@
                             class="segmented-option custom-tip-wrap is-selected"
                             data-value="hiragana"
                             aria-pressed="true"
+                            aria-disabled="true"
                             disabled
                         >
                             <span class="icon-emoji">🐣</span>Hiragana Only
@@ -211,9 +39,10 @@
 
                         <button
                             type="button"
-                            class="segmented-option custom-tip-wrap"
+                            class="segmented-option custom-tip-wrap pronunciation-kanji-disabled"
                             data-value="kanji"
                             aria-pressed="false"
+                            aria-disabled="true"
                             disabled
                         >
                             <span class="icon-emoji">🐤</span>With漢字
@@ -224,13 +53,14 @@
             </div>
 
             <div class="settings-row settings-auto-row">
+
                 <div class="control-item settings-onoff">
                     <span
                         id="labelAutoRecord"
                         class="mode-label active-mode custom-tip-wrap"
                     >
                         <span class="icon-emoji">⏹️</span>Autostop
-                        <span class="custom-tip-box">ON: Automatically stops recording. OFF: Records until you click the stop button.</span>
+                        <span class="custom-tip-box">ON: Stop after 2 seconds of silence following speech. OFF: Use the stop button. All recordings stop after 20 seconds.</span>
                     </span>
 
                     <label class="switch">
@@ -250,7 +80,7 @@
                         class="mode-label active-mode custom-tip-wrap"
                     >
                         <span class="icon-emoji">▶️</span>Autoplay
-                        <span class="custom-tip-box">ON: Plays your voice automatically after recording. OFF: Disables automatic playback.</span>
+                        <span class="custom-tip-box">ON: Plays the model, when available, then your recording. OFF: Disables automatic playback.</span>
                     </span>
 
                     <label class="switch">
@@ -263,25 +93,30 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+
             </div>
         </div>
     </div>
 
     <!-- Drill 1 -->
-    <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-        <span class="info-panel-title">
-            Drill 1: Mimic and Compare (Listen &amp; Shadow)
-        </span>
+    <section class="practice-section">
 
-        <span class="info-panel-desc">
-            💡 Listen to the model, mimic the voice and speak aloud.
-        </span>
-    </div>
+        <div class="info-panel info-panel-task1">
+            <span class="info-panel-title">
+                Drill 1: Mimic and Compare (Listen &amp; Shadow)
+            </span>
 
-    <div id="drill1List"></div>
+            <span class="info-panel-desc">
+                💡Listen to the model, mimic the voice and speak aloud.
+            </span>
+        </div>
 
-    <!-- Lab：Drill 1の後に配置 -->
+        <div id="drill1List"></div>
+    </section>
+
+    <!-- Lab -->
     <section id="pitchLab" aria-labelledby="pitchLabTitle">
+
         <h2 id="pitchLabTitle" class="pitch-lab-title">
             Watch Your Pitch Rise and Fall
         </h2>
@@ -291,108 +126,18 @@
             Try any word pair, such as はし／はし.
         </p>
 
-        <div class="pitch-lab-grid">
-            <section class="pitch-card" data-pitch-side="word1">
-                <label class="pitch-word-label" for="pitchWord1">
-                    Word 1
-                </label>
-
-                <input
-                    id="pitchWord1"
-                    class="pitch-word-input"
-                    type="text"
-                    placeholder="例：はし"
-                    autocomplete="off"
-                >
-
-                <div class="pitch-controls">
-                    <button
-                        type="button"
-                        class="example-button pitch-record"
-                        aria-label="Record word 1"
-                    >🎙️とる</button>
-
-                    <button
-                        type="button"
-                        class="example-button pitch-stop"
-                        aria-label="Stop recording word 1"
-                        disabled
-                    >⏹️</button>
-
-                    <button
-                        type="button"
-                        class="example-button pitch-play"
-                        aria-label="Play your recording of word 1"
-                        disabled
-                    >▶️</button>
-
-                    <span
-                        class="pitch-status"
-                        role="status"
-                        aria-live="polite"
-                    >Not recorded yet</span>
-                </div>
-
-                <canvas
-                    class="pitch-canvas"
-                    aria-label="Recorded pitch contour for word 1"
-                ></canvas>
-            </section>
-
-            <section class="pitch-card" data-pitch-side="word2">
-                <label class="pitch-word-label" for="pitchWord2">
-                    Word 2
-                </label>
-
-                <input
-                    id="pitchWord2"
-                    class="pitch-word-input"
-                    type="text"
-                    placeholder="例：はし"
-                    autocomplete="off"
-                >
-
-                <div class="pitch-controls">
-                    <button
-                        type="button"
-                        class="example-button pitch-record"
-                        aria-label="Record word 2"
-                    >🎙️とる</button>
-
-                    <button
-                        type="button"
-                        class="example-button pitch-stop"
-                        aria-label="Stop recording word 2"
-                        disabled
-                    >⏹️</button>
-
-                    <button
-                        type="button"
-                        class="example-button pitch-play"
-                        aria-label="Play your recording of word 2"
-                        disabled
-                    >▶️</button>
-
-                    <span
-                        class="pitch-status"
-                        role="status"
-                        aria-live="polite"
-                    >Not recorded yet</span>
-                </div>
-
-                <canvas
-                    class="pitch-canvas"
-                    aria-label="Recorded pitch contour for word 2"
-                ></canvas>
-            </section>
-        </div>
+        <div class="pitch-lab-grid"></div>
     </section>
 
     <div class="voice-guide-footer">
         🔊Want to change the voice?
         <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
 
-        <div id="guideBox" class="guide-box-popup" style="display: none;">
+        <div
+            id="guideBox"
+            class="guide-box-popup"
+            style="display: none;"
+        >
             Win: Settings &gt; Time &amp; Language &gt; Speech<br>
             Mac/iOS: Settings &gt; Accessibility &gt; Spoken Content<br>
             ChromeOS: Settings &gt; Advanced &gt; Accessibility &gt; Text-to-Speech
