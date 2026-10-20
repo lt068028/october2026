@@ -1453,16 +1453,51 @@ input:checked + .slider:before { transform: translateX(16px); }
     white-space: nowrap;
 }
 
+/* =========================================================
+   Practice 7.1専用：ラベル・例文の強調・発話開始ヒント
+   ========================================================= */
+
+/* 🔁Habit */
 #drill1Container .p71-present {
     background: #fde047;
     color: #713f12;
 }
 
+/* ▶️Ongoing */
 #drill1Container .p71-ongoing {
-    background: #fed7aa;
-    color: #9a3412;
+    background: #ffab70;
+    color: #6b240b;
 }
 
+/* 例文内の指定語句だけをゴールドにする */
+#practice71Example .p71-grammar-highlight {
+    color: #ca8a04;
+    font-weight: bold;
+}
+
+/* 停止ボタンの右に表示する「いつも…／今…」 */
+#drill1Container .p71-start-hint {
+    margin-left: 8px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* ダークモード */
+@media (prefers-color-scheme: dark) {
+    #drill1Container .p71-present {
+        background: #665710;
+        color: #fef08a;
+    }
+
+    #drill1Container .p71-ongoing {
+        background: #813d16;
+        color: #ffdab5;
+    }
+
+    #practice71Example .p71-grammar-highlight {
+        color: #fbbf24;
+    }
+}
 /* Example文中の対象語 */
 #practice71Example .p71-underlined {
     text-decoration: underline;
