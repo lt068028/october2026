@@ -1,3 +1,8 @@
+/* Practice 7.2：Example 1とDrill 1の間隔 */
+#drill1Container:has(> #practice72QuestionSection)
+> .example-box + .info-panel {
+    margin-top: 24px;
+}
 /* 質問・回答練習：前のDrillとの間隔 */
 .practice-qa-section {
     margin-top: 40px;
