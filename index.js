@@ -1,3 +1,430 @@
+// Index専用：Whisperによる端末内文字起こしテスト
+(() => {
+    'use strict';
+
+    function mountWhisperTest() {
+        const host = document.querySelector('.menu-container');
+        if (!host || document.getElementById('whisperLocalTest')) return;
+
+        const panel = document.createElement('section');
+        panel.id = 'whisperLocalTest';
+        panel.innerHTML = `
+            <h2>Whisper端末内テスト</h2>
+            <p>
+                初回は①認識を準備を押して待つ。
+                準備完了後、②とるで話し、⏹️で停止する。
+                再生せずに文字を抽出する。
+            </p>
+            <div>
+                <button type="button" class="example-button"
+                    data-action="load">①認識を準備</button>
+                <button type="button" class="example-button"
+                    data-action="record" disabled>②🎙️とる</button>
+                <button type="button" class="example-button"
+                    data-action="stop" disabled>⏹️</button>
+                <button type="button" class="example-button"
+                    data-action="play" disabled>▶️再生</button>
+                <button type="button" class="example-button"
+                    data-action="retry" disabled>文字抽出を再試行</button>
+                <button type="button" class="example-button"
+                    data-action="cancel" disabled>処理中止</button>
+            </div>
+            <p data-output="status" role="status" aria-live="polite">
+                未準備。音声は端末内で処理する。
+            </p>
+            <p data-output="text">抽出文：未実施</p>
+        `;
+        host.append(panel);
+
+        const button = name =>
+            panel.querySelector(`[data-action="${name}"]`);
+        const status = panel.querySelector('[data-output="status"]');
+        const text = panel.querySelector('[data-output="text"]');
+
+        let worker = null;
+        let ready = false;
+        let busy = false;
+        let stream = null;
+        let recorder = null;
+        let recording = false;
+        let timer = null;
+        let ticker = null;
+        let savedBlob = null;
+        let savedUrl = '';
+        let player = null;
+        let job = 0;
+        let startedAt = 0;
+
+        function sync() {
+            button('load').disabled = busy || recording || ready;
+            button('record').disabled = busy || recording || !ready;
+            button('stop').disabled = !recording;
+            button('play').disabled = busy || recording || !savedUrl;
+            button('retry').disabled =
+                busy || recording || !ready || !savedBlob;
+            button('cancel').disabled = !busy;
+        }
+
+        function stopTracks() {
+            stream?.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
+
+        function stopPlayback() {
+            if (player) {
+                player.pause();
+                player = null;
+            }
+        }
+
+        // 別スレッドで解析し、画面の操作を妨げにくくする。
+        function workerMain() {
+            let transcriber = null;
+
+            self.onmessage = async ({ data }) => {
+                try {
+                    if (data.type === 'load') {
+                        const { pipeline, env } = await import(
+                            'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1'
+                        );
+
+                        env.allowLocalModels = false;
+                        env.useBrowserCache = true;
+                        env.backends.onnx.wasm.numThreads = 1;
+                        env.backends.onnx.wasm.proxy = false;
+
+                        transcriber = await pipeline(
+                            'automatic-speech-recognition',
+                            'Xenova/whisper-tiny',
+                            {
+                                device: 'wasm',
+                                dtype: 'q8',
+                                progress_callback: progress => {
+                                    if (progress.status === 'progress') {
+                                        self.postMessage({
+                                            type: 'progress',
+                                            file: progress.file || '',
+                                            percent: Math.round(
+                                                progress.progress || 0
+                                            )
+                                        });
+                                    }
+                                }
+                            }
+                        );
+
+                        self.postMessage({ type: 'ready' });
+                    }
+
+                    if (data.type === 'transcribe') {
+                        if (!transcriber) {
+                            throw new Error('モデルの準備が必要');
+                        }
+
+                        const result = await transcriber(data.audio, {
+                            language: 'japanese',
+                            task: 'transcribe',
+                            do_sample: false,
+                            max_new_tokens: 128
+                        });
+
+                        self.postMessage({
+                            type: 'result',
+                            text: result.text || ''
+                        });
+                    }
+                } catch (error) {
+                    self.postMessage({
+                        type: 'error',
+                        message: error.message || String(error)
+                    });
+                }
+            };
+        }
+
+        function endBusy() {
+            busy = false;
+            clearInterval(ticker);
+            ticker = null;
+            sync();
+        }
+
+        function resetWorker() {
+            worker?.terminate();
+            worker = null;
+            ready = false;
+        }
+
+        button('load').onclick = () => {
+            if (busy || recording) return;
+            stopPlayback();
+            busy = true;
+            status.textContent =
+                'モデルを準備中。初回はダウンロードに時間がかかる。';
+            sync();
+
+            try {
+                const source = new Blob(
+                    [`(${workerMain.toString()})();`],
+                    { type: 'text/javascript' }
+                );
+                const url = URL.createObjectURL(source);
+                try {
+                    worker = new Worker(url, { type: 'module' });
+                } finally {
+                    URL.revokeObjectURL(url);
+                }
+
+                worker.onmessage = ({ data }) => {
+                    if (data.type === 'progress') {
+                        status.textContent =
+                            `モデル取得中：${data.file} ${data.percent}%`;
+                    } else if (data.type === 'ready') {
+                        ready = true;
+                        status.textContent =
+                            '準備完了。②🎙️とるで短い日本語を話す。';
+                        endBusy();
+                    } else if (data.type === 'result') {
+                        const seconds =
+                            ((performance.now() - startedAt) / 1000).toFixed(1);
+                        text.textContent =
+                            '抽出文：' + (data.text.trim() || '文字なし');
+                        status.textContent =
+                            `抽出完了：${seconds}秒。録音は保存済み。`;
+                        endBusy();
+                    } else if (data.type === 'error') {
+                        status.textContent =
+                            '処理失敗：' + data.message +
+                            '。保存済み録音は保持している。';
+                        resetWorker();
+                        endBusy();
+                    }
+                };
+
+                worker.onerror = event => {
+                    event.preventDefault();
+                    status.textContent =
+                        'モデル実行失敗：' +
+                        (event.message || '読み込みまたは実行エラー');
+                    resetWorker();
+                    endBusy();
+                };
+
+                worker.postMessage({ type: 'load' });
+            } catch (error) {
+                status.textContent = '準備失敗：' + error.message;
+                resetWorker();
+                endBusy();
+            }
+        };
+
+        async function transcribeSaved() {
+            if (busy || recording || !ready || !savedBlob) return;
+            stopPlayback();
+            busy = true;
+            const currentJob = ++job;
+            startedAt = performance.now();
+            status.textContent = '録音を変換中…';
+            sync();
+
+            let context = null;
+            try {
+                const AudioContextClass =
+                    window.AudioContext || window.webkitAudioContext;
+                context = new AudioContextClass();
+                const decoded = await context.decodeAudioData(
+                    await savedBlob.arrayBuffer()
+                );
+                await context.close();
+                context = null;
+
+                // Whisperへ渡す音声は、16kHz・モノラルに統一する。
+                const offline = new OfflineAudioContext(
+                    1,
+                    Math.max(1, Math.ceil(decoded.duration * 16000)),
+                    16000
+                );
+                const source = offline.createBufferSource();
+                source.buffer = decoded;
+                source.connect(offline.destination);
+                source.start();
+
+                const rendered = await offline.startRendering();
+                if (currentJob !== job) return;
+
+                const audio = new Float32Array(rendered.getChannelData(0));
+                status.textContent = '端末内で文字抽出中：0秒';
+                ticker = setInterval(() => {
+                    const elapsed = Math.floor(
+                        (performance.now() - startedAt) / 1000
+                    );
+                    status.textContent =
+                        `端末内で文字抽出中：${elapsed}秒`;
+                }, 1000);
+
+                worker.postMessage(
+                    { type: 'transcribe', audio },
+                    [audio.buffer]
+                );
+            } catch (error) {
+                if (currentJob === job) {
+                    status.textContent =
+                        '音声変換失敗：' + error.message +
+                        '。保存済み録音は保持している。';
+                    endBusy();
+                }
+            } finally {
+                if (context) await context.close().catch(() => {});
+            }
+        }
+
+        button('record').onclick = async () => {
+            if (busy || recording || !ready) return;
+            stopPlayback();
+            busy = true;
+            const currentJob = ++job;
+            status.textContent = 'マイクを準備中…';
+            sync();
+
+            try {
+                if (!navigator.mediaDevices?.getUserMedia ||
+                    !window.MediaRecorder) {
+                    throw new Error('この環境では録音APIを使用できない');
+                }
+
+                const acquired =
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                if (currentJob !== job) {
+                    acquired.getTracks().forEach(track => track.stop());
+                    return;
+                }
+
+                stream = acquired;
+                const chunks = [];
+                recorder = new MediaRecorder(stream);
+                let failed = false;
+
+                recorder.ondataavailable = event => {
+                    if (event.data.size) chunks.push(event.data);
+                };
+
+                recorder.onerror = event => {
+                    failed = true;
+                    clearTimeout(timer);
+                    stopTracks();
+                    recording = false;
+                    busy = false;
+                    status.textContent =
+                        '録音失敗：' +
+                        (event.error?.message || '録音エラー');
+                    sync();
+                };
+
+                recorder.onstop = async () => {
+                    clearTimeout(timer);
+                    stopTracks();
+                    recording = false;
+                    busy = false;
+
+                    if (failed) {
+                        sync();
+                        return;
+                    }
+
+                    const blob = new Blob(chunks, {
+                        type: recorder.mimeType ||
+                            chunks[0]?.type || 'audio/webm'
+                    });
+
+                    if (!blob.size) {
+                        status.textContent =
+                            '録音データなし。以前の録音は保持している。';
+                        sync();
+                        return;
+                    }
+
+                    if (savedUrl) URL.revokeObjectURL(savedUrl);
+                    savedBlob = blob;
+                    savedUrl = URL.createObjectURL(blob);
+                    status.textContent = '録音保存完了。文字抽出を開始する。';
+                    sync();
+                    await transcribeSaved();
+                };
+
+                recorder.start();
+                recording = true;
+                busy = false;
+                status.textContent =
+                    '録音中。話し終えたら⏹️。20秒で自動停止する。';
+                timer = setTimeout(() => button('stop').click(), 20000);
+                sync();
+            } catch (error) {
+                stopTracks();
+                if (currentJob === job) {
+                    status.textContent = '録音開始失敗：' + error.message;
+                    endBusy();
+                }
+            }
+        };
+
+        button('stop').onclick = () => {
+            if (!recording || recorder?.state !== 'recording') return;
+            button('stop').disabled = true;
+            status.textContent = '録音を保存中…';
+            recorder.stop();
+        };
+
+        button('retry').onclick = transcribeSaved;
+
+        button('play').onclick = async () => {
+            if (!savedUrl || busy || recording) return;
+            stopPlayback();
+            player = new Audio(savedUrl);
+            try {
+                await player.play();
+            } catch (error) {
+                status.textContent = '再生失敗：' + error.message;
+            }
+        };
+
+        button('cancel').onclick = () => {
+            ++job;
+            resetWorker();
+            endBusy();
+            status.textContent =
+                '処理を中止した。録音は保持している。再開時は①認識を準備。';
+        };
+
+        window.addEventListener('pagehide', () => {
+            ++job;
+            clearTimeout(timer);
+            clearInterval(ticker);
+            if (recorder?.state === 'recording') {
+                recorder.onstop = null;
+                recorder.stop();
+            }
+            stopTracks();
+            stopPlayback();
+            resetWorker();
+            recording = false;
+            busy = false;
+            sync();
+        });
+
+        sync();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            () => setTimeout(mountWhisperTest, 0),
+            { once: true }
+        );
+    } else {
+        setTimeout(mountWhisperTest, 0);
+    }
+})();
 // A方式：音声トラックを認識APIへ渡せるかを確認する。
 (() => {
     'use strict';
