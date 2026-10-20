@@ -2453,31 +2453,74 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     }
 
     function updateLayout() {
+        Object.values(
+            practice7State.views || {}
+        ).forEach(view => {
+            const tip = view.recordBtn.querySelector(
+                '.custom-tip-box'
+            );
+
+            view.recordBtn.replaceChildren(
+                document.createTextNode('🎙️とる')
+            );
+
+            if (tip) view.recordBtn.append(tip);
+        });
+
         document.querySelectorAll(
             '#drill1List .result-text'
         ).forEach(result => {
             const cell = result.closest('td');
+            if (!cell) return;
+
+            let layout = cell.querySelector(
+                '.recording-controls'
+            );
+
+            if (!layout) {
+                const wrap = result.parentElement;
+                wrap.classList.add('recording-result');
+
+                [
+                    'float',
+                    'display',
+                    'align-items'
+                ].forEach(name =>
+                    wrap.style.removeProperty(name)
+                );
+
+                layout = document.createElement('div');
+                layout.className = 'recording-controls';
+
+                const actions = document.createElement('div');
+                actions.className = 'recording-actions';
+
+                Array.from(cell.childNodes).forEach(node => {
+                    if (node !== wrap) actions.append(node);
+                });
+
+                layout.append(actions, wrap);
+                cell.append(layout);
+            }
+
+            cell.style.removeProperty('white-space');
+        });
+
+        // 訂正欄を対応する録音行の直下へ移動する。
+        Object.values(
+            practice7State.views || {}
+        ).forEach(view => {
+            const cell = view.resultSpan.closest('td');
 
             if (
-                !cell ||
-                cell.querySelector('.recording-controls')
-            ) return;
+                cell
+                && view.correctionBox.parentElement !== cell
+            ) {
+                cell.append(view.correctionBox);
+            }
 
-            const wrap = result.parentElement;
-            wrap.classList.add('recording-result');
-
-            const layout = document.createElement('div');
-            layout.className = 'recording-controls';
-
-            const actions = document.createElement('div');
-            actions.className = 'recording-actions';
-
-            Array.from(cell.childNodes).forEach(node => {
-                if (node !== wrap) actions.append(node);
-            });
-
-            layout.append(actions, wrap);
-            cell.append(layout);
+            view.corrListenBtn.hidden = true;
+            view.corrListenBtn.style.display = 'none';
         });
 
         document.querySelectorAll(
@@ -2486,7 +2529,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             const table = cell.closest('table');
             if (!table) return;
 
+            cell.classList.add('drill-cue-cell');
             table.classList.add('recording-table');
+
+            table.style.removeProperty('width');
+            table.style.removeProperty('border-collapse');
 
             let cols = table.querySelector(
                 'colgroup.recording-columns'
@@ -2509,6 +2556,29 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             cols.children[1].style.width =
                 `${(parseFloat(cell.style.width) || 0) + 4}px`;
         });
+
+        document.querySelectorAll(
+            '.meaning-change-note-title, ' +
+            '.meaning-change-note small'
+        ).forEach(title => {
+            title.textContent = title.textContent.replace(
+                /^✨\s+/,
+                '✨'
+            );
+        });
+
+        document.querySelectorAll(
+            '#drill1Container .info-panel-desc'
+        ).forEach(description => {
+            description.childNodes.forEach(node => {
+                if (node.nodeType === 3) {
+                    node.textContent = node.textContent.replace(
+                        /💡\s+/,
+                        '💡'
+                    );
+                }
+            });
+        });
     }
 
     function updateExample() {
@@ -2518,36 +2588,37 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             const sentence = line.lastElementChild;
 
             if (
-                !sentence ||
-                sentence.tagName !== 'SPAN'
-            ) return;
+                !sentence
+                || sentence.tagName !== 'SPAN'
+            ) {
+                return;
+            }
 
-            sentence.querySelectorAll('strong')
-                .forEach(strong => {
-                    const text = strong.textContent;
-                    let ending;
+            sentence.querySelectorAll(
+                'strong'
+            ).forEach(strong => {
+                const text = strong.textContent;
+                let ending;
 
-                    if (text.startsWith('ました')) {
-                        ending = speechStyle === 'formal'
-                            ? 'ました'
-                            : speechStyle === 'informal'
-                                ? 'た'
-                                : 'たよ';
-                    } else if (
-                        text.startsWith('ています')
-                    ) {
-                        ending = speechStyle === 'formal'
-                            ? 'ています'
-                            : speechStyle === 'informal'
-                                ? 'ている'
-                                : 'てるよ';
-                    } else {
-                        return;
-                    }
+                if (text.startsWith('ました')) {
+                    ending = speechStyle === 'formal'
+                        ? 'ました'
+                        : speechStyle === 'informal'
+                            ? 'た'
+                            : 'たよ';
+                } else if (text.startsWith('ています')) {
+                    ending = speechStyle === 'formal'
+                        ? 'ています'
+                        : speechStyle === 'informal'
+                            ? 'ている'
+                            : 'てるよ';
+                } else {
+                    return;
+                }
 
-                    strong.textContent = ending +
-                        (text.endsWith('。') ? '。' : '');
-                });
+                strong.textContent = ending
+                    + (text.endsWith('。') ? '。' : '');
+            });
         });
 
         [
@@ -2560,6 +2631,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             const model = convert(text);
 
             button.onclick = () => {
+                if (blocked()) return;
+
                 setPlayingStateMultiple(
                     [button],
                     'Playing...'
@@ -2572,20 +2645,103 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 );
             };
         });
+
+        // 元の要素を移し、Exampleの各列をそろえる。
+        document.querySelectorAll(
+            '#drill1Container .example-box'
+        ).forEach(box => {
+            const lines = Array.from(
+                box.querySelectorAll('.example-line')
+            );
+
+            if (!lines.length) return;
+
+            const table = document.createElement('table');
+            table.className = 'drill-example-table';
+
+            const body = document.createElement('tbody');
+
+            for (const line of lines) {
+                const label = line.firstElementChild;
+                const listen = line.querySelector('button');
+                const arrow = listen?.previousElementSibling;
+                const badge = listen?.nextElementSibling;
+                const sentence = line.lastElementChild;
+
+                if (
+                    !label
+                    || !listen
+                    || !arrow
+                    || !badge
+                    || badge === sentence
+                ) {
+                    return;
+                }
+
+                const cue = document.createElement('td');
+                let current = label.nextSibling;
+
+                while (current && current !== arrow) {
+                    const next = current.nextSibling;
+                    cue.append(current);
+                    current = next;
+                }
+
+                label.style.removeProperty('min-width');
+                label.style.removeProperty('width');
+
+                const row = document.createElement('tr');
+
+                for (const element of [
+                    label,
+                    cue,
+                    arrow,
+                    listen,
+                    badge,
+                    sentence
+                ]) {
+                    if (element === cue) {
+                        row.append(cue);
+                    } else {
+                        const cell = document.createElement('td');
+                        cell.append(element);
+                        row.append(cell);
+                    }
+                }
+
+                body.append(row);
+            }
+
+            table.append(body);
+            box.replaceChildren(table);
+        });
     }
 
     const originalShow = practice7ShowResult;
 
-    practice7ShowResult = function (
-        view, saved, rowKey, playRate
+    practice7ShowResult = function(
+        view,
+        saved,
+        rowKey,
+        playRate
     ) {
         originalShow(view, saved, rowKey, playRate);
+
+        view.corrListenBtn.hidden = true;
         view.corrListenBtn.style.display = 'none';
+
+        view.corrTextSpan.textContent =
+            view.corrTextSpan.textContent.replace(
+                /^🔥\s+/,
+                '🔥'
+            );
     };
 
     const originalRender = renderAll;
 
-    renderAll = function () {
+    renderAll = function() {
+        if (blocked()) return;
+
         practice7Data.forEach((item, index) => {
             fields.forEach(key => {
                 item[key] = convert(
@@ -2602,8 +2758,28 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     const originalSync = practice7SyncRecordingUI;
 
-    practice7SyncRecordingUI = function () {
+    practice7SyncRecordingUI = function() {
         originalSync();
+
+        document.querySelectorAll(
+            '.compact-settings .segmented-option, ' +
+            '.compact-settings input'
+        ).forEach(control => {
+            control.disabled = blocked();
+        });
+
         syncStyleButtons();
     };
+
+    document.addEventListener('click', event => {
+        if (
+            blocked()
+            && event.target.closest(
+                '.compact-settings .segmented-option'
+            )
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
 })();
