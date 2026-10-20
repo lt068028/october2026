@@ -946,8 +946,8 @@ function showResult(key, notice = '') {
             }
 
             const message = document.createElement('span');
-            message.textContent = '🔥 Keep going! Try once more!';
-
+            message.textContent = '🔥Keep going! Try once more!';
+            
             v.correction.append(message);
             v.correction.hidden = false;
         }
@@ -1230,9 +1230,11 @@ function sync() {
         .forEach(b => b.disabled = blocked);
 
     document.querySelectorAll(
-        '.compact-settings .segmented-option'
-    ).forEach(b => b.disabled = blocked);
-
+        '.compact-settings .segmented-option, ' +
+        '.compact-settings input'
+    ).forEach(control => {
+        control.disabled = blocked;
+    });
     views.forEach((v, key) => {
         const canStop =
             session?.key === key &&
