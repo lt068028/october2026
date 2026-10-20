@@ -1,3 +1,780 @@
+// Practice 7.2：Example 2・Drill 2（肯定・否定の質問応答）
+document.addEventListener('DOMContentLoaded', () => {
+    const states = Array.from({ length: 5 }, () => ({
+        answer: null,
+        questionText: false,
+        yesText: false,
+        noText: false
+    }));
+
+    const targets = [
+        {
+            words: [
+                ['おにいさん', 'お兄さん', 'onīsan', 'older brother'],
+                ['Tシャツ', 'Tシャツ', 'tīshatsu', 'T-shirt'],
+                ['きる', '着る', 'kiru', 'wear']
+            ],
+            subject: 'お兄さん',
+            object: 'Tシャツ',
+            stem: '着て',
+            optional: ['おにいさん', 'にいさん', 'あに', 'Tしゃつ']
+        },
+        {
+            words: [
+                ['おとうさん', 'お父さん', 'otōsan', 'father'],
+                ['ふとる', '太る', 'futoru', 'gain weight']
+            ],
+            subject: 'お父さん',
+            object: '',
+            stem: '太って',
+            optional: ['おとうさん', 'とうさん', 'ちち']
+        },
+        {
+            words: [
+                ['おかあさん', 'お母さん', 'okāsan', 'mother'],
+                ['やせる', 'やせる', 'yaseru', 'lose weight']
+            ],
+            subject: 'お母さん',
+            object: '',
+            stem: 'やせて',
+            optional: ['おかあさん', 'かあさん', 'はは']
+        },
+        {
+            words: [
+                [
+                    'いえのでんわばんごう',
+                    '家の電話番号',
+                    'ie no denwa bangō',
+                    'home phone number'
+                ],
+                ['おぼえる', '覚える', 'oboeru', 'remember']
+            ],
+            subject: '',
+            object: '家の電話番号',
+            stem: '覚えて',
+            optional: [
+                'いえのでんわばんごう',
+                'うちのでんわばんごう',
+                'でんわばんごう'
+            ]
+        },
+        {
+            words: [
+                [
+                    '「あるく」のかんじ',
+                    '「歩く」の漢字',
+                    'aruku no kanji',
+                    'the kanji for aruku (to walk)'
+                ],
+                ['しる', '知る', 'shiru', 'know']
+            ],
+            subject: '',
+            object: '「歩く」の漢字',
+            stem: '知って',
+            know: true,
+            optional: ['あるくのかんじ', 'かんじ']
+        }
+    ];
+
+    const example = {
+        words: [
+            ['おねえさん', 'お姉さん', 'onēsan', 'older sister'],
+            ['けっこんする', '結婚する', 'kekkon suru', 'be married']
+        ],
+        subject: 'お姉さん',
+        object: '',
+        stem: '結婚して'
+    };
+
+    const toHira = practice7ToHiragana;
+
+    practice7ToHiragana = text => {
+        let value = String(text ?? '');
+
+        [
+            ['お兄さん', 'おにいさん'],
+            ['お姉さん', 'おねえさん'],
+            ['お父さん', 'おとうさん'],
+            ['お母さん', 'おかあさん'],
+            ['電話番号', 'でんわばんごう'],
+            ['歩く', 'あるく'],
+            ['家', 'いえ'],
+            ['今', 'いま'],
+            ['兄', 'あに'],
+            ['姉', 'あね'],
+            ['父', 'ちち'],
+            ['母', 'はは']
+        ].forEach(([from, to]) => {
+            value = value.split(from).join(to);
+        });
+
+        return toHira(value);
+    };
+
+    const style = () => document.querySelector(
+        '#speechStyleControl button[aria-pressed="true"]'
+    )?.dataset.value || 'formal';
+
+    const blocked = () => Boolean(
+        activeRecognitionSession ||
+        practice7State.startingRow
+    );
+
+    const normalize = practice7Normalize;
+
+    const flat = text => practice7ToHiragana(
+        String(text ?? '').normalize('NFKC')
+    )
+        .toLowerCase()
+        .replace(/[\s、。．,.!?！？「」『』・]/g, '')
+        .replace(/(?:よね|よ|ね)$/, '');
+
+    // 動詞の肯定・否定を必須とし、その他の指定語句は任意。
+    practice7Normalize = text => {
+        const value = flat(text);
+
+        for (const item of targets) {
+            const stem = flat(item.stem);
+
+            const pattern = item.know
+                ? /(しって)(いません|います|いない|いる|ない|る)(?:よね|よ|ね)?|しりません(?:よね|よ|ね)?|しらない(?:よね|よ|ね)?/g
+                : new RegExp(
+                    stem +
+                    '(いません|います|いない|いる|ない|る)' +
+                    '(?:よね|よ|ね)?',
+                    'g'
+                );
+
+            const matches = Array.from(
+                value.matchAll(pattern)
+            );
+
+            if (matches.length !== 1) continue;
+
+            const match = matches[0];
+
+            const core = match[0].replace(
+                /(?:よね|よ|ね)$/,
+                ''
+            );
+
+            // 「知る」の否定は「知りません／知らない」。
+            if (
+                item.know &&
+                [
+                    'しっていません',
+                    'しっていない',
+                    'しってない'
+                ].includes(core)
+            ) continue;
+
+            const negative =
+                /(?:いません|いない|てない|しらない|しりません)$/
+                    .test(core);
+
+            let rest =
+                value.slice(0, match.index) +
+                value.slice(match.index + match[0].length);
+
+            const optional = item.optional
+                .map(flat)
+                .sort((a, b) => b.length - a.length);
+
+            let valid = true;
+
+            while (rest) {
+                // 「家＝いえ」を否定応答と取り違えないよう、
+                // 指定語句を先に確認する。
+                const token = optional.find(
+                    word => rest.startsWith(word)
+                );
+
+                if (token) {
+                    rest = rest.slice(token.length)
+                        .replace(/^[をはが]/, '');
+
+                    continue;
+                }
+
+                const response = rest.match(
+                    /^(いいえ|いえ|はい|うんんー?|ううん|うん)/
+                );
+
+                if (response) {
+                    const no =
+                        /^(?:いいえ|いえ|うんん|ううん)/
+                            .test(response[0]);
+
+                    if (no !== negative) {
+                        valid = false;
+                        break;
+                    }
+
+                    rest = rest.slice(response[0].length);
+                    continue;
+                }
+
+                const time = rest.match(/^いま(?:は)?/);
+
+                if (time) {
+                    rest = rest.slice(time[0].length);
+                    continue;
+                }
+
+                valid = false;
+                break;
+            }
+
+            if (valid) {
+                return `p72-answer|${core}`;
+            }
+        }
+
+        return normalize(text);
+    };
+
+    const speak = speakText;
+
+    speakText = function(text, rate = 0.9, done) {
+        return speak(
+            String(text ?? '').replace(
+                /^うんん[、,\s]*/,
+                'うんんー、'
+            ),
+            rate,
+            done
+        );
+    };
+
+    const node = (tag, cls = '', text) => {
+        const element = document.createElement(tag);
+        element.className = cls;
+
+        if (text !== undefined) {
+            element.textContent = text;
+        }
+
+        return element;
+    };
+
+    const button = (label, tip, click) => {
+        const b = node(
+            'button',
+            'example-button custom-tip-wrap'
+        );
+
+        b.type = 'button';
+
+        b.append(
+            document.createTextNode(label),
+            node('span', 'custom-tip-box', tip)
+        );
+
+        b.onclick = () => {
+            if (!blocked()) click();
+        };
+
+        return b;
+    };
+
+    function model(item, kind) {
+        const mode = style();
+
+        const subject = item.subject
+            ? item.subject +
+                (mode === 'casual' ? '、' : 'は、')
+            : '';
+
+        const object = item.object
+            ? item.object +
+                (mode === 'casual' ? '、' : 'を、')
+            : '';
+
+        const ending = kind === 'q'
+            ? {
+                formal: 'いますか。',
+                informal: 'いる？',
+                casual: 'る？'
+            }[mode]
+            : kind === 'yes'
+                ? {
+                    formal: 'います。',
+                    informal: 'いる。',
+                    casual: 'るよ。'
+                }[mode]
+                : {
+                    formal: 'いません。',
+                    informal: 'いない。',
+                    casual: 'ないよ。'
+                }[mode];
+
+        const prefix = kind === 'q'
+            ? ''
+            : mode === 'casual'
+                ? (kind === 'yes' ? 'うん、' : 'うんん、')
+                : (kind === 'yes' ? 'はい、' : 'いいえ、');
+
+        const verb = kind === 'no' && item.know
+            ? {
+                formal: '知りません。',
+                informal: '知らない。',
+                casual: '知らないよ。'
+            }[mode]
+            : item.stem + ending;
+
+        return prefix + subject + object + verb;
+    }
+
+    const display = text => scriptMode === 'hiragana'
+        ? practice7ToHiragana(text)
+        : text;
+
+    const cue = item => item.words.map(word => {
+        const english = document.getElementById(
+            'practice7EnglishCueButton'
+        )?.getAttribute('aria-pressed') === 'true';
+
+        if (english) {
+            return node('span', '', word[3]).innerHTML;
+        }
+
+        return formatWord(...word);
+    }).join('／');
+
+    const listen = (getText, label = '🔊きく') => {
+        let b;
+
+        b = button(label, 'Listen to the model.', () => {
+            setPlayingStateMultiple([b], 'Playing...');
+            speakText(getText(), 0.9, stopAllPlayback);
+        });
+
+        return b;
+    };
+
+    function highlighted(text) {
+        const span = node('span');
+
+        const pattern =
+            /ていますか|ていません|ています|ていない|ている|てない|てる|知りません|知らない|しりません|しらない/g;
+
+        let offset = 0;
+
+        for (const match of text.matchAll(pattern)) {
+            span.append(
+                document.createTextNode(
+                    text.slice(offset, match.index)
+                ),
+                node(
+                    'strong',
+                    'grammar-highlight',
+                    match[0]
+                )
+            );
+
+            offset = match.index + match[0].length;
+        }
+
+        span.append(
+            document.createTextNode(text.slice(offset))
+        );
+
+        return span;
+    }
+
+    function makeExample(parent) {
+        const box = node('div', 'example-box');
+        const table = node('table', 'drill-example-table');
+        const body = node('tbody');
+
+        const question = node('tr');
+        const label = node('td');
+
+        label.append(
+            node('strong', 'example-label-title', 'Question:')
+        );
+
+        const cues = node('td');
+        cues.innerHTML = cue(example);
+
+        const sound = node('td');
+        sound.append(listen(() => model(example, 'q')));
+
+        const text = node('td');
+        text.append(
+            highlighted(display(model(example, 'q')))
+        );
+
+        question.append(
+            label,
+            cues,
+            node('td', '', '👉'),
+            sound,
+            text
+        );
+
+        const response = node('tr');
+        const responseLabel = node('td');
+
+        responseLabel.append(
+            node('strong', 'example-label-title', 'Response:')
+        );
+
+        const answers = node('td');
+        answers.colSpan = 4;
+
+        ['yes', 'no'].forEach((kind, index) => {
+            if (index) {
+                answers.append(
+                    document.createTextNode(' ↔️ ')
+                );
+            }
+
+            answers.append(
+                listen(
+                    () => model(example, kind),
+                    index ? '🔊🙅' : '🔊🙆'
+                ),
+                document.createTextNode(' '),
+                highlighted(display(model(example, kind)))
+            );
+        });
+
+        response.append(responseLabel, answers);
+        body.append(question, response);
+        table.append(body);
+        box.append(table);
+        parent.append(box);
+    }
+
+    const answerControls = [];
+
+    function recordingRow(
+        body,
+        item,
+        index,
+        kind,
+        cueCell,
+        state
+    ) {
+        const question = kind === 'q';
+        const ready = question || Boolean(state.answer);
+        const selected = question ? 'q' : state.answer;
+
+        const key =
+            `p72_d2_${index}_${selected || 'answer'}`;
+
+        const getText = () => ready
+            ? model(item, selected)
+            : '';
+
+        const row = node('tr');
+
+        if (question) {
+            const number = node(
+                'td',
+                'drill-number-cell',
+                `${index + 1}.`
+            );
+
+            number.rowSpan = 2;
+            row.append(number);
+        }
+
+        const cell = node('td');
+        const layout = node('div', 'recording-controls');
+        const actions = node('div', 'recording-actions');
+
+        const sound = listen(getText);
+
+        const record = button(
+            '🎙️とる',
+            'Record your sentence.',
+            () => {}
+        );
+
+        const stop = button(
+            '⏹️',
+            'Stop active recording.',
+            () => {}
+        );
+
+        record.onclick = null;
+        stop.onclick = null;
+        stop.disabled = true;
+
+        const shown = node('span');
+
+        const property = question
+            ? 'questionText'
+            : `${selected}Text`;
+
+        const updateText = () => {
+            shown.textContent =
+                ready && state[property]
+                    ? display(getText())
+                    : '';
+
+            text.firstChild.textContent =
+                ready && state[property]
+                    ? '🕶️Hide'
+                    : '👀Text';
+        };
+
+        const text = button(
+            '👀Text',
+            'Show or hide the model answer.',
+            () => {
+                state[property] = !state[property];
+                updateText();
+            }
+        );
+
+        updateText();
+
+        actions.append(
+            sound,
+            record,
+            stop,
+            text,
+            shown
+        );
+
+        const result = node(
+            'span',
+            'result-text',
+            '(Not recorded yet)'
+        );
+
+        const wrap = node('span', 'recording-result');
+        wrap.append(result);
+        layout.append(actions, wrap);
+
+        const correction = node('div', 'correction-box');
+
+        const correctionListen = node(
+            'button',
+            'example-button'
+        );
+
+        correctionListen.type = 'button';
+        correctionListen.hidden = true;
+
+        const correctionText = node('span');
+
+        correction.append(
+            correctionListen,
+            correctionText
+        );
+
+        cell.append(layout, correction);
+        row.append(cueCell, cell);
+        body.append(row);
+
+        if (ready) {
+            bindRecorderEvents(
+                record,
+                stop,
+                result,
+                correction,
+                correctionListen,
+                correctionText,
+                () => practice7ToHiragana(getText()),
+                getText,
+                0.9,
+                key
+            );
+        } else {
+            sound.disabled = true;
+            record.disabled = true;
+            text.disabled = true;
+
+            answerControls.push(sound, record, text);
+        }
+    }
+
+    const baseSync = practice7SyncRecordingUI;
+
+    practice7SyncRecordingUI = function() {
+        baseSync();
+
+        answerControls.forEach(control => {
+            control.disabled = true;
+        });
+    };
+
+    const baseRender = renderAll;
+
+    renderAll = function() {
+        if (blocked()) return;
+
+        baseRender();
+
+        const root = document.getElementById(
+            'drill1Container'
+        );
+
+        if (!root) return;
+
+        const englishPanel = document.getElementById(
+            'practice7Drill2Panel'
+        );
+
+        const title = englishPanel?.querySelector(
+            '.info-panel-title'
+        );
+
+        if (title) {
+            title.textContent = title.textContent.replace(
+                /^Drill 2:/,
+                'Drill 3:'
+            );
+        }
+
+        answerControls.length = 0;
+
+        const section = node(
+            'section',
+            'practice-section practice-qa-section'
+        );
+
+        section.id = 'practice72QuestionSection';
+
+        makeExample(section);
+
+        const panel = node(
+            'div',
+            'info-panel info-panel-task1'
+        );
+
+        panel.append(
+            node(
+                'span',
+                'info-panel-title',
+                'Drill 2: Ask and answer — Present State'
+            ),
+            node(
+                'span',
+                'info-panel-desc',
+                '💡Ask about a present state. ' +
+                'Choose 🙆 or 🙅, then record your answer.'
+            )
+        );
+
+        section.append(panel);
+
+        targets.forEach((item, index) => {
+            const state = states[index];
+            const card = node('div', 'drill-row');
+            const table = node('table', 'recording-table');
+            const columns = node('colgroup');
+
+            for (let i = 0; i < 3; i++) {
+                columns.append(node('col'));
+            }
+
+            columns.children[0].style.width = '34px';
+
+            const body = node('tbody');
+            table.append(columns, body);
+
+            const cues = node('td', 'drill-cue-cell');
+            cues.innerHTML = cue(item);
+
+            recordingRow(
+                body,
+                item,
+                index,
+                'q',
+                cues,
+                state
+            );
+
+            const choices = node('td', 'drill-cue-cell');
+
+            ['yes', 'no'].forEach((kind, i) => {
+                const choice = button(
+                    i ? '🙅' : '🙆',
+                    i
+                        ? 'Negative response'
+                        : 'Affirmative response',
+                    () => {
+                        state.answer = kind;
+                        stopAllPlayback();
+                        renderAll();
+                    }
+                );
+
+                choice.classList.add('answer-choice');
+                choice.dataset.answer = kind;
+
+                choice.setAttribute(
+                    'aria-pressed',
+                    String(state.answer === kind)
+                );
+
+                choices.append(choice);
+            });
+
+            recordingRow(
+                body,
+                item,
+                index,
+                'a',
+                choices,
+                state
+            );
+
+            card.append(table);
+            section.append(card);
+        });
+
+        root.insertBefore(section, englishPanel || null);
+
+        let width = 0;
+
+        const cells = section.querySelectorAll(
+            '.recording-table .drill-cue-cell'
+        );
+
+        cells.forEach(cell => {
+            const measure = cell.cloneNode(true);
+
+            measure.querySelectorAll(
+                '.tooltip-tip,.custom-tip-box'
+            ).forEach(t => t.remove());
+
+            Object.assign(measure.style, {
+                position: 'absolute',
+                visibility: 'hidden',
+                display: 'inline-block',
+                width: 'max-content',
+                whiteSpace: 'nowrap',
+                font: 'inherit'
+            });
+
+            cell.append(measure);
+
+            width = Math.max(
+                width,
+                Math.ceil(
+                    measure.getBoundingClientRect().width
+                )
+            );
+
+            measure.remove();
+        });
+
+        section.querySelectorAll(
+            '.recording-table colgroup'
+        ).forEach(columns => {
+            columns.children[1].style.width =
+                `${width + 4}px`;
+        });
+
+        practice7SyncRecordingUI();
+    };
+});
 // ============================================================================
 // Practice 7.2: ているform② Present State
 // ============================================================================
