@@ -494,7 +494,123 @@
                 end('開始失敗：' + error.name);
             }
         });
+        // 録音と同時使用せず、音声認識だけを調べる。
+        const recognizeOnly = document.createElement('button');
+        recognizeOnly.id = 'audioTestRecognizeOnly';
+        recognizeOnly.type = 'button';
+        recognizeOnly.className = 'example-button';
+        recognizeOnly.textContent = '📝認識のみ';
 
+        recognizeOnly.setAttribute(
+            'aria-label',
+            '録音せず、日本語の音声認識だけを試す'
+        );
+
+        play.after(recognizeOnly);
+
+        const baseSync = sync;
+
+        sync = function () {
+            baseSync();
+
+            recognizeOnly.disabled =
+                Boolean(run || utterance || audio) ||
+                !Recognition ||
+                !window.isSecureContext;
+        };
+
+        recognizeOnly.addEventListener('click', () => {
+            if (recognizeOnly.disabled) return;
+
+            const s = {
+                stopping: false,
+                stream: null,
+                recorder: null,
+                recognition: null,
+                recordDone: true,
+                recognitionDone: false,
+                text: ''
+            };
+
+            run = s;
+            transcript.textContent = '抽出文：認識待ち';
+
+            show(
+                '認識',
+                '認識のみを準備中。受付中の表示後に話す'
+            );
+
+            sync();
+
+            try {
+                const recognition = new Recognition();
+                s.recognition = recognition;
+
+                recognition.lang = 'ja-JP';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    if (run === s) {
+                        show(
+                            '認識',
+                            '認識のみ受付中。「テストです」と話す'
+                        );
+                    }
+                };
+
+                recognition.onresult = event => {
+                    if (run !== s) return;
+
+                    s.text = Array.from(event.results)
+                        .map(result => result[0].transcript)
+                        .join('');
+
+                    transcript.textContent = '抽出文：' + s.text;
+                    show('認識', '認識のみで文字を取得した');
+                };
+
+                recognition.onerror = event => {
+                    if (run !== s) return;
+
+                    s.recognitionDone = true;
+
+                    show(
+                        '認識',
+                        '認識のみエラー：' + event.error
+                    );
+
+                    finish(s);
+                };
+
+                recognition.onend = () => {
+                    if (run !== s) return;
+
+                    s.recognitionDone = true;
+
+                    show(
+                        '認識',
+                        s.text
+                            ? '認識のみ完了'
+                            : '認識のみ終了したが文字なし'
+                    );
+
+                    finish(s);
+                };
+
+                s.limit = setTimeout(stopRun, 20000);
+                recognition.start();
+            } catch (error) {
+                s.recognitionDone = true;
+
+                show(
+                    '認識',
+                    '認識のみ開始失敗：' + error.name
+                );
+
+                finish(s);
+            }
+        });
         if (!synth) {
             show('TTS', 'このブラウザでは非対応');
         }
