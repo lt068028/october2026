@@ -444,63 +444,58 @@ function compositionPlay(rowIndex, model = "", onlyModel = false) {
     else playOwn();
 }
 
+let compositionSpeechStyle = "formal";
+
+function compositionModel(item, omitParticle = true) {
+    let text = item.jaKanji.replace(/[。？?]+$/g, "");
+    const question = /ですか$/.test(text);
+
+    if (compositionSpeechStyle !== "formal") {
+        text = text
+            .replace(/ですか$/, "")
+            .replace(/です$/, "");
+
+        if (compositionSpeechStyle === "casual") {
+            if (omitParticle) {
+                text = text.replace(
+                    /^(.+?)[がは][、,\s]*/,
+                    "$1、"
+                );
+            }
+
+            if (!question) text += "よ";
+        }
+    }
+
+    text = text.replace(
+        /^(.+?[がは])[、,\s]*/,
+        "$1、"
+    );
+
+    return text + (question ? "？" : "。");
+}
+
 function compositionTokens(text) {
     const chars = Array.from(
         String(text ?? "").normalize("NFKC")
     );
-    const value = chars.join("");
-    const suffix = value.match(/(?:よね|よ|ね)[。！？!?\s]*$/);
-    const limit = suffix
-        ? Array.from(value.slice(0, suffix.index)).length
-        : chars.length;
 
-    const lexicon = [
-        "天気", "てんき", "時計", "とけい", "仕事", "しごと",
-        "勉強", "べんきょう", "時間", "じかん", "傘", "かさ",
-        "悪い", "わるい", "良い", "いい", "良く", "よく",
-        "楽しい", "たのしい", "欲しい", "ほしい",
-        "面白い", "おもしろい",
-        "私", "わたし", "学生", "がくせい", "先生", "せんせい",
-        "ありません", "じゃ", "では", "ない",
-        "です", "でした", "が", "は", "か"
-    ].sort((a, b) => b.length - a.length);
+    const tokens = chars
+        .map((char, index) => ({char, index}))
+        .filter(token =>
+            !/[\s、。,.!?！？「」『』・]/.test(token.char)
+        );
 
-    const segmenter = typeof Intl.Segmenter === "function"
-        ? new Intl.Segmenter("ja", { granularity: "word" })
-        : null;
+    const suffix = tokens
+        .map(token => token.char)
+        .join("")
+        .match(/(?:よね|よ|ね)$/);
 
-    const tokens = [];
-
-    for (let index = 0; index < limit;) {
-        const rest = chars.slice(index, limit).join("");
-
-        if (/^[\s、。,.!?！？「」『』・]/.test(rest)) {
-            index++;
-            continue;
-        }
-
-        const unit = lexicon.find(word => rest.startsWith(word)) ||
-            (segmenter
-                ? segmenter.segment(rest)[Symbol.iterator]().next().value.segment
-                : chars[index]);
-
-        const length = Array.from(unit).length;
-
-        tokens.push({
-            reading: convertToHiragana(unit)
-                .normalize("NFKC")
-                .toLowerCase()
-                .replace(/[ァ-ヶ]/g, character =>
-                    String.fromCharCode(character.charCodeAt(0) - 96)
-                ),
-            start: index,
-            end: index + length
-        });
-
-        index += length;
+    if (suffix) {
+        tokens.splice(tokens.length - suffix[0].length);
     }
 
-    return { chars, tokens };
+    return {chars, tokens};
 }
 
 function compositionDiff(actual, reference) {
@@ -509,32 +504,103 @@ function compositionDiff(actual, reference) {
     const n = a.tokens.length;
     const m = b.tokens.length;
 
-    // このページ固有：「が／は」を許容する。
-    const equal = (x, y) =>
-        x === y ||
-        ((x === "が" || x === "は") &&
-         (y === "が" || y === "は"));
+    const reading = text =>
+        convertToHiragana(text + "\uE000")
+            .replace(/\uE000$/, "")
+            .toLowerCase()
+            .replace(/[ァ-ヶ]/g, char =>
+                String.fromCharCode(char.charCodeAt(0) - 96)
+            );
 
-    const d = Array.from(
-        { length: n + 1 },
-        () => Array(m + 1).fill(0)
+    const spans = tokens => tokens.map((_, start) => {
+        const result = new Map();
+        let text = "";
+
+        for (
+            let end = start + 1;
+            end <= tokens.length;
+            end++
+        ) {
+            text += tokens[end - 1].char;
+            const value = reading(text);
+
+            if (!result.has(value)) {
+                result.set(value, []);
+            }
+
+            result.get(value).push(end);
+        }
+
+        return result;
+    });
+
+    const aa = spans(a.tokens);
+    const bb = spans(b.tokens);
+
+    const costs = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(Infinity)
     );
 
-    for (let i = 0; i <= n; i++) d[i][0] = i;
-    for (let j = 0; j <= m; j++) d[0][j] = j;
+    const steps = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(null)
+    );
 
-    for (let i = 1; i <= n; i++) {
-        for (let j = 1; j <= m; j++) {
-            d[i][j] = Math.min(
-                d[i - 1][j] + 1,
-                d[i][j - 1] + 1,
-                d[i - 1][j - 1] + (
-                    equal(
-                        a.tokens[i - 1].reading,
-                        b.tokens[j - 1].reading
-                    ) ? 0 : 1
-                )
-            );
+    costs[0][0] = 0;
+
+    const update = (
+        i, j, x, y, cost,
+        red = false,
+        blue = false
+    ) => {
+        const value = costs[i][j] + cost;
+
+        if (value < costs[x][y]) {
+            costs[x][y] = value;
+            steps[x][y] = {i, j, red, blue};
+        }
+    };
+
+    for (let i = 0; i <= n; i++) {
+        for (let j = 0; j <= m; j++) {
+            if (!Number.isFinite(costs[i][j])) continue;
+
+            if (i < n && j < m) {
+                const x = a.tokens[i].char;
+                const y = b.tokens[j].char;
+
+                const particle =
+                    x !== y
+                    && /[がは]/.test(x)
+                    && /[がは]/.test(y);
+
+                update(
+                    i, j, i + 1, j + 1,
+                    x === y || particle ? 0 : 1,
+                    x !== y && !particle,
+                    particle
+                );
+
+                for (const [value, endsA] of aa[i]) {
+                    const endsB = bb[j].get(value);
+                    if (!endsB) continue;
+
+                    for (const x of endsA) {
+                        for (const y of endsB) {
+                            update(i, j, x, y, 0);
+                        }
+                    }
+                }
+            }
+
+            if (i < n) {
+                update(i, j, i + 1, j, 1, true);
+            }
+
+            if (j < m) {
+                update(i, j, i, j + 1, 1);
+            }
         }
     }
 
@@ -542,49 +608,34 @@ function compositionDiff(actual, reference) {
     const blue = new Set();
     const gaps = new Set();
 
-    const mark = (set, token) => {
-        for (let k = token.start; k < token.end; k++) {
-            set.add(k);
-        }
-    };
-
     let i = n;
     let j = m;
 
     while (i || j) {
-        if (i && j) {
-            const x = a.tokens[i - 1];
-            const y = b.tokens[j - 1];
-            const same = equal(x.reading, y.reading);
+        const step = steps[i][j];
+        if (!step) break;
 
-            if (
-                d[i][j] ===
-                d[i - 1][j - 1] + (same ? 0 : 1)
-            ) {
-                if (!same) mark(red, x);
-                else if (x.reading !== y.reading) mark(blue, x);
-
-                i--;
-                j--;
-                continue;
-            }
+        for (let k = step.i; k < i; k++) {
+            if (step.red) red.add(a.tokens[k].index);
+            if (step.blue) blue.add(a.tokens[k].index);
         }
 
-        if (j && d[i][j] === d[i][j - 1] + 1) {
+        if (step.i === i && step.j < j) {
             gaps.add(
                 i < n
-                    ? a.tokens[i].start
-                    : n ? a.tokens[n - 1].end : 0
+                    ? a.tokens[i].index
+                    : n
+                        ? a.tokens[n - 1].index + 1
+                        : 0
             );
-            j--;
-        } else {
-            mark(red, a.tokens[i - 1]);
-            i--;
         }
+
+        i = step.i;
+        j = step.j;
     }
 
     return {
-        cost: d[n][m],
+        cost: costs[n][m],
         chars: a.chars,
         red,
         blue,
@@ -592,35 +643,75 @@ function compositionDiff(actual, reference) {
     };
 }
 
+function compositionBestDiff(text, references) {
+    let best = null;
+
+    const candidates = references.flatMap(text => [
+        text,
+        convertToHiragana(text)
+    ]);
+
+    for (const reference of candidates) {
+        const diff = compositionDiff(text, reference);
+
+        if (!best || diff.cost < best.cost) {
+            best = diff;
+        }
+    }
+
+    return best;
+}
+
 function compositionShow(view, message = "") {
     const {
-        rowIndex, item, resultSpan, correctionBox
+        rowIndex,
+        item,
+        resultSpan,
+        correctionBox,
+        corrText
     } = view;
 
     const saved = savedResults[rowIndex];
 
-    resultSpan.textContent = "";
+    resultSpan.replaceChildren();
     resultSpan.style.color = "var(--text-primary)";
     correctionBox.style.display = "none";
+    corrText.textContent = "";
+
+    const append = (text, color) => {
+        const span = document.createElement("span");
+        span.textContent = text;
+
+        if (color) span.style.color = color;
+
+        resultSpan.append(span);
+    };
 
     if (item && saved?.rawTranscript) {
-        const raw = saved.rawTranscript;
+        // 録音時のモデルを保存し、設定変更後も保持する。
+        if (!saved.references) {
+            saved.references = [...item.references];
+            saved.modelKanji = item.jaKanji;
+        }
+
+        if (typeof saved.isCorrect !== "boolean") {
+            saved.isCorrect = compositionBestDiff(
+                saved.rawTranscript,
+                saved.references
+            ).cost === 0;
+        }
+
         const displayed = useHiraganaOnly
-            ? convertToHiragana(raw)
-            : raw;
+            ? convertToHiragana(saved.rawTranscript)
+            : saved.rawTranscript;
 
-        const diff = compositionDiff(displayed, item.jaHira);
-        saved.isCorrect = diff.cost === 0;
-
-        const append = (text, color) => {
-            const span = document.createElement("span");
-            span.textContent = text;
-            if (color) span.style.color = color;
-            resultSpan.appendChild(span);
-        };
+        const diff = compositionBestDiff(
+            displayed,
+            saved.references
+        );
 
         for (let i = 0; i <= diff.chars.length; i++) {
-            if (diff.gaps.has(i)) {
+            if (!saved.isCorrect && diff.gaps.has(i)) {
                 append("＿", "var(--error-text)");
             }
 
@@ -628,76 +719,87 @@ function compositionShow(view, message = "") {
 
             append(
                 diff.chars[i],
-                diff.red.has(i)
+                !saved.isCorrect && diff.red.has(i)
                     ? "var(--error-text)"
-                    : diff.blue.has(i) ? "#38bdf8" : null
+                    : diff.blue.has(i)
+                        ? "var(--accent-color)"
+                        : null
             );
         }
 
         append(saved.isCorrect ? " ✅ " : " ");
 
         if (saved.isCorrect && diff.blue.size) {
-            const explanation = document.createElement("span");
-            explanation.textContent =
-                "(Both 'ga' and 'wa' are correct in this context)";
-            explanation.style.display = "block";
-            explanation.style.fontSize = "11px";
-            explanation.style.color = "#38bdf8";
+            resultSpan.append(
+                document.createElement("br")
+            );
 
-            resultSpan.appendChild(explanation);
+            append(
+                "Both 'ga' and 'wa' are correct in this context. ",
+                "var(--accent-color)"
+            );
         }
 
         if (!saved.isCorrect) {
             correctionBox.style.display = "block";
-            view.corrText.textContent =
-                "🔥 Keep going! Try once more!";
+            corrText.textContent =
+                "🔥Keep going! Try once more!";
         }
-    } else if (!item && savedAudioUrls[rowIndex]) {
-        resultSpan.textContent = useHiraganaOnly
-            ? "🐣Only Hiragana:🎙️Audio only "
-            : (saved?.rawTranscript || "(Recorded)") + " ";
+    } else if (!item && saved?.rawTranscript) {
+        // 音声専用モードへ切り替えても、以前の抽出文は残す。
+        append(
+            (
+                useHiraganaOnly
+                    ? convertToHiragana(saved.rawTranscript)
+                    : saved.rawTranscript
+            ) + " "
+        );
     } else {
-        resultSpan.textContent = savedAudioUrls[rowIndex]
-            ? "(Recorded) "
-            : "(Not recorded yet) ";
-        resultSpan.style.color = "var(--text-secondary)";
+        append(
+            savedAudioUrls[rowIndex]
+                ? (
+                    saved?.audioOnly
+                        ? "🎙️Audio only "
+                        : "(Recorded) "
+                )
+                : "(Not recorded yet) ",
+            "var(--text-secondary)"
+        );
     }
 
     if (savedAudioUrls[rowIndex]) {
-        if (item) {
-            const model = document.createElement("button");
-            model.type = "button";
-            model.className = "example-button model-listen-btn";
-            model.textContent = "🔊きく";
-            model.style.marginLeft = "8px";
-            model.onclick = () =>
-                compositionPlay(rowIndex, item.jaHira, true);
-            resultSpan.appendChild(model);
-        }
-
         const play = document.createElement("button");
+
         play.type = "button";
-        play.className = "example-button play-recording-btn";
+        play.className =
+            "example-button play-recording-btn custom-tip-wrap";
         play.textContent = "▶️";
-        play.setAttribute("aria-label", "Play your recorded voice");
-        play.style.marginLeft = "6px";
+
+        play.setAttribute(
+            "aria-label",
+            "Play your recorded voice"
+        );
+
+        const tip = document.createElement("span");
+        tip.className = "custom-tip-box";
+        tip.textContent = "Play your recorded voice";
+
+        play.append(tip);
         play.onclick = () => compositionPlay(rowIndex);
-        resultSpan.appendChild(play);
+
+        resultSpan.append(play);
     }
 
     if (message) {
-        const notice = document.createElement("span");
-        notice.textContent = message + " ";
-        notice.style.color = "var(--text-secondary)";
-        resultSpan.prepend(notice);
+        append(" " + message, "var(--text-secondary)");
     }
 
-    const session = activeRecognitionSession;
+    if (activeRecognitionSession?.rowIndex === rowIndex) {
+        resultSpan.textContent =
+            activeRecognitionSession.audioOnly
+                ? "Recording...(🐣Hiragana Only:🎙️Audio only)"
+                : "Recording...";
 
-    if (session?.rowIndex === rowIndex) {
-        resultSpan.textContent = !item && session.audioOnly
-            ? "Recording...(🐣Only Hiragana:🎙️Audio only)"
-            : "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
     } else if (compositionState.starting === rowIndex) {
@@ -706,103 +808,396 @@ function compositionShow(view, message = "") {
 }
 
 function createDrill1Row(
-    container, indexLabel, item, rowIndex, playRate
+    container,
+    indexLabel,
+    item,
+    rowIndex
 ) {
-    compositionCreateRow(container, indexLabel, item, rowIndex);
-}
+    const model = compositionModel(item);
 
-function createDrill2Row(container, indexLabel, playRate) {
     compositionCreateRow(
-        container, indexLabel, null, drill1Data.length
+        container,
+        indexLabel,
+        {
+            ...item,
+            jaKanji: model,
+            jaHira: convertToHiragana(model),
+            references: [
+                ...new Set([
+                    model,
+                    compositionModel(item, false)
+                ])
+            ]
+        },
+        rowIndex
     );
 }
 
-function compositionCreateRow(container, indexLabel, item, rowIndex) {
-    const row = document.createElement("div");
-    row.className = "drill-row";
+function createDrill2Row(container, indexLabel) {
+    compositionCreateRow(
+        container,
+        indexLabel,
+        null,
+        drill1Data.length
+    );
+}
 
-    const top = document.createElement("div");
-    top.className = "top-row";
+function compositionCreateRow(
+    container,
+    indexLabel,
+    item,
+    rowIndex
+) {
+    const element = (tag, className = "", text = "") => {
+        const value = document.createElement(tag);
+        value.className = className;
+        value.textContent = text;
+        return value;
+    };
 
-    const index = document.createElement("strong");
-    index.textContent = indexLabel;
-    top.appendChild(index);
+    const button = (label, tip) => {
+        const value = element(
+            "button",
+            "example-button custom-tip-wrap",
+            label
+        );
+
+        value.type = "button";
+        value.append(
+            element("span", "custom-tip-box", tip)
+        );
+
+        return value;
+    };
+
+    const row = element("div", "drill-row");
+    const table = element("table", "recording-table");
+    const columns = element("colgroup");
+
+    columns.append(
+        element("col"),
+        element("col"),
+        element("col")
+    );
+
+    columns.children[0].style.width = "34px";
+
+    const body = element("tbody");
+    const line = element("tr");
+
+    const number = element(
+        "td",
+        "drill-number-cell",
+        indexLabel
+    );
+
+    const cue = element("td", "drill-cue-cell");
 
     if (item) {
-        const prompt = document.createElement("span");
-        prompt.className = "prompt-label";
-        prompt.textContent = item.en;
-        prompt.style.minWidth = "220px";
-        top.appendChild(prompt);
+        cue.textContent = item.en;
     } else {
-        const input = document.createElement("input");
+        const input = element("input", "custom-input");
+
         input.type = "text";
-        input.className = "custom-input";
         input.placeholder = "Optional reference text...";
-        input.setAttribute("aria-label", "Optional reference text");
-        input.style.flex = "1";
-        input.style.minWidth = "180px";
+
+        input.setAttribute(
+            "aria-label",
+            "Optional reference text"
+        );
+
         input.value = drill2State.inputVal;
 
         input.oninput = () => {
             drill2State.inputVal = input.value;
         };
 
-        top.appendChild(input);
+        cue.append(input);
     }
 
-    const recordBtn = document.createElement("button");
-    recordBtn.type = "button";
-    recordBtn.className = "example-button custom-tip-wrap";
-    recordBtn.innerHTML =
-        '⏺️とる<span class="custom-tip-box">Start recording your voice.</span>';
+    const cell = element("td");
+    const controls = element(
+        "div",
+        "recording-controls"
+    );
 
-    const stopBtn = document.createElement("button");
-    stopBtn.type = "button";
-    stopBtn.className = "example-button custom-tip-wrap";
+    const actions = element(
+        "div",
+        "recording-actions"
+    );
+
+    if (item) {
+        const listen = button(
+            "🔊きく",
+            "Listen to the model sentence."
+        );
+
+        listen.onclick = () =>
+            compositionPlay(rowIndex, item.jaKanji, true);
+
+        actions.append(listen);
+    }
+
+    const recordBtn = button(
+        "🎙️とる",
+        "Record your voice."
+    );
+
+    const stopBtn = button(
+        "⏹️",
+        "Stop recording."
+    );
+
     stopBtn.disabled = true;
-    stopBtn.innerHTML =
-        '⏹️<span class="custom-tip-box">Stop the active recording.</span>';
+    actions.append(recordBtn, stopBtn);
 
-    const resultSpan = document.createElement("span");
-    resultSpan.className = "result-text";
+    const resultSpan = element(
+        "span",
+        "result-text"
+    );
 
-    top.append(recordBtn, stopBtn, resultSpan);
-    row.appendChild(top);
+    const result = element(
+        "span",
+        "recording-result"
+    );
 
-    const correctionBox = document.createElement("div");
-    correctionBox.className = "correction-box";
+    result.append(resultSpan);
+    controls.append(actions, result);
 
-    const corrListen = document.createElement("button");
-    corrListen.type = "button";
-    corrListen.className = "example-button";
-    corrListen.textContent = "🔊きく";
-    corrListen.style.marginRight = "8px";
-    corrListen.onclick = () =>
-        compositionPlay(rowIndex, item?.jaHira || "", true);
+    const correctionBox = element(
+        "div",
+        "correction-box"
+    );
 
-    const corrText = document.createElement("span");
-    correctionBox.append(corrListen, corrText);
-    row.appendChild(correctionBox);
+    const corrText = element("span");
+    correctionBox.append(corrText);
+
+    cell.append(controls, correctionBox);
+    line.append(number, cue, cell);
+    body.append(line);
+    table.append(columns, body);
+    row.append(table);
+    container.append(row);
 
     const view = {
-        rowIndex, item, recordBtn, stopBtn,
-        resultSpan, correctionBox, corrText
+        rowIndex,
+        item,
+        recordBtn,
+        stopBtn,
+        resultSpan,
+        correctionBox,
+        corrText
     };
 
     compositionState.views[rowIndex] = view;
-    recordBtn.onclick = () => compositionRecord(rowIndex);
+
+    recordBtn.onclick = () =>
+        compositionRecord(rowIndex);
 
     stopBtn.onclick = () => {
         const session = activeRecognitionSession;
-        if (session?.rowIndex === rowIndex && session.manual) {
+
+        if (
+            session?.rowIndex === rowIndex
+            && session.manual
+        ) {
             session.stop();
         }
     };
 
-    container.appendChild(row);
     compositionShow(view);
 }
+
+(() => {
+    const originalPlay = compositionPlay;
+
+    compositionPlay = function(
+        rowIndex,
+        model = "",
+        onlyModel = false
+    ) {
+        if (model) {
+            const item =
+                compositionState.views[rowIndex]?.item;
+
+            model = onlyModel
+                ? item?.jaKanji || model
+                : savedResults[rowIndex]?.modelKanji
+                    || item?.jaKanji
+                    || model;
+        }
+
+        return originalPlay(rowIndex, model, onlyModel);
+    };
+
+    const originalInit = initSettingsPanel;
+
+    initSettingsPanel = function() {
+        originalInit();
+
+        const control = document.getElementById(
+            "speechStyleControl"
+        );
+
+        control?.addEventListener("click", event => {
+            if (compositionBusy()) return;
+
+            const option = event.target.closest(
+                "button[data-value]"
+            );
+
+            if (
+                !option
+                || !control.contains(option)
+            ) {
+                return;
+            }
+
+            const value = option.dataset.value;
+
+            if (
+                !["formal", "informal", "casual"].includes(value)
+                || value === compositionSpeechStyle
+            ) {
+                return;
+            }
+
+            compositionSpeechStyle = value;
+            renderAll();
+        });
+    };
+
+    const originalSync = compositionSync;
+
+    compositionSync = function() {
+        originalSync();
+
+        document.querySelectorAll(
+            ".compact-settings .segmented-option, " +
+            ".compact-settings input"
+        ).forEach(control => {
+            control.disabled = compositionBusy();
+        });
+    };
+
+    document.addEventListener("click", event => {
+        if (
+            compositionBusy()
+            && event.target.closest(
+                ".compact-settings .segmented-option"
+            )
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
+
+    const originalRender = renderAll;
+
+    renderAll = function() {
+        if (compositionBusy()) return;
+
+        originalRender();
+
+        document.querySelectorAll(
+            "#speechStyleControl button"
+        ).forEach(option => {
+            const selected =
+                option.dataset.value === compositionSpeechStyle;
+
+            option.classList.toggle(
+                "is-selected",
+                selected
+            );
+
+            option.setAttribute(
+                "aria-pressed",
+                String(selected)
+            );
+        });
+
+        for (const id of [
+            "drill1Container",
+            "drill2Container"
+        ]) {
+            const section = document.getElementById(id);
+            section.classList.add("practice-section");
+
+            section.querySelector(
+                ".info-panel"
+            )?.style.removeProperty("margin-top");
+
+            const description = section.querySelector(
+                ".info-panel-desc"
+            );
+
+            if (description) {
+                description.textContent =
+                    description.textContent
+                        .trim()
+                        .replace(/^💡\s*/, "💡");
+            }
+
+            const tables = Array.from(
+                section.querySelectorAll(".recording-table")
+            );
+
+            let width = 0;
+
+            for (const table of tables) {
+                const cell = table.querySelector(
+                    ".drill-cue-cell"
+                );
+
+                const measure =
+                    document.createElement("span");
+
+                cell.childNodes.forEach(child =>
+                    measure.append(child.cloneNode(true))
+                );
+
+                // 内容幅の測定専用。
+                Object.assign(measure.style, {
+                    position: "absolute",
+                    visibility: "hidden",
+                    display: "inline-block",
+                    width: "max-content",
+                    whiteSpace: "nowrap",
+                    font: "inherit"
+                });
+
+                cell.append(measure);
+
+                width = Math.max(
+                    width,
+                    Math.ceil(
+                        measure.getBoundingClientRect().width
+                    )
+                );
+
+                measure.remove();
+            }
+
+            tables.forEach(table => {
+                table.querySelector(
+                    "colgroup"
+                ).children[1].style.width =
+                    `${width + 8}px`;
+            });
+        }
+
+        const tip = document.querySelector(
+            "#labelAutoPlay .custom-tip-box"
+        );
+
+        if (tip) {
+            tip.textContent =
+                "ON: Plays the model, when available, then your recording. OFF: Disables automatic playback.";
+        }
+
+        compositionSync();
+    };
+})();
 
 async function compositionRecord(rowIndex) {
     if (compositionBusy()) return;
