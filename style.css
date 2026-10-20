@@ -1687,3 +1687,87 @@ input:checked + .slider:before { transform: translateX(16px); }
         color: #c084fc;
     }
 }
+/* =========================================================
+   Index：PC・スマホ共通メニュー
+   ========================================================= */
+
+.index-page .menu-container {
+    min-width: 0;
+}
+
+.index-page .menu-container h1 {
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.index-page .menu-container > p {
+    margin: 0 0 20px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.index-page .menu-list {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.index-page .menu-list > li {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.index-page .menu-list > li > a {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-panel);
+    font-size: 16px;
+    line-height: 1.6;
+    text-decoration: none;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.index-page .menu-list > li > a:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+@media (hover: hover) {
+    .index-page .menu-list > li > a:hover {
+        border-color: var(--accent-color);
+        text-decoration: underline;
+    }
+}
+
+@media (max-width: 600px) {
+    body.index-page {
+        margin: 16px auto;
+        padding: 0 16px 24px;
+    }
+
+    .index-page .menu-container h1 {
+        margin: 0 0 12px;
+        font-size: 22px;
+    }
+
+    .index-page .menu-container > p {
+        margin-bottom: 16px;
+    }
+
+    .index-page .menu-list > li > a {
+        padding: 12px 14px;
+    }
+}
