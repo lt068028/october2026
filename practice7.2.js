@@ -401,385 +401,371 @@ function updateToggleLabelStyle(labelEl, isActive) {
 }
 
 function renderAll() {
-    let style = document.getElementById("practice7KaraStyle");
-
-    if (!style) {
-        style = document.createElement("style");
-        style.id = "practice7KaraStyle";
-        document.head.appendChild(style);
-    }
-
-    style.textContent = `
-        #drill1Container .grammar-highlight {
-color: #CA8A04;
-font-weight: bold;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            #drill1Container .grammar-highlight {
-                color: #FBBF24;
-            }
-        }
-    `;
-
     renderDrill1Section();
 
-    const container = document.getElementById("drill1Container");
+    const container = document.getElementById('drill1Container');
     if (!container) return;
 
-    const instruction = container.querySelector(".info-panel-desc");
+    const instruction = container.querySelector('.info-panel-desc');
+
     if (instruction) {
-        instruction.innerHTML = `
-            💡 Compare a past action with the state that continues now.
-            Use <strong class="grammar-highlight">から</strong>
-            after a time expression to show when that state began.
-        `;
+        instruction.innerHTML =
+            '💡Compare a past action with the state that continues now. ' +
+            'Use <strong class="grammar-highlight">から</strong> ' +
+            'after a time expression to show when that state began.';
     }
-
-    container.querySelectorAll(".example-box strong").forEach(element => {
-        const text = element.textContent;
-        const grammar = text.replace(/。$/, "");
-
-        if (["から", "ました", "ています"].includes(grammar)) {
-            const highlighted = document.createElement("strong");
-            highlighted.className = "grammar-highlight";
-            highlighted.textContent = grammar;
-
-            element.replaceWith(
-                highlighted,
-                document.createTextNode(text.endsWith("。") ? "。" : "")
-            );
-        }
-    });
 }
 
-// ============================================================================
-// Render Drill 1 Section (Past & Present State Practice)
-// ============================================================================
 function renderDrill1Section() {
-    let container = document.getElementById("drill1Container");
+    let container = document.getElementById('drill1Container');
 
     if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1Container";
+        container = document.createElement('div');
+        container.id = 'drill1Container';
+
         document.body.insertBefore(
             container,
-            document.querySelector(".voice-guide-footer")
+            document.querySelector('.voice-guide-footer')
         );
     }
 
-    container.innerHTML = "";
+    container.replaceChildren();
 
-    const exBox = document.createElement("div");
-    exBox.className = "example-box";
-    exBox.style.marginTop = "30px";
+    const example = document.createElement('div');
+    example.className = 'example-box';
 
-    const w1 = formatWord(
-        "あさ5じ", "朝5時", "asa go-ji",
+    const time = formatWord(
+        'あさ5じ',
+        '朝5時',
+        'asa go-ji',
         "5 o'clock in the morning"
     );
-    const w2 = formatWord(
-        "おきる", "起きる", "okiru",
-        "to wake up / get up"
-    );
-    const verbStem = scriptMode === "kanji" ? "起き" : "おき";
 
-    exBox.innerHTML = `
-        <div class="example-line flex-row-center"
-             style="margin-bottom: 8px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Past Tense:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPastListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#bae6fd; color:#0369a1;
-                         font-size:13px; font-weight:bold;">⏪Past</span>
-            <span>${w1}に${verbStem}<strong>ました。</strong></span>
+    const verb = formatWord(
+        'おきる',
+        '起きる',
+        'okiru',
+        'to wake up / get up'
+    );
+
+    const stem = scriptMode === 'kanji' ? '起き' : 'おき';
+
+    example.innerHTML = `
+        <div class="example-line">
+            <strong class="example-label-title">Past:</strong>
+            ${time}／${verb}
+            <span>👉</span>
+            <button
+                id="exPastListen"
+                type="button"
+                class="example-button"
+            >🔊きく</button>
+            <span class="tense-badge tense-badge--past">⏪Past</span>
+            <span>${time}に${stem}<strong class="grammar-highlight">ました</strong>。</span>
         </div>
 
-        <div class="example-line dashed-border flex-row-center"
-             style="padding-top: 10px;">
-            <strong class="example-label-title"
-                    style="min-width: 130px;">Present State:</strong>
-            ${w1} ／ ${w2}
-            <span style="font-size: 16px; margin: 0 4px;">👉</span>
-            <button id="exPerfListen" type="button"
-                    class="example-button">🔊きく</button>
-            <span style="display:inline-block; padding:4px 8px;
-                         margin:0 6px; border-radius:4px;
-                         background:#dcfce7; color:#15803d;
-                         font-size:13px; font-weight:bold;">⏳Present State</span>
-            <span>${w1}<strong>から</strong>${verbStem}<strong>ています。</strong></span>
+        <div class="example-line">
+            <strong class="example-label-title">Present State:</strong>
+            ${time}／${verb}
+            <span>👉</span>
+            <button
+                id="exPerfListen"
+                type="button"
+                class="example-button"
+            >🔊きく</button>
+            <span class="tense-badge tense-badge--present-state">⏳Present State</span>
+            <span>${time}<strong class="grammar-highlight">から</strong>${stem}<strong class="grammar-highlight">ています</strong>。</span>
         </div>
     `;
 
-    container.appendChild(exBox);
+    container.append(example);
 
-    const pastListen = document.getElementById("exPastListen");
-    const perfectListen = document.getElementById("exPerfListen");
+    [
+        ['exPastListen', '朝5時に起きました。'],
+        ['exPerfListen', '朝5時から起きています。']
+    ].forEach(([id, model]) => {
+        const button = document.getElementById(id);
 
-    pastListen.onclick = () => {
-        setPlayingStateMultiple([pastListen], "Playing...");
-        speakText("朝5時に起きました。", 0.9, () => stopAllPlayback());
-    };
+        button.onclick = () => {
+            setPlayingStateMultiple([button], 'Playing...');
+            speakText(model, 0.9, () => stopAllPlayback());
+        };
+    });
 
-    perfectListen.onclick = () => {
-        setPlayingStateMultiple([perfectListen], "Playing...");
-        speakText("朝5時から起きています。", 0.9, () => stopAllPlayback());
-    };
+    const panel = document.createElement('div');
+    panel.className = 'info-panel info-panel-task1';
 
-    const infoPanel = document.createElement("div");
-    infoPanel.className = "info-panel info-panel-task1";
-    infoPanel.style.marginTop = "25px";
-    infoPanel.innerHTML = `
+    panel.innerHTML = `
         <span class="info-panel-title">
             Drill 1: Compare Past & Present State
         </span>
-        <span class="info-panel-desc">
-            💡 Compare past actions with ongoing states using ているform.
-        </span>
+        <span class="info-panel-desc"></span>
     `;
-    container.appendChild(infoPanel);
 
-    const listDiv = document.createElement("div");
-    listDiv.id = "drill1List";
-    container.appendChild(listDiv);
+    const list = document.createElement('div');
+    list.id = 'drill1List';
+
+    container.append(panel, list);
 
     practice7Data.forEach((item, index) => {
         createPractice7TableCard(
-            listDiv, `${index + 1}.`, item, index, 0.9
+            list,
+            `${index + 1}.`,
+            item,
+            index,
+            0.9
         );
     });
 }
 
-function createPractice7TableCard(container, indexLabel, item, rowIndex, playRate) {
-    const cardDiv = document.createElement("div");
-    cardDiv.className = "drill-row";
+function createPractice7TableCard(
+    container,
+    indexLabel,
+    item,
+    rowIndex,
+    playRate
+) {
+    const card = document.createElement('div');
+    card.className = 'drill-row';
 
-    const table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
+    const table = document.createElement('table');
+    table.className = 'recording-table';
 
-    // ----------------------------------------------------
-    // 1行目: Past
-    // ----------------------------------------------------
-    const tr1 = document.createElement("tr");
+    const body = document.createElement('tbody');
+    table.append(body);
 
-    const tdIndex = document.createElement("td");
-    tdIndex.rowSpan = 2;
-    tdIndex.textContent = indexLabel;
-    tdIndex.style.fontWeight = "bold";
-    tdIndex.style.verticalAlign = "middle";
-    tdIndex.style.width = "30px";
-    tdIndex.style.paddingRight = "4px";
+    const number = document.createElement('td');
+    number.className = 'drill-number-cell';
+    number.rowSpan = 2;
+    number.textContent = indexLabel;
 
-    const tdPrompt = document.createElement("td");
-    tdPrompt.rowSpan = 2;
-    tdPrompt.className = "prompt-label";
-    const cueParts = item.xKanji === "漢字50個"
+    const cue = document.createElement('td');
+    cue.className = 'prompt-label drill-cue-cell';
+    cue.rowSpan = 2;
+
+    const parts = item.xKanji === '漢字50個'
         ? [
             formatWord(
-                "かんじ", "漢字",
-                "kanji", "kanji characters"
+                'かんじ',
+                '漢字',
+                'kanji',
+                'kanji characters'
             ),
             formatWord(
-                "50こ", "50個",
-                "gojūkko", "50 items"
-            ),
-            formatWord(
-                item.y, item.yKanji,
-                item.yRomaji, item.yMeaning
+                '50こ',
+                '50個',
+                'gojūkko',
+                '50 items'
             )
         ]
         : [
             formatWord(
-                item.x, item.xKanji,
-                item.xRomaji, item.xMeaning
-            ),
-            formatWord(
-                item.y, item.yKanji,
-                item.yRomaji, item.yMeaning
+                item.x,
+                item.xKanji,
+                item.xRomaji,
+                item.xMeaning
             )
         ];
 
-    tdPrompt.innerHTML = cueParts.join(" ／ ");    tdPrompt.style.verticalAlign = "middle";
-    tdPrompt.style.width = "220px";
-    tdPrompt.style.paddingRight = "10px";
-
-    const tdPastControls = document.createElement("td");
-    tdPastControls.style.paddingBottom = "4px";
-    tdPastControls.style.whiteSpace = "nowrap";
-
-    const listenBtn1 = document.createElement("button");
-    listenBtn1.className = "example-button custom-tip-wrap";
-    listenBtn1.innerHTML = '🔊きく<span class="custom-tip-box">Listen to past tense.</span>';
-
-    const pastLabel = document.createElement("span");
-    pastLabel.style.fontWeight = "bold";
-    pastLabel.style.display = "inline-block";
-    pastLabel.style.padding = "4px 8px";
-    pastLabel.style.margin = "0 6px";
-    pastLabel.style.borderRadius = "4px";
-    pastLabel.style.backgroundColor = "#bae6fd";
-    pastLabel.style.color = "#0369a1";
-    pastLabel.style.fontSize = "13px";
-    pastLabel.innerHTML = "⏪Past";
-
-    const recordBtn1 = document.createElement("button");
-    recordBtn1.className = "example-button custom-tip-wrap";
-    recordBtn1.innerHTML = '⏺️とる<span class="custom-tip-box">Record past tense.</span>';
-
-    const stopBtn1 = document.createElement("button");
-    stopBtn1.className = "example-button custom-tip-wrap";
-    stopBtn1.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
-    stopBtn1.disabled = true;
-
-    const rightWrapper1 = document.createElement("span");
-    rightWrapper1.style.float = "right";
-    rightWrapper1.style.display = "inline-flex";
-    rightWrapper1.style.alignItems = "center";
-
-    const resultSpan1 = document.createElement("span");
-    resultSpan1.className = "result-text";
-    resultSpan1.textContent = "(Not recorded yet)";
-    resultSpan1.style.color = "var(--text-secondary)";
-    resultSpan1.style.marginLeft = "8px";
-
-    rightWrapper1.appendChild(resultSpan1);
-
-    listenBtn1.onclick = () => {
-        setPlayingStateMultiple([listenBtn1], "Playing...");
-        speakText(item.pastSentence, playRate, () => stopAllPlayback());
-    };
-
-    tdPastControls.appendChild(listenBtn1);
-    tdPastControls.appendChild(pastLabel);
-    tdPastControls.appendChild(recordBtn1);
-    tdPastControls.appendChild(stopBtn1);
-    tdPastControls.appendChild(rightWrapper1);
-
-    tr1.appendChild(tdIndex);
-    tr1.appendChild(tdPrompt);
-    tr1.appendChild(tdPastControls);
-    table.appendChild(tr1);
-
-    const correctionBox1 = document.createElement("div");
-    correctionBox1.className = "correction-box";
-    const corrListenBtn1 = document.createElement("button");
-    corrListenBtn1.className = "example-button";
-    corrListenBtn1.innerHTML = "🔊 きく";
-    corrListenBtn1.style.marginRight = "8px";
-    const corrTextSpan1 = document.createElement("span");
-    correctionBox1.appendChild(corrListenBtn1);
-    correctionBox1.appendChild(corrTextSpan1);
-
-    bindRecorderEvents(
-        recordBtn1, stopBtn1, resultSpan1, correctionBox1, corrListenBtn1, corrTextSpan1,
-        () => item.pastSentenceHira,
-        () => item.pastSentence,
-        playRate,
-        `p7_drill_past_${rowIndex}`
+    parts.push(
+        formatWord(
+            item.y,
+            item.yKanji,
+            item.yRomaji,
+            item.yMeaning
+        )
     );
 
-    // ----------------------------------------------------
-    // 2行目: Perfect
-    // ----------------------------------------------------
-    const tr2 = document.createElement("tr");
-    tr2.style.borderTop = "1px dashed var(--border-color)";
+    cue.innerHTML = parts.join('／');
 
-    const tdPerfControls = document.createElement("td");
-    tdPerfControls.style.paddingTop = "4px";
-    tdPerfControls.style.whiteSpace = "nowrap";
+    const makeButton = (label, tip) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'example-button custom-tip-wrap';
 
-    const listenBtn2 = document.createElement("button");
-    listenBtn2.className = "example-button custom-tip-wrap";
-    listenBtn2.innerHTML = '🔊きく<span class="custom-tip-box">Listen to Present State.</span>';
+        const tooltip = document.createElement('span');
+        tooltip.className = 'custom-tip-box';
+        tooltip.textContent = tip;
 
-    const perfLabel = document.createElement("span");
-    perfLabel.style.fontWeight = "bold";
-    perfLabel.style.display = "inline-block";
-    perfLabel.style.padding = "4px 8px";
-    perfLabel.style.margin = "0 6px";
-    perfLabel.style.borderRadius = "4px";
-    perfLabel.style.backgroundColor = "#dcfce7";
-    perfLabel.style.color = "#15803d";
-    perfLabel.style.fontSize = "13px";
-    perfLabel.innerHTML = "⏳Present State";
+        button.append(
+            document.createTextNode(label),
+            tooltip
+        );
 
-    const recordBtn2 = document.createElement("button");
-    recordBtn2.className = "example-button custom-tip-wrap";
-    recordBtn2.innerHTML = '⏺️とる<span class="custom-tip-box">Record Present State.</span>';
-
-    const stopBtn2 = document.createElement("button");
-    stopBtn2.className = "example-button custom-tip-wrap";
-    stopBtn2.innerHTML = '⏹️<span class="custom-tip-box">Stop active recording.</span>';
-    stopBtn2.disabled = true;
-
-    const rightWrapper2 = document.createElement("span");
-    rightWrapper2.style.float = "right";
-    rightWrapper2.style.display = "inline-flex";
-    rightWrapper2.style.alignItems = "center";
-
-    const resultSpan2 = document.createElement("span");
-    resultSpan2.className = "result-text";
-    resultSpan2.textContent = "(Not recorded yet)";
-    resultSpan2.style.color = "var(--text-secondary)";
-    resultSpan2.style.marginLeft = "8px";
-
-    rightWrapper2.appendChild(resultSpan2);
-
-    listenBtn2.onclick = () => {
-        setPlayingStateMultiple([listenBtn2], "Playing...");
-        speakText(item.perfectSentence, playRate, () => stopAllPlayback());
+        return button;
     };
 
-    tdPerfControls.appendChild(listenBtn2);
-    tdPerfControls.appendChild(perfLabel);
-    tdPerfControls.appendChild(recordBtn2);
-    tdPerfControls.appendChild(stopBtn2);
-    tdPerfControls.appendChild(rightWrapper2);
+    [
+        [
+            'past',
+            'pastSentence',
+            'pastSentenceHira',
+            '⏪Past',
+            'tense-badge--past',
+            'past tense'
+        ],
+        [
+            'perf',
+            'perfectSentence',
+            'perfectSentenceHira',
+            '⏳Present State',
+            'tense-badge--present-state',
+            'Present State'
+        ]
+    ].forEach(([
+        kind,
+        kanjiKey,
+        hiraKey,
+        label,
+        badgeClass,
+        description
+    ], index) => {
+        const row = document.createElement('tr');
 
-    tr2.appendChild(tdPerfControls);
-    table.appendChild(tr2);
+        if (index === 0) {
+            row.append(number, cue);
+        }
 
-    const correctionBox2 = document.createElement("div");
-    correctionBox2.className = "correction-box";
-    const corrListenBtn2 = document.createElement("button");
-    corrListenBtn2.className = "example-button";
-    corrListenBtn2.innerHTML = "🔊 きく";
-    corrListenBtn2.style.marginRight = "8px";
-    const corrTextSpan2 = document.createElement("span");
-    correctionBox2.appendChild(corrListenBtn2);
-    correctionBox2.appendChild(corrTextSpan2);
+        const cell = document.createElement('td');
 
-    bindRecorderEvents(
-        recordBtn2, stopBtn2, resultSpan2, correctionBox2, corrListenBtn2, corrTextSpan2,
-        () => item.perfectSentenceHira,
-        () => item.perfectSentence,
-        playRate,
-        `p7_drill_perf_${rowIndex}`
-    );
-    // 「覚える」「知る」専用の意味変化メモ。
-    const meaningNotes = {
-        "覚える": {
-            kanji: ["覚えました", "覚えています"],
-            hiragana: ["おぼえました", "おぼえています"],
-            english: ["memorized", "remember"]
+        const layout = document.createElement('div');
+        layout.className = 'recording-controls';
+
+        const actions = document.createElement('div');
+        actions.className = 'recording-actions';
+
+        const listen = makeButton(
+            '🔊きく',
+            `Listen to ${description}.`
+        );
+
+        const badge = document.createElement('span');
+        badge.className = `tense-badge ${badgeClass}`;
+        badge.textContent = label;
+
+        const record = makeButton(
+            '🎙️とる',
+            `Record ${description}.`
+        );
+
+        const stop = makeButton(
+            '⏹️',
+            'Stop active recording.'
+        );
+
+        stop.disabled = true;
+
+        const resultWrap = document.createElement('span');
+        resultWrap.className = 'recording-result';
+
+        const result = document.createElement('span');
+        result.className = 'result-text';
+        result.textContent = '(Not recorded yet)';
+
+        resultWrap.append(result);
+        actions.append(listen, badge, record, stop);
+        layout.append(actions, resultWrap);
+
+        const correction = document.createElement('div');
+        correction.className = 'correction-box';
+
+        const correctionListen = document.createElement('button');
+        correctionListen.type = 'button';
+        correctionListen.className = 'example-button';
+        correctionListen.textContent = '🔊きく';
+        correctionListen.hidden = true;
+
+        const correctionText = document.createElement('span');
+
+        correction.append(
+            correctionListen,
+            correctionText
+        );
+
+        cell.append(layout, correction);
+        row.append(cell);
+        body.append(row);
+
+        listen.onclick = () => {
+            setPlayingStateMultiple([listen], 'Playing...');
+
+            speakText(
+                item[kanjiKey],
+                playRate,
+                () => stopAllPlayback()
+            );
+        };
+
+        bindRecorderEvents(
+            record,
+            stop,
+            result,
+            correction,
+            correctionListen,
+            correctionText,
+            () => item[hiraKey],
+            () => item[kanjiKey],
+            playRate,
+            `p7_drill_${kind}_${rowIndex}`
+        );
+    });
+
+    const notes = {
+        '覚える': {
+            kanji: ['覚えました', '覚えています'],
+            hiragana: ['おぼえました', 'おぼえています'],
+            english: ['memorized', 'remember']
         },
-        "知る": {
-            kanji: ["知りました", "知っています"],
-            hiragana: ["しりました", "しっています"],
-            english: ["learned", "know"]
+        '知る': {
+            kanji: ['知りました', '知っています'],
+            hiragana: ['しりました', 'しっています'],
+            english: ['learned', 'know']
         }
     };
 
-    // 保存された録音ファイルの有無で表示を更新する。
+    const note = notes[item.yKanji];
+
+    if (note) {
+        const row = document.createElement('tr');
+        row.className = 'meaning-change-row';
+
+        row.dataset.pastKey = `p7_drill_past_${rowIndex}`;
+        row.dataset.perfectKey = `p7_drill_perf_${rowIndex}`;
+
+        row.hidden = !(
+            practice7State.audioUrls[row.dataset.pastKey] ||
+            practice7State.audioUrls[row.dataset.perfectKey]
+        );
+
+        const spacer = document.createElement('td');
+        spacer.colSpan = 2;
+
+        const cell = document.createElement('td');
+        cell.className = 'meaning-change-note';
+
+        const title = document.createElement('div');
+        title.className = 'meaning-change-note-title';
+        title.textContent = '✨Notice the meaning change:';
+
+        const comparison = document.createElement('strong');
+        comparison.className = 'meaning-change-comparison';
+
+        const forms = scriptMode === 'hiragana'
+            ? note.hiragana
+            : note.kanji;
+
+        comparison.textContent =
+            `${forms[0]} = ${note.english[0]} / ` +
+            `${forms[1]} = ${note.english[1]}`;
+
+        cell.append(title, comparison);
+        row.append(spacer, cell);
+        body.append(row);
+    }
+
     practice7State.refreshMeaningNotes = () => {
         document.querySelectorAll(
-            "#drill1Container .meaning-change-row"
+            '#drill1Container .meaning-change-row'
         ).forEach(row => {
             row.hidden = !(
                 practice7State.audioUrls[row.dataset.pastKey] ||
@@ -788,92 +774,8 @@ function createPractice7TableCard(container, indexLabel, item, rowIndex, playRat
         });
     };
 
-    const meaningNote = meaningNotes[item.yKanji];
-
-    if (meaningNote) {
-        let noteStyle = document.getElementById(
-            "practice7MeaningNoteStyle"
-        );
-
-        if (!noteStyle) {
-            noteStyle = document.createElement("style");
-            noteStyle.id = "practice7MeaningNoteStyle";
-            document.head.appendChild(noteStyle);
-        }
-
-        noteStyle.textContent = `
-            #drill1Container .meaning-change-row[hidden] {
-                display: none;
-            }
-
-            #drill1Container .meaning-change-note {
-                padding-top: 10px;
-                padding-bottom: 4px;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            #drill1Container .meaning-change-note-title {
-                color: var(--text-primary);
-                font-size: 12px;
-                font-weight: normal;
-            }
-
-            #drill1Container .meaning-change-comparison {
-                color: #7C3AED;
-                font-weight: bold;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .meaning-change-comparison {
-                    color: #C084FC;
-                }
-            }
-        `;
-
-        const forms = scriptMode === "hiragana"
-            ? meaningNote.hiragana
-            : meaningNote.kanji;
-
-        const pastKey = `p7_drill_past_${rowIndex}`;
-        const perfectKey = `p7_drill_perf_${rowIndex}`;
-
-        const noteRow = document.createElement("tr");
-        noteRow.className = "meaning-change-row";
-        noteRow.dataset.pastKey = pastKey;
-        noteRow.dataset.perfectKey = perfectKey;
-
-        noteRow.hidden = !(
-            practice7State.audioUrls[pastKey] ||
-            practice7State.audioUrls[perfectKey]
-        );
-
-        const spacer = document.createElement("td");
-        spacer.colSpan = 2;
-
-        const noteCell = document.createElement("td");
-        noteCell.className = "meaning-change-note";
-
-        const title = document.createElement("div");
-        title.className = "meaning-change-note-title";
-        title.textContent = "✨ Notice the meaning change:";
-
-        const comparison = document.createElement("strong");
-        comparison.className = "meaning-change-comparison";
-        comparison.textContent =
-            `${forms[0]} = ${meaningNote.english[0]} / ` +
-            `${forms[1]} = ${meaningNote.english[1]}`;
-
-        noteCell.appendChild(title);
-        noteCell.appendChild(comparison);
-        noteRow.appendChild(spacer);
-        noteRow.appendChild(noteCell);
-        table.appendChild(noteRow);
-    }
-    cardDiv.appendChild(table);
-    cardDiv.appendChild(correctionBox1);
-    cardDiv.appendChild(correctionBox2);
-    container.appendChild(cardDiv);
+    card.append(table);
+    container.append(card);
 }
 
 // ============================================================================
@@ -1924,97 +1826,22 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     const originalRenderAll = renderAll;
     const originalSyncRecordingUI = practice7SyncRecordingUI;
 
-    function installStyles() {
-        if (document.getElementById("practice7EnglishCueStyle")) return;
+    // 装飾はstyle.cssを使用する。
+    function installStyles() {}
 
-        const style = document.createElement("style");
-        style.id = "practice7EnglishCueStyle";
-        style.textContent = `
-            #practice7Drill2Panel.p7-copy-layout {
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                justify-content: space-between;
-                gap: 24px;
-            }
+    const originalAddDrill2Panel = addDrill2Panel;
 
-            #practice7Drill2Panel.p7-copy-layout .p7-drill2-copy {
-                display: flex;
-                flex-direction: column;
-                gap: 5px;
-                flex: 1;
-                min-width: 0;
-            }
+    addDrill2Panel = function(container) {
+        originalAddDrill2Panel(container);
 
-            #practice7Drill2Panel.p7-copy-layout .drill-cue-title,
-            #practice7Drill2Panel.p7-copy-layout .drill-cue-description {
-                display: block;
-                margin: 0;
-            }
+        const copy = container.querySelector(
+            '#practice7Drill2Panel > .p7-drill2-copy'
+        );
 
-            #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
-                flex: 0 0 auto;
-                width: auto;
-                min-width: 190px;
-            }
-
-            @media (max-width: 600px) {
-                #practice7Drill2Panel.p7-copy-layout {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                #practice7Drill2Panel.p7-copy-layout > .drill-cue-button {
-                    width: 100%;
-                    min-width: 0;
-                }
-            }            #drill1Container .p7-english-cue {
-                overflow-wrap: anywhere;
-            }
-
-            #drill1Container .p7-example-cue {
-                margin-bottom: 12px;
-                font-weight: bold;
-            }
-
-            #drill1Container .p7-underlined-cue {
-                text-decoration: underline;
-                text-underline-offset: 4px;
-                font-weight: bold;
-            }
-
-            #drill1Container .p7-shirt-note[hidden] {
-                display: none;
-            }
-
-            #drill1Container .p7-shirt-note td {
-                padding-top: 10px;
-                padding-bottom: 4px;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-
-            #drill1Container .p7-shirt-note small {
-                display: block;
-                color: var(--text-primary);
-                font-size: 12px;
-                font-weight: normal;
-            }
-
-            #drill1Container .p7-shirt-note strong {
-                color: #7c3aed;
-                font-weight: bold;
-            }
-
-            @media (prefers-color-scheme: dark) {
-                #drill1Container .p7-shirt-note strong {
-                    color: #c084fc;
-                }
-            }
-        `;
-
-        document.head.appendChild(style);
-    }
+        if (copy) {
+            copy.classList.add('drill-cue-copy');
+        }
+    };
     function updateHintControl() {
         const control = document.getElementById("hintModeControl");
         if (!control) return;
