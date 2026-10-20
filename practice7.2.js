@@ -322,8 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }[mode]
             : item.stem + ending;
 
-        return prefix + subject + object + verb;
-    }
+        return kind === 'q' ? subject + object + verb : prefix + verb;    }
 
     const display = text => scriptMode === 'hiragana'
         ? practice7ToHiragana(text)
