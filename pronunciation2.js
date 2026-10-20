@@ -188,121 +188,7 @@ function updateToggleLabelStyle(labelEl, isActive) {
     }
 }
 
-function initSettingsPanel() {
-    const scriptControl =
-        document.getElementById("scriptModeControl");
-
-    function updateScriptSelection() {
-        if (!scriptControl) return;
-
-        const selectedValue =
-            useHiraganaOnly ? "hiragana" : "kanji";
-
-        scriptControl.querySelectorAll("button[data-value]").forEach(button => {
-            const selected = button.dataset.value === selectedValue;
-
-            button.classList.toggle("is-selected", selected);
-            button.setAttribute("aria-pressed", String(selected));
-        });
-    }
-
-    if (scriptControl) {
-        updateScriptSelection();
-
-        scriptControl.addEventListener("click", event => {
-            const button = event.target.closest("button[data-value]");
-
-            if (!button || !scriptControl.contains(button)) return;
-
-            const nextMode = button.dataset.value;
-
-            if (!["hiragana", "kanji"].includes(nextMode)) return;
-
-            const nextHiraganaOnly = nextMode === "hiragana";
-
-            if (nextHiraganaOnly === useHiraganaOnly) return;
-
-            useHiraganaOnly = nextHiraganaOnly;
-
-            updateScriptSelection();
-
-            // Preserve the existing saved-result rendering behavior.
-            renderDrill1Section();
-        });
-    }
-
-    const toggleRecordMode =
-        document.getElementById("toggleRecordMode");
-
-    const labelAutoRecord =
-        document.getElementById("labelAutoRecord");
-
-    if (toggleRecordMode) {
-        toggleRecordMode.checked = !isManualStop;
-
-        updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-
-        toggleRecordMode.addEventListener("change", event => {
-            isManualStop = !event.target.checked;
-
-            updateToggleLabelStyle(labelAutoRecord, !isManualStop);
-        });
-    }
-
-    const togglePlaybackMode =
-        document.getElementById("togglePlaybackMode");
-
-    const labelAutoPlay =
-        document.getElementById("labelAutoPlay");
-
-    if (togglePlaybackMode) {
-        togglePlaybackMode.checked = isAutoPlay;
-
-        updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-
-        togglePlaybackMode.addEventListener("change", event => {
-            isAutoPlay = event.target.checked;
-
-            updateToggleLabelStyle(labelAutoPlay, isAutoPlay);
-        });
-    }
-}
-function renderDrill1Section() {
-    let container = document.getElementById("drill1List");
-    if (!container) {
-        container = document.createElement("div");
-        container.id = "drill1List";
-        document.body.insertBefore(container, document.querySelector(".voice-guide-footer"));
-    }
-
-    const existingPanel = document.querySelector(".info-panel-task1");
-    if (!existingPanel) {
-        const infoPanel = document.createElement("div");
-        infoPanel.className = "info-panel info-panel-task1";
-        infoPanel.style.marginTop = "25px";
-        infoPanel.innerHTML = `
-            <span class="info-panel-title">Drill 1: Mimic and Compare (Listen & Shadow)</span>
-            <span class="info-panel-desc">💡 Listen to the model, mimic the voice and speak aloud.</span>
-        `;
-        container.parentNode.insertBefore(infoPanel, container);
-    }
-
-    container.innerHTML = "";
-
-    drill1Data.forEach((item, index) => {
-        createDrill1Row(
-            container,
-            `${index + 1}.`,
-            item,
-            index,
-            0.9
-        );
-    });
-}
-
-// ============================================================================
-// Pronunciation Practice 2: Unified Recording / Result Handling
-// ============================================================================
+let p2SpeechStyle = "formal";
 
 const p2 = {
     views: {},
@@ -315,169 +201,442 @@ function p2Busy() {
     return p2.pending || Boolean(activeRecognitionSession);
 }
 
-function p2Sync() {
-    const controls = document.querySelectorAll(
-        "#drill1List button, #scriptModeControl button"
-    );
+function initSettingsPanel() {
+    for (const [id, values, get, set] of [
+        [
+            "scriptModeControl",
+            ["hiragana", "kanji"],
+            () => useHiraganaOnly ? "hiragana" : "kanji",
+            value => {
+                useHiraganaOnly = value === "hiragana";
+            }
+        ],
+        [
+            "speechStyleControl",
+            ["formal", "informal", "casual"],
+            () => p2SpeechStyle,
+            value => {
+                p2SpeechStyle = value;
+            }
+        ]
+    ]) {
+        const control = document.getElementById(id);
 
-    controls.forEach(button => {
-        if (p2Busy()) {
-            if (!p2.locks.has(button)) {
-                p2.locks.set(button, button.disabled);
+        control?.addEventListener("click", event => {
+            if (p2Busy()) return;
+
+            const button = event.target.closest(
+                "button[data-value]"
+            );
+
+            if (!button || !control.contains(button)) return;
+
+            const value = button.dataset.value;
+
+            if (
+                !values.includes(value)
+                || value === get()
+            ) {
+                return;
             }
 
-            button.disabled = true;
-        } else if (p2.locks.has(button)) {
-            button.disabled = p2.locks.get(button);
-            p2.locks.delete(button);
-        }
-    });
-
-    const session = activeRecognitionSession;
-
-    if (
-        session &&
-        session.manual &&
-        !session.stopping
-    ) {
-        p2.views[session.key].stop.disabled = false;
+            set(value);
+            renderDrill1Section();
+        });
     }
 
-    Object.values(p2.views).forEach(view => {
-        view.stop.classList.toggle(
-            "stop-btn-active",
-            Boolean(
-                session &&
-                session.key === view.key &&
-                session.manual &&
-                !session.stopping
-            )
+    for (const [id, labelId, get, set] of [
+        [
+            "toggleRecordMode",
+            "labelAutoRecord",
+            () => !isManualStop,
+            value => {
+                isManualStop = !value;
+            }
+        ],
+        [
+            "togglePlaybackMode",
+            "labelAutoPlay",
+            () => isAutoPlay,
+            value => {
+                isAutoPlay = value;
+            }
+        ]
+    ]) {
+        const toggle = document.getElementById(id);
+        const label = document.getElementById(labelId);
+
+        if (!toggle) continue;
+
+        toggle.checked = get();
+        updateToggleLabelStyle(label, get());
+
+        toggle.addEventListener("change", () => {
+            set(toggle.checked);
+            updateToggleLabelStyle(label, get());
+        });
+    }
+}
+
+function p2Model(item, omitParticle = true) {
+    let kanji = item.kanji;
+    let hira = item.hira;
+    let text = item.text;
+
+    if (p2SpeechStyle !== "formal") {
+        kanji = kanji.replace(/です$/, "");
+        hira = hira.replace(/です$/, "");
+        text = text.replace(/です$/, "");
+
+        if (p2SpeechStyle === "casual") {
+            if (omitParticle) {
+                kanji = kanji.replace(
+                    /^(.+?)[がは][、,\s]*/,
+                    "$1、"
+                );
+
+                hira = hira.replace(
+                    /^(.+?)[がは][、,\s]*/,
+                    "$1、"
+                );
+
+                text = text.replace(
+                    /[がは](?=｜)/,
+                    ""
+                );
+            }
+
+            kanji += "よ";
+            hira += "よ";
+            text += "よ";
+        }
+    }
+
+    return {...item, kanji, hira, text};
+}
+
+function renderDrill1Section() {
+    if (p2Busy()) return;
+
+    const container = document.getElementById("drill1List");
+    if (!container) return;
+
+    ++p2.version;
+    stopAllPlayback();
+
+    p2.views = {};
+    container.replaceChildren();
+
+    for (const [id, value] of [
+        [
+            "scriptModeControl",
+            useHiraganaOnly ? "hiragana" : "kanji"
+        ],
+        [
+            "speechStyleControl",
+            p2SpeechStyle
+        ]
+    ]) {
+        document.querySelectorAll(
+            `#${id} button[data-value]`
+        ).forEach(button => {
+            const selected =
+                button.dataset.value === value;
+
+            button.classList.toggle(
+                "is-selected",
+                selected
+            );
+
+            button.setAttribute(
+                "aria-pressed",
+                String(selected)
+            );
+        });
+    }
+
+    drill1Data.forEach((item, index) => {
+        const model = p2Model(item);
+
+        model.references = [
+            ...new Set([
+                model.kanji,
+                model.hira,
+                p2Model(item, false).kanji,
+                p2Model(item, false).hira
+            ])
+        ];
+
+        createDrill1Row(
+            container,
+            `${index + 1}.`,
+            model,
+            index,
+            0.9
         );
     });
 
-    controls.forEach(button => {
-        button.style.setProperty(
-            "cursor",
-            button.disabled ? "not-allowed" : "pointer",
-            "important"
+    let width = 0;
+
+    container.querySelectorAll(
+        ".drill-cue-cell"
+    ).forEach(cell => {
+        const measure = document.createElement("span");
+
+        cell.childNodes.forEach(child =>
+            measure.append(child.cloneNode(true))
+        );
+
+        // 内容幅の測定専用。
+        Object.assign(measure.style, {
+            position: "absolute",
+            visibility: "hidden",
+            display: "inline-block",
+            width: "max-content",
+            whiteSpace: "nowrap",
+            font: "inherit"
+        });
+
+        cell.append(measure);
+
+        width = Math.max(
+            width,
+            Math.ceil(measure.getBoundingClientRect().width)
+        );
+
+        measure.remove();
+    });
+
+    container.querySelectorAll(
+        "colgroup"
+    ).forEach(columns => {
+        columns.children[1].style.width =
+            `${width + 8}px`;
+    });
+
+    p2Sync();
+}
+
+function p2Sync() {
+    const controls = document.querySelectorAll(
+        "#drill1List button, " +
+        ".compact-settings button, " +
+        ".compact-settings input"
+    );
+
+    if (p2Busy()) {
+        controls.forEach(control => {
+            if (!p2.locks.has(control)) {
+                p2.locks.set(control, control.disabled);
+            }
+
+            control.disabled = true;
+        });
+    } else {
+        p2.locks.forEach((disabled, control) => {
+            if (control.isConnected) {
+                control.disabled = disabled;
+            }
+        });
+
+        p2.locks.clear();
+    }
+
+    const session = activeRecognitionSession;
+
+    Object.values(p2.views).forEach(view => {
+        const manualStop = Boolean(
+            session
+            && session.key === view.key
+            && session.manual
+            && !session.stopping
+        );
+
+        if (manualStop) view.stop.disabled = false;
+
+        view.stop.classList.toggle(
+            "stop-btn-active",
+            manualStop
         );
     });
 }
 
-// 比較専用。保存した認識テキスト自体は変更しない。
 function p2Norm(text) {
     return convertToHiragana(
-        String(text).normalize("NFKC")
+        String(text ?? "").normalize("NFKC") + "\uE000"
     )
-        .replace(
-            /[ァ-ヶ]/g,
-            character => String.fromCharCode(
-                character.charCodeAt(0) - 0x60
-            )
+        .replace(/\uE000$/, "")
+        .toLowerCase()
+        .replace(/[ァ-ヶ]/g, char =>
+            String.fromCharCode(char.charCodeAt(0) - 96)
         )
         .replace(/[\p{P}\p{Z}\s]/gu, "");
 }
 
 function p2Tokens(text) {
-    const words =
-        /天気|時間|仕事|先生|学校|学生|てんき|じかん|しごと|せんせい|がっこう|がくせい|面白い|おもしろい|楽しい|たのしい|欲しい|ほしい|良くない|よくない|良い|いい|悪い|わるい|ない|です|でした|ます|ません|は|が|を|に|で|と|も|よ|ね|[一-龯々]+|[ァ-ヶー]+|[a-zA-Z0-9]+|./gu;
+    const chars = Array.from(
+        String(text ?? "").normalize("NFKC")
+    );
 
-    return Array.from(
-        text.matchAll(words),
-        match => ({
-            text: match[0],
-            value: p2Norm(match[0])
-        })
-    ).filter(token => token.value);
+    const tokens = chars
+        .map((char, index) => ({char, index}))
+        .filter(token => p2Norm(token.char));
+
+    const suffix = tokens
+        .map(token => token.char)
+        .join("")
+        .match(/(?:よね|よ|ね)$/);
+
+    if (suffix) {
+        tokens.splice(tokens.length - suffix[0].length);
+    }
+
+    return {chars, tokens};
 }
 
 function p2Diff(raw, expected) {
-    const actual = p2Tokens(raw);
-    const target = p2Tokens(expected);
+    const a = p2Tokens(raw);
+    const b = p2Tokens(expected);
 
-    let end = actual.length;
+    const n = a.tokens.length;
+    const m = b.tokens.length;
 
-    // 文末の「よ」「ね」は許容する。
-    while (
-        end &&
-        ["よ", "ね"].includes(actual[end - 1].value)
-    ) {
-        end--;
-    }
+    const spans = tokens => tokens.map((_, start) => {
+        const result = new Map();
+        let text = "";
 
-    const a = actual.slice(0, end);
-    const b = target;
+        for (
+            let end = start + 1;
+            end <= tokens.length;
+            end++
+        ) {
+            text += tokens[end - 1].char;
+            const reading = p2Norm(text);
 
-    const distance = Array.from(
-        { length: b.length + 1 },
-        () => Array(a.length + 1).fill(0)
+            if (!result.has(reading)) {
+                result.set(reading, []);
+            }
+
+            result.get(reading).push(end);
+        }
+
+        return result;
+    });
+
+    const aa = spans(a.tokens);
+    const bb = spans(b.tokens);
+
+    const costs = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(Infinity)
     );
 
-    for (let i = 0; i <= b.length; i++) {
-        distance[i][0] = i;
-    }
+    const steps = Array.from(
+        {length: n + 1},
+        () => Array(m + 1).fill(null)
+    );
 
-    for (let j = 0; j <= a.length; j++) {
-        distance[0][j] = j;
-    }
+    costs[0][0] = 0;
 
-    for (let i = 1; i <= b.length; i++) {
-        for (let j = 1; j <= a.length; j++) {
-            const substitution =
-                b[i - 1].value === a[j - 1].value
-                    ? 0
-                    : 1;
+    const update = (
+        i, j, x, y, extra, red = false
+    ) => {
+        const cost = costs[i][j] + extra;
 
-            distance[i][j] = Math.min(
-                distance[i - 1][j] + 1,
-                distance[i][j - 1] + 1,
-                distance[i - 1][j - 1] + substitution
-            );
+        if (cost < costs[x][y]) {
+            costs[x][y] = cost;
+            steps[x][y] = {i, j, red};
+        }
+    };
+
+    for (let i = 0; i <= n; i++) {
+        for (let j = 0; j <= m; j++) {
+            if (!Number.isFinite(costs[i][j])) continue;
+
+            if (i < n && j < m) {
+                const same =
+                    a.tokens[i].char === b.tokens[j].char;
+
+                update(
+                    i, j,
+                    i + 1, j + 1,
+                    same ? 0 : 1,
+                    !same
+                );
+
+                for (const [reading, endsA] of aa[i]) {
+                    const endsB = bb[j].get(reading);
+                    if (!endsB) continue;
+
+                    for (const x of endsA) {
+                        for (const y of endsB) {
+                            update(i, j, x, y, 0);
+                        }
+                    }
+                }
+            }
+
+            if (i < n) {
+                update(i, j, i + 1, j, 1, true);
+            }
+
+            if (j < m) {
+                update(i, j, i, j + 1, 1);
+            }
         }
     }
 
     const red = new Set();
     const gaps = new Set();
 
-    let i = b.length;
-    let j = a.length;
+    let i = n;
+    let j = m;
 
     while (i || j) {
-        const substitution =
-            i && j &&
-            b[i - 1].value === a[j - 1].value
-                ? 0
-                : 1;
+        const step = steps[i][j];
+        if (!step) break;
 
-        if (
-            i &&
-            j &&
-            distance[i][j] ===
-                distance[i - 1][j - 1] + substitution
-        ) {
-            if (substitution) red.add(j - 1);
-
-            i--;
-            j--;
-        } else if (
-            i &&
-            distance[i][j] === distance[i - 1][j] + 1
-        ) {
-            // 同じ位置で連続して不足しても＿は一つ。
-            gaps.add(j);
-            i--;
-        } else {
-            red.add(j - 1);
-            j--;
+        if (step.red) {
+            for (let k = step.i; k < i; k++) {
+                red.add(a.tokens[k].index);
+            }
         }
+
+        if (step.i === i && step.j < j) {
+            gaps.add(
+                i < n
+                    ? a.tokens[i].index
+                    : n
+                        ? a.tokens[n - 1].index + 1
+                        : 0
+            );
+        }
+
+        i = step.i;
+        j = step.j;
     }
 
     return {
-        actual,
+        chars: a.chars,
         red,
         gaps,
-        correct: distance[b.length][a.length] === 0
+        cost: costs[n][m],
+        correct: costs[n][m] === 0
     };
+}
+
+function p2BestDiff(raw, references) {
+    let best = null;
+
+    for (const reference of references) {
+        const diff = p2Diff(raw, reference);
+
+        if (!best || diff.cost < best.cost) {
+            best = diff;
+        }
+    }
+
+    return best;
 }
 
 function p2Show(view, notice = "") {
@@ -486,48 +645,66 @@ function p2Show(view, notice = "") {
     view.result.replaceChildren();
     view.result.style.color = "var(--text-primary)";
     view.correction.style.display = "none";
+    view.correctionText.textContent = "";
 
-    if (notice) {
-        const message = document.createElement("span");
-        message.textContent = notice + " ";
-        message.style.color = "var(--text-secondary)";
-        view.result.append(message);
-    }
+    const append = (text, red = false) => {
+        const span = document.createElement("span");
+        span.textContent = text;
+
+        if (red) span.style.color = "var(--error-text)";
+
+        view.result.append(span);
+    };
 
     if (saved?.rawTranscript) {
-        const diff = p2Diff(
-            saved.rawTranscript,
-            view.item.hira
-        );
-
-        diff.actual.forEach((token, index) => {
-            if (diff.gaps.has(index)) {
-                addText("＿", true);
-            }
-
-            addText(
-                useHiraganaOnly
-                    ? p2Norm(token.text)
-                    : token.text,
-                diff.red.has(index)
-            );
-        });
-
-        if (diff.gaps.has(diff.actual.length)) {
-            addText("＿", true);
+        // 録音時のモデルと判定を保持する。
+        if (!saved.references) {
+            saved.references = [...view.item.references];
+            saved.modelKanji = view.item.kanji;
         }
 
-        if (diff.correct) {
-            addText(" ✅ ", false);
-        } else {
+        if (typeof saved.isCorrect !== "boolean") {
+            saved.isCorrect = p2BestDiff(
+                saved.rawTranscript,
+                saved.references
+            ).correct;
+        }
+
+        const displayed = useHiraganaOnly
+            ? convertToHiragana(saved.rawTranscript)
+            : saved.rawTranscript;
+
+        const diff = p2BestDiff(
+            displayed,
+            saved.references
+        );
+
+        for (let i = 0; i <= diff.chars.length; i++) {
+            if (!saved.isCorrect && diff.gaps.has(i)) {
+                append("＿", true);
+            }
+
+            if (i === diff.chars.length) break;
+
+            append(
+                diff.chars[i],
+                !saved.isCorrect && diff.red.has(i)
+            );
+        }
+
+        append(saved.isCorrect ? " ✅ " : " ");
+
+        if (!saved.isCorrect) {
+            view.correctionText.textContent =
+                "🔥Keep going! Try once more!";
+
             view.correction.style.display = "block";
         }
     } else {
-        addText(
+        append(
             savedAudioUrls[view.key]
                 ? "Recorded "
-                : "(Not recorded yet) ",
-            false
+                : "(Not recorded yet) "
         );
     }
 
@@ -536,27 +713,27 @@ function p2Show(view, notice = "") {
 
         play.type = "button";
         play.className =
-            "example-button play-recording-btn";
-        play.textContent = "▶️";
+            "example-button play-recording-btn custom-tip-wrap";
+
+        play.innerHTML =
+            '▶️<span class="custom-tip-box">Play your recorded voice</span>';
+
         play.setAttribute(
             "aria-label",
             "Play your recorded voice"
         );
 
-        play.onclick = () => p2Play(view.key, false);
+        play.onclick = () =>
+            p2Play(view.key, false);
 
         view.result.append(play);
     }
 
-    function addText(text, isRed) {
-        const span = document.createElement("span");
-        span.textContent = text;
-
-        if (isRed) {
-            span.style.color = "var(--error-text)";
-        }
-
-        view.result.append(span);
+    if (notice) {
+        const message = document.createElement("span");
+        message.textContent = " " + notice;
+        message.style.color = "var(--text-secondary)";
+        view.result.append(message);
     }
 }
 
@@ -564,53 +741,73 @@ function p2Play(key, model = true, ownAfter = false) {
     if (p2Busy()) return;
 
     const view = p2.views[key];
+    if (!view) return;
+
     const version = ++p2.version;
 
-    stopAllPlayback();
+    const selected = model
+        ? view.listen
+        : view.result.querySelector(".play-recording-btn");
 
-    const playOwn = () => {
-        if (
-            version !== p2.version ||
-            p2Busy() ||
-            !savedAudioUrls[key]
-        ) {
+    setPlayingStateMultiple(
+        [selected].filter(Boolean),
+        "Playing..."
+    );
+
+    let completed = false;
+
+    const finish = () => {
+        if (version !== p2.version || completed) return;
+
+        completed = true;
+        stopAllPlayback();
+        p2Sync();
+    };
+
+    const own = () => {
+        if (version !== p2.version || p2Busy()) return;
+
+        const url = savedAudioUrls[key];
+
+        if (!url) {
+            finish();
             return;
         }
 
-        const audio = new Audio(savedAudioUrls[key]);
-
+        const audio = new Audio(url);
         currentPlayingAudio = audio;
         audio.playbackRate = 1;
 
-        const done = () => {
-            if (currentPlayingAudio === audio) {
-                currentPlayingAudio = null;
-            }
-        };
-
-        audio.onended = done;
-        audio.onerror = done;
-        audio.play().catch(done);
+        audio.onended = finish;
+        audio.onerror = finish;
+        audio.play().catch(finish);
     };
 
     if (!model) {
-        playOwn();
+        own();
         return;
     }
 
-    // モデル文に登録された音声用の読点を維持する。
-    speakText(
-        view.item.kanji,
-        view.rate,
-        () => {
-            if (
-                version === p2.version &&
-                ownAfter
-            ) {
-                playOwn();
-            }
-        }
-    );
+    let modelEnded = false;
+
+    const afterModel = () => {
+        if (modelEnded || version !== p2.version) return;
+
+        modelEnded = true;
+
+        if (ownAfter) own();
+        else finish();
+    };
+
+    const text = ownAfter
+        ? savedResults[key]?.modelKanji || view.item.kanji
+        : view.item.kanji;
+
+    try {
+        speakText(text, view.rate, afterModel);
+    } catch (error) {
+        afterModel();
+    }
 }
 
 function createDrill1Row(
@@ -620,111 +817,123 @@ function createDrill1Row(
     rowIndex,
     playRate
 ) {
-    const row = document.createElement("div");
-    row.className = "drill-row";
-
-    const top = document.createElement("div");
-    top.className = "top-row";
-
-    const makeButton = (text, label) => {
-        const button = document.createElement("button");
-
-        button.type = "button";
-        button.className = "example-button";
-        button.textContent = text;
-        button.setAttribute("aria-label", label);
-
-        return button;
+    const make = (tag, cls = "", text = "") => {
+        const element = document.createElement(tag);
+        element.className = cls;
+        element.textContent = text;
+        return element;
     };
 
-    const listen = makeButton(
-        "🔊きく",
-        "Listen to the model sentence"
+    const button = (text, tip) => {
+        const element = make(
+            "button",
+            "example-button custom-tip-wrap",
+            text
+        );
+
+        element.type = "button";
+        element.append(
+            make("span", "custom-tip-box", tip)
+        );
+
+        return element;
+    };
+
+    const row = make("div", "drill-row");
+    const table = make("table", "recording-table");
+    const columns = make("colgroup");
+
+    columns.append(
+        make("col"),
+        make("col"),
+        make("col")
     );
 
-    const number = document.createElement("span");
-    number.textContent = indexLabel;
-    number.style.fontWeight = "bold";
+    columns.children[0].style.width = "34px";
 
-    const prompt = document.createElement("span");
-    prompt.className = "prompt-label";
-    prompt.innerHTML = renderPitchAccentHTML(
+    const body = make("tbody");
+    const line = make("tr");
+
+    const number = make(
+        "td",
+        "drill-number-cell",
+        indexLabel
+    );
+
+    const cue = make("td", "drill-cue-cell");
+
+    cue.innerHTML = renderPitchAccentHTML(
         item.text,
         item.color
     );
-    prompt.style.minWidth = "260px";
-    prompt.style.paddingLeft = "4px";
 
-    const record = makeButton(
-        "⏺️とる",
-        "Start recording your voice"
+    const cell = make("td");
+    const controls = make("div", "recording-controls");
+    const actions = make("div", "recording-actions");
+
+    const listen = button(
+        "🔊きく",
+        "Listen to the model sentence."
     );
 
-    const stop = makeButton(
+    const record = button(
+        "🎙️とる",
+        "Record your voice."
+    );
+
+    const stop = button(
         "⏹️",
-        "Stop recording"
+        "Stop recording."
     );
+
     stop.disabled = true;
 
-    const result = document.createElement("span");
-    result.className = "result-text";
+    const result = make("span", "result-text");
+    const resultBox = make("span", "recording-result");
 
-    const correction = document.createElement("div");
-    correction.className = "correction-box";
+    resultBox.append(result);
+    actions.append(listen, record, stop);
+    controls.append(actions, resultBox);
 
-    const retry = makeButton(
-        "🔊きく",
-        "Listen to the model sentence"
-    );
+    const correction = make("div", "correction-box");
+    const correctionText = make("span");
 
-    correction.append(
-        retry,
-        document.createTextNode(
-            " 🔥 Keep going! Try once more!"
-        )
-    );
+    correction.append(correctionText);
+    cell.append(controls, correction);
+    line.append(number, cue, cell);
+    body.append(line);
+    table.append(columns, body);
+    row.append(table);
+    container.append(row);
 
     const view = {
         key: rowIndex,
         item,
         rate: playRate,
+        listen,
         result,
         correction,
+        correctionText,
         stop
     };
 
     p2.views[rowIndex] = view;
 
-    listen.onclick = retry.onclick =
-        () => p2Play(rowIndex);
-
+    listen.onclick = () => p2Play(rowIndex);
     record.onclick = () => p2Record(rowIndex);
 
     stop.onclick = () => {
         const session = activeRecognitionSession;
 
         if (
-            session?.key === rowIndex &&
-            session.manual
+            session?.key === rowIndex
+            && session.manual
         ) {
             session.stop();
         }
     };
 
-    top.append(
-        listen,
-        number,
-        prompt,
-        record,
-        stop,
-        result
-    );
-
-    row.append(top, correction);
-    container.append(row);
-
     p2Show(view);
-    queueMicrotask(p2Sync);
 }
 
 async function p2Record(key) {
