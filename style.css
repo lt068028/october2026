@@ -1492,3 +1492,122 @@ input:checked + .slider:before { transform: translateX(16px); }
     white-space: normal;
     overflow-wrap: anywhere;
 }
+/* =========================================================
+   文法練習：文法強調・時制ラベル・意味の変化
+   固定スタイルをJSから移管
+   ========================================================= */
+
+/* 文法上の注目箇所 */
+.grammar-highlight {
+    color: #ca8a04;
+    font-weight: bold;
+}
+
+/* 共通の時制ラベル */
+.tense-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    margin: 0 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.tense-badge--past {
+    background: #bae6fd;
+    color: #0369a1;
+}
+
+.tense-badge--present-state {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* 意味の変化を示す補足 */
+.meaning-change-row[hidden] {
+    display: none !important;
+}
+
+.meaning-change-note {
+    padding-top: 10px;
+    padding-bottom: 4px;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: right;
+}
+
+.meaning-change-note-title {
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.meaning-change-comparison {
+    color: #7c3aed;
+    font-weight: bold;
+}
+
+/* 英語キュー */
+.p7-english-cue {
+    overflow-wrap: anywhere;
+}
+
+.p7-example-cue {
+    margin-bottom: 12px;
+    font-weight: bold;
+}
+
+.p7-underlined-cue {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    font-weight: bold;
+}
+
+/* 着る／着ているの補足 */
+.p7-shirt-note[hidden] {
+    display: none !important;
+}
+
+.p7-shirt-note td {
+    padding-top: 10px;
+    padding-bottom: 4px;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: right;
+}
+
+.p7-shirt-note small {
+    display: block;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-weight: normal;
+}
+
+.p7-shirt-note strong {
+    color: #7c3aed;
+    font-weight: bold;
+}
+
+/* ダークモード */
+@media (prefers-color-scheme: dark) {
+    .grammar-highlight {
+        color: #fbbf24;
+    }
+
+    .tense-badge--past {
+        background: #164e63;
+        color: #bae6fd;
+    }
+
+    .tense-badge--present-state {
+        background: #14532d;
+        color: #bbf7d0;
+    }
+
+    .meaning-change-comparison,
+    .p7-shirt-note strong {
+        color: #c084fc;
+    }
+}
