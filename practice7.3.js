@@ -720,6 +720,65 @@ function speechText(text) {
     return value;
 }
 
+let preferredVoice73 = null;
+
+function setupPreferredVoice73() {
+    try {
+        const synth = window.speechSynthesis;
+        if (!synth) return;
+
+        const voices = synth.getVoices();
+        if (!voices || voices.length === 0) return;
+
+        let selected = voices.find(v =>
+            v.name && v.lang &&
+            v.name.toLowerCase().includes('chrome os') &&
+            v.lang.includes('ja')
+        );
+
+        if (!selected) {
+            selected = voices.find(v =>
+                v.name &&
+                v.name.toLowerCase().includes('keita')
+            );
+        }
+
+        if (!selected) {
+            selected = voices.find(v =>
+                v.name &&
+                v.name.toLowerCase().includes('nanami')
+            );
+        }
+
+        if (!selected) {
+            selected = voices.find(v =>
+                v.name && v.lang &&
+                v.name.toLowerCase().includes('google') &&
+                v.lang.includes('ja')
+            );
+        }
+
+        if (!selected) {
+            selected = voices.find(v =>
+                v.lang && v.lang.includes('ja')
+            );
+        }
+
+        if (selected) preferredVoice73 = selected;
+    } catch (e) {
+        console.warn('Voice setup error:', e);
+    }
+}
+
+if (window.speechSynthesis) {
+    setupPreferredVoice73();
+
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged =
+            setupPreferredVoice73;
+    }
+}
+
 function speak(text, b, done) {
     stopPlayback();
 
@@ -728,26 +787,18 @@ function speak(text, b, done) {
         return;
     }
 
-    const voices = window.speechSynthesis.getVoices();
-
-    const voice = [
-        'chrome os', 'keita', 'nanami', 'google'
-    ].map(name =>
-        voices.find(v =>
-            v.lang.startsWith('ja') &&
-            v.name.toLowerCase().includes(name)
-        )
-    ).find(Boolean) || voices.find(
-        v => v.lang.startsWith('ja')
-    );
+    setupPreferredVoice73();
 
     const u = new SpeechSynthesisUtterance(
         speechText(text)
     );
+
     u.lang = 'ja-JP';
     u.rate = 0.9;
 
-    if (voice) u.voice = voice;
+    if (preferredVoice73) {
+        u.voice = preferredVoice73;
+    }
 
     markPlaying(b);
     utterance = u;
@@ -763,7 +814,6 @@ function speak(text, b, done) {
 
     window.speechSynthesis.speak(u);
 }
-
 function playRecording(key, b) {
     const value = saved.get(key);
 
@@ -2160,19 +2210,15 @@ render = function () {
         const r = qa73Model(qa73.example, kind);
 
         const listen = button(
-            '🔊',
+            kind === 'yes' ? '🔊🙆' : '🔊🙅',
             () => speak(r.text, listen)
         );
 
         const text = document.createElement('span');
         text.className = 'p73-example-model';
-
-        text.innerHTML =
-            (kind === 'yes' ? '🙆' : '🙅') + sentence(r);
+        text.innerHTML = sentence(r);
 
         answers.append(listen, text);
-    });
-
     response.append(label, answers);
     eb.append(response);
     example.append(et);
