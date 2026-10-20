@@ -1778,6 +1778,615 @@ function init() {
     render();
 }
 
+// Example 2・Drill 2：過去進行の肯定／否定
+const qa73 = {
+    example: ['qaEarlier', 'qaStudy'],
+    items: [
+        ['qaMorning', 'qaFriend', 'qaMeet'],
+        ['qaAfternoon', 'qaBus', 'qaRide'],
+        ['qaNight', 'qaOut'],
+        ['qaNoon', 'qaBath'],
+        ['qaEarlier', 'qaFamily', 'qaCall']
+    ],
+    states: Array.from({ length: 5 }, () => ({
+        answer: null,
+        text: {}
+    }))
+};
+
+Object.assign(words, {
+    qaEarlier: W(
+        'さっき', 'さっき',
+        'sakki', 'a little while ago'
+    ),
+    qaMorning: W(
+        '今日の午前中', 'きょうのごぜんちゅう',
+        'kyō no gozenchū', 'this morning'
+    ),
+    qaAfternoon: W(
+        '今日の午後', 'きょうのごご',
+        'kyō no gogo', 'this afternoon'
+    ),
+    qaNight: W(
+        '昨日の夜', 'きのうのよる',
+        'kinō no yoru', 'last night'
+    ),
+    qaNoon: W(
+        '昨日の昼', 'きのうのひる',
+        'kinō no hiru', 'yesterday at midday'
+    ),
+    qaFriend: W(
+        '友達', 'ともだち',
+        'tomodachi', 'friend'
+    ),
+    qaBus: W(
+        'バス', 'ばす',
+        'basu', 'bus'
+    ),
+    qaFamily: W(
+        '家族', 'かぞく',
+        'kazoku', 'family'
+    ),
+    qaStudy: W(
+        '勉強する', 'べんきょうする',
+        'benkyō suru', 'to study'
+    ),
+    qaMeet: W(
+        '会う', 'あう',
+        'au', 'to meet'
+    ),
+    qaRide: W(
+        '乗る', 'のる',
+        'noru', 'to ride'
+    ),
+    qaOut: W(
+        '出かける', 'でかける',
+        'dekakeru', 'to go out'
+    ),
+    qaBath: W(
+        'お風呂に入る', 'おふろにはいる',
+        'ofuro ni hairu', 'to take a bath'
+    ),
+    qaCall: W(
+        '電話をかける', 'でんわをかける',
+        'denwa o kakeru', 'to make a phone call'
+    )
+});
+
+dictionary.unshift(
+    ['今日', 'きょう'],
+    ['午前中', 'ごぜんちゅう'],
+    ['家族', 'かぞく'],
+    ['勉強', 'べんきょう'],
+    ['お風呂', 'おふろ'],
+    ['風呂', 'ふろ'],
+    ['出掛け', 'でかけ'],
+    ['出かけ', 'でかけ'],
+    ['会っ', 'あっ'],
+    ['乗っ', 'のっ'],
+    ['入っ', 'はいっ'],
+    ['掛け', 'かけ'],
+    ['昼', 'ひる']
+);
+
+const qa73Verbs = {
+    qaStudy: [
+        '勉強して', '', []
+    ],
+    qaMeet: [
+        '会って', '友達に',
+        ['ともだち(?:に)?']
+    ],
+    qaRide: [
+        '乗って', 'バスに',
+        ['ばす(?:に)?']
+    ],
+    qaOut: [
+        '出かけて', '', []
+    ],
+    qaBath: [
+        '入って', 'お風呂に',
+        ['お?ふろ(?:に)?']
+    ],
+    qaCall: [
+        'かけて', '家族に電話を',
+        ['かぞく(?:に)?', 'でんわ(?:を)?']
+    ]
+};
+
+function qa73Model(cues, kind) {
+    const data = qa73Verbs[cues[cues.length - 1]];
+    const negative = kind === 'no';
+    const question = kind === 'q';
+
+    const ending = speechStyle === 'formal'
+        ? (negative ? 'いませんでした' : 'いました')
+        : speechStyle === 'informal'
+            ? (negative ? 'いなかった' : 'いた')
+            : (negative ? 'なかった' : 'た');
+
+    const prefix = question
+        ? ''
+        : speechStyle === 'casual'
+            ? (negative ? 'うんん、' : 'うん、')
+            : (negative ? 'いいえ、' : 'はい、');
+
+    let body = question
+        ? words[cues[0]].kanji + '、' + data[1]
+        : '';
+
+    // 意味を明確にするため、モデルには語句を残す。
+    if (!question && cues.includes('qaBath')) {
+        body = 'お風呂に';
+    }
+
+    if (!question && cues.includes('qaCall')) {
+        body = '電話を';
+    }
+
+    if (speechStyle === 'casual') {
+        body = body.replace(/を/g, '');
+    }
+
+    const text = prefix + body + data[0] + ending +
+        (question
+            ? (speechStyle === 'formal' ? 'か。' : '？')
+            : (speechStyle === 'casual' ? 'よ。' : '。'));
+
+    return row(
+        question ? 'Question:' : 'Response:',
+        cues,
+        text,
+        hira(text),
+        [
+            words[cues[0]].kanji,
+            words[cues[0]].hira,
+            'て' + ending +
+                (question && speechStyle === 'formal' ? 'か' : '')
+        ]
+    );
+}
+
+// 動詞部分を必須とし、対応する時間・名詞・応答語の省略を許容。
+const qa73BaseNormalize = normalize;
+
+normalize = function (text) {
+    const value = qa73BaseNormalize(text);
+
+    // 質問文は既存の判定を使用する。
+    if (
+        /[?？]/.test(String(text)) ||
+        /か$/.test(value)
+    ) {
+        return value;
+    }
+
+    for (const [verbKey, data] of Object.entries(qa73Verbs)) {
+        const stem = hira(data[0]);
+
+        const matches = [...value.matchAll(
+            new RegExp(
+                stem +
+                '(いませんでした|いました|いなかった|いた|なかった|た)',
+                'g'
+            )
+        )];
+
+        if (matches.length !== 1) continue;
+
+        const match = matches[0];
+        const negative =
+            /いませんでした|いなかった|なかった/.test(match[1]);
+
+        let rest =
+            value.slice(0, match.index) +
+            value.slice(match.index + match[0].length);
+
+        const optional = [
+            ...data[2],
+            'さっき(?:は)?',
+            'きょうの(?:ごぜんちゅう|ごご)(?:は)?',
+            'きのうの(?:よる|ひる)(?:は)?',
+            'いま(?:は)?',
+            'わたし(?:は|が)?'
+        ].sort((a, b) => b.length - a.length);
+
+        let valid = true;
+
+        while (rest) {
+            const token = optional
+                .map(pattern =>
+                    rest.match(new RegExp('^(?:' + pattern + ')'))
+                )
+                .find(Boolean);
+
+            if (token) {
+                rest = rest.slice(token[0].length);
+                continue;
+            }
+
+            const prefix = rest.match(
+                /^(いいえ|いえ|はい|うんんー?|ううん|うん)/
+            );
+
+            if (!prefix) {
+                valid = false;
+                break;
+            }
+
+            const saysNo =
+                /^(いいえ|いえ|うんん|ううん)/.test(prefix[0]);
+
+            if (saysNo !== negative) {
+                valid = false;
+                break;
+            }
+
+            rest = rest.slice(prefix[0].length);
+        }
+
+        if (valid) {
+            return 'p73-qa|' + verbKey + '|' + match[1];
+        }
+    }
+
+    return value;
+};
+
+const qa73BaseSpeechText = speechText;
+
+speechText = text => {
+    const value =
+        /勉強|会って|乗って|出かけて|お風呂|電話を?かけて/.test(text)
+            ? String(text)
+            : qa73BaseSpeechText(text);
+
+    return value.replace(/^うんん、?/, 'うんんー、');
+};
+
+// 既存問題の録音キーは変えず、表示番号を変更する。
+sections[1].title = 'Drill 3: What were you doing?';
+
+sections[2].title =
+    'Drill 4: Until when did that state continue?';
+
+function qa73Align(tables) {
+    let width = 0;
+
+    tables.forEach(table => {
+        table.querySelectorAll('.prompt-label').forEach(cell => {
+            const probe = document.createElement('span');
+            probe.innerHTML = cell.innerHTML;
+
+            probe.querySelectorAll(
+                '.tooltip-tip,.custom-tip-box'
+            ).forEach(t => t.remove());
+
+            Object.assign(probe.style, {
+                position: 'absolute',
+                visibility: 'hidden',
+                width: 'max-content',
+                display: 'inline-block',
+                whiteSpace: 'nowrap',
+                font: 'inherit'
+            });
+
+            cell.append(probe);
+
+            width = Math.max(
+                width,
+                Math.ceil(probe.getBoundingClientRect().width)
+            );
+
+            probe.remove();
+        });
+    });
+
+    tables.forEach(table => {
+        table.querySelector('colgroup')
+            .children[1].style.width = (width + 8) + 'px';
+    });
+}
+
+const qa73BaseRender = render;
+
+render = function () {
+    qa73BaseRender();
+
+    const root = $('drill1Container');
+    const anchor = root.querySelectorAll('.example-box')[1];
+
+    const section = document.createElement('section');
+    section.className = 'practice-qa-section';
+
+    const example = document.createElement('div');
+    example.className =
+        'example-box p73-example p73-new-section';
+
+    const et = document.createElement('table');
+    et.className = 'p73-example-table';
+
+    const eb = document.createElement('tbody');
+    et.append(eb);
+
+    const q = qa73Model(qa73.example, 'q');
+    const tr = document.createElement('tr');
+
+    ['Question:', null, '👉', null, null, null]
+        .forEach((content, index) => {
+            const td = document.createElement('td');
+
+            if (index === 0) {
+                td.className = 'p73-example-kind';
+            }
+
+            if (index === 1) {
+                td.className = 'p73-example-cues';
+                td.innerHTML = q.cues.map(word).join('／');
+            } else if (index === 3) {
+                const listen = button(
+                    '🔊きく',
+                    () => speak(q.text, listen)
+                );
+                td.append(listen);
+            } else if (index === 4) {
+                td.innerHTML = badge(q, 0);
+            } else if (index === 5) {
+                td.className = 'p73-example-model';
+                td.innerHTML = sentence(q);
+            } else if (content) {
+                td.textContent = content;
+            }
+
+            tr.append(td);
+        });
+
+    eb.append(tr);
+
+    const response = document.createElement('tr');
+
+    const label = document.createElement('td');
+    label.className = 'p73-example-kind';
+    label.textContent = 'Response:';
+
+    const answers = document.createElement('td');
+    answers.colSpan = 5;
+
+    ['yes', 'no'].forEach((kind, index) => {
+        if (index) {
+            answers.append(document.createTextNode(' ↔️ '));
+        }
+
+        const r = qa73Model(qa73.example, kind);
+
+        const listen = button(
+            '🔊',
+            () => speak(r.text, listen)
+        );
+
+        const text = document.createElement('span');
+        text.className = 'p73-example-model';
+
+        text.innerHTML =
+            (kind === 'yes' ? '🙆' : '🙅') + sentence(r);
+
+        answers.append(listen, text);
+    });
+
+    response.append(label, answers);
+    eb.append(response);
+    example.append(et);
+    section.append(example);
+
+    const panel = document.createElement('div');
+    panel.className = 'info-panel info-panel-task1';
+
+    panel.innerHTML =
+        '<span class="info-panel-title">' +
+        'Drill 2: Yes / No — Past Ongoing</span>' +
+        '<span class="info-panel-desc">' +
+        '💡Ask the question. Choose Yes or No, then answer.</span>';
+
+    section.append(panel);
+
+    const tables = [];
+
+    qa73.items.forEach((cues, index) => {
+        const state = qa73.states[index];
+
+        const card = document.createElement('div');
+        card.className = 'drill-row p73-question-card';
+
+        const table = document.createElement('table');
+        table.className =
+            'p73-question-table recording-table';
+
+        const cols = document.createElement('colgroup');
+
+        for (let i = 0; i < 3; i++) {
+            cols.append(document.createElement('col'));
+        }
+
+        cols.children[0].style.width = '34px';
+
+        const body = document.createElement('tbody');
+        table.append(cols, body);
+
+        ['q', state.answer || 'none'].forEach((kind, ri) => {
+            const enabled = kind !== 'none';
+
+            const r = qa73Model(
+                cues,
+                enabled ? kind : 'yes'
+            );
+
+            const key = `p73-qa-${index}-${kind}`;
+            const tr = document.createElement('tr');
+
+            if (!ri) {
+                const num = document.createElement('td');
+                num.className = 'p73-number';
+                num.rowSpan = 2;
+                num.textContent = (index + 1) + '.';
+                tr.append(num);
+            }
+
+            const cue = document.createElement('td');
+            cue.className = 'prompt-label';
+
+            if (!ri) {
+                cue.innerHTML = cues.map(word).join('／');
+            } else {
+                ['yes', 'no'].forEach(answer => {
+                    const choice = button(
+                        answer === 'yes' ? '🙆' : '🙅',
+                        () => {
+                            if (
+                                session ||
+                                preparing ||
+                                state.answer === answer
+                            ) return;
+
+                            stopPlayback();
+                            state.answer = answer;
+                            render();
+                        }
+                    );
+
+                    choice.classList.add('answer-choice');
+                    choice.dataset.answer = answer;
+
+                    choice.setAttribute(
+                        'aria-pressed',
+                        String(state.answer === answer)
+                    );
+
+                    choice.setAttribute(
+                        'aria-label',
+                        answer === 'yes' ? 'Yes' : 'No'
+                    );
+
+                    cue.append(choice);
+                });
+            }
+
+            const cell = document.createElement('td');
+            cell.className = 'p73-controls';
+
+            const line = document.createElement('div');
+            line.className = 'recording-controls';
+
+            const actions = document.createElement('div');
+            actions.className = 'recording-actions';
+
+            const listen = button('🔊きく', () => {
+                if (enabled && !session && !preparing) {
+                    speak(r.text, listen);
+                }
+            });
+
+            const rec = button('🎙️とる', () => {
+                if (enabled && !session && !preparing) {
+                    record(key, r);
+                }
+            });
+
+            const stop = button('⏹️', () => {
+                if (session?.key === key) {
+                    session.stop();
+                }
+            });
+
+            const toggle = button(
+                state.text[kind] ? '🕶️Hide' : '👀Text',
+                () => {
+                    if (
+                        !enabled ||
+                        session ||
+                        preparing
+                    ) return;
+
+                    state.text[kind] = !state.text[kind];
+                    render();
+                }
+            );
+
+            const shown = document.createElement('span');
+
+            shown.textContent =
+                scriptMode === 'kanji' ? r.text : r.hira;
+
+            shown.hidden =
+                !enabled || !state.text[kind];
+
+            actions.append(
+                listen, rec, stop, toggle, shown
+            );
+
+            const wrap = document.createElement('span');
+            wrap.className = 'recording-result';
+
+            const result = document.createElement('span');
+            result.className = 'result-text';
+
+            wrap.append(result);
+            line.append(actions, wrap);
+
+            const correction = document.createElement('div');
+            correction.className = 'correction-box';
+            correction.hidden = true;
+
+            cell.append(line, correction);
+            tr.append(cue, cell);
+            body.append(tr);
+
+            views.set(key, {
+                r,
+                rec,
+                stop,
+                result,
+                correction,
+                qaDisabled: !enabled,
+                qaButtons: [listen, rec, toggle]
+            });
+
+            showResult(key);
+        });
+
+        card.append(table);
+        section.append(card);
+        tables.push(table);
+    });
+
+    root.insertBefore(section, anchor);
+    qa73Align(tables);
+
+    const copy = root.querySelector('.drill-cue-copy');
+
+    copy.querySelector('.info-panel-title').textContent =
+        'Drill 5: Practice with English cues';
+
+    copy.querySelector('.info-panel-desc').textContent =
+        '💡Practise all questions and responses in Drills 1–4 ' +
+        'using English cues.';
+
+    sync();
+};
+
+const qa73BaseSync = sync;
+
+sync = function () {
+    qa73BaseSync();
+
+    views.forEach(v => {
+        if (v.qaDisabled) {
+            v.qaButtons.forEach(b => {
+                b.disabled = true;
+            });
+        }
+    });
+};
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
