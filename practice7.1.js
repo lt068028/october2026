@@ -1680,346 +1680,239 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
 
     function exampleSentence(item, ongoing) {
-        if (!document.getElementById('practice71GrammarStyle')) {
-            const style = document.createElement('style');
-            style.id = 'practice71GrammarStyle';
-            style.textContent = `
-                #practice71Example .p71-grammar-highlight {
-                    color: #CA8A04;
-                    font-weight: bold;
-                }
+        const text = ongoing
+            ? item.perfectSentence
+            : item.pastSentence;
 
-                @media (prefers-color-scheme: dark) {
-                    #practice71Example .p71-grammar-highlight {
-                        color: #FBBF24;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        const highlight = text =>
-            `<span class="p71-grammar-highlight">${text}</span>`;
-
-        let sentence;
-
-        if (!english) {
-            const text = ongoing
-                ? item.perfectSentence
-                : item.pastSentence;
-
-            sentence = scriptMode === 'hiragana'
-                ? practice71ToHiragana(text)
-                : text;
-        } else {
-            const under = text =>
-                `<span class="p71-underlined">${text}</span>`;
-
-            sentence =
-                `${ongoing ? 'いま' : 'いつも'}、` +
-                `${under('room')} で、` +
-                `Switch を、${under('play')} ` +
-                `${ongoing ? 'しています' : 'します'}。`;
-        }
-
-        if (ongoing) {
-            sentence = sentence.replace(
-                /^(?:いま|今)/,
-                () => highlight(scriptMode === 'hiragana' ? 'いま' : '今')
-            );
-
-            sentence = sentence.replace(
-                /ています(?=[。．.!！]?$)/,
-                () => highlight('ています')
-            );
-        } else {
-            sentence = sentence.replace(
-                /^いつも/,
-                () => highlight('いつも')
-            );
-
-            sentence = sentence.replace(
-                /ます(?=[。．.!！]?$)/,
-                () => highlight('ます')
-            );
-        }
-
-        return sentence;
-    }
-
-    function refreshHintButtons() {
-        document.querySelectorAll(
-            '#hintModeControl button[data-value]'
-        ).forEach(button => {
-            const selected = button.dataset.value === hintMode;
-            button.classList.toggle('is-selected', selected);
-            button.setAttribute('aria-pressed', String(selected));
-        });
+        return scriptMode === 'hiragana'
+            ? practice71ToHiragana(text)
+            : text;
     }
 
     renderAll = function () {
         let container = document.getElementById('drill1Container');
+
         if (!container) {
             container = document.createElement('div');
             container.id = 'drill1Container';
-            document.body.insertBefore(container, document.querySelector('.voice-guide-footer'));
+
+            document.body.insertBefore(
+                container,
+                document.querySelector('.voice-guide-footer')
+            );
         }
+
+        container.classList.add('practice-section');
         container.replaceChildren();
+
         practice71State.views = {};
         practice71State.refreshMeaningNotes = () => {};
+
         const item = practice71Data[0];
+
         const example = document.createElement('div');
         example.className = 'example-box';
         example.id = 'practice71Example';
-        example.style.marginTop = '30px';
-        example.innerHTML = `
-            <style>
-                #practice71Example .p71-example-grid {
-                    display: grid;
-                    grid-template-columns:
-                        repeat(5, max-content) minmax(0, 1fr);
-                    align-items: center;
-                    column-gap: 4px;
-                    row-gap: 10px;
-                    padding: 10px 0;
-                }
 
-                #practice71Example .p71-example-grid > .example-line {
-                    display: contents !important;
-                }
+        const exampleTable = document.createElement('table');
+        exampleTable.className = 'drill-example-table';
 
-                #practice71Example .p71-example-grid > .example-line + .example-line::before {
-                    content: "";
-                    grid-column: 1 / -1;
-                    border-top: 1px dashed #fbc02d;
-                }
+        const body = document.createElement('tbody');
 
-                #practice71Example .p71-example-grid .example-label-title {
-                    width: auto !important;
-                    min-width: 0 !important;
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    white-space: nowrap;
-                }
+        [false, true].forEach(ongoing => {
+            const row = document.createElement('tr');
+            row.className = 'example-line';
 
-                #practice71Example .p71-example-grid > .example-line > .example-button {
-                    justify-self: start;
-                    margin: 0;
-                    white-space: nowrap;
-                }
+            row.innerHTML = `
+                <td>
+                    <strong class="example-label-title">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
+                </td>
+                <td>${cue(item)}</td>
+                <td>👉</td>
+                <td>
+                    <button
+                        type="button"
+                        class="example-button"
+                        data-model="${ongoing ? 'ongoing' : 'Habit'}"
+                    >🔊きく</button>
+                </td>
+                <td>
+                    <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
+                </td>
+                <td class="p71-example-model">${exampleSentence(item, ongoing)}</td>
+            `;
 
-                #practice71Example .p71-example-model {
-                    min-width: 0;
-                    overflow-wrap: normal;
-                    word-break: normal;
-                }
+            const button = row.querySelector('button');
 
-                @media (prefers-color-scheme: dark) {
-                    #practice71Example .p71-example-grid > .example-line + .example-line::before {
-                        border-top-color: #713f12;
-                    }
-                }
-            </style>
-
-            <div class="p71-example-grid">
-                ${[false, true].map(ongoing => `
-                    <div class="example-line">
-                        <strong class="example-label-title">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
-                        ${cue(item)}
-                        <span>👉</span>
-                        <button type="button"
-                                class="example-button"
-                                data-model="${ongoing ? 'ongoing' : 'Habit'}">🔊きく</button>
-                        <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
-                        <span class="p71-example-model">${exampleSentence(item, ongoing)}</span>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-        example.querySelectorAll('button[data-model]').forEach(button => {
             button.onclick = () => {
-                setPlayingStateMultiple([button],'Playing...');
-                speakText(button.dataset.model === 'Habit' ? item.pastSentence : item.perfectSentence,0.9,stopAllPlayback);
+                if (
+                    activeRecognitionSession ||
+                    practice71State.startingRow
+                ) return;
+
+                setPlayingStateMultiple([button], 'Playing...');
+
+                speakText(
+                    ongoing
+                        ? item.perfectSentence
+                        : item.pastSentence,
+                    0.9,
+                    stopAllPlayback
+                );
             };
+
+            body.append(row);
         });
-        container.appendChild(example);
+
+        exampleTable.append(body);
+        example.append(exampleTable);
+
         const info = document.createElement('div');
         info.className = 'info-panel info-panel-task1';
-        info.style.marginTop = '25px';
-        info.innerHTML = '<span class="info-panel-title">Drill 1: Compare Habit &amp; Ongoing</span><span class="info-panel-desc">💡 Compare what you usually do with what you are doing now: いつも ↔️ いま.</span>';
-        container.appendChild(info);
+
+        info.innerHTML =
+            '<span class="info-panel-title">' +
+            'Drill 1: Compare Habit &amp; Ongoing' +
+            '</span>' +
+            '<span class="info-panel-desc">' +
+            '💡Compare what you usually do with what you are doing now: ' +
+            'いつも ↔️ いま.' +
+            '</span>';
+
         const list = document.createElement('div');
         list.id = 'drill1List';
-        container.appendChild(list);
-        practice71Data.slice(1).forEach((item,index) => {
-            createPractice71TableCard(list,`${index+1}.`,item,index,0.9);
+
+        container.append(example, info, list);
+
+        practice71Data.slice(1).forEach((item, index) => {
+            createPractice71TableCard(
+                list,
+                `${index + 1}.`,
+                item,
+                index,
+                0.9
+            );
+
             const card = list.lastElementChild;
-            card.querySelector('.prompt-label').innerHTML = cue(item);
-            const rows = card.querySelectorAll('tr');
-            [false,true].forEach((ongoing,rowIndex) => {
-                const row = rows[rowIndex];
-                const control = row.lastElementChild;
-                const label = Array.from(control.children).find(el => el.tagName === 'SPAN');
+            const table = card.querySelector('table');
+
+            table.classList.add('recording-table');
+            table.removeAttribute('style');
+
+            const rows = Array.from(table.querySelectorAll('tr'));
+
+            const number = rows[0].firstElementChild;
+            number.classList.add('drill-number-cell');
+            number.removeAttribute('style');
+
+            const prompt = card.querySelector('.prompt-label');
+            prompt.classList.add('drill-cue-cell');
+            prompt.removeAttribute('style');
+            prompt.innerHTML = cue(item);
+
+            [false, true].forEach((ongoing, rowIndex) => {
+                const cell = rows[rowIndex].lastElementChild;
+                cell.removeAttribute('style');
+
+                const label = Array.from(cell.children).find(
+                    element => element.tagName === 'SPAN'
+                );
+
                 if (label) {
-                    label.textContent = ongoing ? '▶️Ongoing' : '🔁Habit';
-                    label.className = `p71-tense ${ongoing ? 'p71-ongoing' : 'p71-Habit'}`;
+                    label.textContent = ongoing
+                        ? '▶️Ongoing'
+                        : '🔁Habit';
+
+                    label.className =
+                        'p71-tense ' +
+                        (ongoing ? 'p71-ongoing' : 'p71-present');
+
                     label.removeAttribute('style');
                 }
-                const stopButton = control.querySelectorAll('button')[2];
 
-                if (stopButton) {
-                    const startHint = document.createElement('span');
-                    startHint.className = 'p71-start-hint';
-                    startHint.textContent = ongoing
-                        ? (scriptMode === 'hiragana' ? 'いま…' : '今…')
-                        : 'いつも…';
+                const key =
+                    `p7_drill_${ongoing ? 'perf' : 'past'}_${index}`;
 
-                    startHint.style.marginLeft = '8px';
-                    startHint.style.fontWeight = 'bold';
-                    startHint.style.whiteSpace = 'nowrap';
+                const view = practice71State.views[key];
+                if (!view) return;
 
-                    stopButton.insertAdjacentElement('afterend', startHint);
+                const tip = view.recordBtn.querySelector(
+                    '.custom-tip-box'
+                );
+
+                view.recordBtn.replaceChildren(
+                    document.createTextNode('🎙️とる')
+                );
+
+                if (tip) {
+                    view.recordBtn.append(tip);
                 }
 
-                row.querySelectorAll('.custom-tip-box').forEach(tip => {
-                    tip.textContent = tip.textContent
-                        .replace(/past tense/gi, 'Habit form')
-                        .replace(/Habit perfect/gi, 'ongoing action');
-                });            });
-        });
-        const panel = document.createElement('div');
-        panel.className = 'info-panel info-panel-task1 drill-cue-panel';
-        panel.innerHTML = `
-            <span class="info-panel-title drill-cue-title">
-                Drill 2: Practice with English cues
-            </span>
-            <span class="info-panel-desc drill-cue-description">
-                💡 Practise making sentences with this lesson’s vocabulary, using English cues.
-            </span>
-        `;
+                cell.querySelectorAll('.custom-tip-box')
+                    .forEach(tooltip => {
+                        tooltip.textContent = tooltip.textContent
+                            .replace(
+                                /past tense/gi,
+                                'habitual action'
+                            )
+                            .replace(
+                                /Habit perfect/gi,
+                                'ongoing action'
+                            );
+                    });
 
-        const button = document.createElement('button');
-        button.id = 'practice71CueButton';
-        button.type = 'button';
-        button.className = english
-            ? 'drill-cue-button is-english'
-            : 'drill-cue-button';
-        button.setAttribute('aria-pressed',String(english));
-        button.textContent = english ? 'Display Japanese cues' : 'Display English cues';
-        button.onclick = () => {
-            if (activeRecognitionSession || practice71State.startingRow) return;
-            stopAllPlayback();
-            if (!english) { previousHint = hintMode; hintMode = 'off'; }
-            else hintMode = previousHint;
-            english = !english;
-            practice71State.savedResults = {};
-            refreshHintButtons();
-            renderAll();
-            requestAnimationFrame(() => {
-                const target = document.getElementById('practice71Example');
-                const style = getComputedStyle(target);
-                const line = parseFloat(style.lineHeight) || (parseFloat(style.fontSize)||16)*1.5;
-                window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-line),behavior:'smooth'});
+                const hint = document.createElement('span');
+                hint.className = 'p71-start-hint';
+
+                hint.textContent = ongoing
+                    ? (
+                        scriptMode === 'hiragana'
+                            ? 'いま…'
+                            : '今…'
+                    )
+                    : 'いつも…';
+
+                view.stopBtn.insertAdjacentElement(
+                    'afterend',
+                    hint
+                );
+
+                const wrap = view.resultSpan.parentElement;
+                wrap.removeAttribute('style');
+                wrap.classList.add('recording-result');
+
+                view.resultSpan.style.removeProperty(
+                    'margin-left'
+                );
+
+                const layout = document.createElement('div');
+                layout.className = 'recording-controls';
+
+                const actions = document.createElement('div');
+                actions.className = 'recording-actions';
+
+                Array.from(cell.childNodes).forEach(node => {
+                    if (node !== wrap) {
+                        actions.append(node);
+                    }
+                });
+
+                layout.append(actions, wrap);
+                cell.append(layout, view.correctionBox);
+
+                view.corrListenBtn.hidden = true;
+                view.corrListenBtn.style.display = 'none';
             });
-        };
-        // Drill 2：左にタイトル＋指示文、右にボタン。
-        const copy = document.createElement('div');
-        copy.className = 'p71-drill2-copy';
+        });
 
-        while (panel.firstChild) {
-            copy.appendChild(panel.firstChild);
-        }
-
-        panel.id = 'practice71Drill2Panel';
-        panel.append(copy, button);
-        container.appendChild(panel);
-
-        // 配置と確定配色を適用。
-        if (!document.getElementById('practice71LayoutStyle')) {
-            const style = document.createElement('style');
-            style.id = 'practice71LayoutStyle';
-            style.textContent = `
-                #practice71Drill2Panel {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    justify-content: space-between;
-                    gap: 24px;
-                }
-
-                #practice71Drill2Panel .p71-drill2-copy {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 5px;
-                    flex: 1;
-                    min-width: 0;
-                }
-
-                #practice71Drill2Panel .drill-cue-title,
-                #practice71Drill2Panel .drill-cue-description {
-                    display: block;
-                    margin: 0;
-                }
-
-                #practice71Drill2Panel > .drill-cue-button {
-                    flex: 0 0 auto;
-                    width: auto;
-                    min-width: 190px;
-                }
-
-                #drill1Container .p71-tense.p71-Habit {
-                    background: #fde047;
-                    color: #713f12;
-                }
-
-                #drill1Container .p71-tense.p71-ongoing {
-                    background: #ffab70;
-                    color: #6b240b;
-                }
-
-                #drill1Container .p71-cues {
-                    white-space: nowrap;
-                }
-
-                #drill1Container .p71-cues wbr {
-                    display: none;
-                }
-
-                @media (prefers-color-scheme: dark) {
-                    #drill1Container .p71-tense.p71-Habit {
-                        background: #665710;
-                        color: #fef08a;
-                    }
-
-                    #drill1Container .p71-tense.p71-ongoing {
-                        background: #813d16;
-                        color: #ffdab5;
-                    }
-                }
-
-                @media (max-width: 600px) {
-                    #practice71Drill2Panel {
-                        flex-direction: column;
-                        align-items: stretch;
-                    }
-
-                    #practice71Drill2Panel > .drill-cue-button {
-                        width: 100%;
-                        min-width: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        // 全キューを実測し、最長の1行表示幅に列を揃える。
-        const cueCells = Array.from(
+        // 最長キューの一行表示幅を実測する。
+        const cues = Array.from(
             list.querySelectorAll('.prompt-label')
         );
 
         let cueWidth = 0;
 
-        cueCells.forEach(cell => {
+        cues.forEach(cell => {
             const measure = document.createElement('span');
             measure.innerHTML = cell.innerHTML;
 
@@ -2034,7 +1927,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 pointerEvents: 'none'
             });
 
-            cell.appendChild(measure);
+            cell.append(measure);
 
             cueWidth = Math.max(
                 cueWidth,
@@ -2044,53 +1937,64 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             measure.remove();
         });
 
-        cueCells.forEach(cell => {
+        cues.forEach(cell => {
             cell.style.setProperty(
-                'width', `${cueWidth}px`, 'important'
-            );
-            cell.style.setProperty(
-                'padding-right', '4px', 'important'
-            );
-            cell.style.setProperty(
-                'white-space', 'nowrap', 'important'
+                'width',
+                `${cueWidth}px`,
+                'important'
             );
 
-            const table = cell.closest('table');
-            if (!table) return;
+            const columns = document.createElement('colgroup');
+            columns.className = 'recording-columns';
 
-            table.classList.add('recording-table');
-
-            let columns = table.querySelector(
-                'colgroup.recording-columns'
-            );
-
-            if (!columns) {
-                columns = document.createElement('colgroup');
-                columns.className = 'recording-columns';
-
-                for (let index = 0; index < 3; index++) {
-                    columns.appendChild(
-                        document.createElement('col')
-                    );
-                }
-
-                table.prepend(columns);
+            for (let index = 0; index < 3; index++) {
+                columns.append(
+                    document.createElement('col')
+                );
             }
 
-            // 番号・最長キューの幅を確保し、
-            // 操作と結果には残りの幅を割り当てる。
             columns.children[0].style.width = '34px';
             columns.children[1].style.width =
                 `${cueWidth + 4}px`;
+
+            cell.closest('table').prepend(columns);
         });
+
         practice71SyncRecordingUI();
     };
+
     const originalSync = practice71SyncRecordingUI;
+
     practice71SyncRecordingUI = function () {
         originalSync();
-        const button = document.getElementById('practice71CueButton');
-        if (button) button.disabled = Boolean(activeRecognitionSession || practice71State.startingRow);
+
+        const blocked = Boolean(
+            activeRecognitionSession ||
+            practice71State.startingRow
+        );
+
+        document.querySelectorAll(
+            '.compact-settings .segmented-option, ' +
+            '.compact-settings input'
+        ).forEach(control => {
+            control.disabled = blocked;
+        });
     };
+
+    document.addEventListener('click', event => {
+        if (
+            (
+                activeRecognitionSession ||
+                practice71State.startingRow
+            ) &&
+            event.target.closest(
+                '.compact-settings .segmented-option'
+            )
+        ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+        }
+    }, true);
 })();
 
 // ============================================================================
@@ -2599,25 +2503,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             document.createTextNode(' ✅ ')
         );
 
-        const listen = document.createElement('button');
-        listen.type = 'button';
-        listen.className = 'example-button';
-        listen.textContent = '🔊きく';
 
-        listen.onclick = () => {
-            if (activeRecognitionSession ||
-                practice71State.startingRow) return;
-
-            stopAllPlayback();
-            setPlayingStateMultiple([listen], 'Playing...');
-            speakText(
-                result.modelText,
-                playRate,
-                stopAllPlayback
-            );
-        };
-
-        view.resultSpan.append(listen);
 
         if (recording) {
             view.resultSpan.append(recording);
