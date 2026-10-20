@@ -1,3 +1,138 @@
+// A方式：音声トラックを認識APIへ渡せるかを確認する。
+(() => {
+    'use strict';
+
+    function mount() {
+        const panel = document.getElementById('indexAudioTest');
+        if (!panel || document.getElementById('sharedInputCheck')) return;
+
+        const row = document.createElement('div');
+        const button = document.createElement('button');
+        const result = document.createElement('span');
+
+        button.id = 'sharedInputCheck';
+        button.type = 'button';
+        button.className = 'example-button';
+        button.textContent = '🔗共有入力確認';
+
+        result.setAttribute('role', 'status');
+        result.setAttribute('aria-live', 'polite');
+        result.textContent = '未実施。発話は不要。';
+
+        row.append(button, document.createTextNode(' '), result);
+        panel.append(row);
+
+        button.addEventListener('click', async () => {
+            if (button.disabled) return;
+
+            const recordButton =
+                document.getElementById('audioTestRecord');
+
+            if (recordButton?.disabled) {
+                result.textContent =
+                    '現在の録音・認識・再生が終了してから押す。';
+                return;
+            }
+
+            const Recognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
+            if (
+                !Recognition ||
+                !navigator.mediaDevices?.getUserMedia
+            ) {
+                result.textContent =
+                    '必要な音声APIが、このブラウザでは利用できない。';
+                return;
+            }
+
+            const savedButtons = Array.from(
+                panel.querySelectorAll('button')
+            ).map(element => ({
+                element,
+                disabled: element.disabled
+            }));
+
+            savedButtons.forEach(({ element }) => {
+                element.disabled = true;
+            });
+
+            let stream = null;
+            let probe = null;
+            let testTrack = null;
+
+            result.textContent = '共有入力APIを確認中…';
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+                const track = stream.getAudioTracks()[0];
+
+                if (!track) {
+                    throw new Error('音声トラックを取得できない');
+                }
+
+                // 元のマイク入力を止めず、検査用の複製だけを停止する。
+                testTrack = track.clone();
+                testTrack.stop();
+
+                probe = new Recognition();
+                probe.lang = 'ja-JP';
+                probe.onerror = () => {};
+
+                try {
+                    // 対応実装なら、停止済みトラックを拒否する。
+                    probe.start(testTrack);
+
+                    result.textContent =
+                        '共有入力への対応を確認できない。' +
+                        '音声トラックの引数が無視された可能性がある。';
+                } catch (error) {
+                    if (error.name === 'InvalidStateError') {
+                        result.textContent =
+                            '音声トラックを検査する実装を確認した。' +
+                            '次に、同じ入力で録音と認識が両立するかを試せる。';
+                    } else if (error.name === 'NotSupportedError') {
+                        result.textContent =
+                            '共有入力は未対応（NotSupportedError）。';
+                    } else {
+                        result.textContent =
+                            '共有入力の判定不可：' +
+                            error.name + ' / ' + error.message;
+                    }
+                }
+            } catch (error) {
+                result.textContent =
+                    '確認に失敗：' +
+                    error.name + ' / ' + error.message;
+            } finally {
+                try {
+                    probe?.abort();
+                } catch (error) {}
+
+                testTrack?.stop();
+                stream?.getTracks().forEach(track => track.stop());
+
+                savedButtons.forEach(({ element, disabled }) => {
+                    element.disabled = disabled;
+                });
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            () => queueMicrotask(mount),
+            { once: true }
+        );
+    } else {
+        queueMicrotask(mount);
+    }
+})();
 // Index専用：TTS・録音・再生・音声認識の切り分け
 (() => {
     'use strict';
