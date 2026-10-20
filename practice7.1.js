@@ -1,3 +1,98 @@
+// Drill 2：動詞の活用を必須とし、応答語・今・目的語は任意にする。
+document.addEventListener('DOMContentLoaded', () => {
+    const originalNormalize = practice71Normalize;
+
+    const targets = [
+        ['ほん', 'よんで'],
+        ['あさごはん', 'たべて'],
+        ['おんがく', 'きいて'],
+        ['しゃしん', 'とって'],
+        ['おべんとう', 'かって']
+    ];
+
+    practice71Normalize = function(text) {
+        const value = practice71ToHiragana(
+            String(text ?? '').normalize('NFKC')
+        )
+            .replace(/[\s、。．,.!?！？「」『』]/g, '')
+            .replace(/(?:よね|よ|ね)$/, '');
+
+        for (const [object, verb] of targets) {
+            const pattern = new RegExp(
+                verb + '(いません|います|いない|いる|ない|る)'
+                    + '(?:よね|よ|ね)?',
+                'g'
+            );
+
+            const matches = Array.from(
+                value.matchAll(pattern)
+            );
+
+            // 対象の活用が一つ必要。
+            if (matches.length !== 1) continue;
+
+            const match = matches[0];
+            const ending = match[1];
+
+            const negative = [
+                'いません',
+                'いない',
+                'ない'
+            ].includes(ending);
+
+            let rest =
+                value.slice(0, match.index) +
+                value.slice(match.index + match[0].length);
+
+            let valid = true;
+
+            // 動詞以外が、許容する任意要素だけかを確認する。
+            while (rest) {
+                const response = rest.match(
+                    /^(いいえ|いえ|はい|うんんー?|ううん|うん)/
+                );
+
+                if (response) {
+                    const no = /^(?:いいえ|いえ|うんん|ううん)/
+                        .test(response[0]);
+
+                    // 応答語と動詞の肯定・否定が矛盾する場合。
+                    if (no !== negative) {
+                        valid = false;
+                        break;
+                    }
+
+                    rest = rest.slice(response[0].length);
+                    continue;
+                }
+
+                const time = rest.match(/^いま(?:は)?/);
+
+                if (time) {
+                    rest = rest.slice(time[0].length);
+                    continue;
+                }
+
+                if (rest.startsWith(object)) {
+                    rest = rest.slice(object.length)
+                        .replace(/^を/, '');
+
+                    continue;
+                }
+
+                // 無関係な語が残っている。
+                valid = false;
+                break;
+            }
+
+            if (valid) {
+                return `p71-answer|${verb}|${ending}`;
+            }
+        }
+
+        return originalNormalize(text);
+    };
+});
 // Drill 2：回答の「はい／いいえ」と目的語の省略を許容する。
 document.addEventListener('DOMContentLoaded', () => {
     const originalNormalize = practice71Normalize;
