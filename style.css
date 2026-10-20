@@ -1,3 +1,305 @@
+/* =========================================================
+   発音練習：選択不可の漢字設定
+   ========================================================= */
+
+#scriptModeControl
+.segmented-option.pronunciation-kanji-disabled:disabled {
+    color: #707b8a !important;
+    background: #939eac !important;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+    font-weight: normal !important;
+}
+
+#scriptModeControl
+.pronunciation-kanji-disabled .icon-emoji {
+    filter: grayscale(100%) !important;
+    opacity: 1 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    #scriptModeControl
+    .segmented-option.pronunciation-kanji-disabled:disabled {
+        color: #94a3b8 !important;
+        background: #718096 !important;
+    }
+}
+
+/* =========================================================
+   Pitch Lab：通常表示
+   ========================================================= */
+
+#pitchLab {
+    --lab-background: #faf5ff;
+    --lab-border: #a855f7;
+    --lab-text: #30203c;
+    --lab-secondary: #62536d;
+    --lab-badge: #7e22ce;
+    --lab-badge-text: #ffffff;
+    --lab-card: #ffffff;
+    --lab-input: #ffffff;
+    --lab-line: #d8c9e2;
+    --lab-button: #f3e8ff;
+    --lab-placeholder: #786783;
+
+    /* グラフ描画から参照する色 */
+    --text-primary: var(--lab-text);
+    --text-secondary: var(--lab-secondary);
+    --bg-main: var(--lab-card);
+    --bg-row: var(--lab-card);
+    --border-color: var(--lab-line);
+
+    position: relative;
+    margin-top: 36px;
+    padding: 24px 16px 16px;
+    border: 1px solid var(--lab-border);
+    border-radius: 6px;
+    background: var(--lab-background);
+    color: var(--lab-text);
+}
+
+#pitchLab::before {
+    content: "Lab";
+    position: absolute;
+    top: -10px;
+    left: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--lab-badge);
+    color: var(--lab-badge-text);
+    font-size: 11px;
+    font-weight: bold;
+}
+
+#pitchLab .pitch-lab-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    color: var(--lab-text);
+}
+
+#pitchLab .pitch-lab-description {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--lab-text);
+}
+
+#pitchLab .pitch-lab-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+#pitchLab .pitch-card {
+    min-width: 0;
+    padding: 14px;
+    border: 1px solid var(--lab-line);
+    border-radius: 8px;
+    background: var(--lab-card);
+    color: var(--lab-text);
+}
+
+#pitchLab .pitch-word-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--lab-text);
+}
+
+#pitchLab .pitch-word-input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--lab-line);
+    border-radius: 4px;
+    background: var(--lab-input);
+    color: var(--lab-text);
+    font: inherit;
+    font-size: 16px;
+}
+
+#pitchLab .pitch-word-input::placeholder {
+    color: var(--lab-placeholder);
+    opacity: 1;
+}
+
+/* 録音・停止・再生と、右側の状態表示 */
+#pitchLab .pitch-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 0;
+    margin-top: 12px;
+}
+
+#pitchLab .pitch-card .pitch-controls {
+    margin-top: 0;
+}
+
+#pitchLab .pitch-controls .example-button {
+    flex: 0 0 auto;
+    min-height: 32px;
+    margin: 0;
+    border: 1px solid var(--lab-border);
+    background: var(--lab-button);
+    color: var(--lab-text);
+    white-space: nowrap;
+}
+
+#pitchLab .pitch-controls button:disabled {
+    background: var(--lab-button) !important;
+    color: var(--lab-secondary) !important;
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+#pitchLab .pitch-status {
+    flex: 0 0 auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 0 0 auto;
+    font-size: 14px;
+    color: var(--lab-secondary);
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+#pitchLab .pitch-canvas {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 190px;
+    margin-top: 12px;
+    border: 1px solid var(--lab-line);
+    border-radius: 4px;
+    background: var(--lab-card);
+}
+
+#pitchLab .pitch-word-input:focus-visible,
+#pitchLab button:focus-visible,
+#pitchLab .pitch-pair-summary:focus-visible {
+    outline: 3px solid var(--lab-border);
+    outline-offset: 3px;
+}
+
+/* =========================================================
+   Pitch Lab：ペア選択
+   ========================================================= */
+
+#pitchLab .pitch-pair-picker {
+    position: relative;
+    margin-top: 14px;
+}
+
+#pitchLab .pitch-pair-summary,
+#pitchLab .pitch-pair-choice {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+    padding: 10px 28px 10px 12px;
+    border: 1px solid var(--lab-border);
+    border-radius: 4px;
+    background: var(--lab-input);
+    color: var(--lab-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+#pitchLab .pitch-pair-summary {
+    list-style: none;
+    position: relative;
+}
+
+#pitchLab .pitch-pair-summary::-webkit-details-marker {
+    display: none;
+}
+
+#pitchLab .pitch-pair-summary::after {
+    content: "▾";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--lab-text);
+}
+
+#pitchLab .pitch-pair-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    line-height: 2;
+}
+
+#pitchLab .pitch-pair-content > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+#pitchLab .pitch-pair-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    margin-top: 4px;
+    padding: 4px;
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid var(--lab-border);
+    border-radius: 4px;
+    background: var(--lab-input);
+}
+
+#pitchLab .pitch-pair-choice {
+    border: 0;
+    padding: 8px;
+}
+
+#pitchLab .pitch-pair-choice:hover,
+#pitchLab .pitch-pair-choice[aria-current="true"] {
+    background: var(--lab-button);
+}
+
+/* =========================================================
+   Pitch Lab：ダーク表示・狭い画面
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+    #pitchLab {
+        color-scheme: dark;
+        --lab-background: #2e163e;
+        --lab-border: #c084fc;
+        --lab-text: #f3e8ff;
+        --lab-secondary: #e2d3ed;
+        --lab-badge: #d8b4fe;
+        --lab-badge-text: #3b0764;
+        --lab-card: #211827;
+        --lab-input: #302238;
+        --lab-line: #80628e;
+        --lab-button: #493056;
+        --lab-placeholder: #cbb8d6;
+    }
+}
+
+@media (max-width: 680px) {
+    #pitchLab .pitch-lab-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #pitchLab .pitch-card {
+        padding: 12px;
+    }
+}
 /* 共通：Exampleから対応するDrillまで */
 .practice-section > .example-box + .info-panel {
     margin-top: 24px;
