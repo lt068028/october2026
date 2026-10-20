@@ -182,7 +182,7 @@
             finish(s);
         }
 
-        record.addEventListener('click', async () => {
+        record.addEventListener('click', () => {
             if (record.disabled) return;
 
             const s = {
@@ -192,185 +192,241 @@
                 recognition: null,
                 recordDone: false,
                 recognitionDone: !Recognition,
+                recordingRequested: false,
                 chunks: [],
                 text: ''
             };
 
             run = s;
             transcript.textContent = '抽出文：認識待ち';
-            show('録音', 'マイク準備中');
+
+            show('録音', '認識の受付開始を待っている');
 
             show(
                 '認識',
-                Recognition ? '準備中' : 'このブラウザでは非対応'
+                Recognition
+                    ? '先に認識を開始する'
+                    : 'このブラウザでは非対応'
             );
 
             sync();
 
-            try {
-                const stream =
-                    await navigator.mediaDevices.getUserMedia({
-                        audio: true
-                    });
+            // 認識の受付開始後に、初めて録音用マイクを取得する。
+            const startRecording = async () => {
+                if (
+                    run !== s ||
+                    s.stopping ||
+                    s.recordingRequested
+                ) return;
 
-                if (run !== s || s.stopping) {
-                    stream.getTracks().forEach(track => track.stop());
-                    return;
-                }
+                s.recordingRequested = true;
+                show('録音', 'マイク準備中');
 
-                s.stream = stream;
+                try {
+                    const stream =
+                        await navigator.mediaDevices.getUserMedia({
+                            audio: true
+                        });
 
-                const recorder = new MediaRecorder(stream);
-                s.recorder = recorder;
-
-                recorder.ondataavailable = event => {
-                    if (event.data?.size > 0) {
-                        s.chunks.push(event.data);
+                    if (run !== s || s.stopping) {
+                        stream.getTracks().forEach(
+                            track => track.stop()
+                        );
+                        return;
                     }
-                };
 
-                recorder.onstop = () => {
-                    if (run !== s) return;
+                    s.stream = stream;
 
-                    // 無音・認識失敗でも、取得した録音データを保存する。
-                    if (s.chunks.length) {
-                        try {
-                            const type =
-                                recorder.mimeType ||
-                                s.chunks[0].type;
+                    const recorder = new MediaRecorder(stream);
+                    s.recorder = recorder;
 
-                            const blob = new Blob(
-                                s.chunks,
-                                type ? { type } : undefined
-                            );
+                    recorder.ondataavailable = event => {
+                        if (event.data?.size > 0) {
+                            s.chunks.push(event.data);
+                        }
+                    };
 
-                            const nextUrl = URL.createObjectURL(blob);
+                    recorder.onstop = () => {
+                        if (run !== s) return;
 
-                            if (audioUrl) {
-                                URL.revokeObjectURL(audioUrl);
+                        if (s.chunks.length) {
+                            try {
+                                const type =
+                                    recorder.mimeType ||
+                                    s.chunks[0].type;
+
+                                const blob = new Blob(
+                                    s.chunks,
+                                    type ? { type } : undefined
+                                );
+
+                                const nextUrl =
+                                    URL.createObjectURL(blob);
+
+                                if (audioUrl) {
+                                    URL.revokeObjectURL(audioUrl);
+                                }
+
+                                audioUrl = nextUrl;
+
+                                show(
+                                    '録音',
+                                    '保存完了（' +
+                                    blob.size +
+                                    ' bytes）'
+                                );
+                            } catch (error) {
+                                show(
+                                    '録音',
+                                    '保存失敗：' + error.name
+                                );
                             }
-
-                            audioUrl = nextUrl;
-
+                        } else {
                             show(
                                 '録音',
-                                '保存完了（' + blob.size + ' bytes）'
-                            );
-                        } catch (error) {
-                            show(
-                                '録音',
-                                '保存失敗：' + error.name
+                                'データが0件。音声を保存できない'
                             );
                         }
-                    } else {
+
+                        s.chunks = [];
+                        s.recordDone = true;
+                        releaseTracks(s);
+                        finish(s);
+                    };
+
+                    recorder.onerror = event => {
                         show(
                             '録音',
-                            'データが0件。音声を保存できない'
+                            'エラー：' +
+                            (event.error?.name || 'unknown')
+                        );
+
+                        stopRun();
+                    };
+
+                    recorder.start();
+
+                    show(
+                        '録音',
+                        '録音開始。「テストです」と話してから⏹️を押す'
+                    );
+
+                    sync();
+                } catch (error) {
+                    if (run !== s || s.stopping) return;
+
+                    show('録音', '開始失敗：' + error.name);
+                    stopRun();
+                }
+            };
+
+            // 準備中も含め、このテストのマイク使用を20秒で終了する。
+            s.limit = setTimeout(stopRun, 20000);
+
+            if (!Recognition) {
+                startRecording();
+                return;
+            }
+
+            try {
+                const recognition = new Recognition();
+                s.recognition = recognition;
+
+                recognition.lang = 'ja-JP';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+
+                recognition.onstart = () => {
+                    if (run !== s || s.stopping) return;
+
+                    show(
+                        '認識',
+                        '受付開始。次に録音を開始する'
+                    );
+
+                    startRecording();
+                };
+
+                recognition.onresult = event => {
+                    if (run !== s) return;
+
+                    s.text = Array.from(event.results)
+                        .map(result => result[0].transcript)
+                        .join('');
+
+                    transcript.textContent = '抽出文：' + s.text;
+                    show('認識', '文字を取得した');
+                };
+
+                recognition.onerror = event => {
+                    if (run !== s) return;
+
+                    s.recognitionError = true;
+                    s.recognitionDone = true;
+
+                    show(
+                        '認識',
+                        'エラー：' + event.error
+                    );
+
+                    if (!s.recordingRequested) {
+                        s.recordDone = true;
+
+                        show(
+                            '録音',
+                            '認識の受付前に失敗したため、今回は開始していない'
                         );
                     }
 
-                    s.chunks = [];
-                    s.recordDone = true;
-                    releaseTracks(s);
+                    // 録音開始後の認識エラーでは、録音を破棄しない。
                     finish(s);
                 };
 
-                recorder.onerror = event => {
-                    show(
-                        '録音',
-                        'エラー：' +
-                        (event.error?.name || 'unknown')
-                    );
-                    stopRun();
-                };
+                recognition.onend = () => {
+                    if (run !== s) return;
 
-                recorder.start();
+                    s.recognitionDone = true;
 
-                show(
-                    '録音',
-                    '録音中。手動停止／20秒上限'
-                );
-
-                s.limit = setTimeout(stopRun, 20000);
-
-                if (Recognition) {
-                    try {
-                        const recognition = new Recognition();
-                        s.recognition = recognition;
-
-                        recognition.lang = 'ja-JP';
-                        recognition.continuous = false;
-                        recognition.interimResults = true;
-
-                        recognition.onstart = () => {
-                            if (run === s) {
-                                show('認識', '受付中（日本語）');
-                            }
-                        };
-
-                        recognition.onresult = event => {
-                            if (run !== s) return;
-
-                            s.text = Array.from(event.results)
-                                .map(result => result[0].transcript)
-                                .join('');
-
-                            transcript.textContent =
-                                '抽出文：' + s.text;
-
-                            show('認識', '文字を取得した');
-                        };
-
-                        recognition.onerror = event => {
-                            if (run !== s) return;
-
-                            s.recognitionError = true;
-                            s.recognitionDone = true;
-
-                            show(
-                                '認識',
-                                'エラー：' + event.error
-                            );
-
-                            // 認識エラーを理由に、録音は破棄しない。
-                            finish(s);
-                        };
-
-                        recognition.onend = () => {
-                            if (run !== s) return;
-
-                            s.recognitionDone = true;
-
-                            if (!s.recognitionError) {
-                                show(
-                                    '認識',
-                                    s.text
-                                        ? '完了'
-                                        : '終了したが文字なし'
-                                );
-                            }
-
-                            finish(s);
-                        };
-
-                        recognition.start();
-                    } catch (error) {
-                        s.recognitionDone = true;
-
+                    if (!s.recognitionError) {
                         show(
                             '認識',
-                            '開始失敗：' + error.name
+                            s.text
+                                ? '完了'
+                                : '終了したが文字なし'
                         );
                     }
-                }
 
-                sync();
+                    if (!s.recordingRequested) {
+                        s.recordDone = true;
+
+                        show(
+                            '録音',
+                            '認識の受付前に終了したため、今回は開始していない'
+                        );
+                    }
+
+                    finish(s);
+                };
+
+                // ここでは録音用マイクをまだ取得していない。
+                recognition.start();
             } catch (error) {
                 if (run !== s) return;
 
-                show('録音', '開始失敗：' + error.name);
                 s.recognitionDone = true;
-                stopRun();
+                s.recordDone = true;
+
+                show(
+                    '認識',
+                    '開始失敗：' + error.name
+                );
+
+                show(
+                    '録音',
+                    '認識を開始できなかったため、今回は開始していない'
+                );
+
+                finish(s);
             }
         });
 
