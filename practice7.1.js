@@ -1,3 +1,638 @@
+// Practice 7.1：Example 2・Drill 2（質問とYes／No回答）
+document.addEventListener('DOMContentLoaded', () => {
+    const states = Array.from({ length: 5 }, () => ({
+        answer: null,
+        questionText: false,
+        yesText: false,
+        noText: false
+    }));
+
+    const targets = [
+        [
+            'ほん', '本', 'hon', 'book',
+            'よむ', '読む', 'yomu', 'read',
+            '読んで'
+        ],
+        [
+            'あさごはん', '朝ご飯', 'asagohan', 'breakfast',
+            'たべる', '食べる', 'taberu', 'eat',
+            '食べて'
+        ],
+        [
+            'おんがく', '音楽', 'ongaku', 'music',
+            'きく', '聞く', 'kiku', 'listen to',
+            '聞いて'
+        ],
+        [
+            'しゃしん', '写真', 'shashin', 'photo',
+            'とる', '撮る', 'toru', 'take',
+            '撮って'
+        ],
+        [
+            'おべんとう', 'お弁当', 'obentō', 'boxed lunch',
+            'かう', '買う', 'kau', 'buy',
+            '買って'
+        ]
+    ];
+
+    const example = [
+        'へや', '部屋', 'heya', 'room',
+        'そうじする', '掃除する', 'sōji suru', 'clean',
+        '掃除して'
+    ];
+
+    const toHira = practice71ToHiragana;
+
+    practice71ToHiragana = text => {
+        let value = String(text ?? '');
+
+        [
+            ['朝ご飯', 'あさごはん'],
+            ['お弁当', 'おべんとう'],
+            ['掃除', 'そうじ'],
+            ['写真', 'しゃしん'],
+            ['音楽', 'おんがく'],
+            ['部屋', 'へや'],
+            ['本', 'ほん'],
+            ['読', 'よ'],
+            ['食', 'た'],
+            ['撮', 'と'],
+            ['買', 'か']
+        ].forEach(([from, to]) => {
+            value = value.split(from).join(to);
+        });
+
+        return toHira(value);
+    };
+
+    const style = () => document.querySelector(
+        '#speechStyleControl button[aria-pressed="true"]'
+    )?.dataset.value || 'formal';
+
+    const blocked = () => Boolean(
+        activeRecognitionSession ||
+        practice71State.startingRow
+    );
+
+    const normalize = practice71Normalize;
+
+    practice71Normalize = text => {
+        let value = String(text ?? '');
+
+        if (style() === 'casual') {
+            value = value
+                .replace(
+                    /^(?:うんんー?|ううん)[、,\s]*/,
+                    'いいえ、'
+                )
+                .replace(/^うん[、,\s]*/, 'はい、');
+
+            for (const item of [example, ...targets]) {
+                for (const noun of [item[0], item[1]]) {
+                    value = value.replace(noun + 'を', noun);
+                }
+            }
+        }
+
+        return normalize(value);
+    };
+
+    const speak = speakText;
+
+    speakText = function(text, rate = 0.9, done) {
+        return speak(
+            String(text ?? '').replace(
+                /^うんん[、,\s]*/,
+                'うんんー、'
+            ),
+            rate,
+            done
+        );
+    };
+
+    const node = (tag, cls = '', text) => {
+        const element = document.createElement(tag);
+        element.className = cls;
+
+        if (text !== undefined) {
+            element.textContent = text;
+        }
+
+        return element;
+    };
+
+    const button = (label, tip, click) => {
+        const b = node(
+            'button',
+            'example-button custom-tip-wrap'
+        );
+
+        b.type = 'button';
+
+        b.append(
+            document.createTextNode(label),
+            node('span', 'custom-tip-box', tip)
+        );
+
+        b.onclick = () => {
+            if (!blocked()) click();
+        };
+
+        return b;
+    };
+
+    function model(item, kind) {
+        const mode = style();
+
+        const object = item[1] +
+            (mode === 'casual' ? '、' : 'を、');
+
+        const ending = kind === 'q'
+            ? {
+                formal: 'いますか。',
+                informal: 'いる？',
+                casual: 'る？'
+            }[mode]
+            : kind === 'yes'
+                ? {
+                    formal: 'います。',
+                    informal: 'いる。',
+                    casual: 'るよ。'
+                }[mode]
+                : {
+                    formal: 'いません。',
+                    informal: 'いない。',
+                    casual: 'ないよ。'
+                }[mode];
+
+        const prefix = kind === 'q'
+            ? '今、'
+            : mode === 'casual'
+                ? (kind === 'yes' ? 'うん、' : 'うんん、')
+                : (kind === 'yes' ? 'はい、' : 'いいえ、');
+
+        return prefix + object + item[8] + ending;
+    }
+
+    const display = text => scriptMode === 'hiragana'
+        ? practice71ToHiragana(text)
+        : text;
+
+    const cue = item => [
+        formatWord('いま', '今', 'ima', 'now'),
+        formatWord(...item.slice(0, 4)),
+        formatWord(...item.slice(4, 8))
+    ].join('／');
+
+    const listen = (getText, label = '🔊きく') => {
+        let b;
+
+        b = button(label, 'Listen to the model.', () => {
+            setPlayingStateMultiple([b], 'Playing...');
+            speakText(getText(), 0.9, stopAllPlayback);
+        });
+
+        return b;
+    };
+
+    function highlighted(text) {
+        const span = node('span');
+
+        const pattern =
+            /ていますか|ていません|ています|ていない|ている|てない|てる|今|いま/g;
+
+        let offset = 0;
+
+        for (const match of text.matchAll(pattern)) {
+            span.append(
+                document.createTextNode(
+                    text.slice(offset, match.index)
+                ),
+                node(
+                    'strong',
+                    'grammar-highlight',
+                    match[0]
+                )
+            );
+
+            offset = match.index + match[0].length;
+        }
+
+        span.append(
+            document.createTextNode(text.slice(offset))
+        );
+
+        return span;
+    }
+
+    function makeExample(parent) {
+        const box = node('div', 'example-box');
+        const table = node('table', 'drill-example-table');
+        const body = node('tbody');
+
+        const question = node('tr');
+        const label = node('td');
+
+        label.append(
+            node('strong', 'example-label-title', 'Question:')
+        );
+
+        const cues = node('td');
+        cues.innerHTML = cue(example);
+
+        const sound = node('td');
+        sound.append(listen(() => model(example, 'q')));
+
+        const text = node('td');
+        text.append(
+            highlighted(display(model(example, 'q')))
+        );
+
+        question.append(
+            label,
+            cues,
+            node('td', '', '👉'),
+            sound,
+            text
+        );
+
+        const response = node('tr');
+        const responseLabel = node('td');
+
+        responseLabel.append(
+            node('strong', 'example-label-title', 'Response:')
+        );
+
+        const answers = node('td');
+        answers.colSpan = 4;
+
+        ['yes', 'no'].forEach((kind, index) => {
+            if (index) {
+                answers.append(
+                    document.createTextNode(' ↔️ ')
+                );
+            }
+
+            answers.append(
+                listen(
+                    () => model(example, kind),
+                    index ? '🔊🙅' : '🔊🙆'
+                ),
+                document.createTextNode(' '),
+                highlighted(display(model(example, kind)))
+            );
+        });
+
+        response.append(responseLabel, answers);
+        body.append(question, response);
+        table.append(body);
+        box.append(table);
+        parent.append(box);
+    }
+
+    const answerControls = [];
+
+    function recordingRow(
+        body,
+        item,
+        index,
+        kind,
+        cueCell,
+        state
+    ) {
+        const question = kind === 'q';
+        const ready = question || Boolean(state.answer);
+        const selected = question ? 'q' : state.answer;
+
+        // Yes／Noは別のキーで録音を保持する。
+        const key =
+            `p71_d2_${index}_${selected || 'answer'}`;
+
+        const getText = () => ready
+            ? model(item, selected)
+            : '';
+
+        const row = node('tr');
+
+        if (question) {
+            const number = node(
+                'td',
+                'drill-number-cell',
+                `${index + 1}.`
+            );
+
+            number.rowSpan = 2;
+            row.append(number);
+        }
+
+        const cell = node('td');
+        const layout = node('div', 'recording-controls');
+        const actions = node('div', 'recording-actions');
+
+        const sound = listen(getText);
+
+        const record = button(
+            '🎙️とる',
+            'Record your sentence.',
+            () => {}
+        );
+
+        const stop = button(
+            '⏹️',
+            'Stop active recording.',
+            () => {}
+        );
+
+        // 録音・停止は既存の録音処理に接続する。
+        record.onclick = null;
+        stop.onclick = null;
+        stop.disabled = true;
+
+        const shown = node('span');
+
+        const property = question
+            ? 'questionText'
+            : `${selected}Text`;
+
+        const updateText = () => {
+            shown.textContent =
+                ready && state[property]
+                    ? display(getText())
+                    : '';
+
+            text.firstChild.textContent =
+                ready && state[property]
+                    ? '🕶️Hide'
+                    : '👀Text';
+        };
+
+        const text = button(
+            '👀Text',
+            'Show or hide the model answer.',
+            () => {
+                state[property] = !state[property];
+                updateText();
+            }
+        );
+
+        updateText();
+
+        actions.append(
+            sound,
+            record,
+            stop,
+            text,
+            shown
+        );
+
+        const result = node(
+            'span',
+            'result-text',
+            '(Not recorded yet)'
+        );
+
+        const wrap = node('span', 'recording-result');
+        wrap.append(result);
+        layout.append(actions, wrap);
+
+        const correction = node('div', 'correction-box');
+
+        const correctionListen = node(
+            'button',
+            'example-button'
+        );
+
+        correctionListen.type = 'button';
+        correctionListen.hidden = true;
+
+        const correctionText = node('span');
+
+        correction.append(
+            correctionListen,
+            correctionText
+        );
+
+        cell.append(layout, correction);
+        row.append(cueCell, cell);
+        body.append(row);
+
+        if (ready) {
+            bindRecorderEvents(
+                record,
+                stop,
+                result,
+                correction,
+                correctionListen,
+                correctionText,
+                () => practice71ToHiragana(getText()),
+                getText,
+                0.9,
+                key
+            );
+        } else {
+            sound.disabled = true;
+            record.disabled = true;
+            text.disabled = true;
+
+            answerControls.push(sound, record, text);
+        }
+    }
+
+    const baseSync = practice71SyncRecordingUI;
+
+    practice71SyncRecordingUI = function() {
+        baseSync();
+
+        answerControls.forEach(control => {
+            control.disabled = true;
+        });
+    };
+
+    const baseRender = renderAll;
+
+    renderAll = function() {
+        if (blocked()) return;
+
+        baseRender();
+
+        const root = document.getElementById(
+            'drill1Container'
+        );
+
+        if (!root) return;
+
+        const heading = root.querySelector(
+            '.info-panel:not(.drill-cue-panel) ' +
+            '.info-panel-title'
+        );
+
+        if (heading) {
+            heading.textContent =
+                heading.textContent.replace(
+                    /^Drill [234]:/,
+                    'Drill 1:'
+                );
+        }
+
+        root.querySelectorAll(
+            '.p71-stage-panel .info-panel-title'
+        ).forEach(title => {
+            title.textContent =
+                title.textContent.replace(
+                    /^Drill ([23]):/,
+                    (_, number) =>
+                        `Drill ${Number(number) + 1}:`
+                );
+        });
+
+        answerControls.length = 0;
+
+        const section = node(
+            'section',
+            'practice-section practice-qa-section'
+        );
+
+        section.id = 'practice71QuestionSection';
+
+        makeExample(section);
+
+        const panel = node(
+            'div',
+            'info-panel info-panel-task1'
+        );
+
+        panel.append(
+            node(
+                'span',
+                'info-panel-title',
+                'Drill 2: Ask and answer — 今～ていますか'
+            ),
+            node(
+                'span',
+                'info-panel-desc',
+                '💡Ask what someone is doing now. ' +
+                'Choose 🙆 or 🙅, then record your answer.'
+            )
+        );
+
+        section.append(panel);
+
+        targets.forEach((item, index) => {
+            const state = states[index];
+            const card = node('div', 'drill-row');
+            const table = node('table', 'recording-table');
+            const columns = node('colgroup');
+
+            for (let i = 0; i < 3; i++) {
+                columns.append(node('col'));
+            }
+
+            columns.children[0].style.width = '34px';
+
+            const body = node('tbody');
+            table.append(columns, body);
+
+            const cues = node('td', 'drill-cue-cell');
+            cues.innerHTML = cue(item);
+
+            recordingRow(
+                body,
+                item,
+                index,
+                'q',
+                cues,
+                state
+            );
+
+            const choices = node('td', 'drill-cue-cell');
+
+            ['yes', 'no'].forEach((kind, i) => {
+                const choice = button(
+                    i ? '🙅' : '🙆',
+                    i
+                        ? 'Negative response'
+                        : 'Affirmative response',
+                    () => {
+                        state.answer = kind;
+                        stopAllPlayback();
+                        renderAll();
+                    }
+                );
+
+                choice.classList.add('answer-choice');
+                choice.dataset.answer = kind;
+
+                choice.setAttribute(
+                    'aria-pressed',
+                    String(state.answer === kind)
+                );
+
+                choices.append(choice);
+            });
+
+            recordingRow(
+                body,
+                item,
+                index,
+                'a',
+                choices,
+                state
+            );
+
+            card.append(table);
+            section.append(card);
+        });
+
+        root.insertBefore(
+            section,
+            root.querySelector('.p71-stage-panel')
+        );
+
+        // 質問行と回答行のきくボタンを同じ列にそろえる。
+        let width = 0;
+
+        const cells = section.querySelectorAll(
+            '.recording-table .drill-cue-cell'
+        );
+
+        cells.forEach(cell => {
+            const measure = cell.cloneNode(true);
+
+            measure.querySelectorAll(
+                '.tooltip-tip,.custom-tip-box'
+            ).forEach(t => t.remove());
+
+            Object.assign(measure.style, {
+                position: 'absolute',
+                visibility: 'hidden',
+                display: 'inline-block',
+                width: 'max-content',
+                whiteSpace: 'nowrap',
+                font: 'inherit'
+            });
+
+            cell.append(measure);
+
+            width = Math.max(
+                width,
+                Math.ceil(
+                    measure.getBoundingClientRect().width
+                )
+            );
+
+            measure.remove();
+        });
+
+        section.querySelectorAll(
+            '.recording-table colgroup'
+        ).forEach(columns => {
+            columns.children[1].style.width =
+                `${width + 4}px`;
+        });
+
+        practice71SyncRecordingUI();
+    };
+});
 // ============================================================================
 // Practice 7.1: ているform① Habit continuous
 // ============================================================================
