@@ -4,8 +4,18 @@
 
     function mount() {
         const panel = document.getElementById('indexAudioTest');
-        if (!panel || document.getElementById('sharedInputCheck')) return;
 
+        if (!panel) {
+            mount.waitCount = (mount.waitCount || 0) + 1;
+
+            if (mount.waitCount <= 30) {
+                setTimeout(mount, 100);
+            }
+
+            return;
+        }
+
+        if (document.getElementById('sharedInputCheck')) return;
         const row = document.createElement('div');
         const button = document.createElement('button');
         const result = document.createElement('span');
