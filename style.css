@@ -1,3 +1,39 @@
+/* 質問・回答練習：前のDrillとの間隔 */
+.practice-qa-section {
+    margin-top: 40px;
+}
+
+/* Yes／No選択 */
+.example-button.answer-choice {
+    margin-right: 4px;
+    background: #bae6fd;
+    color: #142346;
+}
+
+.example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+    background: #4ade80;
+}
+
+.example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+    background: #fca5a5;
+}
+
+@media (prefers-color-scheme: dark) {
+    .example-button.answer-choice {
+        background: #1e3a5f;
+        color: #e5efff;
+    }
+
+    .example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+        background: #14532d;
+        color: #bbf7d0;
+    }
+
+    .example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+        background: #7f1d1d;
+        color: #fecaca;
+    }
+}
 /* =========================================================
    発音練習：選択不可の漢字設定
    ========================================================= */
