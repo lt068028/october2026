@@ -347,8 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 ? (kind === 'yes' ? 'うん、' : 'うんん、')
                 : (kind === 'yes' ? 'はい、' : 'いいえ、');
 
-        return prefix + object + item[8] + ending;
-    }
+        return prefix + (kind === 'q' ? object : '') + item[8] + ending;    }
 
     const display = text => scriptMode === 'hiragana'
         ? practice71ToHiragana(text)
