@@ -8,15 +8,18 @@
 </head>
 <body>
 
-    <!-- Header & Settings -->
     <div class="main-header page-header">
+
         <div class="page-heading">
             <h1>Pronunciation Practice 2</h1>
             <a href="index.html" class="back-link">↩️もどる</a>
         </div>
 
         <div class="compact-settings">
+
             <div class="settings-row settings-segments-row">
+
+                <!-- 文字表示 -->
                 <div class="control-item">
                     <div
                         id="scriptModeControl"
@@ -45,16 +48,58 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- 文体 -->
+                <div class="control-item">
+                    <div
+                        id="speechStyleControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Speech Style"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="formal"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">👔</span>Formal
+                            <span class="custom-tip-box">Polite speech for work or unfamiliar people.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="informal"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">✏️</span>Informal
+                            <span class="custom-tip-box">Plain forms used in writing</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="casual"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">💬</span>Casual
+                            <span class="custom-tip-box">Relaxed speech with family and friends.</span>
+                        </button>
+                    </div>
+                </div>
+
             </div>
 
             <div class="settings-row settings-auto-row">
+
                 <div class="control-item settings-onoff">
                     <span
                         id="labelAutoRecord"
                         class="mode-label inactive-mode custom-tip-wrap"
                     >
                         <span class="icon-emoji">⏹️</span>Autostop
-                        <span class="custom-tip-box">ON: Automatically stops recording when you stop speaking. OFF: Records until you click the stop button.</span>
+                        <span class="custom-tip-box">ON: Stop after 2 seconds of silence following speech. OFF: Use the stop button. All recordings stop after 20 seconds.</span>
                     </span>
 
                     <label class="switch">
@@ -73,7 +118,7 @@
                         class="mode-label active-mode custom-tip-wrap"
                     >
                         <span class="icon-emoji">▶️</span>Autoplay
-                        <span class="custom-tip-box">ON: Plays your voice automatically after recording. OFF: Disables automatic playback.</span>
+                        <span class="custom-tip-box">ON: Plays the model and then your recording. OFF: Disables automatic playback.</span>
                     </span>
 
                     <label class="switch">
@@ -86,28 +131,35 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+
             </div>
         </div>
     </div>
 
-    <!-- Drill 1 -->
-    <div class="info-panel info-panel-task1" style="margin-top: 25px;">
-        <span class="info-panel-title">
-            Drill 1: Mimic and Compare (Listen &amp; Shadow)
-        </span>
-        <span class="info-panel-desc">
-            💡 Listen to the model, mimic the voice and speak aloud.
-        </span>
-    </div>
+    <section class="practice-section">
 
-    <div id="drill1List"></div>
+        <div class="info-panel info-panel-task1">
+            <span class="info-panel-title">
+                Drill 1: Mimic and Compare (Listen &amp; Shadow)
+            </span>
 
-    <!-- Footer -->
+            <span class="info-panel-desc">
+                💡Listen to the model, mimic the voice and speak aloud.
+            </span>
+        </div>
+
+        <div id="drill1List"></div>
+    </section>
+
     <div class="voice-guide-footer">
         🔊Want to change the voice?
         <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
 
-        <div id="guideBox" class="guide-box-popup" style="display: none;">
+        <div
+            id="guideBox"
+            class="guide-box-popup"
+            style="display: none;"
+        >
             Win: Settings &gt; Time &amp; Language &gt; Speech<br>
             Mac/iOS: Settings &gt; Accessibility &gt; Spoken Content<br>
             ChromeOS: Settings &gt; Advanced &gt; Accessibility &gt; Text-to-Speech
