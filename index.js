@@ -253,7 +253,70 @@
                 if (currentJob !== job) return;
 
                 const audio = new Float32Array(rendered.getChannelData(0));
-                status.textContent = '端末内で文字抽出中：0秒';
+
+                // 認識へ渡す音声と同一のデータを、確認用WAVにする。
+                const wav = new ArrayBuffer(44 + audio.length * 2);
+                const view = new DataView(wav);
+
+                function writeLabel(offset, value) {
+                    for (let i = 0; i < value.length; i++) {
+                        view.setUint8(offset + i, value.charCodeAt(i));
+                    }
+                }
+
+                writeLabel(0, 'RIFF');
+                view.setUint32(4, 36 + audio.length * 2, true);
+                writeLabel(8, 'WAVE');
+                writeLabel(12, 'fmt ');
+                view.setUint32(16, 16, true);
+                view.setUint16(20, 1, true);
+                view.setUint16(22, 1, true);
+                view.setUint32(24, 16000, true);
+                view.setUint32(28, 32000, true);
+                view.setUint16(32, 2, true);
+                view.setUint16(34, 16, true);
+                writeLabel(36, 'data');
+                view.setUint32(40, audio.length * 2, true);
+
+                for (let i = 0; i < audio.length; i++) {
+                    const sample = Math.max(-1, Math.min(1, audio[i]));
+                    view.setInt16(
+                        44 + i * 2,
+                        Math.round(sample * (sample < 0 ? 32768 : 32767)),
+                        true
+                    );
+                }
+
+                let convertedButton = button('converted');
+                if (!convertedButton) {
+                    convertedButton = document.createElement('button');
+                    convertedButton.type = 'button';
+                    convertedButton.className = 'example-button';
+                    convertedButton.dataset.action = 'converted';
+                    convertedButton.textContent = '▶️変換後を再生';
+                    button('play').after(convertedButton);
+                }
+
+                if (convertedButton.dataset.audioUrl) {
+                    URL.revokeObjectURL(convertedButton.dataset.audioUrl);
+                }
+
+                convertedButton.dataset.audioUrl = URL.createObjectURL(
+                    new Blob([wav], { type: 'audio/wav' })
+                );
+
+                convertedButton.onclick = async () => {
+                    if (busy || recording) return;
+                    stopPlayback();
+                    player = new Audio(convertedButton.dataset.audioUrl);
+
+                    try {
+                        await player.play();
+                    } catch (error) {
+                        status.textContent =
+                            '変換後の再生失敗：' + error.message;
+                    }
+                };                status.textContent = '端末内で文字抽出中：0秒';
                 ticker = setInterval(() => {
                     const elapsed = Math.floor(
                         (performance.now() - startedAt) / 1000
