@@ -1771,3 +1771,66 @@ input:checked + .slider:before { transform: translateX(16px); }
         padding: 12px 14px;
     }
 }
+/* 共通TTS：読み込み・生成・再生の状態表示 */
+#ttsStatus {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-sizing: border-box;
+    margin: 16px 0;
+    padding: 14px 18px;
+    border: 2px solid #a16207;
+    border-radius: 10px;
+    background: #fef3c7;
+    color: #713f12;
+    font-weight: 700;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+#ttsStatus:empty,
+#ttsStatus[hidden] {
+    display: none;
+}
+
+#ttsStatus.is-busy::before {
+    content: "";
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    box-sizing: border-box;
+    border: 3px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: tts-status-spin 0.9s linear infinite;
+}
+
+#ttsStatus.is-error {
+    border-color: #b91c1c;
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+@keyframes tts-status-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-color-scheme: dark) {
+    #ttsStatus {
+        border-color: #fbbf24;
+        background: #422006;
+        color: #fef3c7;
+    }
+
+    #ttsStatus.is-error {
+        border-color: #fca5a5;
+        background: #450a0a;
+        color: #fecaca;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #ttsStatus.is-busy::before {
+        animation: none;
+    }
+}
