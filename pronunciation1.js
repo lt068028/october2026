@@ -4,7 +4,7 @@
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
+    { kanji: "箸。端。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
     { kanji: "腿。桃。", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
     { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
     { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
