@@ -1,11 +1,11 @@
-// 共通TTS：通常速度で生成・70％で再生・句点間に1秒
+// 共通TTS：通常速度で生成・50％で再生・句点間に0.5秒
 const ASSETS =
     'https://huggingface.co/Supertone/supertonic-3/resolve/main';
 
 const STORAGE_KEY = 'practice.tts.voice';
 const GENERATION_SPEED = 1.0;
-const PLAYBACK_RATE = 0.7;
-const GAP_MS = 1000;
+const PLAYBACK_RATE = 0.5;
+const GAP_MS = 500;
 
 let selectedVoice = 'M2';
 
@@ -29,10 +29,40 @@ const audioCache = new Map();
 function message(text, state = '') {
     if (!statusElement) return;
 
-    statusElement.textContent = text;
+    // 表示する速度・待機時間を、実際の設定値に合わせる。
+    if (text.startsWith('Playing model audio at ')) {
+        text =
+            `Playing model audio at ${Math.round(PLAYBACK_RATE * 100)}% speed…`;
+    } else if (text.startsWith('Next word in ')) {
+        text = `Next word in ${GAP_MS / 1000} seconds…`;
+    }
+
+    statusElement.replaceChildren();
     statusElement.hidden = !text;
     statusElement.classList.toggle('is-busy', state === 'busy');
     statusElement.classList.toggle('is-error', state === 'error');
+
+    if (!text) return;
+
+    if (text.startsWith('Preparing voices…')) {
+        const content = document.createElement('span');
+        const heading = document.createElement('strong');
+
+        heading.textContent = 'Preparing voices…';
+
+        content.append(
+            heading,
+            document.createElement('br'),
+            document.createTextNode(
+                'The first download may take a few minutes. ' +
+                'Please keep this page open.'
+            )
+        );
+
+        statusElement.append(content);
+    } else {
+        statusElement.textContent = text;
+    }
 }
 
 function mount() {
