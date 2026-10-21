@@ -1834,3 +1834,27 @@ input:checked + .slider:before { transform: translateX(16px); }
         animation: none;
     }
 }
+/* 共通TTS：A配色（赤系） */
+#ttsStatus {
+    background: #fee2e2;
+    border-color: #dc2626;
+    color: #991b1b;
+}
+
+#ttsStatus strong,
+#ttsStatus b {
+    color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+    #ttsStatus {
+        background: #450a0a;
+        border-color: #f87171;
+        color: #fecaca;
+    }
+
+    #ttsStatus strong,
+    #ttsStatus b {
+        color: #fecaca;
+    }
+}
