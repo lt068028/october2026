@@ -1,10 +1,14 @@
-// 共通TTS：Supertonic 3 / Hiro・Mina / 速度70％
+// 共通TTS：通常速度で生成・70％で再生・句点間に1秒
 const ASSETS =
     'https://huggingface.co/Supertone/supertonic-3/resolve/main';
+
 const STORAGE_KEY = 'practice.tts.voice';
-const SPEED = 0.7;
+const GENERATION_SPEED = 1.0;
+const PLAYBACK_RATE = 0.7;
+const GAP_MS = 1000;
 
 let selectedVoice = 'M2';
+
 try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === 'M2' || saved === 'F1') selectedVoice = saved;
@@ -16,13 +20,19 @@ let loading;
 let queue = Promise.resolve();
 let serial = 0;
 let playback = null;
+let pauseBetween = null;
 let statusElement;
 
 const styles = new Map();
 const audioCache = new Map();
 
-function message(text) {
-    if (statusElement) statusElement.textContent = text;
+function message(text, state = '') {
+    if (!statusElement) return;
+
+    statusElement.textContent = text;
+    statusElement.hidden = !text;
+    statusElement.classList.toggle('is-busy', state === 'busy');
+    statusElement.classList.toggle('is-error', state === 'error');
 }
 
 function mount() {
@@ -74,13 +84,16 @@ function mount() {
             updateSelection();
         });
     });
+
     updateSelection();
 
     statusElement = document.createElement('p');
     statusElement.id = 'ttsStatus';
     statusElement.lang = 'en';
+    statusElement.hidden = true;
     statusElement.setAttribute('role', 'status');
     statusElement.setAttribute('aria-live', 'polite');
+    statusElement.setAttribute('aria-atomic', 'true');
     document.querySelector('.main-header').after(statusElement);
 }
 
@@ -90,15 +103,21 @@ if (document.readyState === 'loading') {
     mount();
 }
 
-async function prepare() {
+async function prepare(ticket) {
     if (engine) return;
     if (loading) return loading;
 
-    loading = (async () => {
+    const progress = () => {
+        if (ticket !== serial) return;
         message(
             'Preparing voices… The first download may take a few minutes. ' +
-            'Please keep this page open.'
+            'Please keep this page open.',
+            'busy'
         );
+    };
+
+    loading = (async () => {
+        progress();
 
         const [ort, library] = await Promise.all([
             import(
@@ -115,11 +134,6 @@ async function prepare() {
         ort.env.wasm.wasmPaths =
             'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/';
         helper.configureOrt(ort);
-
-        const progress = () => message(
-            'Preparing voices… The first download may take a few minutes. ' +
-            'Please keep this page open.'
-        );
 
         if (navigator.gpu) {
             try {
@@ -146,6 +160,7 @@ async function prepare() {
             },
             progress
         );
+
         engine = loaded.textToSpeech;
     })();
 
@@ -158,47 +173,50 @@ async function prepare() {
 
 export function cancel() {
     ++serial;
+
     if (playback) playback.finish(false);
-    message('');
+    if (pauseBetween) pauseBetween.finish(false);
+
+    // 呼び出し側の終了処理でエラー表示を消さない。
+    if (!statusElement?.classList.contains('is-error')) {
+        message('');
+    }
 }
 
 async function generate(text, voice, ticket) {
     if (ticket !== serial) return null;
 
-    const key = JSON.stringify([text, voice, SPEED]);
+    const key = JSON.stringify([text, voice, GENERATION_SPEED]);
     if (audioCache.has(key)) return audioCache.get(key);
 
-    await prepare();
-    if (ticket !== serial) {
-        message('');
-        return null;
-    }
+    await prepare(ticket);
+    if (ticket !== serial) return null;
 
     if (!styles.has(voice)) {
-        message('Preparing the selected voice…');
+        message('Preparing the selected voice…', 'busy');
+
         const style = await helper.loadVoiceStyle(
             [ASSETS + '/voice_styles/' + voice + '.json'],
             false
         );
         styles.set(voice, style);
     }
-    if (ticket !== serial) {
-        message('');
-        return null;
-    }
 
-    message('Generating audio…');
+    if (ticket !== serial) return null;
+
+    message('Generating audio… Please wait.', 'busy');
 
     const { wav, duration } = await engine.call(
         text,
         'ja',
         styles.get(voice),
         8,
-        SPEED,
+        GENERATION_SPEED,
         0.3
     );
 
     const length = Math.floor(engine.sampleRate * duration[0]);
+
     if (!Number.isFinite(length) || length <= 0) {
         throw new Error('No audio was generated.');
     }
@@ -207,48 +225,23 @@ async function generate(text, voice, ticket) {
         wav.slice(0, length),
         engine.sampleRate
     );
-    const url = URL.createObjectURL(
-        new Blob([buffer], { type: 'audio/wav' })
-    );
-    audioCache.set(key, url);
 
-    // ページ内キャッシュの件数を制限する。
+    // Blobを保持し、再生時にだけURLを作成する。
+    const blob = new Blob([buffer], { type: 'audio/wav' });
+    audioCache.set(key, blob);
+
     if (audioCache.size > 80) {
-        const oldest = audioCache.keys().next().value;
-        URL.revokeObjectURL(audioCache.get(oldest));
-        audioCache.delete(oldest);
+        audioCache.delete(audioCache.keys().next().value);
     }
 
-    if (ticket !== serial) {
-        message('');
-        return null;
-    }
-    return url;
+    return ticket === serial ? blob : null;
 }
 
-export async function speak(text) {
-    cancel();
-    const ticket = serial;
-    const voice = selectedVoice;
-
-    // 同じモデルで複数の生成処理を同時に走らせない。
-    const task = queue.then(() => generate(String(text), voice, ticket));
-    queue = task.catch(() => {});
-
-    let url;
-    try {
-        url = await task;
-    } catch (error) {
-        if (ticket !== serial) return false;
-        message('Audio generation failed: ' + error.message);
-        throw error;
-    }
-
-    if (!url || ticket !== serial) return false;
-
-    message('Playing model audio…');
+function playClip(blob, ticket) {
+    if (ticket !== serial) return Promise.resolve(false);
 
     return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         let finished = false;
 
@@ -256,31 +249,134 @@ export async function speak(text) {
             finish(success, error) {
                 if (finished) return;
                 finished = true;
+
                 audio.onended = null;
                 audio.onerror = null;
                 audio.pause();
+                audio.removeAttribute('src');
+                audio.load();
+                URL.revokeObjectURL(url);
+
                 if (playback === item) playback = null;
 
-                if (error) {
-                    message(
-                        'Audio playback failed. Please press Listen again. ' +
-                        error.message
-                    );
-                    reject(error);
-                } else {
-                    if (ticket === serial) message('');
-                    resolve(success);
-                }
+                if (error) reject(error);
+                else resolve(success);
             }
         };
 
         playback = item;
-        audio.playbackRate = 1;
+
+        audio.defaultPlaybackRate = PLAYBACK_RATE;
+        audio.playbackRate = PLAYBACK_RATE;
+        audio.preservesPitch = true;
+
+        if ('webkitPreservesPitch' in audio) {
+            audio.webkitPreservesPitch = true;
+        }
+
         audio.onended = () => item.finish(true);
-        audio.onerror = () =>
-            item.finish(false, new Error('Unable to play model audio.'));
+        audio.onerror = () => item.finish(
+            false,
+            new Error('Unable to play model audio.')
+        );
+
         audio.play().catch(error => item.finish(false, error));
     });
+}
+
+function waitBetweenClips(ticket) {
+    if (ticket !== serial) return Promise.resolve(false);
+
+    return new Promise(resolve => {
+        let finished = false;
+        let timer;
+
+        const item = {
+            finish(success) {
+                if (finished) return;
+                finished = true;
+                clearTimeout(timer);
+                if (pauseBetween === item) pauseBetween = null;
+                resolve(success);
+            }
+        };
+
+        pauseBetween = item;
+        timer = setTimeout(
+            () => item.finish(ticket === serial),
+            GAP_MS
+        );
+    });
+}
+
+export async function speak(text) {
+    cancel();
+    message('');
+
+    const ticket = serial;
+    const voice = selectedVoice;
+
+    // 「箸。橋。」→「箸。」「橋。」
+    // 読点「、」では分割しない。
+    const parts = (String(text).match(/[^。]+。?/g) || [])
+        .map(part => part.trim())
+        .filter(Boolean);
+
+    if (!parts.length) return false;
+
+    message('Preparing model audio… Please wait.', 'busy');
+
+    // 全語を先に生成し、再生途中に生成待ちが入らないようにする。
+    const task = queue.then(async () => {
+        const clips = [];
+
+        for (const part of parts) {
+            if (ticket !== serial) return null;
+            const blob = await generate(part, voice, ticket);
+            if (!blob) return null;
+            clips.push(blob);
+        }
+
+        return clips;
+    });
+
+    queue = task.catch(() => {});
+
+    let stage = 'generation';
+
+    try {
+        const clips = await task;
+        if (!clips || ticket !== serial) return false;
+
+        stage = 'playback';
+
+        for (let index = 0; index < clips.length; index++) {
+            if (ticket !== serial) return false;
+
+            message('Playing model audio at 70% speed…');
+
+            const completed = await playClip(clips[index], ticket);
+            if (!completed || ticket !== serial) return false;
+
+            if (index < clips.length - 1) {
+                message('Next word in 1 second…');
+                const continued = await waitBetweenClips(ticket);
+                if (!continued) return false;
+            }
+        }
+
+        if (ticket === serial) message('');
+        return true;
+    } catch (error) {
+        if (ticket !== serial) return false;
+
+        message(
+            'Audio ' + stage + ' failed. Please press Listen again. ' +
+            (error.message || String(error)),
+            'error'
+        );
+        throw error;
+    }
 }
 
 window.addEventListener('pagehide', cancel);
