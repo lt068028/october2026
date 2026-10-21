@@ -117,8 +117,7 @@
 
             const [ort, library] = await Promise.all([
                 import(
-                    'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.webgpu.min.mjs'
-                ),
+                    'https://cdn.jsdelivr.net/gh/cskwork/supertonic-tts@main/app/helper.js'                ),
                 import(
                     'https://cdn.jsdelivr.net/npm/supertonic-tts@0.1.0/app/helper.js'
                 )
