@@ -9,24 +9,25 @@
 ## 1. 開発環境とGit／デプロイの進捗（2026-10-24時点）
 
 ### 1.1 構築済み環境（確認済み）
-- **OS・端末**：Chrome OS の Linux 開発環境（Debian 12、x86_64、ディスク容量 20GB へ拡張済み）。
+- **OS・端末**：
+  - Chrome OS の Linux 開発環境（Debian 12、x86_64、ディスク容量 20GB へ拡張済み）。
+  - Windows 端末（`c:\Users\veryl\Projects\october2026`）での Antigravity 作業環境も接続確認済み。
 - **エディタ・操作環境**：
-  - Linux 側に Antigravity を導入し、ユーザーの Google アカウント（`lt068028@gmail.com`）でログイン済み。
-  - Remote Control を有効化し、Chrome ブラウザ画面から指示・確認を行う体制を構築済み（Linux 側の Antigravity は実行環境として起動維持）。
+  - Antigravity を導入し、ユーザーの Google アカウント（`lt068028@gmail.com`）でログイン済み。
+  - Remote Control を有効化し、Chrome ブラウザ画面から指示・確認を行う体制を構築済み。
 - **ローカルリポジトリ**：
-  - パス：`/home/lt068028/october2026`
+  - パス（Linux）：`/home/lt068028/october2026` ／ パス（Windows）：`c:\Users\veryl\Projects\october2026`
   - ブランチ：`main`
   - リモート `origin`：`https://github.com/lt068028/october2026.git`
   - 公開先（Vercel）：`https://october2026.vercel.app`
 - **Gitコミット作成者設定（設定済み）**：
-  - 過去のコミット履歴と同一の `user.name = lt068028` / `user.email = lt068028@gmail.com` をローカルリポジトリに設定済み。
+  - 過去のコミット履歴と同一の `user.name = lt068028` / `user.email = lt068028@gmail.com` を使用。
 
 ### 1.2 GitHub 認証・push 体制と端末切り替え時の注意
-- **GitHub CLI（`gh`）認証および push（確認済み）**：
-  - GitHub CLI（`gh`）を導入し、HTTPS・ブラウザログインにより `lt068028` アカウントで認証済み（`gh auth setup-git` 設定済み）。
+- **GitHub 認証および push（確認済み）**：
   - `origin/main` への `git push` および Vercel（`https://october2026.vercel.app`）へのデプロイ連携を確認済み。
-- **将来の Windows 併用時の注意**：
-  - 将来 Windows 端末でも作業する予定あり。別端末のローカルリポジトリへ切り替える際は、必ず未コミット・未push の変更を確認し、未保存の変更を破棄せずに GitHub の最新版を取り込んでから編集を開始すること。
+- **端末切り替え時の注意**：
+  - Linux 端末と Windows 端末を切り替える際は、必ず未コミット・未push の変更を確認し、未保存の変更を破棄せずに GitHub の最新版を取り込んでから編集を開始すること。
 
 ---
 
@@ -78,5 +79,8 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
   - 全8練習ページ（`practice1.1`、`practice1.2`、`practice7.1`、`practice7.2`、`practice7.3`、`composition1`、`pronunciation1`、`pronunciation2`）および `style.css`：
     - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
     - プルダウンで選択した音声名を `localStorage`（`october2026.selectedVoiceName`）に保存し、ページ移動や再読み込みでも維持するよう実装（未保存または該当音声がない環境では従来の優先順位で自動選択）。
+  - `pronunciation2.html` および `pronunciation2.js`：
+    - `pronunciation1` と同じ Pitch Lab（`#pitchLab`）セクションを設置（案B：プルダウンで5つの文＋Free practiceを選択し、1文全体のピッチ曲線を2枚の比較カードで描画）。
+    - 上部設定の `Speech Style`（Formal / Informal / Casual）切替に連動して、Lab プルダウンの文表示および各カードの `🔊きく` モデル音声も更新されるよう実装（録音済みデータは維持）。
 - **【ユーザー実機確認待ち】**
-  - Vercel デプロイ後、各ページ最下部左の `🔊Voice:` プルダウンに実行環境の日本語TTS一覧が正式名称で表示され、切り替え・ページ間保持が正常に動作することのWeb実機確認。
+  - Vercel デプロイ後、各ページ最下部左の `🔊Voice:` プルダウンの動作、および `pronunciation2` の Pitch Lab における文選択・`🔊きく`・録音・ピッチ曲線描画のWeb実機確認。

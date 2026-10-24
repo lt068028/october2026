@@ -54,7 +54,7 @@
      - そのため、語彙が定まっている問題（Drill 1・2等）では、事前登録辞書を用いて認識結果をひらがなへ置換・補完して表示・判定する。
      - 一方、学習者が任意の語を入力・発話する自由入力問題（Practice 1.1 の Drill 3、Composition 1 の Drill 2 等）では事前辞書による補完が不可能であるため、**`Hiragana Only` 選択時の自由入力問題はテキスト抽出・判定を行わず、録音のみ（`Audio only`）として動作させ、テキスト抽出不可を示す文言（`🐣Only Hiragana:🎙️Audio only` 等）を表示する**。
    - **発音練習での制約（確定仕様・現行実装一致）**：
-     - `pronunciation1` および `pronunciation2` では `🐣Hiragana Only` を選択状態で固定し、`🐤With漢字` は `disabled`（選択不可・グレーアウト表示 `.pronunciation-kanji-disabled`）とする。
+     - `pronunciation1` では `🐣Hiragana Only` を選択状態で固定し、`🐤With漢字` は `disabled`（選択不可・グレーアウト表示 `.pronunciation-kanji-disabled`）とする。
 
 2. **Speech Style（`👔Formal` ／ `✏️Informal` ／ `💬Casual`）**
    - **表記（確定仕様・現行実装一致）**：`👔Formal` ／ `✏️Informal` ／ `💬Casual`（絵文字の直後に不要な空白を入れない）。
@@ -100,7 +100,7 @@
 
 ### 3.2 モデル音生成元と表示文に関するコード照合結果（実装詳細・相違点）
 - **モデル音の生成元（現行実装）**：
-  - `practice1.1.js`（Example・Drill 1・Drill 2）、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js` のいずれも、`Script Mode` が `Hiragana Only` のときでも **TTSへ渡す読み上げ用テキストには漢字表記（`kanji`）を使用**している。
+  - `practice1.1.js`（Example・Drill 1・Drill 2）、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js` のいずれも、`Script Mode` が `Hiragana Only` のときでも **TTSへ渡す読み上げ用テキストには漢字表記（`kanji`）を使用**している。
   - 例外として、`practice1.1.js` の Drill 3（自由入力）のみ、学習者が入力欄（`inputX` / `inputY`）に入力した文字列そのままを `modelSentence` に渡している。
 - **モデル表示文の読点に関する注意点（コード照合で確認された事項）**：
   - `practice1.1.js` の Example 表示（573行目・590行目・2722行目）では、`私<strong>は、</strong>学生<strong>です。</strong>` のように画面表示文にも読点「、」が含まれている。また `practice7.1.js` の Example 2 等でも `model()` の文字列（読点あり）を表示に用いている箇所がある。画面表示からモデル音用の読点を除外する仕様とする場合は、今後の改修対象として確認が必要。
@@ -135,11 +135,12 @@
 ### 4.3 UIボタン・配置の統一仕様
 - **録音ボタン**：表記は **`🎙️とる`**（絵文字の直後に空白を入れない）。
   - ※注：`practice1.1.js` は初期関数 `makeRow`（669行目）で `"⏺️とる"` を生成した後、下部IIFEのラッパー（2540行目）で `'🎙️とる'` に上書きし、あわせて `.correction-box` 内の重複聞くボタン（`correctionListen`）を非表示化している。
-- **聞くボタン**：表記は **`🔊きく`**。各行のキュー横の所定の操作列（`.recording-actions`）、および `pronunciation1` の Pitch Lab 各カードの録音ボタン（`🎙️とる`）の前に配置し、重複追加しない。
+- **聞くボタン**：表記は **`🔊きく`**。各行のキュー横の所定の操作列（`.recording-actions`）、および `pronunciation1`・`pronunciation2` の Pitch Lab 各カードの録音ボタン（`🎙️とる`）の前に配置し、重複追加しない。
 - **停止ボタン**：表記は **`⏹️`**。Manual モードで録音中の行のみ有効化（`.stop-btn-active`）し、Autostop 時や非録音時は無効化する。
 - **録音再生ボタン**：録音が存在する行の結果欄末尾（および Pitch Lab 各カード）に **`▶️`**（ツールチップ：`Play your recorded voice`）を表示する。
-- **Pitch Lab（`pronunciation1`）のピッチ描画仕様**：
+- **Pitch Lab（`pronunciation1`・`pronunciation2`）のピッチ描画仕様**：
+  - `pronunciation1` では単語ペア（または `Free practice`）を、`pronunciation2` では Drill 1 の5つの文（`Speech Style` 切替連動）または `Free practice` をプルダウン（`#pitchPairSelect`）から選択し、左右2枚のカード（`.pitch-lab-grid`）で録音・ピッチ曲線の比較描画を行える。
   - 録音全体のピーク音量に対する相対エネルギー閾値（18%以上）およびゼロ交差率（ZCR）フィルタにより、無音区間・環境ノイズ・無声子音（s/sh/h等）を除外する。
   - 自己相関の最初のゼロ交差以降の局所ピーク（周期性 `>= 0.68`）のみを検出し、400Hz上限張り付きノイズやオクターブ誤検出を防止する。
-  - 5フレーム中央値フィルタ、短区間ノイズ（60ms未満）除外、および重み付き移動平均平滑化（2パス）を適用し、細かい揺れを除いた明確なピッチの上昇・下降曲線のみを描画する。
+  - 5フレーム中央値フィルタ、短区間ノイズ（60ms未満）除外、および重み付き移動平均平滑化（2パス）を適用し、細かい揺れを除いた明確なピッチの上昇・下降曲線のみを描画する（`pronunciation2` では2文節にわたる1文全体の有声セグメント群を保持して描画する）。
   - 横軸（時間軸）は有声区間を中心に自動トリミングして表示し、前後の無音時間で曲線が潰れないようにする。
