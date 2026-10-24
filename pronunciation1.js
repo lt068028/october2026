@@ -907,13 +907,7 @@ async function pronunciationCaptureStart(key, state) {
     try {
         session.stream =
             await navigator.mediaDevices.getUserMedia({
-                audio: state
-                    ? {
-                        echoCancellation: false,
-                        noiseSuppression: false,
-                        autoGainControl: false
-                    }
-                    : true
+                audio: true
             });
 
         const Context =

@@ -80,6 +80,7 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
     - Pitch Lab 各カードにおいて、`🎙️とる` の前にモデル音声を聞く **`🔊きく`** ボタンを設置（プルダウンで選択中のペアの各語をブラウザ標準TTSで再生、`Free practice` 選択時は無効化）。
     - Pitch Lab のピッチ曲線描画（`estimateF0Frames` / `drawPitchCurve`）を改善し、相対音量ゲート・ゼロ交差後の自己相関ピーク検出・中央値フィルタ・移動平均平滑化・有声区間への時間軸フォーカスにより、環境ノイズや細かい揺れを除外して明確なピッチの動きのみを描画するよう修正。
     - Pitch Lab で左カード録音後の自動再生中（特に Autostop の末尾2秒の無音再生中）に右カードの `🎙️とる` を押した際、`stopAllPlayback()` が左カードのステータス（`statusEl`）を `"Ready"` に戻さず `"Playing..."` のまま取り残していた不具合を修正。
+    - Pitch Lab の録音時のみ `getUserMedia` で `noiseSuppression: false` 等が指定されていたため、環境ノイズで RMS が `0.015` を下回らず発話後2秒の Autostop が作動せずに20秒上限まで録音が続いていた問題を修正（Drill 1 や他ページと同じ `audio: true` に統一）。
   - `index.js`：Supertonic 3 音声テストパネル（`mountSupertonicTest`）を完全除去し、モバイル案内のみの状態へ復元。
   - `AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/HANDOVER.md`：Supertonic 3 不採用・各ページ復元・ブラウザ標準TTS優先選択仕様・Pitch Lab 改善内容の反映。
 - **【ユーザー実機確認待ち】**
