@@ -826,37 +826,90 @@ const practice71State = {
     savedResults: {}
 };
 
+const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 let preferredVoice = null;
 
 function setupPreferredVoice() {
     try {
-        const voices = speechSynthesis.getVoices();
-        if (!voices || voices.length === 0) return;
+        const voices =
+            typeof speechSynthesis !== "undefined"
+                ? speechSynthesis.getVoices()
+                : [];
 
-        let selected = voices.find(v =>
-            v.name && v.lang &&
-            v.name.toLowerCase().includes("chrome os") &&
-            v.lang.includes("ja")
+        const japanese = (voices || []).filter(
+            v => v && v.lang && /^ja/i.test(v.lang)
         );
 
+        let savedName = null;
+        try {
+            savedName = localStorage.getItem(VOICE_STORAGE_KEY);
+        } catch (e) {}
+
+        let selected = savedName
+            ? japanese.find(v => v.name === savedName)
+            : null;
+
         if (!selected) {
-            selected = voices.find(v => v.name && v.name.toLowerCase().includes("keita"));
-        }
-        if (!selected) {
-            selected = voices.find(v => v.name && v.name.toLowerCase().includes("nanami"));
-        }
-        if (!selected) {
-            selected = voices.find(v =>
-                v.name && v.lang &&
-                v.name.toLowerCase().includes("google") &&
-                v.lang.includes("ja")
-            );
-        }
-        if (!selected) {
-            selected = voices.find(v => v.lang && v.lang.includes("ja"));
+            selected =
+                japanese.find(v =>
+                    v.name && /chrome os/i.test(v.name)
+                )
+                || japanese.find(v =>
+                    v.name && /keita/i.test(v.name)
+                )
+                || japanese.find(v =>
+                    v.name && /nanami/i.test(v.name)
+                )
+                || japanese.find(v =>
+                    v.name && /google/i.test(v.name)
+                )
+                || japanese[0]
+                || null;
         }
 
-        if (selected) preferredVoice = selected;
+        preferredVoice = selected;
+
+        const selectEl = document.getElementById("voiceSelect");
+        if (selectEl) {
+            if (!selectEl.dataset.bound) {
+                selectEl.dataset.bound = "true";
+                selectEl.addEventListener("change", () => {
+                    try {
+                        localStorage.setItem(
+                            VOICE_STORAGE_KEY,
+                            selectEl.value
+                        );
+                    } catch (e) {}
+                    setupPreferredVoice();
+                });
+            }
+
+            const signature = japanese.map(v => v.name).join("||");
+            if (selectEl.dataset.voicesSignature !== signature) {
+                selectEl.dataset.voicesSignature = signature;
+                selectEl.replaceChildren();
+
+                if (!japanese.length) {
+                    const opt = document.createElement("option");
+                    opt.value = "";
+                    opt.textContent = "No Japanese voice available";
+                    selectEl.append(opt);
+                    selectEl.disabled = true;
+                } else {
+                    selectEl.disabled = false;
+                    japanese.forEach(v => {
+                        const opt = document.createElement("option");
+                        opt.value = v.name;
+                        opt.textContent = v.name;
+                        selectEl.append(opt);
+                    });
+                }
+            }
+
+            if (selected && selectEl.value !== selected.name) {
+                selectEl.value = selected.name;
+            }
+        }
     } catch (e) {
         console.warn("Voice setup error:", e);
     }
@@ -936,19 +989,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function setupFooterGuide() {
-    const trigger = document.getElementById("guideTrigger");
-    const box = document.getElementById("guideBox");
-
-    if (trigger && box) {
-        trigger.addEventListener("click", (e) => {
-            e.stopPropagation();
-            box.style.display = box.style.display === "none" ? "block" : "none";
-        });
-
-        document.addEventListener("click", () => {
-            box.style.display = "none";
-        });
-    }
+    setupPreferredVoice();
 }
 
 function formatWord(word, kanji, romaji, meaning) {

@@ -73,15 +73,10 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
 ### 4.1 現在の状態区分
 - **【ユーザー実機確認済み】**
   - `pronunciation1` および `practice1.1` における Supertonic 3（Hiro／Mina）の実機試聴・不採用判断。
+  - Chrome でのブラウザ標準TTSへの復元動作、および `pronunciation1` の Pitch Lab における `🔊きく` ボタン・ピッチ曲線描画・自動停止動作。
 - **【実装済み・自動検証済み】**
-  - `practice1.1.js`：Supertonic 3 接続前の元の状態（ブラウザ標準 `speechSynthesis`）へ復元。
-  - `pronunciation1.js`：
-    - Supertonic 3 接続前の元の状態（ブラウザ標準 `speechSynthesis` および元の `drill1Data`）へ復元。
-    - Pitch Lab 各カードにおいて、`🎙️とる` の前にモデル音声を聞く **`🔊きく`** ボタンを設置（プルダウンで選択中のペアの各語をブラウザ標準TTSで再生、`Free practice` 選択時は無効化）。
-    - Pitch Lab のピッチ曲線描画（`estimateF0Frames` / `drawPitchCurve`）を改善し、相対音量ゲート・ゼロ交差後の自己相関ピーク検出・中央値フィルタ・移動平均平滑化・有声区間への時間軸フォーカスにより、環境ノイズや細かい揺れを除外して明確なピッチの動きのみを描画するよう修正。
-    - Pitch Lab で左カード録音後の自動再生中（特に Autostop の末尾2秒の無音再生中）に右カードの `🎙️とる` を押した際、`stopAllPlayback()` が左カードのステータス（`statusEl`）を `"Ready"` に戻さず `"Playing..."` のまま取り残していた不具合を修正。
-    - Pitch Lab の録音時のみ `getUserMedia` で `noiseSuppression: false` 等が指定されていたため、環境ノイズで RMS が `0.015` を下回らず発話後2秒の Autostop が作動せずに20秒上限まで録音が続いていた問題を修正（Drill 1 や他ページと同じ `audio: true` に統一）。
-  - `index.js`：Supertonic 3 音声テストパネル（`mountSupertonicTest`）を完全除去し、モバイル案内のみの状態へ復元。
-  - `AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/HANDOVER.md`：Supertonic 3 不採用・各ページ復元・ブラウザ標準TTS優先選択仕様・Pitch Lab 改善内容の反映。
+  - 全8練習ページ（`practice1.1`、`practice1.2`、`practice7.1`、`practice7.2`、`practice7.3`、`composition1`、`pronunciation1`、`pronunciation2`）および `style.css`：
+    - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
+    - プルダウンで選択した音声名を `localStorage`（`october2026.selectedVoiceName`）に保存し、ページ移動や再読み込みでも維持するよう実装（未保存または該当音声がない環境では従来の優先順位で自動選択）。
 - **【ユーザー実機確認待ち】**
-  - Vercel デプロイ後、`index.html`（音声テスト消去）、`practice1.1.html`、`pronunciation1.html`（Pitch Lab の `🔊きく` ボタン、ピッチ描画の視認性、左右カードの `Playing...` → `Ready` 復帰を含む）のWeb実機確認。
+  - Vercel デプロイ後、各ページ最下部左の `🔊Voice:` プルダウンに実行環境の日本語TTS一覧が正式名称で表示され、切り替え・ページ間保持が正常に動作することのWeb実機確認。

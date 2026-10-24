@@ -202,19 +202,76 @@ function busy() {
 // 再生
 // ============================================================================
 
+const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
+
 function setupPreferredVoice() {
     if (!("speechSynthesis" in window)) return;
 
     const voices = window.speechSynthesis.getVoices();
     const japanese = voices.filter(v => /^ja/i.test(v.lang));
 
-    preferredVoice =
-        japanese.find(v => /chrome os/i.test(v.name))
-        || japanese.find(v => /keita/i.test(v.name))
-        || japanese.find(v => /nanami/i.test(v.name))
-        || japanese.find(v => /google/i.test(v.name))
-        || japanese[0]
-        || null;
+    let savedName = null;
+    try {
+        savedName = localStorage.getItem(VOICE_STORAGE_KEY);
+    } catch (e) {}
+
+    let selected = savedName
+        ? japanese.find(v => v.name === savedName)
+        : null;
+
+    if (!selected) {
+        selected =
+            japanese.find(v => /chrome os/i.test(v.name))
+            || japanese.find(v => /keita/i.test(v.name))
+            || japanese.find(v => /nanami/i.test(v.name))
+            || japanese.find(v => /google/i.test(v.name))
+            || japanese[0]
+            || null;
+    }
+
+    preferredVoice = selected;
+
+    const selectEl = document.getElementById("voiceSelect");
+    if (selectEl) {
+        if (!selectEl.dataset.bound) {
+            selectEl.dataset.bound = "true";
+            selectEl.addEventListener("change", () => {
+                try {
+                    localStorage.setItem(
+                        VOICE_STORAGE_KEY,
+                        selectEl.value
+                    );
+                } catch (e) {}
+                setupPreferredVoice();
+            });
+        }
+
+        const signature = japanese.map(v => v.name).join("||");
+        if (selectEl.dataset.voicesSignature !== signature) {
+            selectEl.dataset.voicesSignature = signature;
+            selectEl.replaceChildren();
+
+            if (!japanese.length) {
+                const opt = document.createElement("option");
+                opt.value = "";
+                opt.textContent = "No Japanese voice available";
+                selectEl.append(opt);
+                selectEl.disabled = true;
+            } else {
+                selectEl.disabled = false;
+                japanese.forEach(v => {
+                    const opt = document.createElement("option");
+                    opt.value = v.name;
+                    opt.textContent = v.name;
+                    selectEl.append(opt);
+                });
+            }
+        }
+
+        if (selected && selectEl.value !== selected.name) {
+            selectEl.value = selected.name;
+        }
+    }
 }
 
 function stopAllPlayback() {
@@ -2154,26 +2211,7 @@ async function startRecording(initialView) {
 // ============================================================================
 
 function setupFooterGuide() {
-    const trigger =
-        document.getElementById("guideTrigger");
-
-    const box =
-        document.getElementById("guideBox");
-
-    if (!trigger || !box) return;
-
-    trigger.addEventListener("click", event => {
-        event.stopPropagation();
-
-        box.style.display =
-            box.style.display === "none"
-                ? "block"
-                : "none";
-    });
-
-    document.addEventListener("click", () => {
-        box.style.display = "none";
-    });
+    setupPreferredVoice();
 }
 
 if ("speechSynthesis" in window) {

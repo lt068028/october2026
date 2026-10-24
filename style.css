@@ -1040,11 +1040,58 @@ input:checked + .slider:before { transform: translateX(16px); }
    Footer
    ========================================== */
 .voice-guide-footer {
-    margin-top: 30px; text-align: left; font-size: 13px; color: var(--text-secondary); position: relative; display: inline-block;
+    margin-top: 30px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-secondary);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
 }
-.guide-trigger { cursor: pointer; color: var(--accent-color); text-decoration: underline; font-weight: bold; }
-.guide-box-popup {
-    margin-top: 6px; background-color: var(--tooltip-bg); color: var(--tooltip-text); padding: 8px 12px; border-radius: 4px; font-size: 12px; line-height: 1.4; position: absolute; z-index: 10; left: 0; white-space: nowrap; display: none;
+.voice-select-label {
+    font-weight: bold;
+    color: var(--text-secondary);
+}
+.voice-select {
+    font: inherit;
+    font-size: 13px;
+    color: var(--text-primary);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 3px 8px;
+    max-width: min(380px, 78vw);
+    cursor: pointer;
+}
+.voice-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.voice-help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: bold;
+    cursor: help;
+    user-select: none;
+}
+.voice-help-icon > .custom-tip-box {
+    left: 0;
+    transform: none;
+    white-space: normal;
+    width: max-content;
+    max-width: min(320px, 75vw);
+    text-align: left;
+    line-height: 1.4;
 }
 
 /* ==========================================

@@ -148,18 +148,11 @@
 
     <!-- Footer -->
     <footer class="voice-guide-footer">
-        🔊Want to change the voice?
-        <span id="guideTrigger" class="guide-trigger">Check⚙️</span>
-
-        <div
-            id="guideBox"
-            class="guide-box-popup"
-            style="display: none;"
-        >
-            Win: Settings &gt; Time &amp; Language &gt; Speech<br>
-            Mac/iOS: Settings &gt; Accessibility &gt; Spoken Content<br>
-            ChromeOS: Settings &gt; Advanced &gt; Accessibility &gt; Text-to-Speech
-        </div>
+        <label for="voiceSelect" class="voice-select-label">🔊Voice:</label>
+        <select id="voiceSelect" class="voice-select" aria-label="Voice"></select>
+        <span class="voice-help-icon custom-tip-wrap" tabindex="0" aria-label="Voice help">?
+            <span class="custom-tip-box">If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.</span>
+        </span>
     </footer>
 
     <script src="practice7.1.js"></script>

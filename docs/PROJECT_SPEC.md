@@ -30,15 +30,20 @@
 - **状態保持の原則（確定仕様・現行実装一致）**：
   - 表示モード（`Script Mode`）、`Speech Style`、`Vocab` ヒント表示などを切り替えても、**既に録音した音声データ・元の認識結果・抽出テキスト・正誤判定結果を消去しない**。
 
-### 2.2 ブラウザ標準TTS（`speechSynthesis`）の優先音声選択仕様（全8練習ページ共通）
-- 全練習ページ（`practice1.1.js`、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js`）では、`setupPreferredVoice()`（`practice7.3.js` では `setupPreferredVoice73()`）により、`window.speechSynthesis.getVoices()` から以下の優先順位で日本語音声（`preferredVoice`）を自動選択する：
-  1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含み、`lang` に `"ja"` を含む音声
-  2. **Windows（Edge / OS）男性自然音声**：`name` に `"keita"` を含む音声（Microsoft Keita）
-  3. **Windows（Edge / OS）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
-  4. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含み、`lang` に `"ja"` を含む音声
-  5. **その他の日本語音声（フォールバック）**：上記がない場合、`lang` に `"ja"` を含む最初の音声（macOS / iOS の Kyoko・Otoya 等）
+### 2.2 ブラウザ標準TTS（`speechSynthesis`）の優先音声選択・切替仕様（全8練習ページ共通）
+- 全練習ページ（`practice1.1.js`、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js`）では、`setupPreferredVoice()`（`practice7.3.js` では `setupPreferredVoice73()`）により、`window.speechSynthesis.getVoices()` から日本語音声（`/^ja/i.test(v.lang)`）を取得して以下のように選択する：
+  - **保存音声の復元**：`localStorage`（キー：`october2026.selectedVoiceName`）に保存された音声名が現在の環境の日本語音声一覧に存在する場合は、その音声を選択する（ページ移動や再読み込みでも維持される）。
+  - **未保存時・該当音声不在時の自動選択優先順位**：
+    1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含み、`lang` に `"ja"` を含む音声
+    2. **Windows（Edge / OS）男性自然音声**：`name` に `"keita"` を含む音声（Microsoft Keita）
+    3. **Windows（Edge / OS）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
+    4. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含み、`lang` に `"ja"` を含む音声
+    5. **その他の日本語音声（フォールバック）**：上記がない場合、`lang` に `"ja"` を含む最初の音声（macOS / iOS の Kyoko・Otoya 等）
 - 読み上げ時は `utterance.lang = "ja-JP"`、`utterance.rate = 0.9`（デフォルト）で再生する。
-- 各ページのフッターには `🔊Want to change the voice? Check⚙️`（`#guideTrigger` / `#guideBox`）が設置されており、OS別（Win / Mac・iOS / ChromeOS）の音声変更手順を案内している。
+- **ページ最下部左（`.voice-guide-footer`）の音声選択UI**：
+  - 従来の `🔊Want to change the voice? Check⚙️` およびOS別設定パスのポップアップは廃止し、`🔊Voice:` ＋ プルダウン（`#voiceSelect`）＋ 補足ツールチップ（`?`）を配置する。
+  - プルダウンには実行環境で利用可能なすべての日本語TTSを正式名称（`voice.name`）で一覧表示し、現在使用中の音声を表示するとともに、他の日本語TTSへその場で切り替え・`localStorage` 保存できるようにする。
+  - 横の `?` アイコンのツールチップには、選択肢が出ない場合のみ端末のText-to-Speech設定で日本語音声を追加できる旨の補足（`If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.`）を表示する。
 
 ### 2.3 各設定項目の目的・対象・動作・制約
 
