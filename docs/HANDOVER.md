@@ -75,8 +75,12 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
   - `pronunciation1` および `practice1.1` における Supertonic 3（Hiro／Mina）の実機試聴・不採用判断。
 - **【実装済み・自動検証済み】**
   - `practice1.1.js`：Supertonic 3 接続前の元の状態（ブラウザ標準 `speechSynthesis`）へ復元。
-  - `pronunciation1.js`：Supertonic 3 接続前の元の状態（ブラウザ標準 `speechSynthesis` および元の `drill1Data`）へ復元。
+  - `pronunciation1.js`：
+    - Supertonic 3 接続前の元の状態（ブラウザ標準 `speechSynthesis` および元の `drill1Data`）へ復元。
+    - Pitch Lab 各カードにおいて、`🎙️とる` の前にモデル音声を聞く **`🔊きく`** ボタンを設置（プルダウンで選択中のペアの各語をブラウザ標準TTSで再生、`Free practice` 選択時は無効化）。
+    - Pitch Lab のピッチ曲線描画（`estimateF0Frames` / `drawPitchCurve`）を改善し、相対音量ゲート・ゼロ交差後の自己相関ピーク検出・中央値フィルタ・移動平均平滑化・有声区間への時間軸フォーカスにより、環境ノイズや細かい揺れを除外して明確なピッチの動きのみを描画するよう修正。
+    - Pitch Lab で左カード録音後の自動再生中（特に Autostop の末尾2秒の無音再生中）に右カードの `🎙️とる` を押した際、`stopAllPlayback()` が左カードのステータス（`statusEl`）を `"Ready"` に戻さず `"Playing..."` のまま取り残していた不具合を修正。
   - `index.js`：Supertonic 3 音声テストパネル（`mountSupertonicTest`）を完全除去し、モバイル案内のみの状態へ復元。
-  - `AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/HANDOVER.md`：Supertonic 3 不採用・各ページ復元・ブラウザ標準TTS優先選択仕様の反映。
+  - `AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/HANDOVER.md`：Supertonic 3 不採用・各ページ復元・ブラウザ標準TTS優先選択仕様・Pitch Lab 改善内容の反映。
 - **【ユーザー実機確認待ち】**
-  - Vercel デプロイ後、`index.html`（音声テスト消去）、`practice1.1.html`、`pronunciation1.html` が元のブラウザ標準TTSの状態で正常に動作することのWeb実機確認。
+  - Vercel デプロイ後、`index.html`（音声テスト消去）、`practice1.1.html`、`pronunciation1.html`（Pitch Lab の `🔊きく` ボタン、ピッチ描画の視認性、左右カードの `Playing...` → `Ready` 復帰を含む）のWeb実機確認。

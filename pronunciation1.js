@@ -129,11 +129,32 @@ function stopAllPlayback() {
     currentUtteranceRef = null;
 
     if (currentPlayingAudio) {
+        currentPlayingAudio.onended = null;
+        currentPlayingAudio.onerror = null;
         currentPlayingAudio.pause();
         currentPlayingAudio = null;
     }
 
     restorePlayButtons();
+
+    if (activePitchPlayingState) {
+        const state = activePitchPlayingState;
+        activePitchPlayingState = null;
+
+        if (!state.isRecording && !state.isAnalyzing) {
+            if (state.listenBtn) {
+                state.listenBtn.disabled = !state.modelText;
+            }
+
+            state.recordBtn.disabled = false;
+            state.playBtn.disabled = !state.audioBlob;
+
+            setPitchStatus(
+                state,
+                state.audioBlob ? "Ready" : "Not recorded yet"
+            );
+        }
+    }
 }
 
 // ============================================================================
@@ -262,6 +283,7 @@ const pronunciation1State = {
 };
 
 let activePitchRecordingState = null;
+let activePitchPlayingState = null;
 let pronunciationCapture = null;
 
 function initSettingsPanel() {
@@ -828,6 +850,9 @@ async function pronunciationCaptureStart(key, state) {
             pronunciation1Sync();
 
             if (state) {
+                if (state.listenBtn) {
+                    state.listenBtn.disabled = !state.modelText;
+                }
                 state.recordBtn.disabled = false;
                 state.stopBtn.disabled = true;
                 state.playBtn.disabled = !state.audioBlob;
@@ -1022,7 +1047,12 @@ function pronunciationLabTips() {
     document.querySelectorAll(
         "#pitchLab .pitch-play"
     ).forEach(button => {
-        if (button.querySelector(".custom-tip-box")) return;
+        if (
+            activePlayButtons.includes(button)
+            || button.querySelector(".custom-tip-box")
+        ) {
+            return;
+        }
 
         button.classList.add(
             "play-recording-btn",
@@ -1033,6 +1063,7 @@ function pronunciationLabTips() {
         tip.className = "custom-tip-box";
         tip.textContent = "Play your recorded voice";
         button.append(tip);
+        button.dataset.originalHtml = button.innerHTML;
     });
 }
 
@@ -1065,12 +1096,17 @@ function initPitchLab() {
     const pairs = drill1Data.map((item, index) => ({
         id: String(index),
         words: item.text.split("｜").map(text => text.trim()),
+        models: item.kanji
+            .split("。")
+            .map(text => text.trim())
+            .filter(Boolean),
         free: false
     }));
 
     pairs.push({
         id: "free",
         words: ["First recording", "Second recording"],
+        models: ["", ""],
         free: true
     });
 
@@ -1152,7 +1188,7 @@ function initPitchLab() {
         const controls = document.createElement("div");
         controls.className = "pitch-controls";
 
-        function button(text, className, label) {
+        function button(text, className, label, tipText = "") {
             const element = document.createElement("button");
             element.type = "button";
             element.className = `example-button ${className}`;
@@ -1163,21 +1199,50 @@ function initPitchLab() {
                 `${label}: ${word}`
             );
 
+            if (tipText) {
+                element.classList.add("custom-tip-wrap");
+                const tip = document.createElement("span");
+                tip.className = "custom-tip-box";
+                tip.textContent = tipText;
+                element.append(tip);
+            }
+
+            element.dataset.originalHtml = element.innerHTML;
+
             return element;
         }
 
+        const modelText = pair.models?.[side] || "";
+
+        const listenBtn = button(
+            "🔊きく",
+            "pitch-listen",
+            "Listen to the model",
+            "Listen to the model."
+        );
+
         const recordBtn = button(
-            "🎙️とる", "pitch-record", "Record"
+            "🎙️とる",
+            "pitch-record",
+            "Record",
+            "Record your voice."
         );
 
         const stopBtn = button(
-            "⏹️", "pitch-stop", "Stop recording"
+            "⏹️",
+            "pitch-stop",
+            "Stop recording",
+            "Stop recording."
         );
 
         const playBtn = button(
-            "▶️", "pitch-play", "Play your recording"
+            "▶️",
+            "pitch-play play-recording-btn",
+            "Play your recording",
+            "Play your recorded voice"
         );
 
+        listenBtn.disabled = !modelText;
         stopBtn.disabled = true;
         playBtn.disabled = true;
 
@@ -1196,6 +1261,7 @@ function initPitchLab() {
         );
 
         controls.append(
+            listenBtn,
             recordBtn,
             stopBtn,
             playBtn,
@@ -1207,6 +1273,8 @@ function initPitchLab() {
         const state = {
             card,
             side: card.dataset.pitchSide,
+            modelText,
+            listenBtn,
             recordBtn,
             stopBtn,
             playBtn,
@@ -1221,6 +1289,10 @@ function initPitchLab() {
             isAnalyzing: false,
             f0Frames: null
         };
+
+        listenBtn.addEventListener("click", () => {
+            playPitchModel(state);
+        });
 
         recordBtn.addEventListener("click", () => {
             startPitchRecording(state);
@@ -1299,6 +1371,9 @@ function initPitchLab() {
         choice.addEventListener("click", () => {
             if (busy()) return;
 
+            ++pronunciation1State.playback;
+            stopAllPlayback();
+
             showPair(pair);
             picker.open = false;
             summary.focus();
@@ -1363,6 +1438,46 @@ function stopPitchRecording(state) {
     }
 }
 
+function playPitchModel(state) {
+    if (
+        pronunciation1Busy()
+        || state.isAnalyzing
+        || !state.modelText
+    ) {
+        return;
+    }
+
+    const version = ++pronunciation1State.playback;
+
+    setPlayingStateMultiple(
+        [state.listenBtn],
+        "Playing..."
+    );
+
+    activePitchPlayingState = state;
+    setPitchStatus(state, "Playing...");
+
+    let completed = false;
+
+    const finish = () => {
+        if (
+            completed
+            || version !== pronunciation1State.playback
+        ) {
+            return;
+        }
+
+        completed = true;
+        stopAllPlayback();
+    };
+
+    try {
+        speakText(state.modelText, 0.9, finish);
+    } catch (error) {
+        finish();
+    }
+}
+
 function playPitchRecording(state) {
     if (
         pronunciation1Busy()
@@ -1373,12 +1488,15 @@ function playPitchRecording(state) {
         return;
     }
 
-    ++pronunciation1State.playback;
+    const version = ++pronunciation1State.playback;
 
     setPlayingStateMultiple(
         [state.playBtn],
         "Playing..."
     );
+
+    activePitchPlayingState = state;
+    setPitchStatus(state, "Playing...");
 
     const audio = new Audio(state.audioUrl);
     currentPlayingAudio = audio;
@@ -1387,29 +1505,28 @@ function playPitchRecording(state) {
     let completed = false;
 
     const finish = () => {
-        if (completed) return;
+        if (
+            completed
+            || version !== pronunciation1State.playback
+        ) {
+            return;
+        }
+
         completed = true;
-
-        if (currentPlayingAudio !== audio) return;
-
         stopAllPlayback();
-
-        state.recordBtn.disabled = false;
-        state.playBtn.disabled = !state.audioBlob;
-
-        setPitchStatus(state, "Ready");
     };
 
     audio.onended = finish;
     audio.onerror = finish;
     audio.play().catch(finish);
-
-    setPitchStatus(state, "Playing...");
 }
 async function analyzePitchRecording(state) {
     if (!state.audioBlob || state.isAnalyzing) return;
 
     state.isAnalyzing = true;
+    if (state.listenBtn) {
+        state.listenBtn.disabled = true;
+    }
     state.recordBtn.disabled = true;
     state.playBtn.disabled = true;
     setPitchStatus(state, "Drawing pitch...");
@@ -1467,6 +1584,9 @@ async function analyzePitchRecording(state) {
         }
 
         state.isAnalyzing = false;
+        if (state.listenBtn) {
+            state.listenBtn.disabled = !state.modelText;
+        }
         state.recordBtn.disabled = false;
         state.playBtn.disabled = !state.audioBlob;
     }
@@ -1498,17 +1618,25 @@ function estimateF0Frames(samples, sampleRate) {
     const frameLength = Math.round(sampleRate * 0.040);
     const hopLength = Math.round(sampleRate * 0.010);
 
-    const minFrequency = 70;
+    const minFrequency = 75;
     const maxFrequency = 400;
 
     const minLag = Math.floor(sampleRate / maxFrequency);
     const maxLag = Math.ceil(sampleRate / minFrequency);
 
-    const frames = [];
-
     if (samples.length < frameLength) {
-        return frames;
+        return [];
     }
+
+    // Build Hann window once per analysis.
+    const hannWindow = new Float32Array(frameLength);
+    for (let i = 0; i < frameLength; i++) {
+        hannWindow[i] =
+            0.5 * (1 - Math.cos((2 * Math.PI * i) / (frameLength - 1)));
+    }
+
+    const rawFrames = [];
+    let maxRms = 0;
 
     for (
         let start = 0;
@@ -1520,60 +1648,300 @@ function estimateF0Frames(samples, sampleRate) {
             start + frameLength
         );
 
-        const f0 = estimateFrameF0(
+        let mean = 0;
+        for (let i = 0; i < frameLength; i++) {
+            mean += frame[i];
+        }
+        mean /= frameLength;
+
+        let energy = 0;
+        let zeroCrossings = 0;
+        let prev = frame[0] - mean;
+
+        for (let i = 0; i < frameLength; i++) {
+            const centeredVal = frame[i] - mean;
+            energy += centeredVal * centeredVal;
+
+            if (
+                (centeredVal >= 0 && prev < 0)
+                || (centeredVal < 0 && prev >= 0)
+            ) {
+                zeroCrossings++;
+            }
+            prev = centeredVal;
+        }
+
+        const rms = Math.sqrt(energy / frameLength);
+        if (rms > maxRms) {
+            maxRms = rms;
+        }
+
+        const zcrHz = (zeroCrossings * sampleRate) / (2 * frameLength);
+
+        rawFrames.push({
+            start,
+            time: (start + frameLength / 2) / sampleRate,
+            rms,
+            zcrHz,
+            mean,
+            f0: null
+        });
+    }
+
+    if (maxRms < 0.008) {
+        return rawFrames.map(({ time }) => ({ time, f0: null }));
+    }
+
+    // Relative vocal energy gate: ignore background hum, breath, and silence.
+    const rmsThreshold = Math.max(0.008, maxRms * 0.18);
+
+    for (let idx = 0; idx < rawFrames.length; idx++) {
+        const info = rawFrames[idx];
+
+        // Skip low-energy frames and high-frequency unvoiced fricatives (s, sh, h).
+        if (info.rms < rmsThreshold || info.zcrHz > 2200) {
+            continue;
+        }
+
+        const frame = samples.subarray(
+            info.start,
+            info.start + frameLength
+        );
+
+        info.f0 = estimateFrameF0(
             frame,
+            info.mean,
+            hannWindow,
             sampleRate,
             minLag,
             maxLag
         );
-
-        frames.push({
-            time: (start + frameLength / 2) / sampleRate,
-            f0
-        });
     }
 
-    return frames;
+    // 1. 5-frame median filter to eliminate isolated 1-2 frame octave spikes.
+    const medianFiltered = rawFrames.map((frame, i) => {
+        if (!Number.isFinite(frame.f0)) return null;
+
+        const neighbors = [];
+        for (
+            let j = Math.max(0, i - 2);
+            j <= Math.min(rawFrames.length - 1, i + 2);
+            j++
+        ) {
+            if (Number.isFinite(rawFrames[j].f0)) {
+                neighbors.push(rawFrames[j].f0);
+            }
+        }
+
+        if (neighbors.length < 3) return null;
+
+        const med = calculateMedian(neighbors);
+        if (Math.abs(frame.f0 - med) / med > 0.18) {
+            return med;
+        }
+
+        return frame.f0;
+    });
+
+    for (let i = 0; i < rawFrames.length; i++) {
+        rawFrames[i].f0 = medianFiltered[i];
+    }
+
+    // 2. Bridge tiny 1-2 frame (10-20ms) gaps within a smooth voiced contour.
+    for (let i = 1; i < rawFrames.length - 2; i++) {
+        if (!Number.isFinite(rawFrames[i].f0)) {
+            const left = rawFrames[i - 1].f0;
+            const right1 = rawFrames[i + 1].f0;
+            const right2 = rawFrames[i + 2].f0;
+
+            if (
+                Number.isFinite(left)
+                && Number.isFinite(right1)
+                && Math.abs(left - right1) / left < 0.12
+            ) {
+                rawFrames[i].f0 = (left + right1) / 2;
+            } else if (
+                Number.isFinite(left)
+                && !Number.isFinite(right1)
+                && Number.isFinite(right2)
+                && Math.abs(left - right2) / left < 0.12
+            ) {
+                rawFrames[i].f0 = (2 * left + right2) / 3;
+                rawFrames[i + 1].f0 = (left + 2 * right2) / 3;
+            }
+        }
+    }
+
+    // 3. Extract contiguous voiced segments and filter out short noise blips (< 60ms)
+    //    or segments far weaker than the main spoken word.
+    const segments = [];
+    let currentSeg = [];
+
+    for (let i = 0; i < rawFrames.length; i++) {
+        if (Number.isFinite(rawFrames[i].f0)) {
+            currentSeg.push(i);
+        } else if (currentSeg.length) {
+            segments.push(currentSeg);
+            currentSeg = [];
+        }
+    }
+    if (currentSeg.length) {
+        segments.push(currentSeg);
+    }
+
+    // Trim steep consonant-onset/offset jumps at the edges of each segment.
+    const validSegments = [];
+
+    for (const seg of segments) {
+        if (seg.length < 6) continue;
+
+        const segMedian = calculateMedian(
+            seg.map(idx => rawFrames[idx].f0)
+        );
+
+        // Reject outlier frames within the segment that deviate > 28% from segment median
+        // or jump > 12% in a single 10ms step at segment boundaries.
+        let startIdx = 0;
+        let endIdx = seg.length - 1;
+
+        while (startIdx < endIdx) {
+            const fCur = rawFrames[seg[startIdx]].f0;
+            const fNext = rawFrames[seg[startIdx + 1]].f0;
+            if (
+                Math.abs(fCur - fNext) / fNext > 0.10
+                || Math.abs(fCur - segMedian) / segMedian > 0.28
+            ) {
+                startIdx++;
+            } else {
+                break;
+            }
+        }
+
+        while (endIdx > startIdx) {
+            const fCur = rawFrames[seg[endIdx]].f0;
+            const fPrev = rawFrames[seg[endIdx - 1]].f0;
+            if (
+                Math.abs(fCur - fPrev) / fPrev > 0.10
+                || Math.abs(fCur - segMedian) / segMedian > 0.28
+            ) {
+                endIdx--;
+            } else {
+                break;
+            }
+        }
+
+        const trimmed = seg.slice(startIdx, endIdx + 1);
+        if (trimmed.length >= 6) {
+            const peakRms = Math.max(
+                ...trimmed.map(idx => rawFrames[idx].rms)
+            );
+            const totalEnergy = trimmed.reduce(
+                (sum, idx) =>
+                    sum + rawFrames[idx].rms * rawFrames[idx].rms,
+                0
+            );
+
+            validSegments.push({
+                indices: trimmed,
+                peakRms,
+                totalEnergy,
+                startTime: rawFrames[trimmed[0]].time,
+                endTime: rawFrames[trimmed[trimmed.length - 1]].time
+            });
+        }
+    }
+
+    const cleanedF0 = new Array(rawFrames.length).fill(null);
+
+    if (validSegments.length) {
+        // Identify the primary spoken word segment (highest total vocal energy)
+        // and keep only segments belonging to that utterance.
+        const mainSeg = validSegments.reduce((best, seg) =>
+            seg.totalEnergy > best.totalEnergy ? seg : best
+        );
+
+        const keptSegments = validSegments.filter(seg => {
+            const timeGap = Math.max(
+                0,
+                seg.startTime - mainSeg.endTime,
+                mainSeg.startTime - seg.endTime
+            );
+            return (
+                seg.peakRms >= mainSeg.peakRms * 0.30
+                && timeGap <= 0.45
+            );
+        });
+
+        // 4. Smooth each kept voiced segment with 2 passes of a weighted 5-point filter
+        //    so only the clear pitch movement (rise/fall) is drawn.
+        const weights = [1, 2, 3, 2, 1];
+
+        for (const seg of keptSegments) {
+            let values = seg.indices.map(idx => rawFrames[idx].f0);
+
+            for (let pass = 0; pass < 2; pass++) {
+                values = values.map((_, pos) => {
+                    let weightedSum = 0;
+                    let weightTotal = 0;
+
+                    for (let offset = -2; offset <= 2; offset++) {
+                        const neighborPos = pos + offset;
+                        if (
+                            neighborPos >= 0
+                            && neighborPos < values.length
+                        ) {
+                            const w = weights[offset + 2];
+                            weightedSum += values[neighborPos] * w;
+                            weightTotal += w;
+                        }
+                    }
+
+                    return weightedSum / weightTotal;
+                });
+            }
+
+            seg.indices.forEach((frameIdx, pos) => {
+                cleanedF0[frameIdx] = values[pos];
+            });
+        }
+    }
+
+    return rawFrames.map((frame, i) => ({
+        time: frame.time,
+        f0: cleanedF0[i]
+    }));
 }
 
-function estimateFrameF0(frame, sampleRate, minLag, maxLag) {
+function estimateFrameF0(
+    frame,
+    mean,
+    hannWindow,
+    sampleRate,
+    minLag,
+    maxLag
+) {
     const length = frame.length;
-
-    // Remove DC offset.
-    let mean = 0;
+    const windowed = new Float32Array(length);
 
     for (let i = 0; i < length; i++) {
-        mean += frame[i];
+        windowed[i] = (frame[i] - mean) * hannWindow[i];
     }
-
-    mean /= length;
-
-    const centered = new Float32Array(length);
-    let energy = 0;
-
-    for (let i = 0; i < length; i++) {
-        centered[i] = frame[i] - mean;
-        energy += centered[i] * centered[i];
-    }
-
-    // Ignore silence and very low-energy frames.
-    if (energy / length < 0.000015) {
-        return null;
-    }
-
-    let bestLag = -1;
-    let bestCorrelation = 0;
 
     const upperLag = Math.min(maxLag, length - 2);
+    const correlations = new Float32Array(upperLag + 1);
 
-    for (let lag = minLag; lag <= upperLag; lag++) {
+    // Find the first zero-crossing of the autocorrelation after lag = 0
+    // so we never pick the lag = 0 main lobe slope at minLag (400 Hz).
+    let passedZero = false;
+
+    for (let lag = 1; lag <= upperLag; lag++) {
         let cross = 0;
         let energyA = 0;
         let energyB = 0;
 
         for (let i = 0; i < length - lag; i++) {
-            const a = centered[i];
-            const b = centered[i + lag];
+            const a = windowed[i];
+            const b = windowed[i + lag];
 
             cross += a * b;
             energyA += a * a;
@@ -1581,25 +1949,65 @@ function estimateFrameF0(frame, sampleRate, minLag, maxLag) {
         }
 
         const denominator = Math.sqrt(energyA * energyB);
+        const corr = denominator > 0 ? cross / denominator : 0;
 
-        if (denominator <= 0) continue;
-
-        const correlation = cross / denominator;
-
-        if (correlation > bestCorrelation) {
-            bestCorrelation = correlation;
-            bestLag = lag;
+        if (!passedZero) {
+            if (corr <= 0) {
+                passedZero = true;
+            }
+            continue;
         }
+
+        correlations[lag] = corr;
     }
 
-    // Reject weak periodicity to reduce false pitch estimates.
-    if (bestLag < 0 || bestCorrelation < 0.55) {
+    if (!passedZero) {
         return null;
     }
 
-    const f0 = sampleRate / bestLag;
+    // Collect local maxima within [minLag, upperLag].
+    const peaks = [];
+    let maxPeakCorr = 0;
 
-    if (f0 < 70 || f0 > 400) {
+    for (let lag = Math.max(minLag, 2); lag < upperLag; lag++) {
+        const corr = correlations[lag];
+        if (
+            corr >= 0.68
+            && corr > correlations[lag - 1]
+            && corr >= correlations[lag + 1]
+        ) {
+            peaks.push({ lag, corr });
+            if (corr > maxPeakCorr) {
+                maxPeakCorr = corr;
+            }
+        }
+    }
+
+    if (!peaks.length || maxPeakCorr < 0.68) {
+        return null;
+    }
+
+    // Choose the first strong peak (>= 90% of the highest peak) to avoid
+    // picking a half-frequency subharmonic octave drop.
+    const chosen = peaks.find(
+        peak => peak.corr >= maxPeakCorr * 0.90
+    ) || peaks[0];
+
+    let refinedLag = chosen.lag;
+    const prevCorr = correlations[chosen.lag - 1];
+    const nextCorr = correlations[chosen.lag + 1];
+    const denom = prevCorr - 2 * chosen.corr + nextCorr;
+
+    if (Math.abs(denom) > 1e-6) {
+        const delta = 0.5 * (prevCorr - nextCorr) / denom;
+        if (Math.abs(delta) <= 0.5) {
+            refinedLag += delta;
+        }
+    }
+
+    const f0 = sampleRate / refinedLag;
+
+    if (f0 < 75 || f0 > 400) {
         return null;
     }
 
@@ -1749,10 +2157,36 @@ function drawPitchCurve(state, frames) {
     context.lineTo(plotRight, plotBottom);
     context.stroke();
 
-    const maxTime = Math.max(
+    // Focus the time window around the voiced speech so leading/trailing silence
+    // does not compress the word contour into a tiny sliver.
+    const voicedFrames = frames.filter(
+        frame =>
+            Number.isFinite(frame.f0)
+            && frame.f0 >= minHz
+            && frame.f0 <= maxHz
+    );
+
+    const totalDuration = Math.max(
         frames[frames.length - 1].time,
         0.1
     );
+
+    let windowStart = 0;
+    let windowEnd = totalDuration;
+
+    if (voicedFrames.length) {
+        const firstVoiced = voicedFrames[0].time;
+        const lastVoiced = voicedFrames[voicedFrames.length - 1].time;
+        const voicedSpan = Math.max(0, lastVoiced - firstVoiced);
+        const targetSpan = Math.max(0.8, voicedSpan + 0.30);
+        const center = (firstVoiced + lastVoiced) / 2;
+
+        windowStart = Math.max(0, center - targetSpan / 2);
+        windowEnd = Math.min(totalDuration, windowStart + targetSpan);
+        windowStart = Math.max(0, windowEnd - targetSpan);
+    }
+
+    const windowDuration = Math.max(windowEnd - windowStart, 0.1);
 
     context.fillStyle = "#777777";
     context.font = "10px sans-serif";
@@ -1761,70 +2195,80 @@ function drawPitchCurve(state, frames) {
 
     context.fillText("0 s", plotLeft, plotBottom + 7);
     context.fillText(
-        `${maxTime.toFixed(1)} s`,
+        `${windowDuration.toFixed(1)} s`,
         plotRight,
         plotBottom + 7
     );
 
-    // Draw a separate segment for each continuous voiced section.
-    // Missing/unvoiced frames create gaps rather than being interpolated.
+    // Draw a smooth, bold curve for each continuous voiced section
+    // with start/end endpoint markers instead of noisy per-frame dots.
     context.strokeStyle = "#0d9488";
-    context.lineWidth = 2;
+    context.lineWidth = 3;
     context.lineJoin = "round";
     context.lineCap = "round";
 
-    let segmentOpen = false;
-
-    context.beginPath();
+    const segments = [];
+    let currentSegment = [];
 
     frames.forEach(frame => {
         if (
             !Number.isFinite(frame.f0) ||
             frame.f0 < minHz ||
-            frame.f0 > maxHz
+            frame.f0 > maxHz ||
+            frame.time < windowStart ||
+            frame.time > windowEnd
         ) {
-            segmentOpen = false;
+            if (currentSegment.length) {
+                segments.push(currentSegment);
+                currentSegment = [];
+            }
             return;
         }
 
         const x =
-            plotLeft + (frame.time / maxTime) * plotWidth;
+            plotLeft +
+            ((frame.time - windowStart) / windowDuration) * plotWidth;
 
         const y =
             plotBottom -
             ((frame.f0 - minHz) / (maxHz - minHz)) * plotHeight;
 
-        if (!segmentOpen) {
-            context.moveTo(x, y);
-            segmentOpen = true;
-        } else {
-            context.lineTo(x, y);
-        }
+        currentSegment.push({ x, y });
     });
 
-    context.stroke();
+    if (currentSegment.length) {
+        segments.push(currentSegment);
+    }
 
-    context.fillStyle = "#0d9488";
+    segments.forEach(points => {
+        context.beginPath();
+        context.moveTo(points[0].x, points[0].y);
 
-    frames.forEach(frame => {
-        if (
-            !Number.isFinite(frame.f0) ||
-            frame.f0 < minHz ||
-            frame.f0 > maxHz
-        ) {
-            return;
+        for (let i = 1; i < points.length - 1; i++) {
+            const midX = (points[i].x + points[i + 1].x) / 2;
+            const midY = (points[i].y + points[i + 1].y) / 2;
+            context.quadraticCurveTo(
+                points[i].x,
+                points[i].y,
+                midX,
+                midY
+            );
         }
 
-        const x =
-            plotLeft + (frame.time / maxTime) * plotWidth;
+        if (points.length > 1) {
+            const last = points[points.length - 1];
+            context.lineTo(last.x, last.y);
+        }
 
-        const y =
-            plotBottom -
-            ((frame.f0 - minHz) / (maxHz - minHz)) * plotHeight;
+        context.stroke();
 
-        context.beginPath();
-        context.arc(x, y, 1.8, 0, Math.PI * 2);
-        context.fill();
+        // Draw subtle start and end markers so the direction of movement is clear.
+        context.fillStyle = "#0d9488";
+        [points[0], points[points.length - 1]].forEach(pt => {
+            context.beginPath();
+            context.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+            context.fill();
+        });
     });
 }
 
