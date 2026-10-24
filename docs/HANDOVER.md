@@ -75,12 +75,12 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
 - **【ユーザー実機確認済み】**
   - `pronunciation1` および `practice1.1` における Supertonic 3（Hiro／Mina）の実機試聴・不採用判断。
   - Chrome でのブラウザ標準TTSへの復元動作、および `pronunciation1` の Pitch Lab における `🔊きく` ボタン・ピッチ曲線描画・自動停止動作。
+  - `pronunciation2` の Pitch Lab 設置および1枚カード表示の反映確認。
 - **【実装済み・自動検証済み】**
   - 全8練習ページ（`practice1.1`、`practice1.2`、`practice7.1`、`practice7.2`、`practice7.3`、`composition1`、`pronunciation1`、`pronunciation2`）および `style.css`：
     - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
     - プルダウンで選択した音声名を `localStorage`（`october2026.selectedVoiceName`）に保存し、ページ移動や再読み込みでも維持するよう実装（未保存または該当音声がない環境では従来の優先順位で自動選択）。
-  - `pronunciation2.html` および `pronunciation2.js`：
-    - `pronunciation1` と同じ Pitch Lab（`#pitchLab`）セクションを設置（プルダウンで5つの文＋Free practiceを選択し、右側の比較カードを除いた1枚のカードで1文全体のピッチ曲線を描画）。
-    - 上部設定の `Speech Style`（Formal / Informal / Casual）切替に連動して、Lab プルダウンの文表示およびカードの `🔊きく` モデル音声も更新されるよう実装（録音済みデータは維持）。
+  - `pronunciation2.js`（Pitch Lab における `🔊きく` バックグラウンド録音・モデル音ピッチ曲線重ね描きテスト）：
+    - `🔊きく` ボタン押下時に `echoCancellation: false, noiseSuppression: false, autoGainControl: false` でマイクをバックグラウンド起動してスピーカーからのモデル音声を録音し、同じ F0 抽出ロジックで `Model (🔊)`（紫）のピッチ曲線を描画し、学習者の `You (🎙️)`（緑）のピッチ曲線と発声開始時刻を揃えて重ねて比較表示する試験実装。
 - **【ユーザー実機確認待ち】**
-  - Vercel デプロイ後、各ページ最下部左の `🔊Voice:` プルダウンの動作、および `pronunciation2` の Pitch Lab における文選択・`🔊きく`・録音・ピッチ曲線描画のWeb実機確認。
+  - Vercel デプロイ後、`pronunciation2` の Pitch Lab においてスピーカー再生環境で `🔊きく` を押した際のモデル音バックグラウンド録音・ピッチ曲線描画、および `🎙️とる` の録音曲線との重ね合わせ比較のWeb実機確認。
