@@ -15,21 +15,32 @@
   - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
   - 作文練習：`composition1.html` / `composition1.js`
   - 発音練習：`pronunciation1.html` / `pronunciation1.js`、`pronunciation2.html` / `pronunciation2.js`
-  - 共通ファイル：`style.css`（全ページ共通スタイル）、`shared-tts.js`（Supertonic 3 共通TTSモジュール）、`vocab.json`（語彙データ）
+  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）
+  - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）はリポジトリ内に残存しているが、Supertonic 3 が候補対象外となったため現在どのページからも読み込まれていない。
 
 ---
 
-## 2. グローバル設定（ヘッダー設定パネル）の仕様
+## 2. グローバル設定（ヘッダー設定パネル）とブラウザ標準TTSの仕様
 
 ### 2.1 設定項目の並び順と構成
 - **確定仕様**：
   - 上段（セグメント行）：**`Script Mode` → `Speech Style` → `Vocab`（ヒント表示）** の並びを基本とする。
-  - 下段（トグル・音声行）：`Voice`（Supertonic導入ページのみ：`Hiro` / `Mina`）、`Autostop`、`Autoplay` を配置する。
+  - 下段（トグル行）：`Autostop`、`Autoplay` を配置する。
   - 録音中（およびマイク許可待ち中）は、設定パネルの切替操作を無効化（ロック）する。
 - **状態保持の原則（確定仕様・現行実装一致）**：
   - 表示モード（`Script Mode`）、`Speech Style`、`Vocab` ヒント表示などを切り替えても、**既に録音した音声データ・元の認識結果・抽出テキスト・正誤判定結果を消去しない**。
 
-### 2.2 各設定項目の目的・対象・動作・制約
+### 2.2 ブラウザ標準TTS（`speechSynthesis`）の優先音声選択仕様（全8練習ページ共通）
+- 全練習ページ（`practice1.1.js`、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js`）では、`setupPreferredVoice()`（`practice7.3.js` では `setupPreferredVoice73()`）により、`window.speechSynthesis.getVoices()` から以下の優先順位で日本語音声（`preferredVoice`）を自動選択する：
+  1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含み、`lang` に `"ja"` を含む音声
+  2. **Windows（Edge / OS）男性自然音声**：`name` に `"keita"` を含む音声（Microsoft Keita）
+  3. **Windows（Edge / OS）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
+  4. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含み、`lang` に `"ja"` を含む音声
+  5. **その他の日本語音声（フォールバック）**：上記がない場合、`lang` に `"ja"` を含む最初の音声（macOS / iOS の Kyoko・Otoya 等）
+- 読み上げ時は `utterance.lang = "ja-JP"`、`utterance.rate = 0.9`（デフォルト）で再生する。
+- 各ページのフッターには `🔊Want to change the voice? Check⚙️`（`#guideTrigger` / `#guideBox`）が設置されており、OS別（Win / Mac・iOS / ChromeOS）の音声変更手順を案内している。
+
+### 2.3 各設定項目の目的・対象・動作・制約
 
 1. **Script Mode（`🐣Hiragana Only` ／ `🐤With漢字`）**
    - **目的**：学習段階に応じて、問題キュー・例文・音声認識結果の表示を「ひらがなのみ」と「漢字かな交じり」で切り替える。

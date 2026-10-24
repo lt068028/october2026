@@ -4,13 +4,13 @@
 // ============================================================================
 
 const drill1Data = [
-    { kanji: "箸。端。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
-    { kanji: "腿。桃。", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
+    { kanji: "箸。橋。", hira: "はし、はし", text: "は↘し chopstick ｜ は↗し bridge", color: "#facc15" },
+    { kanji: "萌々。桃", hira: "もも、もも", text: "も↘も thigh ｜ も↗も peach", color: "#34d399" },
     { kanji: "降る。振る", hira: "ふる、ふる", text: "ふ↘る to fall ｜ ふ↗る to shake", color: "#22d3ee" },
     { kanji: "切る。着る", hira: "きる、きる", text: "き↘る to cut ｜ き↗る to wear", color: "#e879f9" },
     { kanji: "撒く。巻く", hira: "まく、まく", text: "ま↘く to scatter ｜ ま↗く to roll", color: "#fda4af" },
     { kanji: "春。貼る", hira: "はる、はる", text: "は↘る spring ｜ は↗る to paste", color: "#facc15" },
-    { kanji: "隅。墨。棲み。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
+    { kanji: "隅。炭。", hira: "すみ、すみ", text: "す↘み corner ｜ す↗み charcoal", color: "#34d399" },
     { kanji: "牡蠣。かき。", hira: "かき、かき", text: "か↘き oyster ｜ か↗き persimmon", color: "#22d3ee" },
     { kanji: "鶴。釣る", hira: "つる、つる", text: "つ↘る crane ｜ つ↗る to fish", color: "#e879f9" },
     { kanji: "雨。飴", hira: "あめ、あめ", text: "あ↘め rain ｜ あ↗め candy", color: "#fda4af" }
@@ -191,89 +191,38 @@ function renderPitchAccentHTML(textStr, color) {
     return resultHTML;
 }
 
-// 共通TTSの読み込みと、発音1の再生処理との接続
-let pronunciationTTS = null;
-let pronunciationTTSLoading = null;
-let pronunciationTTSTicket = 0;
+function speakText(text, rate = 0.9, onEndCallback) {
+    setupPreferredVoice();
 
-function loadPronunciationTTS() {
-    if (!pronunciationTTSLoading) {
-        pronunciationTTSLoading = import('./shared-tts.js')
-            .then(module => {
-                pronunciationTTS = module;
-                return module;
-            })
-            .catch(error => {
-                pronunciationTTSLoading = null;
-                throw error;
-            });
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    utterance.lang = "ja-JP";
+    utterance.rate = rate;
+
+    if (preferredVoice) {
+        utterance.voice = preferredVoice;
     }
-    return pronunciationTTSLoading;
-}
 
-// 既存の停止処理に、Supertonicの停止を追加する。
-const pronunciationOriginalStopAllPlayback = stopAllPlayback;
+    currentUtteranceRef = utterance;
 
-stopAllPlayback = function () {
-    ++pronunciationTTSTicket;
-    if (pronunciationTTS) pronunciationTTS.cancel();
-    pronunciationOriginalStopAllPlayback();
-};
-
-// 設定ボタンを表示する。モデル取得は最初の再生時に行う。
-loadPronunciationTTS().catch(error => {
-    console.error('Shared TTS could not be loaded:', error);
-
-    const showError = () => {
-        if (document.getElementById('ttsLoadError')) return;
-        const notice = document.createElement('p');
-        notice.id = 'ttsLoadError';
-        notice.setAttribute('role', 'alert');
-        notice.textContent =
-            'Voice settings could not be loaded. Please reload this page.';
-        const header = document.querySelector('.main-header');
-        if (header) header.after(notice);
+    utterance.onend = () => {
+        currentUtteranceRef = null;
+        if (onEndCallback) onEndCallback();
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', showError, {
-            once: true
-        });
-    } else {
-        showError();
+    utterance.onerror = () => {
+        currentUtteranceRef = null;
+        if (onEndCallback) onEndCallback();
+    };
+
+    try {
+        speechSynthesis.speak(utterance);
+    } catch (err) {
+        console.error("Speech synthesis error:", err);
+        currentUtteranceRef = null;
+
+        if (onEndCallback) onEndCallback();
     }
-});
-
-function speakText(text, rate = 0.9, onEndCallback) {
-    const ticket = ++pronunciationTTSTicket;
-
-    loadPronunciationTTS()
-        .then(module => {
-            if (ticket !== pronunciationTTSTicket) return false;
-
-            // 試験中は共通TTS側で生成速度70％に固定する。
-            return module.speak(text);
-        })
-        .then(completed => {
-            if (
-                completed &&
-                ticket === pronunciationTTSTicket &&
-                onEndCallback
-            ) {
-                onEndCallback();
-            }
-        })
-        .catch(error => {
-            console.error('Supertonic playback failed:', error);
-
-            // エラー時も既存の再生ボタン復帰処理へ戻す。
-            if (
-                ticket === pronunciationTTSTicket &&
-                onEndCallback
-            ) {
-                onEndCallback();
-            }
-        });
 }
 
 // ============================================================================
