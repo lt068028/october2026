@@ -217,8 +217,56 @@ function setupPreferredVoice() {
         || null;
 }
 
+// 共通TTSの読み込みと、練習1.1の再生処理との接続
+let practice1TTS = null;
+let practice1TTSLoading = null;
+let practice1TTSTicket = 0;
+
+function loadPractice1TTS() {
+    if (!practice1TTSLoading) {
+        practice1TTSLoading = import('./shared-tts.js')
+            .then(module => {
+                practice1TTS = module;
+                return module;
+            })
+            .catch(error => {
+                practice1TTSLoading = null;
+                throw error;
+            });
+    }
+    return practice1TTSLoading;
+}
+
+loadPractice1TTS().catch(error => {
+    console.error('Shared TTS could not be loaded:', error);
+
+    const showError = () => {
+        if (document.getElementById('ttsLoadError')) return;
+        const notice = document.createElement('p');
+        notice.id = 'ttsLoadError';
+        notice.setAttribute('role', 'alert');
+        notice.textContent =
+            'Voice settings could not be loaded. Please reload this page.';
+        const header = document.querySelector('.main-header');
+        if (header) header.after(notice);
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', showError, {
+            once: true
+        });
+    } else {
+        showError();
+    }
+});
+
 function stopAllPlayback() {
     playbackVersion++;
+    ++practice1TTSTicket;
+
+    if (practice1TTS) {
+        practice1TTS.cancel();
+    }
 
     if (currentUtteranceRef) {
         currentUtteranceRef.onend = null;
@@ -260,42 +308,29 @@ function markPlaying(button) {
 }
 
 function speakText(text, rate = 0.9, done = () => {}) {
-    if (!("speechSynthesis" in window)) {
-        done();
-        return;
-    }
+    const ticket = ++practice1TTSTicket;
 
-    setupPreferredVoice();
+    loadPractice1TTS()
+        .then(module => {
+            if (ticket !== practice1TTSTicket) return false;
+            return module.speak(text);
+        })
+        .then(completed => {
+            if (
+                completed &&
+                ticket === practice1TTSTicket &&
+                done
+            ) {
+                done();
+            }
+        })
+        .catch(error => {
+            console.error('Supertonic playback failed:', error);
 
-    const version = playbackVersion;
-    const utterance = new SpeechSynthesisUtterance(text);
-
-    utterance.lang = "ja-JP";
-    utterance.rate = rate;
-
-    if (preferredVoice) {
-        utterance.voice = preferredVoice;
-    }
-
-    currentUtteranceRef = utterance;
-
-    const finish = () => {
-        if (version !== playbackVersion) return;
-
-        utterance.onend = null;
-        utterance.onerror = null;
-        currentUtteranceRef = null;
-        done();
-    };
-
-    utterance.onend = finish;
-    utterance.onerror = finish;
-
-    try {
-        window.speechSynthesis.speak(utterance);
-    } catch (error) {
-        finish();
-    }
+            if (ticket === practice1TTSTicket && done) {
+                done();
+            }
+        });
 }
 
 function playAudio(url) {

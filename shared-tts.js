@@ -4,7 +4,7 @@ const ASSETS =
 
 const STORAGE_KEY = 'practice.tts.voice';
 const GENERATION_SPEED = 1.0;
-const PLAYBACK_RATE = 0.5;
+const PLAYBACK_RATE = 0.7;
 const GAP_MS = 500;
 
 let selectedVoice = 'M2';
@@ -383,7 +383,7 @@ export async function speak(text) {
         for (let index = 0; index < clips.length; index++) {
             if (ticket !== serial) return false;
 
-            message('Playing model audio at 70% speed…');
+            message('');
 
             const completed = await playClip(clips[index], ticket);
             if (!completed || ticket !== serial) return false;
