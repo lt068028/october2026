@@ -75,12 +75,13 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
 - **【ユーザー実機確認済み】**
   - `pronunciation1` および `practice1.1` における Supertonic 3（Hiro／Mina）の実機試聴・不採用判断。
   - Chrome でのブラウザ標準TTSへの復元動作、および `pronunciation1` の Pitch Lab における `🔊きく` ボタン・ピッチ曲線描画・自動停止動作。
-  - `pronunciation2` の Pitch Lab 設置および1枚カード表示の反映確認。
+  - `pronunciation2` の Pitch Lab 設置、1枚カード表示、および `🔊きく` によるスピーカーからのモデル音収音・ピッチ曲線重ね描き動作の実機確認。
 - **【実装済み・自動検証済み】**
   - 全8練習ページ（`practice1.1`、`practice1.2`、`practice7.1`、`practice7.2`、`practice7.3`、`composition1`、`pronunciation1`、`pronunciation2`）および `style.css`：
     - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
-    - プルダウンで選択した音声名を `localStorage`（`october2026.selectedVoiceName`）に保存し、ページ移動や再読み込みでも維持するよう実装（未保存または該当音声がない環境では従来の優先順位で自動選択）。
-  - `pronunciation2.js`（Pitch Lab における `🔊きく` バックグラウンド録音・モデル音ピッチ曲線重ね描きテスト）：
-    - `🔊きく` ボタン押下時に `echoCancellation: false, noiseSuppression: false, autoGainControl: false` でマイクをバックグラウンド起動してスピーカーからのモデル音声を録音し、同じ F0 抽出ロジックで `Model (🔊)`（紫）のピッチ曲線を描画し、学習者の `You (🎙️)`（緑）のピッチ曲線と発声開始時刻を揃えて重ねて比較表示する試験実装。
+  - `pronunciation2.html` / `pronunciation2.js` / `style.css`：
+    - TTSの優先順位・プルダウン並び順を `Chrome OS` → `Google 日本語` → `Microsoft Nanami` → `Microsoft Keita` → `Microsoft Haruka`（Windows標準4音声の筆頭）→ その他 に変更し、`translate="no"` により自動翻訳での名称変化（`Harley` 等）を防止。
+    - `🔊Voice:` 下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を追加。
+    - Pitch Lab でモデルピッチ未検出時の表示を `Model pitch not detected.` に統一し、一度でもモデルピッチ描画が成功した際に描画エリア下部へ `If the model line does not appear clearly, please turn up your speaker volume.` を表示するよう実装。
 - **【ユーザー実機確認待ち】**
-  - Vercel デプロイ後、`pronunciation2` の Pitch Lab においてスピーカー再生環境で `🔊きく` を押した際のモデル音バックグラウンド録音・ピッチ曲線描画、および `🎙️とる` の録音曲線との重ね合わせ比較のWeb実機確認。
+  - `pronunciation2` における上記変更（`Haruka` 筆頭・`Nanami` 優先、`🔊Voice:` 下部の Chrome 推奨文言、Pitch Lab 描画エリア下部の音量案内表示）の実機確認（問題なければ `pronunciation1` 等にも踏襲）。

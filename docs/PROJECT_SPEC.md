@@ -33,17 +33,19 @@
 ### 2.2 ブラウザ標準TTS（`speechSynthesis`）の優先音声選択・切替仕様（全8練習ページ共通）
 - 全練習ページ（`practice1.1.js`、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js`）では、`setupPreferredVoice()`（`practice7.3.js` では `setupPreferredVoice73()`）により、`window.speechSynthesis.getVoices()` から日本語音声（`/^ja/i.test(v.lang)`）を取得して以下のように選択する：
   - **保存音声の復元**：`localStorage`（キー：`october2026.selectedVoiceName`）に保存された音声名が現在の環境の日本語音声一覧に存在する場合は、その音声を選択する（ページ移動や再読み込みでも維持される）。
-  - **未保存時・該当音声不在時の自動選択優先順位**：
-    1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含み、`lang` に `"ja"` を含む音声
-    2. **Windows（Edge / OS）男性自然音声**：`name` に `"keita"` を含む音声（Microsoft Keita）
-    3. **Windows（Edge / OS）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
-    4. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含み、`lang` に `"ja"` を含む音声
-    5. **その他の日本語音声（フォールバック）**：上記がない場合、`lang` に `"ja"` を含む最初の音声（macOS / iOS の Kyoko・Otoya 等）
+  - **未保存時・該当音声不在時の自動選択優先順位（およびプルダウン内の並び順、`pronunciation2.js` 実装済み・確認後に他ページへ展開予定）**：
+    1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含む音声
+    2. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含む音声
+    3. **Windows（Edge）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
+    4. **Windows（Edge）男性自然音声**：`name` に `"keita"` を含む音声（Microsoft Keita）
+    5. **Windows OS標準 女性音声（筆頭）**：`name` に `"haruka"` を含む音声（Microsoft Haruka）
+    6. **その他の日本語音声（フォールバック）**：上記以外の `ja` 系音声（Ayumi / Ichiro / Sayaka、macOS / iOS の Kyoko・Otoya 等）
 - 読み上げ時は `utterance.lang = "ja-JP"`、`utterance.rate = 0.9`（デフォルト）で再生する。
 - **ページ最下部左（`.voice-guide-footer`）の音声選択UI**：
   - 従来の `🔊Want to change the voice? Check⚙️` およびOS別設定パスのポップアップは廃止し、`🔊Voice:` ＋ プルダウン（`#voiceSelect`）＋ 補足ツールチップ（`?`）を配置する。
   - プルダウンには実行環境で利用可能なすべての日本語TTSを正式名称（`voice.name`）で一覧表示し、現在使用中の音声を表示するとともに、他の日本語TTSへその場で切り替え・`localStorage` 保存できるようにする。
   - 横の `?` アイコンのツールチップには、選択肢が出ない場合のみ端末のText-to-Speech設定で日本語音声を追加できる旨の補足（`If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.`）を表示する。
+  - `pronunciation2.html`（確認後に `pronunciation1.html` にも適用予定）では、`🔊Voice:` の下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を表示し、`<select id="voiceSelect">` に `translate="no"`（`.notranslate`）を付与してブラウザ自動翻訳による音声名変換（`Haruka` → `Harley` 等）を防止する。
 
 ### 2.3 各設定項目の目的・対象・動作・制約
 
@@ -140,7 +142,7 @@
 - **録音再生ボタン**：録音が存在する行の結果欄末尾（および Pitch Lab 各カード）に **`▶️`**（ツールチップ：`Play your recorded voice`）を表示する。
 - **Pitch Lab（`pronunciation1`・`pronunciation2`）のピッチ描画仕様**：
   - `pronunciation1` では単語ペア（または `Free practice`）をプルダウン（`#pitchPairSelect`）から選択して左右2枚のカード（`.pitch-lab-grid`）で比較描画を行い、`pronunciation2` では Drill 1 の5つの文（`Speech Style` 切替連動）または `Free practice` をプルダウンから選択して1枚のカードで1文全体の録音・ピッチ曲線描画を行える。
-  - **モデル音のバックグラウンド録音・比較描画テスト（`pronunciation2` 試験実装中）**：`pronunciation2` の Pitch Lab では、`🔊きく` ボタンを押した際に `echoCancellation: false, noiseSuppression: false, autoGainControl: false` でマイクをバックグラウンド起動してスピーカーからのモデル音声を録音し、同じ F0 抽出ロジックで `Model (🔊)` のピッチ曲線（紫）を描画・保持して、学習者が `🎙️とる` で録音した `You (🎙️)` のピッチ曲線（緑）と発声開始時刻を揃えて同一グラフ上に重ねて比較できるようにしている。
+  - **モデル音のバックグラウンド録音・比較描画（`pronunciation2` 実装済み・確認後に `pronunciation1` へ展開予定）**：`pronunciation2` の Pitch Lab では、`🔊きく` ボタンを押した際に `echoCancellation: false, noiseSuppression: false, autoGainControl: false` でマイクをバックグラウンド起動してスピーカーからのモデル音声を録音し、同じ F0 抽出ロジックで `Model (🔊)` のピッチ曲線（紫）を描画・保持して、学習者が `🎙️とる` で録音した `You (🎙️)` のピッチ曲線（緑）と発声開始時刻を揃えて同一グラフ上に重ねて比較できるようにしている。モデルピッチ未検出時は `Model pitch not detected.` と表示し、一度でもモデル描画が成功した場合は描画エリア下部に `If the model line does not appear clearly, please turn up your speaker volume.` を表示する。
   - 録音全体のピーク音量に対する相対エネルギー閾値（18%以上）およびゼロ交差率（ZCR）フィルタにより、無音区間・環境ノイズ・無声子音（s/sh/h等）を除外する。
   - 自己相関の最初のゼロ交差以降の局所ピーク（周期性 `>= 0.68`）のみを検出し、400Hz上限張り付きノイズやオクターブ誤検出を防止する。
   - 5フレーム中央値フィルタ、短区間ノイズ（60ms未満）除外、および重み付き移動平均平滑化（2パス）を適用し、細かい揺れを除いた明確なピッチの上昇・下降曲線のみを描画する（`pronunciation2` では2文節にわたる1文全体の有声セグメント群を保持して描画する）。

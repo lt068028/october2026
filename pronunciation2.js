@@ -28,6 +28,16 @@ const savedResults = {}; // 録音結果やHTMLコンテンツを永続化保存
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 let preferredVoice = null;
 
+function voicePriorityRank(v) {
+    const name = (v && v.name) ? v.name : "";
+    if (/chrome os/i.test(name)) return 0;
+    if (/google/i.test(name)) return 1;
+    if (/nanami/i.test(name)) return 2;
+    if (/keita/i.test(name)) return 3;
+    if (/haruka/i.test(name)) return 4;
+    return 5;
+}
+
 function setupPreferredVoice() {
     try {
         const voices =
@@ -35,9 +45,9 @@ function setupPreferredVoice() {
                 ? speechSynthesis.getVoices()
                 : [];
 
-        const japanese = (voices || []).filter(
-            v => v && v.lang && /^ja/i.test(v.lang)
-        );
+        const japanese = (voices || [])
+            .filter(v => v && v.lang && /^ja(?:$|[-_])/i.test(v.lang))
+            .sort((a, b) => voicePriorityRank(a) - voicePriorityRank(b));
 
         let savedName = null;
         try {
@@ -49,27 +59,16 @@ function setupPreferredVoice() {
             : null;
 
         if (!selected) {
-            selected =
-                japanese.find(v =>
-                    v.name && /chrome os/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /keita/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /nanami/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /google/i.test(v.name)
-                )
-                || japanese[0]
-                || null;
+            selected = japanese[0] || null;
         }
 
         preferredVoice = selected;
 
         const selectEl = document.getElementById("voiceSelect");
         if (selectEl) {
+            selectEl.setAttribute("translate", "no");
+            selectEl.classList.add("notranslate");
+
             if (!selectEl.dataset.bound) {
                 selectEl.dataset.bound = "true";
                 selectEl.addEventListener("change", () => {
@@ -100,6 +99,8 @@ function setupPreferredVoice() {
                         const opt = document.createElement("option");
                         opt.value = v.name;
                         opt.textContent = v.name;
+                        opt.setAttribute("translate", "no");
+                        opt.className = "notranslate";
                         selectEl.append(opt);
                     });
                 }
@@ -1681,6 +1682,12 @@ function initPitchLab() {
             `Recorded pitch: ${word}`
         );
 
+        const volumeNoteEl = document.createElement("p");
+        volumeNoteEl.className = "pitch-volume-note";
+        volumeNoteEl.textContent =
+            "If the model line does not appear clearly, please turn up your speaker volume.";
+        volumeNoteEl.hidden = !p2.hasModelPitchDrawn;
+
         controls.append(
             listenBtn,
             recordBtn,
@@ -1689,7 +1696,7 @@ function initPitchLab() {
             statusEl
         );
 
-        card.append(controls, canvas);
+        card.append(controls, canvas, volumeNoteEl);
 
         const state = {
             card,
@@ -1702,6 +1709,7 @@ function initPitchLab() {
             playBtn,
             statusEl,
             canvas,
+            volumeNoteEl,
             recorder: null,
             stream: null,
             chunks: [],
@@ -2354,19 +2362,27 @@ async function analyzeModelPitchBlob(state, blob) {
         );
 
         if (!hasPitch) {
-            if (state.f0Frames?.length) {
+            if (state.f0Frames?.length || state.modelF0Frames?.length) {
                 drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
             } else {
                 drawPitchPlaceholder(
                     state,
-                    "Model sound not picked up by mic (check speaker volume)."
+                    "Model pitch not detected."
                 );
             }
             setPitchStatus(
                 state,
-                "Model pitch not detected via mic."
+                "Model pitch not detected."
             );
             return;
+        }
+
+        p2.hasModelPitchDrawn = true;
+        document.querySelectorAll("#pitchLab .pitch-volume-note").forEach(el => {
+            el.hidden = false;
+        });
+        if (state.volumeNoteEl) {
+            state.volumeNoteEl.hidden = false;
         }
 
         state.modelF0Frames = frames;

@@ -224,6 +224,13 @@
     background: var(--lab-card);
 }
 
+#pitchLab .pitch-volume-note {
+    margin: 8px 0 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--lab-secondary);
+}
+
 #pitchLab .pitch-word-input:focus-visible,
 #pitchLab button:focus-visible,
 #pitchLab .pitch-pair-summary:focus-visible {
@@ -1083,6 +1090,13 @@ input:checked + .slider:before { transform: translateX(16px); }
     font-weight: bold;
     cursor: help;
     user-select: none;
+}
+.voice-recommend-note {
+    flex-basis: 100%;
+    margin-top: 2px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--text-secondary);
 }
 .voice-help-icon > .custom-tip-box {
     left: 0;
