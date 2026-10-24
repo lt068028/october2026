@@ -66,7 +66,74 @@ function setupPreferredVoice() {
         const selectEl = document.getElementById("voiceSelect");
         if (selectEl) {
             selectEl.setAttribute("translate", "no");
-            selectEl.classList.add("notranslate");
+            selectEl.classList.add("notranslate", "is-enhanced");
+
+            const labelEl = document.querySelector('label[for="voiceSelect"]');
+            if (labelEl) {
+                labelEl.setAttribute("for", "voiceDropdownBtn");
+            }
+
+            let dropdownEl = document.getElementById("voiceDropdown");
+            if (!dropdownEl) {
+                dropdownEl = document.createElement("div");
+                dropdownEl.id = "voiceDropdown";
+                dropdownEl.className = "voice-dropdown notranslate";
+                dropdownEl.setAttribute("translate", "no");
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.id = "voiceDropdownBtn";
+                btn.className = "voice-dropdown-btn notranslate";
+                btn.setAttribute("translate", "no");
+                btn.setAttribute("aria-haspopup", "listbox");
+                btn.setAttribute("aria-expanded", "false");
+
+                const btnLabel = document.createElement("span");
+                btnLabel.className = "voice-dropdown-btn-label";
+
+                const btnArrow = document.createElement("span");
+                btnArrow.className = "voice-dropdown-btn-arrow";
+                btnArrow.setAttribute("aria-hidden", "true");
+                btnArrow.textContent = "▾";
+
+                btn.append(btnLabel, btnArrow);
+
+                const menu = document.createElement("ul");
+                menu.id = "voiceDropdownMenu";
+                menu.className = "voice-dropdown-menu notranslate";
+                menu.setAttribute("translate", "no");
+                menu.setAttribute("role", "listbox");
+                menu.hidden = true;
+
+                dropdownEl.append(btn, menu);
+                selectEl.insertAdjacentElement("afterend", dropdownEl);
+
+                btn.addEventListener("click", event => {
+                    event.stopPropagation();
+                    if (btn.disabled) return;
+                    const willOpen = menu.hidden;
+                    menu.hidden = !willOpen;
+                    btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+                });
+
+                document.addEventListener("click", event => {
+                    if (!dropdownEl.contains(event.target)) {
+                        menu.hidden = true;
+                        btn.setAttribute("aria-expanded", "false");
+                    }
+                });
+
+                document.addEventListener("keydown", event => {
+                    if (event.key === "Escape" && !menu.hidden) {
+                        menu.hidden = true;
+                        btn.setAttribute("aria-expanded", "false");
+                    }
+                });
+            }
+
+            const btn = document.getElementById("voiceDropdownBtn");
+            const btnLabel = dropdownEl.querySelector(".voice-dropdown-btn-label");
+            const menu = document.getElementById("voiceDropdownMenu");
 
             if (!selectEl.dataset.bound) {
                 selectEl.dataset.bound = "true";
@@ -85,6 +152,7 @@ function setupPreferredVoice() {
             if (selectEl.dataset.voicesSignature !== signature) {
                 selectEl.dataset.voicesSignature = signature;
                 selectEl.replaceChildren();
+                if (menu) menu.replaceChildren();
 
                 if (!japanese.length) {
                     const opt = document.createElement("option");
@@ -92,8 +160,12 @@ function setupPreferredVoice() {
                     opt.textContent = "No Japanese voice available";
                     selectEl.append(opt);
                     selectEl.disabled = true;
+                    if (btn) btn.disabled = true;
+                    if (btnLabel) btnLabel.textContent = "No Japanese voice available";
+                    if (menu) menu.hidden = true;
                 } else {
                     selectEl.disabled = false;
+                    if (btn) btn.disabled = false;
                     japanese.forEach(v => {
                         const opt = document.createElement("option");
                         opt.value = v.name;
@@ -101,12 +173,43 @@ function setupPreferredVoice() {
                         opt.setAttribute("translate", "no");
                         opt.className = "notranslate";
                         selectEl.append(opt);
+
+                        if (menu) {
+                            const item = document.createElement("li");
+                            item.className = "voice-dropdown-item notranslate";
+                            item.setAttribute("translate", "no");
+                            item.setAttribute("role", "option");
+                            item.dataset.voiceName = v.name;
+                            item.textContent = v.name;
+                            item.addEventListener("click", event => {
+                                event.stopPropagation();
+                                try {
+                                    localStorage.setItem(VOICE_STORAGE_KEY, v.name);
+                                } catch (e) {}
+                                menu.hidden = true;
+                                if (btn) btn.setAttribute("aria-expanded", "false");
+                                setupPreferredVoice();
+                            });
+                            menu.append(item);
+                        }
                     });
                 }
             }
 
             if (selected && selectEl.value !== selected.name) {
                 selectEl.value = selected.name;
+            }
+            if (btnLabel && japanese.length) {
+                btnLabel.textContent = selected ? selected.name : japanese[0].name;
+            }
+            if (menu) {
+                Array.from(menu.children).forEach(item => {
+                    const isSelected = Boolean(
+                        selected && item.dataset.voiceName === selected.name
+                    );
+                    item.classList.toggle("is-selected", isSelected);
+                    item.setAttribute("aria-selected", isSelected ? "true" : "false");
+                });
             }
         }
     } catch (e) {

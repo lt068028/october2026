@@ -42,10 +42,11 @@
     6. **その他の日本語音声（フォールバック）**：上記以外の `ja` 系音声（Ayumi / Ichiro / Sayaka、macOS / iOS の Kyoko・Otoya 等）
 - 読み上げ時は `utterance.lang = "ja-JP"`、`utterance.rate = 0.9`（デフォルト）で再生する。
 - **ページ最下部左（`.voice-guide-footer`）の音声選択UI**：
-  - 従来の `🔊Want to change the voice? Check⚙️` およびOS別設定パスのポップアップは廃止し、`🔊Voice:` ＋ プルダウン（`#voiceSelect`）＋ 補足ツールチップ（`?`）を配置する。
+  - 従来の `🔊Want to change the voice? Check⚙️` およびOS別設定パスのポップアップは廃止し、`🔊Voice:` ＋ プルダウン（`#voiceSelect`／カスタムドロップダウン `#voiceDropdown`）＋ 補足ツールチップ（`?`）を配置する。
   - プルダウンには実行環境で利用可能なすべての日本語TTSを正式名称（`voice.name`）で一覧表示し、現在使用中の音声を表示するとともに、他の日本語TTSへその場で切り替え・`localStorage` 保存できるようにする。
+  - Chrome 等のOSネイティブ `<select>` ポップアップでは選択肢が1個（`Google 日本語` 一択）のときでも余白の大きい複数行枠が開いてしまうため、カスタムドロップダウンメニュー（`#voiceDropdownMenu`）により**選択肢の数に応じた行数（1個しかないときは余白なしの1行のみ）で開く**仕様とする。
   - 横の `?` アイコンのツールチップには、選択肢が出ない場合のみ端末のText-to-Speech設定で日本語音声を追加できる旨の補足（`If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.`）を表示する。
-  - `pronunciation1.html`・`pronunciation2.html` では、`🔊Voice:` の下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を表示し、`<select id="voiceSelect">` に `translate="no"`（`.notranslate`）を付与してブラウザ自動翻訳による音声名変換（`Haruka` → `Harley` 等）を防止する。
+  - `pronunciation1.html`・`pronunciation2.html` では、`🔊Voice:` の下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を表示し、`<select id="voiceSelect">`（および `#voiceDropdown`）に `translate="no"`（`.notranslate`）を付与してブラウザ自動翻訳による音声名変換（`Haruka` → `Harley` 等）を防止する。
 
 ### 2.3 各設定項目の目的・対象・動作・制約
 
