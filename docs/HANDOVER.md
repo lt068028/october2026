@@ -75,13 +75,14 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
 - **【ユーザー実機確認済み】**
   - `pronunciation1` および `practice1.1` における Supertonic 3（Hiro／Mina）の実機試聴・不採用判断。
   - Chrome でのブラウザ標準TTSへの復元動作、および `pronunciation1` の Pitch Lab における `🔊きく` ボタン・ピッチ曲線描画・自動停止動作。
-  - `pronunciation2` の Pitch Lab 設置、1枚カード表示、および `🔊きく` によるスピーカーからのモデル音収音・ピッチ曲線重ね描き動作の実機確認。
+  - `pronunciation2` における Pitch Lab の設置・1枚カード表示、`🔊きく` によるスピーカーからのモデル音収音・ピッチ曲線重ね描き、TTS優先順位（`Nanami` 優先・`Haruka` 筆頭）、`🔊Voice:` 下部の Chrome 推奨文言、および描画エリア下部の音量案内表示の実機確認。
 - **【実装済み・自動検証済み】**
   - 全8練習ページ（`practice1.1`、`practice1.2`、`practice7.1`、`practice7.2`、`practice7.3`、`composition1`、`pronunciation1`、`pronunciation2`）および `style.css`：
     - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
-  - `pronunciation2.html` / `pronunciation2.js` / `style.css`：
+  - `pronunciation1.html` / `pronunciation1.js`（`pronunciation2` の確認済み仕様を踏襲）：
     - TTSの優先順位・プルダウン並び順を `Chrome OS` → `Google 日本語` → `Microsoft Nanami` → `Microsoft Keita` → `Microsoft Haruka`（Windows標準4音声の筆頭）→ その他 に変更し、`translate="no"` により自動翻訳での名称変化（`Harley` 等）を防止。
     - `🔊Voice:` 下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を追加。
-    - Pitch Lab でモデルピッチ未検出時の表示を `Model pitch not detected.` に統一し、一度でもモデルピッチ描画が成功した際に描画エリア下部へ `If the model line does not appear clearly, please turn up your speaker volume.` を表示するよう実装。
+    - Pitch Lab（左右2枚のカード）に `🔊きく` 押下時のスピーカーからのモデル音バックグラウンド収音・`Model (🔊)`（紫）と `You (🎙️)`（緑）のピッチ曲線重ね描き機能を実装。
+    - モデルピッチ未検出時の表示を `Model pitch not detected.` に統一し、一度でもモデルピッチ描画が成功した際に描画エリア下部へ `If the model line does not appear clearly, please turn up your speaker volume.` を表示するよう実装。
 - **【ユーザー実機確認待ち】**
-  - `pronunciation2` における上記変更（`Haruka` 筆頭・`Nanami` 優先、`🔊Voice:` 下部の Chrome 推奨文言、Pitch Lab 描画エリア下部の音量案内表示）の実機確認（問題なければ `pronunciation1` 等にも踏襲）。
+  - `pronunciation1` における上記変更（`Haruka` 筆頭・`Nanami` 優先、`🔊Voice:` 下部の Chrome 推奨文言、Pitch Lab のモデル音収音・重ね描き・描画エリア下部の音量案内表示）の実機確認。

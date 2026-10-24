@@ -27,6 +27,16 @@ let activeRecognitionSession = null;
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 let preferredVoice = null;
 
+function voicePriorityRank(v) {
+    const name = (v && v.name) ? v.name : "";
+    if (/chrome os/i.test(name)) return 0;
+    if (/google/i.test(name)) return 1;
+    if (/nanami/i.test(name)) return 2;
+    if (/keita/i.test(name)) return 3;
+    if (/haruka/i.test(name)) return 4;
+    return 5;
+}
+
 function setupPreferredVoice() {
     try {
         const voices =
@@ -34,9 +44,9 @@ function setupPreferredVoice() {
                 ? speechSynthesis.getVoices()
                 : [];
 
-        const japanese = (voices || []).filter(
-            v => v && v.lang && /^ja/i.test(v.lang)
-        );
+        const japanese = (voices || [])
+            .filter(v => v && v.lang && /^ja(?:$|[-_])/i.test(v.lang))
+            .sort((a, b) => voicePriorityRank(a) - voicePriorityRank(b));
 
         let savedName = null;
         try {
@@ -48,27 +58,16 @@ function setupPreferredVoice() {
             : null;
 
         if (!selected) {
-            selected =
-                japanese.find(v =>
-                    v.name && /chrome os/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /keita/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /nanami/i.test(v.name)
-                )
-                || japanese.find(v =>
-                    v.name && /google/i.test(v.name)
-                )
-                || japanese[0]
-                || null;
+            selected = japanese[0] || null;
         }
 
         preferredVoice = selected;
 
         const selectEl = document.getElementById("voiceSelect");
         if (selectEl) {
+            selectEl.setAttribute("translate", "no");
+            selectEl.classList.add("notranslate");
+
             if (!selectEl.dataset.bound) {
                 selectEl.dataset.bound = "true";
                 selectEl.addEventListener("change", () => {
@@ -99,6 +98,8 @@ function setupPreferredVoice() {
                         const opt = document.createElement("option");
                         opt.value = v.name;
                         opt.textContent = v.name;
+                        opt.setAttribute("translate", "no");
+                        opt.className = "notranslate";
                         selectEl.append(opt);
                     });
                 }
@@ -865,8 +866,8 @@ async function pronunciationCaptureStart(key, state) {
             if (state && blob) {
                 await analyzePitchRecording(state);
             } else if (state) {
-                if (state.f0Frames?.length) {
-                    drawPitchCurve(state, state.f0Frames);
+                if (state.f0Frames?.length || state.modelF0Frames?.length) {
+                    drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
                 } else {
                     drawPitchPlaceholder(
                         state,
@@ -1193,8 +1194,8 @@ function initPitchLab() {
     }
 
     function redraw(state) {
-        if (state.f0Frames?.length) {
-            drawPitchCurve(state, state.f0Frames);
+        if (state.f0Frames?.length || state.modelF0Frames?.length) {
+            drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
         } else {
             drawPitchPlaceholder(
                 state,
@@ -1286,6 +1287,12 @@ function initPitchLab() {
             `Recorded pitch: ${word}`
         );
 
+        const volumeNoteEl = document.createElement("p");
+        volumeNoteEl.className = "pitch-volume-note";
+        volumeNoteEl.textContent =
+            "If the model line does not appear clearly, please turn up your speaker volume.";
+        volumeNoteEl.hidden = !pronunciation1State.hasModelPitchDrawn;
+
         controls.append(
             listenBtn,
             recordBtn,
@@ -1294,7 +1301,7 @@ function initPitchLab() {
             statusEl
         );
 
-        card.append(controls, canvas);
+        card.append(controls, canvas, volumeNoteEl);
 
         const state = {
             card,
@@ -1306,6 +1313,7 @@ function initPitchLab() {
             playBtn,
             statusEl,
             canvas,
+            volumeNoteEl,
             recorder: null,
             stream: null,
             chunks: [],
@@ -1313,7 +1321,8 @@ function initPitchLab() {
             audioUrl: null,
             isRecording: false,
             isAnalyzing: false,
-            f0Frames: null
+            f0Frames: null,
+            modelF0Frames: null
         };
 
         listenBtn.addEventListener("click", () => {
@@ -1464,7 +1473,7 @@ function stopPitchRecording(state) {
     }
 }
 
-function playPitchModel(state) {
+async function playPitchModel(state) {
     if (
         pronunciation1Busy()
         || state.isAnalyzing
@@ -1481,7 +1490,57 @@ function playPitchModel(state) {
     );
 
     activePitchPlayingState = state;
-    setPitchStatus(state, "Playing...");
+    state.recordBtn.disabled = true;
+    state.playBtn.disabled = true;
+    setPitchStatus(state, "Playing & capturing model...");
+
+    let stream = null;
+    let recorder = null;
+    const chunks = [];
+
+    if (
+        navigator.mediaDevices?.getUserMedia
+        && typeof MediaRecorder !== "undefined"
+    ) {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false
+                }
+            });
+        } catch (e) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+            } catch (err) {
+                stream = null;
+            }
+        }
+    }
+
+    if (version !== pronunciation1State.playback) {
+        stream?.getTracks().forEach(t => t.stop());
+        return;
+    }
+
+    if (stream) {
+        try {
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = event => {
+                if (event.data && event.data.size > 0) {
+                    chunks.push(event.data);
+                }
+            };
+            recorder.start();
+        } catch (e) {
+            stream.getTracks().forEach(t => t.stop());
+            stream = null;
+            recorder = null;
+        }
+    }
 
     let completed = false;
 
@@ -1490,17 +1549,140 @@ function playPitchModel(state) {
             completed
             || version !== pronunciation1State.playback
         ) {
+            stream?.getTracks().forEach(t => t.stop());
             return;
         }
 
         completed = true;
-        stopAllPlayback();
+
+        if (!recorder || recorder.state === "inactive") {
+            stream?.getTracks().forEach(t => t.stop());
+            stopAllPlayback();
+            return;
+        }
+
+        setTimeout(() => {
+            if (version !== pronunciation1State.playback) {
+                stream?.getTracks().forEach(t => t.stop());
+                return;
+            }
+
+            recorder.onstop = async () => {
+                stream?.getTracks().forEach(t => t.stop());
+                stopAllPlayback();
+
+                const blob = chunks.some(c => c.size > 0)
+                    ? new Blob(chunks, {
+                        type: recorder.mimeType || "audio/webm"
+                    })
+                    : null;
+
+                if (blob) {
+                    await analyzeModelPitchBlob(state, blob);
+                }
+            };
+
+            try {
+                recorder.stop();
+            } catch (e) {
+                stream?.getTracks().forEach(t => t.stop());
+                stopAllPlayback();
+            }
+        }, 220);
     };
 
     try {
         speakText(state.modelText, 0.9, finish);
     } catch (error) {
         finish();
+    }
+}
+
+async function analyzeModelPitchBlob(state, blob) {
+    if (!blob || state.isAnalyzing) return;
+
+    state.isAnalyzing = true;
+    if (state.listenBtn) {
+        state.listenBtn.disabled = true;
+    }
+    state.recordBtn.disabled = true;
+    state.playBtn.disabled = true;
+    setPitchStatus(state, "Drawing model pitch...");
+
+    let audioContext = null;
+
+    try {
+        const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextClass) {
+            throw new Error("Web Audio API is not supported.");
+        }
+
+        audioContext = new AudioContextClass();
+
+        if (audioContext.state === "suspended") {
+            await audioContext.resume();
+        }
+
+        const arrayBuffer = await blob.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(
+            arrayBuffer
+        );
+
+        const frames = estimateF0Frames(
+            mixAudioToMono(audioBuffer),
+            audioBuffer.sampleRate,
+            true
+        );
+
+        const hasPitch = frames.some(
+            frame => Number.isFinite(frame.f0) && frame.f0 > 0
+        );
+
+        if (!hasPitch) {
+            if (state.f0Frames?.length || state.modelF0Frames?.length) {
+                drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
+            } else {
+                drawPitchPlaceholder(
+                    state,
+                    "Model pitch not detected."
+                );
+            }
+            setPitchStatus(
+                state,
+                "Model pitch not detected."
+            );
+            return;
+        }
+
+        pronunciation1State.hasModelPitchDrawn = true;
+        document.querySelectorAll("#pitchLab .pitch-volume-note").forEach(el => {
+            el.hidden = false;
+        });
+        if (state.volumeNoteEl) {
+            state.volumeNoteEl.hidden = false;
+        }
+
+        state.modelF0Frames = frames;
+        drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
+        setPitchStatus(state, "Model pitch drawn");
+    } catch (error) {
+        console.error("Model pitch analysis error:", error);
+        setPitchStatus(state, "Could not draw model pitch.");
+    } finally {
+        if (audioContext && audioContext.state !== "closed") {
+            try {
+                await audioContext.close();
+            } catch (error) {}
+        }
+
+        state.isAnalyzing = false;
+        if (state.listenBtn) {
+            state.listenBtn.disabled = !state.modelText;
+        }
+        state.recordBtn.disabled = false;
+        state.playBtn.disabled = !state.audioBlob;
     }
 }
 
@@ -1589,13 +1771,17 @@ async function analyzePitchRecording(state) {
 
         if (!hasPitch) {
             state.f0Frames = null;
-            drawPitchPlaceholder(state, "Pitch not detected.");
+            if (state.modelF0Frames?.length) {
+                drawPitchCurve(state, null, state.modelF0Frames);
+            } else {
+                drawPitchPlaceholder(state, "Pitch not detected.");
+            }
             setPitchStatus(state, "Pitch not detected. Try again.");
             return;
         }
 
         state.f0Frames = frames;
-        drawPitchCurve(state, frames);
+        drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
         setPitchStatus(state, "Ready");
     } catch (error) {
         console.error("Pitch Lab analysis error:", error);
@@ -1640,7 +1826,7 @@ function mixAudioToMono(audioBuffer) {
 // ----------------------------------------------------------------------------
 // Estimate fundamental frequency using windowed autocorrelation
 // ----------------------------------------------------------------------------
-function estimateF0Frames(samples, sampleRate) {
+function estimateF0Frames(samples, sampleRate, isModelCapture = false) {
     const frameLength = Math.round(sampleRate * 0.040);
     const hopLength = Math.round(sampleRate * 0.010);
 
@@ -1714,12 +1900,13 @@ function estimateF0Frames(samples, sampleRate) {
         });
     }
 
-    if (maxRms < 0.008) {
+    const minRmsFloor = isModelCapture ? 0.0015 : 0.008;
+    if (maxRms < minRmsFloor) {
         return rawFrames.map(({ time }) => ({ time, f0: null }));
     }
 
     // Relative vocal energy gate: ignore background hum, breath, and silence.
-    const rmsThreshold = Math.max(0.008, maxRms * 0.18);
+    const rmsThreshold = Math.max(minRmsFloor, maxRms * 0.18);
 
     for (let idx = 0; idx < rawFrames.length; idx++) {
         const info = rawFrames[idx];
@@ -2114,7 +2301,7 @@ function drawPitchPlaceholder(state, message) {
     );
 }
 
-function drawPitchCurve(state, frames) {
+function drawPitchCurve(state, userFrames, modelFrames = null) {
     const { context, width, height } =
         preparePitchCanvas(state.canvas);
 
@@ -2123,14 +2310,17 @@ function drawPitchCurve(state, frames) {
     const padding = {
         left: 44,
         right: 12,
-        top: 16,
+        top: 22,
         bottom: 28
     };
 
     const plotWidth = width - padding.left - padding.right;
     const plotHeight = height - padding.top - padding.bottom;
 
-    if (plotWidth <= 0 || plotHeight <= 0 || !frames.length) {
+    const hasUser = Boolean(userFrames?.length);
+    const hasModel = Boolean(modelFrames?.length);
+
+    if (plotWidth <= 0 || plotHeight <= 0 || (!hasUser && !hasModel)) {
         drawPitchPlaceholder(state, "No F0 data available.");
         return;
     }
@@ -2183,36 +2373,33 @@ function drawPitchCurve(state, frames) {
     context.lineTo(plotRight, plotBottom);
     context.stroke();
 
-    // Focus the time window around the voiced speech so leading/trailing silence
-    // does not compress the word contour into a tiny sliver.
-    const voicedFrames = frames.filter(
-        frame =>
-            Number.isFinite(frame.f0)
-            && frame.f0 >= minHz
-            && frame.f0 <= maxHz
-    );
-
-    const totalDuration = Math.max(
-        frames[frames.length - 1].time,
-        0.1
-    );
-
-    let windowStart = 0;
-    let windowEnd = totalDuration;
-
-    if (voicedFrames.length) {
-        const firstVoiced = voicedFrames[0].time;
-        const lastVoiced = voicedFrames[voicedFrames.length - 1].time;
-        const voicedSpan = Math.max(0, lastVoiced - firstVoiced);
-        const targetSpan = Math.max(0.8, voicedSpan + 0.30);
-        const center = (firstVoiced + lastVoiced) / 2;
-
-        windowStart = Math.max(0, center - targetSpan / 2);
-        windowEnd = Math.min(totalDuration, windowStart + targetSpan);
-        windowStart = Math.max(0, windowEnd - targetSpan);
+    function extractVoicedInfo(frames) {
+        if (!frames?.length) return null;
+        const voiced = frames.filter(
+            frame =>
+                Number.isFinite(frame.f0)
+                && frame.f0 >= minHz
+                && frame.f0 <= maxHz
+        );
+        if (!voiced.length) return null;
+        const firstVoiced = voiced[0].time;
+        const lastVoiced = voiced[voiced.length - 1].time;
+        return {
+            frames,
+            firstVoiced,
+            lastVoiced,
+            span: Math.max(0, lastVoiced - firstVoiced)
+        };
     }
 
-    const windowDuration = Math.max(windowEnd - windowStart, 0.1);
+    const userInfo = extractVoicedInfo(userFrames);
+    const modelInfo = extractVoicedInfo(modelFrames);
+
+    const maxSpan = Math.max(
+        userInfo ? userInfo.span : 0,
+        modelInfo ? modelInfo.span : 0
+    );
+    const windowDuration = Math.max(0.8, maxSpan + 0.30);
 
     context.fillStyle = "#777777";
     context.font = "10px sans-serif";
@@ -2226,76 +2413,111 @@ function drawPitchCurve(state, frames) {
         plotBottom + 7
     );
 
-    // Draw a smooth, bold curve for each continuous voiced section
-    // with start/end endpoint markers instead of noisy per-frame dots.
-    context.strokeStyle = "#0d9488";
-    context.lineWidth = 3;
-    context.lineJoin = "round";
-    context.lineCap = "round";
+    function renderContour(info, color, isDashed = false) {
+        if (!info) return;
 
-    const segments = [];
-    let currentSegment = [];
-
-    frames.forEach(frame => {
-        if (
-            !Number.isFinite(frame.f0) ||
-            frame.f0 < minHz ||
-            frame.f0 > maxHz ||
-            frame.time < windowStart ||
-            frame.time > windowEnd
-        ) {
-            if (currentSegment.length) {
-                segments.push(currentSegment);
-                currentSegment = [];
-            }
-            return;
+        context.save();
+        context.strokeStyle = color;
+        context.lineWidth = 3;
+        context.lineJoin = "round";
+        context.lineCap = "round";
+        if (isDashed) {
+            context.setLineDash([6, 4]);
         }
 
-        const x =
-            plotLeft +
-            ((frame.time - windowStart) / windowDuration) * plotWidth;
+        const segments = [];
+        let currentSegment = [];
 
-        const y =
-            plotBottom -
-            ((frame.f0 - minHz) / (maxHz - minHz)) * plotHeight;
+        info.frames.forEach(frame => {
+            const relTime = frame.time - info.firstVoiced + 0.15;
+            if (
+                !Number.isFinite(frame.f0) ||
+                frame.f0 < minHz ||
+                frame.f0 > maxHz ||
+                relTime < 0 ||
+                relTime > windowDuration
+            ) {
+                if (currentSegment.length) {
+                    segments.push(currentSegment);
+                    currentSegment = [];
+                }
+                return;
+            }
 
-        currentSegment.push({ x, y });
-    });
+            const x =
+                plotLeft +
+                (relTime / windowDuration) * plotWidth;
 
-    if (currentSegment.length) {
-        segments.push(currentSegment);
+            const y =
+                plotBottom -
+                ((frame.f0 - minHz) / (maxHz - minHz)) * plotHeight;
+
+            currentSegment.push({ x, y });
+        });
+
+        if (currentSegment.length) {
+            segments.push(currentSegment);
+        }
+
+        segments.forEach(points => {
+            context.beginPath();
+            context.moveTo(points[0].x, points[0].y);
+
+            for (let i = 1; i < points.length - 1; i++) {
+                const midX = (points[i].x + points[i + 1].x) / 2;
+                const midY = (points[i].y + points[i + 1].y) / 2;
+                context.quadraticCurveTo(
+                    points[i].x,
+                    points[i].y,
+                    midX,
+                    midY
+                );
+            }
+
+            if (points.length > 1) {
+                const last = points[points.length - 1];
+                context.lineTo(last.x, last.y);
+            }
+
+            context.stroke();
+
+            context.setLineDash([]);
+            context.fillStyle = color;
+            [points[0], points[points.length - 1]].forEach(pt => {
+                context.beginPath();
+                context.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                context.fill();
+            });
+            if (isDashed) {
+                context.setLineDash([6, 4]);
+            }
+        });
+
+        context.restore();
     }
 
-    segments.forEach(points => {
-        context.beginPath();
-        context.moveTo(points[0].x, points[0].y);
+    if (modelInfo) {
+        renderContour(modelInfo, "#9333ea", Boolean(userInfo));
+    }
+    if (userInfo) {
+        renderContour(userInfo, "#0d9488", false);
+    }
 
-        for (let i = 1; i < points.length - 1; i++) {
-            const midX = (points[i].x + points[i + 1].x) / 2;
-            const midY = (points[i].y + points[i + 1].y) / 2;
-            context.quadraticCurveTo(
-                points[i].x,
-                points[i].y,
-                midX,
-                midY
-            );
-        }
-
-        if (points.length > 1) {
-            const last = points[points.length - 1];
-            context.lineTo(last.x, last.y);
-        }
-
-        context.stroke();
-
-        // Draw subtle start and end markers so the direction of movement is clear.
+    context.save();
+    context.font = "bold 11px sans-serif";
+    context.textBaseline = "top";
+    context.textAlign = "right";
+    let legendX = plotRight;
+    if (userInfo) {
         context.fillStyle = "#0d9488";
-        [points[0], points[points.length - 1]].forEach(pt => {
-            context.beginPath();
-            context.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
-            context.fill();
-        });
-    });
+        context.fillText("● You (🎙️)", legendX, 4);
+        legendX -= 76;
+    }
+    if (modelInfo) {
+        context.fillStyle = "#9333ea";
+        context.fillText("● Model (🔊)", legendX, 4);
+    }
+    context.restore();
 }
 
 function setPitchStatus(state, message) {
