@@ -204,11 +204,23 @@ function busy() {
 
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 
+function voicePriorityRank(v) {
+    const name = (v && v.name) ? v.name : "";
+    if (/chrome os/i.test(name)) return 0;
+    if (/google/i.test(name)) return 1;
+    if (/nanami/i.test(name)) return 2;
+    if (/keita/i.test(name)) return 3;
+    if (/haruka/i.test(name)) return 4;
+    return 5;
+}
+
 function setupPreferredVoice() {
     if (!("speechSynthesis" in window)) return;
 
     const voices = window.speechSynthesis.getVoices();
-    const japanese = voices.filter(v => /^ja/i.test(v.lang));
+    const japanese = (voices || [])
+        .filter(v => v && v.lang && /^ja(?:$|[-_])/i.test(v.lang))
+        .sort((a, b) => voicePriorityRank(a) - voicePriorityRank(b));
 
     let savedName = null;
     try {
@@ -220,13 +232,7 @@ function setupPreferredVoice() {
         : null;
 
     if (!selected) {
-        selected =
-            japanese.find(v => /chrome os/i.test(v.name))
-            || japanese.find(v => /keita/i.test(v.name))
-            || japanese.find(v => /nanami/i.test(v.name))
-            || japanese.find(v => /google/i.test(v.name))
-            || japanese[0]
-            || null;
+        selected = japanese[0] || null;
     }
 
     preferredVoice = selected;

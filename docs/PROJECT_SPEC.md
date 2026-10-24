@@ -33,7 +33,7 @@
 ### 2.2 ブラウザ標準TTS（`speechSynthesis`）の優先音声選択・切替仕様（全8練習ページ共通）
 - 全練習ページ（`practice1.1.js`、`practice1.2.js`、`practice7.1.js`、`practice7.2.js`、`practice7.3.js`、`composition1.js`、`pronunciation1.js`、`pronunciation2.js`）では、`setupPreferredVoice()`（`practice7.3.js` では `setupPreferredVoice73()`）により、`window.speechSynthesis.getVoices()` から日本語音声（`/^ja/i.test(v.lang)`）を取得して以下のように選択する：
   - **保存音声の復元**：`localStorage`（キー：`october2026.selectedVoiceName`）に保存された音声名が現在の環境の日本語音声一覧に存在する場合は、その音声を選択する（ページ移動や再読み込みでも維持される）。
-  - **未保存時・該当音声不在時の自動選択優先順位（およびプルダウン内の並び順、`pronunciation1.js`・`pronunciation2.js` 実装済み）**：
+  - **未保存時・該当音声不在時の自動選択優先順位（およびプルダウン内の並び順、全8練習ページ共通）**：
     1. **ChromeOS 日本語音声**：`name` に `"chrome os"` を含む音声
     2. **Google 日本語音声（Chrome / Android 等）**：`name` に `"google"` を含む音声
     3. **Windows（Edge）女性自然音声**：`name` に `"nanami"` を含む音声（Microsoft Nanami）
@@ -47,6 +47,8 @@
   - Chrome 等のOSネイティブ `<select>` ポップアップでは選択肢が1個（`Google 日本語` 一択）のときでも余白の大きい複数行枠が開いてしまうため、カスタムドロップダウンメニュー（`#voiceDropdownMenu`）により**選択肢の数に応じた行数（1個しかないときは余白なしの1行のみ）で開く**仕様とする。
   - 横の `?` アイコンのツールチップには、選択肢が出ない場合のみ端末のText-to-Speech設定で日本語音声を追加できる旨の補足（`If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.`）を表示する。
   - `pronunciation1.html`・`pronunciation2.html` では、`🔊Voice:` の下部に `💡For the clearest pitch accent model in this practice, Google Chrome (Google 日本語 voice) is recommended.` を表示し、`<select id="voiceSelect">`（および `#voiceDropdown`）に `translate="no"`（`.notranslate`）を付与してブラウザ自動翻訳による音声名変換（`Haruka` → `Harley` 等）を防止する。
+- **発音1（`pronunciation1`）における非対応ブラウザ注意喚起バナー（`#browserPitchNotice`）**：
+  - 発音1のピッチアクセント練習では適切なピッチアクセントモデルを提示できないブラウザ（Edge、Brave、Firefox、Safari 等、または `Google`／`Chrome OS` 日本語TTSが利用できない環境）でページを開いた際、Drill 1 上部に注意喚起パネル（`⚠️ Pitch Accent Notice` / `This browser does not support presenting accurate pitch accent models on this page. Google Chrome is recommended.`）を自動表示する（Google Chrome / ChromeOS で Google・ChromeOS 日本語TTSが利用可能な場合は非表示）。
 
 ### 2.3 各設定項目の目的・対象・動作・制約
 

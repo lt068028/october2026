@@ -26,6 +26,39 @@ let activeRecognitionSession = null;
 // ============================================================================
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 let preferredVoice = null;
+let isDetectedBrave = false;
+
+if (typeof navigator !== "undefined" && navigator.brave && typeof navigator.brave.isBrave === "function") {
+    navigator.brave.isBrave().then(result => {
+        if (result) {
+            isDetectedBrave = true;
+            setupPreferredVoice();
+        }
+    }).catch(() => {});
+}
+
+function updateBrowserPitchNotice(voices, japanese, forceWhenEmpty = false) {
+    const noticeEl = document.getElementById("browserPitchNotice");
+    if (!noticeEl) return;
+
+    const ua = (typeof navigator !== "undefined" && navigator.userAgent) ? navigator.userAgent : "";
+    const isNonChromeUA =
+        isDetectedBrave ||
+        /\bEdg\//i.test(ua) ||
+        /\bOPR\//i.test(ua) ||
+        /Firefox\//i.test(ua) ||
+        (/^((?!chrome|android|crios).)*safari/i.test(ua));
+
+    const hasGoogleOrChromeOsVoice = (japanese || []).some(
+        v => v && v.name && /chrome os|google/i.test(v.name)
+    );
+
+    if (hasGoogleOrChromeOsVoice && !isNonChromeUA) {
+        noticeEl.hidden = true;
+    } else if (isNonChromeUA || (voices && voices.length > 0) || forceWhenEmpty) {
+        noticeEl.hidden = false;
+    }
+}
 
 function voicePriorityRank(v) {
     const name = (v && v.name) ? v.name : "";
@@ -62,6 +95,7 @@ function setupPreferredVoice() {
         }
 
         preferredVoice = selected;
+        updateBrowserPitchNotice(voices, japanese, false);
 
         const selectEl = document.getElementById("voiceSelect");
         if (selectEl) {
@@ -223,6 +257,16 @@ if (typeof speechSynthesis !== "undefined") {
     if (speechSynthesis.onvoiceschanged !== undefined) {
         speechSynthesis.onvoiceschanged = () => setupPreferredVoice();
     }
+
+    setTimeout(() => {
+        try {
+            const voices = speechSynthesis.getVoices() || [];
+            const japanese = voices.filter(v => v && v.lang && /^ja(?:$|[-_])/i.test(v.lang));
+            updateBrowserPitchNotice(voices, japanese, true);
+        } catch (e) {}
+    }, 600);
+} else {
+    updateBrowserPitchNotice([], [], true);
 }
 
 // ============================================================================
