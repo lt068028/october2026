@@ -1516,17 +1516,19 @@ function initPitchLab() {
 
     if (!grid || lab.querySelector("#pitchPairSelect")) return;
 
+    grid.style.gridTemplateColumns = "minmax(0, 1fr)";
+
     const pairs = drill1Data.map((item, index) => ({
         id: String(index),
         itemIndex: index,
-        words: ["First recording", "Second recording"],
+        words: ["Recording"],
         free: false
     }));
 
     pairs.push({
         id: "free",
         itemIndex: -1,
-        words: ["First recording", "Second recording"],
+        words: ["Free practice"],
         free: true
     });
 
@@ -1557,29 +1559,20 @@ function initPitchLab() {
         const content = document.createElement("span");
         content.className = "pitch-pair-content";
 
-        if (pair.free) {
-            pair.words.forEach((word, index) => {
-                if (index) {
-                    const separator = document.createElement("span");
-                    separator.textContent = "↔️";
-                    separator.setAttribute("aria-hidden", "true");
-                    content.append(separator);
-                }
+        const part = document.createElement("span");
+        part.style.gridColumn = "1 / -1";
 
-                const part = document.createElement("span");
-                part.textContent = word;
-                content.append(part);
-            });
+        if (pair.free) {
+            part.textContent = "Free practice";
         } else {
             const model = getPairModel(pair);
-            const part = document.createElement("span");
-            part.style.gridColumn = "1 / -1";
             part.innerHTML = renderPitchAccentHTML(
                 model.text,
                 "#e879f9"
             );
-            content.append(part);
         }
+
+        content.append(part);
 
         return content;
     }

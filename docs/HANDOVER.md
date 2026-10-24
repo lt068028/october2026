@@ -80,7 +80,7 @@ Supertonic 3 の不採用確定に伴い、試験を行っていた以下の3フ
     - ページ最下部左（`.voice-guide-footer`）の旧 `🔊Want to change the voice? Check⚙️` とOS設定案内ポップアップを削除し、現在使用中のTTSを正式名称で表示・切替できるプルダウン（`🔊Voice:` ＋ `#voiceSelect`）と補足 `?` ツールチップに置き換え。
     - プルダウンで選択した音声名を `localStorage`（`october2026.selectedVoiceName`）に保存し、ページ移動や再読み込みでも維持するよう実装（未保存または該当音声がない環境では従来の優先順位で自動選択）。
   - `pronunciation2.html` および `pronunciation2.js`：
-    - `pronunciation1` と同じ Pitch Lab（`#pitchLab`）セクションを設置（案B：プルダウンで5つの文＋Free practiceを選択し、1文全体のピッチ曲線を2枚の比較カードで描画）。
-    - 上部設定の `Speech Style`（Formal / Informal / Casual）切替に連動して、Lab プルダウンの文表示および各カードの `🔊きく` モデル音声も更新されるよう実装（録音済みデータは維持）。
+    - `pronunciation1` と同じ Pitch Lab（`#pitchLab`）セクションを設置（プルダウンで5つの文＋Free practiceを選択し、右側の比較カードを除いた1枚のカードで1文全体のピッチ曲線を描画）。
+    - 上部設定の `Speech Style`（Formal / Informal / Casual）切替に連動して、Lab プルダウンの文表示およびカードの `🔊きく` モデル音声も更新されるよう実装（録音済みデータは維持）。
 - **【ユーザー実機確認待ち】**
   - Vercel デプロイ後、各ページ最下部左の `🔊Voice:` プルダウンの動作、および `pronunciation2` の Pitch Lab における文選択・`🔊きく`・録音・ピッチ曲線描画のWeb実機確認。

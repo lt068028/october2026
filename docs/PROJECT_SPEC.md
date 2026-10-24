@@ -139,7 +139,7 @@
 - **停止ボタン**：表記は **`⏹️`**。Manual モードで録音中の行のみ有効化（`.stop-btn-active`）し、Autostop 時や非録音時は無効化する。
 - **録音再生ボタン**：録音が存在する行の結果欄末尾（および Pitch Lab 各カード）に **`▶️`**（ツールチップ：`Play your recorded voice`）を表示する。
 - **Pitch Lab（`pronunciation1`・`pronunciation2`）のピッチ描画仕様**：
-  - `pronunciation1` では単語ペア（または `Free practice`）を、`pronunciation2` では Drill 1 の5つの文（`Speech Style` 切替連動）または `Free practice` をプルダウン（`#pitchPairSelect`）から選択し、左右2枚のカード（`.pitch-lab-grid`）で録音・ピッチ曲線の比較描画を行える。
+  - `pronunciation1` では単語ペア（または `Free practice`）をプルダウン（`#pitchPairSelect`）から選択して左右2枚のカード（`.pitch-lab-grid`）で比較描画を行い、`pronunciation2` では Drill 1 の5つの文（`Speech Style` 切替連動）または `Free practice` をプルダウンから選択して1枚のカードで1文全体の録音・ピッチ曲線描画を行える。
   - 録音全体のピーク音量に対する相対エネルギー閾値（18%以上）およびゼロ交差率（ZCR）フィルタにより、無音区間・環境ノイズ・無声子音（s/sh/h等）を除外する。
   - 自己相関の最初のゼロ交差以降の局所ピーク（周期性 `>= 0.68`）のみを検出し、400Hz上限張り付きノイズやオクターブ誤検出を防止する。
   - 5フレーム中央値フィルタ、短区間ノイズ（60ms未満）除外、および重み付き移動平均平滑化（2パス）を適用し、細かい揺れを除いた明確なピッチの上昇・下降曲線のみを描画する（`pronunciation2` では2文節にわたる1文全体の有声セグメント群を保持して描画する）。
