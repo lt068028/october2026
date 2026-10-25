@@ -2027,7 +2027,7 @@ label:has(> input:disabled) .slider {
 }
 
 /* Practice 1.2 only: fixed at the former 130% setting while other pages await review. */
-body.practice12-page {
+body:is(.practice12-page, .practice73-page) {
     --practice12-scale: 1.3;
     max-width: 1280px;
     width: calc(100% - 64px);
@@ -2037,55 +2037,55 @@ body.practice12-page {
     font-size: calc(16px * var(--practice12-scale));
 }
 
-.practice12-page h1 { font-size: calc(24px * var(--practice12-scale)); }
-.practice12-page .back-link { font-size: calc(16.1px * var(--practice12-scale)); }
-.practice12-page .prompt-label { font-size: calc(16px * var(--practice12-scale)); }
-.practice12-page .info-panel-desc { font-size: calc(15px * var(--practice12-scale)); }
-.practice12-page :is(.custom-select, .custom-input, .correction-box) {
+:is(.practice12-page, .practice73-page) h1 { font-size: calc(24px * var(--practice12-scale)); }
+:is(.practice12-page, .practice73-page) .back-link { font-size: calc(16.1px * var(--practice12-scale)); }
+:is(.practice12-page, .practice73-page) .prompt-label { font-size: calc(16px * var(--practice12-scale)); }
+:is(.practice12-page, .practice73-page) .info-panel-desc { font-size: calc(15px * var(--practice12-scale)); }
+:is(.practice12-page, .practice73-page) :is(.custom-select, .custom-input, .correction-box) {
     font-size: calc(14px * var(--practice12-scale));
 }
-.practice12-page .example-button:not(.segmented-option) {
+:is(.practice12-page, .practice73-page) .example-button:not(.segmented-option) {
     font-size: calc(14.95px * var(--practice12-scale));
     min-width: calc(36px * var(--practice12-scale));
     min-height: calc(26px * var(--practice12-scale));
 }
-.practice12-page :is(.mode-label, .voice-guide-footer, .voice-select, .voice-dropdown-btn, .voice-dropdown-item) {
+:is(.practice12-page, .practice73-page) :is(.mode-label, .voice-guide-footer, .voice-select, .voice-dropdown-btn, .voice-dropdown-item) {
     font-size: calc(13px * var(--practice12-scale));
 }
-.practice12-page .segmented-control .segmented-option,
-.practice12-page .compact-settings .settings-segments-row .segmented-option {
+:is(.practice12-page, .practice73-page) .segmented-control .segmented-option,
+:is(.practice12-page, .practice73-page) .compact-settings .settings-segments-row .segmented-option {
     font-size: calc(13px * var(--practice12-scale));
     line-height: calc(18px * var(--practice12-scale));
     min-height: calc(26px * var(--practice12-scale));
 }
-.practice12-page :is(.custom-tip-box, .tooltip-tip) {
+:is(.practice12-page, .practice73-page) :is(.custom-tip-box, .tooltip-tip) {
     font-size: calc(12px * var(--practice12-scale));
 }
-.practice12-page .voice-help-icon {
+:is(.practice12-page, .practice73-page) .voice-help-icon {
     font-size: calc(11px * var(--practice12-scale));
     width: calc(18px * var(--practice12-scale));
     height: calc(18px * var(--practice12-scale));
 }
-.practice12-page .settings-onoff .switch {
+:is(.practice12-page, .practice73-page) .settings-onoff .switch {
     width: calc(76px * var(--practice12-scale));
     height: calc(32px * var(--practice12-scale));
 }
-.practice12-page .settings-onoff .slider::before {
+:is(.practice12-page, .practice73-page) .settings-onoff .slider::before {
     width: calc(24px * var(--practice12-scale));
     height: calc(24px * var(--practice12-scale));
     left: calc(4px * var(--practice12-scale));
     bottom: calc(4px * var(--practice12-scale));
 }
-.practice12-page .settings-onoff .slider::after {
+:is(.practice12-page, .practice73-page) .settings-onoff .slider::after {
     left: calc(28px * var(--practice12-scale));
     width: calc(48px * var(--practice12-scale));
     height: calc(32px * var(--practice12-scale));
     font-size: calc(12px * var(--practice12-scale));
 }
-.practice12-page .settings-onoff input:checked + .slider::before {
+:is(.practice12-page, .practice73-page) .settings-onoff input:checked + .slider::before {
     transform: translateX(calc(44px * var(--practice12-scale)));
 }
-.practice12-page .settings-onoff input:checked + .slider::after { left: 0; }
+:is(.practice12-page, .practice73-page) .settings-onoff input:checked + .slider::after { left: 0; }
 
 /* Practice 1.2: use available width; wrap complete groups only when needed. */
 .practice12-page .practice12-cue-unit {
@@ -2211,4 +2211,54 @@ body.practice12-page {
         grid-column: 1;
     }
     .practice12-page .practice12-answer-separator { display: none; }
+}
+
+/* Practice 7.3: 130% preview; keep the measured cue column within the card. */
+.practice73-page .recording-table col:nth-child(2) {
+    width: min(var(--practice73-cue-width, 50%), 50%) !important;
+}
+.practice73-page .recording-table .prompt-label {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+.practice73-page #drill1Container .p73-tense {
+    font-size: calc(13px * var(--practice12-scale));
+}
+.practice73-page :is(.example-box, .drill-row) { container-type: inline-size; }
+@container (max-width: 850px) {
+    .practice73-page .recording-table colgroup { display: none; }
+    .practice73-page .recording-table > tbody > tr {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 6px 4px;
+    }
+    .practice73-page .recording-table > tbody > tr > td { min-width: 0; }
+    .practice73-page .recording-table .p73-controls { grid-column: 1 / -1; }
+    .practice73-page .recording-table tr:not(:has(.p73-number)) > .prompt-label { grid-column: 2; }
+}
+.practice73-page .p73-example-table { width: 100%; }
+.practice73-page .p73-example-table button { white-space: nowrap; }
+.practice73-page .p73-example-model { overflow-wrap: anywhere; }
+@container (max-width: 1000px) {
+    .practice73-page .p73-example-table,
+    .practice73-page .p73-example-table > tbody { display: block; }
+    .practice73-page .p73-example-table tr {
+        display: grid;
+        grid-template-columns: max-content max-content minmax(0, 1fr);
+        align-items: baseline;
+        gap: 6px 4px;
+        margin-bottom: 12px;
+    }
+    .practice73-page .p73-example-table td { min-width: 0; }
+    .practice73-page .p73-example-kind,
+    .practice73-page .p73-example-cues { grid-column: 1 / -1; }
+    .practice73-page .p73-example-cues::after { content: ' 👉'; white-space: nowrap; }
+    .practice73-page .p73-example-table td:nth-child(3) { display: none; }
+    .practice73-page .p73-example-table td:nth-child(4) { grid-column: 1; }
+}
+@container (max-width: 1000px) {
+    .practice73-page .p73-example-table td[colspan] {
+        grid-column: 1 / -1;
+        overflow-wrap: anywhere;
+    }
 }

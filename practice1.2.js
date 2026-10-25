@@ -1390,7 +1390,7 @@ function practice2ShowNotice(resultSpan, message) {
         const text = getText();
 
         const pattern =
-            /(じゃないです|じゃないよ|じゃない|ですか|だよ|です|だ|はい|いいえ|ううん|うん|は、)/g;
+            /(じゃないです|じゃないよ|じゃない|なんですか|何ですか|の(?=せんこう|専攻)|ですか|だよ|です|だ|はい|いいえ|ううん|うん|は、)/g;
 
         let position = 0;
 

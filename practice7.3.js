@@ -1389,6 +1389,7 @@ function render() {
         });
 
         cards.forEach(table => {
+            table.style.setProperty('--practice73-cue-width', (width + 8) + 'px');
             table.querySelector('colgroup')
                 .children[1].style.width = (width + 8) + 'px';
         });
@@ -2300,6 +2301,7 @@ function qa73Align(tables) {
     });
 
     tables.forEach(table => {
+        table.style.setProperty('--practice73-cue-width', (width + 8) + 'px');
         table.querySelector('colgroup')
             .children[1].style.width = (width + 8) + 'px';
     });

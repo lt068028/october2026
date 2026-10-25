@@ -31,7 +31,7 @@ function mock(){
    t.speaking=true;
    const toggle=document.querySelector('#toggleRecordMode');if(toggle.checked)toggle.click();
    const rec=[...document.querySelectorAll('button')].find(b=>/^(🎙️|⏺️)とる/.test(b.textContent));
-   if(!rec||rec.disabled)throw Error('record unavailable');rec.click();
+   if(!rec||rec.disabled)throw Error('record unavailable');rec.dataset.recordUnderTest='true';rec.click();
   });
   await p.waitForTimeout(400);
   await p.evaluate(()=>{
@@ -91,11 +91,8 @@ function mock(){
   await p.evaluate(()=>t.spoken.at(-1).onend());
   await record(p);
   const before=await p.evaluate(()=>{t.late=t.spoken.at(-1).onend;return t.audios.length});
-  await p.evaluate(()=>{
-   t.speaking=true;
-   [...document.querySelectorAll('button')].find(b=>/^(🎙️|⏺️)とる/.test(b.textContent)&&!b.disabled).click();
-   t.late();
-  });
+  await p.locator('[data-record-under-test]').click();
+  await p.evaluate(()=>t.late());
   await p.waitForTimeout(400);
   await p.evaluate(()=>{
    const r=t.recognitions.at(-1),result=[{transcript:'私は学生です'}];result.isFinal=true;
@@ -108,7 +105,9 @@ function mock(){
   ok(await p.evaluate(()=>!t.audios.at(-1).paused),name+' new relay own stage starts');
   await p.evaluate(()=>{
    t.oldAudio=t.audios.at(-1);t.lateAudio=t.oldAudio.onended;
-   [...document.querySelectorAll('button')].find(b=>/^(🎙️|⏺️)とる/.test(b.textContent)&&!b.disabled).click();
+  });
+  await p.locator('[data-record-under-test]').click();
+  await p.evaluate(()=>{
    t.lateAudio();
   });
   await p.waitForTimeout(400);
