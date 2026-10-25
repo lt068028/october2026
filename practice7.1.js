@@ -275,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const speak = speakText;
 
-    speakText = function(text, rate = 0.9, done) {
+    speakText = function(text, rate = 0.8, done) {
         return speak(
             String(text ?? '').replace(
                 /^うんん[、,\s]*/,
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         b = button(label, 'Listen to the model.', () => {
             setPlayingStateMultiple([b], 'Playing...');
-            speakText(getText(), 0.9, stopAllPlayback);
+            speakText(getText(), 0.8, stopAllPlayback);
         });
 
         return b;
@@ -601,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 correctionText,
                 () => practice71ToHiragana(getText()),
                 getText,
-                0.9,
+                0.8,
                 key
             );
         } else {
@@ -1779,7 +1779,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
 
             speakText(
                 saved.modelText,
-                0.9,
+                0.8,
                 () => stopAllPlayback()
             );
         };
@@ -2584,7 +2584,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     };
 
     // 読み上げの区切りとSwitchの読みを指定する。
-    speakText = function (text, rate = 0.9, onEndCallback) {
+    speakText = function (text, rate = 0.8, onEndCallback) {
         setupPreferredVoice();
 
         const utterance = new SpeechSynthesisUtterance(
@@ -2714,7 +2714,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                     ongoing
                         ? item.perfectSentence
                         : item.pastSentence,
-                    0.9,
+                    0.8,
                     stopAllPlayback
                 );
             };
@@ -2748,7 +2748,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 `${index + 1}.`,
                 item,
                 index,
-                0.9
+                0.8
             );
 
             const card = list.lastElementChild;

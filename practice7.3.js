@@ -947,7 +947,7 @@ function speak(text, b, done, relay = false) {
     );
 
     u.lang = 'ja-JP';
-    u.rate = 0.9;
+    u.rate = 0.8;
 
     if (preferredVoice73) {
         u.voice = preferredVoice73;

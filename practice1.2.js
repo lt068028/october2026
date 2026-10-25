@@ -457,7 +457,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-function speakText(text, rate = 0.9, onEndCallback) {
+function speakText(text, rate = 0.75, onEndCallback) {
     setupPreferredVoice();
 
     const utterance = new SpeechSynthesisUtterance(
@@ -1375,7 +1375,7 @@ function practice2ShowNotice(resultSpan, message) {
 
                 speakText(
                     practice2SpeechText(text),
-                    0.9,
+                    0.75,
                     () => stopAllPlayback()
                 );
             }
@@ -1600,7 +1600,7 @@ function practice2ShowNotice(resultSpan, message) {
             corrTextSpan,
             getText,
             getText,
-            0.9,
+            0.75,
             key
         );
 
@@ -2611,7 +2611,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
 
             speakText(
                 practice2SpeechText(saved.modelText),
-                0.9,
+                0.75,
                 () => stopAllPlayback()
             );
         };

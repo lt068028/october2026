@@ -47,6 +47,8 @@ function mock(){
   await record(p);
 
   ok(await labels(p)===2,name+' both labels during automatic model');
+  const rate=name.startsWith('practice1.')?0.75:name.startsWith('practice7.')?0.8:0.9;
+  assert.equal(await p.evaluate(()=>t.spoken.at(-1).rate),rate,name+' configured model TTS rate');checks++;
   ok(!await p.locator('#togglePlaybackMode').isDisabled(),name+' autoplay toggle available');
   await p.evaluate(()=>t.spoken.at(-1).onerror({error:'synthesis-failed'}));
   ok(await labels(p)===0,name+' error restores both labels');
@@ -59,6 +61,7 @@ function mock(){
   await p.evaluate(()=>{t.oldEnd=t.spoken.at(-1).onend;t.oldEnd()});
   ok(await p.evaluate(()=>t.audios.length===1&&!t.audios[0].paused),name+' OFF still proceeds to own stage');
   ok(await labels(p)===2,name+' both labels during own stage');
+  ok(await p.evaluate(()=>t.audios.at(-1).playbackRate===1),name+' own audio rate is 1.0');
   await p.locator('label:has(#togglePlaybackMode)').click();
   ok(await p.locator('#togglePlaybackMode').isChecked(),name+' ON accepted during own stage');
   await p.locator('label:has(#togglePlaybackMode)').click();

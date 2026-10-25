@@ -432,7 +432,7 @@ function markPlaying(button) {
     button.disabled = true;
 }
 
-function speakText(text, rate = 0.9, done = () => {}) {
+function speakText(text, rate = 0.75, done = () => {}) {
     if (!("speechSynthesis" in window)) {
         done();
         return;
@@ -499,7 +499,7 @@ function playModel(text, button) {
 
     stopAllPlayback();
     markPlaying(button);
-    speakText(text, 0.9, stopAllPlayback);
+    speakText(text, 0.75, stopAllPlayback);
 }
 
 function appendPersistedPlayButton(resultSpan, rowKey) {
@@ -2034,7 +2034,7 @@ async function startRecording(initialView) {
             DrillAudio.playRelay({
                 recordButton: view.record,
                 result: view.result,
-                speak: done => speakText(model, 0.9, done),
+                speak: done => speakText(model, 0.75, done),
                 url: () => practice1State.audioUrls[rowKey]
             });
         }
