@@ -50,6 +50,8 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    for(const a of ['お父さんを太っています','お父さんに太っています','お父さんは','はい'])check(await p.evaluate(a=>practice7Normalize(a)===practice7Normalize('はいお父さんは太っています'),a),false,'p72 reject '+a);
    for(const a of ['お兄さんはTシャツを着ています','お兄さんがTシャツを着ています','Tシャツを着ています'])check(await p.evaluate(a=>practice7Normalize(a)===practice7Normalize('はいお兄さんはTシャツを着ています'),a),true,'p72 subject and object '+a);
    check(await p.evaluate(()=>practice7Normalize('お兄さんをTシャツを着ています')===practice7Normalize('はいお兄さんはTシャツを着ています')),false,'p72 subject を rejected without blocking object を');
+   for(const a of ['電話番号を覚えています','電話番号は覚えています','家の電話番号を覚えています','家の電話番号は覚えています','覚えています'])check(await p.evaluate(a=>practice7Normalize(a)===practice7Normalize('はい家の電話番号を覚えています'),a),true,'p72 phone object '+a);
+   for(const a of ['電話番号が覚えています','家の電話番号が覚えています'])check(await p.evaluate(a=>practice7Normalize(a)===practice7Normalize('はい家の電話番号を覚えています'),a),false,'p72 phone が rejected '+a);
    for(const [m,variants] of [ ['夜十時に寝ました',['夜10時に寝ました','夜１０時に寝ました','夜じゅうじに寝ました']],['漢字を五十個覚えました',['漢字を50個覚えました','漢字を５０個覚えました','漢字をごじゅっこ覚えました','漢字をごじっこ覚えました','漢字をごじゅうこ覚えました']],['三年前に結婚しました',['3年前に結婚しました','３年前に結婚しました','さんねんまえに結婚しました']]]){
     for(const a of variants)check(await p.evaluate(({a,m})=>practice7Normalize(a)===practice7Normalize(m),{a,m}),true,'p72 number '+a);
    }
@@ -79,7 +81,7 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    }
   }
   // Symbols are audited, not broadened in this change.
-  if(name==='composition1')check(await p.evaluate(()=>compositionBestDiff('天気がいいです【】',['天気がいいです']).cost===0),false,'composition brackets remain review item');
+  if(name==='composition1')check(await p.evaluate(()=>compositionBestDiff('天気がいいです【】',['天気がいいです']).cost===0),false,'composition synthetic brackets unchanged');
   if(name==='pronunciation2')check(await p.evaluate(()=>p2BestDiff('天気がいいです【】',['天気がいいです']).correct),true,'p2 brackets already ignored');
   assert.deepEqual(errors,[],name+' browser errors');await p.close();
  }

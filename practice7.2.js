@@ -192,9 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (token) {
                     const subjectToken = item.subject &&
                         (!item.object || token !== flat(item.object));
-                    rest = rest.slice(token.length)
-                        // Restrict subjects only; retain existing object allowances.
-                        .replace(subjectToken ? /^[はが]/ : /^[をはが]/, '');
+                    const particle = subjectToken ? /^[はが]/
+                        : item.object === '家の電話番号' ? /^[をは]/
+                        : /^[をはが]/;
+                    rest = rest.slice(token.length).replace(particle, '');
 
                     continue;
                 }
