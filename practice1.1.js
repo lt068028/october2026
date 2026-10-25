@@ -708,7 +708,7 @@ function renderExampleSection() {
                     id="ex1Listen"
                     class="example-button"
                 >🔊きく</button>
-                <span>${subject}<strong>は、</strong>${noun1}<strong>です。</strong></span>
+                <span>${subject}<strong class="grammar-highlight">は、</strong>${noun1}<strong class="grammar-highlight">です。</strong></span>
             </div>
 
             <div
@@ -725,7 +725,7 @@ function renderExampleSection() {
                     id="ex2Listen"
                     class="example-button"
                 >🔊きく</button>
-                <span>${subject}<strong>は、</strong>${noun2}<strong>じゃないです。</strong></span>
+                <span>${subject}<strong class="grammar-highlight">は、</strong>${noun2}<strong class="grammar-highlight">じゃないです。</strong></span>
             </div>
         </div>
     `;
@@ -2837,11 +2837,11 @@ window.addEventListener("pagehide", () => {
 
             sentence.innerHTML =
                 escapeHtml(subject) +
-                '<strong>' +
+                '<strong class="grammar-highlight">' +
                 (speechStyle === 'casual' ? '、' : 'は、') +
                 '</strong>' +
                 escapeHtml(nouns[index]) +
-                '<strong>' +
+                '<strong class="grammar-highlight">' +
                 escapeHtml(end) +
                 '</strong>';
 
