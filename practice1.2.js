@@ -1411,7 +1411,7 @@ function practice2ShowNotice(resultSpan, message) {
         return span;
     }
 
-    function example(container, lines) {
+    function example(container, lines, { responseCue = false, questionCue = "" } = {}) {
         const box = node("div", "example-box");
         const table = node("table", "drill-example-table");
         const body = node("tbody");
@@ -1419,7 +1419,7 @@ function practice2ShowNotice(resultSpan, message) {
         let responseCell = null;
 
         for (const [label, cue, getText, buttonLabel] of lines) {
-            if (label === "Response:") {
+            if (label === "Response:" && !responseCue) {
                 if (!responseCell) {
                     const row = node("tr");
                     const labelCell = node("td");
@@ -1459,6 +1459,9 @@ function practice2ShowNotice(resultSpan, message) {
             cueCell.innerHTML = cue;
 
             const arrowCell = node("td", "", "👉");
+            if (label === "Question:" && questionCue) {
+                arrowCell.insertAdjacentHTML("beforeend", "／" + questionCue);
+            }
 
             const listenCell = node("td");
             listenCell.append(
@@ -1859,7 +1862,11 @@ function practice2ShowNotice(resultSpan, message) {
             ],
             [
                 "Response:",
-                formatWord(
+                formatWord("あなた", "あなた", "anata", "you")
+                + "／"
+                + formatWord("せんこう", "専攻", "senkō", "major")
+                + "／"
+                + formatWord(
                     "せいじ",
                     "政治",
                     "seiji",
@@ -1873,7 +1880,10 @@ function practice2ShowNotice(resultSpan, message) {
                     word("せいじ", "政治")
                 )
             ]
-        ]);
+        ], {
+            responseCue: true,
+            questionCue: formatWord("なに", "何", "nani", "what")
+        });
 
         second.container.append(second.panel);
 
