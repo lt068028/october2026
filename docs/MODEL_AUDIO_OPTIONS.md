@@ -1,6 +1,6 @@
 # 発音モデル音声の固定ファイル化：方式検討
 
-2026-10-25。ユーザー案Aを受けた調査・提案。録音ツールや学習ページへの固定音声搭載は未実装。CSS・速度設定の実装とは別作業。
+2026-10-25。ユーザー案Aを受けた調査・提案。その後ユーザーがWindowsでの一度限りの収録も許容し、方式を承認。独立した収録ツールを実装した。実TTSの収録経路の確認と、学習ページへの固定音声搭載は未了。操作方法は `docs/MODEL_AUDIO_CAPTURE.md`。
 
 ## 推奨する進め方
 
@@ -45,3 +45,12 @@
 - [Chrome：tabCapture](https://developer.chrome.com/docs/extensions/reference/api/tabCapture)
 - [getDisplayMedia：音声取得と許可条件](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getDisplayMedia)
 - [MediaRecorder.isTypeSupported](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/isTypeSupported_static)
+
+
+## 方式承認後の実装
+
+- `tools/model-recorder.html` を追加。1項目収録→信号検査→保存音声の試聴確認→一括収録→ZIP保存の順で使用する。
+- タブ音声／画面全体のシステム音声を共有する候補を選択可能。要求は候補であり、実際の選択と音声共有はChromeの共有ダイアログで行う。通常ページだけで収録経路が得られれば拡張は不要。
+- 対象Voiceを明示指定する。日本語3があれば初期選択し、なければユーザー選択を必要とする。練習ページのVoice保存設定は読み書きしない。WindowsにChromeOSと同じ音声が存在する保証はない。
+- 原本（対応するWebM/Opus等）、原本をデコードして生成した16-bit PCM WAV、各音声の条件を記録するmanifestをZIP保存する。WAV化は圧縮前の情報を復元する処理ではなく、原本からの変換である。
+- 合成共有音声による自動検証と実TTS収録の実機確認を区別する。実機での経路成功・アクセント・語頭語尾の確認後に本番収録へ進む。

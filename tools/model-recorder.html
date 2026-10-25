@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>モデル音声収録（開発用）</title>
+<link rel="stylesheet" href="model-recorder.css">
+<script src="model-recorder.js" defer></script>
+</head>
+<body>
+<main>
+<h1>モデル音声収録（開発用）</h1>
+<p>Chromeでモデル音声を一度だけファイル化するためのツールです。練習ページの音声・設定は変更しません。HTTPSまたはlocalhostで開いてください。</p>
+<ol>
+<li>Voiceと読み上げ一覧を確認します。Windowsに同じVoiceがあるとは限らないので、名前と実際の声を確認してください。</li>
+<li>共有を開始します。まずこのタブ＋音声共有を選択。無音なら共有を終了し、Windowsで「画面全体＋システム音声共有」を試してください。選択画面の表示は環境により異なります。</li>
+<li>先頭1項目を収録し、波形と保存音声を試聴します。語頭・語尾、声、アクセントを確認してから一括収録してください。</li>
+</ol>
+<p><strong>収録中は他の音声再生を止め、通知音も避けてください。</strong>このツールはマイクを使いません。音声の自動無音切り詰めは行いません。</p>
+<fieldset id="settings">
+<legend>収録条件</legend>
+<label>Voice <select id="voice"><option value="">音声一覧を待っています</option></select></label>
+<button id="refresh" type="button">音声一覧を更新</button>
+<label>速度 <input id="rate" type="number" min="0.1" max="2" step="0.05" value="0.9"></label>
+<label>Pitch <input id="pitch" type="number" min="0" max="2" step="0.1" value="1"></label>
+<label>読み上げ一覧（1行＝ID、タブ、読み上げ文。IDは英数字・ハイフン・下線、重複不可）
+<textarea id="items" rows="7" spellcheck="false">sample-01	箸。橋。
+sample-02	雨。飴。</textarea></label>
+<p>初期一覧は収録試験用です。正式なモデル一覧ではありません。単語単独と対語をまとめた発話ではアクセントが変わる場合があります。確認した文脈・句読点を保ってください。</p>
+<label>共有の候補 <select id="source"><option value="tab">このタブの音声</option><option value="screen">画面全体のシステム音声（Windows向け）</option></select></label>
+</fieldset>
+<div class="actions"><button id="share" type="button">1. 共有を開始</button><button id="disconnect" type="button" disabled>共有を終了</button></div>
+<p id="sharing">共有していません</p>
+<div class="actions"><button id="probe" type="button" disabled>2. 先頭1項目を収録</button><button id="cancel" type="button" disabled>収録を中止</button></div>
+<label class="confirmation"><input id="approved" type="checkbox" disabled> 保存音声を試聴し、声・アクセント・語頭／語尾が正しいことを確認した</label>
+<div class="actions"><button id="batch" type="button" disabled>3. 全項目を順番に収録</button><button id="export" type="button" disabled>収録済みをZIP保存</button></div>
+<p>一括収録では同じIDの成功済み音声を、新しく成功した音声で置き換えます。中止・失敗しても、それまでの完成データは保持します。再読込前にZIP保存してください。</p>
+<p id="status" role="status" aria-live="polite">Voiceと共有対象を選択してください。</p>
+<section aria-labelledby="result-title"><h2 id="result-title">保存音声の確認</h2><div id="results"></div></section>
+<p>ZIPにはWebM等の収録原本・WAV・manifest.jsonが入ります。曲線生成と練習ページへの搭載は別工程です。MP3への変換は行いません。</p>
+</main>
+</body>
+</html>

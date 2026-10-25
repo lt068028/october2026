@@ -1,0 +1,17 @@
+:root { color-scheme: light dark; font: 16px/1.6 system-ui, sans-serif; }
+body { margin: 0; }
+main { max-width: 920px; margin: auto; padding: 24px; }
+fieldset { border: 1px solid #888; border-radius: 8px; }
+label { display: block; margin: 12px 0; }
+input, select, textarea, button { font: inherit; }
+input[type=number] { width: 6em; }
+select { max-width: 100%; }
+textarea { display: block; box-sizing: border-box; width: 100%; }
+button { padding: 8px 14px; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+#status { border-left: 4px solid #4080c0; padding: 12px; white-space: pre-wrap; }
+.result { border: 1px solid #888; border-radius: 8px; margin: 16px 0; padding: 12px; }
+canvas { display: block; width: 100%; height: 100px; background: #eef4fa; }
+audio { display: block; max-width: 100%; margin: 12px 0; }
+.warning { color: light-dark(#9a3200, #ffb380); }
