@@ -1957,3 +1957,7 @@ label:has(> input:disabled) .slider {
     filter: grayscale(1);
     cursor: not-allowed !important;
 }
+
+#audioRecoveryStatus[hidden] {
+    display: none !important;
+}

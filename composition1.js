@@ -320,7 +320,7 @@ function convertToHiragana(text) {
     return cleaned;
 }
 
-function speakText(text, rate = 0.9, onEndCallback) {
+function speakText(text, rate = 0.9, onEndCallback, onErrorCallback = onEndCallback) {
     setupPreferredVoice();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -338,15 +338,14 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
     utterance.onerror = () => {
         currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+        onErrorCallback?.();
     };
 
     try {
-        DrillAudio.guardUtterance(utterance);
-        speechSynthesis.speak(utterance);
+        DrillAudio.speak(utterance);
     } catch (err) {
         currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+        onErrorCallback?.();
     }
 }
 
@@ -582,38 +581,36 @@ function compositionSync() {
     });
 }
 
-function compositionPlay(rowIndex, model = "", onlyModel = false) {
+function compositionPlay(rowIndex, model = "", onlyModel = false, autoplay = false) {
     if (compositionBusy()) return;
-
+    const view = compositionState.views[rowIndex];
+    if (!view) return;
     const version = ++compositionState.playback;
-    stopAllPlayback();
-
+    const ownButton = view.resultSpan.querySelector('.play-recording-btn');
+    const buttons = autoplay && model
+        ? [view.listenBtn, ownButton]
+        : [model ? view.listenBtn : ownButton];
+    setPlayingStateMultiple(buttons.filter(Boolean), 'Playing...');
+    if (autoplay) DrillAudio.setAutoplayActive(true);
     const url = savedAudioUrls[rowIndex];
-
+    let completed = false;
+    const finish = () => {
+        if (completed || version !== compositionState.playback) return;
+        completed = true;
+        stopAllPlayback();
+        compositionSync();
+    };
     const playOwn = () => {
-        if (
-            version !== compositionState.playback ||
-            compositionBusy() || !url || onlyModel
-        ) {
-            return;
-        }
-
+        if (version !== compositionState.playback || compositionBusy()) return;
+        if (!url || onlyModel) { finish(); return; }
         const audio = new Audio(url);
         currentPlayingAudio = audio;
         audio.playbackRate = 1;
-
-        const ended = () => {
-            if (currentPlayingAudio === audio) {
-                currentPlayingAudio = null;
-            }
-        };
-
-        audio.onended = ended;
-        audio.onerror = ended;
-        DrillAudio.play(audio, ended);
+        audio.onended = finish;
+        audio.onerror = finish;
+        DrillAudio.play(audio, finish);
     };
-
-    if (model) speakText(model, 0.9, playOwn);
+    if (model) speakText(model, 0.9, onlyModel ? finish : playOwn, finish);
     else playOwn();
 }
 
@@ -1099,6 +1096,7 @@ function compositionCreateRow(
         "recording-actions"
     );
 
+    let listenBtn = null;
     if (item) {
         const listen = button(
             "🔊きく",
@@ -1109,6 +1107,7 @@ function compositionCreateRow(
             compositionPlay(rowIndex, item.jaKanji, true);
 
         actions.append(listen);
+        listenBtn = listen;
     }
 
     const recordBtn = button(
@@ -1155,6 +1154,7 @@ function compositionCreateRow(
     const view = {
         rowIndex,
         item,
+        listenBtn,
         recordBtn,
         stopBtn,
         resultSpan,
@@ -1187,7 +1187,8 @@ function compositionCreateRow(
     compositionPlay = function(
         rowIndex,
         model = "",
-        onlyModel = false
+        onlyModel = false,
+        autoplay = false
     ) {
         if (model) {
             const item =
@@ -1200,7 +1201,7 @@ function compositionCreateRow(
                     || model;
         }
 
-        return originalPlay(rowIndex, model, onlyModel);
+        return originalPlay(rowIndex, model, onlyModel, autoplay);
     };
 
     const originalInit = initSettingsPanel;
@@ -1525,7 +1526,7 @@ async function compositionRecord(rowIndex) {
         compositionSync();
 
         if (valid && isAutoPlay) {
-            compositionPlay(rowIndex, view.item?.jaHira || "");
+            compositionPlay(rowIndex, view.item?.jaHira || "", false, true);
         }
     }
 

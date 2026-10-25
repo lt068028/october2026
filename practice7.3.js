@@ -963,9 +963,7 @@ function speak(text, b, done) {
     u.onend = finish;
     u.onerror = finish;
 
-    DrillAudio.guardUtterance(u);
-
-    window.speechSynthesis.speak(u);
+    DrillAudio.speak(u);
 }
 function playRecording(key, b) {
     const value = saved.get(key);

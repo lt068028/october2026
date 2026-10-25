@@ -10,6 +10,8 @@ window.DrillAudio = (() => {
     const streams = new Set();
     const pitchStates = new Set();
     const locks = new Set();
+    const analyses = new Map();
+    let playbackStage = null;
     const nativeGetUserMedia = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices);
     const settings = '.compact-settings button, .compact-settings input, #voiceSelect, #voiceDropdownBtn';
     const voice = '#voiceSelect, #voiceDropdown';
@@ -85,7 +87,8 @@ window.DrillAudio = (() => {
             }
         }
         old.stream?.getTracks().forEach(track => track.stop());
-        if (old.context && old.context.state !== 'closed') old.context.close().catch(() => {});
+        closeContext(old.context);
+        cancelAnalysis(old.state);
         old.state.isAnalyzing = false;
         old.restore();
         sync();
@@ -108,6 +111,7 @@ window.DrillAudio = (() => {
     }
 
     async function getUserMedia(options) {
+        clearNotice();
         if (leaving) throw new DOMException('Page left', 'AbortError');
         const request = requestGeneration;
         const stream = await nativeGetUserMedia(options);
@@ -125,6 +129,136 @@ window.DrillAudio = (() => {
         return stream;
     }
 
+    function notify(message) {
+        if (leaving) return;
+        let el = document.getElementById('audioRecoveryStatus');
+        if (!el) {
+            el = document.createElement('p');
+            el.id = 'audioRecoveryStatus';
+            el.className = 'info-panel';
+            el.setAttribute('role', 'status');
+            const header = document.querySelector('.main-header');
+            if (header) header.after(el); else document.body.prepend(el);
+        }
+        el.textContent = message;
+        el.hidden = !message;
+    }
+    function clearNotice() {
+        const el = document.getElementById('audioRecoveryStatus');
+        if (el) el.hidden = true;
+    }
+    function closeContext(context) {
+        if (context && context.state !== 'closed') {
+            try { Promise.resolve(context.close()).catch(() => {}); } catch (_) {}
+        }
+    }
+    function startPlaybackStage(budget, cleanup = () => {}) {
+        playbackStage?.cancel();
+        clearNotice();
+        const ticket = playbackGeneration;
+        const stage = {
+            done: false, timer: null,
+            valid: () => !leaving && !stage.done && playbackStage === stage && ticket === playbackGeneration,
+            cancel() {
+                if (stage.done) return;
+                stage.done = true;
+                clearTimeout(stage.timer);
+                cleanup();
+                if (playbackStage === stage) playbackStage = null;
+            },
+            arm(ms) {
+                clearTimeout(stage.timer);
+                stage.timer = setTimeout(() => {
+                    if (!stage.valid()) return;
+                    stage.cancel();
+                    adapter?.stop();
+                    notify('Playback timed out. Please try again. Your recording has been kept.');
+                    sync();
+                }, Math.max(0, ms));
+            }
+        };
+        playbackStage = stage;
+        stage.arm(budget);
+        return stage;
+    }
+    function analysisError() {
+        const error = new Error('Pitch analysis timed out.');
+        error.name = 'TimeoutError';
+        return error;
+    }
+    function stopAnalysisWorker(analysis) {
+        analysis.worker?.terminate();
+        analysis.worker = null;
+        if (analysis.workerURL) URL.revokeObjectURL(analysis.workerURL);
+        analysis.workerURL = null;
+    }
+    function cancelAnalysis(state) {
+        const analysis = analyses.get(state);
+        if (!analysis) return;
+        analyses.delete(state);
+        clearTimeout(analysis.timer);
+        stopAnalysisWorker(analysis);
+        closeContext(analysis.context);
+        state.isAnalyzing = false;
+        analysis.reject(new DOMException('Analysis cancelled', 'AbortError'));
+    }
+    function beginAnalysis(state) {
+        cancelAnalysis(state);
+        clearNotice();
+        const started = performance.now();
+        const analysis = { context: null, timer: null, expired: false };
+        const deadline = new Promise((resolve, reject) => { analysis.reject = reject; });
+        deadline.catch(() => {});
+        analysis.owns = () => analyses.get(state) === analysis;
+        analysis.check = () => {
+            if (!analysis.owns() || leaving) throw new DOMException('Analysis cancelled', 'AbortError');
+            if (analysis.expired || performance.now() - started >= 10000) throw analysisError();
+        };
+        analysis.wait = promise => Promise.race([promise, deadline]);
+        analysis.frames = (samples, sampleRate, modelCapture, functions) => {
+            analysis.check();
+            const source = Object.entries(functions).map(([name, fn]) =>
+                `const ${name} = (${fn.toString()});`
+            ).join('\n') + `
+                self.onmessage = event => {
+                    try {
+                        const {samples, sampleRate, modelCapture} = event.data;
+                        self.postMessage({frames: estimateF0Frames(samples, sampleRate, modelCapture)});
+                    } catch (error) { self.postMessage({error: error.message}); }
+                };`;
+            analysis.workerURL = URL.createObjectURL(new Blob([source], {type: 'text/javascript'}));
+            analysis.worker = new Worker(analysis.workerURL);
+            const result = new Promise((resolve, reject) => {
+                analysis.worker.onmessage = event => {
+                    if (!analysis.owns() || analysis.expired) return;
+                    if (event.data.error) reject(new Error(event.data.error));
+                    else resolve(event.data.frames);
+                };
+                analysis.worker.onerror = event => {
+                    event.preventDefault?.();
+                    reject(new Error(event.message || 'Pitch worker failed.'));
+                };
+                analysis.worker.postMessage({samples, sampleRate, modelCapture}, [samples.buffer]);
+            });
+            return analysis.wait(result);
+        };
+        analysis.finish = () => {
+            clearTimeout(analysis.timer);
+            stopAnalysisWorker(analysis);
+            closeContext(analysis.context);
+            if (analysis.owns()) analyses.delete(state);
+        };
+        analyses.set(state, analysis);
+        analysis.timer = setTimeout(() => {
+            if (!analysis.owns()) return;
+            analysis.expired = true;
+            stopAnalysisWorker(analysis);
+            closeContext(analysis.context);
+            analysis.reject(analysisError());
+        }, 10000);
+        return analysis;
+    }
+
     function clearModels() {
         for (const state of pitchStates) {
             state.modelF0Frames = null;
@@ -135,6 +269,7 @@ window.DrillAudio = (() => {
         if (leaving) return;
         leaving = true;
         ++requestGeneration;
+        for (const state of analyses.keys()) cancelAnalysis(state);
         adapter?.cancel();
         adapter?.stop();
         cancelModel();
@@ -186,36 +321,62 @@ window.DrillAudio = (() => {
             sync();
         },
         sync, getUserMedia, beginModel, cancelModel, valid, endModel, clearModels,
+        beginAnalysis, notify,
+        registerPitch(state, redraw) { state.redraw = redraw; pitchStates.add(state); },
         setAutoplayActive(active) { autoplayActive = active; sync(); },
         invalidatePlayback() {
             ++playbackGeneration;
+            playbackStage?.cancel();
             if (autoplayActive) { autoplayActive = false; sync(); }
         },
         guardUtterance(utterance) {
-            const ticket = playbackGeneration;
-            let finished = false;
+            const stage = startPlaybackStage(20000);
             for (const key of ['onend', 'onerror']) {
                 const callback = utterance[key];
                 utterance[key] = event => {
-                    if (!leaving && !finished && ticket === playbackGeneration) {
-                        finished = true;
-                        callback?.(event);
-                    }
+                    if (!stage.valid()) return;
+                    stage.cancel();
+                    callback?.(event);
                 };
             }
         },
-        registerPitch(state, redraw) { state.redraw = redraw; pitchStates.add(state); },
+        speak(utterance) {
+            this.guardUtterance(utterance);
+            try { window.speechSynthesis.speak(utterance); }
+            catch (error) { utterance.onerror?.(error); }
+        },
         play(audio, onError) {
-            const ticket = playbackGeneration;
+            const started = performance.now();
+            const update = () => {
+                if (!stage.valid()) return;
+                const duration = Number(audio.duration);
+                const rate = Number(audio.playbackRate) || 1;
+                const budget = Number.isFinite(duration) && duration > 0
+                    ? duration * 1000 / rate + 3000 : 23000;
+                stage.arm(budget - (performance.now() - started));
+            };
+            const stage = startPlaybackStage(23000, () => {
+                audio.removeEventListener?.('loadedmetadata', update);
+                audio.removeEventListener?.('durationchange', update);
+            });
+            audio.addEventListener?.('loadedmetadata', update);
+            audio.addEventListener?.('durationchange', update);
+            update();
             for (const key of ['onended', 'onerror']) {
                 const callback = audio[key];
                 audio[key] = event => {
-                    if (!leaving && ticket === playbackGeneration) callback?.(event);
+                    if (!stage.valid()) return;
+                    stage.cancel();
+                    callback?.(event);
                 };
             }
-            audio.play().catch(error => {
-                if (!leaving && ticket === playbackGeneration) onError(error);
-            });
+            const failed = error => {
+                if (!stage.valid()) return;
+                stage.cancel();
+                onError(error);
+            };
+            try { Promise.resolve(audio.play()).catch(failed); }
+            catch (error) { failed(error); }
         },
         get leaving() { return leaving; }
     };

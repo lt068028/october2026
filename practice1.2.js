@@ -510,8 +510,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
     };
 
     try {
-        DrillAudio.guardUtterance(utterance);
-        speechSynthesis.speak(utterance);
+        DrillAudio.speak(utterance);
     } catch (error) {
         finish();
     }

@@ -464,8 +464,7 @@ function speakText(text, rate = 0.9, done = () => {}) {
     utterance.onerror = finish;
 
     try {
-        DrillAudio.guardUtterance(utterance);
-        window.speechSynthesis.speak(utterance);
+        DrillAudio.speak(utterance);
     } catch (error) {
         finish();
     }

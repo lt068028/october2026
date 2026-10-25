@@ -8,6 +8,12 @@ function mock(){
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
  window.SpeechSynthesisUtterance=class{constructor(text){this.text=text}};
  Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:()=>new Promise((resolve,reject)=>{const finish=()=>{if(t.deny)return reject(new DOMException('Denied','NotAllowedError'));const track={readyState:'live',stop(){this.readyState='ended'},addEventListener(){}};t.tracks.push(track);resolve({getTracks:()=>[track]})};t.requests.push(finish);if(!t.defer)finish()})}});
+ window.NativePitchWorker=window.Worker;
+ window.Worker=class{
+  constructor(){(t.workers ||= []).push(this)}
+  postMessage(){if(t.workerHang)return;queueMicrotask(()=>{if(!this.terminated)this.onmessage?.({data:{frames:[{time:0,f0:180},{time:.02,f0:190}]}})})}
+  terminate(){this.terminated=true}
+ };
  window.MediaRecorder=class{constructor(stream){this.stream=stream;this.state='inactive';this.mimeType='audio/webm';t.recorders.push(this)}start(){this.state='recording'}stop(){this.state='inactive';setTimeout(()=>{this.ondataavailable?.({data:new Blob(['recorded'])});this.onstop?.()},0)}};
  window.SpeechRecognition=class{constructor(){t.recognitions.push(this)}start(){}stop(){setTimeout(()=>this.onend?.(),0)}abort(){setTimeout(()=>this.onend?.(),0)}};
  window.Audio=class{constructor(url){this.url=url;t.audios.push(this)}play(){this.paused=false;return Promise.resolve()}pause(){this.paused=true}};
@@ -36,7 +42,7 @@ function mock(){
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(70);
  }
 
- for(const name of names){const p=await open(name);await start(p);await finish(p);const trace=await p.evaluate(()=>({records:[...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる')).slice(0,3).map(b=>b.disabled),toggles:[...document.querySelectorAll('.compact-settings input')].map(b=>b.disabled),voice:document.querySelector('#voiceDropdownBtn').disabled,spoken:t.spoken.length}));console.log('TRACE',name,JSON.stringify(trace));if(!process.env.BASELINE){assert.equal(trace.records[1],false,name+' next row available during autoplay');assert.deepEqual(trace.toggles,[false,name==='pronunciation2'],name+' Autostop released; p2 Autoplay locked during auto playback');checks+=2;
+ for(const name of names){const p=await open(name);await start(p);await finish(p);const trace=await p.evaluate(()=>({records:[...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる')).slice(0,3).map(b=>b.disabled),toggles:[...document.querySelectorAll('.compact-settings input')].map(b=>b.disabled),voice:document.querySelector('#voiceDropdownBtn').disabled,spoken:t.spoken.length}));console.log('TRACE',name,JSON.stringify(trace));if(!process.env.BASELINE){assert.equal(trace.records[1],false,name+' next row available during autoplay');assert.deepEqual(trace.toggles,[false,name!=='pronunciation1'],name+' Autostop released; p2 Autoplay locked during auto playback');checks+=2;
  assert.notEqual(await p.evaluate(()=>getComputedStyle([...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる'))[1]).cursor),'not-allowed',name+' enabled record cursor');checks++;
  await start(p,1);await finish(p);await start(p,0);await finish(p);assert.deepEqual(p.errors,[],name);checks++}await p.close()}
  for(const name of ['pronunciation1','pronunciation2']){const p=await open(name);await p.evaluate(()=>states[0].listenBtn.click());await p.waitForTimeout(30);console.log('MODEL',name,await p.evaluate(()=>({record:states[0].recordBtn.disabled,otherListen:states[1]?.listenBtn.disabled,toggle:document.querySelector('#toggleRecordMode').disabled})));if(!process.env.BASELINE){assert(await p.evaluate(()=>[...document.querySelectorAll('button')].filter(b=>b.textContent.startsWith('🔊きく')).every(b=>b.disabled)),name+' other listens blocked during mic capture');checks++;

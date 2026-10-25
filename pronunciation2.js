@@ -375,7 +375,7 @@ function speakText(text, rate = 0.9, onEndCallback, onErrorCallback = onEndCallb
     currentUtteranceRef = utterance;
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     utterance.onerror = () => { currentUtteranceRef = null; onErrorCallback?.(); };
-    try { DrillAudio.guardUtterance(utterance); speechSynthesis.speak(utterance); } catch (err) {
+    try { DrillAudio.speak(utterance); } catch (err) {
         currentUtteranceRef = null;
         onErrorCallback?.();
     }
@@ -2158,7 +2158,7 @@ async function startPitchRecording(state) {
 
             if (message) setPitchStatus(state, message);
 
-            if (valid && isAutoPlay) {
+            if (valid && isAutoPlay && !state.analysisTimedOut) {
                 playPitchRecording(state, true);
             }
         }
@@ -2422,6 +2422,7 @@ async function playPitchModel(state) {
 async function analyzeModelPitchBlob(state, blob, token) {
     if (!blob || state.isAnalyzing || !DrillAudio.valid(token)) return;
 
+    const analysis = DrillAudio.beginAnalysis(state);
     state.isAnalyzing = true;
     if (state.listenBtn) {
         state.listenBtn.disabled = true;
@@ -2442,25 +2443,25 @@ async function analyzeModelPitchBlob(state, blob, token) {
         }
 
         audioContext = new AudioContextClass();
+        analysis.context = audioContext;
         token.context = audioContext;
 
         if (audioContext.state === "suspended") {
-            await audioContext.resume();
+            await analysis.wait(audioContext.resume());
         }
 
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(
-            arrayBuffer
-        );
+        const arrayBuffer = await analysis.wait(blob.arrayBuffer());
+        const audioBuffer = await analysis.wait(audioContext.decodeAudioData(arrayBuffer));
+        analysis.check();
 
         if (!DrillAudio.valid(token)) return;
 
-        const frames = estimateF0Frames(
-            mixAudioToMono(audioBuffer),
-            audioBuffer.sampleRate,
-            true
+        const frames = await analysis.frames(
+            mixAudioToMono(audioBuffer), audioBuffer.sampleRate, true,
+            {estimateF0Frames, estimateFrameF0, calculateMedian}
         );
 
+        analysis.check();
         const hasPitch = frames.some(
             frame => Number.isFinite(frame.f0) && frame.f0 > 0
         );
@@ -2493,21 +2494,20 @@ async function analyzeModelPitchBlob(state, blob, token) {
         drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
         setPitchStatus(state, "Model pitch drawn");
     } catch (error) {
-        if (!DrillAudio.valid(token)) return;
-        console.error("Model pitch analysis error:", error);
-        setPitchStatus(state, "Could not draw model pitch.");
+        if (!analysis.owns() || !DrillAudio.valid(token)) return;
+        if (error.name === 'AbortError') return;
+        if (error.name === 'TimeoutError') {
+            DrillAudio.notify("Pitch analysis timed out. Your recording has been kept. Please try again.");
+        }
+        setPitchStatus(state, error.name === 'TimeoutError'
+            ? "Pitch analysis timed out. Your recording has been kept. Please try again."
+            : "Could not draw pitch. Try again.");
     } finally {
-        if (audioContext && audioContext.state !== "closed") {
-            try {
-                await audioContext.close();
-            } catch (error) {}
-        }
-
-        if (!DrillAudio.valid(token)) return;
+        const owns = analysis.owns();
+        analysis.finish();
+        if (!owns || !DrillAudio.valid(token)) return;
         state.isAnalyzing = false;
-        if (state.listenBtn) {
-            state.listenBtn.disabled = !state.modelText;
-        }
+        if (state.listenBtn) state.listenBtn.disabled = !state.modelText;
         state.recordBtn.disabled = false;
         state.playBtn.disabled = !state.audioBlob;
     }
@@ -2561,7 +2561,9 @@ function playPitchRecording(state, autoplay = false) {
 async function analyzePitchRecording(state) {
     if (!state.audioBlob || state.isAnalyzing) return;
 
+    const analysis = DrillAudio.beginAnalysis(state);
     state.isAnalyzing = true;
+    state.analysisTimedOut = false;
     if (state.listenBtn) {
         state.listenBtn.disabled = true;
     }
@@ -2580,21 +2582,22 @@ async function analyzePitchRecording(state) {
         }
 
         audioContext = new AudioContextClass();
+        analysis.context = audioContext;
 
         if (audioContext.state === "suspended") {
-            await audioContext.resume();
+            await analysis.wait(audioContext.resume());
         }
 
-        const arrayBuffer = await state.audioBlob.arrayBuffer();
-        const audioBuffer = await audioContext.decodeAudioData(
-            arrayBuffer
+        const arrayBuffer = await analysis.wait(state.audioBlob.arrayBuffer());
+        const audioBuffer = await analysis.wait(audioContext.decodeAudioData(arrayBuffer));
+        analysis.check();
+
+        const frames = await analysis.frames(
+            mixAudioToMono(audioBuffer), audioBuffer.sampleRate, false,
+            {estimateF0Frames, estimateFrameF0, calculateMedian}
         );
 
-        const frames = estimateF0Frames(
-            mixAudioToMono(audioBuffer),
-            audioBuffer.sampleRate
-        );
-
+        analysis.check();
         const hasPitch = frames.some(
             frame => Number.isFinite(frame.f0) && frame.f0 > 0
         );
@@ -2614,21 +2617,21 @@ async function analyzePitchRecording(state) {
         drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
         setPitchStatus(state, "Ready");
     } catch (error) {
-        console.error("Pitch Lab analysis error:", error);
-        setPitchStatus(state, "Could not draw pitch. Try again.");
+        if (!analysis.owns()) return;
+        if (error.name === 'AbortError') return;
+        if (error.name === 'TimeoutError') {
+            DrillAudio.notify("Pitch analysis timed out. Your recording has been kept. Please try again.");
+        }
+        state.analysisTimedOut = error.name === 'TimeoutError';
+        setPitchStatus(state, error.name === 'TimeoutError'
+            ? "Pitch analysis timed out. Your recording has been kept. Please try again."
+            : "Could not draw pitch. Try again.");
     } finally {
-        if (audioContext && audioContext.state !== "closed") {
-            try {
-                await audioContext.close();
-            } catch (error) {
-                console.warn("Could not close AudioContext:", error);
-            }
-        }
-
+        const owns = analysis.owns();
+        analysis.finish();
+        if (!owns) return;
         state.isAnalyzing = false;
-        if (state.listenBtn) {
-            state.listenBtn.disabled = !state.modelText;
-        }
+        if (state.listenBtn) state.listenBtn.disabled = !state.modelText;
         state.recordBtn.disabled = false;
         state.playBtn.disabled = !state.audioBlob;
     }

@@ -2622,8 +2622,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         utterance.onerror = finish;
 
         try {
-            DrillAudio.guardUtterance(utterance);
-            speechSynthesis.speak(utterance);
+            DrillAudio.speak(utterance);
         } catch (error) {
             finish();
         }

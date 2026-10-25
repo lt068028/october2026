@@ -21,6 +21,12 @@ const mock=()=>{
  Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:()=>new Promise((resolve,reject)=>{
  const complete=()=>{if(testAudio.reject){reject(new DOMException('Denied','NotAllowedError'));return}const track={readyState:'live',stop(){this.readyState='ended'},addEventListener(){}};testAudio.tracks.push(track);resolve({getTracks:()=>[track]})};
  testAudio.requests.push(complete);if(!testAudio.defer)complete();})}});
+ window.NativePitchWorker=window.Worker;
+ window.Worker=class{
+  constructor(){(testAudio.workers ||= []).push(this)}
+  postMessage(){if(testAudio.workerHang)return;queueMicrotask(()=>{if(!this.terminated)this.onmessage?.({data:{frames:[{time:0,f0:180},{time:.02,f0:190}]}})})}
+  terminate(){this.terminated=true}
+ };
  window.MediaRecorder=class {constructor(stream){this.stream=stream;this.state='inactive';this.mimeType='audio/webm'}start(){this.state='recording'}stop(){this.state='inactive';this.ondataavailable?.({data:new Blob(['audio'])});this.onstop?.()}};
  window.SpeechRecognition=class{start(){}stop(){this.onend?.()}abort(){this.onend?.()}};
  window.Audio=class{constructor(url){this.url=url;this.paused=false}play(){return Promise.resolve()}pause(){this.paused=true}};
