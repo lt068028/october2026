@@ -1981,37 +1981,6 @@ label:has(> input:disabled) .slider {
     display: none !important;
 }
 
-/* 練習7.2：狭いPCウィンドウではExampleの文を下段で折り返す */
-@media (max-width: 700px) {
-    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table,
-    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody {
-        display: block;
-        width: 100%;
-    }
-
-    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr > td {
-        display: block;
-        width: auto;
-        min-width: 0;
-        max-width: 100%;
-        box-sizing: border-box;
-        flex: 0 1 auto;
-    }
-
-    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr > td:last-child {
-        flex: 1 1 100%;
-        white-space: normal;
-        overflow-wrap: anywhere;
-        word-break: normal;
-    }
-}
-
 /* 学習操作・リンクの文字を115%へ。余白・高さ指定は維持する。 */
 .example-button:not(.segmented-option) {
     font-size: 14.95px;
@@ -2236,29 +2205,38 @@ body:is(.practice12-page, .practice73-page) {
     .practice73-page .recording-table .p73-controls { grid-column: 1 / -1; }
     .practice73-page .recording-table tr:not(:has(.p73-number)) > .prompt-label { grid-column: 2; }
 }
-.practice73-page .p73-example-table { width: 100%; }
-.practice73-page .p73-example-table button { white-space: nowrap; }
-.practice73-page .p73-example-model { overflow-wrap: anywhere; }
-@container (max-width: 1000px) {
-    .practice73-page .p73-example-table,
-    .practice73-page .p73-example-table > tbody { display: block; }
-    .practice73-page .p73-example-table tr {
-        display: grid;
-        grid-template-columns: max-content max-content minmax(0, 1fr);
-        align-items: baseline;
-        gap: 6px 4px;
-        margin-bottom: 12px;
-    }
-    .practice73-page .p73-example-table td { min-width: 0; }
-    .practice73-page .p73-example-kind,
-    .practice73-page .p73-example-cues { grid-column: 1 / -1; }
-    .practice73-page .p73-example-cues::after { content: ' 👉'; white-space: nowrap; }
-    .practice73-page .p73-example-table td:nth-child(3) { display: none; }
-    .practice73-page .p73-example-table td:nth-child(4) { grid-column: 1; }
+
+/* Practice 7 Examples: category, cues, arrow, listen, model text. */
+.practice7-page .example-box { container-type: inline-size; }
+.practice7-page .example-box :is(.drill-example-table, .p73-example-table) {
+    display: grid;
+    width: 100%;
+    grid-template-columns: max-content minmax(0, 1fr) max-content max-content minmax(12em, 1.2fr);
+    gap: 6px 4px;
 }
-@container (max-width: 1000px) {
-    .practice73-page .p73-example-table td[colspan] {
-        grid-column: 1 / -1;
-        overflow-wrap: anywhere;
+.practice7-page .example-box :is(.drill-example-table, .p73-example-table) > tbody { display: contents; }
+.practice7-page .example-box tr {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    align-items: baseline;
+}
+.practice7-page .example-box tr > td {
+    width: auto;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 6px 2px;
+}
+.practice7-page .example-box tr > td:first-child .example-label-title { display: block; }
+.practice7-page .example-box button { white-space: nowrap; }
+.practice7-page .example-box td[colspan] { grid-column: 2 / -1; }
+@container (max-width: 850px) {
+    .practice7-page .example-box :is(.drill-example-table, .p73-example-table) {
+        grid-template-columns: max-content max-content minmax(0, 1fr);
     }
+    .practice7-page .example-box tr > td:nth-child(1),
+    .practice7-page .example-box tr > td:nth-child(2) { grid-column: 1 / -1; }
+    .practice7-page .example-box tr > td:nth-child(3) { grid-column: 1; }
+    .practice7-page .example-box td[colspan] { grid-column: 1 / -1; }
 }

@@ -1201,10 +1201,13 @@ function render() {
 
             const kind = document.createElement('td');
             kind.className = 'p73-example-kind';
-            kind.textContent = r.label.replace(
-                'Past Continuous',
-                'Past Ongoing'
-            );
+            kind.innerHTML = badge(r, si);
+            if (/^(Question|Response):$/.test(r.label)) {
+                const role = document.createElement('strong');
+                role.className = 'example-label-title';
+                role.textContent = r.label;
+                kind.append(role);
+            }
 
             const cue = document.createElement('td');
             cue.className = 'p73-example-cues';
@@ -1221,14 +1224,11 @@ function render() {
             });
             lc.append(listen);
 
-            const type = document.createElement('td');
-            type.innerHTML = badge(r, si);
-
             const text = document.createElement('td');
             text.className = 'p73-example-model';
             text.innerHTML = sentence(r);
 
-            tr.append(kind, cue, arrow, lc, type, text);
+            tr.append(kind, cue, arrow, lc, text);
             eb.append(tr);
         });
 
@@ -2331,12 +2331,13 @@ render = function () {
     const q = qa73Model(qa73.example, 'q');
     const tr = document.createElement('tr');
 
-    ['Question:', null, '👉', null, null, null]
+    ['Question:', null, '👉', null, null]
         .forEach((content, index) => {
             const td = document.createElement('td');
 
             if (index === 0) {
                 td.className = 'p73-example-kind';
+                td.innerHTML = badge(q, 0) + '<strong class="example-label-title">Question:</strong>';
             }
 
             if (index === 1) {
@@ -2349,11 +2350,9 @@ render = function () {
                 );
                 td.append(listen);
             } else if (index === 4) {
-                td.innerHTML = badge(q, 0);
-            } else if (index === 5) {
                 td.className = 'p73-example-model';
                 td.innerHTML = sentence(q);
-            } else if (content) {
+            } else if (content && index !== 0) {
                 td.textContent = content;
             }
 
@@ -2366,10 +2365,10 @@ render = function () {
 
     const label = document.createElement('td');
     label.className = 'p73-example-kind';
-    label.textContent = 'Response:';
+    label.innerHTML = badge(q, 0) + '<strong class="example-label-title">Response:</strong>';
 
     const answers = document.createElement('td');
-    answers.colSpan = 5;
+    answers.colSpan = 4;
 
     ['yes', 'no'].forEach((kind, index) => {
         if (index) {

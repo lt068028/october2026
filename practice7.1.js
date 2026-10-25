@@ -426,12 +426,12 @@ document.addEventListener('DOMContentLoaded', () => {
             highlighted(display(model(example, 'q')))
         );
 
+        label.prepend(...type.childNodes);
         question.append(
             label,
             cues,
             node('td', '', '👉'),
             sound,
-            type,
             text
         );
 
@@ -443,7 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         const answers = node('td');
-        answers.colSpan = 5;
+        answers.colSpan = 4;
 
         ['yes', 'no'].forEach((kind, index) => {
             if (index) {
@@ -462,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
             );
         });
 
+        responseLabel.prepend(node('span', 'tense-badge tense-badge--ongoing', '▶️Ongoing'));
         response.append(responseLabel, answers);
         body.append(question, response);
         table.append(body);
@@ -2687,7 +2688,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             row.innerHTML = `
                 <td>
-                    <strong class="example-label-title">${ongoing ? 'Ongoing:' : 'Habit:'}</strong>
+                    <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
                 </td>
                 <td>${cue(item)}</td>
                 <td>👉</td>
@@ -2697,9 +2698,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                         class="example-button"
                         data-model="${ongoing ? 'ongoing' : 'Habit'}"
                     >🔊きく</button>
-                </td>
-                <td>
-                    <span class="p71-tense ${ongoing ? 'p71-ongoing' : 'p71-present'}">${ongoing ? '▶️Ongoing' : '🔁Habit'}</span>
                 </td>
                 <td class="p71-example-model">${exampleSentence(item, ongoing)}</td>
             `;
