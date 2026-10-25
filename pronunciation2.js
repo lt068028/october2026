@@ -998,7 +998,6 @@ function p2Play(key, model = true, ownAfter = false) {
         ? [view.listen, view.result.querySelector(".play-recording-btn")]
         : [selected];
     setPlayingStateMultiple(buttons.filter(Boolean), "Playing...");
-    if (model && ownAfter) DrillAudio.setAutoplayActive(true);
 
     let completed = false;
 
@@ -2530,7 +2529,6 @@ function playPitchRecording(state, autoplay = false) {
         "Playing..."
     );
 
-    if (autoplay) DrillAudio.setAutoplayActive(true);
 
     activePitchPlayingState = state;
     setPitchStatus(state, "Playing...");

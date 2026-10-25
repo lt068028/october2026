@@ -707,7 +707,9 @@ function pronunciation1Play(
         : view.resultSpan.querySelector(".play-recording-btn");
 
     setPlayingStateMultiple(
-        [selected].filter(Boolean),
+        (model && playOwnAfter
+            ? [view.listenBtn, view.resultSpan.querySelector(".play-recording-btn")]
+            : [selected]).filter(Boolean),
         "Playing..."
     );
 

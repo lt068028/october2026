@@ -42,7 +42,7 @@ function mock(){
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(70);
  }
 
- for(const name of names){const p=await open(name);await start(p);await finish(p);const trace=await p.evaluate(()=>({records:[...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる')).slice(0,3).map(b=>b.disabled),toggles:[...document.querySelectorAll('.compact-settings input')].map(b=>b.disabled),voice:document.querySelector('#voiceDropdownBtn').disabled,spoken:t.spoken.length}));console.log('TRACE',name,JSON.stringify(trace));if(!process.env.BASELINE){assert.equal(trace.records[1],false,name+' next row available during autoplay');assert.deepEqual(trace.toggles,[false,name!=='pronunciation1'],name+' Autostop released; p2 Autoplay locked during auto playback');checks+=2;
+ for(const name of names){const p=await open(name);await start(p);await finish(p);const trace=await p.evaluate(()=>({records:[...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる')).slice(0,3).map(b=>b.disabled),toggles:[...document.querySelectorAll('.compact-settings input')].map(b=>b.disabled),voice:document.querySelector('#voiceDropdownBtn').disabled,spoken:t.spoken.length}));console.log('TRACE',name,JSON.stringify(trace));if(!process.env.BASELINE){assert.equal(trace.records[1],false,name+' next row available during autoplay');assert.deepEqual(trace.toggles,[false,false],name+' both toggles available during playback');checks+=2;
  assert.notEqual(await p.evaluate(()=>getComputedStyle([...document.querySelectorAll('#drill1List button,#drill1Container button')].filter(b=>b.textContent.startsWith('🎙️とる'))[1]).cursor),'not-allowed',name+' enabled record cursor');checks++;
  await start(p,1);await finish(p);await start(p,0);await finish(p);assert.deepEqual(p.errors,[],name);checks++}await p.close()}
  for(const name of ['pronunciation1','pronunciation2']){const p=await open(name);await p.evaluate(()=>states[0].listenBtn.click());await p.waitForTimeout(30);console.log('MODEL',name,await p.evaluate(()=>({record:states[0].recordBtn.disabled,otherListen:states[1]?.listenBtn.disabled,toggle:document.querySelector('#toggleRecordMode').disabled})));if(!process.env.BASELINE){assert(await p.evaluate(()=>[...document.querySelectorAll('button')].filter(b=>b.textContent.startsWith('🔊きく')).every(b=>b.disabled)),name+' other listens blocked during mic capture');checks++;
@@ -78,13 +78,13 @@ function mock(){
   const pair=()=>p.evaluate(()=>[p2.views[0].listen.textContent,p2.views[0].result.querySelector('.play-recording-btn').textContent]);
   await start(p);await finish(p);
   assert.deepEqual(await pair(),['Playing...','Playing...'],'both labels during model stage');checks++;
-  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),true,'Autoplay locked during model');checks++;
+  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'Autoplay available during model');checks++;
   assert.equal(await p.locator('#voiceDropdownBtn').isDisabled(),false,'recording Voice lock released during ordinary autoplay');checks++;
   await p.evaluate(()=>{const toggle=document.querySelector('#togglePlaybackMode');toggle.checked=false;toggle.dispatchEvent(new Event('change',{bubbles:true}))});
-  assert.equal(await p.locator('#togglePlaybackMode').isChecked(),true,'blocked change restores toggle');checks++;
+  assert.equal(await p.locator('#togglePlaybackMode').isChecked(),false,'OFF accepted during relay');checks++;
   await p.evaluate(()=>t.spoken.at(-1).onend());await p.waitForTimeout(20);
   assert.deepEqual(await pair(),['Playing...','Playing...'],'both labels during own stage');checks++;
-  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),true,'Autoplay locked during own audio');checks++;
+  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'Autoplay available during own audio');checks++;
   await p.evaluate(()=>t.audios.at(-1).onended());await p.waitForTimeout(20);
   assert(await p.evaluate(()=>p2.views[0].listen.textContent.startsWith('🔊きく')&&p2.views[0].result.querySelector('.play-recording-btn').textContent.startsWith('▶️')),'relay labels restored');checks++;
   assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'relay unlocks toggle');checks++;
@@ -102,6 +102,7 @@ function mock(){
   assert((await pair())[0].startsWith('🔊きく')&&(await pair())[1].startsWith('▶️'),'error restores both labels');checks++;
   assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'error unlocks toggle');checks++;
   // New row recording cancels a relay and releases its labels.
+  await p.evaluate(()=>{const toggle=document.querySelector('#togglePlaybackMode');if(!toggle.checked)toggle.click()});
   await p.evaluate(()=>p2Play(0,true,true));await start(p,1);
   assert((await pair())[0].startsWith('🔊きく')&&(await pair())[1].startsWith('▶️'),'next row restores old labels');checks++;
   await finish(p);await p.evaluate(()=>t.spoken.at(-1).onend());await p.waitForTimeout(10);await p.evaluate(()=>t.audios.at(-1).onended());
@@ -117,9 +118,10 @@ function mock(){
   assert.equal(await p.locator('#speechStyleControl [data-value="formal"]').getAttribute('aria-pressed'),'true','Formal available');checks++;
   assert.equal(await casual.isDisabled(),true,'Casual stays disabled after rerender');checks++;
   assert((await p.locator('.voice-recommend-note').textContent()).trim().startsWith('ℹ️'),'information icon adopted');checks++;
+  await p.evaluate(()=>{const toggle=document.querySelector('#togglePlaybackMode');if(!toggle.checked)toggle.click()});
   await start(p,0,true);await finish(p);
   assert(await p.evaluate(()=>states[0].listenBtn.textContent.startsWith('🔊きく')&&states[0].playBtn.textContent==='Playing...'),'Lab own-only autoplay marks only own button');checks++;
-  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),true,'Lab autoplay locks toggle');checks++;
+  assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'Lab autoplay permits toggle');checks++;
   await p.evaluate(()=>t.audios.at(-1).onended());await p.waitForTimeout(10);
   assert.equal(await p.locator('#togglePlaybackMode').isDisabled(),false,'Lab own completion unlocks toggle');checks++;
   await p.evaluate(()=>document.querySelector('#togglePlaybackMode').click());

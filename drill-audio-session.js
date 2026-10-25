@@ -3,7 +3,7 @@ window.DrillAudio = (() => {
     let adapter;
     let leaving = false;
     let model = null;
-    let autoplayActive = false;
+    let relay = null;
     let generation = 0;
     let playbackGeneration = 0;
     let requestGeneration = 0;
@@ -29,7 +29,6 @@ window.DrillAudio = (() => {
         const recording = adapter.busy();
         document.body.classList.toggle('drill-recording-locked', recording);
         document.body.classList.toggle('drill-model-capturing', Boolean(model));
-        document.body.classList.toggle('drill-autoplay-active', autoplayActive);
         // Page recorders own drill-button/settings locks. Never snapshot their
         // temporary disabled=true: restoring that snapshot would lock them forever.
         const controls = new Set(recording
@@ -39,10 +38,6 @@ window.DrillAudio = (() => {
                     el => el.matches(settings) || isAudioButton(el)
                 )
                 : []);
-        if (autoplayActive) {
-            const toggle = document.getElementById('togglePlaybackMode');
-            if (toggle) controls.add(toggle);
-        }
         let released = false;
         for (const el of locks) {
             if (!controls.has(el)) {
@@ -284,10 +279,6 @@ window.DrillAudio = (() => {
         if (adapter.busy() && !target.classList.contains('stop-btn-active')) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
         }
-        if (autoplayActive && target.matches('#togglePlaybackMode')) {
-            target.checked = true;
-            event.preventDefault(); event.stopImmediatePropagation(); return;
-        }
         const setting = target.closest('.compact-settings, #voiceDropdown, #voiceSelect');
         if (model && (setting || isAudioButton(target))) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
@@ -323,11 +314,52 @@ window.DrillAudio = (() => {
         sync, getUserMedia, beginModel, cancelModel, valid, endModel, clearModels,
         beginAnalysis, notify,
         registerPitch(state, redraw) { state.redraw = redraw; pitchStates.add(state); },
-        setAutoplayActive(active) { autoplayActive = active; sync(); },
         invalidatePlayback() {
             ++playbackGeneration;
             playbackStage?.cancel();
-            if (autoplayActive) { autoplayActive = false; sync(); }
+            if (relay) {
+                const old = relay;
+                relay = null;
+                old.audio?.pause();
+                old.buttons.forEach(({ button, nodes, disabled }) => {
+                    button.replaceChildren(...nodes);
+                    button.disabled = disabled;
+                });
+            }
+        },
+        // Ordinary grammar rows: keep both labels throughout a single relay.
+        // The toggle is sampled by the recorder, never by this running sequence.
+        playRelay({ recordButton, result, speak, url }) {
+            adapter.stop();
+            let row = recordButton.parentElement;
+            while (row && ![...row.querySelectorAll('button')].some(
+                button => button.textContent.trim().startsWith('🔊きく')
+            )) row = row.parentElement;
+            const listen = [...(row?.querySelectorAll('button') || [])].find(
+                button => button.textContent.trim().startsWith('🔊きく')
+            );
+            const own = result.querySelector('.play-recording-btn, .recorded-play-button');
+            const current = { buttons: [listen, own].filter(Boolean).map(button => ({
+                button, nodes: [...button.childNodes], disabled: button.disabled
+            })) };
+            relay = current;
+            current.buttons.forEach(({ button }) => {
+                button.textContent = 'Playing...';
+                button.disabled = true;
+            });
+            const finish = () => { if (relay === current) adapter.stop(); };
+            try {
+                speak(() => {
+                    if (relay !== current || adapter.busy()) return;
+                    const source = url();
+                    if (!source) { finish(); return; }
+                    const audio = current.audio = new Audio(source);
+                    audio.playbackRate = 1;
+                    audio.onended = finish;
+                    audio.onerror = finish;
+                    this.play(audio, finish);
+                });
+            } catch (_) { finish(); }
         },
         guardUtterance(utterance) {
             const stage = startPlaybackStage(20000);
@@ -336,7 +368,8 @@ window.DrillAudio = (() => {
                 utterance[key] = event => {
                     if (!stage.valid()) return;
                     stage.cancel();
-                    callback?.(event);
+                    if (key === 'onerror') adapter?.stop();
+                    else callback?.(event);
                 };
             }
         },

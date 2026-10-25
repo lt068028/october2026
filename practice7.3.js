@@ -930,8 +930,8 @@ if (window.speechSynthesis) {
     }
 }
 
-function speak(text, b, done) {
-    stopPlayback();
+function speak(text, b, done, relay = false) {
+    if (!relay) stopPlayback();
 
     if (!window.speechSynthesis) {
         if (done) done();
@@ -956,7 +956,8 @@ function speak(text, b, done) {
 
     const finish = () => {
         if (utterance !== u) return;
-        stopPlayback();
+        if (relay) utterance = null;
+        else stopPlayback();
         if (done) done();
     };
 
@@ -1591,10 +1592,12 @@ async function record(key, r) {
             !s.discard &&
             s.raw.trim()
         ) {
-            speak(r.text, null, () => {
-                if (!session && !preparing) {
-                    playRecording(key);
-                }
+            const view = views.get(key);
+            DrillAudio.playRelay({
+                recordButton: view.rec,
+                result: view.result,
+                speak: done => speak(r.text, null, done, true),
+                url: () => saved.get(key)?.url
             });
         }
     };

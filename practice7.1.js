@@ -2391,20 +2391,11 @@ function processResult(
     );
 
     if (isAutoPlay) {
-        speakText(modelText, playRate, () => {
-            // 新しい録音中に古い自動再生を開始しない。
-            if (activeRecognitionSession ||
-                practice71State.startingRow) return;
-
-            stopAllPlayback();
-            const url = getUrlFn();
-            if (!url) return;
-
-            const audio = new Audio(url);
-            currentPlayingAudio = audio;
-            audio.playbackRate = 1.0;
-            audio.onended = () => stopAllPlayback();
-            DrillAudio.play(audio, () => stopAllPlayback());
+        DrillAudio.playRelay({
+            recordButton: practice71State.views[rowKey].recordBtn,
+            result: resultSpan,
+            speak: done => speakText(modelText, playRate, done),
+            url: getUrlFn
         });
     }
 }

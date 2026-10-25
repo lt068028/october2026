@@ -107,7 +107,7 @@ function mock(){
   await p.evaluate(()=>t.audios.at(-1).onended());
   await p.evaluate(()=>compositionPlay(0,'天気がいいです',false,true));
   ok((await labels()).every(s=>s==='Playing...'),'composition relay marks both during model');
-  ok(await p.locator('#togglePlaybackMode').isDisabled(),'composition relay locks Autoplay');
+  ok(!await p.locator('#togglePlaybackMode').isDisabled(),'composition relay permits Autoplay changes');
   await p.evaluate(()=>t.spoken.at(-1).onend());
   ok((await labels()).every(s=>s==='Playing...'),'composition relay marks both during own');
   await p.evaluate(()=>t.audios.at(-1).onended());

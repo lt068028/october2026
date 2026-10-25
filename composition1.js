@@ -591,7 +591,6 @@ function compositionPlay(rowIndex, model = "", onlyModel = false, autoplay = fal
         ? [view.listenBtn, ownButton]
         : [model ? view.listenBtn : ownButton];
     setPlayingStateMultiple(buttons.filter(Boolean), 'Playing...');
-    if (autoplay) DrillAudio.setAutoplayActive(true);
     const url = savedAudioUrls[rowIndex];
     let completed = false;
     const finish = () => {

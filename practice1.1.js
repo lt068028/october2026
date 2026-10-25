@@ -2030,17 +2030,14 @@ async function startRecording(initialView) {
         displayResult(view, message);
 
         if (valid && isAutoPlay) {
-            stopAllPlayback();
-
-            const url =
-                practice1State.audioUrls[rowKey];
-
-            speakText(
-                model,
-                0.9,
-                () => playAudio(url)
-            );
-        }    }
+            DrillAudio.playRelay({
+                recordButton: view.record,
+                result: view.result,
+                speak: done => speakText(model, 0.9, done),
+                url: () => practice1State.audioUrls[rowKey]
+            });
+        }
+    }
 
     function stop(message = "", discard = false) {
         if (session.finished || session.stopRequested) {

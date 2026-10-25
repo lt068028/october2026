@@ -1256,25 +1256,12 @@ function practice2ShowNotice(resultSpan, message) {
         );
 
         if (isAutoPlay) {
-            speakText(
-                practice2SpeechText(modelText),
-                rate,
-                () => {
-                    if (busy()) return;
-
-                    stopAllPlayback();
-
-                    const url = getUrl();
-                    if (!url) return;
-
-                    const audio = new Audio(url);
-                    currentPlayingAudio = audio;
-                    audio.playbackRate = 1;
-                    audio.onended = () => stopAllPlayback();
-
-                    DrillAudio.play(audio, () => stopAllPlayback());
-                }
-            );
+            DrillAudio.playRelay({
+                recordButton: practice2State.views[key].recordBtn,
+                result: resultSpan,
+                speak: done => speakText(practice2SpeechText(modelText), rate, done),
+                url: getUrl
+            });
         }
     };
 
@@ -3253,24 +3240,12 @@ function processResult(
     );
 
     if (isAutoPlay) {
-        speakText(
-            practice2SpeechText(modelText),
-            playRate,
-            () => {
-                if (activeRecognitionSession ||
-                    practice2State.startingRow) return;
-
-                stopAllPlayback();
-                const url = getUrlFn();
-                if (!url) return;
-
-                const audio = new Audio(url);
-                currentPlayingAudio = audio;
-                audio.playbackRate = 1.0;
-                audio.onended = () => stopAllPlayback();
-                DrillAudio.play(audio, () => stopAllPlayback());
-            }
-        );
+        DrillAudio.playRelay({
+            recordButton: practice2State.views[rowKey].recordBtn,
+            result: resultSpan,
+            speak: done => speakText(practice2SpeechText(modelText), playRate, done),
+            url: getUrlFn
+        });
     }
 }
 
