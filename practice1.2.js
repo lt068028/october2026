@@ -1411,7 +1411,7 @@ function practice2ShowNotice(resultSpan, message) {
         return span;
     }
 
-    function example(container, lines, { responseCue = false, questionCue = "" } = {}) {
+    function example(container, lines, { responseCue = false } = {}) {
         const box = node("div", "example-box");
         const table = node("table", "drill-example-table");
         const body = node("tbody");
@@ -1459,9 +1459,6 @@ function practice2ShowNotice(resultSpan, message) {
             cueCell.innerHTML = cue;
 
             const arrowCell = node("td", "", "👉");
-            if (label === "Question:" && questionCue) {
-                arrowCell.insertAdjacentHTML("beforeend", "／" + questionCue);
-            }
 
             const listenCell = node("td");
             listenCell.append(
@@ -1851,7 +1848,9 @@ function practice2ShowNotice(resultSpan, message) {
                     "専攻",
                     "senkō",
                     "major"
-                ),
+                )
+                + "／"
+                + formatWord("なに", "何", "nani", "what"),
                 () => question(
                     word(
                         "あなたのせんこう",
@@ -1881,8 +1880,7 @@ function practice2ShowNotice(resultSpan, message) {
                 )
             ]
         ], {
-            responseCue: true,
-            questionCue: formatWord("なに", "何", "nani", "what")
+            responseCue: true
         });
 
         second.container.append(second.panel);
