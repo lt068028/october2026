@@ -2011,3 +2011,17 @@ label:has(> input:disabled) .slider {
         word-break: normal;
     }
 }
+
+/* 学習操作・リンクの文字を115%へ。余白・高さ指定は維持する。 */
+.example-button:not(.segmented-option) {
+    font-size: 14.95px;
+    min-width: 36px;
+}
+
+.back-link {
+    font-size: 16.1px;
+}
+
+.index-page .menu-list > li > a {
+    font-size: 18.4px;
+}
