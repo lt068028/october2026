@@ -2025,3 +2025,126 @@ label:has(> input:disabled) .slider {
 .index-page .menu-list > li > a {
     font-size: 18.4px;
 }
+
+/* Practice 1.2 only: 100% is the current UI; typography and minimum targets scale together. */
+body.practice12-page {
+    --practice12-scale: 1;
+    font-size: calc(16px * var(--practice12-scale));
+}
+
+.practice12-page h1 { font-size: calc(24px * var(--practice12-scale)); }
+.practice12-page .back-link { font-size: calc(16.1px * var(--practice12-scale)); }
+.practice12-page .prompt-label { font-size: calc(16px * var(--practice12-scale)); }
+.practice12-page .info-panel-desc { font-size: calc(15px * var(--practice12-scale)); }
+.practice12-page :is(.custom-select, .custom-input, .correction-box) {
+    font-size: calc(14px * var(--practice12-scale));
+}
+.practice12-page .example-button:not(.segmented-option) {
+    font-size: calc(14.95px * var(--practice12-scale));
+    min-width: calc(36px * var(--practice12-scale));
+    min-height: calc(26px * var(--practice12-scale));
+}
+.practice12-page :is(.mode-label, .voice-guide-footer, .voice-select, .voice-dropdown-btn, .voice-dropdown-item) {
+    font-size: calc(13px * var(--practice12-scale));
+}
+.practice12-page .segmented-control .segmented-option,
+.practice12-page .compact-settings .settings-segments-row .segmented-option {
+    font-size: calc(13px * var(--practice12-scale));
+    line-height: calc(18px * var(--practice12-scale));
+    min-height: calc(26px * var(--practice12-scale));
+}
+.practice12-page :is(.custom-tip-box, .tooltip-tip) {
+    font-size: calc(12px * var(--practice12-scale));
+}
+.practice12-page .voice-help-icon {
+    font-size: calc(11px * var(--practice12-scale));
+    width: calc(18px * var(--practice12-scale));
+    height: calc(18px * var(--practice12-scale));
+}
+.practice12-page .settings-onoff .switch {
+    width: calc(76px * var(--practice12-scale));
+    height: calc(32px * var(--practice12-scale));
+}
+.practice12-page .settings-onoff .slider::before {
+    width: calc(24px * var(--practice12-scale));
+    height: calc(24px * var(--practice12-scale));
+    left: calc(4px * var(--practice12-scale));
+    bottom: calc(4px * var(--practice12-scale));
+}
+.practice12-page .settings-onoff .slider::after {
+    left: calc(28px * var(--practice12-scale));
+    width: calc(48px * var(--practice12-scale));
+    height: calc(32px * var(--practice12-scale));
+    font-size: calc(12px * var(--practice12-scale));
+}
+.practice12-page .settings-onoff input:checked + .slider::before {
+    transform: translateX(calc(44px * var(--practice12-scale)));
+}
+.practice12-page .settings-onoff input:checked + .slider::after { left: 0; }
+
+/* Enlarged examples can move the sentence below their cues without squeezing the text. */
+@media (max-width: 900px) {
+    .practice12-page:not([data-display-size="100"]) .drill-example-table,
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody {
+        display: block;
+        width: 100%;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr > td {
+        display: block;
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        flex: 0 1 auto;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr > td:nth-child(2) {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr + tr {
+        border-top: 1px dashed var(--border-color);
+        margin-top: 6px;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr + tr > td {
+        border-top: 0;
+    }
+    .practice12-page:not([data-display-size="100"]) .drill-example-table > tbody > tr > td:last-child {
+        flex: 1 1 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+/* At enlarged sizes, keep prompts and recording controls readable in narrow windows. */
+@media (max-width: 900px) {
+    .practice12-page:not([data-display-size="100"]) .recording-table,
+    .practice12-page:not([data-display-size="100"]) .recording-table > tbody {
+        display: block;
+        width: 100%;
+    }
+    .practice12-page:not([data-display-size="100"]) .recording-table > colgroup {
+        display: none;
+    }
+    .practice12-page:not([data-display-size="100"]) .recording-table > tbody > tr {
+        display: grid;
+        grid-template-columns: min-content minmax(0, 1fr);
+        gap: 6px 4px;
+    }
+    .practice12-page:not([data-display-size="100"]) .recording-table > tbody > tr > td {
+        min-width: 0;
+        max-width: 100%;
+    }
+    .practice12-page:not([data-display-size="100"]) .recording-table .drill-cue-cell {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .practice12-page:not([data-display-size="100"]) .recording-table > tbody > tr > td:last-child {
+        grid-column: 1 / -1;
+        padding-bottom: 6px;
+    }
+}
