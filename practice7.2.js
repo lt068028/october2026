@@ -242,8 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
     speakText = function(text, rate = 0.8, done) {
         return speak(
             String(text ?? '').replace(
-                /^うんん[、,\s]*/,
-                'うんんー、'
+                /^(?:ううんん?|うんん)ー?[、,\s]*/,
+                'ううんん、'
             ),
             rate,
             done
@@ -315,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prefix = kind === 'q'
             ? ''
             : mode === 'casual'
-                ? (kind === 'yes' ? 'うん、' : 'うんん、')
+                ? (kind === 'yes' ? 'うん、' : 'ううん、')
                 : (kind === 'yes' ? 'はい、' : 'いいえ、');
 
         const verb = kind === 'no' && item.know

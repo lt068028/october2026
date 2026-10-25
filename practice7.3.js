@@ -2103,7 +2103,7 @@ function qa73Model(cues, kind) {
     const prefix = question
         ? ''
         : speechStyle === 'casual'
-            ? (negative ? 'うんん、' : 'うん、')
+            ? (negative ? 'ううん、' : 'うん、')
             : (negative ? 'いいえ、' : 'はい、');
 
     let body = question
@@ -2258,7 +2258,7 @@ speechText = text => {
             ? String(text)
             : qa73BaseSpeechText(text);
 
-    return value.replace(/^うんん、?/, 'うんんー、');
+    return value.replace(/^(?:ううんん?|うんん)ー?[、,\s]*/, 'ううんん、');
 };
 
 // 既存問題の録音キーは変えず、表示番号を変更する。
