@@ -1039,6 +1039,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
 
         tables.forEach(table => {
+            table.style.setProperty("--practice12-cue-width", `${width + 8}px`);
             table.querySelector(
                 "colgroup"
             ).children[1].style.width = `${width + 8}px`;
@@ -1457,7 +1458,10 @@ function practice2ShowNotice(resultSpan, message) {
             const cueCell = node("td");
             cueCell.innerHTML = cue;
 
-            cueCell.append(node("span", "practice12-cue-arrow", " 👉"));
+            const arrowHost = cueCell.lastElementChild?.classList.contains("practice12-cue-unit")
+                ? cueCell.lastElementChild
+                : cueCell;
+            arrowHost.append(node("span", "practice12-cue-arrow", " 👉"));
             const arrowCell = node("td", "practice12-empty-arrow-cell");
 
             const listenCell = node("td", "practice12-empty-listen-cell");
@@ -1602,13 +1606,15 @@ function practice2ShowNotice(resultSpan, message) {
 
         return {
             actions,
+            cueCell,
+            controls,
             listenBtn,
             recordBtn
         };
     }
 
-    function textToggle(actions, getText, enabled) {
-        const answer = node("span");
+    function textToggle(view, getText, enabled) {
+        const answer = node("span", "practice12-shown-model");
 
         const toggle = button(
             "👀Text",
@@ -1636,7 +1642,9 @@ function practice2ShowNotice(resultSpan, message) {
             toggle.firstChild.textContent = "🕶️Hide";
         }
 
-        actions.append(toggle, answer);
+        // Keep selection and Text together, before the shared Listen/Record/Stop column.
+        view.cueCell.lastElementChild.append(toggle);
+        view.controls.append(answer);
     }
 
     function section(id, title, instruction) {
@@ -1812,7 +1820,7 @@ function practice2ShowNotice(resultSpan, message) {
                 Boolean(state.answerMode)
             );
 
-            textToggle(answer.actions, getText, {
+            textToggle(answer, getText, {
                 get textVisible() {
                     return state.textVisible;
                 },
@@ -1993,7 +2001,7 @@ function practice2ShowNotice(resultSpan, message) {
                 Boolean(state.selectedValue)
             );
 
-            textToggle(answer.actions, getText, {
+            textToggle(answer, getText, {
                 get textVisible() {
                     return state.textVisible;
                 },
@@ -2179,6 +2187,7 @@ function practice2ShowNotice(resultSpan, message) {
             }
 
             tables.forEach(table => {
+                table.style.setProperty("--practice12-cue-width", `${width + 8}px`);
                 table.querySelector(
                     "colgroup"
                 ).children[1].style.width =

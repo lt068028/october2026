@@ -50,6 +50,16 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    const overflow=await p.locator('.example-box,.drill-row,.settings-row').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2));
    check(overflow,false,`fixed 130% layout ${width}/${theme}/${style}/${hint}/${script}`);
    check(await p.locator('#drill1Container .example-box .practice12-example-answer').count(),2,'yes/no are complete separate groups');
+   for(const section of ['#drill1Container','#drill2Container']) {
+    check(await p.locator(section+' .recording-actions').evaluateAll(es=>{const xs=es.map(e=>e.querySelector('button').getBoundingClientRect().x);return Math.max(...xs)-Math.min(...xs)<1.5}),true,`Listen column aligned ${section}/${width}/${theme}/${style}/${hint}/${script}`);
+    check(await p.locator(section+' .example-box tr').evaluateAll(rows=>{
+     const xs=rows.map(row=>row.querySelector('button').getBoundingClientRect().x);
+     const aligned=Math.max(...xs)-Math.min(...xs)<1.5;
+     const responses=rows.flatMap(row=>[...row.querySelectorAll('.practice12-example-answer button')]);
+     const first=responses[0]?.getBoundingClientRect();
+     return aligned&&responses.every(button=>{const r=button.getBoundingClientRect();return Math.abs(r.y-first.y)<10||Math.abs(r.x-first.x)<1.5});
+    }),true,`Example primary Listen column aligned ${section}/${width}/${theme}/${style}/${hint}/${script}`);
+   }
   }
  }
  for(const width of [1440,1280]) for(const hint of ['hover','paren']) {
@@ -62,6 +72,20 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
   check(await p.locator('#drill1Container .example-box tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`example uses one line when it fits ${width}/${hint}`);
   check(await p.locator('.recording-table tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`recording controls use one line when they fit ${width}/${hint}`);
  }
+ await p.setViewportSize({width:1280,height:900});
+ await p.locator('#drill1Container .drill-row').first().locator('.drill-cue-cell button[aria-pressed]').first().click();
+ let row=p.locator('#drill1Container .drill-row').first();
+ check(await row.locator('.drill-cue-cell button').evaluateAll(es=>es.map(e=>e.firstChild.textContent.trim())),['🙆','🙅','👀Text'],'choices and Text share the cue group');
+ const listenX=await row.locator('.recording-actions').first().evaluate(e=>e.querySelector('button').getBoundingClientRect().x);
+ await row.locator('.drill-cue-cell button').last().click();
+ check(await row.locator('.practice12-shown-model').innerText().then(t=>t.length>0),true,'Text shows model in its own output area');
+ check(Math.abs(await row.locator('.recording-actions').first().evaluate(e=>e.querySelector('button').getBoundingClientRect().x)-listenX)<1.5,true,'showing text does not move Listen column');
+ await row.locator('.drill-cue-cell button').last().click();
+ check(await row.locator('.practice12-shown-model').innerText(),'','Hide restores compact output');
+ await p.locator('#drill2Container select.custom-select').first().selectOption('せいじ');
+ check(await p.locator('#drill2Container .drill-row').first().locator('.drill-cue-cell button').last().isEnabled(),true,'major selection enables adjacent Text');
+ const box=await p.locator('body').boundingBox();
+ check(box.width<=1280&&box.x>=32,true,'agreed width and outer gutters');
  check(p.errors.concat(other.errors),[],'no page errors');
  const denied=await browser.newContext();await denied.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new DOMException('denied','SecurityError')};Storage.prototype.setItem=()=>{throw new DOMException('denied','SecurityError')}});
  const d=await open(denied);check(await d.locator('body').evaluate(e=>getComputedStyle(e).getPropertyValue('--practice12-scale').trim()),'1.3','fixed size works without localStorage');check(d.errors,[],'storage denial does not break page');

@@ -2029,8 +2029,8 @@ label:has(> input:disabled) .slider {
 /* Practice 1.2 only: fixed at the former 130% setting while other pages await review. */
 body.practice12-page {
     --practice12-scale: 1.3;
-    max-width: 1320px;
-    width: calc(100% - 32px);
+    max-width: 1280px;
+    width: calc(100% - 64px);
     box-sizing: border-box;
     margin: 24px auto;
     padding: 16px;
@@ -2103,8 +2103,9 @@ body.practice12-page {
     width: 100%;
 }
 .practice12-page .drill-example-table > tbody > tr {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
     gap: 6px 8px;
     align-items: baseline;
 }
@@ -2121,8 +2122,8 @@ body.practice12-page {
 .practice12-page .drill-example-table > tbody > tr > td:first-child { flex-shrink: 0; }
 .practice12-page .drill-example-table > tbody > tr > .practice12-example-model {
     display: flex;
-    flex: 1 1 0;
-    min-width: min(100%, 20em);
+    grid-column: 3;
+    min-width: 0;
     gap: 8px;
     align-items: baseline;
 }
@@ -2130,7 +2131,8 @@ body.practice12-page {
 .practice12-page .practice12-example-model > span { min-width: 0; overflow-wrap: anywhere; }
 .practice12-page .drill-example-table > tbody > tr > td[colspan] {
     display: flex;
-    flex: 1 1 auto;
+    grid-column: 3;
+    container-type: inline-size;
     flex-wrap: wrap;
     gap: 8px 16px;
 }
@@ -2150,8 +2152,8 @@ body.practice12-page {
 .practice12-page .practice12-example-answer > span:last-child { overflow-wrap: anywhere; }
 .practice12-page .recording-table > colgroup { display: none; }
 .practice12-page .recording-table > tbody > tr {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 34px minmax(0, min(var(--practice12-cue-width, 50%), 50%)) minmax(0, 1fr);
     align-items: center;
     gap: 6px 4px;
 }
@@ -2175,3 +2177,38 @@ body.practice12-page {
     display: none;
 }
 .practice12-page .practice12-cue-arrow { white-space: nowrap; }
+
+/* Practice 1.2: shared Listen column within each Example/Drill, without a Text-only slot. */
+.practice12-page :is(.example-box, .drill-row) { container-type: inline-size; }
+.practice12-page .drill-example-table {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr) minmax(20em, 1.2fr);
+    column-gap: 8px;
+}
+.practice12-page .drill-example-table > tbody { display: contents; }
+.practice12-page .drill-cue-cell > span:has(> button) {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 100%;
+}
+.practice12-page .practice12-shown-model {
+    flex: 1 1 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.practice12-page .practice12-shown-model:empty { display: none; }
+@container (max-width: 850px) {
+    .practice12-page .recording-table > tbody > tr {
+        grid-template-columns: 34px minmax(0, 1fr);
+    }
+    .practice12-page .recording-table > tbody > tr > td:last-child { grid-column: 1 / -1; }
+}
+@container (max-width: 800px) {
+    .practice12-page .drill-example-table { grid-template-columns: minmax(0, 1fr); }
+    .practice12-page .drill-example-table > tbody > tr > :is(.practice12-example-model, td[colspan]) {
+        grid-column: 1;
+    }
+    .practice12-page .practice12-answer-separator { display: none; }
+}
