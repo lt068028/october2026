@@ -881,6 +881,10 @@ function p2BestDiff(raw, references) {
         }
     }
 
+    if (!DrillAnswer.formAllowed(raw, p2SpeechStyle)) {
+        best.correct = false;
+        best.cost = Math.max(1, best.cost);
+    }
     return best;
 }
 

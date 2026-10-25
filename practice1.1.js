@@ -2407,6 +2407,7 @@ window.addEventListener("pagehide", () => {
         modelSentence(x, y, negative);
 
     matchesSentence = function (transcript, expectedText) {
+        if (!DrillAnswer.formAllowed(transcript, speechStyle)) return false;
         const actual = practice1Normalize(transcript);
         const expected = practice1Normalize(expectedText);
 
@@ -2476,6 +2477,7 @@ window.addEventListener("pagehide", () => {
     const originalFreeMatch = matchesFreeSentence;
 
     matchesFreeSentence = function (transcript, negative) {
+        if (!DrillAnswer.formAllowed(transcript, speechStyle)) return false;
         if (speechStyle === 'formal') {
             return originalFreeMatch(transcript, negative);
         }

@@ -1211,7 +1211,7 @@ function practice2ShowNotice(resultSpan, message) {
     const matches = (actual, expected, style) => {
         const value = normalize(actual);
 
-        return value.length > 0
+        return DrillAnswer.formAllowed(actual, style) && value.length > 0
             && references(expected, style).includes(value);
     };
 

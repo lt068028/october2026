@@ -1663,7 +1663,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
             saved.rawTranscript
         );
 
-        saved.isCorrect = normalized.length > 0 && [
+        saved.isCorrect = DrillAnswer.formAllowed(saved.rawTranscript) && normalized.length > 0 && [
             saved.expectedText,
             saved.modelText
         ].some(text =>
@@ -2367,7 +2367,7 @@ function processResult(
     const modelText = getExpectedKanjiFn();
     const normalized = practice71Normalize(transcript);
 
-    const isCorrect = normalized.length > 0 && (
+    const isCorrect = DrillAnswer.formAllowed(transcript) && normalized.length > 0 && (
         normalized === practice71Normalize(expectedText) ||
         normalized === practice71Normalize(modelText)
     );
@@ -3381,10 +3381,10 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             '$1$2を'
         );
 
-        // 全スタイルで文末の「よ」を任意とする。
+        // 全スタイルで文末の「よ／ね／よね」を任意とする。
         value = value
-            .replace(/[\s、。．,.!?！？]+$/g, '')
-            .replace(/よ$/, '');
+            .replace(/[\s、。．,.!?！？「」『』・]+$/g, '')
+            .replace(/(?:よね|よ|ね)$/, '');
 
         // 各スタイルのモデル語尾に合わせて比較する。
         if (speechStyle === 'casual') value += 'よ';

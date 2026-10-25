@@ -828,6 +828,7 @@ function compositionBestDiff(text, references) {
         }
     }
 
+    if (!DrillAnswer.formAllowed(text, compositionSpeechStyle)) best.cost = Math.max(1, best.cost);
     return best;
 }
 

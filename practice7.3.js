@@ -6,7 +6,7 @@
 "use strict";
 
 const W = (kanji, hira, romaji, meaning) => ({
-    kanji, hira, romaji, meaning
+    kanji: DrillAnswer.kanjiNumbers(kanji), hira, romaji, meaning
 });
 
 const words = {
@@ -96,7 +96,8 @@ const words = {
 const row = (
     label, cues, text, hira, marks = [], tag = ""
 ) => ({
-    label, cues, text, hira, marks, tag
+    label, cues, text: DrillAnswer.kanjiNumbers(text), hira,
+    marks: marks.map(DrillAnswer.kanjiNumbers), tag
 });
 
 const pair = (a, b) => [a, b];
@@ -472,7 +473,7 @@ const dictionary = [
 ];
 
 function hira(text) {
-    let value = String(text ?? '').normalize('NFKC');
+    let value = DrillAnswer.numbers(text);
 
     for (const [from, to] of dictionary) {
         value = value.split(from).join(to);
@@ -1573,7 +1574,7 @@ async function record(key, r) {
                 raw: s.raw.trim(),
                 correct:
                     Boolean(s.raw.trim()) &&
-                    normalize(s.raw) === normalize(r.hira)
+                    matchesAnswer(s.raw, r)
             });
         }
 
@@ -2122,7 +2123,7 @@ function qa73Model(cues, kind) {
             ? (speechStyle === 'formal' ? 'か。' : '？')
             : (speechStyle === 'casual' ? 'よ。' : '。'));
 
-    return row(
+    return Object.assign(row(
         question ? 'Question:' : 'Response:',
         cues,
         text,
@@ -2133,7 +2134,7 @@ function qa73Model(cues, kind) {
             'て' + ending +
                 (question && speechStyle === 'formal' ? 'か' : '')
         ]
-    );
+    ), { answerTime: words[cues[0]].hira, answerKind: kind });
 }
 
 // 動詞部分を必須とし、対応する時間・名詞・応答語の省略を許容。
@@ -2228,6 +2229,21 @@ normalize = function (text) {
 
     return value;
 };
+
+// Omitted time is allowed; an explicitly spoken time must match this question.
+function matchesAnswer(actual, target) {
+    if (!DrillAnswer.formAllowed(actual, speechStyle)) return false;
+    if (target.answerTime && target.answerKind !== 'q') {
+        const data = qa73Verbs[target.cues[target.cues.length - 1]];
+        // Remove the verb before looking for 今: いました contains いま.
+        const spoken = qa73BaseNormalize(actual).replace(new RegExp(
+            qa73BaseNormalize(data[0]) + '(?:いませんでした|いました|いなかった|いた|なかった|た)', 'g'
+        ), '');
+        const times = spoken.match(/きょうの(?:ごぜんちゅう|ごご)|きのうの(?:よる|ひる)|さっき|いま/g) || [];
+        if (times.some(time => time !== qa73BaseNormalize(target.answerTime))) return false;
+    }
+    return Boolean(String(actual).trim()) && normalize(actual) === normalize(target.hira);
+}
 
 const qa73BaseSpeechText = speechText;
 

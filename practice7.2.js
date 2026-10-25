@@ -190,8 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 if (token) {
+                    const subjectToken = item.subject &&
+                        (!item.object || token !== flat(item.object));
                     rest = rest.slice(token.length)
-                        .replace(/^[をはが]/, '');
+                        // Restrict subjects only; retain existing object allowances.
+                        .replace(subjectToken ? /^[はが]/ : /^[をはが]/, '');
 
                     continue;
                 }
@@ -877,7 +880,13 @@ const practice7Data = [
         perfectSentence: "ているフォームを知っています。",
         perfectSentenceHira: "ているふぉーむを、しっています。"
     }
-];
+].map(item => ({
+    ...item,
+    xKanji: DrillAnswer.kanjiNumbers(item.xKanji),
+    yKanji: DrillAnswer.kanjiNumbers(item.yKanji),
+    pastSentence: DrillAnswer.kanjiNumbers(item.pastSentence),
+    perfectSentence: DrillAnswer.kanjiNumbers(item.perfectSentence)
+}));
 
 let isManualStop = false;
 let hintMode = "hover";
@@ -1164,19 +1173,19 @@ function speakText(text, rate = 0.9, onEndCallback) {
 
     // 読み上げ専用。表示文・判定文には反映しない。
     const speechText = String(text ?? "")
-        .replace(/朝5時に(?=起き)/g, "朝5時に、")
-        .replace(/朝5時から(?=起き)/g, "朝5時から、")
-        .replace(/夜10時に(?=寝)/g, "夜10時に、")
-        .replace(/夜10時から(?=寝)/g, "夜10時から、")
+        .replace(/朝(?:五|5)時に(?=起き)/g, "朝五時に、")
+        .replace(/朝(?:五|5)時から(?=起き)/g, "朝五時から、")
+        .replace(/夜(?:十|10)時に(?=寝)/g, "夜十時に、")
+        .replace(/夜(?:十|10)時から(?=寝)/g, "夜十時から、")
         .replace(/さっきから(?=Tシャツ)/g, "さっきから、")
         .replace(/さっき(?=Tシャツ)/g, "さっき、")
         .replace(/お正月に(?=太)/g, "お正月に、")
         .replace(/お正月から(?=太)/g, "お正月から、")
         .replace(/夏休みに(?=やせ)/g, "夏休みに、")
         .replace(/夏休みから(?=やせ)/g, "夏休みから、")
-        .replace(/漢字を50個(?=覚え)/g, "漢字を50個、")
-        .replace(/3年前に(?=結婚)/g, "3年前に、")
-        .replace(/3年前から(?=結婚)/g, "3年前から、")
+        .replace(/漢字を(?:五十|50)個(?=覚え)/g, "漢字を五十個、")
+        .replace(/(?:三|3)年前に(?=結婚)/g, "三年前に、")
+        .replace(/(?:三|3)年前から(?=結婚)/g, "三年前から、")
         .replace(/ているフォームを(?=知)/g, "ているフォームを、");
 
     const utterance = new SpeechSynthesisUtterance(speechText);
@@ -1367,7 +1376,7 @@ function renderDrill1Section() {
 
     const time = formatWord(
         'あさ5じ',
-        '朝5時',
+        '朝五時',
         'asa go-ji',
         "5 o'clock in the morning"
     );
@@ -1412,8 +1421,8 @@ function renderDrill1Section() {
     container.append(example);
 
     [
-        ['exPastListen', '朝5時に起きました。'],
-        ['exPerfListen', '朝5時から起きています。']
+        ['exPastListen', '朝五時に起きました。'],
+        ['exPerfListen', '朝五時から起きています。']
     ].forEach(([id, model]) => {
         const button = document.getElementById(id);
 
@@ -1716,7 +1725,7 @@ function createPractice7TableCard(
 // 実際の認識結果を、このページで扱う語句の範囲で変換する。
 // モデル文そのものへの置き換えは行わない。
 function practice7ToHiragana(text) {
-    let value = String(text ?? "").normalize("NFKC");
+    let value = DrillAnswer.numbers(text);
 
     const dictionary = [
         ["お正月", "おしょうがつ"],
@@ -1948,7 +1957,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
             saved.rawTranscript
         );
 
-        saved.isCorrect = normalized.length > 0 && [
+        saved.isCorrect = DrillAnswer.formAllowed(saved.rawTranscript) && normalized.length > 0 && [
             saved.expectedText,
             saved.modelText
         ].some(text =>
@@ -2652,7 +2661,7 @@ function processResult(
     const modelText = getExpectedKanjiFn();
     const normalized = practice7Normalize(transcript);
 
-    const isCorrect = normalized.length > 0 && (
+    const isCorrect = DrillAnswer.formAllowed(transcript) && normalized.length > 0 && (
         normalized === practice7Normalize(expectedText) ||
         normalized === practice7Normalize(modelText)
     );
@@ -3372,8 +3381,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
 
         [
-            ['exPastListen', '朝5時に起きました。'],
-            ['exPerfListen', '朝5時から起きています。']
+            ['exPastListen', '朝五時に起きました。'],
+            ['exPerfListen', '朝五時から起きています。']
         ].forEach(([id, text]) => {
             const button = document.getElementById(id);
             if (!button) return;
