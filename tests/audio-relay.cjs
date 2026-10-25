@@ -148,36 +148,39 @@ function mock(){
   await p.close();
  }
 
- // A native voice may still report speaking after cancel() returns.
- for(const release of [true,false]) {
-  const p=await open('practice1.2');
-  const card=p.locator('#drill1Container .drill-row').nth(4);
-  await card.locator('button').filter({hasText:/^🙅/}).click();
+
+ // Every page waits for asynchronous native speech cancellation before recording.
+ for(const name of names) for(const release of [true,false]) {
+  const p=await open(name);
   await p.evaluate(()=>{
-   t.nativeBusy=true;
+   const no=[...document.querySelectorAll('button')].find(b=>b.textContent.startsWith('🙅')&&!b.disabled);
+   no?.click();
+  });
+  await record(p);
+  await p.evaluate(()=>{
+   const no=[...document.querySelectorAll('button')].find(b=>b.textContent.startsWith('🙅')&&!b.disabled);
+   const target=no?.closest('tr')?.querySelector('button');
+   const inRow=no?.closest('tr');
+   const rec=[...(inRow||document).querySelectorAll('button')].find(b=>/^(🎙️|⏺️)とる/.test(b.textContent)&&!b.disabled);
+   if(!rec)throw Error('next record unavailable');rec.dataset.nextNative='true';
+   t.nativeBusy=true;t.beforeNative=[t.requests.length,t.recorders.length,t.recognitions.length];
    Object.defineProperty(speechSynthesis,'speaking',{get:()=>t.nativeBusy});
    Object.defineProperty(speechSynthesis,'pending',{get:()=>false});
-   const row=document.querySelectorAll('#drill1Container .drill-row')[4];
-   const recordButton=[...row.querySelectorAll('tr:first-child button')].find(b=>b.textContent.startsWith('🎙️とる'));
-   const result=row.querySelector('.result-text');
-   DrillAudio.playRelay({recordButton,result,speak:done=>speakText('妹はフリーターですか？',.75,done),url:()=>null});
    t.lateNative=t.spoken.at(-1).onend;
   });
-  await card.locator('tr').nth(1).locator('button').filter({hasText:/^🎙️とる/}).click();
-  await p.waitForTimeout(100);
-  ok(await p.evaluate(()=>t.requests.length===0&&t.recorders.length===0&&t.recognitions.length===0),'native stop pending: no microphone, recorder or recognition');
+  await p.locator('[data-next-native]').click();await p.waitForTimeout(100);
+  ok(await p.evaluate(()=>JSON.stringify(t.beforeNative)===JSON.stringify([t.requests.length,t.recorders.length,t.recognitions.length])),name+' native stop pending: no new microphone/recorder/recognition');
   if(release) {
-   await p.evaluate(()=>{t.nativeBusy=false;t.lateNative()});
-   await p.waitForTimeout(100);
-   ok(await p.evaluate(()=>t.requests.length===1&&t.recorders.length===1&&t.recognitions.length===1),'native stopped: next No row recording starts');
-   ok(await p.evaluate(()=>t.audios.length===0),'late model end cannot revive old own playback');
+   await p.evaluate(()=>{t.nativeBusy=false;t.lateNative()});await p.waitForTimeout(400);
+   ok(await p.evaluate(()=>t.requests.length===t.beforeNative[0]+1&&t.recorders.length===t.beforeNative[1]+1),name+' native stopped: next recording starts');
+   ok(await p.evaluate(()=>t.audios.length===0),name+' late model end cannot revive old own playback');
   } else {
    await p.waitForTimeout(2100);
-   ok(await p.evaluate(()=>t.requests.length===0&&t.recorders.length===0),'native stop timeout: never start microphone');
-   ok(await card.innerText().then(t=>t.includes('Playback is still stopping.')), 'stop timeout has accurate notice');
-   ok(!await card.locator('tr').nth(1).locator('button').filter({hasText:/^🎙️とる/}).isDisabled(),'stop timeout releases controls');
+   ok(await p.evaluate(()=>t.requests.length===t.beforeNative[0]),name+' stop timeout never starts microphone');
+   ok(await p.locator('body').innerText().then(t=>t.includes('Playback is still stopping.')),name+' stop timeout notice');
+   ok(!await p.locator('[data-next-native]').isDisabled(),name+' stop timeout releases controls');
   }
-  await p.close();
+  assert.deepEqual(p.errors,[],name+' native stop runtime errors');await p.close();
  }
  await browser.close();console.log('PASS relay standard',checks);
 })().catch(e=>{console.error(e);process.exit(1)});

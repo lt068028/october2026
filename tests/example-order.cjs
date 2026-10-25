@@ -30,7 +30,9 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box tr').evaluateAll(rows=>rows.every(row=>{
      const cells=[...row.children];
-     if(!cells[0].querySelector('.tense-badge,.p71-tense,.p73-tense'))return false;
+     const heading=row.closest('.example-box').querySelector('.example-category-heading');
+     if(heading) {if(row.querySelector('.tense-badge,.p71-tense,.p73-tense'))return false;}
+     else if(!cells[0].querySelector('.tense-badge,.p71-tense,.p73-tense'))return false;
      if(cells.length===2)return cells[1].hasAttribute('colspan')&&cells[1].querySelectorAll('button').length===2;
      return cells.length===5&&cells[2].textContent.includes('👉')&&cells[3].querySelector('button')&&cells[4].textContent.trim()&&!cells.slice(1).some(c=>c.querySelector('.tense-badge,.p71-tense,.p73-tense'));
     })),true,`${name} category/cue/arrow/listen/text order`);

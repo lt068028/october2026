@@ -639,6 +639,7 @@ function renderDrill1Section() {
     container.querySelectorAll(
         "colgroup"
     ).forEach(columns => {
+        columns.parentElement.style.setProperty('--drill-cue-width', `${width + 8}px`);
         columns.children[1].style.width = `${width + 8}px`;
     });
 
@@ -1231,7 +1232,9 @@ async function pronunciationCaptureStart(key, state) {
         }, 20000));
     } catch (error) {
         session.stop(
-            "Could not start recording. Check microphone permissions.",
+            error.name === 'PlaybackStopError'
+                ? DrillAudio.microphoneError(error)
+                : "Could not start recording. Check microphone permissions.",
             true
         );
     }
@@ -2434,7 +2437,7 @@ function drawPitchPlaceholder(state, message) {
     context.clearRect(0, 0, width, height);
 
     context.fillStyle = "#888888";
-    context.font = "12px sans-serif";
+    context.font = "15.6px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
@@ -2479,7 +2482,7 @@ function drawPitchCurve(state, userFrames, modelFrames = null) {
     const plotBottom = padding.top + plotHeight;
 
     // Horizontal grid and frequency labels.
-    context.font = "10px sans-serif";
+    context.font = "13px sans-serif";
     context.textAlign = "right";
     context.textBaseline = "middle";
 
@@ -2505,7 +2508,7 @@ function drawPitchCurve(state, userFrames, modelFrames = null) {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "#777777";
-    context.font = "10px sans-serif";
+    context.font = "13px sans-serif";
     context.fillText("F0 (Hz)", 0, 0);
     context.restore();
 
@@ -2547,7 +2550,7 @@ function drawPitchCurve(state, userFrames, modelFrames = null) {
     const windowDuration = Math.max(0.8, maxSpan + 0.30);
 
     context.fillStyle = "#777777";
-    context.font = "10px sans-serif";
+    context.font = "13px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "top";
 
@@ -2649,7 +2652,7 @@ function drawPitchCurve(state, userFrames, modelFrames = null) {
     }
 
     context.save();
-    context.font = "bold 11px sans-serif";
+    context.font = "bold 14.3px sans-serif";
     context.textBaseline = "top";
     context.textAlign = "right";
     let legendX = plotRight;

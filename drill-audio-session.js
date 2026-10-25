@@ -109,6 +109,20 @@ window.DrillAudio = (() => {
         clearNotice();
         if (leaving) throw new DOMException('Page left', 'AbortError');
         const request = requestGeneration;
+        // Native cancellation can outlive cancel(); never record the old model.
+        const deadline = performance.now() + 2000;
+        while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
+            if (leaving || request !== requestGeneration) {
+                throw new DOMException('Recording cancelled', 'AbortError');
+            }
+            if (performance.now() >= deadline) {
+                throw new DOMException('Speech is still stopping', 'PlaybackStopError');
+            }
+            await new Promise(resolve => setTimeout(resolve, 25));
+        }
+        if (leaving || request !== requestGeneration) {
+            throw new DOMException('Recording cancelled', 'AbortError');
+        }
         const stream = await nativeGetUserMedia(options);
         if (leaving || request !== requestGeneration) {
             stream.getTracks().forEach(track => track.stop());
@@ -320,6 +334,11 @@ window.DrillAudio = (() => {
                 && /(?:日本語|Japanese)[\s_-]*3(?![0-9])/i.test(
                     String(voice?.name || '').normalize('NFKC')
                 );
+        },
+        microphoneError(error) {
+            return error?.name === 'PlaybackStopError'
+                ? 'Playback is still stopping. Please try recording again.'
+                : 'Microphone access denied.';
         },
         sync, getUserMedia, beginModel, cancelModel, valid, endModel, clearModels,
         beginAnalysis, notify,

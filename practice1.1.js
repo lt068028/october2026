@@ -1868,7 +1868,7 @@ async function startRecording(initialView) {
 
         displayResult(
             currentView(),
-            "Microphone access denied."
+            DrillAudio.microphoneError(error)
         );
 
         return;
@@ -2939,6 +2939,7 @@ window.addEventListener("pagehide", () => {
             });
 
             tables.forEach(table => {
+                table.style.setProperty('--drill-cue-width', `${width + 8}px`);
                 table.querySelector('colgroup')
                     .children[1].style.width =
                         `${width + 8}px`;

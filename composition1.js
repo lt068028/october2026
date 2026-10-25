@@ -1415,7 +1415,7 @@ async function compositionRecord(rowIndex) {
         compositionSync();
         compositionShow(
             compositionState.views[rowIndex],
-            "Microphone access denied."
+            DrillAudio.microphoneError(error)
         );
         compositionSync();
         return;

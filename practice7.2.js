@@ -411,7 +411,9 @@ document.addEventListener('DOMContentLoaded', () => {
             highlighted(display(model(example, 'q')))
         );
 
-        label.prepend(...type.childNodes);
+        const heading = node('div', 'example-category-heading');
+        heading.append(...type.childNodes);
+        box.append(heading);
         question.append(
             label,
             cues,
@@ -431,23 +433,20 @@ document.addEventListener('DOMContentLoaded', () => {
         answers.colSpan = 4;
 
         ['yes', 'no'].forEach((kind, index) => {
-            if (index) {
-                answers.append(
-                    document.createTextNode(' ↔️ ')
-                );
-            }
-
-            answers.append(
+            const pair = node('span', 'example-answer-pair');
+            const answerText = node('span');
+            answerText.append(highlighted(display(model(example, kind))));
+            pair.append(
                 listen(
                     () => model(example, kind),
                     index ? '🔊🙅' : '🔊🙆'
                 ),
                 document.createTextNode(' '),
-                highlighted(display(model(example, kind)))
+                answerText
             );
+            answers.append(pair);
         });
 
-        responseLabel.prepend(node('span', 'tense-badge tense-badge--present-state', '⏳Present State'));
         response.append(responseLabel, answers);
         body.append(question, response);
         table.append(body);
@@ -776,6 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
         section.querySelectorAll(
             '.recording-table colgroup'
         ).forEach(columns => {
+            columns.parentElement.style.setProperty('--drill-cue-width', `${width + 4}px`);
             columns.children[1].style.width =
                 `${width + 4}px`;
         });
@@ -2257,7 +2257,7 @@ function bindRecorderEvents(
             if (error.name === "AbortError") return;
             practice7State.startingRow = null;
             practice7SyncRecordingUI();
-            restoreResult("Microphone access denied.");
+            restoreResult(DrillAudio.microphoneError(error));
             practice7SyncRecordingUI();
             return;
         }
@@ -3000,9 +3000,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
 
         cueCells.forEach(cell => {
-            cell.style.setProperty("width", `${cueWidth}px`, "important");
-            cell.style.setProperty("padding-right", "4px", "important");
-            cell.style.setProperty("white-space", "nowrap", "important");
+            cell.closest('table').style.setProperty('--drill-cue-width', `${cueWidth + 4}px`);
         });
 
         addShirtMeaningNote(container);
@@ -3318,9 +3316,10 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 table.prepend(cols);
             }
 
+            table.style.setProperty('--drill-cue-width', table.style.getPropertyValue('--drill-cue-width') || '50%');
             cols.children[0].style.width = '34px';
             cols.children[1].style.width =
-                `${(parseFloat(cell.style.width) || 0) + 4}px`;
+                table.style.getPropertyValue('--drill-cue-width') || '50%';
         });
 
         document.querySelectorAll(

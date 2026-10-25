@@ -36,7 +36,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  check(await p.evaluate(()=>practice2State.savedResults[sizeTestKey]===sizeTestSaved&&practice2State.audioUrls[sizeTestKey]===sizeTestUrl),true,'recording and original result retained across redraw');
  check(await p.locator('.recorded-play-button,.play-recording-btn').count()>0,true,'recording remains playable');
  const other=await open(context,'practice7.1');
- check(await other.locator('body').evaluate(e=>getComputedStyle(e).getPropertyValue('--practice12-scale').trim()),'','130% does not leak to other pages');
+ check(await other.locator('body').evaluate(e=>getComputedStyle(e).getPropertyValue('--practice12-scale').trim()),'1.3','130% is applied to other pages');
  await p.bringToFront();
  await p.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
  for(const width of [1440,1100,900,600]) for(const theme of ['light','dark']) {

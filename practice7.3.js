@@ -1195,13 +1195,20 @@ function render() {
         const eb = document.createElement('tbody');
         et.append(eb);
 
+        const questionResponse = section.example.some(source => source.label === 'Question:');
+        if (questionResponse) {
+            const heading = document.createElement('div');
+            heading.className = 'example-category-heading';
+            heading.innerHTML = badge(model(section.example[0]), si);
+            example.append(heading);
+        }
         section.example.forEach(source => {
             const r = model(source);
             const tr = document.createElement('tr');
 
             const kind = document.createElement('td');
             kind.className = 'p73-example-kind';
-            kind.innerHTML = badge(r, si);
+            if (!questionResponse) kind.innerHTML = badge(r, si);
             if (/^(Question|Response):$/.test(r.label)) {
                 const role = document.createElement('strong');
                 role.className = 'example-label-title';
@@ -1488,7 +1495,7 @@ async function record(key, r) {
     } catch (e) {
             if (e.name === "AbortError") return;
         preparing = false;
-        showResult(key, "Microphone access denied.");
+        showResult(key, DrillAudio.microphoneError(e));
         sync();
         return;
     }
@@ -2337,7 +2344,7 @@ render = function () {
 
             if (index === 0) {
                 td.className = 'p73-example-kind';
-                td.innerHTML = badge(q, 0) + '<strong class="example-label-title">Question:</strong>';
+                td.innerHTML = '<strong class="example-label-title">Question:</strong>';
             }
 
             if (index === 1) {
@@ -2365,16 +2372,12 @@ render = function () {
 
     const label = document.createElement('td');
     label.className = 'p73-example-kind';
-    label.innerHTML = badge(q, 0) + '<strong class="example-label-title">Response:</strong>';
+    label.innerHTML = '<strong class="example-label-title">Response:</strong>';
 
     const answers = document.createElement('td');
     answers.colSpan = 4;
 
     ['yes', 'no'].forEach((kind, index) => {
-        if (index) {
-            answers.append(document.createTextNode(' ↔️ '));
-        }
-
         const r = qa73Model(qa73.example, kind);
 
         const listen = button(
@@ -2386,12 +2389,18 @@ render = function () {
         text.className = 'p73-example-model';
         text.innerHTML = sentence(r);
 
-        answers.append(listen, text);
+        const pair = document.createElement('span');
+        pair.className = 'example-answer-pair';
+        pair.append(listen, text);
+        answers.append(pair);
     });
 
     response.append(label, answers);
     eb.append(response);
-    example.append(et);
+    const heading = document.createElement('div');
+    heading.className = 'example-category-heading';
+    heading.innerHTML = badge(q, 0);
+    example.append(heading, et);
     section.append(example);
 
     const panel = document.createElement('div');
