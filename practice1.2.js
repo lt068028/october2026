@@ -1,4 +1,4 @@
-// Casualの否定：表示「うんん」／モデル音声「うんんー」
+// Casualの否定：表示「ううん」／モデル音声「ううんん」
 (() => {
     const originalSpeechText = practice2SpeechText;
     const originalNormalize = practice2Normalize;
@@ -8,12 +8,12 @@
         const value = String(text ?? "")
             .trim()
             .replace(
-                /^(?:ううん|うんん)ー?/,
-                "うんんー"
+                /^(?:ううんん?|うんん)ー?/,
+                "ううんん"
             )
             .replace(
-                /(専攻|せんこう)[、,\s]*(?:は[、,\s]*)?/g,
-                "$1は、"
+                /の(?=専攻|せんこう)/g,
+                "の、"
             );
 
         return originalSpeechText(value);
@@ -40,8 +40,8 @@
                 if (child.nodeType === 3) {
                     child.textContent =
                         child.textContent.replace(
-                            /^ううん/,
-                            "うんん"
+                            /^うんん(?=[、,])/,
+                            "ううん"
                         );
                 } else if (
                     child.nodeType === 1
@@ -909,7 +909,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
 
         value = value.replace(
-            /なん(?=ですか|[？?。]|$)/g,
+            /(?:なん|なに)(?=ですか|[？?。]|$)/g,
             "何"
         );
 
@@ -1856,7 +1856,7 @@ function practice2ShowNotice(resultSpan, message) {
                         "あなたのせんこう",
                         "あなたの専攻"
                     ),
-                    word("なん", "何")
+                    word(speechStyle === "casual" ? "なに" : "なん", "何")
                 )
             ],
             [
