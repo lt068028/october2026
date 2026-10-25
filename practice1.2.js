@@ -539,7 +539,7 @@ function formatWord(word, kanji, romaji, meaning) {
 
     // Vocab Display: Always show vocabulary hints
     if (hintMode === "paren") {
-        return `<span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span>`;
+        return `<span class="practice12-cue-unit"><span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span></span>`;
     }
 
     // Vocab Hover: Show vocabulary hints on hover
@@ -1433,17 +1433,16 @@ function practice2ShowNotice(resultSpan, message) {
 
                     row.append(labelCell, responseCell);
                     body.append(row);
-                } else {
-                    responseCell.append(
-                        document.createTextNode(" ↔️ ")
-                    );
                 }
 
-                responseCell.append(
-                    listen(getText, buttonLabel),
-                    document.createTextNode(" "),
-                    modelText(getText)
-                );
+                const answer = node("span", "practice12-example-answer");
+                if (responseCell.childElementCount) {
+                    const separator = node("span", "practice12-answer-separator", "↔️");
+                    separator.setAttribute("aria-hidden", "true");
+                    answer.append(separator);
+                }
+                answer.append(listen(getText, buttonLabel), modelText(getText));
+                responseCell.append(answer);
 
                 continue;
             }
@@ -1458,7 +1457,8 @@ function practice2ShowNotice(resultSpan, message) {
             const cueCell = node("td");
             cueCell.innerHTML = cue;
 
-            const arrowCell = node("td", "", "👉");
+            cueCell.append(node("span", "practice12-cue-arrow", " 👉"));
+            const arrowCell = node("td", "practice12-empty-arrow-cell");
 
             const listenCell = node("td");
             listenCell.append(
@@ -3272,38 +3272,4 @@ DrillAudio.configure({
             capture.stop?.("", true);
         }
     }
-});
-
-
-// Display-size trial: page-local preference; learning state stays in the existing renderer.
-document.addEventListener("DOMContentLoaded", () => {
-    const control = document.getElementById("displaySizeControl");
-    const storageKey = "october2026.practice12.displaySize";
-    const sizes = new Set(["100", "115", "130"]);
-
-    function applySize(size, redraw) {
-        document.body.dataset.displaySize = size;
-        document.body.style.setProperty("--practice12-scale", Number(size) / 100);
-        control.querySelectorAll("button").forEach(button => {
-            const selected = button.dataset.displaySize === size;
-            button.classList.toggle("is-selected", selected);
-            button.setAttribute("aria-pressed", String(selected));
-        });
-        // Recalculate cue-column widths at the new font size and restore saved recordings/results.
-        if (redraw) renderAll();
-    }
-
-    let stored;
-    try { stored = localStorage.getItem(storageKey); } catch (_) {}
-    applySize(sizes.has(stored) ? stored : "100", sizes.has(stored) && stored !== "100");
-
-    control.addEventListener("click", event => {
-        const button = event.target.closest("button[data-display-size]");
-        if (!button || button.disabled || activeRecognitionSession || practice2State.startingRow) return;
-        const size = button.dataset.displaySize;
-        if (!sizes.has(size) || size === document.body.dataset.displaySize) return;
-        stopAllPlayback();
-        applySize(size, true);
-        try { localStorage.setItem(storageKey, size); } catch (_) {}
-    });
 });
