@@ -1,4 +1,4 @@
-// Practice 7.3 fixed 130% preview and Practice 1.2 grammar emphasis.
+// Practice 7 Examples: content-sized cues and aligned Question/Yes/No audio.
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize';
@@ -28,6 +28,10 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      document.querySelector(`#scriptModeControl [data-value="${script}"]`).click();
     },[style,hint,script]);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
+    check(await p.locator('.example-box:has(.example-answer-pair)').evaluateAll(es=>es.every(e=>{
+     const r=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect());
+     return r.length===3&&Math.max(...r.map(r=>r.x))-Math.min(...r.map(r=>r.x))<2&&r[0].y<r[1].y&&r[1].y<r[2].y;
+    })),true,`${name} question/Yes/No audio starts in one column`);
     check(await p.locator('.example-box tr').evaluateAll(rows=>rows.every(row=>{
      const cells=[...row.children];
      const heading=row.closest('.example-box').querySelector('.example-category-heading');
@@ -38,6 +42,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     })),true,`${name} category/cue/arrow/listen/text order`);
    }
   }
+  await p.setViewportSize({width:1440,height:900});
+  await p.evaluate(()=>document.querySelector('#hintModeControl [data-value="off"]').click());
+  check(await p.locator('.example-box table').evaluateAll(tables=>tables.every(t=>{
+   const rows=[...t.querySelectorAll('tr')].filter(r=>r.children.length===5);
+   const right=Math.max(...rows.map(row=>{const range=document.createRange();range.selectNodeContents(row.children[1]);return range.getBoundingClientRect().right}));
+   const arrow=rows[0].children[2].getBoundingClientRect();
+   return arrow.left-right>=-2&&arrow.left-right<16;
+  })),true,name+' intrinsic cue track leaves only the column gap');
   check(p.errors,[],name+' runtime errors');await p.close();
  }
  await browser.close();console.log('PASS Practice 7 Example order',checks);

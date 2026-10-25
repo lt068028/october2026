@@ -2151,7 +2151,7 @@ body.site-scale {
 .practice12-page :is(.example-box, .drill-row) { container-type: inline-size; }
 .practice12-page .drill-example-table {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr) minmax(20em, 1.2fr);
+    grid-template-columns: max-content var(--practice12-example-cue-track, minmax(0, 1fr)) var(--practice12-example-model-track, minmax(20em, 1.2fr));
     column-gap: 8px;
 }
 .practice12-page .drill-example-table > tbody { display: contents; }
@@ -2208,7 +2208,7 @@ body.site-scale {
 .practice7-page .example-box :is(.drill-example-table, .p73-example-table) {
     display: grid;
     width: 100%;
-    grid-template-columns: max-content minmax(0, 1fr) max-content max-content minmax(12em, 1.2fr);
+    grid-template-columns: max-content fit-content(55%) max-content max-content minmax(0, 1fr);
     gap: 6px 4px;
 }
 .practice7-page .example-box :is(.drill-example-table, .p73-example-table) > tbody { display: contents; }
@@ -2300,4 +2300,27 @@ body.site-scale {
     width: auto;
     min-width: 0;
     white-space: normal;
+}
+
+/* Example replies share the question's audio/text tracks. Cue tracks take only content width. */
+.practice7-page .example-box td[colspan] {
+    display: grid !important;
+    grid-template-columns: subgrid;
+    gap: 6px 4px;
+}
+.practice7-page .example-box .example-answer-pair {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 3 / -1;
+    align-items: baseline;
+    width: auto;
+    padding: 0 2px;
+}
+@container (max-width: 850px) {
+    .practice7-page .example-box .example-answer-pair { grid-column: 2 / -1; }
+}
+
+.practice12-page #drill2Container .drill-example-table {
+    --practice12-example-cue-track: fit-content(55%);
+    --practice12-example-model-track: minmax(0, 1fr);
 }
