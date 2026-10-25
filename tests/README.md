@@ -8,6 +8,7 @@ node tests/audio-lifecycle.cjs
 node tests/audio-recovery.cjs
 node tests/audio-relay.cjs
 node tests/answer-rules.cjs
+node tests/voice-default.cjs
 ```
 
 Chromiumが `/usr/bin/chromium` にない場合は `CHROMIUM_PATH` に実行ファイルのパスを指定する。
@@ -21,3 +22,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 音声合成・マイク・録音・デコード・ピッチ値には制御可能な代替を使用し、回復テストの一部では実Workerと合成波形も使用する。実際の音声認識精度、TTS発音、ピッチ品質、ChromeOS固有の許可UIを保証するテストではない。初期の167項目だけでは有効録音後の連続操作によるロック競合を検出できなかったため、再現可能な回帰テストを追加した。
 
 - `answer-rules.cjs`：255項目。認識対象7ページの全対応文体でよ／ね／よね、Formal質問のか、数字の表記差、主語と目的語の区別、時間条件、言い直し、Habit必須語を検証する。文字列を実際のページ判定関数へ入力する検証であり、マイク認識精度の試験ではない。
+
+- `voice-default.cjs`：112項目。全8ページで日本語3の初期選択・実際のUtteranceのvoice指定、全角／空白／英語表記、保存済み手動設定、候補不在、遅い一覧、Edge・Brave相当の優先順位維持を代替音声一覧で検証する。実機の音声名・音質確認とは区別する。

@@ -205,6 +205,7 @@ function busy() {
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
 
 function voicePriorityRank(v) {
+    if (DrillAudio.isChromeJapanese3(v)) return -1;
     const name = (v && v.name) ? v.name : "";
     if (/chrome os/i.test(name)) return 0;
     if (/google/i.test(name)) return 1;

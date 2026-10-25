@@ -311,6 +311,16 @@ window.DrillAudio = (() => {
             });
             sync();
         },
+        // Prefer the named voice, not the third entry in the browser's list.
+        isChromeJapanese3(voice) {
+            const ua = navigator.userAgent || '';
+            return /(?:Chrome|Chromium|CriOS)\//i.test(ua)
+                && !/(?:Edg|EdgA|EdgiOS|OPR)\//i.test(ua)
+                && !navigator.brave
+                && /(?:日本語|Japanese)[\s_-]*3(?![0-9])/i.test(
+                    String(voice?.name || '').normalize('NFKC')
+                );
+        },
         sync, getUserMedia, beginModel, cancelModel, valid, endModel, clearModels,
         beginAnalysis, notify,
         registerPitch(state, redraw) { state.redraw = redraw; pitchStates.add(state); },

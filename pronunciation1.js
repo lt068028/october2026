@@ -61,6 +61,7 @@ function updateBrowserPitchNotice(voices, japanese, forceWhenEmpty = false) {
 }
 
 function voicePriorityRank(v) {
+    if (DrillAudio.isChromeJapanese3(v)) return -1;
     const name = (v && v.name) ? v.name : "";
     if (/chrome os/i.test(name)) return 0;
     if (/google/i.test(name)) return 1;
