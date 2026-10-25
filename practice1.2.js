@@ -372,6 +372,16 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    DrillAudio.invalidatePlayback();
+    // Detach callbacks before cancel: browsers may deliver an error synchronously.
+    if (currentUtteranceRef) {
+        currentUtteranceRef.onend = null;
+        currentUtteranceRef.onerror = null;
+    }
+    if (currentPlayingAudio) {
+        currentPlayingAudio.onended = null;
+        currentPlayingAudio.onerror = null;
+    }
     if (currentPlayTimeoutId) {
         clearTimeout(currentPlayTimeoutId);
         currentPlayTimeoutId = null;
@@ -500,6 +510,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
     };
 
     try {
+        DrillAudio.guardUtterance(utterance);
         speechSynthesis.speak(utterance);
     } catch (error) {
         finish();
@@ -1262,7 +1273,7 @@ function practice2ShowNotice(resultSpan, message) {
                     audio.playbackRate = 1;
                     audio.onended = () => stopAllPlayback();
 
-                    audio.play().catch(() => stopAllPlayback());
+                    DrillAudio.play(audio, () => stopAllPlayback());
                 }
             );
         }
@@ -2645,7 +2656,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         currentPlayingAudio = audio;
         audio.playbackRate = 1.0;
         audio.onended = () => stopAllPlayback();
-        audio.play().catch(() => stopAllPlayback());
+        DrillAudio.play(audio, () => stopAllPlayback());
     };
 
     resultSpan.appendChild(button);
@@ -2756,10 +2767,11 @@ function bindRecorderEvents(
         let stream;
 
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
+            stream = await DrillAudio.getUserMedia({
                 audio: true
             });
         } catch (error) {
+            if (error.name === "AbortError") return;
             practice2State.startingRow = null;
             practice2SyncRecordingUI();
 
@@ -3257,8 +3269,24 @@ function processResult(
                 currentPlayingAudio = audio;
                 audio.playbackRate = 1.0;
                 audio.onended = () => stopAllPlayback();
-                audio.play().catch(() => stopAllPlayback());
+                DrillAudio.play(audio, () => stopAllPlayback());
             }
         );
     }
 }
+
+
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => Boolean(activeRecognitionSession || practice2State.startingRow),
+    sync: () => practice2SyncRecordingUI(),
+    stop: () => stopAllPlayback(),
+    cancel: () => {
+        practice2State.startingRow = null;
+        const capture = activeRecognitionSession;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});

@@ -1059,6 +1059,16 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    DrillAudio.invalidatePlayback();
+    // Detach callbacks before cancel: browsers may deliver an error synchronously.
+    if (currentUtteranceRef) {
+        currentUtteranceRef.onend = null;
+        currentUtteranceRef.onerror = null;
+    }
+    if (currentPlayingAudio) {
+        currentPlayingAudio.onended = null;
+        currentPlayingAudio.onerror = null;
+    }
     if (currentPlayTimeoutId) {
         clearTimeout(currentPlayTimeoutId);
         currentPlayTimeoutId = null;
@@ -1939,10 +1949,11 @@ function bindRecorderEvents(
         let stream;
 
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
+            stream = await DrillAudio.getUserMedia({
                 audio: true
             });
         } catch (error) {
+            if (error.name === "AbortError") return;
             practice71State.startingRow = null;
             practice71SyncRecordingUI();
             restoreResult("Microphone access denied.");
@@ -2393,7 +2404,7 @@ function processResult(
             currentPlayingAudio = audio;
             audio.playbackRate = 1.0;
             audio.onended = () => stopAllPlayback();
-            audio.play().catch(() => stopAllPlayback());
+            DrillAudio.play(audio, () => stopAllPlayback());
         });
     }
 }
@@ -2426,7 +2437,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         currentPlayingAudio = audio;
         audio.playbackRate = 1.0;
         audio.onended = () => stopAllPlayback();
-        audio.play().catch(() => stopAllPlayback());
+        DrillAudio.play(audio, () => stopAllPlayback());
     };
 
     resultSpan.appendChild(button);
@@ -2611,6 +2622,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         utterance.onerror = finish;
 
         try {
+            DrillAudio.guardUtterance(utterance);
             speechSynthesis.speak(utterance);
         } catch (error) {
             finish();
@@ -3644,3 +3656,19 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
     applyStage();
 })();
+
+
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => Boolean(activeRecognitionSession || practice71State.startingRow),
+    sync: () => practice71SyncRecordingUI(),
+    stop: () => stopAllPlayback(),
+    cancel: () => {
+        practice71State.startingRow = null;
+        const capture = activeRecognitionSession;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});

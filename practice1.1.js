@@ -389,6 +389,7 @@ function setupPreferredVoice() {
 }
 
 function stopAllPlayback() {
+    DrillAudio.invalidatePlayback();
     playbackVersion++;
 
     if (currentUtteranceRef) {
@@ -463,6 +464,7 @@ function speakText(text, rate = 0.9, done = () => {}) {
     utterance.onerror = finish;
 
     try {
+        DrillAudio.guardUtterance(utterance);
         window.speechSynthesis.speak(utterance);
     } catch (error) {
         finish();
@@ -489,7 +491,7 @@ function playAudio(url) {
 
     audio.onended = finish;
     audio.onerror = finish;
-    audio.play().catch(finish);
+    DrillAudio.play(audio, finish);
 }
 
 function playModel(text, button) {
@@ -1855,10 +1857,11 @@ async function startRecording(initialView) {
     let stream;
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        stream = await DrillAudio.getUserMedia({
             audio: true
         });
     } catch (error) {
+            if (error.name === "AbortError") return;
         practice1State.startingRow = null;
 
         refreshRow(currentView());
@@ -2975,3 +2978,19 @@ window.addEventListener("pagehide", () => {
         syncRecordingButtons();
     };
 })();
+
+
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => busy(),
+    sync: () => syncRecordingButtons(),
+    stop: () => stopAllPlayback(),
+    cancel: () => {
+        practice1State.startingRow = null;
+        const capture = activeRecognitionSession;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});

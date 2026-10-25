@@ -671,6 +671,16 @@ function button(text, fn, tip = '') {
 }
 
 function stopPlayback() {
+    DrillAudio.invalidatePlayback();
+    // Detach callbacks before cancel: browsers may deliver an error synchronously.
+    if (utterance) {
+        utterance.onend = null;
+        utterance.onerror = null;
+    }
+    if (playingAudio) {
+        playingAudio.onended = null;
+        playingAudio.onerror = null;
+    }
     window.speechSynthesis?.cancel();
 
     if (playingAudio) {
@@ -953,6 +963,8 @@ function speak(text, b, done) {
     u.onend = finish;
     u.onerror = finish;
 
+    DrillAudio.guardUtterance(u);
+
     window.speechSynthesis.speak(u);
 }
 function playRecording(key, b) {
@@ -969,7 +981,7 @@ function playRecording(key, b) {
 
     playingAudio.onended = stopPlayback;
     playingAudio.onerror = stopPlayback;
-    playingAudio.play().catch(stopPlayback);
+    DrillAudio.play(playingAudio, stopPlayback);
 }
 
 function diffTokens(text) {
@@ -1464,10 +1476,11 @@ async function record(key, r) {
     let stream;
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        stream = await DrillAudio.getUserMedia({
             audio: true
         });
     } catch (e) {
+            if (e.name === "AbortError") return;
         preparing = false;
         showResult(key, "Microphone access denied.");
         sync();
@@ -2572,4 +2585,19 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => Boolean(session || preparing),
+    sync: () => sync(),
+    stop: () => stopPlayback(),
+    cancel: () => {
+        preparing = false;
+        const capture = session;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});
+
 })();

@@ -62,7 +62,13 @@ function setupPreferredVoice() {
             selected = japanese[0] || null;
         }
 
+        const previousVoice = preferredVoice;
         preferredVoice = selected;
+        if (JSON.stringify([previousVoice?.voiceURI, previousVoice?.name, previousVoice?.lang]) !==
+            JSON.stringify([selected?.voiceURI, selected?.name, selected?.lang])) {
+            stopAllPlayback();
+            DrillAudio.clearModels();
+        }
 
         const selectEl = document.getElementById("voiceSelect");
         if (selectEl) {
@@ -256,6 +262,17 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    DrillAudio.invalidatePlayback();
+    // Detach callbacks before cancel: browsers may deliver an error synchronously.
+    if (currentUtteranceRef) {
+        currentUtteranceRef.onend = null;
+        currentUtteranceRef.onerror = null;
+    }
+    if (currentPlayingAudio) {
+        currentPlayingAudio.onended = null;
+        currentPlayingAudio.onerror = null;
+    }
+    DrillAudio.cancelModel();
     if (currentPlayTimeoutId) { clearTimeout(currentPlayTimeoutId); currentPlayTimeoutId = null; }
     try { speechSynthesis.cancel(); } catch (e) {}
     currentUtteranceRef = null;
@@ -358,7 +375,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
     currentUtteranceRef = utterance;
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
     utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
-    try { speechSynthesis.speak(utterance); } catch (err) {
+    try { DrillAudio.guardUtterance(utterance); speechSynthesis.speak(utterance); } catch (err) {
         currentUtteranceRef = null;
         if (onEndCallback) onEndCallback();
     }
@@ -1004,7 +1021,7 @@ function p2Play(key, model = true, ownAfter = false) {
 
         audio.onended = finish;
         audio.onerror = finish;
-        audio.play().catch(finish);
+        DrillAudio.play(audio, finish);
     };
 
     if (!model) {
@@ -1194,10 +1211,11 @@ async function p2Record(key) {
     let stream;
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        stream = await DrillAudio.getUserMedia({
             audio: true
         });
     } catch (error) {
+        if (error.name === "AbortError") return;
         p2.pending = false;
         p2Sync();
 
@@ -1823,6 +1841,13 @@ function initPitchLab() {
             f0Frames: null,
             modelF0Frames: null
         };
+        DrillAudio.registerPitch(state, () => {
+            if (state.f0Frames?.length || state.modelF0Frames?.length) {
+                drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
+            } else {
+                drawPitchPlaceholder(state, "Record your voice to begin.");
+            }
+        });
 
         listenBtn.addEventListener("click", () => {
             playPitchModel(state);
@@ -2167,7 +2192,7 @@ async function startPitchRecording(state) {
 
     try {
         session.stream =
-            await navigator.mediaDevices.getUserMedia({
+            await DrillAudio.getUserMedia({
                 audio: true
             });
 
@@ -2301,129 +2326,89 @@ function stopPitchRecording(state) {
 }
 
 async function playPitchModel(state) {
-    if (
-        p2Busy()
-        || state.isAnalyzing
-        || !state.modelText
-    ) {
-        return;
-    }
-
-    const version = ++p2.version;
-
-    setPlayingStateMultiple(
-        [state.listenBtn],
-        "Playing..."
-    );
-
+    if (p2Busy() || state.isAnalyzing || !state.modelText) return;
+    ++p2.version;
+    setPlayingStateMultiple([state.listenBtn], "Playing...");
     activePitchPlayingState = state;
+    const token = DrillAudio.beginModel(state, () => {
+        state.isAnalyzing = false;
+        state.listenBtn.disabled = !state.modelText;
+        state.recordBtn.disabled = false;
+        state.playBtn.disabled = !state.audioBlob;
+        setPitchStatus(state, state.audioBlob ? "Ready" : "Not recorded yet");
+    });
     state.recordBtn.disabled = true;
     state.playBtn.disabled = true;
     setPitchStatus(state, "Playing & capturing model...");
-
-    let stream = null;
-    let recorder = null;
     const chunks = [];
-
-    if (
-        navigator.mediaDevices?.getUserMedia
-        && typeof MediaRecorder !== "undefined"
-    ) {
+    if (navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined") {
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: false,
-                    noiseSuppression: false,
-                    autoGainControl: false
-                }
+            token.stream = await DrillAudio.getUserMedia({
+                audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
             });
-        } catch (e) {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    audio: true
-                });
-            } catch (err) {
-                stream = null;
+        } catch (error) {
+            // Retry only unsupported constraints, never a denial or a cancelled session.
+            token.stream = null;
+            if (DrillAudio.valid(token) && error.name === "OverconstrainedError") {
+                try { token.stream = await DrillAudio.getUserMedia({ audio: true }); }
+                catch (_) { token.stream = null; }
             }
         }
     }
-
-    if (version !== p2.version) {
-        stream?.getTracks().forEach(t => t.stop());
+    if (!DrillAudio.valid(token)) {
+        token.stream?.getTracks().forEach(track => track.stop());
         return;
     }
-
-    if (stream) {
+    if (token.stream) {
         try {
-            recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = event => {
-                if (event.data && event.data.size > 0) {
-                    chunks.push(event.data);
-                }
+            token.recorder = new MediaRecorder(token.stream);
+            token.recorder.ondataavailable = event => {
+                if (DrillAudio.valid(token) && event.data?.size) chunks.push(event.data);
             };
-            recorder.start();
-        } catch (e) {
-            stream.getTracks().forEach(t => t.stop());
-            stream = null;
-            recorder = null;
+            token.recorder.start();
+        } catch (error) {
+            token.stream.getTracks().forEach(track => track.stop());
+            token.recorder = null;
         }
     }
-
     let completed = false;
-
     const finish = () => {
-        if (completed || version !== p2.version) {
-            stream?.getTracks().forEach(t => t.stop());
-            return;
-        }
-
+        if (completed || !DrillAudio.valid(token)) return;
         completed = true;
-
-        if (!recorder || recorder.state === "inactive") {
-            stream?.getTracks().forEach(t => t.stop());
+        if (!token.recorder || token.recorder.state === "inactive") {
+            DrillAudio.endModel(token);
             stopAllPlayback();
+            setPitchStatus(state, "Model pitch not detected.");
             return;
         }
-
-        setTimeout(() => {
-            if (version !== p2.version) {
-                stream?.getTracks().forEach(t => t.stop());
-                return;
-            }
-
-            recorder.onstop = async () => {
-                stream?.getTracks().forEach(t => t.stop());
-                stopAllPlayback();
-
-                const blob = chunks.some(c => c.size > 0)
-                    ? new Blob(chunks, {
-                        type: recorder.mimeType || "audio/webm"
-                    })
-                    : null;
-
-                if (blob) {
-                    await analyzeModelPitchBlob(state, blob);
+        token.timer = setTimeout(() => {
+            if (!DrillAudio.valid(token)) return;
+            token.recorder.onstop = async () => {
+                token.stream.getTracks().forEach(track => track.stop());
+                if (!DrillAudio.valid(token)) return;
+                const blob = chunks.length ? new Blob(chunks, {
+                    type: token.recorder.mimeType || "audio/webm"
+                }) : null;
+                try {
+                    if (blob) await analyzeModelPitchBlob(state, blob, token);
+                } finally {
+                    if (DrillAudio.valid(token)) {
+                        DrillAudio.endModel(token);
+                        stopAllPlayback();
+                    }
                 }
             };
-
-            try {
-                recorder.stop();
-            } catch (e) {
-                stream?.getTracks().forEach(t => t.stop());
+            try { token.recorder.stop(); } catch (error) {
+                DrillAudio.cancelModel();
                 stopAllPlayback();
             }
         }, 220);
     };
-
-    try {
-        speakText(state.modelText, 0.9, finish);
-    } catch (error) {
-        finish();
-    }
+    try { speakText(state.modelText, 0.9, finish); } catch (error) { finish(); }
 }
 
-async function analyzeModelPitchBlob(state, blob) {
-    if (!blob || state.isAnalyzing) return;
+async function analyzeModelPitchBlob(state, blob, token) {
+    if (!blob || state.isAnalyzing || !DrillAudio.valid(token)) return;
 
     state.isAnalyzing = true;
     if (state.listenBtn) {
@@ -2444,6 +2429,7 @@ async function analyzeModelPitchBlob(state, blob) {
         }
 
         audioContext = new AudioContextClass();
+        token.context = audioContext;
 
         if (audioContext.state === "suspended") {
             await audioContext.resume();
@@ -2453,6 +2439,8 @@ async function analyzeModelPitchBlob(state, blob) {
         const audioBuffer = await audioContext.decodeAudioData(
             arrayBuffer
         );
+
+        if (!DrillAudio.valid(token)) return;
 
         const frames = estimateF0Frames(
             mixAudioToMono(audioBuffer),
@@ -2492,6 +2480,7 @@ async function analyzeModelPitchBlob(state, blob) {
         drawPitchCurve(state, state.f0Frames, state.modelF0Frames);
         setPitchStatus(state, "Model pitch drawn");
     } catch (error) {
+        if (!DrillAudio.valid(token)) return;
         console.error("Model pitch analysis error:", error);
         setPitchStatus(state, "Could not draw model pitch.");
     } finally {
@@ -2501,6 +2490,7 @@ async function analyzeModelPitchBlob(state, blob) {
             } catch (error) {}
         }
 
+        if (!DrillAudio.valid(token)) return;
         state.isAnalyzing = false;
         if (state.listenBtn) {
             state.listenBtn.disabled = !state.modelText;
@@ -2550,7 +2540,7 @@ function playPitchRecording(state) {
 
     audio.onended = finish;
     audio.onerror = finish;
-    audio.play().catch(finish);
+    DrillAudio.play(audio, finish);
 }
 
 async function analyzePitchRecording(state) {
@@ -3343,3 +3333,19 @@ function setPitchStatus(state, message) {
         state.statusEl.textContent = message;
     }
 }
+
+
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => p2Busy(),
+    sync: () => p2Sync(),
+    stop: () => stopAllPlayback(),
+    cancel: () => {
+        p2.pending = false;
+        const capture = pronunciationCapture || activeRecognitionSession;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});

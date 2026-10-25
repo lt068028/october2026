@@ -259,6 +259,16 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    DrillAudio.invalidatePlayback();
+    // Detach callbacks before cancel: browsers may deliver an error synchronously.
+    if (currentUtteranceRef) {
+        currentUtteranceRef.onend = null;
+        currentUtteranceRef.onerror = null;
+    }
+    if (currentPlayingAudio) {
+        currentPlayingAudio.onended = null;
+        currentPlayingAudio.onerror = null;
+    }
     if (currentPlayTimeoutId) {
         clearTimeout(currentPlayTimeoutId);
         currentPlayTimeoutId = null;
@@ -332,6 +342,7 @@ function speakText(text, rate = 0.9, onEndCallback) {
     };
 
     try {
+        DrillAudio.guardUtterance(utterance);
         speechSynthesis.speak(utterance);
     } catch (err) {
         currentUtteranceRef = null;
@@ -599,7 +610,7 @@ function compositionPlay(rowIndex, model = "", onlyModel = false) {
 
         audio.onended = ended;
         audio.onerror = ended;
-        audio.play().catch(ended);
+        DrillAudio.play(audio, ended);
     };
 
     if (model) speakText(model, 0.9, playOwn);
@@ -1393,10 +1404,11 @@ async function compositionRecord(rowIndex) {
     let stream;
 
     try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        stream = await DrillAudio.getUserMedia({
             audio: true
         });
     } catch (error) {
+            if (error.name === "AbortError") return;
         compositionState.starting = null;
         compositionSync();
         compositionShow(
@@ -1721,3 +1733,19 @@ async function compositionRecord(rowIndex) {
         stop("Could not start recording.", true);
     }
 }
+
+
+// Keep lifecycle and Voice locks aligned with this page's existing recorder.
+DrillAudio.configure({
+    busy: () => compositionBusy(),
+    sync: () => compositionSync(),
+    stop: () => stopAllPlayback(),
+    cancel: () => {
+        compositionState.starting = null;
+        const capture = activeRecognitionSession;
+        if (capture) {
+            capture.discard = true;
+            capture.stop?.("", true);
+        }
+    }
+});
