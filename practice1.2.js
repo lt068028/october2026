@@ -1460,13 +1460,9 @@ function practice2ShowNotice(resultSpan, message) {
             cueCell.append(node("span", "practice12-cue-arrow", " 👉"));
             const arrowCell = node("td", "practice12-empty-arrow-cell");
 
-            const listenCell = node("td");
-            listenCell.append(
-                listen(getText, buttonLabel)
-            );
-
-            const textCell = node("td");
-            textCell.append(modelText(getText));
+            const listenCell = node("td", "practice12-empty-listen-cell");
+            const textCell = node("td", "practice12-example-model");
+            textCell.append(listen(getText, buttonLabel), modelText(getText));
 
             row.append(
                 labelCell,

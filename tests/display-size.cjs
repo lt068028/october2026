@@ -52,6 +52,16 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    check(await p.locator('#drill1Container .example-box .practice12-example-answer').count(),2,'yes/no are complete separate groups');
   }
  }
+ for(const width of [1440,1280]) for(const hint of ['hover','paren']) {
+  await p.setViewportSize({width,height:900});
+  await p.evaluate(hint=>{
+   document.querySelector('#speechStyleControl [data-value="formal"]').click();
+   document.querySelector('#scriptModeControl [data-value="hiragana"]').click();
+   document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
+  },hint);
+  check(await p.locator('#drill1Container .example-box tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`example uses one line when it fits ${width}/${hint}`);
+  check(await p.locator('.recording-table tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`recording controls use one line when they fit ${width}/${hint}`);
+ }
  check(p.errors.concat(other.errors),[],'no page errors');
  const denied=await browser.newContext();await denied.addInitScript(()=>{Storage.prototype.getItem=()=>{throw new DOMException('denied','SecurityError')};Storage.prototype.setItem=()=>{throw new DOMException('denied','SecurityError')}});
  const d=await open(denied);check(await d.locator('body').evaluate(e=>getComputedStyle(e).getPropertyValue('--practice12-scale').trim()),'1.3','fixed size works without localStorage');check(d.errors,[],'storage denial does not break page');
