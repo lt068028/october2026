@@ -403,6 +403,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const sound = node('td');
         sound.append(listen(() => model(example, 'q')));
 
+        const type = node('td');
+        type.append(node('span', 'tense-badge tense-badge--present-state', '⏳Present State'));
+
         const text = node('td');
         text.append(
             highlighted(display(model(example, 'q')))
@@ -413,6 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cues,
             node('td', '', '👉'),
             sound,
+            type,
             text
         );
 
@@ -424,7 +428,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         const answers = node('td');
-        answers.colSpan = 4;
+        answers.colSpan = 5;
 
         ['yes', 'no'].forEach((kind, index) => {
             if (index) {

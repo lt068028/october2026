@@ -448,8 +448,8 @@
 }
 
 #drill1Container .p73-ongoing {
-    background: #ffab70;
-    color: #6b240b;
+    background: #fce7f3;
+    color: #831843;
 }
 
 #drill1Container:has(.p73-example) .info-panel {
@@ -484,8 +484,8 @@
     }
 
     #drill1Container .p73-ongoing {
-        background: #813d16;
-        color: #ffdab5;
+        background: #831843;
+        color: #fce7f3;
     }
 }
 /* ==========================================
@@ -1698,9 +1698,10 @@ input:checked + .slider:before {
 }
 
 /* ▶️Ongoing */
+.tense-badge--ongoing,
 #drill1Container .p71-ongoing {
-    background: #ffab70;
-    color: #6b240b;
+    background: #fce7f3;
+    color: #831843;
 }
 
 /* 例文内の指定語句だけをゴールドにする */
@@ -1723,9 +1724,10 @@ input:checked + .slider:before {
         color: #fef08a;
     }
 
+    .tense-badge--ongoing,
     #drill1Container .p71-ongoing {
-        background: #813d16;
-        color: #ffdab5;
+        background: #831843;
+        color: #fce7f3;
     }
 
     #practice71Example .p71-grammar-highlight {

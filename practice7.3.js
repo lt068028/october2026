@@ -1195,7 +1195,7 @@ function render() {
         const eb = document.createElement('tbody');
         et.append(eb);
 
-        section.example.forEach(source => {
+        section.example.forEach((source, exampleIndex) => {
             const r = model(source);
             const tr = document.createElement('tr');
 
@@ -1222,7 +1222,9 @@ function render() {
             lc.append(listen);
 
             const type = document.createElement('td');
-            type.innerHTML = badge(r, si);
+            if (si === 0 || exampleIndex === 0) {
+                type.innerHTML = badge(r, si);
+            }
 
             const text = document.createElement('td');
             text.className = 'p73-example-model';
@@ -1304,8 +1306,10 @@ function render() {
                     }
                 });
 
-                const type = document.createElement('span');
-                type.innerHTML = badge(r, si);
+                const type = si === 0
+                    ? document.createElement('span')
+                    : null;
+                if (type) type.innerHTML = badge(r, si);
 
                 const rec = button(
                     '🎙️とる',
@@ -1317,7 +1321,9 @@ function render() {
                 });
                 stop.disabled = true;
 
-                actions.append(listen, type, rec, stop);
+                actions.append(listen);
+                if (type) actions.append(type);
+                actions.append(rec, stop);
 
                 const wrap = document.createElement('span');
                 wrap.className = 'recording-result';
