@@ -1657,7 +1657,8 @@ async function playPitchModel(state) {
         state.playBtn.disabled = !state.audioBlob;
         setPitchStatus(state, state.audioBlob ? "Ready" : "Not recorded yet");
     });
-    state.recordBtn.disabled = true;
+    // Recording is a new task: it may cancel this model session.
+    state.recordBtn.disabled = false;
     state.playBtn.disabled = true;
     setPitchStatus(state, "Playing & capturing model...");
     const chunks = [];
@@ -1686,6 +1687,12 @@ async function playPitchModel(state) {
                 if (DrillAudio.valid(token) && event.data?.size) chunks.push(event.data);
             };
             token.recorder.start();
+            // Some browser voices/recorders never deliver their completion event.
+            token.watchdog = setTimeout(() => {
+                if (!DrillAudio.valid(token)) return;
+                stopAllPlayback();
+                setPitchStatus(state, "Model pitch not detected.");
+            }, 20000);
         } catch (error) {
             token.stream.getTracks().forEach(track => track.stop());
             token.recorder = null;
@@ -1734,7 +1741,8 @@ async function analyzeModelPitchBlob(state, blob, token) {
     if (state.listenBtn) {
         state.listenBtn.disabled = true;
     }
-    state.recordBtn.disabled = true;
+    // Recording is a new task: it may cancel this model session.
+    state.recordBtn.disabled = false;
     state.playBtn.disabled = true;
     setPitchStatus(state, "Drawing model pitch...");
 

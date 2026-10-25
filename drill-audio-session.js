@@ -8,30 +8,52 @@ window.DrillAudio = (() => {
     let requestGeneration = 0;
     const streams = new Set();
     const pitchStates = new Set();
-    const locks = new Map();
+    const locks = new Set();
     const nativeGetUserMedia = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices);
     const settings = '.compact-settings button, .compact-settings input, #voiceSelect, #voiceDropdownBtn';
     const voice = '#voiceSelect, #voiceDropdown';
+
+    function isAudioButton(el) {
+        return el.matches('button') && (
+            el.textContent.trim().startsWith('🔊きく') ||
+            el.textContent.trim().startsWith('▶️') ||
+            [...pitchStates].some(state => state.listenBtn === el || state.playBtn === el)
+        );
+    }
 
     function sync() {
         if (!adapter) return;
         const recording = adapter.busy();
         const blocked = recording || Boolean(model);
-        for (const el of document.querySelectorAll(recording
-            ? 'button, input, select, textarea'
-            : settings)) {
-            if (recording && el.classList.contains('stop-btn-active')) continue;
-            if (blocked) {
-                if (!locks.has(el)) locks.set(el, el.disabled);
-                if (!el.disabled) el.disabled = true;
+        document.body.classList.toggle('drill-recording-locked', recording);
+        document.body.classList.toggle('drill-model-capturing', Boolean(model));
+        // Page recorders own drill-button/settings locks. Never snapshot their
+        // temporary disabled=true: restoring that snapshot would lock them forever.
+        const controls = recording
+            ? document.querySelectorAll('input, select, textarea, #voiceDropdownBtn')
+            : model
+                ? [...document.querySelectorAll(settings), ...document.querySelectorAll('button')].filter(
+                    el => el.matches(settings) || isAudioButton(el)
+                )
+                : [];
+        for (const el of controls) {
+            if (!el.disabled) {
+                locks.add(el);
+                el.disabled = true;
             }
         }
-        if (!blocked) {
-            for (const [el, disabled] of locks) {
-                if (el.isConnected && el.disabled !== disabled) el.disabled = disabled;
+        if (!blocked && locks.size) {
+            for (const el of locks) {
+                if (el.isConnected) el.disabled = false;
             }
             locks.clear();
             adapter.sync?.();
+        }
+        // Existing pages sometimes set an inline !important pointer cursor.
+        // Derive prohibition from the current state instead of preserving it.
+        for (const el of document.querySelectorAll('button, input, select, textarea')) {
+            if (el.disabled) el.style.setProperty('cursor', 'not-allowed', 'important');
+            else if (el.style.cursor === 'not-allowed') el.style.removeProperty('cursor');
         }
         if (blocked) {
             const menu = document.getElementById('voiceDropdownMenu');
@@ -47,6 +69,7 @@ window.DrillAudio = (() => {
         model = null;
         old.cancelled = true;
         clearTimeout(old.timer);
+        clearTimeout(old.watchdog);
         if (old.recorder) {
             old.recorder.onstop = null;
             old.recorder.ondataavailable = null;
@@ -72,6 +95,7 @@ window.DrillAudio = (() => {
     function endModel(token) {
         if (model !== token) return;
         model = null;
+        clearTimeout(token.watchdog);
         token.stream?.getTracks().forEach(track => track.stop());
         sync();
     }
@@ -112,14 +136,14 @@ window.DrillAudio = (() => {
     }
     function control(event) {
         if (!adapter) return;
-        const target = event.target.closest('button, input, select, textarea, a, summary, [role="option"]');
+        const target = event.target.closest?.('button, input, select, textarea, a, summary, [role="option"]');
         if (!target) return;
         if (target.matches('a.back-link')) { leave(); return; }
         if (adapter.busy() && !target.classList.contains('stop-btn-active')) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
         }
         const setting = target.closest('.compact-settings, #voiceDropdown, #voiceSelect');
-        if (model && setting) {
+        if (model && (setting || isAudioButton(target))) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
         }
         if (event.type === 'click' && target.closest(voice)) {
@@ -143,9 +167,7 @@ window.DrillAudio = (() => {
                     event.preventDefault(); event.stopImmediatePropagation();
                 }
             }, true);
-            new MutationObserver(() => {
-                if (adapter.busy() || model || locks.size) sync();
-            }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
+            new MutationObserver(sync).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled'] });
             window.addEventListener('pagehide', leave);
             window.addEventListener('pageshow', event => {
                 if (event.persisted) { leaving = false; sync(); }

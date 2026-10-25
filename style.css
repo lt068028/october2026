@@ -1938,3 +1938,13 @@ input:checked + .slider:before { transform: translateX(16px); }
         padding: 12px 14px;
     }
 }
+
+/* Match the cursor to actual disabled controls, including toggle labels. */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+label:has(> input:disabled),
+label:has(> input:disabled) .slider {
+    cursor: not-allowed !important;
+}
