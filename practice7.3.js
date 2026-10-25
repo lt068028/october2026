@@ -1195,7 +1195,7 @@ function render() {
         const eb = document.createElement('tbody');
         et.append(eb);
 
-        section.example.forEach((source, exampleIndex) => {
+        section.example.forEach(source => {
             const r = model(source);
             const tr = document.createElement('tr');
 
@@ -1222,9 +1222,7 @@ function render() {
             lc.append(listen);
 
             const type = document.createElement('td');
-            if (si === 0 || exampleIndex === 0) {
-                type.innerHTML = badge(r, si);
-            }
+            type.innerHTML = badge(r, si);
 
             const text = document.createElement('td');
             text.className = 'p73-example-model';

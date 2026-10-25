@@ -1980,3 +1980,34 @@ label:has(> input:disabled) .slider {
 #audioRecoveryStatus[hidden] {
     display: none !important;
 }
+
+/* 練習7.2：狭いPCウィンドウではExampleの文を下段で折り返す */
+@media (max-width: 700px) {
+    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table,
+    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody {
+        display: block;
+        width: 100%;
+    }
+
+    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr > td {
+        display: block;
+        width: auto;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        flex: 0 1 auto;
+    }
+
+    #drill1Container:has(> #practice72QuestionSection) .example-box .drill-example-table > tbody > tr > td:last-child {
+        flex: 1 1 100%;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+}
