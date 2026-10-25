@@ -128,5 +128,56 @@ function mock(){
   }
   assert.deepEqual(p.errors,[],name+' runtime errors');await p.close();
  }
+ for(const manual of [true,false]) for(const part of ['q','a']) for(const phase of ['model','own']) {
+  const p=await open('practice1.2');
+  await p.evaluate(manual=>{document.querySelector('#speechStyleControl [data-value="formal"]').click();const toggle=document.querySelector('#toggleRecordMode');if(toggle.checked===manual)toggle.click();},manual);
+  let card=p.locator('#drill1Container .drill-row').nth(4);
+  await card.locator('button').filter({hasText:/^🙅/}).click();
+  const rec=card.locator('tr').nth(part==='q'?0:1).locator('button').filter({hasText:/^🎙️とる/});
+  await p.evaluate(()=>{t.speaking=true});await rec.click();await p.waitForTimeout(400);
+  await p.evaluate(({manual,part})=>{const result=[{transcript:part==='q'?'妹はフリーターですか':'いいえフリーターじゃないです'}];result.isFinal=true; const r=t.recognitions.at(-1);r.onresult({resultIndex:0,results:[result]});r.onspeechstart();if(!manual)r.onend();},{manual,part});
+  if(manual)await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
+  if(phase==='own')await p.evaluate(()=>t.spoken.at(-1).onend());
+  ok(!await rec.isDisabled(),`1.2 sister ${manual}/${part}/${phase}: record available`);
+  const next=part==='q'?card.locator('tr').nth(1).locator('button').filter({hasText:/^🎙️とる/}):p.locator('#drill2Container .drill-row').first().locator('button').filter({hasText:/^🎙️とる/}).first();
+  await p.evaluate(()=>{t.old=t.audios.at(-1);t.before=t.recognitions.length;t.defer=true});
+  await next.click();
+  ok(await p.evaluate(()=>t.old?.paused??true),'specified row: own stops before mic permission');
+  if(phase==='model')ok(await p.evaluate(()=>t.spoken.at(-1).onend===null),'specified row: TTS detached before mic permission');
+  ok(await labels(p)===0,'specified row: relay labels restored');
+  await p.close();
+ }
+
+ // A native voice may still report speaking after cancel() returns.
+ for(const release of [true,false]) {
+  const p=await open('practice1.2');
+  const card=p.locator('#drill1Container .drill-row').nth(4);
+  await card.locator('button').filter({hasText:/^🙅/}).click();
+  await p.evaluate(()=>{
+   t.nativeBusy=true;
+   Object.defineProperty(speechSynthesis,'speaking',{get:()=>t.nativeBusy});
+   Object.defineProperty(speechSynthesis,'pending',{get:()=>false});
+   const row=document.querySelectorAll('#drill1Container .drill-row')[4];
+   const recordButton=[...row.querySelectorAll('tr:first-child button')].find(b=>b.textContent.startsWith('🎙️とる'));
+   const result=row.querySelector('.result-text');
+   DrillAudio.playRelay({recordButton,result,speak:done=>speakText('妹はフリーターですか？',.75,done),url:()=>null});
+   t.lateNative=t.spoken.at(-1).onend;
+  });
+  await card.locator('tr').nth(1).locator('button').filter({hasText:/^🎙️とる/}).click();
+  await p.waitForTimeout(100);
+  ok(await p.evaluate(()=>t.requests.length===0&&t.recorders.length===0&&t.recognitions.length===0),'native stop pending: no microphone, recorder or recognition');
+  if(release) {
+   await p.evaluate(()=>{t.nativeBusy=false;t.lateNative()});
+   await p.waitForTimeout(100);
+   ok(await p.evaluate(()=>t.requests.length===1&&t.recorders.length===1&&t.recognitions.length===1),'native stopped: next No row recording starts');
+   ok(await p.evaluate(()=>t.audios.length===0),'late model end cannot revive old own playback');
+  } else {
+   await p.waitForTimeout(2100);
+   ok(await p.evaluate(()=>t.requests.length===0&&t.recorders.length===0),'native stop timeout: never start microphone');
+   ok(await card.innerText().then(t=>t.includes('Playback is still stopping.')), 'stop timeout has accurate notice');
+   ok(!await card.locator('tr').nth(1).locator('button').filter({hasText:/^🎙️とる/}).isDisabled(),'stop timeout releases controls');
+  }
+  await p.close();
+ }
  await browser.close();console.log('PASS relay standard',checks);
 })().catch(e=>{console.error(e);process.exit(1)});

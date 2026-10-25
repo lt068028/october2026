@@ -2767,6 +2767,21 @@ function bindRecorderEvents(
         let stream;
 
         try {
+            // cancel() requests cancellation; some voices finish asynchronously.
+            // Do not let the next recording capture the preceding model voice.
+            const stopDeadline = performance.now() + 2000;
+            while (speechSynthesis.speaking || speechSynthesis.pending) {
+                if (DrillAudio.leaving || practice2State.startingRow !== rowKey) {
+                    throw new DOMException("Recording cancelled", "AbortError");
+                }
+                if (performance.now() >= stopDeadline) {
+                    throw new DOMException("Speech is still stopping", "TimeoutError");
+                }
+                await new Promise(resolve => setTimeout(resolve, 25));
+            }
+            if (DrillAudio.leaving || practice2State.startingRow !== rowKey) {
+                throw new DOMException("Recording cancelled", "AbortError");
+            }
             stream = await DrillAudio.getUserMedia({
                 audio: true
             });
@@ -2777,7 +2792,9 @@ function bindRecorderEvents(
 
             practice2ShowNotice(
                 currentView().resultSpan,
-                "Microphone access denied."
+                error.name === "TimeoutError"
+                    ? "Playback is still stopping. Please try recording again."
+                    : "Microphone access denied."
             );
             return;
         }
