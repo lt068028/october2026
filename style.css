@@ -1948,3 +1948,12 @@ label:has(> input:disabled),
 label:has(> input:disabled) .slider {
     cursor: not-allowed !important;
 }
+
+/* Pronunciation 2 offers Formal and Informal only. */
+.segmented-option.pronunciation-style-disabled:disabled {
+    opacity: 0.45;
+    color: var(--text-secondary);
+    background: var(--bg-panel);
+    filter: grayscale(1);
+    cursor: not-allowed !important;
+}

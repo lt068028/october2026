@@ -3,6 +3,7 @@ window.DrillAudio = (() => {
     let adapter;
     let leaving = false;
     let model = null;
+    let autoplayActive = false;
     let generation = 0;
     let playbackGeneration = 0;
     let requestGeneration = 0;
@@ -24,38 +25,44 @@ window.DrillAudio = (() => {
     function sync() {
         if (!adapter) return;
         const recording = adapter.busy();
-        const blocked = recording || Boolean(model);
         document.body.classList.toggle('drill-recording-locked', recording);
         document.body.classList.toggle('drill-model-capturing', Boolean(model));
+        document.body.classList.toggle('drill-autoplay-active', autoplayActive);
         // Page recorders own drill-button/settings locks. Never snapshot their
         // temporary disabled=true: restoring that snapshot would lock them forever.
-        const controls = recording
+        const controls = new Set(recording
             ? document.querySelectorAll('input, select, textarea, #voiceDropdownBtn')
             : model
                 ? [...document.querySelectorAll(settings), ...document.querySelectorAll('button')].filter(
                     el => el.matches(settings) || isAudioButton(el)
                 )
-                : [];
+                : []);
+        if (autoplayActive) {
+            const toggle = document.getElementById('togglePlaybackMode');
+            if (toggle) controls.add(toggle);
+        }
+        let released = false;
+        for (const el of locks) {
+            if (!controls.has(el)) {
+                if (el.isConnected) el.disabled = false;
+                locks.delete(el);
+                released = true;
+            }
+        }
         for (const el of controls) {
             if (!el.disabled) {
                 locks.add(el);
                 el.disabled = true;
             }
         }
-        if (!blocked && locks.size) {
-            for (const el of locks) {
-                if (el.isConnected) el.disabled = false;
-            }
-            locks.clear();
-            adapter.sync?.();
-        }
+        if (!recording && !model && released) adapter.sync?.();
         // Existing pages sometimes set an inline !important pointer cursor.
         // Derive prohibition from the current state instead of preserving it.
         for (const el of document.querySelectorAll('button, input, select, textarea')) {
             if (el.disabled) el.style.setProperty('cursor', 'not-allowed', 'important');
             else if (el.style.cursor === 'not-allowed') el.style.removeProperty('cursor');
         }
-        if (blocked) {
+        if (recording || model) {
             const menu = document.getElementById('voiceDropdownMenu');
             if (menu && !menu.hidden) menu.hidden = true;
             const btn = document.getElementById('voiceDropdownBtn');
@@ -142,6 +149,10 @@ window.DrillAudio = (() => {
         if (adapter.busy() && !target.classList.contains('stop-btn-active')) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
         }
+        if (autoplayActive && target.matches('#togglePlaybackMode')) {
+            target.checked = true;
+            event.preventDefault(); event.stopImmediatePropagation(); return;
+        }
         const setting = target.closest('.compact-settings, #voiceDropdown, #voiceSelect');
         if (model && (setting || isAudioButton(target))) {
             event.preventDefault(); event.stopImmediatePropagation(); return;
@@ -175,7 +186,11 @@ window.DrillAudio = (() => {
             sync();
         },
         sync, getUserMedia, beginModel, cancelModel, valid, endModel, clearModels,
-        invalidatePlayback() { ++playbackGeneration; },
+        setAutoplayActive(active) { autoplayActive = active; sync(); },
+        invalidatePlayback() {
+            ++playbackGeneration;
+            if (autoplayActive) { autoplayActive = false; sync(); }
+        },
         guardUtterance(utterance) {
             const ticket = playbackGeneration;
             let finished = false;

@@ -94,7 +94,7 @@ for(const name of ['pronunciation1','pronunciation2']){
  await start(true);
  assert.equal(await p.locator('#voiceDropdownBtn').isDisabled(),true,name+' model pending lock');checks++;
  if(name==='pronunciation2'){
-   assert.equal(await p.locator('#speechStyleControl [data-value="casual"]').isDisabled(),true,'style locked during model wait');checks++;
+   assert.equal(await p.locator('#speechStyleControl [data-value="informal"]').isDisabled(),true,'style locked during model wait');checks++;
  }
 
  await p.evaluate(()=>{document.querySelectorAll('.pitch-pair-choice')[1].click();testAudio.requests.at(-1)()});await p.waitForTimeout(30);
@@ -122,7 +122,7 @@ for(const name of ['pronunciation1','pronunciation2']){
  // Speech style changes clear the prior model but retain the user's curve.
  if(name==='pronunciation2'){
   await start();await end();await p.evaluate(()=>testAudio.decodes.shift()());await p.waitForTimeout(30);
-  await p.evaluate(()=>document.querySelector('#speechStyleControl [data-value="casual"]').click());await p.waitForTimeout(30);
+  await p.evaluate(()=>document.querySelector('#speechStyleControl [data-value="informal"]').click());await p.waitForTimeout(30);
   assert.equal(await p.evaluate(()=>__states[0].modelF0Frames),null,'style change clears old model');checks++;
   assert.equal(await p.evaluate(()=>__states[0].f0Frames[0].f0),150,'style change retains user curve');checks++;
  }

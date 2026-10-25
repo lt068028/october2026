@@ -365,7 +365,7 @@ function renderPitchAccentHTML(textStr, color) {
     return resultHTML;
 }
 
-function speakText(text, rate = 0.9, onEndCallback) {
+function speakText(text, rate = 0.9, onEndCallback, onErrorCallback = onEndCallback) {
     setupPreferredVoice();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ja-JP";
@@ -374,10 +374,10 @@ function speakText(text, rate = 0.9, onEndCallback) {
     
     currentUtteranceRef = utterance;
     utterance.onend = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
-    utterance.onerror = () => { currentUtteranceRef = null; if (onEndCallback) onEndCallback(); };
+    utterance.onerror = () => { currentUtteranceRef = null; onErrorCallback?.(); };
     try { DrillAudio.guardUtterance(utterance); speechSynthesis.speak(utterance); } catch (err) {
         currentUtteranceRef = null;
-        if (onEndCallback) onEndCallback();
+        onErrorCallback?.();
     }
 }
 
@@ -435,7 +435,7 @@ function initSettingsPanel() {
         ],
         [
             "speechStyleControl",
-            ["formal", "informal", "casual"],
+            ["formal", "informal"],
             () => p2SpeechStyle,
             value => {
                 p2SpeechStyle = value;
@@ -494,6 +494,7 @@ function initSettingsPanel() {
         updateToggleLabelStyle(label, get());
 
         toggle.addEventListener("change", () => {
+            if (toggle.disabled) { toggle.checked = get(); return; }
             set(toggle.checked);
             updateToggleLabelStyle(label, get());
         });
@@ -682,6 +683,9 @@ function p2Sync() {
 
         p2.locks.clear();
     }
+
+    const casual = document.querySelector('#speechStyleControl [data-value="casual"]');
+    if (casual) { casual.disabled = true; casual.setAttribute('aria-disabled', 'true'); }
 
     const session = activeRecognitionSession;
 
@@ -990,10 +994,11 @@ function p2Play(key, model = true, ownAfter = false) {
         ? view.listen
         : view.result.querySelector(".play-recording-btn");
 
-    setPlayingStateMultiple(
-        [selected].filter(Boolean),
-        "Playing..."
-    );
+    const buttons = model && ownAfter
+        ? [view.listen, view.result.querySelector(".play-recording-btn")]
+        : [selected];
+    setPlayingStateMultiple(buttons.filter(Boolean), "Playing...");
+    if (model && ownAfter) DrillAudio.setAutoplayActive(true);
 
     let completed = false;
 
@@ -1045,7 +1050,7 @@ function p2Play(key, model = true, ownAfter = false) {
         : view.item.kanji;
 
     try {
-        speakText(text, view.rate, afterModel);
+        speakText(text, view.rate, afterModel, finish);
     } catch (error) {
         afterModel();
     }
@@ -2154,7 +2159,7 @@ async function startPitchRecording(state) {
             if (message) setPitchStatus(state, message);
 
             if (valid && isAutoPlay) {
-                playPitchRecording(state);
+                playPitchRecording(state, true);
             }
         }
     };
@@ -2508,7 +2513,7 @@ async function analyzeModelPitchBlob(state, blob, token) {
     }
 }
 
-function playPitchRecording(state) {
+function playPitchRecording(state, autoplay = false) {
     if (
         p2Busy()
         || state.isAnalyzing
@@ -2524,6 +2529,8 @@ function playPitchRecording(state) {
         [state.playBtn],
         "Playing..."
     );
+
+    if (autoplay) DrillAudio.setAutoplayActive(true);
 
     activePitchPlayingState = state;
     setPitchStatus(state, "Playing...");
