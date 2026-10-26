@@ -539,7 +539,7 @@ function formatWord(word, kanji, romaji, meaning) {
 
     // Vocab Display: Always show vocabulary hints
     if (hintMode === "paren") {
-        return `<span class="practice12-cue-unit"><span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span></span>`;
+        return `<span class="practice12-cue-unit display-cue-unit"><span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span></span>`;
     }
 
     // Vocab Hover: Show vocabulary hints on hover
@@ -989,7 +989,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             cue.append(
-                document.createTextNode("／"),
+                document.createTextNode(hintMode === "paren" ? "" : "／"),
                 what
             );
 
@@ -1652,7 +1652,7 @@ function practice2ShowNotice(resultSpan, message) {
         example(first.container, [
             [
                 "Question:",
-                father + "／" + nurse,
+                father + (hintMode === "paren" ? "" : "／") + nurse,
                 () => question(
                     word("おとうさん", "お父さん"),
                     word("かんごし", "看護師")
@@ -1702,7 +1702,7 @@ function practice2ShowNotice(resultSpan, message) {
                     item.xRomaji,
                     item.xMeaning
                 )
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord(
                     item.y,
                     item.yKanji,
@@ -1800,14 +1800,14 @@ function practice2ShowNotice(resultSpan, message) {
                     "anata",
                     "you"
                 )
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord(
                     "せんこう",
                     "専攻",
                     "senkō",
                     "major"
                 )
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord("なに", "何", "nani", "what"),
                 () => question(
                     word(
@@ -1820,9 +1820,9 @@ function practice2ShowNotice(resultSpan, message) {
             [
                 "Response:",
                 formatWord("あなた", "あなた", "anata", "you")
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord("せんこう", "専攻", "senkō", "major")
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord(
                     "せいじ",
                     "政治",
@@ -1868,7 +1868,7 @@ function practice2ShowNotice(resultSpan, message) {
                     target.labelRomaji,
                     target.labelMeaning
                 )
-                + "／"
+                + (hintMode === "paren" ? "" : "／")
                 + formatWord(
                     "せんこう",
                     "専攻",
@@ -1890,7 +1890,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const choices = node("span");
-            choices.innerHTML = cue + "／";
+            choices.innerHTML = cue + (hintMode === "paren" ? "" : "／");
 
             const select = node(
                 "select",

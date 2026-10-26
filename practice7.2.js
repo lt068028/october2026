@@ -1,3 +1,8 @@
+// Display separators depend on rendered vocabulary pairs, preserving English cue spacing.
+function joinDisplayCues(parts, separator) {
+    return parts.join(parts.some(part => String(part).includes('display-cue-unit')) ? '' : separator);
+}
+
 // Practice 7.2：Example 2・Drill 2（肯定・否定の質問応答）
 document.addEventListener('DOMContentLoaded', () => {
     const states = Array.from({ length: 5 }, () => ({
@@ -332,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ? practice7ToHiragana(text)
         : text;
 
-    const cue = item => item.words.map(word => {
+    const cue = item => joinDisplayCues(item.words.map(word => {
         const english = document.getElementById(
             'practice7EnglishCueButton'
         )?.getAttribute('aria-pressed') === 'true';
@@ -342,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return formatWord(...word);
-    }).join('／');
+    }), '／');
 
     const listen = (getText, label = '🔊きく') => {
         let b;
@@ -1194,7 +1199,7 @@ function formatWord(word, kanji, romaji, meaning) {
     }
 
     if (hintMode === "paren") {
-        return `<span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span>`;
+        return `<span class="display-cue-unit"><span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span></span>`;
     }
 
     return `
@@ -1350,7 +1355,7 @@ function renderDrill1Section() {
     example.innerHTML = `
         <div class="example-line">
             <strong class="example-label-title">Past:</strong>
-            ${time}／${verb}
+            ${time}${hintMode === "paren" ? "" : "／"}${verb}
             <span>👉</span>
             <button
                 id="exPastListen"
@@ -1363,7 +1368,7 @@ function renderDrill1Section() {
 
         <div class="example-line">
             <strong class="example-label-title">Present State:</strong>
-            ${time}／${verb}
+            ${time}${hintMode === "paren" ? "" : "／"}${verb}
             <span>👉</span>
             <button
                 id="exPerfListen"
@@ -1473,7 +1478,7 @@ function createPractice7TableCard(
         )
     );
 
-    cue.innerHTML = parts.join('／');
+    cue.innerHTML = joinDisplayCues(parts, '／');
 
     const makeButton = (label, tip) => {
         const button = document.createElement('button');

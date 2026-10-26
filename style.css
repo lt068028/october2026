@@ -2365,3 +2365,10 @@ body.site-scale {
 .practice73-page .p73-display-cue-unit { display: block; }
 .practice73-page .p73-display-cue-unit > .target-word { white-space: nowrap; }
 .practice73-page .p73-display-cue-unit > .vocab-inline { overflow-wrap: anywhere; }
+
+/* All vocabulary Display cues: keep the word and its hint on one logical line. */
+.site-scale .display-cue-unit { display: block; max-width: 100%; white-space: normal; }
+.site-scale .display-cue-unit > .target-word { white-space: nowrap; }
+.site-scale .display-cue-unit > .vocab-inline { overflow-wrap: anywhere; }
+.site-scale #drill1Container .p71-cue-word:has(.display-cue-unit) { display: block; }
+.site-scale .prompt-content:has(> .display-cue-unit) { display: block !important; }

@@ -641,7 +641,7 @@ function formatWord(word, kanji, romaji, meaning) {
     }
 
     if (hintMode === "paren") {
-        return `<span class="target-word">${text}</span> (${hint})`;
+        return `<span class="display-cue-unit"><span class="target-word">${text}</span><span class="vocab-inline"> (${hint})</span></span>`;
     }
 
     return `
@@ -701,7 +701,7 @@ function renderExampleSection() {
                 <span class="example-label-title">
                     🟢Affirmative:
                 </span>
-                ${x} ／ ${student}
+                ${x}${hintMode === "paren" ? "" : " ／ "}${student}
                 <span>👉</span>
                 <button
                     type="button"
@@ -718,7 +718,7 @@ function renderExampleSection() {
                 <span class="example-label-title">
                     🔴Negative:
                 </span>
-                ${x} ／ ${teacher}
+                ${x}${hintMode === "paren" ? "" : " ／ "}${teacher}
                 <span>👉</span>
                 <button
                     type="button"
@@ -1533,7 +1533,7 @@ function renderTask1() {
         );
 
         view.prompts.innerHTML =
-            formattedX + " ／ " + formattedY;
+            formattedX + (hintMode === "paren" ? "" : " ／ ") + formattedY;
 
         refreshRow(view);
     });

@@ -1,3 +1,8 @@
+// Display separators depend on rendered vocabulary pairs, preserving English cue spacing.
+function joinDisplayCues(parts, separator) {
+    return parts.join(parts.some(part => String(part).includes('display-cue-unit')) ? '' : separator);
+}
+
 // Drill 2：動詞の活用を必須とし、応答語・今・目的語は任意にする。
 document.addEventListener('DOMContentLoaded', () => {
     const originalNormalize = practice71Normalize;
@@ -353,11 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ? practice71ToHiragana(text)
         : text;
 
-    const cue = item => [
+    const cue = item => joinDisplayCues([
         formatWord('いま', '今', 'ima', 'now'),
         formatWord(...item.slice(0, 4)),
         formatWord(...item.slice(4, 8))
-    ].join('／');
+    ], '／');
 
     const listen = (getText, label = '🔊きく') => {
         let b;
@@ -1073,7 +1078,7 @@ function formatWord(word, kanji, romaji, meaning) {
     }
 
     if (hintMode === "paren") {
-        return `<span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span>`;
+        return `<span class="display-cue-unit"><span class="target-word">${displayWord}</span><span class="vocab-inline">(${hintStr})</span></span>`;
     }
 
     return `
@@ -1226,7 +1231,7 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
             )
         ];
 
-    tdPrompt.innerHTML = cueParts.join(" ／ ");    tdPrompt.style.verticalAlign = "middle";
+    tdPrompt.innerHTML = joinDisplayCues(cueParts, " ／ ");    tdPrompt.style.verticalAlign = "middle";
     tdPrompt.style.width = "220px";
     tdPrompt.style.paddingRight = "10px";
 
@@ -2586,7 +2591,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         return `<span class="p71-cues">${
             words.join(
-                '<span class="p71-cue-separator">／</span><wbr>'
+                hintMode === 'paren' && !english ? '' : '<span class="p71-cue-separator">／</span><wbr>'
             )
         }</span>`;
     }

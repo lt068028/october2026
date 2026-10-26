@@ -90,3 +90,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/tooltip-layout.cjs`：8練習ページ、600/1440px、通常/ダークで語彙20px・説明18pxと画面内配置を確認。
 
 - `node tests/display-cue-lines.cjs`：7.3のDisplay語句単位改行、語句とヒントの対応、横はみ出し、Hover/OFF／英語キュー維持を4幅・2配色・3文体・2表記で検証。
+
+- display-cue-linesは1.1／1.2／7.1／7.2も追加検証。Display限定の語句＋ヒント、改行、はみ出しと7.1拡張／英語キュー・7.2英語キューの区切り維持を確認。

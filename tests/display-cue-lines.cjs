@@ -17,6 +17,32 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
 
  const context=await browser.newContext();
+ for(const name of ['practice1.1','practice1.2','practice7.1','practice7.2']) {
+  const page=await open(context,name);
+  await page.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
+  for(const width of [600,900,1440]) for(const mode of ['off','hover','paren']) {
+   await page.setViewportSize({width,height:900});
+   await page.locator(`#hintModeControl [data-value="${mode}"]`).click();
+   check(await page.locator('.display-cue-unit').count()>0,mode==='paren',name+' Display pairs only in Display');
+   if(mode==='paren') {
+    check(await page.locator('.example-box tr td:nth-child(2)').evaluateAll(es=>es.every(e=>{const units=[...e.querySelectorAll('.display-cue-unit')];return units.every((u,i)=>!i||u.getBoundingClientRect().top>=units[i-1].getBoundingClientRect().bottom-1)})),true,name+' Example pairs on separate lines');
+    check(await page.locator('.display-cue-unit').evaluateAll(es=>es.every(e=>e.querySelector('.target-word')&&e.querySelector('.vocab-inline'))),true,name+' each pair contains word and hint');
+   }
+   check(await page.locator('.example-box,.drill-row').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,name+' no overflow');
+  }
+  if(name==='practice7.1') {
+   await page.getByRole('button',{name:'Display expanded cues',exact:true}).click();
+   check(await page.locator('#practice71Example .display-cue-unit').count()>0,true,'7.1 expanded Display remains grouped');
+   await page.getByRole('button',{name:'Display English cues',exact:true}).click();
+   check(await page.locator('#practice71Example .display-cue-unit').count(),0,'7.1 English keeps original formatting');
+   check(await page.locator('#practice71Example .p71-cue-separator').count()>0,true,'7.1 English separators retained');
+  }
+  if(name==='practice7.2') {
+   await page.locator('#practice7EnglishCueButton').click();
+   check(await page.locator('#drill1List .p7-english-cue').first().textContent().then(t=>t.includes('／')),true,'7.2 English separators retained');
+  }
+  check(page.errors,[],name+' no runtime errors');await page.close();
+ }
  const p=await open(context,'practice7.3');
  await p.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
  for(const width of [600,900,1440,1920]) for(const theme of ['light','dark']) {
@@ -42,5 +68,5 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await p.locator('#practice73Drill4Panel .drill-cue-button').click();
  check(await p.locator('.p73-display-cue-unit').count(),0,'English cues keep existing layout');
  check(p.errors,[],'no runtime errors');
- await browser.close();console.log('PASS Practice 7.3 Display cue lines',checks);
+ await browser.close();console.log('PASS vocabulary Display cue lines',checks);
 })().catch(e=>{console.error(e);process.exit(1)});
