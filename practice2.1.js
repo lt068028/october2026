@@ -1177,21 +1177,29 @@ function practice2ShowNotice(resultSpan, message) {
         const box=node('section','example-box p21-distance-example');
         box.append(node('h2','p21-distance-heading','こ・そ・あ: three sounds that signal distance'));
         const board=node('div','p21-distance-board');
+        const stage=node('div','p21-photo-stage');
+        const photo=node('img','p21-photo');photo.src='assets/practice21-table.png';
+        photo.alt='A sits at the left end of a table with a book. B sits at the right end with a bag. A clock hangs on the wall, far from both.';
+        photo.width=1536;photo.height=1024;stage.append(photo);
+        const context=node('p','p21-photo-context');
         const people=node('div','p21-distance-people');
         for(const person of ['A','B']) {
             const figure=node('div','p21-distance-person');figure.dataset.person=person;
-            figure.append(node('strong','p21-person-caption'));
-            figure.insertAdjacentHTML('beforeend','<svg viewBox="0 0 50 52" aria-hidden="true"><circle cx="25" cy="11" r="9"/><path d="M7 51V37Q7 23 25 23Q43 23 43 37V51Z"/></svg>');people.append(figure);
+            figure.append(node('strong','p21-person-caption',person));people.append(figure);
         }
-        board.append(people);
+        stage.append(people);
+        for(const zone of ['A','B','far']) {const reach=node('div','p21-reach');reach.dataset.reach=zone;reach.setAttribute('aria-hidden','true');stage.append(reach);}
+        stage.append(context);board.append(stage);
         const areas=node('div','p21-distance-areas');
         const modelList=node('div','p21-model-list');
         function perspective(speaker,target) {
             people.querySelectorAll('[data-person]').forEach(person=>{
                 const active=person.dataset.person===speaker;
                 person.classList.toggle('is-speaker',active);
-                person.querySelector('strong').textContent=`${person.dataset.person}：${active?'Speaker':'Listener'}`;
+                person.querySelector('strong').textContent=person.dataset.person;
             });
+            context.textContent=`${speaker} is speaking`;
+            board.dataset.speaker=speaker;
             areas.querySelectorAll('[data-zone]').forEach(area=>{
                 const sound=area.dataset.zone==='far'?'あ':area.dataset.zone===speaker?'こ':'そ';
                 const description=sound==='こ'?'Near the speaker':sound==='そ'?'Near the listener':'Far from both';
@@ -1210,7 +1218,6 @@ function practice2ShowNotice(resultSpan, message) {
             const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;
             const caption=node('div','p21-area-caption');caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));
             area.append(caption);
-            area.insertAdjacentHTML('beforeend',`<svg class="p21-item-icon" viewBox="-45 -40 90 80" role="img" aria-label="Object ${o.id}: ${o.meaning}">${Practice21.icon(o)}</svg>`);
             area.append(node('span','p21-object-number',`Object ${o.id}`));
             const controls=node('div','p21-item-audio');
             for(const speaker of ['A','B']) {

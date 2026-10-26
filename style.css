@@ -2406,34 +2406,53 @@ body.site-scale {
 .practice21-page .p21-cue .display-cue-unit { display: block; }
 .practice21-page .p21-example-diagram + table { margin-top: 12px; }
 
-/* Practice 2.1 Ex1 review: compact top view, object audio, and six model lines. */
+/* Practice 2.1: photographic scene, real shared audio controls and model text. */
 .p21-distance-heading { margin: 8px 0 14px; font-size: 1.1em; }
-.p21-distance-people { display: flex; justify-content: space-between; padding-inline: 18px; }
-.p21-distance-person { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); }
-.p21-distance-person svg { width: 44px; height: 44px; fill: currentColor; }
-.p21-distance-person.is-speaker { color: var(--text-primary); }
-.p21-distance-areas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
-.p21-distance-area { display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border: 2px solid var(--border-color); border-radius: 14px; background: var(--bg-row); min-width: 0; }
-.p21-distance-area:not([data-zone="far"]) { margin-top: 28px; }
-.p21-area-caption { display: flex; align-items: center; gap: 8px; min-height: 48px; }
-.p21-area-sound { font-size: 1.6em; }
-.p21-area-description { font-size: 0.8em; }
-.p21-distance-area[data-sound="こ"] { border-color: #3b82f6; background: color-mix(in srgb, var(--bg-row) 90%, #3b82f6); }
-.p21-distance-area[data-sound="そ"] { border-color: #16a34a; background: color-mix(in srgb, var(--bg-row) 90%, #16a34a); }
-.p21-distance-area[data-sound="あ"] { border-color: #a855f7; background: color-mix(in srgb, var(--bg-row) 90%, #a855f7); }
-.p21-distance-area.is-target { outline: 2px solid var(--text-primary); outline-offset: 2px; }
-.p21-item-icon { width: 80px; height: 64px; }
-.p21-object-number { font-size: 0.8em; }
-.p21-item-audio { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.p21-distance-board { position: relative; }
+.p21-photo-stage { position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1536 / 740; }
+.p21-photo { display: block; position: absolute; top: 0; width: 100%; height: auto; }
+.p21-photo-context { position: absolute; top: 2%; left: 2%; margin: 0; padding: 4px 8px; background: #ffffffed; color: #172554; border-radius: 6px; font-size: .8em; }
+.p21-distance-person { position: absolute; top: 32%; color: #111827; background: #ffffffe6; border-radius: 4px; padding: 0 6px; }
+.p21-distance-person[data-person="A"] { left: 7%; }
+.p21-distance-person[data-person="B"] { right: 7%; }
+.p21-distance-person.is-speaker { outline: 2px solid #1d4ed8; }
+.p21-reach { position: absolute; pointer-events: none; }
+.p21-reach[data-reach="A"] { left: 12%; top: 40%; width: 28%; height: 50%; border-radius: 0 45% 40% 0; transform: skewX(-6deg); }
+.p21-reach[data-reach="B"] { right: 12%; top: 40%; width: 28%; height: 50%; border-radius: 45% 0 0 40%; transform: skewX(6deg); }
+.p21-distance-board[data-speaker="A"] [data-reach="A"],
+.p21-distance-board[data-speaker="B"] [data-reach="B"] { background: #60a5fa55; }
+.p21-distance-board[data-speaker="A"] [data-reach="B"],
+.p21-distance-board[data-speaker="B"] [data-reach="A"] { background: #86efac55; }
+.p21-reach[data-reach="far"] { left: 42%; top: 1%; width: 30%; height: 24%; background: #fbbf2433; border-radius: 50%; }
+.p21-distance-area { position: absolute; min-width: 0; text-align: center; }
+.p21-distance-area[data-zone="A"] { left: 12%; top: 42%; width: 28%; height: 45%; }
+.p21-distance-area[data-zone="B"] { right: 12%; top: 42%; width: 28%; height: 45%; }
+.p21-distance-area[data-zone="far"] { left: 40%; top: 2%; width: 27%; height: 29%; }
+.p21-area-caption { display: flex; align-items: center; justify-content: center; gap: 6px; color: #172554; }
+.p21-distance-area[data-zone="far"] .p21-area-caption { margin-left: 48%; flex-direction: column; gap: 0; }
+.p21-area-sound { font-size: 1.3em; }
+.p21-area-description { font-size: .65em; line-height: 1.2; }
+.p21-distance-area[data-sound="そ"] .p21-area-caption { color: #14532d; }
+.p21-distance-area[data-sound="あ"] .p21-area-caption { color: #92400e; }
+.p21-object-number { display: none; position: absolute; bottom: -1.5em; left: 0; right: 0; font-size: .65em; color: #111827; }
+.p21-item-audio { position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; }
+.p21-item-audio button { white-space: nowrap; }
+.p21-distance-area.is-target .p21-item-audio { outline: 2px solid var(--accent-color); outline-offset: 3px; border-radius: 4px; }
 .p21-model-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 20px; }
 .p21-model-group { min-width: 0; }
 .p21-model-group h3 { font-size: 1em; margin: 0 0 6px; }
 .p21-model-line { margin: 4px 0; padding: 4px; border-left: 3px solid transparent; }
 .p21-model-line.is-current-model { border-left-color: var(--accent-color); background: var(--bg-panel); }
-@media (max-width: 900px) {
-    .p21-model-list { grid-template-columns: 1fr; }
-    .p21-distance-areas { gap: 6px; }
-    .p21-distance-people { padding-inline: 0; }
-    .p21-area-caption { flex-direction: column; gap: 0; text-align: center; }
-    .p21-person-caption { font-size: 0.85em; }
+@media (max-width: 1100px) {
+    .p21-distance-areas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+    .p21-distance-area[data-zone] { position: relative; inset: auto; width: auto; height: auto; padding: 8px 2px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-row); }
+    .p21-distance-area[data-zone="A"] { order: 0; }
+    .p21-distance-area[data-zone="far"] { order: 1; }
+    .p21-distance-area[data-zone="B"] { order: 2; }
+    .p21-area-caption, .p21-distance-area[data-zone="far"] .p21-area-caption { flex-direction: column; margin: 0; gap: 0; }
+    .p21-distance-area[data-sound] .p21-area-caption { color: var(--text-primary); }
+    .p21-item-audio { position: static; flex-wrap: wrap; margin-top: 6px; }
+    .p21-object-number { display: block; position: static; color: var(--text-secondary); }
+    .p21-area-description { font-size: .7em; }
 }
+@media (max-width: 900px) { .p21-model-list { grid-template-columns: 1fr; } }

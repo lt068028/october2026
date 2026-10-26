@@ -21,10 +21,11 @@ function mock(){
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const p=await browser.newPage();p.setDefaultTimeout(10000);const errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.addInitScript(mock);
- await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return fs.existsSync(file)?r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'}):r.fulfill({status:404,body:''})});
+ await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return fs.existsSync(file)?r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'}):r.fulfill({status:404,body:''})});
  await p.goto('http://drill.test/practice2.1.html');let count=0;const check=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
  check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.drill-row').count(),0,'Drills deferred');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
+ check(await p.locator('.p21-photo').evaluate(im=>im.complete&&im.naturalWidth>0),true,'photo loaded');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-person').count(),2,'only two people');
@@ -35,7 +36,8 @@ function mock(){
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
-   check(await p.locator('.p21-person-caption').allTextContents(),speaker==='A'?['A：Speaker','B：Listener']:['A：Listener','B：Speaker'],'integrated role labels');
+   check(await p.locator('.p21-photo-context').textContent(),speaker+' is speaking','speaker context');
+   check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');
    check(await p.locator('[data-zone="far"] .p21-area-sound').textContent(),'あ','far sound stable');
@@ -48,7 +50,8 @@ function mock(){
  await p.evaluate(()=>t.late21?.());
  check(await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').isEnabled(),true,'previous audio button restored');
  check(await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').isDisabled(),true,'new audio remains playing after stale callback');
- check(await p.locator('.p21-person-caption').allTextContents(),['A：Listener','B：Speaker'],'stale audio cannot change perspective');
+ check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed after stale callback');
+ check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
