@@ -2360,3 +2360,8 @@ body.site-scale {
     transform: none !important;
     transition: opacity 0.2s;
 }
+
+/* Practice 7.3 Display trial: one cue/hint pair per line. */
+.practice73-page .p73-display-cue-unit { display: block; }
+.practice73-page .p73-display-cue-unit > .target-word { white-space: nowrap; }
+.practice73-page .p73-display-cue-unit > .vocab-inline { overflow-wrap: anywhere; }

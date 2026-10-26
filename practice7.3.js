@@ -598,6 +598,12 @@ function word(key) {
     );
 }
 
+// Display trial: keep each Japanese cue and its vocabulary hint together on a line.
+function cueWords(keys) {
+    if (hintMode !== 'paren' || englishCues) return keys.map(word).join('／');
+    return keys.map(key => `<span class="p73-display-cue-unit">${word(key)}</span>`).join('');
+}
+
 function sentence(r) {
     const text = scriptMode === 'kanji' ? r.text : r.hira;
 
@@ -1216,7 +1222,7 @@ function render() {
 
             const cue = document.createElement('td');
             cue.className = 'p73-example-cues';
-            cue.innerHTML = r.cues.map(word).join('／');
+            cue.innerHTML = cueWords(r.cues);
 
             const arrow = document.createElement('td');
             arrow.textContent = '👉';
@@ -1292,7 +1298,7 @@ function render() {
 
                 const cue = document.createElement('td');
                 cue.className = 'prompt-label';
-                cue.innerHTML = r.cues.map(word).join('／');
+                cue.innerHTML = cueWords(r.cues);
 
                 const cell = document.createElement('td');
                 cell.className = 'p73-controls';
@@ -2346,7 +2352,7 @@ render = function () {
 
             if (index === 1) {
                 td.className = 'p73-example-cues';
-                td.innerHTML = q.cues.map(word).join('／');
+                td.innerHTML = cueWords(q.cues);
             } else if (index === 3) {
                 const listen = button(
                     '🔊きく',
@@ -2443,7 +2449,7 @@ render = function () {
             cue.className = 'prompt-label';
 
             if (!ri) {
-                cue.innerHTML = cues.map(word).join('／');
+                cue.innerHTML = cueWords(cues);
             } else {
                 ['yes', 'no'].forEach(answer => {
                     const choice = button(
