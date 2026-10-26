@@ -43,9 +43,11 @@
 | pronunciation2 / 1 | 💡Listen to the model, mimic the voice and speak aloud. | 💡Listen to the model and repeat. | 1 |
 | pronunciation2 / 2 | 💡Copy the model’s pronunciation, rhythm, and timing. Compare the two pitch lines to see whether your pitch rises and falls in a similar way. | 💡Copy the model’s pronunciation, rhythm, and timing. Compare your pitch line with the model’s. | 2 |
 
-## 区分ラベルの余白案（未実装）
+## 区分ラベルの余白案（7.2試験へ更新）
 
-現状の7.2中央寄せラベルは背景約149px、Present Stateのアイコン＋文字約132px、左右padding各8px。左右paddingを各16pxにすると、内容幅は約117pxとなり最長ラベルが収まらない。背景を約165pxへ広げて収めると、内容幅は約133pxへ戻るため、均等割付の広い字間を抑える効果は小さい。今回は中央寄せを維持する。この案が別の意味なら、適用前に解釈を揃える。
+ユーザーの意図は、背景幅と長いPresent Stateは変えず、短いPastだけ左右16pxを確保し、残り幅で文字を均等配置すること。前回は両方のラベルの余白を増やす案と取り違えていた。
+
+7.2の共通背景は約149px。Present Stateは従来の左右8px・中央寄せを維持し、Pastだけ左右16pxの内側（約117px）にアイコン＋文字を置く。アイコンを先頭へ置き、残り幅でPastの文字を均等配置する。背景幅と録音/停止の列は維持する。他ページへは展開しない。
 
 ## 検証範囲
 
