@@ -2045,7 +2045,7 @@ function practice2ShowNotice(resultSpan, message) {
         });
 
         for (const [value, label] of [
-            ["hover", "💬Hover"],
+            ["hover", "🔎Hover"],
             ["paren", "🔡Display"]
         ]) {
             const option = document.querySelector(

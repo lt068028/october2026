@@ -3141,7 +3141,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         anchor.after(item);
 
         const labels = {
-            hover: '💬Hover',
+            hover: '🔎Hover',
             paren: '🔡Display',
             off: 'OFF'
         };
