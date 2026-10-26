@@ -1182,6 +1182,8 @@ function practice2ShowNotice(resultSpan, message) {
         photo.alt='A sits at the left end of a table with a book. B sits at the right end with a bag. A clock hangs on the wall, far from both.';
         photo.width=1536;photo.height=1024;stage.append(photo);
         const context=node('p','p21-photo-context');
+        const currentSpeaker=node('strong','p21-current-speaker');
+        context.append(node('span','','Who is speaking?'),currentSpeaker);
         const people=node('div','p21-distance-people');
         for(const person of ['A','B']) {
             const figure=node('div','p21-distance-person');figure.dataset.person=person;
@@ -1195,7 +1197,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         stage.append(tableRegions);
         // Reveal the original photographed objects above the changing reach colors.
-        for(const item of ['book','bag','clock','left-hand','right-hand','listener-hand']) {
+        for(const item of ['book','bag','clock']) {
             const foreground=node('img',`p21-photo p21-photo-foreground p21-foreground-${item}`);
             foreground.src=photo.src;foreground.alt='';foreground.setAttribute('aria-hidden','true');stage.append(foreground);
         }
@@ -1208,7 +1210,7 @@ function practice2ShowNotice(resultSpan, message) {
                 person.classList.toggle('is-speaker',active);
                 person.querySelector('strong').textContent=person.dataset.person;
             });
-            context.textContent=`${speaker} is speaking`;
+            currentSpeaker.textContent=speaker;
             board.dataset.speaker=speaker;
             areas.querySelectorAll('[data-zone]').forEach(area=>{
                 const sound=area.dataset.zone==='far'?'あ':area.dataset.zone===speaker?'こ':'そ';

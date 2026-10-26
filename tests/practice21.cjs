@@ -26,6 +26,8 @@ function mock(){
  check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.drill-row').count(),0,'Drills deferred');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
+ check(await p.locator('.p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
+ check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-person').count(),2,'only two people');
@@ -36,7 +38,7 @@ function mock(){
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
-   check(await p.locator('.p21-photo-context').textContent(),speaker+' is speaking','speaker context');
+   check(await p.locator('.p21-current-speaker').textContent(),speaker,'speaker context');
    check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');

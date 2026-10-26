@@ -2415,10 +2415,7 @@ body.site-scale {
 .p21-foreground-book { clip-path: polygon(18% 41.5%,26.8% 41.5%,26.5% 56.2%,17.6% 56.2%); }
 .p21-foreground-bag { clip-path: polygon(73% 39.3%,76% 39.1%,78.5% 41%,79.5% 44%,81.2% 49%,81.5% 53%,79.3% 57.8%,75% 57.5%,71% 53%,71% 48%,72% 44%); }
 .p21-foreground-clock { clip-path: ellipse(4.3% 6.6% at 50% 9.1%); }
-.p21-foreground-left-hand { clip-path: polygon(12.5% 36.7%,16% 39%,17.5% 40%,19.8% 41.1%,20% 43%,18.5% 44%,17.2% 42%,15% 41%,12% 40%); }
-.p21-foreground-right-hand { clip-path: polygon(13.5% 57.8%,16.5% 54%,18.5% 52%,20.5% 53%,21% 54.5%,18.2% 56%,16% 59%,13.5% 61%); }
-.p21-foreground-listener-hand { clip-path: polygon(83% 42%,86% 43%,88% 48%,87% 54%,85% 57%,83% 54%,82% 49%); }
-.p21-photo-context { position: absolute; z-index: 3; top: 2%; left: 2%; margin: 0; padding: 4px 8px; background: #ffffffed; color: #172554; border-radius: 6px; font-size: .9em; }
+.p21-photo-context { position: absolute; z-index: 3; top: 2%; left: 2%; margin: 0; padding: 4px 0; display: flex; flex-wrap: wrap; gap: 8px; color: #b91c1c; font-size: .9em; font-weight: 700; text-shadow: 0 1px 2px #fff9; }
 .p21-distance-person { position: absolute; z-index: 3; top: 32%; color: #111827; background: #fffffff0; border-radius: 4px; padding: 0 6px; }
 .p21-distance-person[data-person="A"] { left: 7%; }
 .p21-distance-person[data-person="B"] { right: 7%; }
@@ -2435,11 +2432,12 @@ body.site-scale {
 .p21-distance-areas { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
 .p21-distance-area { position: absolute; min-width: 0; text-align: center; }
 .p21-distance-area[data-zone="A"] { left: 14%; top: 41%; width: 27%; height: 46%; }
-.p21-distance-area[data-zone="B"] { right: 14%; top: 41%; width: 27%; height: 46%; }
+.p21-distance-area[data-zone="B"] { right: 10%; top: 41%; width: 34%; height: 46%; }
 .p21-distance-area[data-zone="far"] { left: 43%; top: 1%; width: 32%; height: 38%; }
-.p21-area-caption { position: absolute; top: -13%; left: 0; display: flex; flex-direction: column; align-items: center; gap: 0; width: max-content; max-width: 100%; padding: 0; color: #172554; background: none; line-height: 1.15; font-weight: 700; text-shadow: 0 1px 2px #fff9; }
-.p21-distance-area[data-zone="B"] .p21-area-caption { left: -18%; top: 1%; }
-.p21-distance-area[data-zone="far"] .p21-area-caption { left: -45%; top: 8%; max-width: 52%; }
+.p21-area-caption { position: absolute; top: -9%; left: 7%; display: flex; flex-direction: column; align-items: center; gap: 0; width: max-content; max-width: 100%; padding: 0; color: #172554; background: none; line-height: 1.15; font-weight: 700; text-shadow: 0 1px 2px #fff9; }
+.p21-distance-area[data-zone="B"] .p21-area-caption { left: 63%; top: -9%; transform: translateX(-50%); }
+.p21-distance-area[data-zone="far"] .p21-area-caption { left: 43%; top: 8%; max-width: 57%; }
+.p21-distance-area[data-zone="far"] .p21-item-audio { right: auto; left: -32%; top: 6%; bottom: auto; }
 .p21-area-sound { font-size: 28px; }
 .p21-area-description { font-size: 18px; line-height: 1.2; }
 .p21-distance-area[data-sound="そ"] .p21-area-caption { color: #14532d; }
@@ -2460,9 +2458,9 @@ body.site-scale {
     .p21-distance-area[data-zone="A"] { order: 0; }
     .p21-distance-area[data-zone="far"] { order: 1; }
     .p21-distance-area[data-zone="B"] { order: 2; }
-    .p21-area-caption, .p21-distance-area[data-zone="B"] .p21-area-caption, .p21-distance-area[data-zone="far"] .p21-area-caption { position: static; margin: 0 auto; background: none; padding: 0; text-shadow: none; }
+    .p21-area-caption, .p21-distance-area[data-zone="B"] .p21-area-caption, .p21-distance-area[data-zone="far"] .p21-area-caption { position: static; margin: 0 auto; background: none; padding: 0; text-shadow: none; transform: none; }
     .p21-distance-area[data-sound] .p21-area-caption { color: var(--text-primary); }
-    .p21-item-audio, .p21-distance-area[data-zone="B"] .p21-item-audio { position: static; margin: 6px auto 0; }
+    .p21-item-audio, .p21-distance-area[data-zone="B"] .p21-item-audio, .p21-distance-area[data-zone="far"] .p21-item-audio { position: static; margin: 6px auto 0; }
     .p21-object-number { display: block; }
 }
 @media (max-width: 900px) {
