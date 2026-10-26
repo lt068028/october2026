@@ -437,33 +437,20 @@ document.addEventListener('DOMContentLoaded', () => {
             text
         );
 
-        const response = node('tr');
-        const responseLabel = node('td');
-
-        responseLabel.append(
-            node('strong', 'example-label-title', 'Response:')
-        );
-
-        const answers = node('td');
-        answers.colSpan = 4;
-
+        body.append(question);
         ['yes', 'no'].forEach((kind, index) => {
-            const pair = node('span', 'example-answer-pair');
-            const answerText = node('span');
-            answerText.append(highlighted(display(model(example, kind))));
-            pair.append(
-                listen(
-                    () => model(example, kind),
-                    index ? '🔊🙅' : '🔊🙆'
-                ),
-                document.createTextNode(' '),
-                answerText
-            );
-            answers.append(pair);
+            const row = node('tr', 'example-response-row');
+            const label = node('td');
+            if (!index) label.append(node('strong', 'example-label-title', 'Response:'));
+            const cues = node('td', 'example-empty-cell');
+            const arrow = node('td', 'example-empty-cell');
+            const sound = node('td', 'example-audio-cell');
+            sound.append(listen(() => model(example, kind), index ? '🔊🙅' : '🔊🙆'));
+            const text = node('td');
+            text.append(highlighted(display(model(example, kind))));
+            row.append(label, cues, arrow, sound, text);
+            body.append(row);
         });
-
-        response.append(responseLabel, answers);
-        body.append(question, response);
         table.append(body);
         box.append(table);
         parent.append(box);
@@ -527,42 +514,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stop.onclick = null;
         stop.disabled = true;
 
-        const shown = node('span');
-
-        const property = question
-            ? 'questionText'
-            : `${selected}Text`;
-
-        const updateText = () => {
-            shown.textContent =
-                ready && state[property]
-                    ? display(getText())
-                    : '';
-
-            text.firstChild.textContent =
-                ready && state[property]
-                    ? '🕶️Hide'
-                    : '👀Text';
-        };
-
-        const text = button(
-            '👀Text',
-            'Show or hide the model answer.',
-            () => {
-                state[property] = !state[property];
-                updateText();
-            }
-        );
-
-        updateText();
-
-        actions.append(
-            sound,
-            record,
-            stop,
-            text,
-            shown
-        );
+        actions.append(sound, record, stop);
 
         const result = node(
             'span',
@@ -611,9 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             sound.disabled = true;
             record.disabled = true;
-            text.disabled = true;
 
-            answerControls.push(sound, record, text);
+            answerControls.push(sound, record);
         }
     }
 

@@ -1613,40 +1613,6 @@ function practice2ShowNotice(resultSpan, message) {
         };
     }
 
-    function textToggle(view, getText, enabled) {
-        const answer = node("span", "practice12-shown-model");
-
-        const toggle = button(
-            "👀Text",
-            "Show or hide the model answer.",
-            () => {
-                const visible =
-                    enabled.textVisible = !enabled.textVisible;
-
-                answer.textContent = visible
-                    ? getText()
-                    : "";
-
-                toggle.firstChild.textContent = visible
-                    ? "🕶️Hide"
-                    : "👀Text";
-
-                alignColumns();
-            }
-        );
-
-        toggle.disabled = !enabled.ready;
-
-        if (enabled.textVisible && enabled.ready) {
-            answer.textContent = getText();
-            toggle.firstChild.textContent = "🕶️Hide";
-        }
-
-        // Keep selection and Text together, before the shared Listen/Record/Stop column.
-        view.cueCell.lastElementChild.append(toggle);
-        view.controls.append(answer);
-    }
-
     function section(id, title, instruction) {
         const container = document.getElementById(id);
         container.replaceChildren();
@@ -1820,15 +1786,7 @@ function practice2ShowNotice(resultSpan, message) {
                 Boolean(state.answerMode)
             );
 
-            textToggle(answer, getText, {
-                get textVisible() {
-                    return state.textVisible;
-                },
-                set textVisible(value) {
-                    state.textVisible = value;
-                },
-                ready: Boolean(state.answerMode)
-            });
+
         });
 
         const second = section(
@@ -2001,15 +1959,7 @@ function practice2ShowNotice(resultSpan, message) {
                 Boolean(state.selectedValue)
             );
 
-            textToggle(answer, getText, {
-                get textVisible() {
-                    return state.textVisible;
-                },
-                set textVisible(value) {
-                    state.textVisible = value;
-                },
-                ready: Boolean(state.selectedValue)
-            });
+
         });
     }
 

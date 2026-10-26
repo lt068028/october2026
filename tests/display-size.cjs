@@ -75,15 +75,10 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await p.setViewportSize({width:1280,height:900});
  await p.locator('#drill1Container .drill-row').first().locator('.drill-cue-cell button[aria-pressed]').first().click();
  let row=p.locator('#drill1Container .drill-row').first();
- check(await row.locator('.drill-cue-cell button').evaluateAll(es=>es.map(e=>e.firstChild.textContent.trim())),['🙆','🙅','👀Text'],'choices and Text share the cue group');
- const listenX=await row.locator('.recording-actions').first().evaluate(e=>e.querySelector('button').getBoundingClientRect().x);
- await row.locator('.drill-cue-cell button').last().click();
- check(await row.locator('.practice12-shown-model').innerText().then(t=>t.length>0),true,'Text shows model in its own output area');
- check(Math.abs(await row.locator('.recording-actions').first().evaluate(e=>e.querySelector('button').getBoundingClientRect().x)-listenX)<1.5,true,'showing text does not move Listen column');
- await row.locator('.drill-cue-cell button').last().click();
- check(await row.locator('.practice12-shown-model').innerText(),'','Hide restores compact output');
+ check(await row.locator('.drill-cue-cell button').evaluateAll(es=>es.map(e=>e.firstChild.textContent.trim())),['🙆','🙅'],'only Yes/No remain in the cue group');
  await p.locator('#drill2Container select.custom-select').first().selectOption('せいじ');
- check(await p.locator('#drill2Container .drill-row').first().locator('.drill-cue-cell button').last().isEnabled(),true,'major selection enables adjacent Text');
+ check(await p.locator('#drill2Container .drill-row').first().locator('.recording-actions').last().locator('button').filter({hasText:/^🎙️とる/}).isEnabled(),true,'major selection still enables response recording');
+ check(await p.locator('button').evaluateAll(es=>es.filter(b=>/^(👀Text|🕶️Hide)/.test(b.textContent)).length),0,'no Text or Hide controls');
  const box=await p.locator('body').boundingBox();
  check(box.width<=1280&&box.x>=32,true,'agreed width and outer gutters');
  check(p.errors.concat(other.errors),[],'no page errors');

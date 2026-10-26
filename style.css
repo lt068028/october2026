@@ -2210,14 +2210,10 @@ body.site-scale {
     width: 100%;
     grid-template-columns: max-content fit-content(55%) max-content max-content minmax(0, 1fr);
     gap: 6px 4px;
-}
-.practice7-page .example-box :is(.drill-example-table, .p73-example-table) > tbody { display: contents; }
-.practice7-page .example-box tr {
-    display: grid;
-    grid-template-columns: subgrid;
-    grid-column: 1 / -1;
     align-items: baseline;
 }
+.practice7-page .example-box :is(.drill-example-table, .p73-example-table) > tbody { display: contents; }
+.practice7-page .example-box tr { display: contents; }
 .practice7-page .example-box tr > td {
     width: auto;
     min-width: 0;
@@ -2302,25 +2298,14 @@ body.site-scale {
     white-space: normal;
 }
 
-/* Example replies share the question's audio/text tracks. Cue tracks take only content width. */
-.practice7-page .example-box td[colspan] {
-    display: grid !important;
-    grid-template-columns: subgrid;
-    gap: 6px 4px;
-}
-.practice7-page .example-box .example-answer-pair {
-    display: grid;
-    grid-template-columns: subgrid;
-    grid-column: 3 / -1;
-    align-items: baseline;
-    width: auto;
-    padding: 0 2px;
-}
-@container (max-width: 850px) {
-    .practice7-page .example-box .example-answer-pair { grid-column: 2 / -1; }
-}
-
 .practice12-page #drill2Container .drill-example-table {
     --practice12-example-cue-track: fit-content(55%);
     --practice12-example-model-track: minmax(0, 1fr);
+}
+
+/* All Example 2 audio buttons are direct cells in the same five tracks. */
+.practice7-page .example-box tr > td:nth-child(4) > button { width: 100%; box-sizing: border-box; }
+@container (max-width: 850px) {
+    .practice7-page .example-box .example-response-row > td:nth-child(2),
+    .practice7-page .example-box .example-response-row > td:first-child:empty { display: none; }
 }

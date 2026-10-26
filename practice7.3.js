@@ -2368,35 +2368,21 @@ render = function () {
 
     eb.append(tr);
 
-    const response = document.createElement('tr');
-
-    const label = document.createElement('td');
-    label.className = 'p73-example-kind';
-    label.innerHTML = '<strong class="example-label-title">Response:</strong>';
-
-    const answers = document.createElement('td');
-    answers.colSpan = 4;
-
     ['yes', 'no'].forEach((kind, index) => {
+        const row = document.createElement('tr');
+        row.className = 'example-response-row';
+        const cells = Array.from({length: 5}, () => document.createElement('td'));
+        if (!index) cells[0].innerHTML = '<strong class="example-label-title">Response:</strong>';
+        cells[1].className = cells[2].className = 'example-empty-cell';
+        cells[3].className = 'example-audio-cell';
+        cells[4].className = 'p73-example-model';
         const r = qa73Model(qa73.example, kind);
-
-        const listen = button(
-            kind === 'yes' ? '🔊🙆' : '🔊🙅',
-            () => speak(r.text, listen)
-        );
-
-        const text = document.createElement('span');
-        text.className = 'p73-example-model';
-        text.innerHTML = sentence(r);
-
-        const pair = document.createElement('span');
-        pair.className = 'example-answer-pair';
-        pair.append(listen, text);
-        answers.append(pair);
+        const listen = button(kind === 'yes' ? '🔊🙆' : '🔊🙅', () => speak(r.text, listen));
+        cells[3].append(listen);
+        cells[4].innerHTML = sentence(r);
+        row.append(...cells);
+        eb.append(row);
     });
-
-    response.append(label, answers);
-    eb.append(response);
     const heading = document.createElement('div');
     heading.className = 'example-category-heading';
     heading.innerHTML = badge(q, 0);
@@ -2522,31 +2508,7 @@ render = function () {
                 }
             });
 
-            const toggle = button(
-                state.text[kind] ? '🕶️Hide' : '👀Text',
-                () => {
-                    if (
-                        !enabled ||
-                        session ||
-                        preparing
-                    ) return;
-
-                    state.text[kind] = !state.text[kind];
-                    render();
-                }
-            );
-
-            const shown = document.createElement('span');
-
-            shown.textContent =
-                scriptMode === 'kanji' ? r.text : r.hira;
-
-            shown.hidden =
-                !enabled || !state.text[kind];
-
-            actions.append(
-                listen, rec, stop, toggle, shown
-            );
+            actions.append(listen, rec, stop);
 
             const wrap = document.createElement('span');
             wrap.className = 'recording-result';
@@ -2572,7 +2534,7 @@ render = function () {
                 result,
                 correction,
                 qaDisabled: !enabled,
-                qaButtons: [listen, rec, toggle]
+                qaButtons: [listen, rec]
             });
 
             showResult(key);

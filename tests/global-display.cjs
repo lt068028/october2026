@@ -29,13 +29,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      document.querySelector(`#hintModeControl [data-value="${hint}"]`)?.click();
      const b=document.querySelector(`#scriptModeControl [data-value="${script}"]`);if(b&&!b.disabled)b.click();
     },[style,hint,script]);
+    check(await p.locator('button').evaluateAll(es=>es.filter(b=>/^(👀Text|🕶️Hide)/.test(b.textContent)).length),0,name+' Text/Hide removed');
     const bad=await p.evaluate(()=>[...document.querySelectorAll('.example-box,.drill-row,.settings-row,.pitch-card,.prompt-item')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));
     check(bad,[],`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height<1000)),true,name+' Example readable wrapping height');
     check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>{
      const heading=e.querySelector('.example-category-heading');
      if(heading&&e.querySelectorAll('.tense-badge,.p71-tense,.p73-tense').length!==1)return false;
-     const pairs=[...e.querySelectorAll('.example-answer-pair,.practice12-example-answer')];
+     const pairs=[...e.querySelectorAll('.example-response-row td:nth-child(4) button,.practice12-example-answer')];
      if(pairs.length<2)return true;
      const r=pairs.map(e=>e.getBoundingClientRect());return r[1].y>r[0].y&&Math.abs(r[1].x-r[0].x)<2;
     })),true,name+' single category heading and vertical Yes/No');

@@ -28,7 +28,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      document.querySelector(`#scriptModeControl [data-value="${script}"]`).click();
     },[style,hint,script]);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
-    check(await p.locator('.example-box:has(.example-answer-pair)').evaluateAll(es=>es.every(e=>{
+    check(await p.locator('.example-box:has(.example-response-row)').evaluateAll(es=>es.every(e=>{
      const r=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect());
      return r.length===3&&Math.max(...r.map(r=>r.x))-Math.min(...r.map(r=>r.x))<2&&r[0].y<r[1].y&&r[1].y<r[2].y;
     })),true,`${name} question/Yes/No audio starts in one column`);
@@ -37,7 +37,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      const heading=row.closest('.example-box').querySelector('.example-category-heading');
      if(heading) {if(row.querySelector('.tense-badge,.p71-tense,.p73-tense'))return false;}
      else if(!cells[0].querySelector('.tense-badge,.p71-tense,.p73-tense'))return false;
-     if(cells.length===2)return cells[1].hasAttribute('colspan')&&cells[1].querySelectorAll('button').length===2;
+     if(row.classList.contains('example-response-row'))return cells.length===5&&cells[3].querySelector('button')&&cells[4].textContent.trim();
      return cells.length===5&&cells[2].textContent.includes('👉')&&cells[3].querySelector('button')&&cells[4].textContent.trim()&&!cells.slice(1).some(c=>c.querySelector('.tense-badge,.p71-tense,.p73-tense'));
     })),true,`${name} category/cue/arrow/listen/text order`);
    }
@@ -45,7 +45,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
   await p.setViewportSize({width:1440,height:900});
   await p.evaluate(()=>document.querySelector('#hintModeControl [data-value="off"]').click());
   check(await p.locator('.example-box table').evaluateAll(tables=>tables.every(t=>{
-   const rows=[...t.querySelectorAll('tr')].filter(r=>r.children.length===5);
+   const rows=[...t.querySelectorAll('tr')].filter(r=>r.children.length===5&&!r.classList.contains('example-response-row'));
    const right=Math.max(...rows.map(row=>{const range=document.createRange();range.selectNodeContents(row.children[1]);return range.getBoundingClientRect().right}));
    const arrow=rows[0].children[2].getBoundingClientRect();
    return arrow.left-right>=-2&&arrow.left-right<16;
