@@ -42,8 +42,8 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
       const cs=getComputedStyle(e),letters=e.querySelector('.practice72-past-letters');
       const r=[...letters.children].map(c=>c.getBoundingClientRect());
       const gaps=r.slice(1).map((x,i)=>x.left-r[i].right);
-      return e.textContent==='⏪Past'&&cs.paddingLeft==='24px'&&cs.paddingRight==='24px'&&gaps.length===3&&Math.max(...gaps)-Math.min(...gaps)<1;
-     }),true,'7.2 Past alone has 24px insets and evenly spaced letters');
+      return e.textContent==='⏪Past'&&cs.paddingLeft==='32px'&&cs.paddingRight==='32px'&&gaps.length===3&&Math.max(...gaps)-Math.min(...gaps)<1;
+     }),true,'7.2 Past alone has 32px insets and evenly spaced letters');
      check(await p.locator('#drill1List .tense-badge--present-state').first().evaluate(e=>e.childElementCount===0&&getComputedStyle(e).paddingLeft==='8px'),true,'Present State retains its original text and padding');
     } else check(await p.locator('.practice72-category-slot').count(),0,'badge trial does not spread to '+name);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
