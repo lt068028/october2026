@@ -2372,3 +2372,8 @@ body.site-scale {
 .site-scale .display-cue-unit > .vocab-inline { overflow-wrap: anywhere; }
 .site-scale #drill1Container .p71-cue-word:has(.display-cue-unit) { display: block; }
 .site-scale .prompt-content:has(> .display-cue-unit) { display: block !important; }
+
+/* A disabled Listen button cannot itself receive keyboard focus. */
+.selection-help-wrap { display: inline-flex; vertical-align: baseline; flex-shrink: 0; }
+.selection-help-wrap > button:disabled { pointer-events: none; }
+.selection-help-wrap:focus-visible > .custom-tip-box { visibility: visible; opacity: 1; }

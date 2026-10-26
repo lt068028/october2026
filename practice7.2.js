@@ -485,6 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const actions = node('div', 'recording-actions');
 
         const sound = listen(getText);
+        if (!ready) sound.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
 
         const record = button(
             '🎙️とる',

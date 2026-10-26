@@ -2499,6 +2499,8 @@ render = function () {
                 }
             });
 
+            if (!enabled) listen.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+
             const rec = button('🎙️とる', () => {
                 if (enabled && !session && !preparing) {
                     record(key, r);

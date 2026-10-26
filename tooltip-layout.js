@@ -1,6 +1,33 @@
 // Keep existing vocabulary and control explanations within the viewport.
 (() => {
     const selector = '.tooltip-wrap, .custom-tip-wrap';
+    // Explain missing prerequisites, rather than repeating the Listen button label.
+    function applyListenPolicy() {
+        observer.disconnect();
+        document.querySelectorAll('button .custom-tip-box').forEach(tip => {
+            if (/^Listen\b/i.test(tip.textContent.trim())) {
+                const button = tip.closest('button');
+                tip.remove();
+                if (!button.querySelector('.custom-tip-box')) button.classList.remove('custom-tip-wrap');
+            }
+        });
+        document.querySelectorAll('button[data-selection-help]').forEach(button => {
+            if (button.parentElement.classList.contains('selection-help-wrap')) return;
+            const wrap = document.createElement('span');
+            wrap.className = 'selection-help-wrap custom-tip-wrap';
+            wrap.tabIndex = 0;
+            wrap.setAttribute('aria-label', button.dataset.selectionHelp);
+            const tip = document.createElement('span');
+            tip.className = 'custom-tip-box';
+            tip.setAttribute('role', 'tooltip');
+            tip.textContent = button.dataset.selectionHelp;
+            button.replaceWith(wrap);
+            wrap.append(button, tip);
+        });
+        observer.observe(document.body, {childList: true, subtree: true});
+    }
+    const observer = new MutationObserver(applyListenPolicy);
+    applyListenPolicy();
     function position(anchor) {
         const tip = anchor.querySelector('.tooltip-tip, .custom-tip-box');
         if (!tip) return;
