@@ -55,9 +55,10 @@ function mock(){
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
+  check(await p.locator('.p21-area-caption').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)')),true,'region labels have no background panels');
   check(await p.locator('.p21-area-description').evaluateAll(es=>es.every(e=>parseFloat(getComputedStyle(e).fontSize)>=18)),true,'region descriptions at least 18px');
   const ratio=await p.locator('.p21-distance-board').evaluate(e=>{const p=e.parentElement,c=getComputedStyle(p);return e.clientWidth/(p.clientWidth-parseFloat(c.paddingLeft)-parseFloat(c.paddingRight));});
-  check(Math.abs(ratio-(width>900?.7:1))<.04,true,'70 percent scene, readable narrow fallback');
+  check(Math.abs(ratio-(width>900?.75:1))<.04,true,'75 percent scene, readable narrow fallback');
   check(await p.locator('.p21-item-audio').evaluateAll(es=>es.every(e=>getComputedStyle(e).flexDirection==='column')),true,'A B audio buttons stacked');
   check(await p.locator('.example-box,.p21-distance-board,.p21-distance-area,.p21-model-group').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'no horizontal overflow');
  }
