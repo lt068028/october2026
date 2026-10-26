@@ -2380,3 +2380,28 @@ body.site-scale {
 .selection-help-wrap:focus-visible > .custom-tip-box { visibility: visible; opacity: 1; }
 
 .segmented-option.pronunciation-style-disabled .icon-emoji { filter: grayscale(1); }
+
+/* Practice 2.1: numbered SVG objects and speaker-relative demonstrations. */
+.practice21-page .p21-diagram { margin: 12px 0 18px; }
+.practice21-page .p21-scene { display: block; width: 100%; max-width: 920px; height: auto; margin-inline: auto; }
+.p21-scene text { fill: var(--text-primary); font: 20px sans-serif; }
+.p21-room { fill: var(--bg-row); stroke: var(--border-color); stroke-width: 2; }
+.p21-far { fill: var(--bg-panel); stroke: var(--text-secondary); stroke-dasharray: 6 5; }
+.p21-person-zone { fill: var(--bg-panel); stroke: var(--border-color); stroke-width: 2; }
+.p21-facing { fill: none; stroke: var(--text-secondary); stroke-width: 3; }
+.p21-person circle { fill: var(--button-bg); stroke: var(--text-secondary); stroke-width: 3; }
+.p21-person text { font-weight: bold; }
+.p21-person.is-speaker circle { fill: #facc15; stroke: #854d0e; stroke-width: 4; }
+.p21-person.is-speaker > text:not(.p21-speaking-label) { fill: #422006; }
+.p21-person .p21-speaking-label { display: none; font-size: 17px; }
+.p21-person .p21-listening-label { font-size: 17px; }
+.p21-person.is-speaker .p21-listening-label { display: none; }
+.p21-person.is-speaker .p21-speaking-label { display: block; }
+.p21-object-frame { fill: transparent; stroke: transparent; stroke-width: 3; }
+.p21-object.is-target .p21-object-frame { fill: #fef9c3; stroke: #a16207; }
+.p21-object.is-target > text { fill: #422006; }
+.p21-scene-context { text-align: center; margin: 6px 0; color: var(--text-secondary); }
+.practice21-page .p21-cue { white-space: normal; }
+.practice21-page .p21-cue > span { display: inline-block; }
+.practice21-page .p21-cue .display-cue-unit { display: block; }
+.practice21-page .p21-example-diagram + table { margin-top: 12px; }

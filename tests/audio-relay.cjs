@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=process.env.DRILL_ROOT || path.resolve(__dirname,'..');
-const names=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
+const names=['practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
 function mock(){
  window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
@@ -47,7 +47,7 @@ function mock(){
   await record(p);
 
   ok(await labels(p)===2,name+' both labels during automatic model');
-  const rate=name.startsWith('practice1.')?0.75:name.startsWith('practice7.')?0.8:0.9;
+  const rate=(name.startsWith('practice1.')||name==='practice2.1')?0.75:name.startsWith('practice7.')?0.8:0.9;
   assert.equal(await p.evaluate(()=>t.spoken.at(-1).rate),rate,name+' configured model TTS rate');checks++;
   ok(!await p.locator('#togglePlaybackMode').isDisabled(),name+' autoplay toggle available');
   await p.evaluate(()=>t.spoken.at(-1).onerror({error:'synthesis-failed'}));

@@ -14,11 +14,11 @@
 - **公開先**：`https://october2026.vercel.app`
 - **構成ファイル**：
   - トップページ：`index.html` / `index.js`
-  - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
+  - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice2.1.html` / `practice2.1.js` / `practice2.1-scenes.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
   - 作文練習：`composition1.html` / `composition1.js`
   - 発音練習：`pronunciation1.html` / `pronunciation1.js`、`pronunciation2.html` / `pronunciation2.js`
-  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全8練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象7ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全8練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
-  - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全8練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
+  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全9練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象8ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全9練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
+  - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全9練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
 
 ---
 
@@ -821,3 +821,9 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 ## 57. 1.1 D2／D3 Casualモデルの主題「は」を保持（2026-10-26）
 - ユーザー判断によりD2・D3はCasualでもモデル音の「は」を省略しない。通常のきくと録音後リレー用モデルを同じ規則へ変更。D3入力間も「は」に統一。
 - D1・ExampleのCasualモデル、回答判定での既存の「は」省略許容、Formal／Informalのモデルは維持。§56のD2/D3区切り統一判断待ちは解消。
+
+
+## 58. 練習2.1：図から指示語を選んで発話する課題（2026-10-26）
+- 最新指示によりE1は本の肯定3文・D1は別アイテム2セット各3文、E2はペンの名前を尋ねる会話3組・D2は別アイテム2セット各3会話、E3はどれの質問と指定Object別の3返答・D3はランダムなアイテム6問。Y/N提案は採用しない。
+- 1.2由来の設定・録音／認識／判定・リレーを使い、SVGのA／B／遠方とO1／O2／O3を対応付ける。D3はBが質問、Aが答え、O1これ／O2それ／O3あれ。色は視覚識別だけに使用。
+- 現行の詳細は[PRACTICE2_SPEC.md](PRACTICE2_SPEC.md)。Indexに2.1を追加。全10公開ページ／9練習ページとなる。2.2・2.3は今後の設計対象。

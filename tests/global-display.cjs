@@ -17,7 +17,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
 
  const context=await browser.newContext();
- for(const name of ['index','practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
+ for(const name of ['index','practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
   const p=await open(context,name);
   await p.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
   check(await p.locator('body').evaluate(e=>getComputedStyle(e).fontSize),'20.8px',name+' 130% body');
@@ -33,7 +33,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     check(await p.locator('.example-box table tr > td:last-child .vocab-inline,.example-box table tr > td:last-child .tooltip-tip').count(),0,name+' Example model text has no vocabulary hints');
     const bad=await p.evaluate(()=>[...document.querySelectorAll('.example-box,.drill-row,.settings-row,.pitch-card,.prompt-item')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));
     check(bad,[],`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
-    check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height<1000)),true,name+' Example readable wrapping height');
+    check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>(e.querySelector('svg')?e.querySelector('table').getBoundingClientRect().height/Math.max(1,e.querySelectorAll('tr').length)<220:e.getBoundingClientRect().height<1000))),true,name+' Example readable wrapping height');
     check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>{
      const heading=e.querySelector('.example-category-heading');
      if(heading&&e.querySelectorAll('.tense-badge,.p71-tense,.p73-tense').length!==1)return false;

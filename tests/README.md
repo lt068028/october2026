@@ -98,3 +98,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - listen-helpは1.1 D2の「は」、D2／D3両条件の充足と入力消去時の理由復帰、1.2 D1のモデル未再生での録音有効化、とるへの選択理由、通常操作説明撤去も検証。
 
 - `node tests/practice11-topic.cjs`：1.1 D2／D3の「は」表示と実ボタンからのTTS入力、全3文体・肯定否定モデル、D1 Casualと省略許容の維持を確認。実音声の品質は検証しない。
+
+- `node tests/practice21.cjs`：2.1の確定した出題数、A/Bの視点・O1～3、色を含めないモデル、D3抽選の保持、全3文体・2表記のTTS入力、D2/D3録音・判定を検証。global-display／audio-relay／tooltip-layoutにも2.1を追加。図入りExampleは図の高さと文の折り返しを区別し、表の1行平均高さで縦長の異常を検出する。
