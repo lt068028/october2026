@@ -35,7 +35,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
  const p=await open(context,'practice7.2');
  check(await p.locator('.practice72-instruction-line').count(),2,'7.2 instruction has two sentence blocks');
- check(await p.locator('.practice72-instruction-line').allTextContents(),['💡Compare a past action with the state that continues now.','Use から after a time expression to show when that state began.'],'7.2 instruction text preserved');
+ check(await p.locator('.practice72-instruction-line').allTextContents(),['💡Make both sentences from the cues.','Present State: start time + から.'],'7.2 instruction text preserved');
  await p.locator('#hintModeControl [data-value="paren"]').click();
  for(const script of ['hiragana','kanji']) {
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();

@@ -1620,7 +1620,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         panel.append(
             node("span", "info-panel-title", title),
-            node("span", "info-panel-desc", instruction)
+            node("span", "info-panel-desc instruction-steps", instruction)
         );
 
         return {container, panel};
@@ -1632,7 +1632,7 @@ function practice2ShowNotice(resultSpan, message) {
         const first = section(
             "drill1Container",
             "Drill 1: Yes/No Questions",
-            "💡Form a question from the prompts and practice both affirmative and negative responses."
+            "💡Ask a Yes/No question.\nPractise both 🙆 and 🙅 answers."
         );
 
         const father = formatWord(
@@ -1788,7 +1788,7 @@ function practice2ShowNotice(resultSpan, message) {
         const second = section(
             "drill2Container",
             "Drill 2: Wh- Questions",
-            "💡Ask about majors. Select a major from the dropdown menu and reply using the possessive form."
+            "💡Ask about a major.\nSelect a major; use person + の + せんこう."
         );
 
         example(second.container, [

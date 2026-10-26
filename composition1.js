@@ -487,7 +487,7 @@ function renderDrill1Section() {
     infoPanel.style.marginTop = "25px";
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 1</span>
-        <span class="info-panel-desc">💡 Form and speak a Japanese sentence using appropriate i-adjectives based on the given context.</span>
+        <span class="info-panel-desc">💡Say a Japanese sentence with an い-adjective for each situation.</span>
     `;
 
     container.appendChild(infoPanel);
@@ -520,7 +520,7 @@ function renderDrill2Section() {
     infoPanel.style.marginTop = "30px";
     infoPanel.innerHTML = `
         <span class="info-panel-title">Drill 2: Self-Check Your Sounds</span>
-        <span class="info-panel-desc">💡 Use this space to record and review how your spoken Japanese sounds.</span>
+        <span class="info-panel-desc">💡Record, listen, and check your pronunciation.</span>
     `;
 
     container.appendChild(infoPanel);

@@ -106,8 +106,7 @@ const sections = [
     {
         title: "Drill 1: Compare Past & Past Continuous",
         instruction:
-            "💡 Compare a completed past action with an action " +
-            "in progress at a past time.",
+            "💡Compare a completed action with an ongoing action at a past time.",
 
         example: pair(
             row(
@@ -189,8 +188,7 @@ const sections = [
     {
         title: "Drill 2: What were you doing?",
         instruction:
-            "💡 Ask what someone was doing at the given time, " +
-            "then answer using the cues.",
+            "💡Use the cues to ask and answer.",
 
         example: pair(
             row(
@@ -416,7 +414,7 @@ sections[2].title =
     'Drill 3: Until when did that state continue?';
 
 sections[2].instruction =
-    '💡 Until when did that state continue?';
+    '💡Ask and answer with まで.';
 
 sections[2].items[0] = pair(
     row(
@@ -1413,8 +1411,7 @@ function render() {
         '<span class="info-panel-title drill-cue-title">' +
         'Drill 4: Practice with English cues</span>' +
         '<span class="info-panel-desc drill-cue-description">' +
-        '💡 Practise all questions and responses in Drills 1–3 ' +
-        'using English cues.</span>';
+        '💡Use English cues for Drills 1–3.</span>';
 
     const toggle = button(
         englishCues
@@ -2395,8 +2392,8 @@ render = function () {
     panel.innerHTML =
         '<span class="info-panel-title">' +
         'Drill 2: Yes / No — Past Ongoing</span>' +
-        '<span class="info-panel-desc">' +
-        '💡Ask the question. Choose Yes or No, then answer.</span>';
+        '<span class="info-panel-desc instruction-steps">' +
+        '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.</span>';
 
     section.append(panel);
 
@@ -2554,8 +2551,7 @@ render = function () {
         'Drill 5: Practice with English cues';
 
     copy.querySelector('.info-panel-desc').textContent =
-        '💡Practise all questions and responses in Drills 1–4 ' +
-        'using English cues.';
+        '💡Use English cues for Drills 1–4.';
 
     sync();
 };

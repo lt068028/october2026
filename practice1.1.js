@@ -1478,7 +1478,7 @@ function section(
             style="margin-top:${margin}px;"
         >
             <span class="info-panel-title">${title}</span>
-            <span class="info-panel-desc">${instruction}</span>
+            <span class="info-panel-desc instruction-steps">${instruction}</span>
         </div>
     `;
 
@@ -1496,7 +1496,7 @@ function renderTask1() {
     const list = section(
         "task1Container",
         "Drill 1: Basic Sentences",
-        "💡 Practice forming 🟢 affirmative and 🔴 negative statements.",
+        "💡Make 🟢 affirmative and 🔴 negative sentences.",
         "info-panel-task1",
         25
     );
@@ -1609,7 +1609,7 @@ function renderTask2() {
     const list = section(
         "task2Container",
         "Drill 2: Selectable Practice",
-        "💡 Choose words and form sentences.",
+        "💡Choose X and Y, then make a sentence.",
         "info-panel-task2",
         30
     );
@@ -1719,7 +1719,7 @@ function renderTask3() {
     const list = section(
         "task3Container",
         "Drill 3: Free Practice",
-        "💡 Enter X and Y, then make an affirmative sentence for 🟢 or a negative sentence for 🔴.",
+        "💡Enter X and Y.\nMake a 🟢 affirmative or 🔴 negative sentence.",
         "info-panel-task3",
         30
     );

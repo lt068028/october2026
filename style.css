@@ -2342,3 +2342,7 @@ body.site-scale {
     box-sizing: border-box;
 }
 .practice72-instruction-line { display: block; }
+
+/* Separate tasks/rules deliberately; ordinary explanations still wrap naturally. */
+.instruction-steps { white-space: pre-line; }
+.instruction-line { display: block; }

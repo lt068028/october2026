@@ -613,9 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ),
             node(
                 'span',
-                'info-panel-desc',
-                '💡Ask about a present state. ' +
-                'Choose 🙆 or 🙅, then record your answer.'
+                'info-panel-desc instruction-steps',
+                '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.'
             )
         );
 
@@ -1308,9 +1307,8 @@ function renderAll() {
 
     if (instruction) {
         instruction.innerHTML =
-            '<span class="practice72-instruction-line">💡Compare a past action with the state that continues now.</span> ' +
-            '<span class="practice72-instruction-line">Use <strong class="grammar-highlight">から</strong> ' +
-            'after a time expression to show when that state began.</span>';
+            '<span class="practice72-instruction-line">💡Make both sentences from the cues.</span> ' +
+            '<span class="practice72-instruction-line">Present State: start time + <strong class="grammar-highlight">から</strong>.</span>';
     }
 }
 
@@ -2844,7 +2842,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const description = document.createElement("span");
         description.className = "info-panel-desc drill-cue-description";
         description.textContent =
-            "💡 Practise making sentences with this lesson’s vocabulary, using English cues.";
+            "💡Make the same sentences from English cues.";
 
         const button = document.createElement("button");
         button.id = "practice7EnglishCueButton";

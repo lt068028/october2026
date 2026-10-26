@@ -639,9 +639,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ),
             node(
                 'span',
-                'info-panel-desc',
-                '💡Ask what someone is doing now. ' +
-                'Choose 🙆 or 🙅, then record your answer.'
+                'info-panel-desc instruction-steps',
+                '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.'
             )
         );
 
@@ -2686,8 +2685,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             'Drill 1: Compare Habit &amp; Ongoing' +
             '</span>' +
             '<span class="info-panel-desc">' +
-            '💡Compare what you usually do with what you are doing now: ' +
-            'いつも ↔️ いま.' +
+            '💡Use all cues; start with いつも or いま.' +
             '</span>';
 
         const list = document.createElement('div');
@@ -3526,10 +3524,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         if (desc) {
             desc.textContent = stage === 1
-                ? '💡 Use all the cues. Begin with いつも or いま.'
+                ? '💡Use all cues; start with いつも or いま.'
                 : stage === 2
-                    ? '💡 Use all the cues. Add で for a place and と for a companion. Keep 先生に with 聞く. 急ぐ has no extra cues.'
-                    : '💡 Use all the English cues to make Japanese sentences. Begin with いつも or いま.';
+                    ? '💡Use all cues.\nPlace: で · With someone: と.\nKeep 先生に with 聞く. No extra cues for 急ぐ.'
+                    : '💡Use all English cues; start with いつも or いま.';
+            desc.classList.toggle('instruction-steps', stage === 2);
         }
 
         container.querySelectorAll(
@@ -3542,7 +3541,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             makePanel(
                 2,
                 titles[2],
-                '💡 Add Japanese cues for a place or a companion to the same exercises.',
+                '💡Add place and person cues.',
                 stage === 2
                     ? 'Display basic cues'
                     : 'Display expanded cues',
@@ -3552,7 +3551,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             makePanel(
                 3,
                 titles[3],
-                '💡 Practise the expanded sentences using English cues.',
+                '💡Use English cues for the same sentences.',
                 stage === 3
                     ? 'Display Japanese cues'
                     : 'Display English cues',
