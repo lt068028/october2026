@@ -2405,3 +2405,35 @@ body.site-scale {
 .practice21-page .p21-cue > span { display: inline-block; }
 .practice21-page .p21-cue .display-cue-unit { display: block; }
 .practice21-page .p21-example-diagram + table { margin-top: 12px; }
+
+/* Practice 2.1 Ex1 review: compact top view, object audio, and six model lines. */
+.p21-distance-heading { margin: 8px 0 14px; font-size: 1.1em; }
+.p21-distance-people { display: flex; justify-content: space-between; padding-inline: 18px; }
+.p21-distance-person { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-secondary); }
+.p21-distance-person svg { width: 44px; height: 44px; fill: currentColor; }
+.p21-distance-person.is-speaker { color: var(--text-primary); }
+.p21-distance-areas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.p21-distance-area { display: flex; flex-direction: column; align-items: center; padding: 10px 6px; border: 2px solid var(--border-color); border-radius: 14px; background: var(--bg-row); min-width: 0; }
+.p21-distance-area:not([data-zone="far"]) { margin-top: 28px; }
+.p21-area-caption { display: flex; align-items: center; gap: 8px; min-height: 48px; }
+.p21-area-sound { font-size: 1.6em; }
+.p21-area-description { font-size: 0.8em; }
+.p21-distance-area[data-sound="こ"] { border-color: #3b82f6; background: color-mix(in srgb, var(--bg-row) 90%, #3b82f6); }
+.p21-distance-area[data-sound="そ"] { border-color: #16a34a; background: color-mix(in srgb, var(--bg-row) 90%, #16a34a); }
+.p21-distance-area[data-sound="あ"] { border-color: #a855f7; background: color-mix(in srgb, var(--bg-row) 90%, #a855f7); }
+.p21-distance-area.is-target { outline: 2px solid var(--text-primary); outline-offset: 2px; }
+.p21-item-icon { width: 80px; height: 64px; }
+.p21-object-number { font-size: 0.8em; }
+.p21-item-audio { display: flex; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.p21-model-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 20px; }
+.p21-model-group { min-width: 0; }
+.p21-model-group h3 { font-size: 1em; margin: 0 0 6px; }
+.p21-model-line { margin: 4px 0; padding: 4px; border-left: 3px solid transparent; }
+.p21-model-line.is-current-model { border-left-color: var(--accent-color); background: var(--bg-panel); }
+@media (max-width: 900px) {
+    .p21-model-list { grid-template-columns: 1fr; }
+    .p21-distance-areas { gap: 6px; }
+    .p21-distance-people { padding-inline: 0; }
+    .p21-area-caption { flex-direction: column; gap: 0; text-align: center; }
+    .p21-person-caption { font-size: 0.85em; }
+}

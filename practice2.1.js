@@ -1169,48 +1169,67 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=diagram(box,objects,speaker,target);box.prepend(picture);
     }
     function renderSections() {
-        practice2State.ui??={};
-        const book=Practice21.items[0],pen=Practice21.items[1];
-        const first=section('drill1Container','Drill 1: これ・それ・あれ','💡Speak as A. Make a statement about Objects 1–3 in each set.');
-        const exampleBooks=Practice21.variants(book);
-        example(first.container,exampleBooks.map(o=>['A:',`[Object] ${o.id}`,()=>statement(pro('A',o),noun(o))]));
-        exampleDiagram(first.container,exampleBooks,[['A',1],['A',2],['A',3]]);
-        first.container.append(first.panel);
-        [Practice21.items[2],Practice21.items[4]].forEach((item,i)=>{
-            const objects=Practice21.variants(item),current=card(first.container,`${i+1}.`);
-            cardDiagram(current,objects,'A',1);
-            objects.forEach((o,k)=>tag(recordingRow(current,k?'a':'q',prompt('A',o),`p21_d1_${i}_${o.id}`,()=>statement(pro('A',o),noun(o))),'A',o));
-        });
-        const second=section('drill2Container','Drill 2: Questions and Responses','💡A asks about Objects 1–3. Answer as B. Complete both sets.');
-        const examplePens=Practice21.variants(pen),lines=[];
-        examplePens.forEach(o=>{
-            lines.push(['Question:',prompt('A',o),()=>nameQuestion('A',o)]);
-            lines.push(['Response:',prompt('B',o),()=>statement(pro('B',o),noun(o))]);
-        });
-        example(second.container,lines,{responseCue:true});
-        exampleDiagram(second.container,examplePens,examplePens.flatMap(o=>[['A',o.id],['B',o.id]]));
-        second.container.append(second.panel);
-        [Practice21.items[5],Practice21.items[3]].forEach((item,i)=>{
-            const objects=Practice21.variants(item),current=card(second.container,`${i+1}.`);
-            cardDiagram(current,objects,'A',1);
-            objects.forEach((o,k)=>{
-                tag(recordingRow(current,k?'a':'q',prompt('A',o),`p21_d2_${i}_${o.id}_q`,()=>nameQuestion('A',o)),'A',o);
-                tag(recordingRow(current,'a',prompt('B',o),`p21_d2_${i}_${o.id}_a`,()=>statement(pro('B',o),noun(o))),'B',o);
+        for(const id of ['drill2Container','drill3Container']) {
+            const section=document.getElementById(id);section.replaceChildren();section.hidden=true;
+        }
+        const container=document.getElementById('drill1Container');container.replaceChildren();
+        const objects=[{...Practice21.items[0],id:1,zone:'A'},{...Practice21.items[2],id:2,zone:'B'},{...Practice21.items[5],id:3,zone:'far'}];
+        const box=node('section','example-box p21-distance-example');
+        box.append(node('h2','p21-distance-heading','こ・そ・あ: three sounds that signal distance'));
+        const board=node('div','p21-distance-board');
+        const people=node('div','p21-distance-people');
+        for(const person of ['A','B']) {
+            const figure=node('div','p21-distance-person');figure.dataset.person=person;
+            figure.append(node('strong','p21-person-caption'));
+            figure.insertAdjacentHTML('beforeend','<svg viewBox="0 0 50 52" aria-hidden="true"><circle cx="25" cy="11" r="9"/><path d="M7 51V37Q7 23 25 23Q43 23 43 37V51Z"/></svg>');people.append(figure);
+        }
+        board.append(people);
+        const areas=node('div','p21-distance-areas');
+        const modelList=node('div','p21-model-list');
+        function perspective(speaker,target) {
+            people.querySelectorAll('[data-person]').forEach(person=>{
+                const active=person.dataset.person===speaker;
+                person.classList.toggle('is-speaker',active);
+                person.querySelector('strong').textContent=`${person.dataset.person}：${active?'Speaker':'Listener'}`;
             });
-        });
-        const third=section('drill3Container','Drill 3: どれ','💡Answer B as A. The specified Object is yours.');
-        example(third.container,[
-            ['Question:','[Speaker] B → A',()=>whichQuestion(book)],
-            ...exampleBooks.map(o=>['Response:',prompt('A',o),()=>shortAnswer('A',o)])
-        ],{responseCue:true});
-        exampleDiagram(third.container,exampleBooks,[['B',1],['A',1],['A',2],['A',3]]);
-        third.container.append(third.panel);
-        Practice21.tasks3.forEach(({item,target},i)=>{
-            const objects=Practice21.variants(item),o=objects[target-1],current=card(third.container,`${i+1}.`);
-            cardDiagram(current,objects,'B',target);
-            tag(recordingRow(current,'q',`[Speaker] B → A／${formatWord(item.hira,item.kanji,item.romaji,item.meaning)}`,`p21_d3_${i}_q`,()=>whichQuestion(item)),'B',o);
-            tag(recordingRow(current,'a',prompt('A',o),`p21_d3_${i}_a`,()=>shortAnswer('A',o)),'A',o);
-        });
+            areas.querySelectorAll('[data-zone]').forEach(area=>{
+                const sound=area.dataset.zone==='far'?'あ':area.dataset.zone===speaker?'こ':'そ';
+                const description=sound==='こ'?'Near the speaker':sound==='そ'?'Near the listener':'Far from both';
+                area.querySelector('.p21-area-sound').textContent=sound;
+                area.querySelector('.p21-area-description').textContent=description;
+                area.dataset.sound=sound;
+                area.classList.toggle('is-target',area.dataset.object===String(target));
+            });
+            modelList.querySelectorAll('[data-model-speaker]').forEach(row=>{
+                const active=row.dataset.modelSpeaker===speaker&&row.dataset.object===String(target);
+                row.classList.toggle('is-current-model',active);
+                if(active)row.setAttribute('aria-current','true');else row.removeAttribute('aria-current');
+            });
+        }
+        for(const o of [objects[0],objects[2],objects[1]]) {
+            const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;
+            const caption=node('div','p21-area-caption');caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));
+            area.append(caption);
+            area.insertAdjacentHTML('beforeend',`<svg class="p21-item-icon" viewBox="-45 -40 90 80" role="img" aria-label="Object ${o.id}: ${o.meaning}">${Practice21.icon(o)}</svg>`);
+            area.append(node('span','p21-object-number',`Object ${o.id}`));
+            const controls=node('div','p21-item-audio');
+            for(const speaker of ['A','B']) {
+                const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`);
+                sound.dataset.speaker=speaker;sound.dataset.object=o.id;
+                sound.addEventListener('focus',()=>perspective(speaker,o.id));controls.append(sound);
+            }
+            area.append(controls);areas.append(area);
+        }
+        board.append(areas);box.append(board);
+        for(const o of objects) {
+            const group=node('section','p21-model-group');const heading=node('h3');heading.innerHTML=formatWord(o.hira,o.kanji,o.romaji,o.meaning);group.append(heading);
+            for(const speaker of ['A','B']) {
+                const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.object=o.id;
+                row.append(node('strong','',`${speaker}：`),modelText(()=>statement(pro(speaker,o),noun(o))));group.append(row);
+            }
+            modelList.append(group);
+        }
+        box.append(modelList);container.append(box);perspective('A',1);
     }
 
     function installSettings() {

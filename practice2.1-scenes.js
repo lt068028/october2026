@@ -60,5 +60,5 @@ const Practice21 = (() => {
         title.textContent=title.textContent.replace(/ Speaker [AB]\./,` Speaker ${row.dataset.speaker}.`).replace(/ Target Object \d+\./,` Target Object ${row.dataset.object}.`);
         root.querySelector('.p21-scene-context').textContent=`Speaker ${row.dataset.speaker} → Object ${row.dataset.object}`;
     }
-    return {items,variants,tasks3,scene,pronoun,refreshTargets};
+    return {items,variants,tasks3,scene,pronoun,refreshTargets,icon};
 })();

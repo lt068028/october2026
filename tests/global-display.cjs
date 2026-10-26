@@ -33,7 +33,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     check(await p.locator('.example-box table tr > td:last-child .vocab-inline,.example-box table tr > td:last-child .tooltip-tip').count(),0,name+' Example model text has no vocabulary hints');
     const bad=await p.evaluate(()=>[...document.querySelectorAll('.example-box,.drill-row,.settings-row,.pitch-card,.prompt-item')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));
     check(bad,[],`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
-    check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>(e.querySelector('svg')?e.querySelector('table').getBoundingClientRect().height/Math.max(1,e.querySelectorAll('tr').length)<220:e.getBoundingClientRect().height<1000))),true,name+' Example readable wrapping height');
+    check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>(e.querySelector('.p21-model-list')?[...e.querySelectorAll('.p21-model-line')].every(r=>r.getBoundingClientRect().height<150):e.getBoundingClientRect().height<1000))),true,name+' Example readable wrapping height');
     check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>{
      const heading=e.querySelector('.example-category-heading');
      if(heading&&e.querySelectorAll('.tense-badge,.p71-tense,.p73-tense').length!==1)return false;
