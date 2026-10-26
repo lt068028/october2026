@@ -1998,7 +1998,14 @@ label:has(> input:disabled) .slider {
 /* Public pages: shared 130% baseline. */
 body.site-scale {
     --practice12-scale: 1.3;
-    max-width: 1280px;
+    --standard-page-width: 1280px;
+    --page-inline-padding: 16px;
+    --card-inline-padding: 16px;
+    /* Keep the baseline cue allocation while the result side expands. */
+    --standard-card-width: calc(var(--standard-page-width) - 2 * var(--page-inline-padding) - 2 * var(--card-inline-padding) - 2px);
+    --drill-cue-limit: calc(var(--standard-card-width) / 2);
+    --example-cue-limit: calc(var(--standard-card-width) * .55);
+    max-width: clamp(var(--standard-page-width), calc(50vw + 560px), 1600px);
     width: calc(100% - 64px);
     box-sizing: border-box;
     margin: 24px auto;
@@ -2122,7 +2129,7 @@ body.site-scale {
 .practice12-page .recording-table > colgroup { display: none; }
 .practice12-page .recording-table > tbody > tr {
     display: grid;
-    grid-template-columns: 34px minmax(0, min(var(--practice12-cue-width, 50%), 50%)) minmax(0, 1fr);
+    grid-template-columns: 34px minmax(0, min(var(--practice12-cue-width, 50%), 50%, var(--drill-cue-limit))) minmax(0, 1fr);
     align-items: center;
     gap: 6px 4px;
 }
@@ -2151,7 +2158,7 @@ body.site-scale {
 .practice12-page :is(.example-box, .drill-row) { container-type: inline-size; }
 .practice12-page .drill-example-table {
     display: grid;
-    grid-template-columns: max-content var(--practice12-example-cue-track, minmax(0, 1fr)) var(--practice12-example-model-track, minmax(20em, 1.2fr));
+    grid-template-columns: max-content var(--practice12-example-cue-track, fit-content(min(55%, var(--example-cue-limit)))) var(--practice12-example-model-track, minmax(0, 1fr));
     column-gap: 8px;
 }
 .practice12-page .drill-example-table > tbody { display: contents; }
@@ -2186,7 +2193,7 @@ body.site-scale {
 .practice73-page .recording-table colgroup { display: none; }
 .practice73-page .recording-table > tbody {
     display: grid;
-    grid-template-columns: 34px minmax(0, min(var(--practice73-cue-width, 50%), 50%)) minmax(0, 1fr);
+    grid-template-columns: 34px minmax(0, min(var(--practice73-cue-width, 50%), 50%, var(--drill-cue-limit))) minmax(0, 1fr);
     align-items: center;
     gap: 6px 4px;
 }
@@ -2208,7 +2215,7 @@ body.site-scale {
 .practice7-page .example-box :is(.drill-example-table, .p73-example-table) {
     display: grid;
     width: 100%;
-    grid-template-columns: max-content fit-content(55%) max-content max-content minmax(0, 1fr);
+    grid-template-columns: max-content fit-content(min(55%, var(--example-cue-limit))) max-content max-content minmax(0, 1fr);
     gap: 6px 4px;
     align-items: baseline;
 }
@@ -2249,7 +2256,7 @@ body.site-scale {
 /* Measured cue tracks on public practice pages; never distribute unused space to cues. */
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table {
     display: grid;
-    grid-template-columns: 34px minmax(0, min(var(--drill-cue-width, 50%), 50%)) minmax(0, 1fr);
+    grid-template-columns: 34px minmax(0, min(var(--drill-cue-width, 50%), 50%, var(--drill-cue-limit))) minmax(0, 1fr);
     align-items: center;
     gap: 6px 4px;
 }
@@ -2299,7 +2306,7 @@ body.site-scale {
 }
 
 .practice12-page #drill2Container .drill-example-table {
-    --practice12-example-cue-track: fit-content(55%);
+    --practice12-example-cue-track: fit-content(min(55%, var(--example-cue-limit)));
     --practice12-example-model-track: minmax(0, 1fr);
 }
 
@@ -2309,3 +2316,5 @@ body.site-scale {
     .practice7-page .example-box .example-response-row > td:nth-child(2),
     .practice7-page .example-box .example-response-row > td:first-child:empty { display: none; }
 }
+/* Explanations remain readable even when practice/result areas are wider. */
+.site-scale .info-panel-desc { max-inline-size: 75ch; }
