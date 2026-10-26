@@ -881,7 +881,8 @@ function makeRow(
                 modelSentence(
                     words.kanjiX || words.x,
                     words.kanjiY || words.y,
-                    negative
+                    negative,
+                    /^task[23]_/.test(rowKey)
                 ),
                 listen
             );
@@ -1857,7 +1858,8 @@ async function startRecording(initialView) {
     const model = modelSentence(
         words.kanjiX || words.x,
         words.kanjiY || words.y,
-        initialView.negative
+        initialView.negative,
+        /^task[23]_/.test(rowKey)
     );
 
     const manual = isManualStop;
@@ -2399,8 +2401,8 @@ window.addEventListener("pagehide", () => {
     const endingOf = text =>
         allNegative.find(end => text.endsWith(end));
 
-    modelSentence = function (x, y, negative) {
-        const topic = speechStyle === 'casual' ? '、' : 'は、';
+    modelSentence = function (x, y, negative, retainTopic = false) {
+        const topic = speechStyle === 'casual' && !retainTopic ? '、' : 'は、';
 
         const end = negative
             ? speechStyle === 'formal'
@@ -2886,16 +2888,6 @@ window.addEventListener("pagehide", () => {
         });
 
         example.replaceChildren(table);
-
-        if (speechStyle === 'casual') {
-            document.querySelectorAll(
-                '#task3Container .prompt-content > span'
-            ).forEach(span => {
-                if (span.textContent === 'は') {
-                    span.textContent = '／';
-                }
-            });
-        }
     }
 
     function alignCueColumns() {
