@@ -2327,9 +2327,20 @@ body.site-scale {
     padding-inline: 0;
 }
 
-/* Practice 7.2 trial: share only the category slot; keep each colored badge natural. */
+/* Practice 7.2 trial: equal colored badge widths and evenly spaced characters. */
 .site-scale #drill1List .practice72-category-slot {
     display: inline-flex;
     align-items: baseline;
     inline-size: var(--practice72-category-width);
 }
+
+.site-scale .practice72-category-slot > .tense-badge {
+    display: inline-flex;
+    align-items: baseline;
+    inline-size: var(--practice72-category-box-width);
+    box-sizing: border-box;
+}
+.practice72-category-icon { flex-shrink: 0; }
+.practice72-category-letters { display: inline-flex; flex: 1; min-width: 0; justify-content: space-between; }
+.practice72-category-letters > span { flex-shrink: 0; white-space: pre; }
+.practice72-instruction-line { display: block; }

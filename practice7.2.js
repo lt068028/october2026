@@ -1308,9 +1308,9 @@ function renderAll() {
 
     if (instruction) {
         instruction.innerHTML =
-            '💡Compare a past action with the state that continues now. ' +
-            'Use <strong class="grammar-highlight">から</strong> ' +
-            'after a time expression to show when that state began.';
+            '<span class="practice72-instruction-line">💡Compare a past action with the state that continues now.</span>' +
+            '<span class="practice72-instruction-line">Use <strong class="grammar-highlight">から</strong> ' +
+            'after a time expression to show when that state began.</span>';
     }
 }
 
@@ -3458,12 +3458,28 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         if (!list) return;
         const badges = [...list.querySelectorAll('.recording-actions > .tense-badge')];
         if (!badges.length) return;
+        badges.forEach(badge => {
+            const [icon, ...letters] = Array.from(badge.textContent);
+            const mark = document.createElement('span');
+            mark.className = 'practice72-category-icon';
+            mark.textContent = icon;
+            const label = document.createElement('span');
+            label.className = 'practice72-category-letters';
+            letters.forEach(letter => {
+                const character = document.createElement('span');
+                character.textContent = letter;
+                label.append(character);
+            });
+            badge.replaceChildren(mark, label);
+        });
+        const boxWidth = Math.max(...badges.map(badge => badge.getBoundingClientRect().width));
         const width = Math.max(...badges.map(badge => {
             const style = getComputedStyle(badge);
             return badge.getBoundingClientRect().width
                 + (parseFloat(style.marginLeft) || 0)
                 + (parseFloat(style.marginRight) || 0);
         }));
+        list.style.setProperty('--practice72-category-box-width', `${Math.ceil(boxWidth)}px`);
         list.style.setProperty('--practice72-category-width', `${Math.ceil(width)}px`);
         badges.forEach(badge => {
             const slot = document.createElement('span');

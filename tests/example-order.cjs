@@ -36,8 +36,13 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
       const slots=[...e.querySelectorAll('.practice72-category-slot')];
       const widths=slots.map(s=>s.getBoundingClientRect().width);
       const past=e.querySelector('.tense-badge--past'),state=e.querySelector('.tense-badge--present-state');
-      return slots.length>0&&Math.max(...widths)-Math.min(...widths)<1&&past.getBoundingClientRect().width<state.getBoundingClientRect().width;
-     }),true,'7.2 shared slot retains natural colored badge widths');
+      return slots.length>0&&Math.max(...widths)-Math.min(...widths)<1&&Math.abs(past.getBoundingClientRect().width-state.getBoundingClientRect().width)<1;
+     }),true,'7.2 trial shares colored badge widths');
+     check(await p.locator('#drill1List .tense-badge--past .practice72-category-letters').first().evaluate(e=>{
+      const r=[...e.children].map(c=>c.getBoundingClientRect());
+      const gaps=r.slice(1).map((x,i)=>x.left-r[i].right);
+      return e.textContent==='Past'&&gaps.length===3&&Math.max(...gaps)-Math.min(...gaps)<1;
+     }),true,'7.2 Past letters are evenly distributed');
     } else check(await p.locator('.practice72-category-slot').count(),0,'badge trial does not spread to '+name);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box:has(.example-response-row)').evaluateAll(es=>es.every(e=>{
