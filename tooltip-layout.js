@@ -1,6 +1,6 @@
 // Keep existing vocabulary and control explanations within the viewport.
 (() => {
-    const selector = '.tooltip-wrap, .custom-tip-wrap';
+    const selector = '.tooltip-wrap, .custom-tip-wrap, .p21-image-hint';
     // Explain missing prerequisites, rather than repeating the Listen button label.
     function applyListenPolicy() {
         observer.disconnect();
@@ -39,8 +39,8 @@
     }
     const observer = new MutationObserver(applyListenPolicy);
     applyListenPolicy();
-    function position(anchor) {
-        const tip = anchor.querySelector('.tooltip-tip, .custom-tip-box');
+    function position(anchor, explicitTip) {
+        const tip = explicitTip || anchor.querySelector('.tooltip-tip, .custom-tip-box') || document.getElementById(anchor.dataset.portalTip || '');
         if (!tip) return;
         tip.dataset.viewportTip = '';
         const rect = anchor.getBoundingClientRect();
@@ -54,6 +54,7 @@
         tip.style.setProperty('--tip-left', `${left}px`);
         tip.style.setProperty('--tip-top', `${top}px`);
     }
+    window.DrillTooltips = { position };
     for (const event of ['pointerover', 'focusin']) {
         document.addEventListener(event, e => {
             const anchor = e.target.closest?.(selector);

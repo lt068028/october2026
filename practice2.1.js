@@ -751,14 +751,15 @@ function practice2ShowNotice(resultSpan, message) {
     ) {
         const modelText = getModel();
 
+        const acceptedTexts=[...new Set([expectedText,modelText,...(practice2State.replyReferences?.[key]?.()||[])])];
         const saved = {
+            acceptedTexts,
             rawTranscript: String(rawTranscript ?? "").trim(),
             expectedText,
             modelText,
             speechStyle,
             isCorrect:
-                matches(rawTranscript, expectedText, speechStyle)
-                || matches(rawTranscript, modelText, speechStyle)
+                acceptedTexts.some(text=>matches(rawTranscript,text,speechStyle))
         };
 
         practice2State.savedResults[key] = saved;
@@ -800,7 +801,8 @@ function practice2ShowNotice(resultSpan, message) {
         } else {
             const candidates = [
                 saved.expectedText,
-                saved.modelText
+                saved.modelText,
+                ...(saved.acceptedTexts||[])
             ]
                 .filter(Boolean)
                 .flatMap(text =>
@@ -903,7 +905,29 @@ function practice2ShowNotice(resultSpan, message) {
         return element;
     }
 
-    function modelText(getText) {
+    let imageHintSerial=0;
+    function imageHint(anchor,o) {
+        if(hintMode==='off')return;
+        anchor.classList.add('p21-image-hint');anchor.tabIndex=0;
+        anchor.setAttribute('aria-label',`${noun(o)} (${o.romaji}, ${o.meaning})`);
+        let host=null;
+        function close() {
+            if(anchor.matches(':hover, :focus'))return;
+            host?.remove();host=null;delete anchor.dataset.portalTip;anchor.removeAttribute('aria-describedby');
+        }
+        function show() {
+            if(host)return;
+            host=node('span','tooltip-wrap p21-image-tip-host');
+            const tip=node('span','tooltip-tip',`${noun(o)} (${o.romaji}, ${o.meaning})`);
+            tip.id=`p21-image-tip-${++imageHintSerial}`;tip.setAttribute('role','tooltip');host.append(tip);
+            anchor.dataset.portalTip=tip.id;anchor.setAttribute('aria-describedby',tip.id);
+            document.body.append(host);window.DrillTooltips.position(anchor,tip);
+        }
+        anchor.addEventListener('pointerenter',show);anchor.addEventListener('focus',show);
+        anchor.addEventListener('pointerleave',close);anchor.addEventListener('blur',close);
+    }
+
+    function modelText(getText, object) {
         const span = node("span");
         const text = getText();
 
@@ -927,6 +951,17 @@ function practice2ShowNotice(resultSpan, message) {
             document.createTextNode(text.slice(position))
         );
 
+        if(object&&hintMode==='hover') {
+            const walker=document.createTreeWalker(span,NodeFilter.SHOW_TEXT),texts=[];
+            while(walker.nextNode())texts.push(walker.currentNode);
+            for(const textNode of texts) {
+                const value=noun(object),parts=textNode.textContent.split(value);
+                if(parts.length<2)continue;
+                const fragment=document.createDocumentFragment();
+                parts.forEach((part,i)=>{if(i){const wordNode=node('span');wordNode.innerHTML=formatWord(object.hira,object.kanji,object.romaji,object.meaning);fragment.append(...wordNode.childNodes);}fragment.append(document.createTextNode(part));});
+                textNode.replaceWith(fragment);
+            }
+        }
         return span;
     }
 
@@ -1201,6 +1236,10 @@ function practice2ShowNotice(resultSpan, message) {
             const foreground=node('img',`p21-photo p21-photo-foreground p21-foreground-${item}`);
             foreground.src=photo.src;foreground.alt='';foreground.setAttribute('aria-hidden','true');stage.append(foreground);
         }
+        for(const o of objects) {
+            const hotspot=node('span','p21-example-item-hint');hotspot.dataset.kind=o.kind;
+            imageHint(hotspot,o);stage.append(hotspot);
+        }
         stage.append(context);board.append(stage);
         const areas=node('div','p21-distance-areas');
         const modelList=node('div','p21-model-list');
@@ -1244,7 +1283,7 @@ function practice2ShowNotice(resultSpan, message) {
             const group=node('section','p21-model-group');const heading=node('h3');heading.innerHTML=formatWord(o.hira,o.kanji,o.romaji,o.meaning);group.append(heading);
             for(const speaker of ['A','B']) {
                 const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.object=o.id;
-                row.append(node('strong','',`${speaker}：`),modelText(()=>statement(pro(speaker,o),noun(o))));group.append(row);
+                row.append(node('strong','',`${speaker}：`),modelText(()=>statement(pro(speaker,o),noun(o)),o));group.append(row);
             }
             modelList.append(group);
         }
@@ -1260,7 +1299,7 @@ function practice2ShowNotice(resultSpan, message) {
         const drill=node('section','p21-drill1');
         const panel=node('div','info-panel info-panel-task1');
         panel.append(node('span','info-panel-title','Drill 1: Describe the objects'),
-            node('span','info-panel-desc','💡Complete three sentences as A, then as B.'));
+            node('span','info-panel-desc',setIndex===0?'💡Complete three sentences as A, then as B.':'💡A: Ask. B: Say no and give the correct name.'));
         drill.append(panel);
         const switcher=node('div','p21-set-switcher');
         switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
@@ -1291,14 +1330,14 @@ function practice2ShowNotice(resultSpan, message) {
             } else {
                 const [x,y]=sprites[o.kind];item.style.backgroundPosition=`${x}% ${y}%`;
             }
-            stage.append(item);
+            imageHint(item,o);stage.append(item);
         }
         picture.append(stage);drill.append(picture);
         function showSpeaker(speaker) {
             stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker));
             picture.dataset.speaker=speaker;
         }
-        for(const speaker of ['A','B']) {
+        if(setIndex===0)for(const speaker of ['A','B']) {
             const current=card(drill,`${speaker}：`);
             current.body.closest('.drill-row').classList.add('p21-speaker-practice');
             const ordered=speaker==='A'?objects:[objects[1],objects[0],objects[2]];
@@ -1311,6 +1350,33 @@ function practice2ShowNotice(resultSpan, message) {
                 view.listenBtn.addEventListener('click',()=>showSpeaker(speaker));
                 view.recordBtn.addEventListener('click',()=>showSpeaker(speaker));
                 for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('focus',()=>showSpeaker(speaker));
+            });
+        }
+        if(setIndex===1) {
+            const wrong=[objects[1],objects[2],objects[0]];
+            objects.forEach((o,i)=>{
+                const current=card(drill,String(i+1));
+                current.body.closest('.drill-row').classList.add('p21-dialogue-practice');
+                const questionCue=`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
+                const prefix=speechStyle==='casual'?'ううん':'いいえ';
+                const ending={formal:'です',informal:'だ',casual:'だよ'}[speechStyle];
+                const answerCue=`<strong>B · Response:</strong> ${prefix}、＿は＿${ending}。`;
+                const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])));
+                const key=`p21_d1_s1_r_${i}`;
+                const answer=()=>`${prefix}、${statement(pro('B',o),noun(o))}`;
+                practice2State.replyReferences[key]=()=>{
+                    const topic=pro('B',o)+'は、',yes=noun(o)+ending+'。';
+                    const negatives=[...negativeForms.slice(0,speechStyle==='formal'?4:6),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])];
+                    return [answer(),...negatives.flatMap(negative=>{
+                        const no=noun(wrong[i])+negative+'。';
+                        return [`${prefix}、${topic}${no}${yes}`,`${prefix}、${no}${topic}${yes}`,`${prefix}、${no}${yes}`,`${prefix}、${topic}${no}${topic}${yes}`];
+                    })];
+                };
+                const r=recordingRow(current,'a',answerCue,key,answer);
+                for(const [view,speaker] of [[q,'A'],[r,'B']]) {
+                    view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
+                    for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>showSpeaker(speaker));
+                }
             });
         }
         showSpeaker('A');container.append(drill);
@@ -1529,7 +1595,9 @@ function practice2ShowNotice(resultSpan, message) {
 
         stopAllPlayback();
 
+        document.querySelectorAll(".p21-image-tip-host").forEach(e=>e.remove());
         practice2State.views = {};
+        practice2State.replyReferences = {};
 
         installSettings();
         renderSections();

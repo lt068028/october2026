@@ -2486,4 +2486,13 @@ body.site-scale {
 .p21-drill-item[data-kind="newspaper"] { left: 65%; width: 16%; }
 .p21-drill-item[data-set="1"][data-zone="A"] { left: 20.5%; }
 .p21-drill-item[data-set="1"][data-zone="B"] { left: 67%; }
-.p21-drill-item[data-kind="tshirt"] { left: 41.5%; top: 7%; width: 17%; }
+.p21-drill-item[data-kind="tshirt"] { left: 41.5%; top: 0%; width: 17%; }
+
+.p21-example-item-hint { position: absolute; z-index: 3; pointer-events: none; }
+.p21-example-item-hint.p21-image-hint { pointer-events: auto; cursor: help; }
+.p21-example-item-hint[data-kind="book"] { left: 17%; top: 57%; width: 11%; height: 21%; }
+.p21-example-item-hint[data-kind="bag"] { left: 70%; top: 53%; width: 12%; height: 29%; }
+.p21-example-item-hint[data-kind="clock"] { left: 45.5%; top: 3%; width: 9%; height: 19%; }
+.p21-image-tip-host { display: contents; pointer-events: none; }
+.site-scale .p21-image-tip-host .tooltip-tip { visibility: visible; opacity: 1; font-size: 20px; z-index: 10000; }
+.p21-image-hint:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }

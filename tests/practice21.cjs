@@ -77,13 +77,57 @@ function mock(){
   const nouns=set===0?['ぺん','しんぶん','ぼうし']:['のーと','じしょ','てぃーしゃつ'];
   const rows=p.locator('.p21-drill1 tr');
   for(let i=0;i<6;i++) {
-   const speaker=i<3?'A':'B',j=i%3,object=i<3?j:[1,0,2][j];
+   const speaker=set===0?(i<3?'A':'B'):(i%2?'B':'A'),j=set===0?i%3:Math.floor(i/2),object=set===0?(i<3?j:[1,0,2][j]):j;
    await rows.nth(i).locator('.recording-actions button').first().click();
    const spoken=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
-   check(spoken,['これ','それ','あれ'][j]+'は'+nouns[object]+(style==='formal'?'です':'だ'),'Drill model by set, speaker, style and script');
+   const end=style==='formal'?'です':'だ';
+   const expected=set===0?['これ','それ','あれ'][j]+'は'+nouns[object]+end:speaker==='A'?['これ','それ','あれ'][j]+'は'+nouns[[1,2,0][j]]+(style==='formal'?'ですか':''):(style==='casual'?'ううん':'いいえ')+['それ','これ','あれ'][j]+'は'+nouns[j]+end;
+   check(spoken,expected,'Drill model by set, speaker, style and script');
    check(await p.locator('.p21-drill-picture').getAttribute('data-speaker'),speaker,'Drill speaker updates');
   }
  }
+
+ // Set 2 accepts the requested short correction and explicit denial + correction.
+ for(const style of ['formal','informal','casual']) {
+  await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
+  await p.locator('.p21-set-switcher button').nth(1).click();
+  const results=await p.evaluate(style=>{
+   isAutoPlay=false;
+   const prefix=style==='casual'?'ううん':'いいえ',end=style==='formal'?'です':style==='casual'?'だよ':'だ';
+   return ['ノート','辞書','Tシャツ'].flatMap((correct,i)=>{
+    const pro=['それ','これ','あれ'][i],wrong=['辞書','Tシャツ','ノート'][i],negative=style==='formal'?'じゃないです':style==='casual'?'じゃないよ':'じゃない';
+    const short=`${prefix}、${pro}は${correct}${end}。`;
+    const samples=[
+     [short,true],
+     [`${prefix}、${pro}は${wrong}${negative}。${correct}${end}。`,true],
+     [`${prefix}、${wrong}${negative}。${correct}${end}。`,true],
+     [`${prefix}、${wrong}${negative}。${pro}は${correct}${end}。`,true],
+     [`${prefix}、${['これ','それ','これ'][i]}は${correct}${end}。`,false],
+     [`${prefix}、${pro}は${wrong}${end}。`,false],
+     [`${prefix}、${pro}は${wrong}${negative}。`,false],
+     [`${prefix}、${pro}は${correct}${end}。それはペンです。`,false]
+    ];
+    const key=`p21_d1_s1_r_${i}`,v=practice2State.views[key];
+    return samples.map(([text,want])=>{processResult(text,short,()=>short,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,want,text]});
+   });
+  },style);
+  for(const [actual,want,text] of results)check(actual,want,style+' response: '+text);
+ }
+ await p.locator('#hintModeControl [data-value="hover"]').click();
+ check(await p.locator('.p21-image-hint').count(),6,'all Example and Drill items have hints');
+ check(await p.locator('.p21-model-line .tooltip-wrap').count(),6,'all Example noun occurrences have hints');
+ for(const width of [600,1440]) {
+  await p.setViewportSize({width,height:1100});
+  for(const selector of ['.p21-example-item-hint[data-kind="book"]','.p21-example-item-hint[data-kind="clock"]','.p21-model-line .tooltip-wrap','.p21-drill-item[data-kind="tshirt"]']) {
+   const anchor=p.locator(selector).first();await anchor.hover();
+   const tip=selector.includes('model-line')?anchor.locator('.tooltip-tip'):p.locator('.p21-image-tip-host .tooltip-tip').last();
+   check(await tip.isVisible(),true,'visible vocabulary hint '+selector);
+   const box=await tip.boundingBox();check(box.x>=10&&box.y>=10&&box.x+box.width<=width-10,true,'hint within viewport');
+   check(await tip.evaluate(e=>getComputedStyle(e).fontSize),'20px','vocabulary font 20px');
+  }
+ }
+ await p.locator('#hintModeControl [data-value="off"]').click();
+ check(await p.locator('.p21-image-hint,.p21-image-tip-host,.p21-model-line .tooltip-wrap').count(),0,'OFF removes image and model hints');
  await p.locator('#speechStyleControl [data-value="formal"]').click();
  await p.locator('.p21-set-switcher button').first().click();
  await p.evaluate(()=>{const mode=document.getElementById('toggleRecordMode');if(mode.checked)mode.click();t.speaking=true;});
