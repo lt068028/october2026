@@ -43,7 +43,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
   check(await p.locator('.example-box table tr > td:last-child .vocab-inline,.example-box table tr > td:last-child .tooltip-tip').count(),0,'no duplicated model hints');
  }
  await p.locator('#practice7EnglishCueButton').click();
- check(await p.locator('#drill1List .practice72-category-slot').count()>0,true,'category alignment survives English cue change');
+ check(await p.locator('#drill1List .practice7-category').count()>0,true,'category alignment survives English cue change');
  check(p.errors,[],'7.2 no runtime errors after cue changes');
  await browser.close();console.log('PASS layout rules',checks);
 })().catch(e=>{console.error(e);process.exit(1)});

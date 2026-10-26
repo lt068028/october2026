@@ -27,25 +27,26 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
      document.querySelector(`#scriptModeControl [data-value="${script}"]`).click();
     },[style,hint,script]);
-    if(name==='practice7.2') {
-     check(await p.locator('#drill1List .recording-actions').evaluateAll(es=>{
-      const xs=es.map(e=>[...e.querySelectorAll('button')].slice(0,3).map(b=>b.getBoundingClientRect().x));
-      return xs.length>0&&[0,1,2].every(i=>Math.max(...xs.map(x=>x[i]))-Math.min(...xs.map(x=>x[i]))<2);
-     }),true,`7.2 trial Listen/Record/Stop aligned ${width}/${theme}/${style}/${hint}/${script}`);
-     check(await p.locator('#drill1List').evaluate(e=>{
-      const slots=[...e.querySelectorAll('.practice72-category-slot')];
-      const widths=slots.map(s=>s.getBoundingClientRect().width);
-      const past=e.querySelector('.tense-badge--past'),state=e.querySelector('.tense-badge--present-state');
-      return slots.length>0&&Math.max(...widths)-Math.min(...widths)<1&&Math.abs(past.getBoundingClientRect().width-state.getBoundingClientRect().width)<1;
-     }),true,'7.2 trial shares colored badge widths');
-     check(await p.locator('#drill1List .tense-badge--past').first().evaluate(e=>{
-      const cs=getComputedStyle(e),letters=e.querySelector('.practice72-past-letters');
-      const r=[...letters.children].map(c=>c.getBoundingClientRect());
-      const gaps=r.slice(1).map((x,i)=>x.left-r[i].right);
-      return e.textContent==='⏪Past'&&cs.paddingLeft==='40px'&&cs.paddingRight==='40px'&&gaps.length===3&&Math.max(...gaps)-Math.min(...gaps)<1;
-     }),true,'7.2 Past alone has 40px insets and evenly spaced letters');
-     check(await p.locator('#drill1List .tense-badge--present-state').first().evaluate(e=>e.childElementCount===0&&getComputedStyle(e).paddingLeft==='8px'),true,'Present State retains its original text and padding');
-    } else check(await p.locator('.practice72-category-slot').count(),0,'badge trial does not spread to '+name);
+    check(await p.locator('.practice7-category').evaluateAll(es=>{
+     if(!es.length)return false;
+     return es.every(e=>{
+      const group=e.closest('.example-box')||e.closest('#drill1List, #drill1Container');
+      const badges=[...group.querySelectorAll('.practice7-category')].filter(b=>b.closest('.example-box')===e.closest('.example-box'));
+      const widths=badges.map(b=>b.getBoundingClientRect().width);
+      const natural=badges.map(b=>{
+       const clone=b.cloneNode(true);clone.classList.remove('practice7-category');clone.textContent=b.textContent;
+       b.after(clone);const w=clone.getBoundingClientRect().width;clone.remove();return w;
+      });
+      const max=Math.max(...natural);
+      const label=e.querySelector('.practice7-category-label');
+      const measure=text=>{const probe=document.createElement('span');probe.style.display='inline-block';probe.style.flexShrink='0';probe.textContent=text;e.append(probe);const w=probe.getBoundingClientRect().width;probe.remove();return w;};
+      const naturalLabel=measure(label.textContent);
+      const cap=Math.max(measure('Past'),measure('⏳Present State')+16-80-measure('⏪'));
+      return widths.every(w=>Math.abs(w-max)<1)
+       &&label.getBoundingClientRect().width<=Math.max(cap,naturalLabel)+1
+       &&parseFloat(label.style.columnGap)>=0;
+     });
+    }),true,`${name} shared category background equals natural longest width`);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box:has(.example-response-row)').evaluateAll(es=>es.every(e=>{
      const r=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect());

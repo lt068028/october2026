@@ -3451,42 +3451,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
     };
 
-    function alignComparisonBadges() {
-        const list = document.getElementById('drill1List');
-        if (!list) return;
-        const badges = [...list.querySelectorAll('.recording-actions > .tense-badge')];
-        if (!badges.length) return;
-        const boxWidth = Math.max(...badges.map(badge => badge.getBoundingClientRect().width));
-        const width = Math.max(...badges.map(badge => {
-            const style = getComputedStyle(badge);
-            return badge.getBoundingClientRect().width
-                + (parseFloat(style.marginLeft) || 0)
-                + (parseFloat(style.marginRight) || 0);
-        }));
-        list.style.setProperty('--practice72-category-box-width', `${Math.ceil(boxWidth)}px`);
-        list.style.setProperty('--practice72-category-width', `${Math.ceil(width)}px`);
-        badges.forEach(badge => {
-            if (badge.classList.contains('tense-badge--past')) {
-                const [icon, ...letters] = Array.from(badge.textContent);
-                const mark = document.createElement('span');
-                mark.textContent = icon;
-                const label = document.createElement('span');
-                label.className = 'practice72-past-letters';
-                letters.forEach(letter => {
-                    const character = document.createElement('span');
-                    character.textContent = letter;
-                    label.append(character);
-                });
-                badge.classList.add('practice72-past-justify');
-                badge.replaceChildren(mark, label);
-            }
-            const slot = document.createElement('span');
-            slot.className = 'practice72-category-slot';
-            badge.replaceWith(slot);
-            slot.append(badge);
-        });
-    }
-
     const originalRender = renderAll;
 
     renderAll = function() {
@@ -3504,7 +3468,6 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         installSettings();
         updateLayout();
         updateExample();
-        alignComparisonBadges();
     };
 
     const originalSync = practice7SyncRecordingUI;

@@ -2327,27 +2327,15 @@ body.site-scale {
     padding-inline: 0;
 }
 
-/* Practice 7.2 trial: equal colored badge widths with centered natural text. */
-.site-scale #drill1List .practice72-category-slot {
-    display: inline-flex;
+/* Practice 7: natural longest badge width, bounded spacing on shorter labels. */
+.site-scale .practice7-category {
+    display: inline-flex !important;
     align-items: baseline;
-    inline-size: var(--practice72-category-width);
-}
-
-.site-scale .practice72-category-slot > .tense-badge {
-    display: inline-flex;
-    align-items: baseline;
-    inline-size: var(--practice72-category-box-width);
     justify-content: center;
     box-sizing: border-box;
+    inline-size: var(--category-width);
 }
+.practice7-category-label { display: inline-flex; white-space: pre; }
 .practice72-instruction-line { display: block; }
-
-/* Separate tasks/rules deliberately; ordinary explanations still wrap naturally. */
 .instruction-steps { white-space: pre-line; }
 .instruction-line { display: block; }
-
-/* Past only: preserve the shared background, inset by 40px, distribute the letters. */
-.site-scale .practice72-category-slot > .practice72-past-justify { padding-inline: 40px; }
-.practice72-past-letters { display: flex; flex: 1; min-width: 0; justify-content: space-between; }
-.practice72-past-letters > span { flex-shrink: 0; }
