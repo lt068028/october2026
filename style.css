@@ -2082,7 +2082,7 @@ body.site-scale {
     display: grid;
     grid-template-columns: subgrid;
     grid-column: 1 / -1;
-    gap: 6px 8px;
+    gap: 6px 4px;
     align-items: baseline;
 }
 .practice12-page .drill-example-table > tbody > tr > td {
@@ -2098,7 +2098,7 @@ body.site-scale {
 .practice12-page .drill-example-table > tbody > tr > td:first-child { flex-shrink: 0; }
 .practice12-page .drill-example-table > tbody > tr > .practice12-example-model {
     display: flex;
-    grid-column: 3;
+    grid-column: 4;
     min-width: 0;
     gap: 8px;
     align-items: baseline;
@@ -2107,7 +2107,7 @@ body.site-scale {
 .practice12-page .practice12-example-model > span { min-width: 0; overflow-wrap: anywhere; }
 .practice12-page .drill-example-table > tbody > tr > td[colspan] {
     display: flex;
-    grid-column: 3;
+    grid-column: 4;
     container-type: inline-size;
     flex-wrap: wrap;
     gap: 8px 16px;
@@ -2158,8 +2158,8 @@ body.site-scale {
 .practice12-page :is(.example-box, .drill-row) { container-type: inline-size; }
 .practice12-page .drill-example-table {
     display: grid;
-    grid-template-columns: max-content var(--practice12-example-cue-track, fit-content(min(55%, var(--example-cue-limit)))) var(--practice12-example-model-track, minmax(0, 1fr));
-    column-gap: 8px;
+    grid-template-columns: max-content var(--practice12-example-cue-track, fit-content(min(55%, var(--example-cue-limit)))) max-content var(--practice12-example-model-track, minmax(0, 1fr));
+    column-gap: 4px;
 }
 .practice12-page .drill-example-table > tbody { display: contents; }
 .practice12-page .drill-cue-cell > span:has(> button) {
@@ -2182,9 +2182,12 @@ body.site-scale {
     .practice12-page .recording-table > tbody > tr > td:last-child { grid-column: 1 / -1; }
 }
 @container (max-width: 800px) {
-    .practice12-page .drill-example-table { grid-template-columns: minmax(0, 1fr); }
+    .practice12-page .drill-example-table { grid-template-columns: max-content minmax(0, 1fr); }
+    .practice12-page .drill-example-table > tbody > tr > td:first-child,
+    .practice12-page .drill-example-table > tbody > tr > td:nth-child(2) { grid-column: 1 / -1; }
+    .practice12-page .drill-example-table > tbody > tr > .practice12-example-arrow { grid-column: 1; }
     .practice12-page .drill-example-table > tbody > tr > :is(.practice12-example-model, td[colspan]) {
-        grid-column: 1;
+        grid-column: 2;
     }
     .practice12-page .practice12-answer-separator { display: none; }
 }
@@ -2318,3 +2321,8 @@ body.site-scale {
 }
 /* Explanations remain readable even when practice/result areas are wider. */
 .site-scale .info-panel-desc { max-inline-size: 75ch; }
+
+.practice12-page .drill-example-table > tbody > tr > .practice12-example-arrow {
+    white-space: nowrap;
+    padding-inline: 0;
+}

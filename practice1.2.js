@@ -1458,11 +1458,7 @@ function practice2ShowNotice(resultSpan, message) {
             const cueCell = node("td");
             cueCell.innerHTML = cue;
 
-            const arrowHost = cueCell.lastElementChild?.classList.contains("practice12-cue-unit")
-                ? cueCell.lastElementChild
-                : cueCell;
-            arrowHost.append(node("span", "practice12-cue-arrow", " 👉"));
-            const arrowCell = node("td", "practice12-empty-arrow-cell");
+            const arrowCell = node("td", "practice12-example-arrow", "👉");
 
             const listenCell = node("td", "practice12-empty-listen-cell");
             const textCell = node("td", "practice12-example-model");

@@ -47,6 +47,13 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
     document.querySelector(`#scriptModeControl [data-value="${script}"]`).click();
    },[style,hint,script]);
+   for(const section of ['#drill1Container','#drill2Container']) {
+    check(await p.locator(section+' .example-box .practice12-example-arrow').evaluateAll(es=>es.length>0&&es.every(e=>{
+     const arrow=e.getBoundingClientRect(),sound=e.parentElement.querySelector('button').getBoundingClientRect();
+     const gap=sound.x-arrow.right;
+     return gap>=-1&&gap<=12&&Math.abs(sound.y-arrow.y)<12;
+    })),true,`arrow immediately before Listen ${section}/${width}/${theme}/${style}/${hint}/${script}`);
+   }
    const overflow=await p.locator('.example-box,.drill-row,.settings-row').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2));
    check(overflow,false,`fixed 130% layout ${width}/${theme}/${style}/${hint}/${script}`);
    check(await p.locator('#drill1Container .example-box .practice12-example-answer').count(),2,'yes/no are complete separate groups');
