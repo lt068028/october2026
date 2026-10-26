@@ -31,10 +31,6 @@
                     probe.remove();
                     return result;
                 };
-                // Reference: Present State natural background, Past with 40px on each side.
-                const reference = measure('⏳Present State') + 16;
-                const maximumLabelWidth = Math.max(measure('Past'),
-                    reference - 80 - measure('⏪'));
                 const [icon, ...letters] = [...segmenter.segment(badge.textContent)].map(s => s.segment);
                 const mark = document.createElement('span');
                 mark.textContent = icon;
@@ -42,10 +38,12 @@
                 label.className = 'practice7-category-label';
                 const textWidth = measure(letters.join(''));
                 const characterWidth = letters.reduce((sum, letter) => sum + measure(letter), 0);
-                const extra = Math.min(width - natural, Math.max(0, maximumLabelWidth - characterWidth));
-                const gap = Math.max(0, extra / Math.max(1, letters.length - 1));
+                // Add at most 3.5px between letters; leave the longest label natural.
+                const available = width - natural + textWidth - characterWidth;
+                const gap = width - natural < 0.01 ? 0
+                    : Math.min(3.5, Math.max(0, available / Math.max(1, letters.length - 1)));
                 label.style.columnGap = `${gap}px`;
-                if (gap > 0 && textWidth < maximumLabelWidth) {
+                if (gap > 0) {
                     letters.forEach(letter => {
                         const span = document.createElement('span');
                         span.textContent = letter;

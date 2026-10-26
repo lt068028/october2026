@@ -40,11 +40,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
       const max=Math.max(...natural);
       const label=e.querySelector('.practice7-category-label');
       const measure=text=>{const probe=document.createElement('span');probe.style.display='inline-block';probe.style.flexShrink='0';probe.textContent=text;e.append(probe);const w=probe.getBoundingClientRect().width;probe.remove();return w;};
-      const naturalLabel=measure(label.textContent);
-      const cap=Math.max(measure('Past'),measure('⏳Present State')+16-80-measure('⏪'));
-      return widths.every(w=>Math.abs(w-max)<1)
-       &&label.getBoundingClientRect().width<=Math.max(cap,naturalLabel)+1
-       &&parseFloat(label.style.columnGap)>=0;
+      const gap=parseFloat(label.style.columnGap);
+      const textWidth=measure(label.textContent);
+      const chars=[...new Intl.Segmenter('en',{granularity:'grapheme'}).segment(label.textContent)].map(s=>s.segment);
+      const characterWidth=chars.reduce((sum,c)=>sum+measure(c),0);
+      const own=natural[badges.indexOf(e)];
+      const expected=max-own<0.01?0:Math.min(3.5,Math.max(0,(max-own+textWidth-characterWidth)/Math.max(1,chars.length-1)));
+      return widths.every(w=>Math.abs(w-max)<1)&&gap>=0&&gap<=3.5&&Math.abs(gap-expected)<0.02;
+
      });
     }),true,`${name} shared category background equals natural longest width`);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
