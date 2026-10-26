@@ -2347,7 +2347,7 @@ body.site-scale {
 .instruction-steps { white-space: pre-line; }
 .instruction-line { display: block; }
 
-/* Past only: preserve the shared background, inset by 16px, distribute the letters. */
-.site-scale .practice72-category-slot > .practice72-past-justify { padding-inline: 16px; }
+/* Past only: preserve the shared background, inset by 24px, distribute the letters. */
+.site-scale .practice72-category-slot > .practice72-past-justify { padding-inline: 24px; }
 .practice72-past-letters { display: flex; flex: 1; min-width: 0; justify-content: space-between; }
 .practice72-past-letters > span { flex-shrink: 0; }
