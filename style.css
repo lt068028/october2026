@@ -2481,3 +2481,9 @@ body.site-scale {
 @media (max-width: 900px) { .p21-drill-picture { width: 100%; } }
 
 .p21-drill-item[data-kind="pen"] { width: 12%; }
+
+.p21-replacement-item { background-image: url('assets/practice21-newspaper-tshirt.png'); background-size: 200% 100%; }
+.p21-drill-item[data-kind="newspaper"] { left: 65%; width: 16%; }
+.p21-drill-item[data-set="1"][data-zone="A"] { left: 20.5%; }
+.p21-drill-item[data-set="1"][data-zone="B"] { left: 67%; }
+.p21-drill-item[data-kind="tshirt"] { left: 41.5%; top: 7%; width: 17%; }

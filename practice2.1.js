@@ -1254,7 +1254,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     function renderDrill1(container) {
         const all=Practice21.items;
-        const sets=[[all[1],all[3],all[6]],[all[7],all[8],all[2]]];
+        const sets=[[all[1],all[9],all[6]],[all[7],all[8],all[10]]];
         const setIndex=practice2State.activeSet ?? 0;
         const objects=sets[setIndex].map((o,i)=>({...o,zone:['A','B','far'][i]}));
         const drill=node('section','p21-drill1');
@@ -1283,8 +1283,15 @@ function practice2ShowNotice(resultSpan, message) {
         const sprites={pen:[0,0],wallet:[50,0],hat:[100,0],notebook:[0,100],dictionary:[50,100],bag:[100,100]};
         for(const o of objects) {
             const item=node('div','p21-drill-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
+            item.dataset.set=String(setIndex);
             item.setAttribute('role','img');item.setAttribute('aria-label',o.meaning);
-            const [x,y]=sprites[o.kind];item.style.backgroundPosition=`${x}% ${y}%`;stage.append(item);
+            if(o.kind==='newspaper'||o.kind==='tshirt') {
+                item.classList.add('p21-replacement-item');
+                item.style.backgroundPosition=o.kind==='newspaper'?'0% 0%':'100% 0%';
+            } else {
+                const [x,y]=sprites[o.kind];item.style.backgroundPosition=`${x}% ${y}%`;
+            }
+            stage.append(item);
         }
         picture.append(stage);drill.append(picture);
         function showSpeaker(speaker) {
@@ -1540,7 +1547,7 @@ function practice2ToHiragana(text) {
     let value = String(text ?? "").normalize("NFKC");
 
     // このページの語彙を判定用の読みへ変換する。
-    value = convertToHiragana(value);
+    value = convertToHiragana(value.replace(/[Tt]シャツ/g, "ティーシャツ"));
 
     // このページの問題データに登録された語句を追加変換する。
     const pairs = Practice21.items.map(o => [o.kanji,o.hira]);

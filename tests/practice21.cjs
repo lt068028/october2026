@@ -69,11 +69,12 @@ function mock(){
  check(await p.locator('.p21-drill1 .recording-table tr').count(),6,'three rows per speaker');
  check(await p.locator('.p21-drill1 .p21-reach,.p21-drill1 .p21-object-number,.p21-drill1 .p21-area-caption').count(),0,'no regions, object numbers or distance answers');
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
+ check(await p.evaluate(()=>practice2Normalize('Tシャツ')===practice2Normalize('ティーシャツ')),true,'T-shirt recognition forms agree');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   await p.locator('.p21-set-switcher button').nth(set).click();
-  const nouns=set===0?['ぺん','さいふ','ぼうし']:['のーと','じしょ','かばん'];
+  const nouns=set===0?['ぺん','しんぶん','ぼうし']:['のーと','じしょ','てぃーしゃつ'];
   const rows=p.locator('.p21-drill1 tr');
   for(let i=0;i<6;i++) {
    const speaker=i<3?'A':'B',j=i%3,object=i<3?j:[1,0,2][j];
@@ -97,7 +98,7 @@ function mock(){
  check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),false,'sets keep distinct results');
  await p.locator('.p21-set-switcher button').first().click();
  check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),true,'result restored on return');
- await p.evaluate(()=>{isAutoPlay=false;const key='p21_d1_s0_B_0',v=practice2State.views[key];processResult('それは財布です','これは、財布です。',()=> 'これは、財布です。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);});
+ await p.evaluate(()=>{isAutoPlay=false;const key='p21_d1_s0_B_0',v=practice2State.views[key];processResult('それは新聞です','これは、新聞です。',()=> 'これは、新聞です。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);});
  check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_B_0.isCorrect),false,'wrong demonstrative rejected');
  for(const width of [600,900,1440,1920]) {
   await p.setViewportSize({width,height:1100});
