@@ -2467,3 +2467,17 @@ body.site-scale {
     .p21-distance-board { width: 100%; }
     .p21-model-list { grid-template-columns: 1fr; }
 }
+
+/* Practice 2.1 Drill 1: one unmarked scene, two interchangeable object sets. */
+.p21-drill1 { margin-top: 24px; }
+.p21-drill-picture { width: 60%; margin: 12px auto 20px; }
+.p21-set-switcher { display: flex; justify-content: center; gap: 8px; margin-top: 12px; }
+.p21-set-switcher [aria-pressed="true"] { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.p21-drill-item { position: absolute; background-image: url('assets/practice21-items.png'); background-size: 300% 200%; background-repeat: no-repeat; width: 14%; aspect-ratio: 1; clip-path: inset(2% 2% 5%); }
+.p21-drill-item[data-zone="A"] { left: 22%; top: 52%; }
+.p21-drill-item[data-zone="B"] { left: 70%; top: 52%; }
+.p21-drill-item[data-zone="far"] { left: 42.5%; top: 7%; width: 15%; }
+.p21-speaker-practice .recording-table { width: 100%; }
+@media (max-width: 900px) { .p21-drill-picture { width: 100%; } }
+
+.p21-drill-item[data-kind="pen"] { width: 12%; }

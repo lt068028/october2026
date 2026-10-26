@@ -23,14 +23,14 @@ function mock(){
  await p.addInitScript(mock);
  await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return fs.existsSync(file)?r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'}):r.fulfill({status:404,body:''})});
  await p.goto('http://drill.test/practice2.1.html');let count=0;const check=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
- check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.drill-row').count(),0,'Drills deferred');
+ check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.drill-row').count(),2,'A and B practice groups');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
  check(await p.locator('.p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
- check(await p.locator('.p21-distance-person').count(),2,'only two people');
+ check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   for(const [object,noun] of [[1,'ほん'],[2,'かばん'],[3,'とけい']])for(const speaker of ['A','B']) {
@@ -65,6 +65,47 @@ function mock(){
   check(await p.locator('.example-box,.p21-distance-board,.p21-distance-area,.p21-model-group').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'no horizontal overflow');
  }
  check(await p.locator('button .custom-tip-box').evaluateAll(es=>es.some(t=>/^Listen/.test(t.textContent))),false,'no routine explanations');
- if(process.env.P21_SCREENSHOT_DIR){fs.mkdirSync(process.env.P21_SCREENSHOT_DIR,{recursive:true});for(const width of [600,900,1440,1920]){await p.setViewportSize({width,height:1100});await p.locator('.example-box').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`practice21-${width}.png`)});}}
- check(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 2.1 Example 1',count);
+
+ check(await p.locator('.p21-drill1 .recording-table tr').count(),6,'three rows per speaker');
+ check(await p.locator('.p21-drill1 .p21-reach,.p21-drill1 .p21-object-number,.p21-drill1 .p21-area-caption').count(),0,'no regions, object numbers or distance answers');
+ check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
+ for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
+  await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
+  await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
+  await p.locator('.p21-set-switcher button').nth(set).click();
+  const nouns=set===0?['ぺん','さいふ','ぼうし']:['のーと','じしょ','かばん'];
+  const rows=p.locator('.p21-drill1 tr');
+  for(let i=0;i<6;i++) {
+   const speaker=i<3?'A':'B',j=i%3,object=i<3?j:[1,0,2][j];
+   await rows.nth(i).locator('.recording-actions button').first().click();
+   const spoken=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
+   check(spoken,['これ','それ','あれ'][j]+'は'+nouns[object]+(style==='formal'?'です':'だ'),'Drill model by set, speaker, style and script');
+   check(await p.locator('.p21-drill-picture').getAttribute('data-speaker'),speaker,'Drill speaker updates');
+  }
+ }
+ await p.locator('#speechStyleControl [data-value="formal"]').click();
+ await p.locator('.p21-set-switcher button').first().click();
+ await p.evaluate(()=>{const mode=document.getElementById('toggleRecordMode');if(mode.checked)mode.click();t.speaking=true;});
+ await p.locator('.p21-drill1 tr').first().locator('.recording-actions button').nth(1).click();
+ await p.waitForTimeout(400);
+ check(await p.locator('.p21-set-switcher button').first().isDisabled(),true,'set switch locked during recording');
+ await p.evaluate(()=>{const r=t.recognitions.at(-1),result=[{transcript:'これはペンです'}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();});
+ await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
+ check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_A_0?.isCorrect),true,'recording extracted and matched');
+ check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),true,'transcript visible in row');
+ await p.locator('.p21-set-switcher button').nth(1).click();
+ check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),false,'sets keep distinct results');
+ await p.locator('.p21-set-switcher button').first().click();
+ check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),true,'result restored on return');
+ await p.evaluate(()=>{isAutoPlay=false;const key='p21_d1_s0_B_0',v=practice2State.views[key];processResult('それは財布です','これは、財布です。',()=> 'これは、財布です。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);});
+ check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_B_0.isCorrect),false,'wrong demonstrative rejected');
+ for(const width of [600,900,1440,1920]) {
+  await p.setViewportSize({width,height:1100});
+  check(await p.locator('.p21-drill1,.p21-drill-picture,.p21-speaker-practice').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'Drill fits viewport');
+  const ratio=await p.locator('.p21-drill-picture').evaluate(e=>e.clientWidth/e.parentElement.clientWidth);
+  check(Math.abs(ratio-(width>900?.6:1))<.03,true,'60 percent Drill scene');
+ }
+ if(process.env.P21_SCREENSHOT_DIR){fs.mkdirSync(process.env.P21_SCREENSHOT_DIR,{recursive:true});for(const width of [600,900,1440,1920]){await p.setViewportSize({width,height:1100});await p.locator('.example-box').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`practice21-${width}.png`)});await p.locator('.p21-drill1').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`drill21-${width}.png`)});}}
+ if(process.env.P21_SCREENSHOT_DIR){await p.setViewportSize({width:1440,height:1100});await p.locator('.p21-set-switcher button').nth(1).click();await p.locator('.p21-drill1').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,'drill21-set2.png')});}
+ check(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 2.1 Ex1 and Drill 1',count);
 })().catch(e=>{console.error(e);process.exit(1)});

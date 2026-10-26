@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=process.env.DRILL_ROOT || path.resolve(__dirname,'..');
-const names=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
+const names=['practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
 function mock(){
  window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
@@ -24,7 +24,7 @@ function mock(){
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  let checks=0;
  const ok=(condition,label)=>{assert(condition,label);checks++};
- async function open(name){const p=await browser.newPage();p.errors=[];p.on('pageerror',e=>p.errors.push(e.message));await p.addInitScript(mock);await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});let source=fs.readFileSync(file,'utf8');if(file.endsWith('drill-audio-session.js'))source+='\nconst reg=DrillAudio.registerPitch;DrillAudio.registerPitch=(s,f)=>{(window.states ||= []).push(s);reg(s,f)};';return r.fulfill({body:source,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'})});await p.goto('http://drill.test/'+name+'.html');await p.waitForTimeout(50);if(name.startsWith('pronunciation'))await p.evaluate(()=>{estimateF0Frames=()=>[{time:0,f0:180},{time:.02,f0:190}];drawPitchCurve=(s,u,m)=>{s.drawn={u,m}};drawPitchPlaceholder=s=>{s.drawn={u:null,m:null}}});return p}
+ async function open(name){const p=await browser.newPage();p.errors=[];p.on('pageerror',e=>p.errors.push(e.message));await p.addInitScript(mock);await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});let source=fs.readFileSync(file,file.endsWith('.js')?'utf8':undefined);if(file.endsWith('drill-audio-session.js'))source+='\nconst reg=DrillAudio.registerPitch;DrillAudio.registerPitch=(s,f)=>{(window.states ||= []).push(s);reg(s,f)};';return r.fulfill({body:source,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'})});await p.goto('http://drill.test/'+name+'.html');await p.waitForTimeout(50);if(name.startsWith('pronunciation'))await p.evaluate(()=>{estimateF0Frames=()=>[{time:0,f0:180},{time:.02,f0:190}];drawPitchCurve=(s,u,m)=>{s.drawn={u,m}};drawPitchPlaceholder=s=>{s.drawn={u:null,m:null}}});return p}
 
  async function record(p){
   await p.evaluate(()=>{
@@ -47,7 +47,7 @@ function mock(){
   await record(p);
 
   ok(await labels(p)===2,name+' both labels during automatic model');
-  const rate=name.startsWith('practice1.')?0.75:name.startsWith('practice7.')?0.8:0.9;
+  const rate=(name.startsWith('practice1.')||name==='practice2.1')?0.75:name.startsWith('practice7.')?0.8:0.9;
   assert.equal(await p.evaluate(()=>t.spoken.at(-1).rate),rate,name+' configured model TTS rate');checks++;
   ok(!await p.locator('#togglePlaybackMode').isDisabled(),name+' autoplay toggle available');
   await p.evaluate(()=>t.spoken.at(-1).onerror({error:'synthesis-failed'}));

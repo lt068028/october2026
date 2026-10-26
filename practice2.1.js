@@ -1249,6 +1249,64 @@ function practice2ShowNotice(resultSpan, message) {
             modelList.append(group);
         }
         box.append(modelList);container.append(box);perspective('A',1);
+        renderDrill1(container);
+    }
+
+    function renderDrill1(container) {
+        const all=Practice21.items;
+        const sets=[[all[1],all[3],all[6]],[all[7],all[8],all[2]]];
+        const setIndex=practice2State.activeSet ?? 0;
+        const objects=sets[setIndex].map((o,i)=>({...o,zone:['A','B','far'][i]}));
+        const drill=node('section','p21-drill1');
+        const panel=node('div','info-panel info-panel-task1');
+        panel.append(node('span','info-panel-title','Drill 1: Describe the objects'),
+            node('span','info-panel-desc','💡Complete three sentences as A, then as B.'));
+        drill.append(panel);
+        const switcher=node('div','p21-set-switcher');
+        switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
+        sets.forEach((_,i)=>{
+            const control=node('button','example-button',`Set ${i+1}`);control.type='button';
+            control.setAttribute('aria-pressed',String(i===setIndex));
+            control.onclick=()=>{if(busy()||i===setIndex)return;practice2State.activeSet=i;renderAll();};
+            switcher.append(control);
+        });
+        drill.append(switcher);
+        const picture=node('div','p21-drill-picture');
+        const stage=node('div','p21-photo-stage');
+        const background=node('img','p21-photo');background.src='assets/practice21-empty-table.png';
+        background.width=1536;background.height=1024;
+        background.alt='A sits at the left end of a table; B sits at the right. One object is near each person and another hangs on the distant wall.';
+        stage.append(background);
+        for(const person of ['A','B']) {
+            const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);
+        }
+        const sprites={pen:[0,0],wallet:[50,0],hat:[100,0],notebook:[0,100],dictionary:[50,100],bag:[100,100]};
+        for(const o of objects) {
+            const item=node('div','p21-drill-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
+            item.setAttribute('role','img');item.setAttribute('aria-label',o.meaning);
+            const [x,y]=sprites[o.kind];item.style.backgroundPosition=`${x}% ${y}%`;stage.append(item);
+        }
+        picture.append(stage);drill.append(picture);
+        function showSpeaker(speaker) {
+            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker));
+            picture.dataset.speaker=speaker;
+        }
+        for(const speaker of ['A','B']) {
+            const current=card(drill,`${speaker}：`);
+            current.body.closest('.drill-row').classList.add('p21-speaker-practice');
+            const ordered=speaker==='A'?objects:[objects[1],objects[0],objects[2]];
+            ordered.forEach((o,i)=>{
+                const pronoun=pro(speaker,o);
+                const cue=`<strong class="grammar-highlight">${pronoun}は</strong>…`;
+                const getText=()=>statement(pronoun,noun(o));
+                const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText);
+                view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
+                view.listenBtn.addEventListener('click',()=>showSpeaker(speaker));
+                view.recordBtn.addEventListener('click',()=>showSpeaker(speaker));
+                for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('focus',()=>showSpeaker(speaker));
+            });
+        }
+        showSpeaker('A');container.append(drill);
     }
 
     function installSettings() {
