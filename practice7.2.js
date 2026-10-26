@@ -1347,6 +1347,7 @@ function renderDrill1Section() {
     );
 
     const stem = scriptMode === 'kanji' ? '起き' : 'おき';
+    const modelTime = scriptMode === 'kanji' ? '朝五時' : 'あさ5じ';
 
     example.innerHTML = `
         <div class="example-line">
@@ -1359,7 +1360,7 @@ function renderDrill1Section() {
                 class="example-button"
             >🔊きく</button>
             <span class="tense-badge tense-badge--past">⏪Past</span>
-            <span>${time}に${stem}<strong class="grammar-highlight">ました</strong>。</span>
+            <span>${modelTime}に${stem}<strong class="grammar-highlight">ました</strong>。</span>
         </div>
 
         <div class="example-line">
@@ -1372,7 +1373,7 @@ function renderDrill1Section() {
                 class="example-button"
             >🔊きく</button>
             <span class="tense-badge tense-badge--present-state">⏳Present State</span>
-            <span>${time}<strong class="grammar-highlight">から</strong>${stem}<strong class="grammar-highlight">ています</strong>。</span>
+            <span>${modelTime}<strong class="grammar-highlight">から</strong>${stem}<strong class="grammar-highlight">ています</strong>。</span>
         </div>
     `;
 
@@ -3452,6 +3453,26 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
     };
 
+    function alignComparisonBadges() {
+        const list = document.getElementById('drill1List');
+        if (!list) return;
+        const badges = [...list.querySelectorAll('.recording-actions > .tense-badge')];
+        if (!badges.length) return;
+        const width = Math.max(...badges.map(badge => {
+            const style = getComputedStyle(badge);
+            return badge.getBoundingClientRect().width
+                + (parseFloat(style.marginLeft) || 0)
+                + (parseFloat(style.marginRight) || 0);
+        }));
+        list.style.setProperty('--practice72-category-width', `${Math.ceil(width)}px`);
+        badges.forEach(badge => {
+            const slot = document.createElement('span');
+            slot.className = 'practice72-category-slot';
+            badge.replaceWith(slot);
+            slot.append(badge);
+        });
+    }
+
     const originalRender = renderAll;
 
     renderAll = function() {
@@ -3469,6 +3490,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         installSettings();
         updateLayout();
         updateExample();
+        alignComparisonBadges();
     };
 
     const originalSync = practice7SyncRecordingUI;

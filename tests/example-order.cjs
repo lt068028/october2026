@@ -27,6 +27,18 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
      document.querySelector(`#scriptModeControl [data-value="${script}"]`).click();
     },[style,hint,script]);
+    if(name==='practice7.2') {
+     check(await p.locator('#drill1List .recording-actions').evaluateAll(es=>{
+      const xs=es.map(e=>[...e.querySelectorAll('button')].slice(0,3).map(b=>b.getBoundingClientRect().x));
+      return xs.length>0&&[0,1,2].every(i=>Math.max(...xs.map(x=>x[i]))-Math.min(...xs.map(x=>x[i]))<2);
+     }),true,`7.2 trial Listen/Record/Stop aligned ${width}/${theme}/${style}/${hint}/${script}`);
+     check(await p.locator('#drill1List').evaluate(e=>{
+      const slots=[...e.querySelectorAll('.practice72-category-slot')];
+      const widths=slots.map(s=>s.getBoundingClientRect().width);
+      const past=e.querySelector('.tense-badge--past'),state=e.querySelector('.tense-badge--present-state');
+      return slots.length>0&&Math.max(...widths)-Math.min(...widths)<1&&past.getBoundingClientRect().width<state.getBoundingClientRect().width;
+     }),true,'7.2 shared slot retains natural colored badge widths');
+    } else check(await p.locator('.practice72-category-slot').count(),0,'badge trial does not spread to '+name);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box:has(.example-response-row)').evaluateAll(es=>es.every(e=>{
      const r=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect());

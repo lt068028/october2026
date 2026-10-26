@@ -30,6 +30,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      const b=document.querySelector(`#scriptModeControl [data-value="${script}"]`);if(b&&!b.disabled)b.click();
     },[style,hint,script]);
     check(await p.locator('button').evaluateAll(es=>es.filter(b=>/^(👀Text|🕶️Hide)/.test(b.textContent)).length),0,name+' Text/Hide removed');
+    check(await p.locator('.example-box table tr > td:last-child .vocab-inline,.example-box table tr > td:last-child .tooltip-tip').count(),0,name+' Example model text has no vocabulary hints');
     const bad=await p.evaluate(()=>[...document.querySelectorAll('.example-box,.drill-row,.settings-row,.pitch-card,.prompt-item')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));
     check(bad,[],`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height<1000)),true,name+' Example readable wrapping height');

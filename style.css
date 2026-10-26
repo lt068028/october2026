@@ -2181,7 +2181,7 @@ body.site-scale {
     }
     .practice12-page .recording-table > tbody > tr > td:last-child { grid-column: 1 / -1; }
 }
-@container (max-width: 800px) {
+@container (max-width: 850px) {
     .practice12-page .drill-example-table { grid-template-columns: max-content minmax(0, 1fr); }
     .practice12-page .drill-example-table > tbody > tr > td:first-child,
     .practice12-page .drill-example-table > tbody > tr > td:nth-child(2) { grid-column: 1 / -1; }
@@ -2325,4 +2325,11 @@ body.site-scale {
 .practice12-page .drill-example-table > tbody > tr > .practice12-example-arrow {
     white-space: nowrap;
     padding-inline: 0;
+}
+
+/* Practice 7.2 trial: share only the category slot; keep each colored badge natural. */
+.site-scale #drill1List .practice72-category-slot {
+    display: inline-flex;
+    align-items: baseline;
+    inline-size: var(--practice72-category-width);
 }
