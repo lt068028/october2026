@@ -5,10 +5,21 @@
     function applyListenPolicy() {
         observer.disconnect();
         document.querySelectorAll('button .custom-tip-box').forEach(tip => {
-            if (/^Listen\b/i.test(tip.textContent.trim())) {
+            if (/^(Listen\b|Record\b|Stop\b|Play your recorded voice|Affirmative response|Negative response)/i.test(tip.textContent.trim())) {
                 const button = tip.closest('button');
                 tip.remove();
                 if (!button.querySelector('.custom-tip-box')) button.classList.remove('custom-tip-wrap');
+            }
+        });
+        document.querySelectorAll('.selection-help-wrap').forEach(wrap => {
+            const button = wrap.querySelector('button');
+            if (!button?.dataset.selectionHelp) {
+                if (button) wrap.replaceWith(button);
+                else wrap.remove();
+            } else {
+                wrap.setAttribute('aria-label', button.dataset.selectionHelp);
+                const tip = wrap.querySelector('.custom-tip-box');
+                if (tip.textContent !== button.dataset.selectionHelp) tip.textContent = button.dataset.selectionHelp;
             }
         });
         document.querySelectorAll('button[data-selection-help]').forEach(button => {
@@ -24,7 +35,7 @@
             button.replaceWith(wrap);
             wrap.append(button, tip);
         });
-        observer.observe(document.body, {childList: true, subtree: true});
+        observer.observe(document.body, {childList: true, subtree: true, attributes: true, attributeFilter: ['data-selection-help']});
     }
     const observer = new MutationObserver(applyListenPolicy);
     applyListenPolicy();

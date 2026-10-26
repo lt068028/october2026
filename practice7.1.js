@@ -516,6 +516,8 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         // 録音・停止は既存の録音処理に接続する。
+        if (!ready) record.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+
         record.onclick = null;
         stop.onclick = null;
         stop.disabled = true;

@@ -2507,6 +2507,8 @@ render = function () {
                 }
             });
 
+            if (!enabled) rec.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+
             const stop = button('⏹️', () => {
                 if (session?.key === key) {
                     session.stop();

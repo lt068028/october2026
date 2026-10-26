@@ -499,6 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
             () => {}
         );
 
+        if (!ready) record.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+
         record.onclick = null;
         stop.onclick = null;
         stop.disabled = true;

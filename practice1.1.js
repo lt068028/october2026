@@ -929,6 +929,18 @@ function syncRecordingButtons() {
         view.record.disabled =
             blocked || !view.ready();
 
+        const prerequisite = !view.ready()
+            ? view.rowKey.startsWith('task2_') ? 'Select X and Y first.'
+                : view.rowKey.startsWith('task3_') ? 'Enter X and Y first.' : ''
+            : '';
+        [view.listen, view.record].forEach(button => {
+            if (prerequisite) {
+                if (button.dataset.selectionHelp !== prerequisite) button.dataset.selectionHelp = prerequisite;
+            } else if (button.hasAttribute('data-selection-help')) {
+                delete button.dataset.selectionHelp;
+            }
+        });
+
         // Manualでは録音中の行の停止ボタンだけを有効にする。
         view.stop.disabled = !canStop;
 
@@ -1669,6 +1681,7 @@ function renderTask2() {
         view.prompts.append(
             selectX,
             previewX,
+            makeElement("span", "", "は"),
             selectY,
             previewY
         );

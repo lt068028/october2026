@@ -1973,7 +1973,8 @@ label:has(> input:disabled) .slider {
     opacity: 0.45;
     color: var(--text-secondary);
     background: var(--bg-panel);
-    filter: grayscale(1);
+    /* A filter on the button changes the containing block of its fixed tooltip. */
+    filter: none;
     cursor: not-allowed !important;
 }
 
@@ -2377,3 +2378,5 @@ body.site-scale {
 .selection-help-wrap { display: inline-flex; vertical-align: baseline; flex-shrink: 0; }
 .selection-help-wrap > button:disabled { pointer-events: none; }
 .selection-help-wrap:focus-visible > .custom-tip-box { visibility: visible; opacity: 1; }
+
+.segmented-option.pronunciation-style-disabled .icon-emoji { filter: grayscale(1); }

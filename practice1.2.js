@@ -1545,6 +1545,7 @@ function practice2ShowNotice(resultSpan, message) {
             "Stop recording."
         );
 
+        if (listenBtn.dataset.selectionHelp) recordBtn.dataset.selectionHelp = listenBtn.dataset.selectionHelp;
         listenBtn.disabled = !enabled;
         recordBtn.disabled = !enabled;
         stopBtn.disabled = true;
