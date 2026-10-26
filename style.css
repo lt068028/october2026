@@ -2339,3 +2339,24 @@ body.site-scale {
 .practice72-instruction-line { display: block; }
 .instruction-steps { white-space: pre-line; }
 .instruction-line { display: block; }
+
+/* Tooltip sizes are final CSS pixels, independent of the 130% body baseline. */
+.site-scale .tooltip-wrap .tooltip-tip { font-size: 20px; }
+.site-scale .custom-tip-box { font-size: 18px; }
+.site-scale :is(.tooltip-tip, .custom-tip-box) {
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(360px, calc(100vw - 24px));
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+}
+.site-scale [data-viewport-tip] {
+    position: fixed;
+    left: var(--tip-left, 12px) !important;
+    top: var(--tip-top, 12px) !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    transition: opacity 0.2s;
+}
