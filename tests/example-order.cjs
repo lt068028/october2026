@@ -38,11 +38,11 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
       const past=e.querySelector('.tense-badge--past'),state=e.querySelector('.tense-badge--present-state');
       return slots.length>0&&Math.max(...widths)-Math.min(...widths)<1&&Math.abs(past.getBoundingClientRect().width-state.getBoundingClientRect().width)<1;
      }),true,'7.2 trial shares colored badge widths');
-     check(await p.locator('#drill1List .tense-badge--past .practice72-category-letters').first().evaluate(e=>{
-      const r=[...e.children].map(c=>c.getBoundingClientRect());
-      const gaps=r.slice(1).map((x,i)=>x.left-r[i].right);
-      return e.textContent==='Past'&&gaps.length===3&&Math.max(...gaps)-Math.min(...gaps)<1;
-     }),true,'7.2 Past letters are evenly distributed');
+     check(await p.locator('#drill1List .tense-badge--past').first().evaluate(e=>{
+      const range=document.createRange();range.selectNodeContents(e);
+      const text=range.getBoundingClientRect(),box=e.getBoundingClientRect();
+      return e.textContent==='⏪Past'&&e.childElementCount===0&&Math.abs((text.left+text.right-box.left-box.right)/2)<1.5;
+     }),true,'7.2 natural Past text is centered in the shared background');
     } else check(await p.locator('.practice72-category-slot').count(),0,'badge trial does not spread to '+name);
     check(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`${name} overflow ${width}/${theme}/${style}/${hint}/${script}`);
     check(await p.locator('.example-box:has(.example-response-row)').evaluateAll(es=>es.every(e=>{
