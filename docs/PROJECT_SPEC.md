@@ -17,7 +17,7 @@
   - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
   - 作文練習：`composition1.html` / `composition1.js`
   - 発音練習：`pronunciation1.html` / `pronunciation1.js`、`pronunciation2.html` / `pronunciation2.js`
-  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全8練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象7ページのFormal質問チェック・数字比較補助）
+  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全8練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象7ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全8練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
   - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全8練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
 
 ---
@@ -144,11 +144,12 @@
   - 認識結果の文末に付いた `よ` ／ `ね` ／ `よね` は、表示テキストには残しつつ判定比較からは除外して許容する。
 
 ### 4.3 UIボタン・配置の統一仕様
+- **操作条件と説明**：現行の対象・文言・条件は[UI_LAYOUT_SPEC.mdの操作説明と前提条件の統一](UI_LAYOUT_SPEC.md#操作説明と前提条件の統一2026-10-26実機確認済み)に集約する。通常操作説明の撤去と条件不足時の案内を区別し、モデル再生を録音の前提にしない。
 - **録音ボタン**：表記は **`🎙️とる`**（絵文字の直後に空白を入れない）。
   - ※注：`practice1.1.js` は初期関数 `makeRow`（669行目）で `"⏺️とる"` を生成した後、下部IIFEのラッパー（2540行目）で `'🎙️とる'` に上書きし、あわせて `.correction-box` 内の重複聞くボタン（`correctionListen`）を非表示化している。
 - **聞くボタン**：表記は **`🔊きく`**。各行のキュー横の所定の操作列（`.recording-actions`）、および `pronunciation1`・`pronunciation2` の Pitch Lab 各カードの録音ボタン（`🎙️とる`）の前に配置し、重複追加しない。
 - **停止ボタン**：表記は **`⏹️`**。Manual モードで録音中の行のみ有効化（`.stop-btn-active`）し、Autostop 時や非録音時は無効化する。
-- **録音再生ボタン**：録音が存在する行の結果欄末尾（および Pitch Lab 各カード）に **`▶️`**（ツールチップ：`Play your recorded voice`）を表示する。
+- **録音再生ボタン**：録音が存在する行の結果欄末尾（および Pitch Lab 各カード）に **`▶️`**を表示する。Pitch Labでは未録音時から無効状態で置く場合がある。通常の再生説明ツールチップは撤去済み。
 - **Pitch Lab（`pronunciation1`・`pronunciation2`）のピッチ描画仕様**：
   - `pronunciation1` では単語ペア（または `Free practice`）をプルダウン（`#pitchPairSelect`）から選択して左右2枚のカード（`.pitch-lab-grid`）で比較描画を行い、`pronunciation2` では Drill 1 の5つの文（`Speech Style` 切替連動）または `Free practice` をプルダウンから選択して1枚のカードで1文全体の録音・ピッチ曲線描画を行える。
   - **モデル音のバックグラウンド録音・比較描画（`pronunciation1`・`pronunciation2` 実装済み）**：`pronunciation1`・`pronunciation2` の Pitch Lab では、`🔊きく` ボタンを押した際に `echoCancellation: false, noiseSuppression: false, autoGainControl: false` でマイクをバックグラウンド起動してスピーカーからのモデル音声を録音し、同じ F0 抽出ロジックで `Model (🔊)` のピッチ曲線（紫）を描画・保持して、学習者が `🎙️とる` で録音した `You (🎙️)` のピッチ曲線（緑）と発声開始時刻を揃えて同一グラフ上に重ねて比較できるようにしている。モデルピッチ未検出時は `Model pitch not detected.` と表示し、一度でもモデル描画が成功した場合は描画エリア下部に `If the model line does not appear clearly, please turn up your speaker volume.` を表示する。
@@ -797,7 +798,9 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 - Hover／OFF・英語キューの区切りと配置、音声・判定・モデル文は維持。作文・発音はこのVocab Display機能を持たない。語彙20px／操作説明18pxと画面内補正は既に全8練習ページへ適用済み。
 
 
-## 54. Listen説明を選択前の理由表示へ変更（2026-10-26）
+## 54. Listen説明を選択前の理由表示へ変更（2026-10-26・導入時履歴）
+
+以下は導入時点。とる／停止等を維持する記述は§55で更新済み。現行の全対象はUI_LAYOUT_SPECを参照。
 - 通常時のListenから始まる操作説明は全8練習ページで撤去。既存のとる・停止・設定等の説明は維持。
 - 1.2 D2の未選択返答きく：「Select a major first.」。1.2 D1、7.1／7.2／7.3の未選択Y/N返答きく：「Choose 🙆 or 🙅 first.」。選択後は説明なし、未選択へ戻れば再表示。録音中等の無効化と未選択を区別する。
 - disabledのまま再生を禁止し、その外側の説明枠へホバー・キーボードフォーカスを可能にする。説明は18px・画面内補正を継承。
@@ -807,3 +810,9 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 - 通常のきく／とる／停止／録音再生、🙆🙅説明を全8練習ページで撤去。設定・制約説明は維持。未選択理由はとるにも同じ文言で表示。
 - 1.1 D2にプルダウン間の「は」を追加。D2未選択は「Select X and Y first.」、D3未入力は「Enter X and Y first.」をきく・とるへ表示。両方揃えば有効化、入力消去等で条件が欠ければ説明復帰。空白のみは未入力扱い。
 - 1.2 D1と練習7 Y/N返答、1.2 D2専攻返答も両操作へ理由表示。Y/N選択だけで録音へ進め、モデル再生は前提条件にしない（既存有効化仕様を検証し維持）。
+
+
+## 56. 実機確認と操作条件仕様の文書点検（2026-10-26）
+- ユーザーがbedd182の実機確認完了を報告。現行UI仕様の操作条件・文言を1表へ集約し、条件充足と排他ロック、質問側／返答側、通常説明／設定・制約説明を区別。コード変更なし。
+- 撤去済みの録音再生説明、7.2限定試験の残存記述、現行欄の重複を整理。変更履歴は当時の記録として維持し、現行仕様への参照を明示。
+- 1.1 D2 Casualの「は」とD3 Casualの「／」はコード上の差として明記し、統一判断は保留。

@@ -43,7 +43,9 @@
 | pronunciation2 / 1 | 💡Listen to the model, mimic the voice and speak aloud. | 💡Listen to the model and repeat. | 1 |
 | pronunciation2 / 2 | 💡Copy the model’s pronunciation, rhythm, and timing. Compare the two pitch lines to see whether your pitch rises and falls in a similar way. | 💡Copy the model’s pronunciation, rhythm, and timing. Compare your pitch line with the model’s. | 2 |
 
-## 区分ラベルの余白案（7.2試験へ更新）
+## 区分ラベルの余白案（過去の7.2試験記録）
+
+この節と末尾の区分案は変更経緯の記録。現在は練習7全3ページへ追加字間最大3.5pxの仕様を適用済みであり、40px固定余白・文字全体幅上限・7.2限定の記述は現行仕様ではない。[現行仕様](UI_LAYOUT_SPEC.md)を参照。
 
 ユーザーの意図は、背景幅と長いPresent Stateは変えず、短いPastだけ左右40pxを確保し、残り幅で文字を均等配置すること。前回は両方のラベルの余白を増やす案と取り違えていた。
 
@@ -54,7 +56,7 @@
 実ブラウザDOMで全8練習ページと7.1拡張キューの文面を採取し比較。通常/ダーク・文体/表記/Vocab・狭幅/大画面の既存表示回帰、音声回帰、段組み基準の検証を行う。実機での読みやすさは公開後の確認対象。
 
 
-### 区分幅の確定方針（2026-10-26）
+### 区分幅の当時案（2026-10-26・後続訂正により更新済み）
 40px試験を基準に練習7全3ページへ展開。均等割付の文字領域はこのPastの文字幅を上限とし、残りは左右余白。より長い名称の自然字間と最長区分の自然背景幅を維持する。同じ比較Drill・Example内で幅を共有し、単独見出しは自然幅。
 
 
