@@ -1250,7 +1250,7 @@ function practice2ShowNotice(resultSpan, message) {
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
         context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:context.closest('.p2x-hat-picture')?Infinity:reduced?1:3,easing:'ease-in-out'});
     }
-    function scene(container,objects,{example=false,people=false,which=false,model=false}={}) {
+    function scene(container,objects,{example=false,people=false,which=false,model=false,speakerGuide=true}={}) {
         const shop=is22&&!people;
         const hats=shop&&(example||Boolean(objects[0]?.photoKind));
         const photoKind=objects[0]?.photoKind;
@@ -1334,7 +1334,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
             }
         }
-        if(hats)stage.append(context);else picture.append(context);picture.append(stage);if(example&&!hats)picture.append(audioGrid);container.append(picture);
+        if(speakerGuide) {if(hats)stage.append(context);else picture.append(context);}picture.append(stage);if(example&&!hats)picture.append(audioGrid);container.append(picture);
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
             context.querySelector('strong').textContent=speaker;
@@ -1403,7 +1403,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function renderPriceStatements(container) {
         panel(container,'Drill 1: Describe the price','💡Follow the speaker cue. Use この／その／あの + noun and say the picture price.');
-        const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects);
+        const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects,{speakerGuide:false});
         [['B',objects[0]],['A',objects[0]],['B',objects[2]]].forEach(([speaker,o],i)=>{
             const current=card(container,String(i+1));
             const row=recordingRow(current,'q',`<strong>${speaker}:</strong> ${demonstrative(speaker,o)}／${vocabulary(o)}／Price`,`p22_statements_s${set}_${speaker}_${i}`,()=>describe(speaker,o));attach(row,speaker,o,select);

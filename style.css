@@ -2445,7 +2445,7 @@ body.site-scale {
 .p21-object-number { display: none; font-size: .8em; color: var(--text-secondary); }
 .p21-item-audio { position: absolute; bottom: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; width: max-content; pointer-events: auto; }
 .p21-distance-area[data-zone="B"] .p21-item-audio { right: auto; left: 0; }
-.p21-item-audio button { white-space: nowrap; }
+.p21-item-audio button { white-space: nowrap; width: 100%; box-sizing: border-box; }
 .p21-example-item-hint.is-target { outline: 2px solid var(--accent-color); outline-offset: 2px; }
 .p21-model-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 20px; }
 .p21-model-group { min-width: 0; }
@@ -2505,7 +2505,11 @@ body.site-scale {
 .p21-distance-board[data-speaker="A"] [data-reach="B"], .p21-distance-board[data-speaker="B"] [data-reach="A"] { background: #86efac80; }
 .p21-reach[data-reach="far"] { background: #fbbf2455; }
 .p21-distance-area[data-zone="B"] .p21-area-caption { left: 59%; }
-.p21-distance-area[data-zone="A"] .p21-item-audio, .p21-distance-area[data-zone="B"] .p21-item-audio { bottom: 6%; }
+@container (min-width: 651px) {
+    .p21-distance-area[data-zone="A"] .p21-item-audio,
+    .p21-distance-area[data-zone="B"] .p21-item-audio { top: 32%; bottom: auto; }
+    .p21-distance-area[data-zone="A"] { width: 28.08%; }
+}
 .p21-response-lead { color: var(--text-secondary); white-space: nowrap; }
 .p21-choice-item { background-image: url('assets/practice21-choice-items.png'); background-size: 300% 300%; }
 .p21-shelf-scene .p21-drill-item[data-zone="far"] { left: 44%; top: 10%; width: 12%; }
