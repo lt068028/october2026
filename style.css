@@ -2543,7 +2543,10 @@ body.site-scale {
 .p21-which-guide .p21-thought-cloud circle { fill: rgb(248 113 113 / 22%); stroke: rgb(220 38 38 / 55%); stroke-width: 1; stroke-dasharray: none; }
 
 /* Anchor thought dots to the shelf edge rather than the B label. */
-.p21-thought-dots { position: absolute; left: 74%; top: 34%; z-index: 4; width: 12px; height: 12px; pointer-events: none; }
+.p21-thought-dots { position: absolute; left: 76%; top: calc(31% - 14.5px); z-index: 4; width: 12px; height: 12px; pointer-events: none; }
 .p21-thought-dots::before, .p21-thought-dots::after { content: ''; position: absolute; box-sizing: border-box; border: 1px solid rgb(220 38 38 / 55%); border-radius: 50%; background: rgb(248 113 113 / 22%); }
 .p21-thought-dots::before { left: 0; top: 0; width: 10px; height: 10px; }
 .p21-thought-dots::after { left: -10px; top: 12px; width: 5px; height: 5px; }
+
+/* Keep the speaker guide crisp above the picture annotations and controls. */
+.p21-photo-context { z-index: 6; text-shadow: none; }

@@ -1265,6 +1265,13 @@ function practice2ShowNotice(resultSpan, message) {
                 if(active)row.setAttribute('aria-current','true');else row.removeAttribute('aria-current');
             });
         }
+        function emphasizeSpeaker() {
+            context.getAnimations().forEach(animation=>animation.cancel());
+            const highlight={backgroundColor:'rgb(239 68 68 / 38%)',borderColor:'#b91c1c',boxShadow:'0 0 0 3px rgb(239 68 68 / 25%)'};
+            const normal={backgroundColor:'rgb(239 68 68 / 16%)',borderColor:'#ef4444',boxShadow:'0 0 0 0 rgb(239 68 68 / 0%)'};
+            const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            context.animate(reduced?[highlight,highlight]:[normal,highlight,normal],{duration:1000,easing:'ease-out'});
+        }
         for(const o of [objects[0],objects[2],objects[1]]) {
             const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;
             const caption=node('div','p21-area-caption');caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));
@@ -1272,7 +1279,7 @@ function practice2ShowNotice(resultSpan, message) {
             area.append(node('span','p21-object-number',`Object ${o.id}`));
             const controls=node('div','p21-item-audio');
             for(const speaker of ['A','B']) {
-                const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`);
+                const sound=listen(()=>{perspective(speaker,o.id);emphasizeSpeaker();return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`);
                 sound.dataset.speaker=speaker;sound.dataset.object=o.id;
                 sound.addEventListener('focus',()=>perspective(speaker,o.id));controls.append(sound);
             }
