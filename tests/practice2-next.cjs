@@ -103,6 +103,10 @@ function mock(){
   for(const width of [600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
    await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
    const overflow=await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));check(overflow,[],number+' layout '+width+theme+hint);
+   check(await p.locator('.p2x-distance-label').evaluateAll(es=>es.every(el=>{
+    const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();
+    return a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
+   })),true,number+' distance captions stay visible '+width+theme+hint);
    if(process.env.NEXT_SCREENSHOT_DIR&&width===1440&&theme==='light'&&hint==='hover'){
     fs.mkdirSync(process.env.NEXT_SCREENSHOT_DIR,{recursive:true});await p.locator('.p2x-example').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-example.png`)});await p.locator('#drill2Container .p2x-picture').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-drill2.png`)});
    }

@@ -1236,14 +1236,16 @@ function practice2ShowNotice(resultSpan, message) {
         context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:reduced?1:3,easing:'ease-in-out'});
     }
     function scene(container,objects,{example=false,people=false,which=false}={}) {
+        const shop=is22&&!people;
         const picture=node('div','p21-drill-picture p2x-picture');
+        picture.classList.toggle('p2x-shop-picture',shop);
         picture.classList.toggle('p2x-example-picture',example);picture.classList.toggle('p2x-floor-picture',!is22);
         picture.classList.toggle('p2x-people-picture',people);
         const stage=node('div','p2x-stage');
         const image=node('img','p2x-photo');
-        image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':'assets/practice21-shelf-table.png';
-        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A is seated on the left and B on the right. Mary is near A, Takeshi is near B, and Robert is far from both.':'A sits on the left, B on the right. Objects are near A, near B, and on a shelf far from both.';
-        image.width=is22?1536:2172;image.height=is22?1024:724;stage.append(image);
+        image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':'assets/practice22-shelves.png';
+        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A is seated on the left and B on the right. Mary is near A, Takeshi is near B, and Robert is far from both.':'A stands on the left beside a nearby shelf, B stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
+        image.width=shop?1774:is22?1536:2172;image.height=shop?887:is22?1024:724;stage.append(image);
         if(!is22) {
             PracticeNext.places.forEach((place,i)=>{
                 const label=node('div','p2x-floor-label');label.dataset.zone=place.zone;
@@ -1253,14 +1255,14 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const context=node('p','p21-photo-context p2x-speaker-guide');
         context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
-        const peoplePositions=people?{A:[7,30],B:[88,27]}:is22?{A:[5,36],B:[92,36]}:{A:[6,17],B:[60,17]};
+        const peoplePositions=people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
         for(const person of ['A','B']) {
             const label=node('strong','p2x-person',person);label.dataset.person=person;
             label.style.left=peoplePositions[person][0]+'%';label.style.top=peoplePositions[person][1]+'%';stage.append(label);
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[27,61],B:[73,61],far:[50,20]}[o.zone];
+            const position=!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(people) {target.append(node('span','p2x-person-name',noun(o)));}

@@ -2596,3 +2596,9 @@ body.site-scale {
 .p2x-person-target[data-zone="B"] { height: 75%; }
 .practice-next-page #drill2Container .p2x-sprite { filter: grayscale(1); }
 @media (max-width: 900px) { .practice-next-page .p21-model-list { grid-template-columns: 1fr; } }
+
+/* Practice 2.2 merchandise: standing shoppers and three shelves at different distances. */
+.p2x-shop-picture .p2x-stage { aspect-ratio: 2 / 1; }
+.p2x-shop-picture .p2x-object { width: 11%; }
+.p2x-shop-picture .p2x-object[data-zone="far"] { width: 8%; }
+.p2x-shop-picture .p2x-distance-label { width: 36%; }
