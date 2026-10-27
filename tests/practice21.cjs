@@ -60,19 +60,18 @@ function mock(){
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  const attention=await p.locator('.p21-photo-context').evaluate(el=>{
-  const animation=el.getAnimations()[0];
-  return {front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),shadow:getComputedStyle(el).textShadow,duration:animation.effect.getTiming().duration,frames:animation.effect.getKeyframes().length};
+  const animation=el.querySelector('.p21-current-speaker').getAnimations()[0];
+  return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),background:getComputedStyle(el).backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
  });
- check(attention,{front:true,shadow:'none',duration:1000,frames:3},'speaker guide foreground and brief pulse');
- await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
+ check(attention,{outside:true,front:true,background:'rgb(254, 202, 202)',duration:1200,iterations:2},'speaker guide above photograph with two visible letter pulses');
+ await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
+ check(await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
  await p.emulateMedia({reducedMotion:'reduce'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
- check(await p.locator('.p21-photo-context').evaluate(el=>{
-  const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;
- }),true,'reduced motion uses a static highlight');
+ check(await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().length),0,'reduced motion uses static emphasis');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.emulateMedia({reducedMotion:'no-preference'});
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {

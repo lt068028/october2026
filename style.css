@@ -2549,4 +2549,7 @@ body.site-scale {
 .p21-thought-dots::after { left: -10px; top: 12px; width: 5px; height: 5px; }
 
 /* Keep the speaker guide crisp above the picture annotations and controls. */
-.p21-photo-context { z-index: 6; text-shadow: none; }
+.p21-distance-board > .p21-photo-stage { z-index: 0; }
+.p21-distance-board > .p21-photo-context { z-index: 10; color: #991b1b; background: #fee2e2; text-shadow: none; opacity: 1; }
+.p21-photo-context.is-emphasized { border: 2px solid #b91c1c; background: #fecaca; box-shadow: 0 0 0 3px rgb(239 68 68 / 25%); }
+.p21-current-speaker { display: inline-block; transform-origin: center; }

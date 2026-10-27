@@ -1240,7 +1240,7 @@ function practice2ShowNotice(resultSpan, message) {
             const hotspot=node('span','p21-example-item-hint');hotspot.dataset.kind=o.kind;
             imageHint(hotspot,o);stage.append(hotspot);
         }
-        stage.append(context);board.append(stage);
+        board.append(stage,context);
         const areas=node('div','p21-distance-areas');
         const modelList=node('div','p21-model-list');
         function perspective(speaker,target) {
@@ -1266,11 +1266,15 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         function emphasizeSpeaker() {
-            context.getAnimations().forEach(animation=>animation.cancel());
-            const highlight={backgroundColor:'rgb(239 68 68 / 38%)',borderColor:'#b91c1c',boxShadow:'0 0 0 3px rgb(239 68 68 / 25%)'};
-            const normal={backgroundColor:'rgb(239 68 68 / 16%)',borderColor:'#ef4444',boxShadow:'0 0 0 0 rgb(239 68 68 / 0%)'};
-            const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            context.animate(reduced?[highlight,highlight]:[normal,highlight,normal],{duration:1000,easing:'ease-out'});
+            currentSpeaker.getAnimations().forEach(animation=>animation.cancel());
+            context.classList.add('is-emphasized');
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                currentSpeaker.animate([
+                    {transform:'scale(1)'},
+                    {transform:'scale(1.22)'},
+                    {transform:'scale(1)'}
+                ],{duration:1200,iterations:2,easing:'ease-in-out'});
+            }
         }
         for(const o of [objects[0],objects[2],objects[1]]) {
             const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;
