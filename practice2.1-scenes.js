@@ -17,9 +17,9 @@ const Practice21 = (() => {
         {id:14,hira:'おにぎり',kanji:'おにぎり',romaji:'onigiri',meaning:'rice ball',kind:'onigiri'},
         {id:15,hira:'おべんとう',kanji:'お弁当',romaji:'obentō',meaning:'boxed lunch',kind:'bento'},
         {id:16,hira:'サンドイッチ',kanji:'サンドイッチ',romaji:'sandoitchi',meaning:'sandwich',kind:'sandwich'},
-        {id:17,hira:'りんご',kanji:'りんご',romaji:'ringo',meaning:'apple',kind:'apple'},
-        {id:18,hira:'やさい',kanji:'野菜',romaji:'yasai',meaning:'vegetables',kind:'vegetables'},
-        {id:19,hira:'にく',kanji:'肉',romaji:'niku',meaning:'meat',kind:'meat'}
+        {id:17,hira:'くつ',kanji:'靴',romaji:'kutsu',meaning:'shoes',kind:'shoes'},
+        {id:18,hira:'ジーンズ',kanji:'ジーンズ',romaji:'jīnzu',meaning:'jeans',kind:'jeans'},
+        {id:19,hira:'トレーナー',kanji:'トレーナー',romaji:'torēnā',meaning:'sweatshirt',kind:'sweatshirt'}
     ];
     const variants = item => ['A','B','far'].map((zone,i)=>({...item,id:i+1,zone,color:['#e76f51','#4f86c6','#55a66b'][(i+item.id)%3]}));
     const shuffle = values => {

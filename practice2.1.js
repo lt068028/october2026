@@ -1333,7 +1333,7 @@ function practice2ShowNotice(resultSpan, message) {
         for(const person of ['A','B']) {
             const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);
         }
-        const foodSprites={pencil:[0,0],onigiri:[50,0],bento:[100,0],sandwich:[0,50],apple:[50,50],vegetables:[100,50],meat:[0,100]};
+        const foodSprites={pencil:[0,0],onigiri:[50,0],bento:[100,0],sandwich:[0,50]};
         const sprites={pen:[0,0],wallet:[50,0],hat:[100,0],notebook:[0,100],dictionary:[50,100],bag:[100,100]};
         for(const o of objects) {
             const item=node('div','p21-drill-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
@@ -1420,8 +1420,10 @@ function practice2ShowNotice(resultSpan, message) {
         for(const o of objects) {
             const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
             item.setAttribute('role','img');item.setAttribute('aria-label',`${o.colorName||''} ${o.meaning}`.trim());
-            const foodSprites={onigiri:[50,0],bento:[100,0],sandwich:[0,50],apple:[50,50],vegetables:[100,50],meat:[0,100]};
-            if(foodSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-food-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
+            const foodSprites={onigiri:[50,0],bento:[100,0],sandwich:[0,50]};
+            const clothingSprites={shoes:[0,12.5],jeans:[50,12.5],sweatshirt:[100,12.5]};
+            if(clothingSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-clothing-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=clothingSprites[o.kind].map(v=>v+'%').join(' ');}
+            else if(foodSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-food-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
             else if(o.kind==='notebook') {item.classList.remove('p21-choice-item');item.style.backgroundPosition='0% 100%';}
             else item.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;
             imageHint(item,o);stage.append(item);
@@ -1455,7 +1457,7 @@ function practice2ShowNotice(resultSpan, message) {
         const d2=document.getElementById('drill2Container');d2.hidden=false;
         const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡A: Ask what each object is. B: Answer.'));d2.append(panel2);
         const s2=setButtons(d2,['Set 1','Set 2'],'namingSet');
-        const kinds=s2===0?['onigiri','bento','sandwich']:['apple','vegetables','meat'];
+        const kinds=s2===0?['onigiri','bento','sandwich']:['shoes','jeans','sweatshirt'];
         const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i]}));
         const show2=laterScene(d2,objects);
         objects.forEach((o,i)=>{

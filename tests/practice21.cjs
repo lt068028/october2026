@@ -187,7 +187,7 @@ function mock(){
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   for(const set of [0,1]) {
    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();
-   const nouns=set===0?['おにぎり','おべんとう','さんどいっち']:['りんご','やさい','にく'];
+   const nouns=set===0?['おにぎり','おべんとう','さんどいっち']:['くつ','じーんず','とれーなー'];
    for(let i=0;i<6;i++) {
     await p.locator('#drill2Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
