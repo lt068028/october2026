@@ -10,7 +10,7 @@ const PracticeNext = (()=>{
         {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
-    const readings=[['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん']];
+    const readings=[['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
     return {items:[...Practice21.items,...places,...people],places,people,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
@@ -267,6 +267,7 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    document.querySelectorAll(".p2x-speaker-guide").forEach(e=>e.getAnimations().forEach(a=>a.cancel()));
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (currentUtteranceRef) {
@@ -897,7 +898,7 @@ function practice2ShowNotice(resultSpan, message) {
             : "🔥Keep going! Try once more!";
     };
 
-    function listen(getText, label = "🔊きく") {
+    function listen(getText, label = "🔊きく", onPlay) {
         const element = button(
             label,
             "Listen to the model sentence.",
@@ -910,6 +911,7 @@ function practice2ShowNotice(resultSpan, message) {
                     "Playing..."
                 );
 
+                onPlay?.();
                 speakText(
                     practice2SpeechText(text),
                     0.75,
@@ -1233,18 +1235,20 @@ function practice2ShowNotice(resultSpan, message) {
         context.getAnimations().forEach(a=>a.cancel());
         const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-        context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:reduced?1:3,easing:'ease-in-out'});
+        context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:context.closest('.p2x-hat-picture')?Infinity:reduced?1:3,easing:'ease-in-out'});
     }
     function scene(container,objects,{example=false,people=false,which=false}={}) {
         const shop=is22&&!people;
+        const hats=shop&&example;
         const picture=node('div','p21-drill-picture p2x-picture');
         picture.classList.toggle('p2x-shop-picture',shop);
+        picture.classList.toggle('p2x-hat-picture',hats);
         picture.classList.toggle('p2x-example-picture',example);picture.classList.toggle('p2x-floor-picture',!is22);
         picture.classList.toggle('p2x-people-picture',people);
         const stage=node('div','p2x-stage');
         const image=node('img','p2x-photo');
-        image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':'assets/practice22-shelves.png';
-        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A is seated on the left and B on the right. Mary is near A, Takeshi is near B, and Robert is far from both.':'A stands on the left beside a nearby shelf, B stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
+        image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':hats?'assets/practice22-hats.png':'assets/practice22-shelves.png';
+        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A is seated on the left and B on the right. Mary is near A, Takeshi is near B, and Robert is far from both.':hats?'Rear view of A on the left and B on the right, with a baseball cap near A, a sun hat near B, and a fedora on the upper central shelf.':'A stands on the left beside a nearby shelf, B stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
         image.width=shop?1774:is22?1536:2172;image.height=shop?887:is22?1024:724;stage.append(image);
         if(!is22) {
             PracticeNext.places.forEach((place,i)=>{
@@ -1255,20 +1259,21 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const context=node('p','p21-photo-context p2x-speaker-guide');
         context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
-        const peoplePositions=people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
+        const peoplePositions=hats?{A:[11,70],B:[88,70]}:people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
         for(const person of ['A','B']) {
             const label=node('strong','p2x-person',person);label.dataset.person=person;
             label.style.left=peoplePositions[person][0]+'%';label.style.top=peoplePositions[person][1]+'%';stage.append(label);
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?{A:[25,48],B:[74,46],far:[50,18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(people) {target.append(node('span','p2x-person-name',noun(o)));}
             else {
                 const sprite=node('span','p2x-sprite');
-                if(o.kind==='place') {sprite.classList.add('p2x-place-target');}
+                if(o.kind==='hat') {sprite.style.background='none';}
+                else if(o.kind==='place') {sprite.classList.add('p2x-place-target');}
                 else if(o.kind==='notebook') {sprite.style.backgroundImage="url('assets/practice21-items.png')";sprite.style.backgroundSize='300% 200%';sprite.style.backgroundPosition='0% 100%';}
                 else {sprite.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;}
                 target.append(sprite);
@@ -1277,12 +1282,12 @@ function practice2ShowNotice(resultSpan, message) {
             imageHint(target,o);stage.append(target);
             if(example) {
                 const region=node('div','p2x-distance-label');region.dataset.zone=o.zone;
-                region.style.left=position[0]+'%';region.style.top=(is22?position[1]+20:39)+'%';
+                region.style.left=position[0]+'%';region.style.top=(hats?(o.zone==='far'?36:18):is22?position[1]+20:39)+'%';
                 region.append(node('strong','p21-area-sound'),node('span','p21-area-description'));stage.append(region);
                 const buttons=node('div','p21-item-audio p2x-audio');buttons.dataset.zone=o.zone;
                 buttons.style.left=(!is22?[17,50,83][i]:position[0])+'%';buttons.style.top=(is22?position[1]+27:73)+'%';
                 for(const speaker of ['A','B']) {
-                    const b=listen(()=>{select(speaker,o.zone);emphasize(context);return describe(speaker,o);},`${speaker}🔊きく`);
+                    const b=listen(()=>{select(speaker,o.zone);return describe(speaker,o);},`${speaker}🔊きく`,()=>emphasize(context));
                     b.dataset.speaker=speaker;b.dataset.zone=o.zone;b.addEventListener('focus',()=>select(speaker,o.zone));buttons.append(b);
                 }
                 buttons.style.order=(!is22?['A','B','far']:['A','far','B']).indexOf(o.zone);
@@ -1292,7 +1297,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(which) {
             const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
         }
-        picture.append(context,stage);if(example)picture.append(audioGrid);container.append(picture);
+        if(hats)stage.append(context);else picture.append(context);picture.append(stage);if(example)picture.append(audioGrid);container.append(picture);
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
             context.querySelector('strong').textContent=speaker;
@@ -1317,10 +1322,10 @@ function practice2ShowNotice(resultSpan, message) {
     function renderSections() {
         for(const id of ['drill1Container','drill2Container','drill3Container']){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
         const d1=document.getElementById('drill1Container');
-        const exObjects=is22?itemsFor(['phone','dictionary','wallet']):places();
+        const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
         const box=node('section','example-box p2x-example');
-        box.append(node('h2','p21-distance-heading',is22?'この・その・あの: use a noun after each word':'ここ・そこ・あそこ: three places, three floors'));
-        box.append(node('p','p2x-context-note',is22?'The price is on each tag.':'A and B are on a call, on different floors.'));
+        box.append(node('h2','p21-distance-heading',is22?'この・その・あの + noun':'ここ・そこ・あそこ: three places, three floors'));
+        box.append(node('p','p2x-context-note',is22?'Use この・その・あの before a noun you already know to point out which item. The price is on each tag.':'A and B are on a call, on different floors.'));
         const selectExample=scene(box,exObjects,{example:true});
         const list=node('div','p21-model-list');
         for(const o of exObjects) {

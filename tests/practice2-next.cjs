@@ -26,6 +26,15 @@ function mock(){
   await p.goto(`http://next.test/practice${number}.html`);
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
+  if(number==='2.2'){
+   check(await p.locator('.p2x-example .p2x-photo').getAttribute('src'),'assets/practice22-hats.png','hat photo');
+   check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
+   check(await p.locator('.p2x-example .p2x-stage > .p2x-speaker-guide').count(),1,'Who guide inside image');
+   await p.locator('.p2x-example .p21-item-audio button').first().click();
+   check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations()[0].effect.getTiming().iterations),Infinity,'guide continues during playback');
+   await p.evaluate(()=>t.spoken.at(-1).onend?.());
+   check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations().length),0,'guide stops with playback');
+  }
   for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
    await p.locator(`#speechStyleControl [data-value="${style}"]`).click();await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
    const end=style==='formal'?'です':style==='casual'?'だよ':'だ';
@@ -34,7 +43,7 @@ function mock(){
    };
    for(const speaker of ['A','B'])for(let i=0;i<3;i++){
     const zone=['A','B','far'][i],loc=i===2?'あそこ':speaker===zone?'ここ':'そこ',adj=i===2?'あの':speaker===zone?'この':'その';
-    const model=number==='2.2'?adj+['スマホ','辞書','財布'][i]+'は'+['三万円','三千円','二千円'][i]+end:loc+'は'+['銀行','喫茶店','図書館'][i]+end;
+    const model=number==='2.2'?adj+'帽子は'+['千円','三千円','四千円'][i]+end:loc+'は'+['銀行','喫茶店','図書館'][i]+end;
     await compare(p.locator(`.p2x-example .p21-item-audio [data-speaker="${speaker}"][data-zone="${zone}"]`),model,'Example '+speaker+zone);
    }
    for(const set of [0,1]){

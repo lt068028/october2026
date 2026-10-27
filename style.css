@@ -2602,3 +2602,9 @@ body.site-scale {
 .p2x-shop-picture .p2x-object { width: 11%; }
 .p2x-shop-picture .p2x-object[data-zone="far"] { width: 8%; }
 .p2x-shop-picture .p2x-distance-label { width: 36%; }
+
+/* Practice 2.2 Example: three differently shaped hats on separated shelves. */
+.p2x-hat-picture .p2x-speaker-guide { position: absolute; left: 50%; top: 75%; transform: translateX(-50%); margin: 0; max-width: 65%; border: 2px solid #e60012; border-radius: 8px; padding: 4px 8px; }
+.p2x-hat-picture .p2x-object { width: 15%; }
+.p2x-hat-picture .p2x-object[data-zone="far"] { width: 13%; }
+.p2x-hat-picture .p2x-price { top: 95%; }

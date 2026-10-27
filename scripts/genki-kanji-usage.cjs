@@ -21,7 +21,7 @@ for(const [set,kinds] of [['phone','wallet','dictionary'],['notebook','dictionar
 for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.
-for(const k of ['phone','dictionary','wallet'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,[item(k),'円']);
+for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,['帽子','円']);
 for(const [set,kinds] of [['phone','wallet','dictionary'],['notebook','dictionary','wallet']].entries())for(const k of kinds)for(const speaker of ['A','B'])add('2.2',`D1-S${set+1}-${k}-${speaker}`,[item(k),'円']);
 for(const set of [1,2]){add('2.2',`D2-S${set}-Example-Q`,['人','誰']);add('2.2',`D2-S${set}-Example-R`,['メアリー']);}
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`D2-S${set}-${name}-Q`,['人','誰']);add('2.2',`D2-S${set}-${name}-R`,[name]);}

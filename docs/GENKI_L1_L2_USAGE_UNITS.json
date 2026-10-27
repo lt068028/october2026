@@ -801,55 +801,55 @@
   },
   {
     "page": "2.2",
-    "id": "E1-phone-A",
+    "id": "E1-cap-A",
     "type": "model",
     "tokens": [
-      "スマホ",
+      "帽子",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "E1-phone-B",
+    "id": "E1-cap-B",
     "type": "model",
     "tokens": [
-      "スマホ",
+      "帽子",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "E1-dictionary-A",
+    "id": "E1-sunhat-A",
     "type": "model",
     "tokens": [
-      "辞書",
+      "帽子",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "E1-dictionary-B",
+    "id": "E1-sunhat-B",
     "type": "model",
     "tokens": [
-      "辞書",
+      "帽子",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "E1-wallet-A",
+    "id": "E1-fedora-A",
     "type": "model",
     "tokens": [
-      "財布",
+      "帽子",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "E1-wallet-B",
+    "id": "E1-fedora-B",
     "type": "model",
     "tokens": [
-      "財布",
+      "帽子",
       "円"
     ]
   },
