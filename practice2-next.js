@@ -927,7 +927,8 @@ function practice2ShowNotice(resultSpan, message) {
     function imageHint(anchor,o) {
         if(hintMode==='off')return;
         anchor.classList.add('p21-image-hint');anchor.tabIndex=0;
-        anchor.setAttribute('aria-label',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
+        const tipText=o.hintText||`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`;
+        anchor.setAttribute('aria-label',o.hintText?`${anchor.textContent}: ${tipText}`:tipText);
         let host=null;
         function close() {
             if(anchor.matches(':hover, :focus'))return;
@@ -936,7 +937,7 @@ function practice2ShowNotice(resultSpan, message) {
         function show() {
             if(host)return;
             host=node('span','tooltip-wrap p21-image-tip-host');
-            const tip=node('span','tooltip-tip',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
+            const tip=node('span','tooltip-tip',tipText);
             tip.id=`p21-image-tip-${++imageHintSerial}`;tip.setAttribute('role','tooltip');host.append(tip);
             anchor.dataset.portalTip=tip.id;anchor.setAttribute('aria-describedby',tip.id);
             document.body.append(host);window.DrillTooltips.position(anchor,tip);
@@ -1206,6 +1207,12 @@ function practice2ShowNotice(resultSpan, message) {
     const short=text=>text+ending();
     const adnominal=(speaker,o)=>demonstrative(speaker,o)+noun(o);
     const price=o=>word(o.priceHira,o.priceKanji);
+    const priceCue=o=>{
+        const text=price(o);
+        if(hintMode==='off'||scriptMode==='hiragana')return text;
+        if(hintMode==='paren')return `<span class="practice12-cue-unit display-cue-unit"><span class="target-word">${text}</span><span class="vocab-inline">(${o.priceHira})</span></span>`;
+        return `<span class="tooltip-wrap"><span class="target-word">${text}</span><span class="tooltip-tip">${o.priceHira}</span></span>`;
+    };
     const describe=(speaker,o)=>is22?statement(adnominal(speaker,o),price(o)):statement(demonstrative(speaker,o),noun(o));
     const vocabulary=o=>formatWord(o.hira,o.kanji,o.romaji,o.meaning);
     const itemsFor=kinds=>kinds.map((kind,i)=>{
@@ -1293,6 +1300,7 @@ function practice2ShowNotice(resultSpan, message) {
                 target.append(sprite);
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
+                    if(!example){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
                     if(hats) {tag.style.left=position[0]+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'?21:29)+'%';tag.style.bottom='auto';stage.append(tag);}
                     else target.append(tag);
                 }
@@ -1396,8 +1404,7 @@ function practice2ShowNotice(resultSpan, message) {
     function renderPriceDialogue(d1) {
         panel(d1,'Drill 1: Ask the price','💡A asks three prices. B answers with この／その／あの + noun and the price.');
         const set=setButtons(d1,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(d1,objects);
-        const sample=objects[0],mini=node('section','example-box p2x-dialogue-example');
-        mini.append(node('h3','','Example'));
+        const sample=objects[0],mini=node('section','example-box p2x-dialogue-example p2x-price-example');
         const q=node('p'),r=node('p');
         q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'A🔊きく'),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'B🔊きく'),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));mini.append(q,r);d1.append(mini);
@@ -1419,7 +1426,7 @@ function practice2ShowNotice(resultSpan, message) {
         r.append(node('strong','','B · Response: '),listen(()=>{select('B',sample.zone);return short(adnominal('B',sample));},'B🔊きく'),modelText(()=>short(adnominal('B',sample)),sample));mini.append(q,r);d3.append(mini);
         for(const asker of ['A','B'])objects.forEach((o,i)=>{
             const answerer=asker==='A'?'B':'A',current=card(d3,`${asker}${i+1}`),prefix=`p22_food_s${set}_${asker}_${i}`;
-            const q=recordingRow(current,'q',`<strong>${asker} · Question:</strong> どの／${vocabulary(o)}／${price(o)}`,prefix+'_q',()=>qText(o));
+            const q=recordingRow(current,'q',`<strong>${asker} · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
             practice2State.replyReferences[prefix+'_r']=()=>[adnominal(answerer,o)+'が、'+price(o)+ending(),statement(adnominal(answerer,o),price(o))];
             const r=recordingRow(current,'a',`<strong>${answerer} · Response:</strong> …`,prefix+'_r',()=>short(adnominal(answerer,o)));
             attach(q,asker,o,select);attach(r,answerer,o,select);

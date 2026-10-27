@@ -37,6 +37,17 @@ function mock(){
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
    check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),1,'D3 uses 2.1 thought bubble');
    check(await p.locator('#drill1Container .recording-table tr').count(),6,'three A-to-B price conversations');
+   check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
+   check(await p.locator('.p2x-price-example').evaluate(e=>getComputedStyle(e,'::before').content),'none','redundant Example badge removed');
+   check(await p.locator('#drill1Container > .info-panel').evaluate(e=>parseFloat(getComputedStyle(e).marginTop)),24,'shared Example to Drill spacing');
+   check(await p.locator('#drill2Container').evaluate(e=>parseFloat(getComputedStyle(e).marginTop)),40,'shared section spacing');
+   check(await p.locator('.p2x-example .p2x-price-hint').count(),0,'Example prices need no reading hover');
+   for(const [selector,reading]of [['#drill1Container .p2x-price-hint','にせんえん'],['#drill3Container .p2x-price-hint','さんびゃくえん']]) {
+    const tag=p.locator(selector).first();await tag.hover();
+    check(await p.locator('.p21-image-tip-host .tooltip-tip').last().textContent(),reading,'price hover reading');
+    await p.mouse.move(0,0);
+   }
+
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
    check(await p.locator('.p2x-example .p2x-stage > .p2x-speaker-guide').count(),1,'Who guide inside image');
    check(await p.locator('.p2x-example .p2x-stage > .p2x-audio').count(),3,'three audio pairs inside image');
