@@ -17,21 +17,18 @@ const items=constant('practice2.1-scenes.js','items'),item=k=>items.find(o=>o.ki
 for(const k of ['book','bag','clock'])for(const speaker of ['A','B'])add('2.1','E1-'+k+'-'+speaker,[item(k)]);
 for(const k of ['pen','newspaper','hat'])for(const speaker of ['A','B'])add('2.1','D1-S1-'+k+'-'+speaker,[item(k)]);
 for(const [i,k] of ['notebook','pencil','tshirt'].entries()){add('2.1',`D1-S2-${i}-Q`,[item(['pencil','tshirt','notebook'][i])]);add('2.1',`D1-S2-${i}-R`,[item(k)]);}
-for(const [set,kinds] of [['onigiri','bento','sandwich'],['shoes','jeans','sweatshirt']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
+for(const [set,kinds] of [['onigiri','bento','sandwich'],['sweatshirt','jeans','shoes']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
 for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.
 for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,['帽子','円']);
-for(const [set,k] of ['bag','clock'].entries()) {
- add('2.2',`D1-S${set+1}-Example-Q`,[item(k)]);add('2.2',`D1-S${set+1}-Example-R`,[item(k),'円']);
- for(let i=0;i<3;i++){add('2.2',`D1-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D1-S${set+1}-A-${i}-R`,[item(k),'円']);}
-}
-for(const set of [1,2]){add('2.2',`D2-S${set}-Example-Q`,['人','誰']);add('2.2',`D2-S${set}-Example-R`,['メアリー']);}
-for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`D2-S${set}-${name}-Q`,['人','誰']);add('2.2',`D2-S${set}-${name}-R`,[name]);}
-for(const [set,food] of ['おにぎり','お弁当'].entries()) {
- add('2.2',`D3-S${set+1}-Example-Q`,[food,'円']);add('2.2',`D3-S${set+1}-Example-R`,[food]);
- for(const speaker of ['A','B'])for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-${speaker}-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-${speaker}-${i}-R`,[food]);}
-}
+for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++)add('2.2',`D1-S${set+1}-A-${i}`,[item(k),'円']);
+add('2.2','E2-Q',['時計']);add('2.2','E2-R',['時計','円']);
+for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++){add('2.2',`D2-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D2-S${set+1}-A-${i}-R`,[item(k),'円']);}
+add('2.2','E3-Q',['おにぎり','円']);add('2.2','E3-R',['おにぎり']);
+for(const [set,food] of ['おにぎり','お弁当'].entries())for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-A-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-A-${i}-R`,[food]);}
+for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add('2.2',`People-S${set}-Example-R`,['メアリー']);}
+for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
 for(const place of ['銀行','喫茶店','図書館'])for(const speaker of ['A','B']){add('2.3','E1-'+place+'-'+speaker,[place]);add('2.3','D1-S1-'+place+'-'+speaker,[place]);}
 for(const k of ['phone','dictionary','wallet'])for(const speaker of ['A','B'])add('2.3',`D1-S2-${k}-${speaker}`,[item(k)]);
 for(const [set,kinds] of [['phone','wallet','dictionary'],['notebook','dictionary','wallet']].entries())for(const [i,k]of kinds.entries())add('2.3',`D2-S${set+1}-${i}-Q`,[item(k)]);

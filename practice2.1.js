@@ -1418,7 +1418,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         for(const person of ['A','B']) {const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);}
         for(const o of objects) {
-            const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
+            const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;item.dataset.color=o.colorName||'';
             item.setAttribute('role','img');item.setAttribute('aria-label',`${o.colorName||''} ${o.meaning}`.trim());
             const foodSprites={onigiri:[50,0],bento:[100,0],sandwich:[0,50]};
             const clothingSprites={shoes:[0,12.5],jeans:[50,12.5],sweatshirt:[100,12.5]};
@@ -1426,6 +1426,7 @@ function practice2ShowNotice(resultSpan, message) {
             else if(foodSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-food-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
             else if(o.kind==='notebook') {item.classList.remove('p21-choice-item');item.style.backgroundPosition='0% 100%';}
             else item.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;
+            if(o.kind==='wallet')item.style.backgroundImage="url('assets/practice21-wallet-variants.png')";
             imageHint(item,o);stage.append(item);
         }
         picture.append(stage);container.append(picture);
@@ -1457,7 +1458,7 @@ function practice2ShowNotice(resultSpan, message) {
         const d2=document.getElementById('drill2Container');d2.hidden=false;
         const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡A: Ask what each object is. B: Answer.'));d2.append(panel2);
         const s2=setButtons(d2,['Set 1','Set 2'],'namingSet');
-        const kinds=s2===0?['onigiri','bento','sandwich']:['shoes','jeans','sweatshirt'];
+        const kinds=s2===0?['onigiri','bento','sandwich']:['sweatshirt','jeans','shoes'];
         const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i]}));
         const show2=laterScene(d2,objects);
         objects.forEach((o,i)=>{
@@ -1749,6 +1750,9 @@ function practice2Normalize(text) {
 // 読み上げ専用。表示・判定用の文は変更しない。
 function practice2SpeechText(text) {
     let value = String(text ?? "").trim().replace(/^ううん、/, "ううんん、");
+    const pairs=Practice21.items.filter(o=>o.hira!==o.kanji).map(o=>[o.hira,o.kanji]).sort((a,b)=>b[0].length-a[0].length);
+    for(const [from,to]of pairs)value=value.split(from).join(to);
+    value=value.replace(/(?:なん|なに)(?=ですか|[？?。]|$)/g,'何');
     let prefix = "";
 
     // 「はい」の「は」を助詞として処理しない。

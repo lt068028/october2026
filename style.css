@@ -2673,6 +2673,12 @@ body.site-scale {
 
 /* Shared section rhythm; these values are not multiplied by the text scale. */
 :root { --example-drill-gap: 24px; --practice-section-gap: 40px; }
-.p2x-price-example { counter-increment: none; padding-top: 16px; }
-.p2x-price-example::before { content: none; }
+.p2x-price-example { padding-top: 24px; }
 .p2x-price-hint.p21-image-hint { cursor: help; z-index: 4; }
+/* Practice 2.2 example colors span the item and its distance caption. */
+.p2x-reach[data-reach="A"], .p2x-reach[data-reach="B"] { top: 37%; height: 38%; }
+.p2x-reach[data-reach="far"] { left: 39%; top: 6%; width: 42%; height: 36%; }
+.p2x-model-picture { width: 75%; }
+@media(max-width:900px) { .p2x-model-picture { width: 100%; } }
+.p2x-reach[data-reach="far"] { height: 26%; border-radius: 50%; }
+.p21-shelf-scene .p21-drill-item[data-kind="wallet"][data-color="green"] { clip-path: inset(2% 2% 5% 9%); }

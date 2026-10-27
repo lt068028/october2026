@@ -114,6 +114,7 @@ function mock(){
  check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='none')),true,'D2 objects stay in full color');
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
  check(await p.evaluate(()=>practice2Normalize('Tシャツ')===practice2Normalize('ティーシャツ')),true,'T-shirt recognition forms agree');
+ check(await p.evaluate(()=>practice2SpeechText('これはほんです。').includes('本')),true,'TTS uses kanji independently of display');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
@@ -188,11 +189,11 @@ function mock(){
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   for(const set of [0,1]) {
    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();
-   const nouns=set===0?['おにぎり','おべんとう','さんどいっち']:['くつ','じーんず','とれーなー'];
+   const nouns=set===0?['おにぎり','おべんとう','さんどいっち']:['とれーなー','じーんず','くつ'];
    for(let i=0;i<6;i++) {
     await p.locator('#drill2Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
-    const j=Math.floor(i/2),expected=i%2?nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なんですか':'なに');
+    const j=Math.floor(i/2),expected=i%2?nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なにですか':'なに');
     check(text,expected,'D2 naming model');
    }
   }

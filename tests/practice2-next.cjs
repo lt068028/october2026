@@ -24,6 +24,7 @@ function mock(){
   const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(mock);
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
+  const personSection=number==='2.2'?'#peopleContainer':'#drill2Container';
   check(await p.title(),number==='2.2'?'Practice 2.2: この・その・あの・どの — Demonstrative Adjectives':'Practice 2.3: ここ・そこ・あそこ・どこ',number+' page title');
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
@@ -35,10 +36,18 @@ function mock(){
    const colorsB=await p.locator('.p2x-example .p2x-reach').evaluateAll(es=>es.map(e=>getComputedStyle(e).backgroundColor));
    check(colorsA[0],colorsB[1],'near speaker color follows B');check(colorsA[1],colorsB[0],'near listener color follows B');check(colorsA[2],colorsB[2],'far region unchanged');
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
-   check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),1,'D3 uses 2.1 thought bubble');
-   check(await p.locator('#drill1Container .recording-table tr').count(),6,'three A-to-B price conversations');
+   check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),2,'E3 and D3 use 2.1 thought bubble');
+   check(await p.locator('#drill2Container .recording-table tr').count(),6,'three A-to-B price conversations');
    check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
-   check(await p.locator('.p2x-price-example').evaluate(e=>getComputedStyle(e,'::before').content),'none','redundant Example badge removed');
+   check(await p.locator('#drill1Container .recording-table tr').count(),3,'D1 has three statements');
+   check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 has three conversations');
+   check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2','','3',''],'D3 numbered 1 through 3');
+   check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','A','B','A','B'],'D3 A asks only');
+   check(await p.locator('#drill1Container,#drill2Container,#drill3Container').evaluateAll(es=>es.every(e=>e.firstElementChild.matches('.example-box')&&Boolean(e.firstElementChild.nextElementSibling?.matches('.info-panel')))),true,'each Example precedes its Drill');
+   check(await p.locator('#peopleContainer').evaluate(e=>e.previousElementSibling.id),'drill3Container','people task retained at bottom');
+   check(await p.locator('.p2x-price-example button,.p2x-food-example button').evaluateAll(es=>es.every(e=>e.firstChild.textContent==='🔊きく')),true,'no repeated A/B on example buttons');
+
+   check(await p.locator('.p2x-price-example').evaluate(e=>getComputedStyle(e,'::before').content!=='none'),true,'Example2 badge restored');
    check(await p.locator('#drill1Container > .info-panel').evaluate(e=>parseFloat(getComputedStyle(e).marginTop)),24,'shared Example to Drill spacing');
    check(await p.locator('#drill2Container').evaluate(e=>parseFloat(getComputedStyle(e).marginTop)),40,'shared section spacing');
    check(await p.locator('.p2x-example .p2x-price-hint').count(),0,'Example prices need no reading hover');
@@ -55,6 +64,7 @@ function mock(){
    check(await p.locator('.p2x-example .p2x-context-note').count(),0,'removed explanatory paragraph');
    await p.locator('.p2x-example .p21-item-audio button').first().click();
    check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations()[0].effect.getTiming().iterations),Infinity,'guide continues during playback');
+   check(await p.evaluate(()=>t.spoken.at(-1).text.includes('千円')&&!t.spoken.at(-1).text.includes('せんえん')),true,'TTS price is kanji with hiragana display');
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
    check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations().length),0,'guide stops with playback');
   }
@@ -70,28 +80,30 @@ function mock(){
     await compare(p.locator(`.p2x-example .p21-item-audio [data-speaker="${speaker}"][data-zone="${zone}"]`),model,'Example '+speaker+zone);
    }
    for(const set of [0,1]){
-    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();
+    await p.locator(personSection+' .p21-set-switcher button').nth(set).click();
     const asker=number==='2.2'&&set===1?'B':'A';
     for(let i=0;i<3;i++){
      const adj=i===2?'あの':asker===['A','B','far'][i]?'この':'その';
      const q=number==='2.2'?adj+'人は誰'+(style==='formal'?'ですか':''):['スマホ','財布','辞書','ノート','辞書','財布'][set*3+i]+'はどこ'+(style==='formal'?'ですか':'');
      const r=number==='2.2'?['メアリー','たけし','ロバート'][i]+'さん'+end:['そこ','ここ','あそこ'][i]+end;
-     await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D2 Q');
-     await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D2 response');
+     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D2 Q');
+     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D2 response');
     }
    }
    if(number==='2.2') {
     for(const set of [0,1]) {
      await p.locator('#drill1Container .p21-set-switcher button').nth(set).click();
+     await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();
      const n=['カバン','時計'][set];
      for(let i=0;i<3;i++) {
       const adj=['この','その','あの'][i],replyAdj=['その','この','あの'][i],amount=(set===0?['二千円','五千円','八千円']:['六千円','九千円','一万円'])[i];
-      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),adj+n+'はいくら'+(style==='formal'?'ですか':''),'D1 price Q');
-      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),replyAdj+n+'は'+amount+end,'D1 price R');
+      await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),adj+n+'は'+amount+end,'D1 statement');
+      await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),adj+n+'はいくら'+(style==='formal'?'ですか':''),'D1 price Q');
+      await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),replyAdj+n+'は'+amount+end,'D1 price R');
      }
      await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
      const food=['おにぎり','お弁当'][set],prices=set===0?['三百円','六百円','九百円']:['千円','二千円','三千円'];
-     for(let i=0;i<6;i++) {
+     for(let i=0;i<3;i++) {
       const zone=['A','B','far'][i%3],answerer=i<3?'B':'A',adj=zone==='far'?'あの':zone===answerer?'この':'その';
       await compare(p.locator('#drill3Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),'どの'+food+'が'+prices[i%3]+(style==='formal'?'ですか':''),'D3 food Q');
       await compare(p.locator('#drill3Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),adj+food+end,'D3 food R');
@@ -112,7 +124,7 @@ function mock(){
 
   }
   await p.locator('#speechStyleControl [data-value="formal"]').click();
-  await p.locator('#drill1Container .p21-set-switcher button').first().click();await p.locator('#drill2Container .p21-set-switcher button').first().click();await p.locator('#drill3Container .p21-set-switcher button').first().click();
+  await p.locator('#drill1Container .p21-set-switcher button').first().click();await p.locator('#drill2Container .p21-set-switcher button').first().click();await p.locator(personSection+' .p21-set-switcher button').first().click();await p.locator('#drill3Container .p21-set-switcher button').first().click();
   const judgments=await p.evaluate(number=>{
    isAutoPlay=false;const prefix=number==='2.2'?'p22':'p23';
    const samples=number==='2.2'?[
@@ -165,7 +177,7 @@ function mock(){
     return buttons.every((a,i)=>a.left>=stage.left&&a.right<=stage.right&&a.top>=stage.top&&a.bottom<=stage.bottom&&buttons.every((b,j)=>i===j||Math.min(a.right,b.right)<=Math.max(a.left,b.left)||Math.min(a.bottom,b.bottom)<=Math.max(a.top,b.top)));
    }),true,'image buttons fit without overlap '+width+theme+hint);
    if(process.env.NEXT_SCREENSHOT_DIR&&width===1440&&theme==='light'&&hint==='hover'){
-    fs.mkdirSync(process.env.NEXT_SCREENSHOT_DIR,{recursive:true});await p.locator('.p2x-example').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-example.png`)});await p.locator('#drill2Container .p2x-picture').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-drill2.png`)});
+    fs.mkdirSync(process.env.NEXT_SCREENSHOT_DIR,{recursive:true});await p.locator('.p2x-example').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-example.png`)});await p.locator('#drill2Container > .p2x-picture').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-drill2.png`)});
    }
   }
   await p.locator('#hintModeControl [data-value="hover"]').click();

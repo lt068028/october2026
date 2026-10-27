@@ -10,7 +10,7 @@ const PracticeNext = (()=>{
         {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
-    const readings=[['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
+    const readings=[['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
     return {items:[...Practice21.items,...places,...people],places,people,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
@@ -1250,14 +1250,14 @@ function practice2ShowNotice(resultSpan, message) {
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
         context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:context.closest('.p2x-hat-picture')?Infinity:reduced?1:3,easing:'ease-in-out'});
     }
-    function scene(container,objects,{example=false,people=false,which=false}={}) {
+    function scene(container,objects,{example=false,people=false,which=false,model=false}={}) {
         const shop=is22&&!people;
         const hats=shop&&(example||Boolean(objects[0]?.photoKind));
         const photoKind=objects[0]?.photoKind;
         const picture=node('div','p21-drill-picture p2x-picture');
         picture.classList.toggle('p2x-shop-picture',shop);
         picture.classList.toggle('p2x-hat-picture',hats);
-        picture.classList.toggle('p2x-example-picture',example);picture.classList.toggle('p2x-floor-picture',!is22);
+        picture.classList.toggle('p2x-example-picture',example);picture.classList.toggle('p2x-model-picture',model);picture.classList.toggle('p2x-floor-picture',!is22);
         picture.classList.toggle('p2x-people-picture',people);
         const stage=node('div','p2x-stage');
         const image=node('img','p2x-photo');
@@ -1300,7 +1300,7 @@ function practice2ShowNotice(resultSpan, message) {
                 target.append(sprite);
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
-                    if(!example){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
+                    if(!example&&!model){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
                     if(hats) {tag.style.left=position[0]+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'?21:29)+'%';tag.style.bottom='auto';stage.append(tag);}
                     else target.append(tag);
                 }
@@ -1357,7 +1357,7 @@ function practice2ShowNotice(resultSpan, message) {
         for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>select(speaker,o.zone));
     }
     function renderSections() {
-        for(const id of ['drill1Container','drill2Container','drill3Container']){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
+        for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?['peopleContainer']:[])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
         const d1=document.getElementById('drill1Container');
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
         const box=node('section','example-box p2x-example');
@@ -1384,7 +1384,7 @@ function practice2ShowNotice(resultSpan, message) {
             }
         }
         box.append(list);d1.append(box);selectExample('A','A');
-        if(is22)renderPriceDialogue(d1);
+        if(is22)renderPriceStatements(d1);
         else {
         panel(d1,is22?'Drill 1: この・その・あの + noun':'Drill 1: Describe each place',is22?'💡A, then B: Name each object and say its price.':(practice2State.describeSet===1?'💡A, then B: Say where each object is.':'💡A, then B: Name the three places.'));
         const set1=setButtons(d1,['Set 1','Set 2'],'describeSet');
@@ -1399,42 +1399,55 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         }
-        renderDialogue();renderChoosing();
+        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderDialogue();}
+        else {renderDialogue();renderChoosing();}
     }
-    function renderPriceDialogue(d1) {
-        panel(d1,'Drill 1: Ask the price','💡A asks three prices. B answers with この／その／あの + noun and the price.');
-        const set=setButtons(d1,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(d1,objects);
-        const sample=objects[0],mini=node('section','example-box p2x-dialogue-example p2x-price-example');
-        const q=node('p'),r=node('p');
-        q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'A🔊きく'),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
-        r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'B🔊きく'),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));mini.append(q,r);d1.append(mini);
+    function renderPriceStatements(container) {
+        panel(container,'Drill 1: Describe the price','💡A: Use この／その／あの + noun and say the price.');
+        const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects);
         objects.forEach((o,i)=>{
-            const current=card(d1,String(i+1)),prefix=`p22_price_s${set}_A_${i}`;
+            const current=card(container,String(i+1));
+            const row=recordingRow(current,'q',`<strong>A:</strong> ${demonstrative('A',o)}／${vocabulary(o)}／${priceCue(o)}`,`p22_statements_s${set}_A_${i}`,()=>describe('A',o));attach(row,'A',o,select);
+        });
+    }
+    function priceConversationExample(container) {
+        const objects=merchandise('clock'),sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
+        const select=scene(box,objects,{model:true}),q=node('p'),r=node('p');
+        q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');}),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
+        r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));}),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
+    }
+    function renderPriceDialogue(container) {
+        priceConversationExample(container);
+        panel(container,'Drill 2: Ask the price','💡A asks three prices. B answers with この／その／あの + noun and the price.');
+        const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'priceDialogueSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects);
+        objects.forEach((o,i)=>{
+            const current=card(container,String(i+1)),prefix=`p22_price_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${demonstrative('A',o)}／${vocabulary(o)}／${formatWord('いくら','いくら','ikura','how much')}`,prefix+'_q',()=>question(adnominal('A',o),'いくら'));
-            // Demonstrative change is the task: a bare price cannot satisfy this exercise.
             const r=recordingRow(current,'a','<strong>B · Response:</strong> …',prefix+'_r',()=>statement(adnominal('B',o),price(o)));
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
-    function renderFoodChoosing(d3) {
-        panel(d3,'Drill 3: どの + noun','💡Ask which group has that price. Answer with この／その／あの + noun.');
-        d3.append(node('p','p2x-context-note','Each price is for the whole group. Japanese nouns and この／その／あの keep the same form for one or more items.'));
-        const set=setButtons(d3,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(d3,objects,{which:true});
+    function renderFoodChoosing(container) {
+        const exampleObjects=merchandise('onigiri'),sample=exampleObjects[0],box=node('section','example-box p2x-dialogue-example p2x-food-example');
+        const selectExample=scene(box,exampleObjects,{which:true,model:true});
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
-        const sample=objects[0],mini=node('section','example-box p2x-dialogue-example');mini.append(node('h3','','Example'));
-        const q=node('p'),r=node('p');q.append(node('strong','','A · Question: '),listen(()=>{select('A',sample.zone);return qText(sample);},'A🔊きく'),modelText(()=>qText(sample),sample));
-        r.append(node('strong','','B · Response: '),listen(()=>{select('B',sample.zone);return short(adnominal('B',sample));},'B🔊きく'),modelText(()=>short(adnominal('B',sample)),sample));mini.append(q,r);d3.append(mini);
-        for(const asker of ['A','B'])objects.forEach((o,i)=>{
-            const answerer=asker==='A'?'B':'A',current=card(d3,`${asker}${i+1}`),prefix=`p22_food_s${set}_${asker}_${i}`;
-            const q=recordingRow(current,'q',`<strong>${asker} · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
-            practice2State.replyReferences[prefix+'_r']=()=>[adnominal(answerer,o)+'が、'+price(o)+ending(),statement(adnominal(answerer,o),price(o))];
-            const r=recordingRow(current,'a',`<strong>${answerer} · Response:</strong> …`,prefix+'_r',()=>short(adnominal(answerer,o)));
-            attach(q,asker,o,select);attach(r,answerer,o,select);
+        const q=node('p'),r=node('p');
+        q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);}),modelText(()=>qText(sample),sample));
+        r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));}),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
+        panel(container,'Drill 3: どの + noun','💡A asks which group has that price. B answers with この／その／あの + noun.');
+        container.append(node('p','p2x-context-note','Each price is for the whole group. Japanese nouns and この／その／あの keep the same form for one or more items.'));
+        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:true});
+        objects.forEach((o,i)=>{
+            const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
+            const q=recordingRow(current,'q',`<strong>A · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
+            practice2State.replyReferences[prefix+'_r']=()=>[adnominal('B',o)+'が、'+price(o)+ending(),statement(adnominal('B',o),price(o))];
+            const r=recordingRow(current,'a','<strong>B · Response:</strong> …',prefix+'_r',()=>short(adnominal('B',o)));
+            attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
     function renderDialogue() {
-        const d2=document.getElementById('drill2Container');
-        panel(d2,is22?'Drill 2: この人はだれですか':'Drill 2: Where is it?',is22?'💡A: Ask who each person is. B: Answer with the name.':'💡A: Ask where each object is. B: Answer with ここ／そこ／あそこ.');
+        const d2=document.getElementById(is22?'peopleContainer':'drill2Container');
+        panel(d2,is22?'この人はだれですか — Under review':'Drill 2: Where is it?',is22?'💡A: Ask who each person is. B: Answer with the name.':'💡A: Ask where each object is. B: Answer with ここ／そこ／あそこ.');
         if(is22)d2.append(node('p','p2x-context-note','どれ = which one? · だれ = who?'));
         const set=setButtons(d2,['Set 1','Set 2'],'dialogueSet');
         const objects=is22?PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]})):itemsFor(set===0?['phone','wallet','dictionary']:['notebook','dictionary','wallet']);
@@ -1443,9 +1456,8 @@ function practice2ShowNotice(resultSpan, message) {
         const asker=is22&&set===1?'B':'A',answerer=asker==='A'?'B':'A';
         if(is22) {
             const sample=objects[0],exampleBox=node('section','example-box p2x-dialogue-example');
-            exampleBox.append(node('h3','','Example'));
-            const q=node('p');q.append(node('strong','',`${asker} · Question: `),listen(()=>{select(asker,sample.zone);return question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰'));},`${asker}🔊きく`),modelText(()=>question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰'))));
-            const r=node('p');r.append(node('strong','',`${answerer} · Response: `),listen(()=>{select(answerer,sample.zone);return short(noun(sample)+'さん');},`${answerer}🔊きく`),modelText(()=>short(noun(sample)+'さん')));exampleBox.append(q,r);d2.append(exampleBox);
+            const q=node('p');q.append(node('strong','',`${asker} · Question: `),listen(()=>{select(asker,sample.zone);return question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰'));}),modelText(()=>question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰'))));
+            const r=node('p');r.append(node('strong','',`${answerer} · Response: `),listen(()=>{select(answerer,sample.zone);return short(noun(sample)+'さん');}),modelText(()=>short(noun(sample)+'さん')));exampleBox.append(q,r);d2.append(exampleBox);
         }
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
@@ -1740,6 +1752,9 @@ function practice2Normalize(text) {
 // 読み上げ専用。表示・判定用の文は変更しない。
 function practice2SpeechText(text) {
     let value = String(text ?? "").trim().replace(/^ううん、/, "ううんん、");
+    const pairs=[...PracticeNext.items.filter(o=>o.hira!==o.kanji).map(o=>[o.hira,o.kanji]),...PracticeNext.readings.filter(([kanji])=>/^[\p{Script=Han}]+$/u.test(kanji)&&kanji!=='武').map(([kanji,hira])=>[hira,kanji])].sort((a,b)=>b[0].length-a[0].length);
+    for(const [from,to]of pairs)value=value.split(from).join(to);
+    value=value.replace(/(?:なん|なに)(?=ですか|[？?。]|$)/g,'何');
     let prefix = "";
 
     // 「はい」の「は」を助詞として処理しない。
