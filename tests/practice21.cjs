@@ -60,13 +60,13 @@ function mock(){
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  const attention=await p.locator('.p21-photo-context').evaluate(el=>{
-  const animation=el.querySelector('.p21-current-speaker').getAnimations()[0];
-  return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),background:getComputedStyle(el).backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
+  const animation=el.getAnimations()[0];
+  return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),highlight:animation.effect.getKeyframes()[1].backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
  });
- check(attention,{outside:true,front:true,background:'rgb(255, 245, 245)',duration:1200,iterations:3},'speaker guide above photograph with three visible letter pulses');
- await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
+ check(attention,{outside:true,front:true,highlight:'rgb(254, 202, 202)',duration:1200,iterations:3},'speaker guide above photograph with three background pulses');
+ await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
- check(await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  check(await p.locator('.p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
  await p.emulateMedia({reducedMotion:'reduce'});

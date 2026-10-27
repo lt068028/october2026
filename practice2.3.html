@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice 2.3: ここ・そこ・あそこ・どこ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="site-scale practice12-page practice21-page practice-next-page" data-practice="2.3">
+
+    <!-- =========================================================
+         Header & Settings
+         ========================================================= -->
+    <div class="main-header page-header">
+
+        <!-- Title + Independent Back Link -->
+        <div class="page-heading">
+            <h1>Practice 2.3: ここ・そこ・あそこ・どこ</h1>
+
+            <a
+                href="#"
+                class="back-link"
+                onclick="window.history.back(); return false;"
+            >↩️もどる</a>
+        </div>
+
+        <!-- Settings -->
+        <div class="compact-settings">
+
+            <!-- Row 1: Script Mode + Vocabulary -->
+            <div class="settings-row settings-segments-row">
+
+                <!-- Script Mode -->
+                <div class="control-item">
+                    <div
+                        id="scriptModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Script Mode"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hiragana"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🐣</span>Hiragana Only
+                            <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="kanji"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🐤</span>With漢字
+                            <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocabulary -->
+                <div class="control-item">
+                    <div
+                        id="hintModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Vocabulary Display"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="off"
+                            aria-pressed="false"
+                        >
+                            OFF
+                            <span class="custom-tip-box">Hides vocabulary pronunciation and meaning hints.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hover"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🔎</span>Vocab Hover
+                            <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="paren"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🔡</span>Vocab Display
+                            <span class="custom-tip-box">Always shows word pronunciation and meaning in parentheses.</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Row 2: Autostop + Autoplay -->
+            <div class="settings-row settings-auto-row">
+
+                <!-- Autostop -->
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoRecord"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">ON: Automatically stops recording when you stop speaking. OFF: Records until you click the stop button.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="toggleRecordMode"
+                            aria-label="Autostop"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Autoplay -->
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoPlay"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">▶️</span>Autoplay
+                        <span class="custom-tip-box">ON: Plays the model and your voice automatically after recording. OFF: Disables automatic playback.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="togglePlaybackMode"
+                            aria-label="Autoplay"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         Drill 1 Section Container
+         ========================================================= -->
+    <div id="drill1Container"></div>
+
+    <!-- =========================================================
+         Drill 2 Section Container
+         ========================================================= -->
+    <div id="drill2Container"></div>
+    <div id="drill3Container"></div>
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
+    <div class="voice-guide-footer">
+        <label for="voiceSelect" class="voice-select-label">🔊Voice:</label>
+        <select id="voiceSelect" class="voice-select" aria-label="Voice"></select>
+        <span class="voice-help-icon custom-tip-wrap" tabindex="0" aria-label="Voice help">?
+            <span class="custom-tip-box">If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.</span>
+        </span>
+    </div>
+
+    <script src="drill-audio-session.js"></script>
+    <script src="drill-answer-rules.js"></script>
+    <script src="practice2.1-scenes.js"></script>
+    <script src="practice2-next.js"></script>
+    <script src="tooltip-layout.js"></script>
+</body>
+</html>

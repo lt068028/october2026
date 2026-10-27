@@ -102,3 +102,9 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/practice21.cjs`：現行はEx1の6モデル・話者と領域の交代・下部の文との対応を検証。初期の全Drill版からEx1専用の検証へ更新済み。
 
 - 現在のpractice21テストはEx1のみ。3文体／2表記の6音声と話者・領域交代、下部モデル対応、600～1920pxのはみ出しを検証。2.1は録音UIを保留したためaudio-relayの対象から外し、既存8ページの検証を維持。図内ボタンはアイテムに追従するのでfluid-widthの固定きく列検証の対象外（ページ幅・はみ出しは継続）。
+
+## 練習2.2・2.3
+
+- `node tests/practice2-next.cjs`：新2ページのモデル・指示語・人名・価格・場所・短答／全文の判定、録音とセット保持、表示の検証。
+- `NEXT_SCREENSHOT_DIR=/tmp/lesson2-preview node tests/practice2-next.cjs`でExampleとD2画像のスクリーンショットも保存する。
+- global-display／audio-relay／tooltip-layout／fluid-widthの対象にも新2ページを追加。音声入力はモックのため、ブラウザ実音・認識精度の保証ではない。

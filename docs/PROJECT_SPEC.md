@@ -14,11 +14,11 @@
 - **公開先**：`https://october2026.vercel.app`
 - **構成ファイル**：
   - トップページ：`index.html` / `index.js`
-  - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice2.1.html` / `practice2.1.js` / `practice2.1-scenes.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
+  - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice2.1.html` / `practice2.1.js` / `practice2.1-scenes.js`、`practice2.2.html` / `practice2.3.html` / `practice2-next.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
   - 作文練習：`composition1.html` / `composition1.js`
   - 発音練習：`pronunciation1.html` / `pronunciation1.js`、`pronunciation2.html` / `pronunciation2.js`
-  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全9練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象8ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全9練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
-  - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全9練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
+  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全11練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象10ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全11練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
+  - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全11練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
 
 ---
 
@@ -927,3 +927,10 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 ## 77. 話者文字の鮮明化と人物課題の方針（2026-10-27）
 - Who is speaking?の文字を鮮やかな赤#e60012へ。背景は通常・強調時ともごく薄い#fff5f5にし、再生後も背景を濃くしない。拡大・戻しは1.2秒×3回へ変更する。最前面配置・reduced-motion対応は維持。
 - 「だれのですか」の所有格課題を2.1へ導入しない。「この人はだれですか」を採用する方針で、「どれ／だれ」のつながりを伝える意図を記録。画像と配置はユーザー検討待ち。2.3画像案も採用せず待機し、追加生成・新ページ構築を行わない。
+
+## 78. 練習2.2・2.3の初期実装と背景3回強調（2026-10-27）
+- 2.1の話者表示は、文字拡大から背景の濃淡変化へ変更。A／Bのきく操作ごとに1.2秒×3回。鮮やかな赤文字と独立した最前面配置は維持。reduced-motionでは一時的な静的強調。
+- 新規実装依頼により2.2・2.3の待機を解除。2.2はこの／その／あの＋名詞の価格文、人物を尋ねるこの人はだれですか、どの＋名詞。どれ＝which one／だれ＝whoを短く対比する。所有者を尋ねるだれのですかは導入しない。
+- 2.3は1F銀行のA、2F喫茶店のB、3F図書館の3コマを横に並べた室内画像。通話中とし、物はどこですかへの返答を、返答者の視点のここ／そこ／あそこで行う。
+- 2.1の設定・130％・語彙表示・録音・結果保持・リレーを踏襲し、indexから各ページへリンク。新しい2ページはpractice2-next.jsを共用し、既存2.1の録音コードは再構成しない。語彙使用ページも2.2・2.3へ拡張。
+- 個別の出題・素材・許容回答・確認待ちはPRACTICE22_23_SPECを正とする。初期モデルの価格文については提案を前提に実装した状態で、実機確認後の調整対象。

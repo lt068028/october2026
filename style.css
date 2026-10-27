@@ -2553,3 +2553,46 @@ body.site-scale {
 .p21-distance-board > .p21-photo-context { z-index: 10; color: #e60012; background: #fff5f5; text-shadow: none; opacity: 1; }
 .p21-photo-context.is-emphasized { border: 2px solid #e60012; background: #fff5f5; box-shadow: 0 0 0 3px rgb(239 68 68 / 12%); }
 .p21-current-speaker { display: inline-block; transform-origin: center; }
+
+/* New Lesson 2 pages reuse the established controls and keep scene annotations separate. */
+.p2x-picture { position: relative; }
+.p2x-example-picture { width: 75%; }
+.p2x-stage { position: relative; aspect-ratio: 1536 / 740; overflow: hidden; border-radius: 8px; isolation: isolate; }
+.p2x-photo { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
+.p2x-people-picture .p2x-stage { aspect-ratio: 3 / 2; }
+.p2x-floor-picture .p2x-stage { aspect-ratio: 3 / 1; }
+.p2x-speaker-guide { position: relative; top: auto; left: auto; z-index: 10; display: inline-flex; color: #e60012; background: #fff5f5; text-shadow: none; margin: 0 0 10px; }
+.p2x-person { position: absolute; z-index: 3; padding: 0 5px; color: #111827; background: #fffef0; border-radius: 4px; }
+.p2x-person.is-speaker { outline: 3px solid #ef4444; }
+.p2x-object { position: absolute; z-index: 2; width: 14%; aspect-ratio: 1; transform: translate(-50%,-50%); }
+.p2x-floor-picture .p2x-object { width: 8%; }
+.p2x-object[data-kind="place"] { width: 29%; height: 70%; top: 58% !important; aspect-ratio: auto; }
+.p2x-sprite { display: block; width: 100%; height: 100%; background-image: url('assets/practice21-choice-items.png'); background-size: 300% 300%; background-repeat: no-repeat; clip-path: inset(2% 2% 5%); }
+.p2x-place-target { background: none; }
+.p2x-price { position: absolute; top: 90%; left: 50%; transform: translateX(-50%); border-radius: 4px; padding: 0 4px; color: #111827; background: #fffef0; font-size: 18px; white-space: nowrap; }
+.p2x-distance-label { position: absolute; z-index: 3; display: flex; flex-direction: column; align-items: center; transform: translateX(-50%); width: 31%; text-align: center; text-shadow: 0 1px 2px #fff; font-weight: 700; pointer-events: none; }
+.p2x-distance-label[data-sound="こ"] { color: #2563eb; }
+.p2x-distance-label[data-sound="そ"] { color: #16a34a; }
+.p2x-distance-label[data-sound="あ"] { color: #c2410c; }
+.p2x-distance-label .p21-area-sound { font-size: 28px; line-height: 1.1; }
+.p2x-distance-label .p21-area-description { font-size: 18px; line-height: 1.1; }
+.p2x-audio-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.p2x-audio-grid .p2x-audio { position: static; transform: none; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.p2x-audio-heading { text-align: center; }
+.p2x-floor-label { position: absolute; z-index: 3; top: 4%; width: 30%; padding: 0 3px; background: rgb(255 255 255 / 93%); border-radius: 4px; color: #111827; text-align: center; transform: translateX(-50%); font-size: 18px; box-sizing: border-box; }
+.p2x-floor-label[data-zone="A"] { left: 16.5%; }
+.p2x-floor-label[data-zone="B"] { left: 50%; }
+.p2x-floor-label[data-zone="far"] { left: 83.5%; }
+.p2x-unknown-guide { position: absolute; z-index: 5; right: 0; top: 0; display: flex; align-items: center; gap: 3px; max-width: 45%; padding: 2px 6px; color: #dc2626; background: #fff1f2; border: 1px solid #f87171; border-radius: 12px; font-size: 18px; }
+.p2x-unknown-guide strong { font-size: 26px; }
+.p2x-person-target { position: absolute; z-index: 2; width: 18%; height: 80%; transform: translate(-50%,-50%); border-radius: 12px; }
+.p2x-person-target[data-zone="far"] { height: 50%; }
+.p2x-person-name { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); color: #111827; background: #fffef0; border-radius: 4px; padding: 0 4px; font-size: 18px; white-space: nowrap; }
+.p2x-object.is-target, .p2x-person-target.is-target { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.p2x-dialogue-example p { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.p2x-context-note { margin: 0 0 12px; }
+@media (max-width: 900px) { .p2x-picture { width: 100%; } }
+
+.p2x-person-target[data-zone="B"] { height: 75%; }
+.practice-next-page #drill2Container .p2x-sprite { filter: grayscale(1); }
+@media (max-width: 900px) { .practice-next-page .p21-model-list { grid-template-columns: 1fr; } }

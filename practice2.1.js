@@ -1266,15 +1266,13 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         function emphasizeSpeaker() {
-            currentSpeaker.getAnimations().forEach(animation=>animation.cancel());
+            context.getAnimations().forEach(animation=>animation.cancel());
             context.classList.add('is-emphasized');
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                currentSpeaker.animate([
-                    {transform:'scale(1)'},
-                    {transform:'scale(1.22)'},
-                    {transform:'scale(1)'}
-                ],{duration:1200,iterations:3,easing:'ease-in-out'});
-            }
+            const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
+            const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            context.animate(reduced?[active,active]:[normal,active,normal],{
+                duration:1200,iterations:reduced?1:3,easing:'ease-in-out'
+            });
         }
         for(const o of [objects[0],objects[2],objects[1]]) {
             const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;

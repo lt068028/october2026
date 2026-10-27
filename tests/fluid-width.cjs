@@ -18,7 +18,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
 
 
  const context=await browser.newContext();
- const names=['index','practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
+ const names=['index','practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
  for(const name of names) {
   const p=await open(context,name);await p.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
   for(const theme of ['light','dark']) for(const hint of name==='index'?['off']:['off','hover','paren']) {
@@ -41,7 +41,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     check(box.x>=32,true,name+' minimum side gutters '+width);
     if(baselineResultSpace!==null)check(Math.abs((await p.locator('.recording-controls').first().evaluate(e=>e.getBoundingClientRect().width)-baselineResultSpace)-(box.width-1280))<2,true,name+' growth allocated to result side '+width);
     const now=await positions();
-    if(name!=='practice2.1')check(now.every((a,i)=>a.every((x,j)=>Math.abs(x-baseline[i][j])<2)),true,name+' extra width stays after controls '+width+'/'+hint);
+    if(!name.startsWith('practice2.'))check(now.every((a,i)=>a.every((x,j)=>Math.abs(x-baseline[i][j])<2)),true,name+' extra width stays after controls '+width+'/'+hint);
     check(await p.locator('.example-box,.drill-row,.settings-row,.pitch-card').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,name+' wide overflow '+width+'/'+hint);
    }
   }

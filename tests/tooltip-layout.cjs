@@ -17,7 +17,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
 
  const context=await browser.newContext();
- for(const name of ['practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
+ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
   const p=await open(context,name);
   for(const width of [600,1440]) for(const theme of ['light','dark']) {
    await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});

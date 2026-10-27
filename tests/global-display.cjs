@@ -17,7 +17,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
 
  const context=await browser.newContext();
- for(const name of ['index','practice1.1','practice1.2','practice2.1','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
+ for(const name of ['index','practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
   const p=await open(context,name);
   await p.addStyleTag({content:'.custom-tip-box,.tooltip-tip{display:none!important}'});
   check(await p.locator('body').evaluate(e=>getComputedStyle(e).fontSize),'20.8px',name+' 130% body');

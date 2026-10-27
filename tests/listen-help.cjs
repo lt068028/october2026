@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  let checks=0;
  const check=(a,b,label)=>{assert.deepEqual(a,b,label);checks++};
- for(const name of ['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
+ for(const name of ['practice1.1','practice1.2','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
   const p=await browser.newPage();p.setDefaultTimeout(10000);const errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.route('http://drill.test/**',r=>{
    const file=path.join(root,new URL(r.request().url()).pathname);
