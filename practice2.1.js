@@ -1263,6 +1263,8 @@ function practice2ShowNotice(resultSpan, message) {
                 area.dataset.sound=sound;
                 area.classList.toggle('is-target',area.dataset.object===String(target));
             });
+            const activeObject=objects.find(o=>o.id===Number(target));
+            stage.querySelectorAll('.p21-example-item-hint').forEach(item=>item.classList.toggle('is-target',item.dataset.kind===activeObject?.kind));
             modelList.querySelectorAll('[data-model-speaker]').forEach(row=>{
                 const active=row.dataset.modelSpeaker===speaker&&row.dataset.object===String(target);
                 row.classList.toggle('is-current-model',active);

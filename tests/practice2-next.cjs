@@ -40,6 +40,11 @@ function mock(){
    check(await p.locator('#drill2Container .recording-table tr').count(),6,'three A-to-B price conversations');
    check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
    check(await p.locator('#drill1Container .recording-table tr').count(),3,'D1 has three statements');
+   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['B','A','B'],'D1 changes viewpoint on same near item');
+   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.zone)),['A','A','far'],'D1 uses the same near item twice');
+   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.textContent.includes('Price'))),true,'D1 does not reveal spoken price in cue');
+   check(await p.locator('#drill3Container > .p2x-context-note').count(),0,'D3 has no duplicate instruction paragraph');
+
    check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 has three conversations');
    check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2','','3',''],'D3 numbered 1 through 3');
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','A','B','A','B'],'D3 A asks only');
@@ -97,7 +102,8 @@ function mock(){
      const n=['カバン','時計'][set];
      for(let i=0;i<3;i++) {
       const adj=['この','その','あの'][i],replyAdj=['その','この','あの'][i],amount=(set===0?['二千円','五千円','八千円']:['六千円','九千円','一万円'])[i];
-      await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),adj+n+'は'+amount+end,'D1 statement');
+      const statementAdj=['その','この','あの'][i],statementAmount=(set===0?['二千円','二千円','八千円']:['六千円','六千円','一万円'])[i];
+      await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),statementAdj+n+'は'+statementAmount+end,'D1 statement');
       await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),adj+n+'はいくら'+(style==='formal'?'ですか':''),'D1 price Q');
       await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),replyAdj+n+'は'+amount+end,'D1 price R');
      }

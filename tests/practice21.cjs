@@ -115,6 +115,8 @@ function mock(){
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
  check(await p.evaluate(()=>practice2Normalize('Tシャツ')===practice2Normalize('ティーシャツ')),true,'T-shirt recognition forms agree');
  check(await p.evaluate(()=>practice2SpeechText('これはほんです。').includes('本')),true,'TTS uses kanji independently of display');
+ check(await p.locator('.p21-example-item-hint.is-target').count(),1,'active example item is highlighted');
+ check(await p.locator('.p21-distance-area.is-target .p21-item-audio').evaluateAll(es=>es.every(e=>getComputedStyle(e).outlineStyle==='none')),true,'active frame is on item rather than audio pair');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();

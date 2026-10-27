@@ -22,7 +22,7 @@ for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.
 for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,['帽子','円']);
-for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++)add('2.2',`D1-S${set+1}-A-${i}`,[item(k),'円']);
+for(const [set,k] of ['bag','clock'].entries())for(const [i,speaker]of ['B','A','B'].entries())add('2.2',`D1-S${set+1}-${speaker}-${i}`,[item(k),'円']);
 add('2.2','E2-Q',['時計']);add('2.2','E2-R',['時計','円']);
 for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++){add('2.2',`D2-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D2-S${set+1}-A-${i}-R`,[item(k),'円']);}
 add('2.2','E3-Q',['おにぎり','円']);add('2.2','E3-R',['おにぎり']);

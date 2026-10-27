@@ -2446,7 +2446,7 @@ body.site-scale {
 .p21-item-audio { position: absolute; bottom: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; width: max-content; pointer-events: auto; }
 .p21-distance-area[data-zone="B"] .p21-item-audio { right: auto; left: 0; }
 .p21-item-audio button { white-space: nowrap; }
-.p21-distance-area.is-target .p21-item-audio { outline: 2px solid var(--accent-color); outline-offset: 3px; border-radius: 4px; }
+.p21-example-item-hint.is-target { outline: 2px solid var(--accent-color); outline-offset: 2px; }
 .p21-model-list { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-top: 20px; }
 .p21-model-group { min-width: 0; }
 .p21-model-group h3 { font-size: 1em; margin: 0 0 6px; }
@@ -2682,3 +2682,7 @@ body.site-scale {
 @media(max-width:900px) { .p2x-model-picture { width: 100%; } }
 .p2x-reach[data-reach="far"] { height: 26%; border-radius: 50%; }
 .p21-shelf-scene .p21-drill-item[data-kind="wallet"][data-color="green"] { clip-path: inset(2% 2% 5% 9%); }
+
+/* Keep the thought dots attached to their cloud at every scene width. */
+.p2x-hat-picture .p21-which-guide .p21-thought-dots { left: 6%; top: calc(100% + 9px); }
+.p2x-hat-picture .p21-which-guide .p21-thought-dots { left: 0; top: calc(100% - 4px); }
