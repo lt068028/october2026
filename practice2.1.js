@@ -1273,7 +1273,7 @@ function practice2ShowNotice(resultSpan, message) {
                     {transform:'scale(1)'},
                     {transform:'scale(1.22)'},
                     {transform:'scale(1)'}
-                ],{duration:1200,iterations:2,easing:'ease-in-out'});
+                ],{duration:1200,iterations:3,easing:'ease-in-out'});
             }
         }
         for(const o of [objects[0],objects[2],objects[1]]) {

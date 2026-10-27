@@ -63,7 +63,7 @@ function mock(){
   const animation=el.querySelector('.p21-current-speaker').getAnimations()[0];
   return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),background:getComputedStyle(el).backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
  });
- check(attention,{outside:true,front:true,background:'rgb(254, 202, 202)',duration:1200,iterations:2},'speaker guide above photograph with two visible letter pulses');
+ check(attention,{outside:true,front:true,background:'rgb(255, 245, 245)',duration:1200,iterations:3},'speaker guide above photograph with three visible letter pulses');
  await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
  check(await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
