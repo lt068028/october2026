@@ -135,11 +135,23 @@ function mock(){
     await p.locator('#drill3Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
     const target=[[0,1],[1,2],[2,0]][set][Math.floor(i/2)],noun=['すまほ','じしょ','さいふ'][set];
-    const expected=i%2?['それ','これ','あれ'][target]+(style==='formal'?'です':'だ'):'あなたの'+noun+'はどれ'+(style==='formal'?'ですか':'');
+    const expected=i%2?(Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):'あなたの'+noun+'はどれ'+(style==='formal'?'ですか':'');
     check(text,expected,'D3 color cue, B perspective');
    }
   }
  }
+
+ check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='grayscale(1)')),true,'D2 has no color differentiation');
+ check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2',''],'D3 numbering restarts per noun');
+ check(await p.locator('#drill3Container tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A'],'D3 question roles alternate');
+ const guide=await p.locator('.p21-which-guide').boundingBox(),scene=await p.locator('#drill3Container .p21-photo-stage').boundingBox();
+ check(guide.x>=scene.x&&guide.y>=scene.y&&guide.x+guide.width<=scene.x+scene.width,true,'do guide inside picture');
+ await p.locator('#drill3Container .p21-set-switcher').scrollIntoViewIfNeeded();
+ const anchorY=await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top),url=p.url();
+ await p.locator('#drill3Container .p21-set-switcher button').first().click();
+ check(Math.abs(await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top)-anchorY)<3,true,'D3 switching keeps its viewport position');
+ check(p.url(),url,'D3 switch does not navigate');
+ await p.locator('#drill3Container .p21-drill-item').first().click();check(p.url(),url,'D3 image does not navigate');
  check(await p.locator('.p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
  check(await p.locator('.p21-drill1 .p21-response-lead').count(),3,'No lead after stop');
  check(await p.locator('.p21-drill1 .p21-dialogue-practice .drill-cue-cell').nth(1).textContent().then(s=>!s.includes('＿')),true,'D1 B cue uses no blanks');
@@ -194,7 +206,7 @@ function mock(){
  check(await p.evaluate(()=>practice2State.savedResults.p21_d3_s0_r_0?.isCorrect),true,'D3 color-selected recording matches B perspective');
  const invalid=await p.evaluate(()=>{
   const key='p21_d3_s0_r_1',v=practice2State.views[key];
-  return ['blueです','あれです'].map(text=>{processResult(text,'これです。',()=> 'これです。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});
+  return ['blueです','あれです'].map(text=>{processResult(text,'それです。',()=> 'それです。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});
  });check(invalid,[false,false],'D3 rejects color answers and wrong pronouns');
  for(const width of [600,900,1440,1920]) {
   await p.setViewportSize({width,height:1100});

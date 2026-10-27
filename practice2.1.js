@@ -1389,14 +1389,14 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=node('div','p21-drill-picture p21-shelf-scene');
         if(which) {
             const guide=node('div','p21-which-guide');
-            guide.append(node('strong','','ど：Asking about the unknown'));
-            guide.insertAdjacentHTML('beforeend','<svg viewBox="0 0 100 24" aria-hidden="true"><path d="M50 2V9M15 18V9H85V18M50 9V18"/><circle cx="15" cy="20" r="2"/><circle cx="50" cy="20" r="2"/><circle cx="85" cy="20" r="2"/></svg>');
-            picture.append(guide);
+            const heading=node('strong');heading.append(node('span','p21-question-sound','ど：'),node('span','p21-question-description','Asking about the unknown'));guide.append(heading);
+            picture._whichGuide=guide;
         }
         const stage=node('div','p21-photo-stage');
         const photo=node('img','p21-photo');photo.src='assets/practice21-shelf-table.png';photo.width=1536;photo.height=1024;
         photo.alt='A sits on the left, B on the right. Objects are near A, near B, and on a shelf far from both.';
         stage.append(photo);
+        if(picture._whichGuide)stage.append(picture._whichGuide);
         for(const person of ['A','B']) {const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);}
         for(const o of objects) {
             const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
@@ -1417,10 +1417,16 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function setButtons(container,labels,property) {
         const index=practice2State[property]??0;
-        const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
+        const switcher=node('div','p21-set-switcher');switcher.dataset.setState=property;switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
         labels.forEach((label,i)=>{
             const control=node('button','example-button',label);control.type='button';control.setAttribute('aria-pressed',String(i===index));
-            control.onclick=()=>{if(busy()||i===index)return;practice2State[property]=i;renderAll();};switcher.append(control);
+            control.onclick=()=>{
+                if(busy()||i===index)return;
+                const top=control.getBoundingClientRect().top;
+                practice2State[property]=i;renderAll();
+                const next=document.querySelector(`[data-set-state="${property}"] button:nth-child(${i+1})`);
+                next.focus({preventScroll:true});window.scrollBy(0,next.getBoundingClientRect().top-top);
+            };switcher.append(control);
         });container.append(switcher);return index;
     }
     function renderLaterDrills() {
@@ -1429,8 +1435,7 @@ function practice2ShowNotice(resultSpan, message) {
         const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡A: Ask what each object is. B: Answer.'));d2.append(panel2);
         const s2=setButtons(d2,['Set 1','Set 2'],'namingSet');
         const kinds=s2===0?['phone','wallet','dictionary']:['notebook','dictionary','wallet'];
-        const colors=s2===0?['blue','red','green']:['red','blue','green'];
-        const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i],colorName:colors[i]}));
+        const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i]}));
         const show2=laterScene(d2,objects);
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
@@ -1440,7 +1445,7 @@ function practice2ShowNotice(resultSpan, message) {
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
         const d3=document.getElementById('drill3Container');d3.hidden=false;
-        const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡A: Ask which one. B: Answer for the color shown.'));d3.append(panel3);
+        const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Answer for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,['スマホ',noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
         const nounItem=item(['phone','dictionary','wallet'][s3]);
         const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
@@ -1448,13 +1453,13 @@ function practice2ShowNotice(resultSpan, message) {
         // Six questions total across three noun sets, balancing all three distances.
         const targets=[[0,1],[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
-            const o=choices[target],current=card(d3,String(s3*2+i+1));
+            const o=choices[target],current=card(d3,String(i+1)),asking=i===0?'A':'B',answering=i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
-            const q=recordingRow(current,'q',`<strong>A · Question:</strong> あなた／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
-            const cue=node('span');cue.innerHTML='<strong>B · Response:</strong> ';
+            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> あなた／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
+            const cue=node('span');cue.innerHTML=`<strong>${answering} · Response:</strong> `;
             const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
-            const r=recordingRow(current,'a',cue,`p21_d3_s${s3}_r_${i}`,()=>shortAnswer('B',o));
-            bindSpeaker(q,'A',show3);bindSpeaker(r,'B',show3);
+            const r=recordingRow(current,'a',cue,`p21_d3_s${s3}_r_${i}`,()=>shortAnswer(answering,o));
+            bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
     }
 

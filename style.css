@@ -2499,7 +2499,7 @@ body.site-scale {
 
 /* Practice 2.1: brighter distance marks and the naming/choosing tasks. */
 .p21-distance-example .p21-distance-area[data-sound="こ"] .p21-area-sound { color: #2563eb; }
-.p21-distance-example .p21-distance-area[data-sound="そ"] .p21-area-sound { color: #15803d; }
+.p21-distance-example .p21-distance-area[data-sound="そ"] .p21-area-sound { color: #16a34a; }
 .p21-distance-example .p21-distance-area[data-sound="あ"] .p21-area-sound { color: #c2410c; }
 .p21-distance-board[data-speaker="A"] [data-reach="A"], .p21-distance-board[data-speaker="B"] [data-reach="B"] { background: #60a5fa80; }
 .p21-distance-board[data-speaker="A"] [data-reach="B"], .p21-distance-board[data-speaker="B"] [data-reach="A"] { background: #86efac80; }
@@ -2520,3 +2520,12 @@ body.site-scale {
 @container (max-width: 650px) { .p21-distance-area[data-zone="B"] .p21-area-caption { left: auto; } }
 
 .p21-shelf-scene .p21-drill-item[data-zone="B"] { left: 67%; }
+
+/* Final placement: keep annotations inside the scene and naming items neutral. */
+.p21-distance-area[data-zone="A"] .p21-area-caption { margin-top: 3px; }
+.p21-distance-area[data-zone="B"] .p21-area-caption { margin-top: 3px; }
+#drill2Container .p21-drill-item { filter: grayscale(1); }
+.p21-which-guide { position: absolute; z-index: 4; top: 4px; right: 10px; max-width: 40%; margin: 0; color: #dc2626; text-align: right; text-shadow: 0 1px 2px #fff9; }
+.p21-which-guide strong { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.p21-question-sound { font-size: 28px; line-height: 1; }
+.p21-question-description { font-size: 18px; line-height: 1.1; }
