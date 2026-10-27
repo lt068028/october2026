@@ -909,7 +909,7 @@ function practice2ShowNotice(resultSpan, message) {
     function imageHint(anchor,o) {
         if(hintMode==='off')return;
         anchor.classList.add('p21-image-hint');anchor.tabIndex=0;
-        anchor.setAttribute('aria-label',`${noun(o)} (${o.romaji}, ${o.meaning})`);
+        anchor.setAttribute('aria-label',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
         let host=null;
         function close() {
             if(anchor.matches(':hover, :focus'))return;
@@ -918,7 +918,7 @@ function practice2ShowNotice(resultSpan, message) {
         function show() {
             if(host)return;
             host=node('span','tooltip-wrap p21-image-tip-host');
-            const tip=node('span','tooltip-tip',`${noun(o)} (${o.romaji}, ${o.meaning})`);
+            const tip=node('span','tooltip-tip',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
             tip.id=`p21-image-tip-${++imageHintSerial}`;tip.setAttribute('role','tooltip');host.append(tip);
             anchor.dataset.portalTip=tip.id;anchor.setAttribute('aria-describedby',tip.id);
             document.body.append(host);window.DrillTooltips.position(anchor,tip);
@@ -1289,6 +1289,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         box.append(modelList);container.append(box);perspective('A',1);
         renderDrill1(container);
+        renderLaterDrills();
     }
 
     function renderDrill1(container) {
@@ -1360,7 +1361,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const questionCue=`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
                 const prefix=speechStyle==='casual'?'ううん':'いいえ';
                 const ending={formal:'です',informal:'だ',casual:'だよ'}[speechStyle];
-                const answerCue=`<strong>B · Response:</strong> ${prefix}、＿は＿${ending}。`;
+                const answerCue=`<strong>B · Response:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
                 const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])));
                 const key=`p21_d1_s1_r_${i}`;
                 const answer=()=>`${prefix}、${statement(pro('B',o),noun(o))}`;
@@ -1373,6 +1374,7 @@ function practice2ShowNotice(resultSpan, message) {
                     })];
                 };
                 const r=recordingRow(current,'a',answerCue,key,answer);
+                r.actions.append(node('span','p21-response-lead',`${prefix}…`));
                 for(const [view,speaker] of [[q,'A'],[r,'B']]) {
                     view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
                     for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>showSpeaker(speaker));
@@ -1380,6 +1382,80 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         showSpeaker('A');container.append(drill);
+    }
+
+    // Shared photo for naming and choosing tasks; all answers remain speaker-relative.
+    function laterScene(container,objects,which=false) {
+        const picture=node('div','p21-drill-picture p21-shelf-scene');
+        if(which) {
+            const guide=node('div','p21-which-guide');
+            guide.append(node('strong','','ど：Asking about the unknown'));
+            guide.insertAdjacentHTML('beforeend','<svg viewBox="0 0 100 24" aria-hidden="true"><path d="M50 2V9M15 18V9H85V18M50 9V18"/><circle cx="15" cy="20" r="2"/><circle cx="50" cy="20" r="2"/><circle cx="85" cy="20" r="2"/></svg>');
+            picture.append(guide);
+        }
+        const stage=node('div','p21-photo-stage');
+        const photo=node('img','p21-photo');photo.src='assets/practice21-shelf-table.png';photo.width=1536;photo.height=1024;
+        photo.alt='A sits on the left, B on the right. Objects are near A, near B, and on a shelf far from both.';
+        stage.append(photo);
+        for(const person of ['A','B']) {const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);}
+        for(const o of objects) {
+            const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
+            item.setAttribute('role','img');item.setAttribute('aria-label',`${o.colorName||''} ${o.meaning}`.trim());
+            if(o.kind==='notebook') {item.classList.remove('p21-choice-item');item.style.backgroundPosition='0% 100%';}
+            else item.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;
+            imageHint(item,o);stage.append(item);
+        }
+        picture.append(stage);container.append(picture);
+        return speaker=>{
+            picture.dataset.speaker=speaker;
+            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker));
+        };
+    }
+    function bindSpeaker(view,speaker,showSpeaker) {
+        view.row.dataset.drillSpeaker=speaker;
+        for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>showSpeaker(speaker));
+    }
+    function setButtons(container,labels,property) {
+        const index=practice2State[property]??0;
+        const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
+        labels.forEach((label,i)=>{
+            const control=node('button','example-button',label);control.type='button';control.setAttribute('aria-pressed',String(i===index));
+            control.onclick=()=>{if(busy()||i===index)return;practice2State[property]=i;renderAll();};switcher.append(control);
+        });container.append(switcher);return index;
+    }
+    function renderLaterDrills() {
+        const item=kind=>Practice21.items.find(o=>o.kind===kind);
+        const d2=document.getElementById('drill2Container');d2.hidden=false;
+        const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡A: Ask what each object is. B: Answer.'));d2.append(panel2);
+        const s2=setButtons(d2,['Set 1','Set 2'],'namingSet');
+        const kinds=s2===0?['phone','wallet','dictionary']:['notebook','dictionary','wallet'];
+        const colors=s2===0?['blue','red','green']:['red','blue','green'];
+        const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i],colorName:colors[i]}));
+        const show2=laterScene(d2,objects);
+        objects.forEach((o,i)=>{
+            const current=card(d2,String(i+1));
+            current.body.closest('.drill-row').classList.add('p21-naming-practice');
+            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／なに`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
+            const r=recordingRow(current,'a','<strong>B · Response:</strong> …',`p21_d2_s${s2}_r_${i}`,()=>statement(pro('B',o),noun(o)));
+            bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
+        });show2('A');
+        const d3=document.getElementById('drill3Container');d3.hidden=false;
+        const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡A: Ask which one. B: Answer for the color shown.'));d3.append(panel3);
+        const s3=setButtons(d3,['スマホ',noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
+        const nounItem=item(['phone','dictionary','wallet'][s3]);
+        const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
+        const show3=laterScene(d3,choices,true);
+        // Six questions total across three noun sets, balancing all three distances.
+        const targets=[[0,1],[1,2],[2,0]][s3];
+        targets.forEach((target,i)=>{
+            const o=choices[target],current=card(d3,String(s3*2+i+1));
+            current.body.closest('.drill-row').classList.add('p21-choosing-practice');
+            const q=recordingRow(current,'q',`<strong>A · Question:</strong> あなた／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
+            const cue=node('span');cue.innerHTML='<strong>B · Response:</strong> ';
+            const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
+            const r=recordingRow(current,'a',cue,`p21_d3_s${s3}_r_${i}`,()=>shortAnswer('B',o));
+            bindSpeaker(q,'A',show3);bindSpeaker(r,'B',show3);
+        });show3('A');
     }
 
     function installSettings() {

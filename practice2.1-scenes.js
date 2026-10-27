@@ -11,7 +11,8 @@ const Practice21 = (() => {
         {id:8,hira:'ノート',kanji:'ノート',romaji:'nōto',meaning:'notebook',kind:'notebook'},
         {id:9,hira:'じしょ',kanji:'辞書',romaji:'jisho',meaning:'dictionary',kind:'dictionary'},
         {id:10,hira:'しんぶん',kanji:'新聞',romaji:'shinbun',meaning:'newspaper',kind:'newspaper'},
-        {id:11,hira:'Tシャツ',kanji:'Tシャツ',romaji:'tīshatsu',meaning:'T-shirt',kind:'tshirt'}
+        {id:11,hira:'Tシャツ',kanji:'Tシャツ',romaji:'tīshatsu',meaning:'T-shirt',kind:'tshirt'},
+        {id:12,hira:'スマホ',kanji:'スマホ',romaji:'sumaho',meaning:'smartphone',kind:'phone'}
     ];
     const variants = item => ['A','B','far'].map((zone,i)=>({...item,id:i+1,zone,color:['#e76f51','#4f86c6','#55a66b'][(i+item.id)%3]}));
     const shuffle = values => {

@@ -2496,3 +2496,27 @@ body.site-scale {
 .p21-image-tip-host { display: contents; pointer-events: none; }
 .site-scale .p21-image-tip-host .tooltip-tip { visibility: visible; opacity: 1; font-size: 20px; z-index: 10000; }
 .p21-image-hint:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+
+/* Practice 2.1: brighter distance marks and the naming/choosing tasks. */
+.p21-distance-example .p21-distance-area[data-sound="こ"] .p21-area-sound { color: #2563eb; }
+.p21-distance-example .p21-distance-area[data-sound="そ"] .p21-area-sound { color: #15803d; }
+.p21-distance-example .p21-distance-area[data-sound="あ"] .p21-area-sound { color: #c2410c; }
+.p21-distance-board[data-speaker="A"] [data-reach="A"], .p21-distance-board[data-speaker="B"] [data-reach="B"] { background: #60a5fa80; }
+.p21-distance-board[data-speaker="A"] [data-reach="B"], .p21-distance-board[data-speaker="B"] [data-reach="A"] { background: #86efac80; }
+.p21-reach[data-reach="far"] { background: #fbbf2455; }
+.p21-distance-area[data-zone="B"] .p21-area-caption { left: 59%; }
+.p21-distance-area[data-zone="A"] .p21-item-audio, .p21-distance-area[data-zone="B"] .p21-item-audio { bottom: 6%; }
+.p21-response-lead { color: var(--text-secondary); white-space: nowrap; }
+.p21-choice-item { background-image: url('assets/practice21-choice-items.png'); background-size: 300% 300%; }
+.p21-shelf-scene .p21-drill-item[data-zone="far"] { left: 44%; top: 10%; width: 12%; }
+.p21-which-guide { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; margin-bottom: 6px; font-size: .85em; }
+.p21-which-guide svg { width: 100px; height: 24px; fill: currentColor; }
+.p21-which-guide path { fill: none; stroke: currentColor; stroke-width: 1; stroke-dasharray: 3 2; }
+.p21-color-cue { display: inline-flex; align-items: center; gap: 8px; }
+.p21-color-cue::before { content: ''; width: 16px; height: 16px; border: 1px solid currentColor; border-radius: 50%; }
+.p21-color-cue[data-color="red"]::before { background: #dc2626; }
+.p21-color-cue[data-color="blue"]::before { background: #2563eb; }
+.p21-color-cue[data-color="green"]::before { background: #16a34a; }
+@container (max-width: 650px) { .p21-distance-area[data-zone="B"] .p21-area-caption { left: auto; } }
+
+.p21-shelf-scene .p21-drill-item[data-zone="B"] { left: 67%; }
