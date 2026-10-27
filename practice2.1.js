@@ -1390,6 +1390,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(which) {
             const guide=node('div','p21-which-guide');
             const heading=node('strong');heading.append(node('span','p21-question-sound','ど：'),node('span','p21-question-description','Asking about the unknown'));guide.append(heading);
+            guide.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/><circle cx="65" cy="101" r="5"/><circle cx="48" cy="109" r="2.5"/></svg>');
             picture._whichGuide=guide;
         }
         const stage=node('div','p21-photo-stage');

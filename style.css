@@ -2529,3 +2529,15 @@ body.site-scale {
 .p21-which-guide strong { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .p21-question-sound { font-size: 28px; line-height: 1; }
 .p21-question-description { font-size: 18px; line-height: 1.1; }
+
+/* Soft red enclosures, matching the existing distance-area language. */
+.p21-photo-context { padding: 4px 8px; border: 1px solid #ef4444; border-radius: 10px; background: rgb(239 68 68 / 16%); }
+.p21-distance-area[data-zone="A"] .p21-area-caption,
+.p21-distance-area[data-zone="B"] .p21-area-caption { margin-top: 5px; }
+.p21-which-guide { top: 2px; padding: 2px 8px; box-sizing: border-box; border: 1px solid rgb(220 38 38 / 40%); border-radius: 50%; background: rgb(248 113 113 / 22%); }
+
+/* Approved thought-bubble variant; Who keeps its existing top-left anchor. */
+.p21-which-guide { border: 0; border-radius: 0; background: none; isolation: isolate; }
+.p21-which-guide .p21-thought-cloud { position: absolute; inset: 0; z-index: -1; width: 100%; height: calc(100% + 14px); overflow: visible; pointer-events: none; }
+.p21-which-guide .p21-thought-cloud path,
+.p21-which-guide .p21-thought-cloud circle { fill: rgb(248 113 113 / 22%); stroke: rgb(220 38 38 / 55%); stroke-width: 1; stroke-dasharray: none; }
