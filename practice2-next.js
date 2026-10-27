@@ -1277,12 +1277,16 @@ function practice2ShowNotice(resultSpan, message) {
                 else if(o.kind==='notebook') {sprite.style.backgroundImage="url('assets/practice21-items.png')";sprite.style.backgroundSize='300% 200%';sprite.style.backgroundPosition='0% 100%';}
                 else {sprite.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;}
                 target.append(sprite);
-                if(is22&&!which)target.append(node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`));
+                if(is22&&!which) {
+                    const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
+                    if(hats) {tag.style.left=position[0]+'%';tag.style.top=(o.zone==='far'?0:29)+'%';tag.style.bottom='auto';stage.append(tag);}
+                    else target.append(tag);
+                }
             }
             imageHint(target,o);stage.append(target);
             if(example) {
                 const region=node('div','p2x-distance-label');region.dataset.zone=o.zone;
-                region.style.left=(hats?{A:30,B:70,far:68}[o.zone]:position[0])+'%';region.style.top=(hats?(o.zone==='far'?9:73):is22?position[1]+20:39)+'%';
+                region.style.left=(hats?{A:30,B:70,far:68}[o.zone]:position[0])+'%';region.style.top=(hats?(o.zone==='far'?9:57):is22?position[1]+20:39)+'%';
                 region.append(node('strong','p21-area-sound'),node('span','p21-area-description'));stage.append(region);
                 const buttons=node('div','p21-item-audio p2x-audio');buttons.dataset.zone=o.zone;
                 buttons.style.left=(!is22?[17,50,83][i]:position[0])+'%';buttons.style.top=(is22?position[1]+27:73)+'%';
@@ -1292,7 +1296,7 @@ function practice2ShowNotice(resultSpan, message) {
                 }
                 buttons.style.order=(!is22?['A','B','far']:['A','far','B']).indexOf(o.zone);
                 if(hats) {
-                    buttons.style.left={A:39,B:61,far:88}[o.zone]+'%';
+                    buttons.style.left={A:39,B:61,far:36}[o.zone]+'%';
                     buttons.style.top=(o.zone==='far'?3:37)+'%';
                     stage.append(buttons);
                 } else {const heading=node('strong','p2x-audio-heading',noun(o));buttons.prepend(heading);audioGrid.append(buttons);}

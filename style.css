@@ -2626,3 +2626,20 @@ body.site-scale {
 @media(max-width:900px) {
  .p2x-hat-picture .p2x-audio button { font-size: 18px; padding: 4px; }
 }
+
+/* Price tags above hats, proximity captions immediately below the lower shelves. */
+.p2x-hat-picture .p2x-price { top: auto; bottom: 100%; }
+@media(max-width:600px) {
+ .p2x-hat-picture .p2x-audio[data-zone="far"] { left: 18% !important; top: 20% !important; }
+}
+@media(max-width:600px) {
+ .p2x-hat-picture .p2x-speaker-guide { max-width: 24%; box-sizing: border-box; font-size: 16px; line-height: 1.1; gap: 2px; padding: 4px; }
+ .p2x-hat-picture .p2x-audio[data-zone="far"] { left: 36% !important; top: 3% !important; }
+ .p2x-hat-picture .p2x-audio:not([data-zone="far"]) { top: 72% !important; }
+ .p2x-hat-picture .p2x-distance-label:not([data-zone="far"]) { top: 54% !important; }
+ .p2x-hat-picture .p2x-audio button { font-size: 16px; padding: 2px 4px; }
+}
+@media(max-width:600px) {
+ .site-scale .p2x-hat-picture .p2x-audio .example-button { font-size: 16px; line-height: 1.2; min-height: 30px; padding: 2px 4px; }
+}
+.p2x-hat-picture .p2x-audio { margin: 0; }
