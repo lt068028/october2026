@@ -160,9 +160,9 @@ function mock(){
  check(await p.locator('.p21-model-line .tooltip-wrap').count(),6,'all Example noun occurrences have hints');
  for(const width of [600,1440]) {
   await p.setViewportSize({width,height:1100});
-  for(const selector of ['.p21-example-item-hint[data-kind="book"]','.p21-example-item-hint[data-kind="clock"]','.p21-model-line .tooltip-wrap','.p21-drill-item[data-kind="tshirt"]']) {
+  for(const selector of ['.p21-example-item-hint[data-kind="book"]','.p21-example-item-hint[data-kind="clock"]','.p21-model-line .tooltip-wrap','.p21-drill-item[data-kind="tshirt"]','#drill2Container .drill-cue-cell .tooltip-wrap','#drill3Container .drill-cue-cell .tooltip-wrap']) {
    const anchor=p.locator(selector).first();await anchor.hover();
-   const tip=selector.includes('model-line')?anchor.locator('.tooltip-tip'):p.locator('.p21-image-tip-host .tooltip-tip').last();
+   const tip=(selector.includes('model-line')||selector.includes('drill-cue-cell'))?anchor.locator('.tooltip-tip'):p.locator('.p21-image-tip-host .tooltip-tip').last();
    check(await tip.isVisible(),true,'visible vocabulary hint '+selector);
    const box=await tip.boundingBox();check(box.x>=10&&box.y>=10&&box.x+box.width<=width-10,true,'hint within viewport');
    check(await tip.evaluate(e=>getComputedStyle(e).fontSize),'20px','vocabulary font 20px');

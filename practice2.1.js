@@ -1390,7 +1390,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(which) {
             const guide=node('div','p21-which-guide');
             const heading=node('strong');heading.append(node('span','p21-question-sound','ど：'),node('span','p21-question-description','Asking about the unknown'));guide.append(heading);
-            guide.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/><circle cx="65" cy="101" r="5"/><circle cx="48" cy="109" r="2.5"/></svg>');
+            guide.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/><circle cx="102" cy="101" r="5"/><circle cx="85" cy="109" r="2.5"/></svg>');
             picture._whichGuide=guide;
         }
         const stage=node('div','p21-photo-stage');
@@ -1441,7 +1441,7 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
-            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／なに`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
+            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','なに','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
             const r=recordingRow(current,'a','<strong>B · Response:</strong> …',`p21_d2_s${s2}_r_${i}`,()=>statement(pro('B',o),noun(o)));
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
@@ -1456,7 +1456,7 @@ function practice2ShowNotice(resultSpan, message) {
         targets.forEach((target,i)=>{
             const o=choices[target],current=card(d3,String(i+1)),asking=i===0?'A':'B',answering=i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
-            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> あなた／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
+            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> ${formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
             const cue=node('span');cue.innerHTML=`<strong>${answering} · Response:</strong> `;
             const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
             const r=recordingRow(current,'a',cue,`p21_d3_s${s3}_r_${i}`,()=>shortAnswer(answering,o));
