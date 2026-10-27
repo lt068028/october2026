@@ -2,6 +2,8 @@
 
 更新：2026-10-27。**現在の実装・評価対象は2.1のExample 1とDrill 1～3。追加のExampleは設けない。** 2.2・2.3の初期実装は[PRACTICE22_23_SPEC](PRACTICE22_23_SPEC.md)を参照。旧版の全Drill構成はPROJECT_SPEC §58とGit履歴4c76063に残す。
 
+- ページ名・HTML title・Index：**Practice 2.1: これ・それ・あれ・どれ — Demonstrative Pronouns**。2.2はDemonstrative Adjectivesで対比する。
+
 ## Ex1の構成
 
 - 横長の俯瞰配置。A・Bの人物は2人だけ。人物は写真内に描き、上に実際のHTMLで「A」「B」だけを表示。写真左上に赤い「Who is speaking?」と現在の話者A/Bを表示する。角丸10pxの薄い赤枠と半透明赤背景（16％）で囲む。別の人物マークやSpeaker／Listenerラベルを重複させない。

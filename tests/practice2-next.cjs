@@ -24,6 +24,7 @@ function mock(){
   const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(mock);
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
+  check(await p.title(),number==='2.2'?'Practice 2.2: この・その・あの・どの — Demonstrative Adjectives':'Practice 2.3: ここ・そこ・あそこ・どこ',number+' page title');
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
   if(number==='2.2'){
@@ -60,6 +61,24 @@ function mock(){
      await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D2 response');
     }
    }
+   if(number==='2.2') {
+    for(const set of [0,1]) {
+     await p.locator('#drill1Container .p21-set-switcher button').nth(set).click();
+     const n=['カバン','時計'][set];
+     for(let i=0;i<6;i++) {
+      const adj=['この','その','あの'][i%3],amount=(i<3?['千円','三千円','四千円']:['三千円','千円','四千円'])[i%3];
+      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),adj+n+'はいくら'+(style==='formal'?'ですか':''),'D1 price Q');
+      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),amount+end,'D1 price R');
+     }
+     await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
+     const food=['おにぎり','お弁当'][set],prices=set===0?['三百円','六百円','九百円']:['千円','二千円','三千円'];
+     for(let i=0;i<6;i++) {
+      const zone=['A','B','far'][i%3],answerer=i<3?'B':'A',adj=zone==='far'?'あの':zone===answerer?'この':'その';
+      await compare(p.locator('#drill3Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),'どの'+food+'が'+prices[i%3]+(style==='formal'?'ですか':''),'D3 food Q');
+      await compare(p.locator('#drill3Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),adj+food+end,'D3 food R');
+     }
+    }
+   } else {
    for(const set of [0,1,2]){
     await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
     const noun=['スマホ','辞書','財布'][set],targets=[[0,1],[1,2],[2,0]][set];
@@ -70,25 +89,28 @@ function mock(){
      await compare(p.locator('#drill3Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(number==='2.2'?adj+noun:loc)+end,'D3 response');
     }
    }
+   }
+
   }
   await p.locator('#speechStyleControl [data-value="formal"]').click();
-  await p.locator('#drill2Container .p21-set-switcher button').first().click();await p.locator('#drill3Container .p21-set-switcher button').first().click();
+  await p.locator('#drill1Container .p21-set-switcher button').first().click();await p.locator('#drill2Container .p21-set-switcher button').first().click();await p.locator('#drill3Container .p21-set-switcher button').first().click();
   const judgments=await p.evaluate(number=>{
    isAutoPlay=false;const prefix=number==='2.2'?'p22':'p23';
    const samples=number==='2.2'?[
-    [`${prefix}_d1_s0_A_0`,'このスマホは3万円です','このスマホはさんまんえんです',true],
-    [`${prefix}_d1_s0_A_0`,'このスマホは30000円です','このスマホはさんまんえんです',true],
-    [`${prefix}_d1_s0_A_0`,'このスマホは3000円です','このスマホはさんまんえんです',false],
+    ['p22_price_s0_A_0_q','このカバンはいくらですか','このカバンはいくらですか',true],
+    ['p22_price_s0_A_0_r','1000円です','せんえんです',true],
+    ['p22_price_s0_A_0_r','そのカバンは千円です','せんえんです',true],
+    ['p22_price_s0_A_0_r','このカバンは千円です','せんえんです',false],
+    ['p22_price_s0_A_0_r','3000円です','せんえんです',false],
+    ['p22_food_s0_A_0_q','どのおにぎりが300円ですか','どのおにぎりがさんびゃくえんですか',true],
+    ['p22_food_s0_A_0_q','どのおにぎりは300円ですか','どのおにぎりがさんびゃくえんですか',false],
+    ['p22_food_s0_A_0_r','そのおにぎりです','そのおにぎりです',true],
+    ['p22_food_s0_A_0_r','そのおにぎりが三百円です','そのおにぎりです',true],
+    ['p22_food_s0_A_0_r','このおにぎりです','そのおにぎりです',false],
+    ['p22_food_s0_A_0_r','そのです','そのおにぎりです',false],
     [`${prefix}_d2_s0_r_0`,'メアリーさんです','メアリーさんです',true],
-    [`${prefix}_d2_s0_r_0`,'メアリーです','メアリーさんです',true],
-    [`${prefix}_d3_s0_q_0`,'あなたのスマホはどのスマホですか','あなたのはどのスマホですか',true],
-    [`${prefix}_d3_s0_q_0`,'あなたの辞書はどのスマホですか','あなたのはどのスマホですか',false],
     [`${prefix}_d2_s0_r_0`,'その人はメアリーさんです','メアリーさんです',true],
-    [`${prefix}_d2_s0_r_0`,'この人はメアリーさんです','メアリーさんです',false],
-    [`${prefix}_d3_s0_r_0`,'そのスマホです','そのスマホです',true],
-    [`${prefix}_d3_s0_r_0`,'私のスマホはそのスマホです','そのスマホです',true],
-    [`${prefix}_d3_s0_r_0`,'そのです','そのスマホです',false],
-    [`${prefix}_d3_s0_r_0`,'このスマホです','そのスマホです',false]
+    [`${prefix}_d2_s0_r_0`,'この人はメアリーさんです','メアリーさんです',false]
    ]:[
     [`${prefix}_d2_s0_r_0`,'そこです','そこです',true],
     [`${prefix}_d2_s0_r_0`,'スマホはそこです','そこです',true],
@@ -119,7 +141,7 @@ function mock(){
     const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();
     return a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
    })),true,number+' distance captions stay visible '+width+theme+hint);
-   if(number==='2.2')check(await p.locator('.p2x-hat-picture').evaluate(e=>{
+   if(number==='2.2')check(await p.locator('.p2x-example .p2x-hat-picture').evaluate(e=>{
     const buttons=[...e.querySelectorAll('.p2x-audio button')].map(b=>b.getBoundingClientRect()),stage=e.querySelector('.p2x-stage').getBoundingClientRect();
     return buttons.every((a,i)=>a.left>=stage.left&&a.right<=stage.right&&a.top>=stage.top&&a.bottom<=stage.bottom&&buttons.every((b,j)=>i===j||Math.min(a.right,b.right)<=Math.max(a.left,b.left)||Math.min(a.bottom,b.bottom)<=Math.max(a.top,b.top)));
    }),true,'image buttons fit without overlap '+width+theme+hint);

@@ -2643,3 +2643,12 @@ body.site-scale {
  .site-scale .p2x-hat-picture .p2x-audio .example-button { font-size: 16px; line-height: 1.2; min-height: 30px; padding: 2px 4px; }
 }
 .p2x-hat-picture .p2x-audio { margin: 0; }
+.p2x-hat-picture .p2x-object[data-kind="onigiri"],
+.p2x-hat-picture .p2x-object[data-kind="bento"] { width: 24%; }
+.p2x-hat-picture .p2x-object[data-zone="far"][data-kind="onigiri"],
+.p2x-hat-picture .p2x-object[data-zone="far"][data-kind="bento"] { width: 20%; }
+/* Drill photos have no embedded audio pairs: keep their speaker guide on one line. */
+.p2x-hat-picture:not(.p2x-example-picture) .p2x-speaker-guide { max-width: 75%; font-size: 18px; line-height: 1.2; white-space: nowrap; }
+.p2x-hat-picture .p2x-unknown-guide { top: auto; bottom: 2%; right: 2%; }
+.p2x-hat-picture:not(.p2x-example-picture) .p2x-speaker-guide { gap: 8px; }
+.p2x-hat-picture .p2x-unknown-guide { left: 50%; right: auto; transform: translateX(-50%); max-width: 60%; }
