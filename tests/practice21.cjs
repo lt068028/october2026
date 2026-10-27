@@ -23,6 +23,8 @@ function mock(){
  await p.addInitScript(mock);
  await p.route('http://drill.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return fs.existsSync(file)?r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'}):r.fulfill({status:404,body:''})});
  await p.goto('http://drill.test/practice2.1.html');let count=0;const check=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
+ check(await p.locator('#scriptModeControl [data-value="hiragana"]').getAttribute('aria-pressed'),'true','L2 defaults to Hiragana');
+ check(await p.evaluate(()=>practice2Normalize('鞄')===practice2Normalize('カバン')),true,'legacy bag ASR remains accepted');
  check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.p21-drill1 .drill-row').count(),2,'A and B practice groups');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
@@ -33,6 +35,8 @@ function mock(){
  check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
+  check(await p.locator('#drill2Container .drill-cue-cell .target-word').first().textContent(),script==='kanji'?'何':'なに','what follows reference-kanji display');
+  if(script==='kanji')check(await p.locator('.p21-model-group h3 .target-word').nth(1).textContent(),'カバン','bag uses katakana in With kanji');
   for(const [object,noun] of [[1,'ほん'],[2,'かばん'],[3,'とけい']])for(const speaker of ['A','B']) {
    await p.locator(`.p21-item-audio button[data-speaker="${speaker}"][data-object="${object}"]`).click();
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});

@@ -1,0 +1,813 @@
+[
+  {
+    "page": "1.1",
+    "id": "E1",
+    "type": "model",
+    "tokens": [
+      "私",
+      "学生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "E2",
+    "type": "model",
+    "tokens": [
+      "私",
+      "先生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-1",
+    "type": "model",
+    "tokens": [
+      "私",
+      "学生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-2",
+    "type": "model",
+    "tokens": [
+      "私",
+      "先生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-3",
+    "type": "model",
+    "tokens": [
+      "私",
+      "日本人"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-4",
+    "type": "model",
+    "tokens": [
+      "私",
+      "留学生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-5",
+    "type": "model",
+    "tokens": [
+      "友達",
+      "学生"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-6",
+    "type": "model",
+    "tokens": [
+      "友達",
+      "主婦"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D1-7",
+    "type": "model",
+    "tokens": [
+      "友達",
+      "アメリカ人"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-friend",
+    "type": "option",
+    "tokens": [
+      "友達"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-family",
+    "type": "option",
+    "tokens": [
+      "家族"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-colleague",
+    "type": "option",
+    "tokens": [
+      "同僚"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-boss",
+    "type": "option",
+    "tokens": [
+      "上司"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-partner",
+    "type": "option",
+    "tokens": [
+      "パートナー"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-Bf/Gf",
+    "type": "option",
+    "tokens": [
+      "恋人"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-best friend",
+    "type": "option",
+    "tokens": [
+      "親友"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-child",
+    "type": "option",
+    "tokens": [
+      "子供"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-grandchild",
+    "type": "option",
+    "tokens": [
+      "孫"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-sibling",
+    "type": "option",
+    "tokens": [
+      "兄弟"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-foreigner",
+    "type": "option",
+    "tokens": [
+      "外国人"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-doctor",
+    "type": "option",
+    "tokens": [
+      "医者"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-engineer",
+    "type": "option",
+    "tokens": [
+      "エンジニア"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-researcher",
+    "type": "option",
+    "tokens": [
+      "研究者"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-designer",
+    "type": "option",
+    "tokens": [
+      "デザイナー"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-store staff",
+    "type": "option",
+    "tokens": [
+      "店員"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-self-employed",
+    "type": "option",
+    "tokens": [
+      "自営業"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-civil servant",
+    "type": "option",
+    "tokens": [
+      "公務員"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-nurse",
+    "type": "option",
+    "tokens": [
+      "看護師"
+    ]
+  },
+  {
+    "page": "1.1",
+    "id": "D2-option-part-time worker",
+    "type": "option",
+    "tokens": [
+      "アルバイト"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "E1-Q",
+    "type": "model",
+    "tokens": [
+      "お父さん",
+      "看護師"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "E1-Yes",
+    "type": "model",
+    "tokens": [
+      "看護師"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "E1-No",
+    "type": "model",
+    "tokens": [
+      "看護師"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "E2-Q",
+    "type": "model",
+    "tokens": [
+      "専攻",
+      "何"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "E2-R",
+    "type": "model",
+    "tokens": [
+      "私",
+      "専攻",
+      "政治"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-1-Q",
+    "type": "model",
+    "tokens": [
+      "お兄さん",
+      "学生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-1-Yes",
+    "type": "model",
+    "tokens": [
+      "学生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-1-No",
+    "type": "model",
+    "tokens": [
+      "学生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-2-Q",
+    "type": "model",
+    "tokens": [
+      "お母さん",
+      "会社員"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-2-Yes",
+    "type": "model",
+    "tokens": [
+      "会社員"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-2-No",
+    "type": "model",
+    "tokens": [
+      "会社員"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-3-Q",
+    "type": "model",
+    "tokens": [
+      "お姉さん",
+      "高校生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-3-Yes",
+    "type": "model",
+    "tokens": [
+      "高校生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-3-No",
+    "type": "model",
+    "tokens": [
+      "高校生"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-4-Q",
+    "type": "model",
+    "tokens": [
+      "お父さん",
+      "自営業"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-4-Yes",
+    "type": "model",
+    "tokens": [
+      "自営業"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-4-No",
+    "type": "model",
+    "tokens": [
+      "自営業"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-5-Q",
+    "type": "model",
+    "tokens": [
+      "妹",
+      "フリーター"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-5-Yes",
+    "type": "model",
+    "tokens": [
+      "フリーター"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D1-5-No",
+    "type": "model",
+    "tokens": [
+      "フリーター"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-1-Q",
+    "type": "model",
+    "tokens": [
+      "友達",
+      "専攻",
+      "何"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-1-R-template",
+    "type": "model",
+    "tokens": [
+      "友達",
+      "専攻"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-2-Q",
+    "type": "model",
+    "tokens": [
+      "親友",
+      "専攻",
+      "何"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-2-R-template",
+    "type": "model",
+    "tokens": [
+      "親友",
+      "専攻"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-3-Q",
+    "type": "model",
+    "tokens": [
+      "同僚",
+      "専攻",
+      "何"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-3-R-template",
+    "type": "model",
+    "tokens": [
+      "同僚",
+      "専攻"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-せいじ",
+    "type": "option",
+    "tokens": [
+      "政治"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-けいざい",
+    "type": "option",
+    "tokens": [
+      "経済"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-ビジネス",
+    "type": "option",
+    "tokens": [
+      "ビジネス"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-こくさいかんけい",
+    "type": "option",
+    "tokens": [
+      "国際関係"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-れきし",
+    "type": "option",
+    "tokens": [
+      "歴史"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-にほんご",
+    "type": "option",
+    "tokens": [
+      "日本語"
+    ]
+  },
+  {
+    "page": "1.2",
+    "id": "D2-option-コンピューター",
+    "type": "option",
+    "tokens": [
+      "コンピューター"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-book-A",
+    "type": "model",
+    "tokens": [
+      "本"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-book-B",
+    "type": "model",
+    "tokens": [
+      "本"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-bag-A",
+    "type": "model",
+    "tokens": [
+      "カバン"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-bag-B",
+    "type": "model",
+    "tokens": [
+      "カバン"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-clock-A",
+    "type": "model",
+    "tokens": [
+      "時計"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E1-clock-B",
+    "type": "model",
+    "tokens": [
+      "時計"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-pen-A",
+    "type": "model",
+    "tokens": [
+      "ペン"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-pen-B",
+    "type": "model",
+    "tokens": [
+      "ペン"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-newspaper-A",
+    "type": "model",
+    "tokens": [
+      "新聞"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-newspaper-B",
+    "type": "model",
+    "tokens": [
+      "新聞"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-hat-A",
+    "type": "model",
+    "tokens": [
+      "帽子"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S1-hat-B",
+    "type": "model",
+    "tokens": [
+      "帽子"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-0-Q",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-0-R",
+    "type": "model",
+    "tokens": [
+      "ノート"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-1-Q",
+    "type": "model",
+    "tokens": [
+      "Tシャツ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-1-R",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-2-Q",
+    "type": "model",
+    "tokens": [
+      "ノート"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D1-S2-2-R",
+    "type": "model",
+    "tokens": [
+      "Tシャツ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-0-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-0-R",
+    "type": "model",
+    "tokens": [
+      "スマホ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-1-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-1-R",
+    "type": "model",
+    "tokens": [
+      "財布"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-2-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S1-2-R",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-0-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-0-R",
+    "type": "model",
+    "tokens": [
+      "ノート"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-1-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-1-R",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-2-Q",
+    "type": "model",
+    "tokens": [
+      "何"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D2-S2-2-R",
+    "type": "model",
+    "tokens": [
+      "財布"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-phone-1-Q",
+    "type": "model",
+    "tokens": [
+      "スマホ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-phone-2-Q",
+    "type": "model",
+    "tokens": [
+      "スマホ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-dictionary-1-Q",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-dictionary-2-Q",
+    "type": "model",
+    "tokens": [
+      "辞書"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-wallet-1-Q",
+    "type": "model",
+    "tokens": [
+      "財布"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "D3-wallet-2-Q",
+    "type": "model",
+    "tokens": [
+      "財布"
+    ]
+  }
+]

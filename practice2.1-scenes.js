@@ -3,7 +3,7 @@ const Practice21 = (() => {
     const items = [
         {id:1,hira:'ほん',kanji:'本',romaji:'hon',meaning:'book',zone:'A',kind:'book'},
         {id:2,hira:'ペン',kanji:'ペン',romaji:'pen',meaning:'pen',zone:'A',kind:'pen'},
-        {id:3,hira:'かばん',kanji:'鞄',romaji:'kaban',meaning:'bag',zone:'B',kind:'bag'},
+        {id:3,hira:'かばん',kanji:'カバン',romaji:'kaban',meaning:'bag',zone:'B',kind:'bag'},
         {id:4,hira:'さいふ',kanji:'財布',romaji:'saifu',meaning:'wallet',zone:'B',kind:'wallet'},
         {id:5,hira:'かさ',kanji:'傘',romaji:'kasa',meaning:'umbrella',zone:'far',kind:'umbrella'},
         {id:6,hira:'とけい',kanji:'時計',romaji:'tokei',meaning:'clock',zone:'far',kind:'clock'},

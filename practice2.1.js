@@ -285,7 +285,7 @@ function stopAllPlayback() {
 function convertToHiragana(text) {
     let value=String(text??'');
     for(const o of Practice21.items) value=value.split(o.kanji).join(o.hira);
-    return value.replace(/何/g,'なに');
+    return value.replace(/鞄/g,'かばん').replace(/何/g,'なに');
 }
 
 function speakText(text, rate = 0.75, onEndCallback) {
@@ -1441,7 +1441,7 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
-            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','なに','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
+            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
             const r=recordingRow(current,'a','<strong>B · Response:</strong> …',`p21_d2_s${s2}_r_${i}`,()=>statement(pro('B',o),noun(o)));
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
