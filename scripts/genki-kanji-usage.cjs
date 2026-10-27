@@ -22,8 +22,10 @@ for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.
 for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,['帽子','円']);
-add('2.2','D1-Example-Q',['帽子']);add('2.2','D1-Example-R',['円']);
-for(const [set,k] of ['bag','clock'].entries())for(const speaker of ['A','B'])for(let i=0;i<3;i++){add('2.2',`D1-S${set+1}-${speaker}-${i}-Q`,[item(k)]);add('2.2',`D1-S${set+1}-${speaker}-${i}-R`,['円']);}
+for(const [set,k] of ['bag','clock'].entries()) {
+ add('2.2',`D1-S${set+1}-Example-Q`,[item(k)]);add('2.2',`D1-S${set+1}-Example-R`,[item(k),'円']);
+ for(let i=0;i<3;i++){add('2.2',`D1-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D1-S${set+1}-A-${i}-R`,[item(k),'円']);}
+}
 for(const set of [1,2]){add('2.2',`D2-S${set}-Example-Q`,['人','誰']);add('2.2',`D2-S${set}-Example-R`,['メアリー']);}
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`D2-S${set}-${name}-Q`,['人','誰']);add('2.2',`D2-S${set}-${name}-R`,[name]);}
 for(const [set,food] of ['おにぎり','お弁当'].entries()) {

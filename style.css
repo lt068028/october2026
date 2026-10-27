@@ -2524,7 +2524,7 @@ body.site-scale {
 /* Final placement: keep annotations inside the scene and naming items neutral. */
 .p21-distance-area[data-zone="A"] .p21-area-caption { margin-top: 3px; }
 .p21-distance-area[data-zone="B"] .p21-area-caption { margin-top: 3px; }
-#drill2Container .p21-drill-item { filter: grayscale(1); }
+#drill2Container .p21-drill-item { filter: none; }
 .p21-which-guide { position: absolute; z-index: 4; top: 4px; right: 10px; max-width: 40%; margin: 0; color: #dc2626; text-align: right; text-shadow: 0 1px 2px #fff9; }
 .p21-which-guide strong { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .p21-question-sound { font-size: 28px; line-height: 1; }
@@ -2652,3 +2652,21 @@ body.site-scale {
 .p2x-hat-picture .p2x-unknown-guide { top: auto; bottom: 2%; right: 2%; }
 .p2x-hat-picture:not(.p2x-example-picture) .p2x-speaker-guide { gap: 8px; }
 .p2x-hat-picture .p2x-unknown-guide { left: 50%; right: auto; transform: translateX(-50%); max-width: 60%; }
+/* Practice 2.1 object sizing: keep the hanging shirt clear of the table. */
+.practice21-page:not(.practice-next-page) .p21-drill-item[data-kind="tshirt"] { width: 20%; left: 40%; top: -1%; }
+.practice21-page:not(.practice-next-page) .p21-drill-item[data-set="1"][data-kind="notebook"] { width: 12%; left: 21.5%; }
+.practice21-page:not(.practice-next-page) .p21-drill-item[data-set="1"][data-kind="pencil"] { width: 12%; left: 68%; }
+/* Practice 2.2: proximity colors below the photographed hats and annotations. */
+.p2x-reach { position: absolute; z-index: 1; pointer-events: none; border-radius: 45%; }
+.p2x-reach[data-reach="A"] { left: 9%; top: 28%; width: 36%; height: 41%; background: rgb(37 99 235 / 19%); }
+.p2x-reach[data-reach="B"] { left: 56%; top: 28%; width: 36%; height: 41%; background: rgb(22 163 74 / 19%); }
+.p2x-reach[data-reach="far"] { left: 35%; top: 4%; width: 30%; height: 28%; background: rgb(194 65 12 / 17%); }
+.p2x-picture[data-speaker="B"] .p2x-reach[data-reach="A"] { background: rgb(22 163 74 / 19%); }
+.p2x-picture[data-speaker="B"] .p2x-reach[data-reach="B"] { background: rgb(37 99 235 / 19%); }
+.p2x-reach-foreground { z-index: 2; pointer-events: none; }
+.p2x-hat-picture .p21-which-guide { top: 2px; right: 10px; max-width: 30%; }
+/* Preserve only hat silhouettes above the colored regions. */
+.p2x-reach-foreground[data-zone="A"] { clip-path: polygon(21.5% 52.5%,21.8% 47%,23% 44%,25% 42%,27% 42%,29% 44%,30% 48%,32.4% 52%,32% 54.5%,29% 54.8%,27.5% 53.5%,25.5% 54%,22% 53.5%); }
+.p2x-reach-foreground[data-zone="B"] { clip-path: polygon(66% 51%,69.5% 49%,70% 44%,71% 41%,74% 40%,76% 42%,77.5% 48%,82% 51%,81% 54%,77% 56%,71% 56%,66% 54%); }
+.p2x-reach-foreground[data-zone="far"] { clip-path: polygon(44% 23%,46% 21%,46.5% 14%,48% 10%,50% 12%,52% 10%,54% 13%,54.5% 21%,56% 23%,55% 25%,45% 25%); }
+.p2x-hat-picture .p21-thought-dots { left: 66%; top: 27%; }

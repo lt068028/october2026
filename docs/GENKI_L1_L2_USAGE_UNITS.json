@@ -855,17 +855,18 @@
   },
   {
     "page": "2.2",
-    "id": "D1-Example-Q",
+    "id": "D1-S1-Example-Q",
     "type": "model",
     "tokens": [
-      "帽子"
+      "カバン"
     ]
   },
   {
     "page": "2.2",
-    "id": "D1-Example-R",
+    "id": "D1-S1-Example-R",
     "type": "model",
     "tokens": [
+      "カバン",
       "円"
     ]
   },
@@ -882,6 +883,7 @@
     "id": "D1-S1-A-0-R",
     "type": "model",
     "tokens": [
+      "カバン",
       "円"
     ]
   },
@@ -898,6 +900,7 @@
     "id": "D1-S1-A-1-R",
     "type": "model",
     "tokens": [
+      "カバン",
       "円"
     ]
   },
@@ -914,54 +917,24 @@
     "id": "D1-S1-A-2-R",
     "type": "model",
     "tokens": [
+      "カバン",
       "円"
     ]
   },
   {
     "page": "2.2",
-    "id": "D1-S1-B-0-Q",
+    "id": "D1-S2-Example-Q",
     "type": "model",
     "tokens": [
-      "カバン"
+      "時計"
     ]
   },
   {
     "page": "2.2",
-    "id": "D1-S1-B-0-R",
+    "id": "D1-S2-Example-R",
     "type": "model",
     "tokens": [
-      "円"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S1-B-1-Q",
-    "type": "model",
-    "tokens": [
-      "カバン"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S1-B-1-R",
-    "type": "model",
-    "tokens": [
-      "円"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S1-B-2-Q",
-    "type": "model",
-    "tokens": [
-      "カバン"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S1-B-2-R",
-    "type": "model",
-    "tokens": [
+      "時計",
       "円"
     ]
   },
@@ -978,6 +951,7 @@
     "id": "D1-S2-A-0-R",
     "type": "model",
     "tokens": [
+      "時計",
       "円"
     ]
   },
@@ -994,6 +968,7 @@
     "id": "D1-S2-A-1-R",
     "type": "model",
     "tokens": [
+      "時計",
       "円"
     ]
   },
@@ -1010,54 +985,7 @@
     "id": "D1-S2-A-2-R",
     "type": "model",
     "tokens": [
-      "円"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-0-Q",
-    "type": "model",
-    "tokens": [
-      "時計"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-0-R",
-    "type": "model",
-    "tokens": [
-      "円"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-1-Q",
-    "type": "model",
-    "tokens": [
-      "時計"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-1-R",
-    "type": "model",
-    "tokens": [
-      "円"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-2-Q",
-    "type": "model",
-    "tokens": [
-      "時計"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D1-S2-B-2-R",
-    "type": "model",
-    "tokens": [
+      "時計",
       "円"
     ]
   },

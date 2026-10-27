@@ -111,6 +111,7 @@ function mock(){
  check(new Set(nounGroups.flat()).size,18,'no noun reused across examples and drill sets');
  check(await p.locator('.p21-drill1 .recording-table tr').count(),6,'three rows per speaker');
  check(await p.locator('.p21-drill1 .p21-reach,.p21-drill1 .p21-object-number,.p21-drill1 .p21-area-caption').count(),0,'no regions, object numbers or distance answers');
+ check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='none')),true,'D2 objects stay in full color');
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
  check(await p.evaluate(()=>practice2Normalize('Tシャツ')===practice2Normalize('ティーシャツ')),true,'T-shirt recognition forms agree');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
@@ -208,7 +209,7 @@ function mock(){
   }
  }
 
- check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='grayscale(1)')),true,'D2 has no color differentiation');
+ check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='none')),true,'D2 image colors are preserved');
  check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2',''],'D3 numbering restarts per noun');
  check(await p.locator('#drill3Container tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A'],'D3 question roles alternate');
  const guide=await p.locator('.p21-which-guide').boundingBox(),scene=await p.locator('#drill3Container .p21-photo-stage').boundingBox();

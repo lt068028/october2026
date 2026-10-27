@@ -28,7 +28,15 @@ function mock(){
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
   if(number==='2.2'){
-   check(await p.locator('.p2x-example .p2x-photo').getAttribute('src'),'assets/practice22-hats.png','hat photo');
+   check(await p.locator('.p2x-example .p2x-photo').first().getAttribute('src'),'assets/practice22-hats.png','hat photo');
+   check(await p.locator('.p2x-example .p2x-reach').count(),3,'three proximity regions');
+   const colorsA=await p.locator('.p2x-example .p2x-reach').evaluateAll(es=>es.map(e=>getComputedStyle(e).backgroundColor));
+   await p.locator('.p2x-example [data-speaker="B"][data-zone="A"]').click();
+   const colorsB=await p.locator('.p2x-example .p2x-reach').evaluateAll(es=>es.map(e=>getComputedStyle(e).backgroundColor));
+   check(colorsA[0],colorsB[1],'near speaker color follows B');check(colorsA[1],colorsB[0],'near listener color follows B');check(colorsA[2],colorsB[2],'far region unchanged');
+   await p.evaluate(()=>t.spoken.at(-1).onend?.());
+   check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),1,'D3 uses 2.1 thought bubble');
+   check(await p.locator('#drill1Container .recording-table tr').count(),6,'three A-to-B price conversations');
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
    check(await p.locator('.p2x-example .p2x-stage > .p2x-speaker-guide').count(),1,'Who guide inside image');
    check(await p.locator('.p2x-example .p2x-stage > .p2x-audio').count(),3,'three audio pairs inside image');
@@ -65,10 +73,10 @@ function mock(){
     for(const set of [0,1]) {
      await p.locator('#drill1Container .p21-set-switcher button').nth(set).click();
      const n=['カバン','時計'][set];
-     for(let i=0;i<6;i++) {
-      const adj=['この','その','あの'][i%3],amount=(i<3?['千円','三千円','四千円']:['三千円','千円','四千円'])[i%3];
+     for(let i=0;i<3;i++) {
+      const adj=['この','その','あの'][i],replyAdj=['その','この','あの'][i],amount=(set===0?['二千円','五千円','八千円']:['六千円','九千円','一万円'])[i];
       await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),adj+n+'はいくら'+(style==='formal'?'ですか':''),'D1 price Q');
-      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),amount+end,'D1 price R');
+      await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),replyAdj+n+'は'+amount+end,'D1 price R');
      }
      await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
      const food=['おにぎり','お弁当'][set],prices=set===0?['三百円','六百円','九百円']:['千円','二千円','三千円'];
@@ -98,10 +106,10 @@ function mock(){
    isAutoPlay=false;const prefix=number==='2.2'?'p22':'p23';
    const samples=number==='2.2'?[
     ['p22_price_s0_A_0_q','このカバンはいくらですか','このカバンはいくらですか',true],
-    ['p22_price_s0_A_0_r','1000円です','せんえんです',true],
-    ['p22_price_s0_A_0_r','そのカバンは千円です','せんえんです',true],
-    ['p22_price_s0_A_0_r','このカバンは千円です','せんえんです',false],
-    ['p22_price_s0_A_0_r','3000円です','せんえんです',false],
+    ['p22_price_s0_A_0_r','2000円です','そのカバンはにせんえんです',false],
+    ['p22_price_s0_A_0_r','そのカバンは2000円です','そのカバンはにせんえんです',true],
+    ['p22_price_s0_A_0_r','このカバンは二千円です','そのカバンはにせんえんです',false],
+    ['p22_price_s0_A_0_r','そのカバンは3000円です','そのカバンはにせんえんです',false],
     ['p22_food_s0_A_0_q','どのおにぎりが300円ですか','どのおにぎりがさんびゃくえんですか',true],
     ['p22_food_s0_A_0_q','どのおにぎりは300円ですか','どのおにぎりがさんびゃくえんですか',false],
     ['p22_food_s0_A_0_r','そのおにぎりです','そのおにぎりです',true],
