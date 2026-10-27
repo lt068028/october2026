@@ -2608,3 +2608,21 @@ body.site-scale {
 .p2x-hat-picture .p2x-object { width: 15%; }
 .p2x-hat-picture .p2x-object[data-zone="far"] { width: 13%; }
 .p2x-hat-picture .p2x-price { top: 95%; }
+
+/* Hat example follows 2.1: controls in the image, models grouped by speaker. */
+.p2x-hat-picture .p2x-speaker-guide { left: 2%; top: 2%; transform: none; max-width: 48%; }
+.p2x-hat-picture .p2x-audio { position: absolute; right: auto; bottom: auto; transform: translateX(-50%); z-index: 5; }
+.p2x-hat-picture .p2x-distance-label { width: 27%; }
+.practice-next-page .p21-model-list.p2x-speaker-models { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@media(max-width:600px) {
+ .p2x-hat-picture .p2x-distance-label .p21-area-sound { font-size: 24px; }
+ .p2x-hat-picture .p2x-distance-label .p21-area-description { font-size: 16px; }
+ .p2x-hat-picture .p2x-audio { gap: 3px; }
+ .practice-next-page .p21-model-list.p2x-speaker-models { grid-template-columns: 1fr; }
+}
+
+.p2x-hat-picture .p2x-distance-label { width: 34%; }
+.p2x-hat-picture .p2x-distance-label[data-zone="far"] { width: 20%; }
+@media(max-width:900px) {
+ .p2x-hat-picture .p2x-audio button { font-size: 18px; padding: 4px; }
+}

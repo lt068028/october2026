@@ -30,6 +30,9 @@ function mock(){
    check(await p.locator('.p2x-example .p2x-photo').getAttribute('src'),'assets/practice22-hats.png','hat photo');
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
    check(await p.locator('.p2x-example .p2x-stage > .p2x-speaker-guide').count(),1,'Who guide inside image');
+   check(await p.locator('.p2x-example .p2x-stage > .p2x-audio').count(),3,'three audio pairs inside image');
+   check(await p.locator('.p2x-speaker-models .p21-model-group').count(),2,'models grouped by speaker');
+   check(await p.locator('.p2x-example .p2x-context-note').count(),0,'removed explanatory paragraph');
    await p.locator('.p2x-example .p21-item-audio button').first().click();
    check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations()[0].effect.getTiming().iterations),Infinity,'guide continues during playback');
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
@@ -116,6 +119,10 @@ function mock(){
     const a=el.getBoundingClientRect(),b=el.parentElement.getBoundingClientRect();
     return a.left>=b.left-1&&a.right<=b.right+1&&a.top>=b.top-1&&a.bottom<=b.bottom+1;
    })),true,number+' distance captions stay visible '+width+theme+hint);
+   if(number==='2.2')check(await p.locator('.p2x-hat-picture').evaluate(e=>{
+    const buttons=[...e.querySelectorAll('.p2x-audio button')].map(b=>b.getBoundingClientRect()),stage=e.querySelector('.p2x-stage').getBoundingClientRect();
+    return buttons.every((a,i)=>a.left>=stage.left&&a.right<=stage.right&&a.top>=stage.top&&a.bottom<=stage.bottom&&buttons.every((b,j)=>i===j||Math.min(a.right,b.right)<=Math.max(a.left,b.left)||Math.min(a.bottom,b.bottom)<=Math.max(a.top,b.top)));
+   }),true,'image buttons fit without overlap '+width+theme+hint);
    if(process.env.NEXT_SCREENSHOT_DIR&&width===1440&&theme==='light'&&hint==='hover'){
     fs.mkdirSync(process.env.NEXT_SCREENSHOT_DIR,{recursive:true});await p.locator('.p2x-example').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-example.png`)});await p.locator('#drill2Container .p2x-picture').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-drill2.png`)});
    }

@@ -1282,7 +1282,7 @@ function practice2ShowNotice(resultSpan, message) {
             imageHint(target,o);stage.append(target);
             if(example) {
                 const region=node('div','p2x-distance-label');region.dataset.zone=o.zone;
-                region.style.left=position[0]+'%';region.style.top=(hats?(o.zone==='far'?36:18):is22?position[1]+20:39)+'%';
+                region.style.left=(hats?{A:30,B:70,far:68}[o.zone]:position[0])+'%';region.style.top=(hats?(o.zone==='far'?9:73):is22?position[1]+20:39)+'%';
                 region.append(node('strong','p21-area-sound'),node('span','p21-area-description'));stage.append(region);
                 const buttons=node('div','p21-item-audio p2x-audio');buttons.dataset.zone=o.zone;
                 buttons.style.left=(!is22?[17,50,83][i]:position[0])+'%';buttons.style.top=(is22?position[1]+27:73)+'%';
@@ -1291,13 +1291,17 @@ function practice2ShowNotice(resultSpan, message) {
                     b.dataset.speaker=speaker;b.dataset.zone=o.zone;b.addEventListener('focus',()=>select(speaker,o.zone));buttons.append(b);
                 }
                 buttons.style.order=(!is22?['A','B','far']:['A','far','B']).indexOf(o.zone);
-                const heading=node('strong','p2x-audio-heading',noun(o));buttons.prepend(heading);audioGrid.append(buttons);
+                if(hats) {
+                    buttons.style.left={A:39,B:61,far:88}[o.zone]+'%';
+                    buttons.style.top=(o.zone==='far'?3:37)+'%';
+                    stage.append(buttons);
+                } else {const heading=node('strong','p2x-audio-heading',noun(o));buttons.prepend(heading);audioGrid.append(buttons);}
             }
         }
         if(which) {
             const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
         }
-        if(hats)stage.append(context);else picture.append(context);picture.append(stage);if(example)picture.append(audioGrid);container.append(picture);
+        if(hats)stage.append(context);else picture.append(context);picture.append(stage);if(example&&!hats)picture.append(audioGrid);container.append(picture);
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
             context.querySelector('strong').textContent=speaker;
@@ -1325,15 +1329,26 @@ function practice2ShowNotice(resultSpan, message) {
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
         const box=node('section','example-box p2x-example');
         box.append(node('h2','p21-distance-heading',is22?'この・その・あの + noun':'ここ・そこ・あそこ: three places, three floors'));
-        box.append(node('p','p2x-context-note',is22?'Use この・その・あの before a noun you already know to point out which item. The price is on each tag.':'A and B are on a call, on different floors.'));
+        if(!is22)box.append(node('p','p2x-context-note','A and B are on a call, on different floors.'));
         const selectExample=scene(box,exObjects,{example:true});
         const list=node('div','p21-model-list');
-        for(const o of exObjects) {
-            const group=node('section','p21-model-group'),heading=node('h3');heading.innerHTML=vocabulary(o);group.append(heading);
+        if(is22) {
+            list.classList.add('p2x-speaker-models');
             for(const speaker of ['A','B']) {
-                const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.zone=o.zone;
-                row.append(node('strong','',`${speaker}：`),modelText(()=>describe(speaker,o),o));group.append(row);
-            }list.append(group);
+                const group=node('section','p21-model-group');group.append(node('h3','',speaker));
+                for(const o of exObjects) {
+                    const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.zone=o.zone;
+                    row.append(modelText(()=>describe(speaker,o),o));group.append(row);
+                }list.append(group);
+            }
+        } else {
+            for(const o of exObjects) {
+                const group=node('section','p21-model-group'),heading=node('h3');heading.innerHTML=vocabulary(o);group.append(heading);
+                for(const speaker of ['A','B']) {
+                    const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.zone=o.zone;
+                    row.append(node('strong','',`${speaker}：`),modelText(()=>describe(speaker,o),o));group.append(row);
+                }list.append(group);
+            }
         }
         box.append(list);d1.append(box);selectExample('A','A');
         panel(d1,is22?'Drill 1: この・その・あの + noun':'Drill 1: Describe each place',is22?'💡A, then B: Name each object and say its price.':(practice2State.describeSet===1?'💡A, then B: Say where each object is.':'💡A, then B: Name the three places.'));
