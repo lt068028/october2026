@@ -252,6 +252,9 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
+    document.querySelectorAll('.p21-photo-context').forEach(context => {
+        context.getAnimations().forEach(animation => animation.cancel());
+    });
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (currentUtteranceRef) {
@@ -881,7 +884,7 @@ function practice2ShowNotice(resultSpan, message) {
             : "🔥Keep going! Try once more!";
     };
 
-    function listen(getText, label = "🔊きく") {
+    function listen(getText, label = "🔊きく", onPlay) {
         const element = button(
             label,
             "Listen to the model sentence.",
@@ -894,6 +897,7 @@ function practice2ShowNotice(resultSpan, message) {
                     "Playing..."
                 );
 
+                onPlay?.();
                 speakText(
                     practice2SpeechText(text),
                     0.75,
@@ -1271,7 +1275,7 @@ function practice2ShowNotice(resultSpan, message) {
             const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
             const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             context.animate(reduced?[active,active]:[normal,active,normal],{
-                duration:1200,iterations:reduced?1:3,easing:'ease-in-out'
+                duration:1200,iterations:Infinity,easing:'ease-in-out'
             });
         }
         for(const o of [objects[0],objects[2],objects[1]]) {
@@ -1281,7 +1285,7 @@ function practice2ShowNotice(resultSpan, message) {
             area.append(node('span','p21-object-number',`Object ${o.id}`));
             const controls=node('div','p21-item-audio');
             for(const speaker of ['A','B']) {
-                const sound=listen(()=>{perspective(speaker,o.id);emphasizeSpeaker();return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`);
+                const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`,emphasizeSpeaker);
                 sound.dataset.speaker=speaker;sound.dataset.object=o.id;
                 sound.addEventListener('focus',()=>perspective(speaker,o.id));controls.append(sound);
             }

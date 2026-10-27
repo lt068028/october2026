@@ -58,22 +58,30 @@ function mock(){
  check(await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').isDisabled(),true,'new audio remains playing after stale callback');
  check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed after stale callback');
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
- await p.evaluate(()=>t.spoken.at(-1).onend?.());
  const attention=await p.locator('.p21-photo-context').evaluate(el=>{
   const animation=el.getAnimations()[0];
   return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),highlight:animation.effect.getKeyframes()[1].backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
  });
- check(attention,{outside:true,front:true,highlight:'rgb(254, 202, 202)',duration:1200,iterations:3},'speaker guide above photograph with three background pulses');
- await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().forEach(a=>a.finish()));
+ check(attention,{outside:true,front:true,highlight:'rgb(254, 202, 202)',duration:1200,iterations:Infinity},'speaker guide pulses throughout playback');
+ await p.locator('.p21-photo-context').evaluate(el=>{el.getAnimations()[0].currentTime=7200;});
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations()[0].playState),'running','attention continues beyond three cycles');
+ await p.evaluate(()=>t.spoken.at(-1).onend?.());
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS completion stops attention');
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
  check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  check(await p.locator('.p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
  await p.emulateMedia({reducedMotion:'reduce'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
- check(await p.locator('.p21-current-speaker').evaluate(el=>el.getAnimations().length),0,'reduced motion uses static emphasis');
+ check(await p.locator('.p21-photo-context').evaluate(el=>{const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;}),true,'reduced motion uses static emphasis during playback');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.emulateMedia({reducedMotion:'no-preference'});
+ await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
+ await p.evaluate(()=>t.spoken.at(-1).onerror?.({error:'synthesis-failed'}));
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS failure stops attention');
+ await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
+ await p.evaluate(()=>stopAllPlayback());
+ check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'explicit interruption stops attention');
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
   check(await p.locator('.p21-area-caption').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)')),true,'region labels have no background panels');
