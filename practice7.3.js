@@ -499,7 +499,7 @@ function normalize(text) {
         .replace(/(?:よね|よ|ね)$/, '');
 }
 
-function convert(text, question = false) {
+function convert(text, question = false, keepParticles = false) {
     if (speechStyle === 'formal') return text;
 
     let value = String(text);
@@ -534,7 +534,7 @@ function convert(text, question = false) {
     );
 
     if (speechStyle === 'casual') {
-        value = value.replace(/を/g, '');
+        if (!keepParticles) value = value.replace(/を/g, '');
 
         // 質問には「よ」を付けない。
         if (!question) {
@@ -552,6 +552,7 @@ function model(r) {
         ...r,
         text: convert(r.text, question),
         hira: convert(r.hira, question),
+        replyHiras: r.replyHiras?.flatMap(text => [convert(text, false), convert(text, false, true)]),
         marks: r.marks.map(mark =>
             convert(mark, question)
                 .replace(
@@ -2157,7 +2158,7 @@ function qa73Model(cues, kind) {
 const qa73BaseNormalize = normalize;
 
 normalize = function (text) {
-    let value = qa73BaseNormalize(text);
+    let value = qa73BaseNormalize(String(text ?? '').replace(/私/g, 'わたし'));
 
     // 「会う」の相手を示す「友達に／友達と」を同じ判定にする。
     if (
@@ -2258,7 +2259,11 @@ function matchesAnswer(actual, target) {
         const times = spoken.match(/きょうの(?:ごぜんちゅう|ごご)|きのうの(?:よる|ひる)|さっき|いま/g) || [];
         if (times.some(time => time !== qa73BaseNormalize(target.answerTime))) return false;
     }
-    return Boolean(String(actual).trim()) && normalize(actual) === normalize(target.hira);
+    const candidates = [target.hira, ...(target.replyHiras || [])];
+    if (target.replyHiras) {
+        candidates.push(...candidates.flatMap(text => ['わたしは、' + text, 'わたしが、' + text]));
+    }
+    return Boolean(String(actual).trim()) && candidates.some(text => normalize(actual) === normalize(text));
 }
 
 const qa73BaseSpeechText = speechText;
@@ -2579,6 +2584,27 @@ sync = function () {
         }
     });
 };
+
+// 会話で既知の時間・対象を省略し、明示した正しい回答も行ごとに保持する。
+for (const [index, section] of sections.entries()) {
+    if (index === 0) continue; // 比較の単独文は必須要素を維持。
+    for (const [q, r] of [section.example, ...section.items]) {
+        const full = r.hira;
+        if (index === 1 && q.cues[0] === r.cues[0]) {
+            const time = words[r.cues[0]];
+            r.text = r.text.replace(time.kanji, '').replace(/^、/, '');
+            r.hira = r.hira.replace(time.hira, '').replace(/^、/, '');
+        }
+        if (index === 2) {
+            const phrases = [['車を','くるまを'],['東京に','とうきょうに'],['自転車を','じてんしゃを'],['宿題のことを','しゅくだいのことを']];
+            for (const [kanji, kana] of phrases) {
+                r.text = r.text.replace(kanji, '');
+                r.hira = r.hira.replace(kana, '');
+            }
+        }
+        r.replyHiras = [full, r.hira];
+    }
+}
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

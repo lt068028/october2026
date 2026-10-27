@@ -1364,14 +1364,14 @@ function practice2ShowNotice(resultSpan, message) {
                 const answerCue=`<strong>B · Response:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
                 const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])));
                 const key=`p21_d1_s1_r_${i}`;
-                const answer=()=>`${prefix}、${statement(pro('B',o),noun(o))}`;
+                const answer=()=>`${prefix}、${noun(o)}${ending}。`;
                 practice2State.replyReferences[key]=()=>{
                     const topic=pro('B',o)+'は、',yes=noun(o)+ending+'。';
                     const negatives=[...negativeForms.slice(0,speechStyle==='formal'?4:6),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])];
-                    return [answer(),...negatives.flatMap(negative=>{
+                    return [answer(),`${prefix}、${topic}${yes}`,...negatives.flatMap(negative=>{
                         const no=noun(wrong[i])+negative+'。';
                         return [`${prefix}、${topic}${no}${yes}`,`${prefix}、${no}${topic}${yes}`,`${prefix}、${no}${yes}`,`${prefix}、${topic}${no}${topic}${yes}`];
-                    })];
+                    })].flatMap(text=>[text,text.replace(/^(?:いいえ|ううん)、/,'')]);
                 };
                 const r=recordingRow(current,'a',answerCue,key,answer);
                 r.actions.append(node('span','p21-response-lead',`${prefix}…`));
@@ -1445,11 +1445,14 @@ function practice2ShowNotice(resultSpan, message) {
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
-            const r=recordingRow(current,'a','<strong>B · Response:</strong> …',`p21_d2_s${s2}_r_${i}`,()=>statement(pro('B',o),noun(o)));
+            const key=`p21_d2_s${s2}_r_${i}`;
+            const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
+            practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o))];
+            const r=recordingRow(current,'a','<strong>B · Response:</strong> …',key,()=>noun(o)+ending);
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
         const d3=document.getElementById('drill3Container');d3.hidden=false;
-        const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Answer for the color shown.'));d3.append(panel3);
+        const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,['スマホ',noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
         const nounItem=item(['phone','dictionary','wallet'][s3]);
         const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
@@ -1462,7 +1465,10 @@ function practice2ShowNotice(resultSpan, message) {
             const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> ${formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
             const cue=node('span');cue.innerHTML=`<strong>${answering} · Response:</strong> `;
             const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
-            const r=recordingRow(current,'a',cue,`p21_d3_s${s3}_r_${i}`,()=>shortAnswer(answering,o));
+            const key=`p21_d3_s${s3}_r_${i}`;
+            const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
+            practice2State.replyReferences[key]=()=>[statement(pro(answering,o),word('わたしの','私の')+noun(o)),statement(word('わたしの','私の')+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),word('わたしの','私の')),pro(answering,o)+'が'+word('わたしの','私の')+noun(o)+ending];
+            const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
     }

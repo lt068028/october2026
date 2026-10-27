@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     practice71Normalize = function(text) {
         const value = practice71ToHiragana(
-            String(text ?? '').normalize('NFKC')
+            String(text ?? '').normalize('NFKC').replace(/私/g, 'わたし')
         )
             .replace(/[\s、。．,.!?！？「」『』]/g, '')
             .replace(/(?:よね|よ|ね)$/, '');
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     continue;
                 }
 
-                const time = rest.match(/^いま(?:は)?/);
+                const time = rest.match(/^(?:いま(?:は)?|わたし(?:は|が)?)/);
 
                 if (time) {
                     rest = rest.slice(time[0].length);

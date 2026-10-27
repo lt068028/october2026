@@ -1232,15 +1232,16 @@ function practice2ShowNotice(resultSpan, message) {
         key
     ) {
         const modelText = getModel();
+        const acceptedTexts = [expectedText, modelText, ...(practice2State.replyReferences?.[key]?.() || [])];
 
         const saved = {
+            acceptedTexts,
             rawTranscript: String(rawTranscript ?? "").trim(),
             expectedText,
             modelText,
             speechStyle,
             isCorrect:
-                matches(rawTranscript, expectedText, speechStyle)
-                || matches(rawTranscript, modelText, speechStyle)
+                acceptedTexts.some(text => matches(rawTranscript, text, speechStyle))
         };
 
         practice2State.savedResults[key] = saved;
@@ -1280,10 +1281,7 @@ function practice2ShowNotice(resultSpan, message) {
                 document.createTextNode(displayed + " ✅ ")
             );
         } else {
-            const candidates = [
-                saved.expectedText,
-                saved.modelText
-            ]
+            const candidates = (saved.acceptedTexts || [saved.expectedText, saved.modelText])
                 .filter(Boolean)
                 .flatMap(text =>
                     references(
@@ -1778,6 +1776,13 @@ function practice2ShowNotice(resultSpan, message) {
                 ? response(y(), state.answerMode === "yes")
                 : "";
 
+            practice2State.replyReferences[`p2_drill1_a_${index}`] = () => {
+                const text = getText(), split = text.indexOf("、");
+                const prefix = text.slice(0, split + 1), predicate = text.slice(split + 1);
+                return [prefix + word(item.x, item.xKanji) + "は、" + predicate, predicate, word(item.x, item.xKanji) + "は、" + predicate,
+                    ...(speechStyle === "casual" ? [prefix + word(item.x, item.xKanji) + "、" + predicate, word(item.x, item.xKanji) + "、" + predicate] : [])];
+            };
+
             const answer = recordingRow(
                 current,
                 "a",
@@ -1834,13 +1839,7 @@ function practice2ShowNotice(resultSpan, message) {
                     "seiji",
                     "politics"
                 ),
-                () => statement(
-                    word(
-                        "わたしのせんこう",
-                        "わたしの専攻"
-                    ),
-                    word("せいじ", "政治")
-                )
+                () => word("せいじ", "政治") + ({formal:"です。", informal:"だ。", casual:"だよ。"}[speechStyle])
             ]
         ], {
             responseCue: true
@@ -1944,12 +1943,14 @@ function practice2ShowNotice(resultSpan, message) {
                 );
 
                 return major
-                    ? statement(
-                        subject(),
-                        word(major.word, major.kanji)
-                    )
+                    ? word(major.word, major.kanji) + ({formal:"です。", informal:"だ。", casual:"だよ。"}[speechStyle])
                     : "";
             };
+
+            practice2State.replyReferences[`${key}_a`] = () => [
+                subject() + "は、" + getText(),
+                word("せんこう", "専攻") + "は、" + getText()
+            ];
 
             const answer = recordingRow(
                 current,
@@ -2178,6 +2179,7 @@ function practice2ShowNotice(resultSpan, message) {
         stopAllPlayback();
 
         practice2State.views = {};
+        practice2State.replyReferences = {};
 
         installSettings();
         renderSections();

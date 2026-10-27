@@ -17,7 +17,7 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    if(!fs.existsSync(file))return r.fulfill({status:404,body:''});
    let s=fs.readFileSync(file,'utf8');
    if(file.endsWith('practice1.2.js'))s=s.replace('    // 保存時だけ判定する。','    window.answerMatch=(a,b)=>matches(a,b,speechStyle);\n    // 保存時だけ判定する。');
-   if(file.endsWith('practice7.3.js')){const i=s.lastIndexOf('})();');s=s.slice(0,i)+`window.answerMatch=(a,b)=>matchesAnswer(a,{hira:hira(b)});window.qaMatch=(a,i=0,kind='yes')=>matchesAnswer(a,qa73Model(qa73.items[i],kind));window.answerRows=()=>[...views.values()].map(v=>v.r);window.answerReading=hira;window.answerExamples=()=>sections.flatMap(s=>s.example||[]).map(r=>model(r));`+s.slice(i);}
+   if(file.endsWith('practice7.3.js')){const i=s.lastIndexOf('})();');s=s.slice(0,i)+`window.answerMatch=(a,b)=>matchesAnswer(a,{hira:hira(b)});window.qaMatch=(a,i=0,kind='yes')=>matchesAnswer(a,qa73Model(qa73.items[i],kind));window.answerRows=()=>[...views.values()].map(v=>v.r);window.answerReading=hira;window.answerExamples=()=>sections.flatMap(s=>s.example||[]).map(r=>model(r));window.conversationMatch=(a,s,i)=>matchesAnswer(a,model(sections[s].items[i][1]));window.conversationModel=(s,i)=>model(sections[s].items[i][1]).hira;`+s.slice(i);}
    return r.fulfill({body:s,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});
   });
   await p.goto('http://answers.test/'+name+'.html');
@@ -78,6 +78,63 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     const ending=style==='informal'?'いた':'た';
     check(await p.evaluate(a=>qaMatch(a),'会って'+ending),true,'p73 '+style+' time omitted');
     check(await p.evaluate(a=>qaMatch(a),'昨日の夜会って'+ending),false,'p73 '+style+' wrong time');
+   }
+  }
+  if(name==='practice7.1')check(await p.evaluate(()=>practice71Normalize('はい私は今本を読んでいます')===practice71Normalize('はい読んでいます')),true,'p71 full first-person response');
+  if(name==='practice7.2'){
+   check(await p.evaluate(()=>practice7Normalize('はい私は家の電話番号を覚えています')===practice7Normalize('はい覚えています')),true,'p72 full first-person response');
+   check(await p.evaluate(()=>practice7Normalize('私を家の電話番号を覚えています')===practice7Normalize('はい覚えています')),false,'p72 self subject を rejected');
+   check(await p.evaluate(()=>practice7Normalize('私は太っています')===practice7Normalize('はい太っています')),false,'p72 cannot replace father subject with self');
+  }
+  if(name==='practice1.2'){
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
+
+   // Use the real row callbacks and saved-result predicate, not a synthetic matcher.
+   const yes=p.locator('#drill1Container button[aria-pressed]').filter({hasText:'🙆'}).first();
+   if(await yes.getAttribute('aria-pressed')!=='true')await yes.click();
+   const out=await p.evaluate(()=>{
+    isAutoPlay=false;
+    const key='p2_drill1_a_0',v=practice2State.views[key];
+    const refs=practice2State.replyReferences[key](),full=refs[0],short=refs[1];
+    return [short,full,full.replace('はい','いいえ')].map(text=>{
+     processResult(text,short,()=>short,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+     return [text,practice2State.savedResults[key].isCorrect];
+    });
+   });
+   check(JSON.stringify(out),JSON.stringify(out.map((v,i)=>[v[0],i<2])),'p12 short/full/polarity');
+   const select=p.locator('#drill2Container select').first();
+   await select.selectOption({index:1});
+   const majors=await p.evaluate(()=>{
+    const key=Object.keys(practice2State.replyReferences).find(k=>k.startsWith('p2_drill2_'));
+    const refs=practice2State.replyReferences[key](),short=refs[0].split('は、').at(-1),v=practice2State.views[key];
+    return [short,...refs,'私の専攻は'+short].map(text=>{
+     processResult(text,short,()=>short,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+     return practice2State.savedResults[key].isCorrect;
+    });
+   });
+   check(JSON.stringify(majors),JSON.stringify([true,true,true,false]),'p12 major short/full/partial/wrong owner');
+   await p.locator('#speechStyleControl [data-value="casual"]').click();
+   check(await p.evaluate(()=>{
+    const key='p2_drill1_a_0',v=practice2State.views[key],refs=practice2State.replyReferences[key]();
+    processResult(refs[3],refs[1],()=>refs[1],v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+    return practice2State.savedResults[key].isCorrect;
+   }),true,'p12 casual topic particle optional in full response');
+  }
+  if(name==='practice7.3'){
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
+   for(const [text,section,index,want] of [
+    ['母を手伝っていました',1,0,true],['昨日の午前中母を手伝っていました',1,0,true],
+    ['私は昨日の午前中母を手伝っていました',1,0,true],['昨日の午後母を手伝っていました',1,0,false],
+    ['去年まで持っていました',2,0,true],['去年まで車を持っていました',2,0,true],
+    ['私は去年まで車を持っていました',2,0,true],['去年まで自転車を持っていました',2,0,false],
+    ['去年まで持っています',2,0,false],['持っていました',2,0,false]
+   ])check(await p.evaluate(({text,section,index})=>conversationMatch(text,section,index),{text,section,index}),want,'p73 conversation '+text);
+   check(await p.evaluate(()=>conversationModel(1,0)),'ははをてつだっていました。','p73 short model');
+   for(const style of ['informal','casual']){
+    await p.locator('#speechStyleControl [data-value="'+style+'"]').click();
+    const end=style==='casual'?'てた':'ていた';
+    for(const text of ['去年まで持っ'+end,'去年まで車を持っ'+end,'私は去年まで車を持っ'+end])
+     check(await p.evaluate(text=>conversationMatch(text,2,0),text),true,'p73 '+style+' full/short '+text);
    }
   }
   // Symbols are audited, not broadened in this change.

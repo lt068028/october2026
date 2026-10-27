@@ -85,7 +85,7 @@ function mock(){
    await rows.nth(i).locator('.recording-actions button').first().click();
    const spoken=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const end=style==='formal'?'です':'だ';
-   const expected=set===0?['これ','それ','あれ'][j]+'は'+nouns[object]+end:speaker==='A'?['これ','それ','あれ'][j]+'は'+nouns[[1,2,0][j]]+(style==='formal'?'ですか':''):(style==='casual'?'ううん':'いいえ')+['それ','これ','あれ'][j]+'は'+nouns[j]+end;
+   const expected=set===0?['これ','それ','あれ'][j]+'は'+nouns[object]+end:speaker==='A'?['これ','それ','あれ'][j]+'は'+nouns[[1,2,0][j]]+(style==='formal'?'ですか':''):(style==='casual'?'ううん':'いいえ')+nouns[j]+end;
    check(spoken,expected,'Drill model by set, speaker, style and script');
    check(await p.locator('.p21-drill1 .p21-drill-picture').getAttribute('data-speaker'),speaker,'Drill speaker updates');
   }
@@ -103,6 +103,7 @@ function mock(){
     const short=`${prefix}、${pro}は${correct}${end}。`;
     const samples=[
      [short,true],
+     [`${prefix}、${correct}${end}。`,true],
      [`${prefix}、${pro}は${wrong}${negative}。${correct}${end}。`,true],
      [`${prefix}、${wrong}${negative}。${correct}${end}。`,true],
      [`${prefix}、${wrong}${negative}。${pro}は${correct}${end}。`,true],
@@ -118,6 +119,29 @@ function mock(){
   for(const [actual,want,text] of results)check(actual,want,style+' response: '+text);
  }
 
+ await p.locator('#speechStyleControl [data-value="formal"]').click();
+ const expanded=await p.evaluate(()=>{
+  isAutoPlay=false;
+  return [
+   ['p21_d2_s0_r_0','スマホです','スマホです',true],
+   ['p21_d2_s0_r_0','それはスマホです','スマホです',true],
+   ['p21_d2_s0_r_0','これはスマホです','スマホです',false],
+   ['p21_d2_s0_r_0','それは辞書です','スマホです',false],
+   ['p21_d3_s0_r_0','それです','それです',true],
+   ['p21_d3_s0_r_0','それは私のスマホです','それです',true],
+   ['p21_d3_s0_r_0','私のスマホはそれです','それです',true],
+   ['p21_d3_s0_r_0','スマホはそれです','それです',true],
+   ['p21_d3_s0_r_0','それは私のです','それです',true],
+   ['p21_d3_s0_r_0','これは私のスマホです','それです',false],
+   ['p21_d3_s0_r_0','それはあなたのスマホです','それです',false],
+   ['p21_d3_s0_r_0','スマホです','それです',false]
+  ].map(([key,text,model,want])=>{
+   const v=practice2State.views[key];
+   processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+   return [practice2State.savedResults[key].isCorrect,want,text];
+  });
+ });
+ for(const [actual,want,text] of expanded)check(actual,want,'expanded dialogue: '+text);
  // Naming questions and color-selected answers use the same perspective rules.
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
@@ -128,7 +152,7 @@ function mock(){
    for(let i=0;i<6;i++) {
     await p.locator('#drill2Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
-    const j=Math.floor(i/2),expected=i%2?['それ','これ','あれ'][j]+'は'+nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なんですか':'なに');
+    const j=Math.floor(i/2),expected=i%2?nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なんですか':'なに');
     check(text,expected,'D2 naming model');
    }
   }

@@ -279,8 +279,6 @@
     "id": "E2-R",
     "type": "model",
     "tokens": [
-      "私",
-      "専攻",
       "政治"
     ]
   },
@@ -423,10 +421,7 @@
     "page": "1.2",
     "id": "D2-1-R-template",
     "type": "model",
-    "tokens": [
-      "友達",
-      "専攻"
-    ]
+    "tokens": []
   },
   {
     "page": "1.2",
@@ -442,10 +437,7 @@
     "page": "1.2",
     "id": "D2-2-R-template",
     "type": "model",
-    "tokens": [
-      "親友",
-      "専攻"
-    ]
+    "tokens": []
   },
   {
     "page": "1.2",
@@ -461,10 +453,7 @@
     "page": "1.2",
     "id": "D2-3-R-template",
     "type": "model",
-    "tokens": [
-      "同僚",
-      "専攻"
-    ]
+    "tokens": []
   },
   {
     "page": "1.2",

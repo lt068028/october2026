@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 動詞の肯定・否定を必須とし、その他の指定語句は任意。
     practice7Normalize = text => {
-        const value = flat(text);
+        const value = flat(String(text ?? '').replace(/私/g, 'わたし'));
 
         for (const item of targets) {
             const stem = flat(item.stem);
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 value.slice(0, match.index) +
                 value.slice(match.index + match[0].length);
 
-            const optional = item.optional
+            const optional = [...item.optional, ...(!item.subject ? ['わたし'] : [])]
                 .map(flat)
                 .sort((a, b) => b.length - a.length);
 
@@ -195,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
 
                 if (token) {
-                    const subjectToken = item.subject &&
-                        (!item.object || token !== flat(item.object));
+                    const subjectToken = token === 'わたし' || (item.subject &&
+                        (!item.object || token !== flat(item.object)));
                     const particle = subjectToken ? /^[はが]/
                         : item.object === '家の電話番号' ? /^[をは]/
                         : /^[をはが]/;
