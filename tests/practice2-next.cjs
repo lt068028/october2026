@@ -41,6 +41,8 @@ function mock(){
    check(await p.locator('#drill2Container .recording-table tr').count(),6,'three A-to-B price conversations');
    check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
    check(await p.locator('#drill1Container .recording-table tr').count(),3,'D1 has three statements');
+   check(await p.locator('#drill3Container > .p2x-picture .p2x-speaker-guide').count(),0,'D3 has no redundant Who guide');
+   check(await p.locator('#drill3Container > .example-box .p2x-speaker-guide').count(),1,'E3 keeps its Who guide');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['B','A','B'],'D1 changes viewpoint on same near item');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.zone)),['A','A','far'],'D1 uses the same near item twice');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.textContent.includes('Price'))),true,'D1 does not reveal spoken price in cue');
