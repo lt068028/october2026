@@ -89,6 +89,7 @@ function mock(){
   const ratio=await p.locator('.p21-distance-board').evaluate(e=>{const p=e.parentElement,c=getComputedStyle(p);return e.clientWidth/(p.clientWidth-parseFloat(c.paddingLeft)-parseFloat(c.paddingRight));});
   check(Math.abs(ratio-(width>900?.75:1))<.04,true,'75 percent scene, readable narrow fallback');
   check(await p.locator('.p21-item-audio').evaluateAll(es=>es.every(e=>getComputedStyle(e).flexDirection==='column')),true,'A B audio buttons stacked');
+  check(await p.locator('.p21-distance-example .p21-item-audio button').evaluateAll(es=>{const values=es.map(e=>{const c=getComputedStyle(e),r=e.getBoundingClientRect();return [c.fontFamily,c.fontSize,c.fontWeight,c.lineHeight,c.padding,r.width,r.height].join('|')});return new Set(values).size;}),1,'all six image audio buttons have identical font and dimensions');
   check(await p.locator('.example-box,.p21-distance-board,.p21-distance-area,.p21-model-group').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'no horizontal overflow');
  }
  check(await p.locator('button .custom-tip-box').evaluateAll(es=>es.some(t=>/^Listen/.test(t.textContent))),false,'no routine explanations');

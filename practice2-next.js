@@ -5,13 +5,14 @@ const PracticeNext = (()=>{
         {hira:'きっさてん',kanji:'喫茶店',romaji:'kissaten',meaning:'cafe',zone:'B',kind:'place'},
         {hira:'としょかん',kanji:'図書館',romaji:'toshokan',meaning:'library',zone:'far',kind:'place'}
     ];
+    const cities=[{hira:'とうきょう',kanji:'東京',romaji:'Tōkyō',meaning:'Tokyo',kind:'city',zone:'A'},{hira:'ロンドン',kanji:'ロンドン',romaji:'Rondon',meaning:'London',kind:'city',zone:'B'},{hira:'ニューヨーク',kanji:'ニューヨーク',romaji:'Nyū Yōku',meaning:'New York',kind:'city',zone:'far'}];
     const people=[
         {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary (blue cardigan)',kind:'person-mary'},
         {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
-    const readings=[['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
-    return {items:[...Practice21.items,...places,...people],places,people,readings};
+    const readings=[['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
+    return {items:[...Practice21.items,...places,...people,...cities],places,people,cities,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
 let isManualStop = false;
@@ -1356,8 +1357,68 @@ function practice2ShowNotice(resultSpan, message) {
         view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
         for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>select(speaker,o.zone));
     }
+    const cityObjects=()=>[
+        {hira:'とうきょう',kanji:'東京',romaji:'Tōkyō',meaning:'Tokyo',zone:'A',kind:'city',timeHira:'ごごじゅうじ',timeKanji:'午後十時',clock:'22:00'},
+        {hira:'ロンドン',kanji:'ロンドン',romaji:'Rondon',meaning:'London',zone:'B',kind:'city',timeHira:'ごごいちじ',timeKanji:'午後一時',clock:'13:00'},
+        {hira:'ニューヨーク',kanji:'ニューヨーク',romaji:'Nyū Yōku',meaning:'New York',zone:'far',kind:'city',timeHira:'ごぜんくじ',timeKanji:'午前九時',clock:'09:00'}
+    ];
+    function cityScene(container,{example=false,times=false,audio=example}={}) {
+        const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
+        const context=node('p','p21-photo-context p2x-speaker-guide');context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
+        if(example)picture.append(context);
+        const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
+        photo.src='assets/practice23-cities.png';photo.width=2172;photo.height=724;photo.alt='Three cities: A in Tokyo, B in London, and C in New York. A and B are talking to each other; C is on a separate call.';stage.append(photo);
+        for(const [i,o]of cityObjects().entries()) {
+            const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.style.left=(i*100/3)+'%';
+            const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);
+            const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);
+            const person=node('strong','p23-city-person',['A','B','C'][i]);region.append(person);
+            if(times){const clock=node('span','p23-city-time',o.clock);imageHint(clock,{...o,hintText:o.timeHira});region.append(clock);}
+            stage.append(region);
+        }
+        picture.append(stage);
+        if(times)picture.append(node('p','p23-time-note','Practice times · not a live clock'));
+        if(audio){
+            const grid=node('div','p23-city-audio');
+            for(const o of cityObjects()) {
+                const group=node('div','p21-item-audio');group.dataset.zone=o.zone;
+                for(const speaker of ['A','B']){const b=listen(()=>{select(speaker,o.zone);return statement(demonstrative(speaker,o),noun(o));},`${speaker}🔊きく`,()=>emphasize(context));b.dataset.speaker=speaker;b.dataset.zone=o.zone;group.append(b);}grid.append(group);
+            }picture.append(grid);
+        }
+        container.append(picture);
+        function select(speaker,zone){
+            picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.querySelector('strong').textContent=speaker;
+            picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-target',e.dataset.zone===zone);e.querySelector('.p21-area-sound').textContent=value;e.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';});
+            container.querySelectorAll('.p21-model-line').forEach(e=>e.classList.toggle('is-current-model',e.dataset.modelSpeaker===speaker&&e.dataset.zone===zone));
+        }
+        select('A');return select;
+    }
+    function renderCitySections(){
+        const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
+        const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
+        const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
+        const selectEx=cityScene(e1,{example:true}),list=node('div','p21-model-list p2x-speaker-models');
+        for(const speaker of ['A','B']){const group=node('section','p21-model-group');group.append(node('h3','',speaker));for(const o of cs){const line=node('p','p21-model-line');line.dataset.modelSpeaker=speaker;line.dataset.zone=o.zone;line.append(modelText(()=>statement(demonstrative(speaker,o),noun(o)),o));group.append(line);}list.append(group);}e1.append(list);d1.append(e1);selectEx('A','A');
+        panel(d1,'Drill 1: Name each place','💡Follow A or B. Use ここ／そこ／あそこ to name all three cities.');
+        const set1=setButtons(d1,['A','B'],'describeSet'),speaker=set1?'B':'A',select1=cityScene(d1);
+        const ordered=[...cs].sort((a,b)=>['こ','そ','あ'].indexOf(sound(speaker,a.zone))-['こ','そ','あ'].indexOf(sound(speaker,b.zone)));
+        ordered.forEach((o,i)=>{const c=card(d1,String(i+1)),r=recordingRow(c,'q',`<strong>${speaker}:</strong> ${demonstrative(speaker,o)}／${vocabulary(o)}`,`p23_city_d1_s${set1}_${i}`,()=>statement(demonstrative(speaker,o),noun(o)));attachCity(r,speaker,o,select1);});select1(speaker);
+        const e2=node('section','example-box p2x-dialogue-example'),selectE2=cityScene(e2,{example:true,audio:false});
+        const addModel=(box,label,text,select,who,o)=>{const p=node('p');p.append(node('strong','',label),listen(()=>{select(who,o.zone);return text();}),modelText(text,o));box.append(p);};
+        addModel(e2,'A · Question: ',()=>question('そこ','どこ'),selectE2,'A',cs[1]);addModel(e2,'B · Response: ',()=>statement('ここ',noun(cs[1])),selectE2,'B',cs[1]);d2.append(e2);
+        panel(d2,'Drill 2: Ask where','💡Ask about the place shown. Answer with ここ／そこ／あそこ and the city.');
+        const set2=setButtons(d2,['A → B','B → A'],'dialogueSet'),asker=set2?'B':'A',answerer=set2?'A':'B',select2=cityScene(d2);
+        for(const [i,o]of cs.entries()){const c=card(d2,String(i+1)),q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}／どこ`,`p23_city_d2_s${set2}_q_${i}`,()=>question(demonstrative(asker,o),'どこ'));const key=`p23_city_d2_s${set2}_r_${i}`;practice2State.replyReferences[key]=()=>[short(noun(o))];const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${vocabulary(o)}`,key,()=>statement(demonstrative(answerer,o),noun(o)));attachCity(q,asker,o,select2);attachCity(r,answerer,o,select2);}select2(asker);
+        const e3=node('section','example-box p2x-dialogue-example'),selectE3=cityScene(e3,{example:true,times:true,audio:false}),time=o=>word(o.timeHira,o.timeKanji);
+        addModel(e3,'A · Question: ',()=>question('そこ',word('いま','今')+word('なんじ','何時')),selectE3,'A',cs[1]);addModel(e3,'B · Response: ',()=>short(time(cs[1])),selectE3,'B',cs[1]);d3.append(e3);
+        panel(d3,'Drill 3: Ask the time','💡Ask the time there. Answer from the practice clock. ※ C is on a separate call.');
+        const set3=setButtons(d3,['A → B','B → A'],'choosingSet'),ask=set3?'B':'A',reply=set3?'A':'B',select3=cityScene(d3,{times:true});
+        for(const[i,o]of cs.entries()){const c=card(d3,String(i+1)),q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${demonstrative(ask,o)}／いま／なんじ`,`p23_city_d3_s${set3}_q_${i}`,()=>question(demonstrative(ask,o),word('いま','今')+word('なんじ','何時')));const key=`p23_city_d3_s${set3}_r_${i}`;practice2State.replyReferences[key]=()=>[statement(demonstrative(reply,o),time(o)),statement(noun(o),time(o))];const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> …`,key,()=>short(time(o)));attachCity(q,ask,o,select3);attachCity(r,reply,o,select3);}select3(ask);
+    }
+
     function renderSections() {
         for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?['peopleContainer']:[])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
+        if(!is22){renderCitySections();return;}
         const d1=document.getElementById('drill1Container');
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
         const box=node('section','example-box p2x-example');

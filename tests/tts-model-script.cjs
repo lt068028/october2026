@@ -20,7 +20,7 @@ const root=path.resolve(__dirname,'..');
   const texts=[];
   for(const mode of ['hiragana','kanji']) {
    await p.evaluate(mode=>document.querySelector(`#scriptModeControl [data-value="${mode}"]`)?.click(),mode);
-   const selector=name==='practice2.1'?'.p21-item-audio [data-speaker="A"][data-object="1"]':name==='practice2.2'?'.p2x-example [data-speaker="A"][data-zone="A"]':null;
+   const selector=name==='practice2.1'?'.p21-item-audio [data-speaker="A"][data-object="1"]':(name==='practice2.2'||name==='practice2.3')?'.p2x-example [data-speaker="A"][data-zone="A"]':null;
    const button=selector?p.locator(selector).first():p.locator('button').filter({hasText:/^🔊きく/}).first();
    await button.click();texts.push(await p.evaluate(()=>{const u=ttsAudit.at(-1);if(!u)throw Error('No TTS model');const text=u.text;u.onend?.();return text;}));
   }

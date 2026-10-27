@@ -2690,3 +2690,60 @@ body.site-scale {
 /* Keep the thought dots attached to their cloud at every scene width. */
 .p2x-hat-picture .p21-which-guide .p21-thought-dots { left: 6%; top: calc(100% + 9px); }
 .p2x-hat-picture .p21-which-guide .p21-thought-dots { left: 0; top: calc(100% - 4px); }
+
+/* Audio controls use an explicit typeface and text scale in every region. */
+.example-button { font-family: sans-serif; font-weight: 400; font-style: normal; text-size-adjust: 100%; -webkit-text-size-adjust: 100%; }
+.site-scale .p21-distance-example .p21-item-audio .example-button {
+    font-family: sans-serif; font-size: calc(14.95px * var(--practice12-scale));
+    line-height: 1.2; font-weight: 400; letter-spacing: normal;
+    padding: 4px 8px; min-inline-size: 5em; min-block-size: calc(26px * var(--practice12-scale));
+}
+.p23-city-stage { position: relative; aspect-ratio: 3 / 1; isolation: isolate; overflow: hidden; border-radius: 8px; }
+.p23-city-photo { display: block; width: 100%; height: 100%; object-fit: cover; }
+.p23-city-region { position: absolute; z-index: 1; top: 10%; bottom: 0; width: 33.333333%; box-sizing: border-box; border: 2px solid transparent; pointer-events: none; }
+.p23-city-region[data-sound="こ"] { background: rgb(96 165 250 / 18%); border-color: #2563eb; color: #172554; }
+.p23-city-region[data-sound="そ"] { background: rgb(134 239 172 / 18%); border-color: #16a34a; color: #14532d; }
+.p23-city-region[data-sound="あ"] { background: rgb(251 191 36 / 18%); border-color: #c2410c; color: #9a3412; }
+.p23-city-region.is-target { border-width: 4px; }
+.p23-city-region .p2x-distance-label { position: absolute; left: 50%; top: 2%; width: 100%; transform: translateX(-50%); text-align: center; text-shadow: 0 1px 2px white; }
+.p23-city-region .p21-area-sound { color: inherit; }
+.p23-city-person { position: absolute; left: 8%; bottom: 4%; padding: 0 5px; border-radius: 4px; color: #111827; background: #fffffff0; }
+.p23-city-time { position: absolute; right: 5%; bottom: 4%; padding: 0 5px; border-radius: 4px; color: #111827; background: #fffffff0; font-variant-numeric: tabular-nums; }
+.p23-city-audio { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 8px; }
+.p23-city-audio .p21-item-audio { position: static; justify-self: center; }
+.p23-time-note { margin: 4px 0; color: var(--text-secondary); font-size: .85em; }
+@media(max-width:600px) {
+ .p23-city-region .p21-area-description { font-size: 14px; }
+ .p23-city-region .p21-area-sound { font-size: 24px; }
+ .p23-city-person,.p23-city-time { font-size: 16px; }
+}
+
+.p23-city-region .p2x-distance-label { color: inherit; }
+.p23-city-picture > .p2x-speaker-guide { width: max-content; max-width: 100%; box-sizing: border-box; }
+@media(max-width:450px) {
+ .p23-city-audio { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .p23-city-audio .p21-item-audio:last-child { grid-column: 1 / -1; }
+}
+/* Diagram audio keeps the same text size as every other Listen control. */
+.site-scale .p2x-hat-picture .p2x-audio .example-button {
+ font-family: sans-serif; font-size: calc(14.95px * var(--practice12-scale));
+ font-weight: 400; line-height: 1.2; padding: 4px 8px;
+ min-height: calc(26px * var(--practice12-scale));
+}
+@media(min-width:451px) and (max-width:600px) {
+ .p2x-hat-picture .p2x-audio:not([data-zone="far"]) { top: 68.5% !important; }
+ .p2x-hat-picture .p2x-distance-label:not([data-zone="far"]) { top: 50% !important; }
+}
+@media(max-width:450px) {
+ .p2x-example-picture.p2x-hat-picture .p2x-stage { overflow: visible; margin-bottom: 170px; }
+ .p2x-hat-picture .p2x-audio[data-zone="A"] { left: 5% !important; top: 105% !important; }
+ .p2x-hat-picture .p2x-audio[data-zone="B"] { left: auto !important; right: 5%; top: 105% !important; }
+ .p2x-hat-picture .p2x-audio[data-zone="far"] { left: 50% !important; top: calc(105% + 80px) !important; transform: translateX(-50%); }
+}
+/* Hidden city vocabulary tips must not widen a narrow card before first hover. */
+body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px; transform: none; }
+.p23-city-hint { position: absolute; inset: 0; pointer-events: auto; }
+.p23-city-time.p21-image-hint { pointer-events: auto; }
+.p23-city-region[data-sound="こ"] .p21-area-sound { color: #2563eb; }
+.p23-city-region[data-sound="そ"] .p21-area-sound { color: #16a34a; }
+.p23-city-region[data-sound="あ"] .p21-area-sound { color: #c2410c; }

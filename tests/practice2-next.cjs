@@ -20,7 +20,8 @@ function mock(){
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  let count=0;const check=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
- for(const number of ['2.2','2.3']){
+ // Practice 2.3 city tasks are covered by practice23-cities.cjs.
+ for(const number of ['2.2']){
   const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(mock);
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
