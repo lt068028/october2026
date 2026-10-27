@@ -108,3 +108,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/practice2-next.cjs`：新2ページのモデル・指示語・人名・価格・場所・短答／全文の判定（2.2 D1のいくら会話、D3の食品群・どの＋名詞が＋価格、両話者視点を含む）、録音とセット保持、表示の検証。
 - `NEXT_SCREENSHOT_DIR=/tmp/lesson2-preview node tests/practice2-next.cjs`でExampleとD2画像のスクリーンショットも保存する。
 - global-display／audio-relay／tooltip-layout／fluid-widthの対象にも新2ページを追加。音声入力はモックのため、ブラウザ実音・認識精度の保証ではない。
+
+- 練習2.1ではExampleとD1/D2/D3各セットの品目を合計18種・重複なしで検証し、D1/D2にスマホ・辞書・財布が含まれないことも確認する。

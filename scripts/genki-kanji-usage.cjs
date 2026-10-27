@@ -16,8 +16,8 @@ constant('practice1.2.js','majorsData').forEach(o=>add('1.2','D2-option-'+o.word
 const items=constant('practice2.1-scenes.js','items'),item=k=>items.find(o=>o.kind===k).kanji;
 for(const k of ['book','bag','clock'])for(const speaker of ['A','B'])add('2.1','E1-'+k+'-'+speaker,[item(k)]);
 for(const k of ['pen','newspaper','hat'])for(const speaker of ['A','B'])add('2.1','D1-S1-'+k+'-'+speaker,[item(k)]);
-for(const [i,k] of ['notebook','dictionary','tshirt'].entries()){add('2.1',`D1-S2-${i}-Q`,[item(['dictionary','tshirt','notebook'][i])]);add('2.1',`D1-S2-${i}-R`,[item(k)]);}
-for(const [set,kinds] of [['phone','wallet','dictionary'],['notebook','dictionary','wallet']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
+for(const [i,k] of ['notebook','pencil','tshirt'].entries()){add('2.1',`D1-S2-${i}-Q`,[item(['pencil','tshirt','notebook'][i])]);add('2.1',`D1-S2-${i}-R`,[item(k)]);}
+for(const [set,kinds] of [['onigiri','bento','sandwich'],['apple','vegetables','meat']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
 for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.

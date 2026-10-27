@@ -12,7 +12,14 @@ const Practice21 = (() => {
         {id:9,hira:'じしょ',kanji:'辞書',romaji:'jisho',meaning:'dictionary',kind:'dictionary'},
         {id:10,hira:'しんぶん',kanji:'新聞',romaji:'shinbun',meaning:'newspaper',kind:'newspaper'},
         {id:11,hira:'Tシャツ',kanji:'Tシャツ',romaji:'tīshatsu',meaning:'T-shirt',kind:'tshirt'},
-        {id:12,hira:'スマホ',kanji:'スマホ',romaji:'sumaho',meaning:'smartphone',kind:'phone'}
+        {id:12,hira:'スマホ',kanji:'スマホ',romaji:'sumaho',meaning:'smartphone',kind:'phone'},
+        {id:13,hira:'えんぴつ',kanji:'鉛筆',romaji:'enpitsu',meaning:'pencil',kind:'pencil'},
+        {id:14,hira:'おにぎり',kanji:'おにぎり',romaji:'onigiri',meaning:'rice ball',kind:'onigiri'},
+        {id:15,hira:'おべんとう',kanji:'お弁当',romaji:'obentō',meaning:'boxed lunch',kind:'bento'},
+        {id:16,hira:'サンドイッチ',kanji:'サンドイッチ',romaji:'sandoitchi',meaning:'sandwich',kind:'sandwich'},
+        {id:17,hira:'りんご',kanji:'りんご',romaji:'ringo',meaning:'apple',kind:'apple'},
+        {id:18,hira:'やさい',kanji:'野菜',romaji:'yasai',meaning:'vegetables',kind:'vegetables'},
+        {id:19,hira:'にく',kanji:'肉',romaji:'niku',meaning:'meat',kind:'meat'}
     ];
     const variants = item => ['A','B','far'].map((zone,i)=>({...item,id:i+1,zone,color:['#e76f51','#4f86c6','#55a66b'][(i+item.id)%3]}));
     const shuffle = values => {

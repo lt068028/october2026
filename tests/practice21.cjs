@@ -93,6 +93,22 @@ function mock(){
  }
  check(await p.locator('button .custom-tip-box').evaluateAll(es=>es.some(t=>/^Listen/.test(t.textContent))),false,'no routine explanations');
 
+ const nounGroups=[['book','bag','clock']];
+ for(const selector of ['.p21-drill1','#drill2Container']) {
+  for(const set of [0,1]) {
+   await p.locator(selector+' .p21-set-switcher button').nth(set).click();
+   const kinds=await p.locator(selector+' .p21-drill-item').evaluateAll(es=>es.map(e=>e.dataset.kind));
+   check(kinds.some(k=>['phone','dictionary','wallet'].includes(k)),false,'D1/D2 do not use nouns reserved for D3');nounGroups.push(kinds);
+  }
+  await p.locator(selector+' .p21-set-switcher button').first().click();
+ }
+ for(const set of [0,1,2]) {
+  await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
+  nounGroups.push(await p.locator('#drill3Container .p21-drill-item').evaluateAll(es=>[...new Set(es.map(e=>e.dataset.kind))]));
+ }
+ await p.locator('#drill3Container .p21-set-switcher button').first().click();
+ check(nounGroups.flat().length,18,'18 assigned nouns');
+ check(new Set(nounGroups.flat()).size,18,'no noun reused across examples and drill sets');
  check(await p.locator('.p21-drill1 .recording-table tr').count(),6,'three rows per speaker');
  check(await p.locator('.p21-drill1 .p21-reach,.p21-drill1 .p21-object-number,.p21-drill1 .p21-area-caption').count(),0,'no regions, object numbers or distance answers');
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
@@ -101,7 +117,7 @@ function mock(){
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   await p.locator('.p21-drill1 .p21-set-switcher button').nth(set).click();
-  const nouns=set===0?['ぺん','しんぶん','ぼうし']:['のーと','じしょ','てぃーしゃつ'];
+  const nouns=set===0?['ぺん','しんぶん','ぼうし']:['のーと','えんぴつ','てぃーしゃつ'];
   const rows=p.locator('.p21-drill1 tr');
   for(let i=0;i<6;i++) {
    const speaker=set===0?(i<3?'A':'B'):(i%2?'B':'A'),j=set===0?i%3:Math.floor(i/2),object=set===0?(i<3?j:[1,0,2][j]):j;
@@ -121,8 +137,8 @@ function mock(){
   const results=await p.evaluate(style=>{
    isAutoPlay=false;
    const prefix=style==='casual'?'ううん':'いいえ',end=style==='formal'?'です':style==='casual'?'だよ':'だ';
-   return ['ノート','辞書','Tシャツ'].flatMap((correct,i)=>{
-    const pro=['それ','これ','あれ'][i],wrong=['辞書','Tシャツ','ノート'][i],negative=style==='formal'?'じゃないです':style==='casual'?'じゃないよ':'じゃない';
+   return ['ノート','鉛筆','Tシャツ'].flatMap((correct,i)=>{
+    const pro=['それ','これ','あれ'][i],wrong=['鉛筆','Tシャツ','ノート'][i],negative=style==='formal'?'じゃないです':style==='casual'?'じゃないよ':'じゃない';
     const short=`${prefix}、${pro}は${correct}${end}。`;
     const samples=[
      [short,true],
@@ -146,10 +162,10 @@ function mock(){
  const expanded=await p.evaluate(()=>{
   isAutoPlay=false;
   return [
-   ['p21_d2_s0_r_0','スマホです','スマホです',true],
-   ['p21_d2_s0_r_0','それはスマホです','スマホです',true],
-   ['p21_d2_s0_r_0','これはスマホです','スマホです',false],
-   ['p21_d2_s0_r_0','それは辞書です','スマホです',false],
+   ['p21_d2_s0_r_0','おにぎりです','おにぎりです',true],
+   ['p21_d2_s0_r_0','それはおにぎりです','おにぎりです',true],
+   ['p21_d2_s0_r_0','これはおにぎりです','おにぎりです',false],
+   ['p21_d2_s0_r_0','それはサンドイッチです','おにぎりです',false],
    ['p21_d3_s0_r_0','それです','それです',true],
    ['p21_d3_s0_r_0','それは私のスマホです','それです',true],
    ['p21_d3_s0_r_0','私のスマホはそれです','それです',true],
@@ -171,7 +187,7 @@ function mock(){
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
   for(const set of [0,1]) {
    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();
-   const nouns=set===0?['すまほ','さいふ','じしょ']:['のーと','じしょ','さいふ'];
+   const nouns=set===0?['おにぎり','おべんとう','さんどいっち']:['りんご','やさい','にく'];
    for(let i=0;i<6;i++) {
     await p.locator('#drill2Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
@@ -246,7 +262,7 @@ function mock(){
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
  }
  await p.locator('#drill2Container .p21-set-switcher button').first().click();
- await recordLater('#drill2Container',1,'それはスマホです');
+ await recordLater('#drill2Container',1,'それはおにぎりです');
  check(await p.evaluate(()=>practice2State.savedResults.p21_d2_s0_r_0?.isCorrect),true,'D2 recording matches model');
  await p.locator('#drill2Container .p21-set-switcher button').nth(1).click();
  check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),false,'D2 sets separated');
