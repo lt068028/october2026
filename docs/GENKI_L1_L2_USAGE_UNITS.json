@@ -1031,7 +1031,7 @@
     "id": "E3-Q",
     "type": "model",
     "tokens": [
-      "おにぎり",
+      "果物",
       "円"
     ]
   },
@@ -1040,7 +1040,7 @@
     "id": "E3-R",
     "type": "model",
     "tokens": [
-      "おにぎり"
+      "果物"
     ]
   },
   {
@@ -1283,71 +1283,32 @@
   },
   {
     "page": "2.3",
-    "id": "E1-A-0",
+    "id": "E1-0-intro",
     "type": "model",
     "tokens": [
+      "私",
       "東京"
     ]
   },
   {
     "page": "2.3",
-    "id": "D1-A-0",
+    "id": "E1-0-period",
     "type": "model",
     "tokens": [
-      "東京"
+      "朝"
     ]
   },
   {
     "page": "2.3",
-    "id": "D2-A-0-R",
+    "id": "D1-0",
     "type": "model",
     "tokens": [
-      "東京"
+      "朝"
     ]
   },
   {
     "page": "2.3",
-    "id": "D3-A-0-R",
-    "type": "model",
-    "tokens": [
-      "午後十時"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-B-0",
-    "type": "model",
-    "tokens": [
-      "東京"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-B-0",
-    "type": "model",
-    "tokens": [
-      "東京"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D2-B-0-R",
-    "type": "model",
-    "tokens": [
-      "東京"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D3-B-0-R",
-    "type": "model",
-    "tokens": [
-      "午後十時"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-A-1",
+    "id": "E1-1-intro",
     "type": "model",
     "tokens": [
       "ロンドン"
@@ -1355,63 +1316,23 @@
   },
   {
     "page": "2.3",
-    "id": "D1-A-1",
+    "id": "E1-1-period",
     "type": "model",
     "tokens": [
-      "ロンドン"
+      "夜"
     ]
   },
   {
     "page": "2.3",
-    "id": "D2-A-1-R",
+    "id": "D1-1",
     "type": "model",
     "tokens": [
-      "ロンドン"
+      "夜"
     ]
   },
   {
     "page": "2.3",
-    "id": "D3-A-1-R",
-    "type": "model",
-    "tokens": [
-      "午後一時"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-B-1",
-    "type": "model",
-    "tokens": [
-      "ロンドン"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-B-1",
-    "type": "model",
-    "tokens": [
-      "ロンドン"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D2-B-1-R",
-    "type": "model",
-    "tokens": [
-      "ロンドン"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D3-B-1-R",
-    "type": "model",
-    "tokens": [
-      "午後一時"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-A-2",
+    "id": "E1-2-intro",
     "type": "model",
     "tokens": [
       "ニューヨーク"
@@ -1419,58 +1340,27 @@
   },
   {
     "page": "2.3",
-    "id": "D1-A-2",
+    "id": "E1-2-period",
     "type": "model",
     "tokens": [
-      "ニューヨーク"
+      "夕方"
     ]
   },
   {
     "page": "2.3",
-    "id": "D2-A-2-R",
+    "id": "D1-2",
     "type": "model",
     "tokens": [
-      "ニューヨーク"
+      "昼"
     ]
   },
   {
     "page": "2.3",
-    "id": "D3-A-2-R",
+    "id": "E2-Q",
     "type": "model",
     "tokens": [
-      "午前九時"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-B-2",
-    "type": "model",
-    "tokens": [
-      "ニューヨーク"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-B-2",
-    "type": "model",
-    "tokens": [
-      "ニューヨーク"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D2-B-2-R",
-    "type": "model",
-    "tokens": [
-      "ニューヨーク"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D3-B-2-R",
-    "type": "model",
-    "tokens": [
-      "午前九時"
+      "今",
+      "何時"
     ]
   },
   {
@@ -1478,7 +1368,109 @@
     "id": "E2-R",
     "type": "model",
     "tokens": [
-      "ロンドン"
+      "午後九時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-0-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-0-R",
+    "type": "model",
+    "tokens": [
+      "午前六時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-1-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-1-R",
+    "type": "model",
+    "tokens": [
+      "午後十時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-2-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-A-2-R",
+    "type": "model",
+    "tokens": [
+      "午後二時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-0-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-0-R",
+    "type": "model",
+    "tokens": [
+      "午前六時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-1-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-1-R",
+    "type": "model",
+    "tokens": [
+      "午後十時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-2-Q",
+    "type": "model",
+    "tokens": [
+      "今",
+      "何時"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D2-B-2-R",
+    "type": "model",
+    "tokens": [
+      "午後二時"
     ]
   },
   {
@@ -1486,7 +1478,31 @@
     "id": "E3-R",
     "type": "model",
     "tokens": [
-      "午後一時"
+      "喫茶店"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-0-R",
+    "type": "model",
+    "tokens": [
+      "喫茶店"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-1-R",
+    "type": "model",
+    "tokens": [
+      "銀行"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-2-R",
+    "type": "model",
+    "tokens": [
+      "図書館"
     ]
   }
 ]

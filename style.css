@@ -2747,3 +2747,29 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-city-region[data-sound="こ"] .p21-area-sound { color: #2563eb; }
 .p23-city-region[data-sound="そ"] .p21-area-sound { color: #16a34a; }
 .p23-city-region[data-sound="あ"] .p21-area-sound { color: #c2410c; }
+/* Reserve a separate annotation band so heads never cross the distance text. */
+.p23-city-stage { aspect-ratio: auto; padding-top: 64px; background: #fff9ed; }
+.p23-city-photo { height: auto; aspect-ratio: 3 / 1; }
+.p23-city-region { top: 0; }
+.p23-city-region .p2x-distance-label { top: 3px; }
+.p23-in-scene-audio { position: absolute; z-index: 4; right: 4%; bottom: 16%; pointer-events: auto; }
+.p23-call-link { margin: 0 0 8px; color: var(--text-primary); font-weight: 700; }
+.p23-city-region .p23-city-time { bottom: 3%; }
+@media(max-width:600px) {
+ .p23-city-stage { padding-top: 64px; }
+ .p23-in-scene-audio { right: 3%; bottom: 20%; }
+}
+/* Each colored panel has its own text and audio bands, separate from the person. */
+.p23-city-stage { padding-top: 90px; }
+.p23-city-picture:has(.p23-in-scene-audio) .p23-city-stage { padding-bottom: 48px; }
+.p23-in-scene-audio { bottom: 6px; right: 4%; }
+.p23-city-person { top: 57px; bottom: auto; }
+.p23-city-region .p23-city-time { top: 57px; bottom: auto; }
+@media(max-width:600px) {
+ .p23-city-stage { padding-top: 90px; }
+ .p23-in-scene-audio { bottom: 6px; }
+}
+@media(max-width:450px) {
+ .p23-city-person { left: 3%; font-size: 14px; padding-inline: 2px; }
+ .p23-city-region .p23-city-time { right: 3%; font-size: 12px; padding-inline: 2px; }
+}

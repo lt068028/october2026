@@ -25,14 +25,18 @@ for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2
 for(const [set,k] of ['bag','clock'].entries())for(const [i,speaker]of ['B','A','B'].entries())add('2.2',`D1-S${set+1}-${speaker}-${i}`,[item(k),'円']);
 add('2.2','E2-Q',['時計']);add('2.2','E2-R',['時計','円']);
 for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++){add('2.2',`D2-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D2-S${set+1}-A-${i}-R`,[item(k),'円']);}
-add('2.2','E3-Q',['おにぎり','円']);add('2.2','E3-R',['おにぎり']);
+add('2.2','E3-Q',['果物','円']);add('2.2','E3-R',['果物']);
 for(const [set,food] of ['おにぎり','お弁当'].entries())for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-A-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-A-${i}-R`,[food]);}
 for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add('2.2',`People-S${set}-Example-R`,['メアリー']);}
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
-for(const [i,city]of ['東京','ロンドン','ニューヨーク'].entries())for(const speaker of ['A','B']) {
- add('2.3',`E1-${speaker}-${i}`,[city]);add('2.3',`D1-${speaker}-${i}`,[city]);add('2.3',`D2-${speaker}-${i}-R`,[city]);add('2.3',`D3-${speaker}-${i}-R`,[['午後十時','午後一時','午前九時'][i]]);
+for(const [i,city]of ['東京','ロンドン','ニューヨーク'].entries()) {
+ add('2.3',`E1-${i}-intro`,i===0?['私',city]:[city]);add('2.3',`E1-${i}-period`,[['朝','夜','夕方'][i]]);
+ add('2.3',`D1-${i}`,[['朝','夜','昼'][i]]);
 }
-add('2.3','E2-R',['ロンドン']);add('2.3','E3-R',['午後一時']);
+add('2.3','E2-Q',['今','何時']);add('2.3','E2-R',['午後九時']);
+for(const speaker of ['A','B'])for(let i=0;i<3;i++){add('2.3',`D2-${speaker}-${i}-Q`,['今','何時']);add('2.3',`D2-${speaker}-${i}-R`,[['午前六時','午後十時','午後二時'][i]]);}
+add('2.3','E3-R',['喫茶店']);
+for(const [i,place]of ['喫茶店','銀行','図書館'].entries())add('2.3',`D3-${i}-R`,[place]);
 
 const lessons={
 L1:'今|英語|学生|語|日本語|高校|午後|午前|歳|時|人|日本人|専攻|専門|先生|大学|電話|友達|名前|何|日本|年生|半|番号|私|留学生|韓国|中国|科学|アジア研究|国際関係|工学|生物学|人類学|政治|文学|歴史|仕事|医者|会社員|看護師|高校生|主婦|大学院生|大学生|弁護士|お母さん|お父さん|お姉さん|お兄さん|妹|弟|家族|国'.split('|'),
