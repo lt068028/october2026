@@ -6,13 +6,19 @@ const PracticeNext = (()=>{
         {hira:'としょかん',kanji:'図書館',romaji:'toshokan',meaning:'library',zone:'far',kind:'place'}
     ];
     const cities=[{hira:'とうきょう',kanji:'東京',romaji:'Tōkyō',meaning:'Tokyo',kind:'city',zone:'A'},{hira:'ロンドン',kanji:'ロンドン',romaji:'Rondon',meaning:'London',kind:'city',zone:'B'},{hira:'ニューヨーク',kanji:'ニューヨーク',romaji:'Nyū Yōku',meaning:'New York',kind:'city',zone:'far'}];
+    const countries=[
+        {hira:'にほん',kanji:'日本',romaji:'Nihon',meaning:'Japan',kind:'country'},
+        {hira:'イギリス',kanji:'イギリス',romaji:'Igirisu',meaning:'United Kingdom',kind:'country'},
+        {hira:'フランス',kanji:'フランス',romaji:'Furansu',meaning:'France',kind:'country'},
+        {hira:'アメリカ',kanji:'アメリカ',romaji:'Amerika',meaning:'United States',kind:'country'}
+    ];
     const people=[
         {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary (blue cardigan)',kind:'person-mary'},
         {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
     const readings=[['百円','ひゃくえん'],['二百円','にひゃくえん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
-    return {items:[...Practice21.items,...places,...people,...cities,{hira:'おおさか',kanji:'大阪',romaji:'Ōsaka',meaning:'Osaka',kind:'city'},{hira:'パリ',kanji:'パリ',romaji:'Pari',meaning:'Paris',kind:'city'},{hira:'ロサンゼルス',kanji:'ロサンゼルス',romaji:'Rosanzerusu',meaning:'Los Angeles',kind:'city'},{hira:'くだもの',kanji:'果物',romaji:'kudamono',meaning:'fruit',kind:'fruit'}],places,people,cities,readings};
+    return {items:[...Practice21.items,...places,...people,...cities,...countries,{hira:'おおさか',kanji:'大阪',romaji:'Ōsaka',meaning:'Osaka',kind:'city'},{hira:'パリ',kanji:'パリ',romaji:'Pari',meaning:'Paris',kind:'city'},{hira:'ロサンゼルス',kanji:'ロサンゼルス',romaji:'Rosanzerusu',meaning:'Los Angeles',kind:'city'},{hira:'くだもの',kanji:'果物',romaji:'kudamono',meaning:'fruit',kind:'fruit'}],places,people,cities,countries,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
 let isManualStop = false;
@@ -1435,11 +1441,7 @@ function practice2ShowNotice(resultSpan, message) {
         const confirm=(subject,predicate)=>statement(subject,predicate).replace(/。$/,'ね。');
         const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
-        const countries=cs.map((o,i)=>({...o,...[
-            {hira:'にほん',kanji:'日本',romaji:'Nihon',meaning:'Japan'},
-            {hira:'イギリス',kanji:'イギリス',romaji:'Igirisu',meaning:'United Kingdom'},
-            {hira:'アメリカ',kanji:'アメリカ',romaji:'Amerika',meaning:'United States'}
-        ][i]}));
+        const countries=cs.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','イギリス','アメリカ'][i])}));
         const selectEx=cityScene(e1,{example:true,times:true,call:true,objects:countries}),list=node('div','p21-model-list p23-speaking-models');
         const header=node('div','p23-example-header');header.append(e1.querySelector('.p21-distance-heading'),e1.querySelector('.p23-call-note'));e1.prepend(header);
         countries.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
@@ -1453,9 +1455,21 @@ function practice2ShowNotice(resultSpan, message) {
             b.dataset.speaker='A';b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);
             flow.append(cue,audio,modelText(()=>speechStyle==='formal'?second().replace(/？$/,'。'):second(),o,true));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
         });e1.append(list);d1.append(e1);
-        panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ.');
-        const ds=cityObjects(true),select1=cityScene(d1,{objects:ds,drill:true});
-        ds.forEach((o,i)=>{const c=card(d1,String(i+1)),r=recordingRow(c,'q',`<strong>A:</strong> ${demonstrative('A',o)}／${formatWord(o.periodHira,o.periodKanji,{あさ:'asa',よる:'yoru',ひる:'hiru'}[o.periodHira],o.periodHira==='あさ'?'morning':o.periodHira==='よる'?'night':'afternoon')}`,`p23_period_d1_${i}`,()=>statement(demonstrative('A',o),period(o)));attachCity(r,'A',o,select1);});
+        const selected=practice2State.cityDrillSet??0;
+        panel(d1,'Drill 1: From A’s point of view',[
+            '💡You are A. Say the place.',
+            '💡You are A. Say the time of day.',
+            '💡You are A. Say where each person is.'
+        ][selected]);
+        const set1=setButtons(d1,['Set 1: Places','Set 2: Time','Set 3: People'],'cityDrillSet');
+        const ds=cityObjects(true),drillPlaces=ds.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i])}));
+        const select1=cityScene(d1,{objects:drillPlaces,drill:true});
+        drillPlaces.forEach((o,i)=>{
+            const c=card(d1,String(i+1)),person=i===0?word('わたし','私'):['','Bさん','Cさん'][i];
+            const model=()=>set1===0?statement(demonstrative('A',o),noun(o)):set1===1?statement(demonstrative('A',o),period(o)):statement(person,demonstrative('A',o));
+            const cue=set1===0?vocabulary(o):set1===1?formatWord(o.periodHira,o.periodKanji,{あさ:'asa',よる:'yoru',ひる:'hiru'}[o.periodHira],{あさ:'morning',よる:'night',ひる:'afternoon'}[o.periodHira]):i===0?formatWord('わたし','私','watashi','I'):person;
+            const r=recordingRow(c,'q',`<strong>A:</strong> ${cue}`,`p23_describe_s${set1}_${i}`,model);attachCity(r,'A',o,select1);
+        });
         const e2=node('section','example-box p2x-dialogue-example'),selectE2=cityScene(e2,{example:true,times:true});
         addModel(e2,'A · Question: ',()=>question('そこ',word('いま','今')+word('なんじ','何時')),selectE2,'A',cs[1]);addModel(e2,'B · Response: ',()=>short(time(cs[1])),selectE2,'B',cs[1]);d2.append(e2);
         panel(d2,'Drill 2: Ask the time','💡Ask the time. Answer from the practice clock.');

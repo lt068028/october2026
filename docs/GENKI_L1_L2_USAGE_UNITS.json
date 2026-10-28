@@ -1293,14 +1293,6 @@
   },
   {
     "page": "2.3",
-    "id": "D1-0",
-    "type": "model",
-    "tokens": [
-      "朝"
-    ]
-  },
-  {
-    "page": "2.3",
     "id": "E1-1-intro",
     "type": "model",
     "tokens": [
@@ -1310,14 +1302,6 @@
   {
     "page": "2.3",
     "id": "E1-1-period",
-    "type": "model",
-    "tokens": [
-      "夜"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-1",
     "type": "model",
     "tokens": [
       "夜"
@@ -1341,11 +1325,71 @@
   },
   {
     "page": "2.3",
-    "id": "D1-2",
+    "id": "D1-S1-0",
+    "type": "model",
+    "tokens": [
+      "日本"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S2-0",
+    "type": "model",
+    "tokens": [
+      "朝"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S3-0",
+    "type": "model",
+    "tokens": [
+      "私"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S1-1",
+    "type": "model",
+    "tokens": [
+      "フランス"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S2-1",
+    "type": "model",
+    "tokens": [
+      "夜"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S3-1",
+    "type": "model",
+    "tokens": []
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S1-2",
+    "type": "model",
+    "tokens": [
+      "アメリカ"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S2-2",
     "type": "model",
     "tokens": [
       "昼"
     ]
+  },
+  {
+    "page": "2.3",
+    "id": "D1-S3-2",
+    "type": "model",
+    "tokens": []
   },
   {
     "page": "2.3",

@@ -40,7 +40,14 @@ function mock(){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
   for(let i=0;i<3;i++){
    const zone=['A','B','far'][i];await compare(p.locator('.p2x-example .p23-example-audio button').nth(i),i===0?'ここは、朝'+end:i===1?'そこは、夜'+qend:'あそこは、夕方'+end.replace('。','ね。'));
-   await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),['ここ','そこ','あそこ'][i]+'は、'+['朝','夜','昼'][i]+end);
+  }
+  for(const set of [0,1,2]){
+   await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
+   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D1 roles are A');
+   for(let i=0;i<3;i++){
+    const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:['私','Bさん','Cさん'][i]+'は、'+loc+end;
+    await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
+   }
   }
   for(const set of [0,1]){
    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();const who=set?'B':'A';
@@ -54,6 +61,9 @@ function mock(){
  await p.evaluate(()=>{isAutoPlay=false;const toggle=document.getElementById('toggleRecordMode');if(toggle.checked)toggle.click();t.speaking=true;});
  const first=p.locator('#drill1Container .recording-table tr').first();await first.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await first.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
  await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await first.textContent().then(s=>s.includes('✅')),true,'diagram model and row recording share state');
+ await p.locator('[data-set-state="cityDrillSet"] button').first().click();
+ await p.locator('[data-set-state="cityDrillSet"] button').nth(2).click();
+ check(await p.locator('#drill1Container .recording-table tr').first().textContent().then(s=>s.includes('✅')),true,'D1 results survive set switching');
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator('#hintModeControl [data-value="'+hint+'"]').click();check(await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)),[],'layout '+width+theme+hint);
   check(await p.locator('.p23-city-picture').evaluateAll(es=>es.every(e=>{const r=e.querySelector('img').getBoundingClientRect();return [...e.querySelectorAll('.p21-area-sound')].every(c=>{const q=c.getBoundingClientRect();return q.top>=r.top&&q.bottom<=r.bottom&&q.left>=r.left&&q.right<=r.right})})),true,'distance sounds stay inside the photograph '+width+theme+hint);

@@ -32,8 +32,8 @@ for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add(
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
 for(const [i,country]of ['日本','イギリス','アメリカ'].entries()) {
  add('2.3',`E1-${i}-intro`,i===0?['私',country]:[country]);add('2.3',`E1-${i}-period`,[['朝','夜','夕方'][i]]);
- add('2.3',`D1-${i}`,[['朝','夜','昼'][i]]);
 }
+for(let i=0;i<3;i++){add('2.3',`D1-S1-${i}`,[['日本','フランス','アメリカ'][i]]);add('2.3',`D1-S2-${i}`,[['朝','夜','昼'][i]]);add('2.3',`D1-S3-${i}`,i===0?['私']:[]);}
 add('2.3','E2-Q',['今','何時']);add('2.3','E2-R',['午後九時']);
 for(const speaker of ['A','B'])for(let i=0;i<3;i++){add('2.3',`D2-${speaker}-${i}-Q`,['今','何時']);add('2.3',`D2-${speaker}-${i}-R`,[['午前六時','午後十時','午後二時'][i]]);}
 add('2.3','E3-R',['喫茶店']);
