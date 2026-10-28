@@ -2773,3 +2773,55 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .p23-city-person { left: 3%; font-size: 14px; padding-inline: 2px; }
  .p23-city-region .p23-city-time { right: 3%; font-size: 12px; padding-inline: 2px; }
 }
+/* 2.1: captions begin just below the table edge. */
+.p21-distance-area[data-zone="A"] .p21-area-caption,
+.p21-distance-area[data-zone="B"] .p21-area-caption { top: -4%; }
+.p21-which-example .p21-drill-picture { width: 75%; }
+@media(max-width:900px) { .p21-which-example .p21-drill-picture { width: 100%; } }
+/* Shop scenes retain the original coordinate system while discarding empty space below A/B. */
+.p2x-cropped-picture .p2x-stage { aspect-ratio: 2 / .86; }
+.p2x-scene-canvas { position: absolute; top: 0; left: 0; width: 100%; aspect-ratio: 2 / 1; }
+.p2x-speaker-group { display: grid; grid-template-columns: max-content minmax(0,1fr); gap: 8px; align-items: start; }
+.p2x-speaker-group > h3 { margin: 4px 0; }
+.p2x-cropped-picture .p21-which-guide { top: auto; bottom: 22%; right: 4%; max-width: 34%; }
+
+.p2x-cropped-picture .p2x-photo:not(.p2x-reach-foreground) { clip-path: inset(0 0 14%); }
+@media(min-width:451px) {
+ .p2x-cropped-picture .p2x-audio:not([data-zone="far"]) { top: 34.5% !important; }
+ .p2x-cropped-picture .p2x-distance-label:not([data-zone="far"]) { top: 66.5% !important; }
+}
+/* City regions and model controls are overlays inside the actual photograph. */
+.p23-city-stage, .p23-city-picture:has(.p23-in-scene-audio) .p23-city-stage { padding: 0; }
+.p23-city-region { top: 9%; }
+.p23-city-region .p2x-distance-label { top: 1%; }
+.p23-city-region .p23-city-person { top: auto; bottom: 5%; }
+.p23-city-region .p23-city-time { top: auto; bottom: 5%; }
+.p23-period-badge { display: none; }
+.p23-in-scene-audio { bottom: 5%; right: 4%; }
+@media(max-width:450px) { .p23-city-region .p23-city-person { bottom: 45px; } }
+/* A single guide line frees the crowded upper shelf without reducing button text. */
+.p2x-cropped-picture > .p2x-speaker-guide { position: static; transform: none; max-width: 100%; width: max-content; margin: 0 0 8px; font-size: .9em; gap: 8px; }
+.p2x-cropped-picture .p2x-audio[data-zone="far"] { left: 32% !important; }
+@media(max-width:450px) { .p2x-cropped-picture .p2x-audio[data-zone="far"] { left: 50% !important; } }
+/* On narrow screens, three aligned groups keep the photographed items unobscured. */
+.p2x-compact-audio:not([hidden]) { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-top: 10px; }
+.p2x-compact-audio .p2x-audio { position: static !important; transform: none !important; margin: 0; width: max-content; justify-self: center; }
+.p2x-cropped-picture[data-audio-layout="tray"] .p2x-stage { overflow: hidden; margin-bottom: 0; }
+.p2x-cropped-picture[data-audio-layout="tray"] .p2x-distance-label:not([data-zone="far"]) { top: 57% !important; }
+.p2x-cropped-picture[data-audio-layout="tray"] .p2x-speaker-guide { font-size: .9em; }
+@media(max-width:450px) {
+ .p2x-compact-audio:not([hidden]) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+ .p2x-compact-audio .p2x-audio[data-zone="B"] { grid-column: 1 / -1; }
+ .p2x-cropped-picture .p2x-person { font-size: 16px; }
+ .p2x-cropped-picture[data-audio-layout="tray"] .p2x-distance-label:not([data-zone="far"]) { top: 52% !important; }
+}
+.p2x-cropped-picture .p21-which-guide { left: 50%; right: auto; transform: translateX(-50%); bottom: 22%; }
+@media(max-width:450px) {
+ .p23-city-region .p21-area-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+@media(max-width:450px) {
+ .p23-city-region .p2x-distance-label { left: 70%; width: 60%; }
+}
+@media(max-width:700px) {
+ .p23-indoor-picture .p21-area-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

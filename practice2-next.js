@@ -11,7 +11,7 @@ const PracticeNext = (()=>{
         {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
-    const readings=[['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
+    const readings=[['百円','ひゃくえん'],['二百円','にひゃくえん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
     return {items:[...Practice21.items,...places,...people,...cities,{hira:'おおさか',kanji:'大阪',romaji:'Ōsaka',meaning:'Osaka',kind:'city'},{hira:'パリ',kanji:'パリ',romaji:'Pari',meaning:'Paris',kind:'city'},{hira:'ロサンゼルス',kanji:'ロサンゼルス',romaji:'Rosanzerusu',meaning:'Los Angeles',kind:'city'},{hira:'くだもの',kanji:'果物',romaji:'kudamono',meaning:'fruit',kind:'fruit'}],places,people,cities,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
@@ -301,7 +301,7 @@ function stopAllPlayback() {
 // このページの語彙の読みを正規化する。
 function convertToHiragana(text) {
     let value=String(text??'');
-    value=value.replace(/(\d[\d,]*)(?:円|えん)/g,(full,amount)=>({30000:'さんまんえん',3000:'さんぜんえん',2000:'にせんえん',300:'さんびゃくえん',1000:'せんえん',4000:'よんせんえん',600:'ろっぴゃくえん',900:'きゅうひゃくえん',5000:'ごせんえん',6000:'ろくせんえん',8000:'はっせんえん',9000:'きゅうせんえん',10000:'いちまんえん'}[Number(amount.replace(/,/g,''))]||full));
+    value=value.replace(/(\d[\d,]*)(?:円|えん)/g,(full,amount)=>({30000:'さんまんえん',3000:'さんぜんえん',2000:'にせんえん',300:'さんびゃくえん',100:'ひゃくえん',200:'にひゃくえん',1000:'せんえん',4000:'よんせんえん',600:'ろっぴゃくえん',900:'きゅうひゃくえん',5000:'ごせんえん',6000:'ろくせんえん',8000:'はっせんえん',9000:'きゅうせんえん',10000:'いちまんえん'}[Number(amount.replace(/,/g,''))]||full));
     for(const [from,to] of [...PracticeNext.items.map(o=>[o.kanji,o.hira]),...PracticeNext.readings].sort((a,b)=>b[0].length-a[0].length)) value=value.split(from).join(to);
     return value.replace(/鞄/g,'かばん').replace(/何/g,'なに');
 }
@@ -954,8 +954,12 @@ function practice2ShowNotice(resultSpan, message) {
         const pattern = /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|だよ|です|だ|は、|が、|いくら|の)/g;
 
         let position = 0;
+        const protectedWord=object?noun(object):'';
+        const protectedStarts=[];
+        if(protectedWord)for(let at=text.indexOf(protectedWord);at!==-1;at=text.indexOf(protectedWord,at+protectedWord.length))protectedStarts.push(at);
 
         for (const match of text.matchAll(pattern)) {
+            if(protectedStarts.some(at=>match.index>=at&&match.index<at+protectedWord.length))continue;
             span.append(
                 document.createTextNode(
                     text.slice(position, match.index)
@@ -1223,8 +1227,8 @@ function practice2ShowNotice(resultSpan, message) {
     });
     const merchandise=(kind)=>{
         const base={fruit:['くだもの','果物','kudamono','fruit'],bag:['かばん','カバン','kaban','bag'],clock:['とけい','時計','tokei','clock / watch'],onigiri:['おにぎり','おにぎり','onigiri','rice ball'],bento:['おべんとう','お弁当','obentō','boxed lunch']}[kind];
-        const values=kind==='onigiri'||kind==='fruit'?[300,600,900]:kind==='bento'?[1000,2000,3000]:kind==='clock'?[6000,9000,10000]:[2000,5000,8000];
-        const names={5000:['ごせんえん','五千円'],6000:['ろくせんえん','六千円'],8000:['はっせんえん','八千円'],9000:['きゅうせんえん','九千円'],10000:['いちまんえん','一万円'],300:['さんびゃくえん','三百円'],600:['ろっぴゃくえん','六百円'],900:['きゅうひゃくえん','九百円'],1000:['せんえん','千円'],2000:['にせんえん','二千円'],3000:['さんぜんえん','三千円'],4000:['よんせんえん','四千円']};
+        const values=kind==='fruit'?[300,100,200]:kind==='onigiri'?[300,600,900]:kind==='bento'?[1000,2000,3000]:kind==='clock'?[6000,9000,10000]:[2000,5000,8000];
+        const names={100:['ひゃくえん','百円'],200:['にひゃくえん','二百円'],5000:['ごせんえん','五千円'],6000:['ろくせんえん','六千円'],8000:['はっせんえん','八千円'],9000:['きゅうせんえん','九千円'],10000:['いちまんえん','一万円'],300:['さんびゃくえん','三百円'],600:['ろっぴゃくえん','六百円'],900:['きゅうひゃくえん','九百円'],1000:['せんえん','千円'],2000:['にせんえん','二千円'],3000:['さんぜんえん','三千円'],4000:['よんせんえん','四千円']};
         return values.map((priceNumber,i)=>({kind,hira:base[0],kanji:base[1],romaji:base[2],meaning:base[3],zone:['A','B','far'][i],photoKind:kind,priceNumber,priceHira:names[priceNumber][0],priceKanji:names[priceNumber][1]}));
     };
     const places=()=>PracticeNext.places.map(o=>({...o}));
@@ -1251,12 +1255,13 @@ function practice2ShowNotice(resultSpan, message) {
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
         context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:context.closest('.p2x-hat-picture')?Infinity:reduced?1:3,easing:'ease-in-out'});
     }
+    const shopAudioCleanups=[];
     function scene(container,objects,{example=false,people=false,which=false,model=false,speakerGuide=true}={}) {
         const shop=is22&&!people;
         const hats=shop&&(example||Boolean(objects[0]?.photoKind));
         const photoKind=objects[0]?.photoKind;
         const picture=node('div','p21-drill-picture p2x-picture');
-        picture.classList.toggle('p2x-shop-picture',shop);
+        picture.classList.toggle('p2x-shop-picture',shop);picture.classList.toggle('p2x-cropped-picture',shop);
         picture.classList.toggle('p2x-hat-picture',hats);
         picture.classList.toggle('p2x-example-picture',example);picture.classList.toggle('p2x-model-picture',model);picture.classList.toggle('p2x-floor-picture',!is22);
         picture.classList.toggle('p2x-people-picture',people);
@@ -1288,7 +1293,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=hats?{A:[photoKind==='onigiri'||photoKind==='bento'||photoKind==='fruit'?30:25,photoKind==='clock'?36:48],B:[74,46],far:[50,18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?{A:[photoKind==='onigiri'||photoKind==='bento'||photoKind==='fruit'?30:25,48],B:[74,46],far:[50,18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(people) {target.append(node('span','p2x-person-name',noun(o)));}
@@ -1302,7 +1307,7 @@ function practice2ShowNotice(resultSpan, message) {
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
                     if(!example&&!model){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
-                    if(hats) {tag.style.left=position[0]+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'?21:photoKind==='clock'?16:29)+'%';tag.style.bottom='auto';stage.append(tag);}
+                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'?21:29)+'%';tag.style.bottom='auto';stage.append(tag);}
                     else target.append(tag);
                 }
             }
@@ -1335,7 +1340,16 @@ function practice2ShowNotice(resultSpan, message) {
                 const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
             }
         }
-        if(speakerGuide) {if(hats)stage.append(context);else picture.append(context);}picture.append(stage);if(example&&!hats)picture.append(audioGrid);container.append(picture);
+        if(speakerGuide)picture.append(context);
+        if(shop){const canvas=node('div','p2x-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}
+        picture.append(stage);if(example&&!hats)picture.append(audioGrid);
+        if(hats&&example){
+            const tray=node('div','p2x-compact-audio');tray.setAttribute('aria-label','Model audio: left item, upper item, right item');picture.append(tray);
+            const media=matchMedia('(max-width:700px)');
+            const moveAudio=()=>{const compact=media.matches;picture.dataset.audioLayout=compact?'tray':'overlay';tray.hidden=!compact;for(const controls of picture.querySelectorAll('.p2x-audio'))(compact?tray:stage.querySelector('.p2x-scene-canvas')).append(controls);};
+            moveAudio();media.addEventListener('change',moveAudio);shopAudioCleanups.push(()=>media.removeEventListener('change',moveAudio));
+        }
+        container.append(picture);
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
             context.querySelector('strong').textContent=speaker;
@@ -1371,6 +1385,7 @@ function practice2ShowNotice(resultSpan, message) {
     };
     function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
+        picture.classList.toggle('p23-indoor-picture',indoor);
         const context=node('p','p21-photo-context p2x-speaker-guide');context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
         if(example){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'))
         }
@@ -1383,7 +1398,7 @@ function practice2ShowNotice(resultSpan, message) {
             const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);
             region.append(node('strong','p23-city-person',['A','B','C'][i]));
             const clock=node('span','p23-city-time',times?o.clock:indoor?'':word(o.periodHira,o.periodKanji));
-            if(times)imageHint(clock,{...o,hintText:o.timeHira});region.append(clock);stage.append(region);
+            if(times)imageHint(clock,{...o,hintText:o.timeHira});else clock.classList.add('p23-period-badge');region.append(clock);stage.append(region);
         }
         picture.append(stage);
         if(!indoor)picture.append(node('p','p23-time-note','Practice times · not a live clock'));
@@ -1401,7 +1416,7 @@ function practice2ShowNotice(resultSpan, message) {
         const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const intro=(o,i)=>statement(i===0?word('わたし','私'):['','Bさん','Cさん'][i],noun(o));
-        const addModel=(box,label,text,select,who,o)=>{const p=node('p');p.append(node('strong','',label),listen(()=>{select(who,o.zone);return text();}),modelText(text,o));box.append(p);};
+        const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`);select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
         const selectEx=cityScene(e1,{example:true}),list=node('div','p21-model-list');
         cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
@@ -1429,6 +1444,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
 
     function renderSections() {
+        shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
         for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?['peopleContainer']:[])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
         if(!is22){renderCitySections();return;}
         const d1=document.getElementById('drill1Container');
@@ -1440,11 +1456,12 @@ function practice2ShowNotice(resultSpan, message) {
         if(is22) {
             list.classList.add('p2x-speaker-models');
             for(const speaker of ['A','B']) {
-                const group=node('section','p21-model-group');group.append(node('h3','',speaker));
+                const group=node('section','p21-model-group');group.classList.add('p2x-speaker-group');group.append(node('h3','',speaker));
+                const sentences=node('div','p2x-speaker-sentences');
                 for(const o of exObjects) {
                     const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.zone=o.zone;
-                    row.append(modelText(()=>describe(speaker,o),o));group.append(row);
-                }list.append(group);
+                    row.append(modelText(()=>describe(speaker,o),o));sentences.append(row);
+                }group.append(sentences);list.append(group);
             }
         } else {
             for(const o of exObjects) {
@@ -1509,7 +1526,7 @@ function practice2ShowNotice(resultSpan, message) {
         q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);}),modelText(()=>qText(sample),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));}),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの + noun','💡A: Ask which group has that price. B: この／その／あの + noun. ※ Price = whole group. Nouns and この／その／あの keep the same form for one or more items.');
-        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:true,speakerGuide:false});
+        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));

@@ -1474,13 +1474,22 @@ function practice2ShowNotice(resultSpan, message) {
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
         const d3=document.getElementById('drill3Container');d3.hidden=false;
+        const exampleBox=node('section','example-box p21-which-example');
+        const phone=item('phone'),exampleObjects=['red','blue','green'].map((colorName,i)=>({...phone,colorName,zone:['A','B','far'][i]}));
+        const showExample=laterScene(exampleBox,exampleObjects,true);
+        const mine=exampleObjects[0],yours=exampleObjects[1];
+        const aText=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine))+whichQuestion(yours);
+        const bText=()=>shortAnswer('B',yours);
+        const qLine=node('p'),rLine=node('p');qLine.append(node('strong','','A · Question: '),listen(()=>{showExample('A');return aText();}),modelText(aText,phone));
+        rLine.append(node('strong','','B · Response: '),listen(()=>{showExample('B');return bText();}),modelText(bText,phone));
+        exampleBox.append(qLine,rLine);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
-        const s3=setButtons(d3,['スマホ',noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
-        const nounItem=item(['phone','dictionary','wallet'][s3]);
+        const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
+        const nounItem=item(['dictionary','wallet'][s3]);
         const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
         const show3=laterScene(d3,choices,true);
-        // Six questions total across three noun sets, balancing all three distances.
-        const targets=[[0,1],[1,2],[2,0]][s3];
+        // The phone is introduced in Example 2; the two Drill sets cover dictionary and wallet.
+        const targets=[[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
             const o=choices[target],current=card(d3,String(i+1)),asking=i===0?'A':'B',answering=i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');

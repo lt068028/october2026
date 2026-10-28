@@ -753,17 +753,10 @@
   },
   {
     "page": "2.1",
-    "id": "D3-phone-1-Q",
+    "id": "E2-A",
     "type": "model",
     "tokens": [
-      "スマホ"
-    ]
-  },
-  {
-    "page": "2.1",
-    "id": "D3-phone-2-Q",
-    "type": "model",
-    "tokens": [
+      "私",
       "スマホ"
     ]
   },

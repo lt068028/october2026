@@ -18,7 +18,8 @@ for(const k of ['book','bag','clock'])for(const speaker of ['A','B'])add('2.1','
 for(const k of ['pen','newspaper','hat'])for(const speaker of ['A','B'])add('2.1','D1-S1-'+k+'-'+speaker,[item(k)]);
 for(const [i,k] of ['notebook','pencil','tshirt'].entries()){add('2.1',`D1-S2-${i}-Q`,[item(['pencil','tshirt','notebook'][i])]);add('2.1',`D1-S2-${i}-R`,[item(k)]);}
 for(const [set,kinds] of [['onigiri','bento','sandwich'],['sweatshirt','jeans','shoes']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
-for(const k of ['phone','dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
+add('2.1','E2-A',['私','スマホ']);
+for(const k of ['dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.
 for(const k of ['cap','sunhat','fedora'])for(const speaker of ['A','B'])add('2.2','E1-'+k+'-'+speaker,['帽子','円']);
@@ -45,7 +46,7 @@ const aliases={'鞄':'カバン','友だち':'友達','～歳':'歳'};
 function matches(word,token){if(word==='人')return ['人','日本人','アメリカ人','外国人'].includes(token);if(['語','歳','時','年生'].includes(word))return token.endsWith(word);return token===(aliases[word]||word)||token===word;}
 function usedPages(word){return ['1.1','1.2','2.1','2.2','2.3'].filter(page=>units.some(u=>u.page===page&&u.tokens.some(t=>matches(word,t))));}
 function entry(word){return `${word==='鞄'?'カバン〔参考表記：鞄〕':word}（${usedPages(word).join('、')||'未使用'}）`;}
-let out='# Genki L1・L2 参考語彙と使用ページ\n\n更新：2026-10-27。対象：練習1.1・1.2・2.1・2.2・2.3の全セット。語の右に使用ページを記載。\n\n';
+let out='# Genki L1・L2 参考語彙と使用ページ\n\n更新：2026-10-28。対象：練習1.1・1.2・2.1・2.2・2.3の全セット。語の右に使用ページを記載。\n\n';
 out+='## 見方\n\n- 例：学生（1.1、1.2）、本（2.1）。ページ内の繰り返し回数は表示しない。\n- 手本文とは、こちらが用意した読み上げ・例文用の文のこと。手本文や問題、選択肢に登録した語を、そのページで使用している語とする。学習者の発話履歴ではない。\n- 自由入力の全組み合わせは含めない。同じ語はページごとに1つの使用箇所として示す。\n- 未使用も明記する。既習漢字一覧ではなく、語彙欄の参考漢字を確認するための表。公開リストを照合した確認用で、版差を含み、出版社紙面の完全な転記ではない。\n- この表は参考漢字のある語が中心。Genki全語彙の網羅表ではないので、この表だけから語彙カバー率を計算しない。\n\n';
 for(const [lesson,words]of Object.entries(lessons)){
  out+=`## ${lesson}の参考表記\n\n| 語（使用ページ） |\n|---|\n`;

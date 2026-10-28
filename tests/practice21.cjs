@@ -25,12 +25,16 @@ function mock(){
  await p.goto('http://drill.test/practice2.1.html');let count=0;const check=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
  check(await p.locator('#scriptModeControl [data-value="hiragana"]').getAttribute('aria-pressed'),'true','L2 defaults to Hiragana');
  check(await p.evaluate(()=>practice2Normalize('鞄')===practice2Normalize('カバン')),true,'legacy bag ASR remains accepted');
- check(await p.locator('.example-box').count(),1,'Ex1 only');check(await p.locator('.p21-drill1 .drill-row').count(),2,'A and B practice groups');
+ check(await p.locator('.example-box').count(),2,'Ex1 and new Ex2');check(await p.locator('.p21-drill1 .drill-row').count(),2,'A and B practice groups');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
  check(await p.locator('.p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
+ check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
+ check(await p.locator('#drill3Container .p21-set-switcher button').count(),2,'two noun sets after phone example');
+ for(const [i,expected]of ['わたしのすまほはこれですあなたのすまほはどれですか','これです'].entries()) {await p.locator('.p21-which-example button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
+
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']) {
@@ -94,7 +98,7 @@ function mock(){
  }
  check(await p.locator('button .custom-tip-box').evaluateAll(es=>es.some(t=>/^Listen/.test(t.textContent))),false,'no routine explanations');
 
- const nounGroups=[['book','bag','clock']];
+ const nounGroups=[['book','bag','clock'],['phone']];
  for(const selector of ['.p21-drill1','#drill2Container']) {
   for(const set of [0,1]) {
    await p.locator(selector+' .p21-set-switcher button').nth(set).click();
@@ -103,9 +107,9 @@ function mock(){
   }
   await p.locator(selector+' .p21-set-switcher button').first().click();
  }
- for(const set of [0,1,2]) {
+ for(const set of [0,1]) {
   await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
-  nounGroups.push(await p.locator('#drill3Container .p21-drill-item').evaluateAll(es=>[...new Set(es.map(e=>e.dataset.kind))]));
+  nounGroups.push(await p.locator('#drill3Container > .p21-drill-picture .p21-drill-item').evaluateAll(es=>[...new Set(es.map(e=>e.dataset.kind))]));
  }
  await p.locator('#drill3Container .p21-set-switcher button').first().click();
  check(nounGroups.flat().length,18,'18 assigned nouns');
@@ -171,14 +175,14 @@ function mock(){
    ['p21_d2_s0_r_0','それはおにぎりです','おにぎりです',true],
    ['p21_d2_s0_r_0','これはおにぎりです','おにぎりです',false],
    ['p21_d2_s0_r_0','それはサンドイッチです','おにぎりです',false],
-   ['p21_d3_s0_r_0','それです','それです',true],
-   ['p21_d3_s0_r_0','それは私のスマホです','それです',true],
-   ['p21_d3_s0_r_0','私のスマホはそれです','それです',true],
-   ['p21_d3_s0_r_0','スマホはそれです','それです',true],
-   ['p21_d3_s0_r_0','それは私のです','それです',true],
-   ['p21_d3_s0_r_0','これは私のスマホです','それです',false],
-   ['p21_d3_s0_r_0','それはあなたのスマホです','それです',false],
-   ['p21_d3_s0_r_0','スマホです','それです',false]
+   ['p21_d3_s0_r_0','これです','これです',true],
+   ['p21_d3_s0_r_0','これは私の辞書です','これです',true],
+   ['p21_d3_s0_r_0','私の辞書はこれです','これです',true],
+   ['p21_d3_s0_r_0','辞書はこれです','これです',true],
+   ['p21_d3_s0_r_0','これは私のです','これです',true],
+   ['p21_d3_s0_r_0','それは私の辞書です','これです',false],
+   ['p21_d3_s0_r_0','これはあなたの辞書です','これです',false],
+   ['p21_d3_s0_r_0','辞書です','これです',false]
   ].map(([key,text,model,want])=>{
    const v=practice2State.views[key];
    processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
@@ -200,13 +204,13 @@ function mock(){
     check(text,expected,'D2 naming model');
    }
   }
-  for(const set of [0,1,2]) {
+  for(const set of [0,1]) {
    await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();
-   check(await p.locator('#drill3Container .p21-drill-item').evaluateAll(es=>new Set(es.map(e=>e.dataset.kind)).size),1,'D3 same noun, three colors');
+   check(await p.locator('#drill3Container > .p21-drill-picture .p21-drill-item').evaluateAll(es=>new Set(es.map(e=>e.dataset.kind)).size),1,'D3 same noun, three colors');
    for(let i=0;i<4;i++) {
     await p.locator('#drill3Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
-    const target=[[0,1],[1,2],[2,0]][set][Math.floor(i/2)],noun=['すまほ','じしょ','さいふ'][set];
+    const target=[[1,2],[2,0]][set][Math.floor(i/2)],noun=['じしょ','さいふ'][set];
     const expected=i%2?(Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):'あなたの'+noun+'はどれ'+(style==='formal'?'ですか':'');
     check(text,expected,'D3 color cue, B perspective');
    }
@@ -216,15 +220,15 @@ function mock(){
  check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='none')),true,'D2 image colors are preserved');
  check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2',''],'D3 numbering restarts per noun');
  check(await p.locator('#drill3Container tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A'],'D3 question roles alternate');
- const guide=await p.locator('.p21-which-guide').boundingBox(),scene=await p.locator('#drill3Container .p21-photo-stage').boundingBox();
+ const guide=await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').boundingBox(),scene=await p.locator('#drill3Container > .p21-drill-picture .p21-photo-stage').boundingBox();
  check(guide.x>=scene.x&&guide.y>=scene.y&&guide.x+guide.width<=scene.x+scene.width,true,'do guide inside picture');
  await p.locator('#drill3Container .p21-set-switcher').scrollIntoViewIfNeeded();
  const anchorY=await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top),url=p.url();
  await p.locator('#drill3Container .p21-set-switcher button').first().click();
  check(Math.abs(await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top)-anchorY)<3,true,'D3 switching keeps its viewport position');
  check(p.url(),url,'D3 switch does not navigate');
- await p.locator('#drill3Container .p21-drill-item').first().click();check(p.url(),url,'D3 image does not navigate');
- check(await p.locator('.p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
+ await p.locator('#drill3Container > .p21-drill-picture .p21-drill-item').first().click();check(p.url(),url,'D3 image does not navigate');
+ check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
  check(await p.locator('.p21-drill1 .p21-response-lead').count(),3,'No lead after stop');
  check(await p.locator('.p21-drill1 .p21-dialogue-practice .drill-cue-cell').nth(1).textContent().then(s=>!s.includes('＿')),true,'D1 B cue uses no blanks');
  await p.locator('#hintModeControl [data-value="hover"]').click();
@@ -274,11 +278,11 @@ function mock(){
  await p.locator('#drill2Container .p21-set-switcher button').first().click();
  check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),true,'D2 result restored');
  await p.locator('#drill3Container .p21-set-switcher button').first().click();
- await recordLater('#drill3Container',1,'それです');
+ await recordLater('#drill3Container',1,'これです');
  check(await p.evaluate(()=>practice2State.savedResults.p21_d3_s0_r_0?.isCorrect),true,'D3 color-selected recording matches B perspective');
  const invalid=await p.evaluate(()=>{
   const key='p21_d3_s0_r_1',v=practice2State.views[key];
-  return ['blueです','あれです'].map(text=>{processResult(text,'それです。',()=> 'それです。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});
+  return ['blueです','これです'].map(text=>{processResult(text,'あれです。',()=> 'あれです。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});
  });check(invalid,[false,false],'D3 rejects color answers and wrong pronouns');
  for(const width of [600,900,1440,1920]) {
   await p.setViewportSize({width,height:1100});
@@ -289,5 +293,5 @@ function mock(){
  if(process.env.P21_SCREENSHOT_DIR){fs.mkdirSync(process.env.P21_SCREENSHOT_DIR,{recursive:true});for(const width of [600,900,1440,1920]){await p.setViewportSize({width,height:1100});await p.locator('.example-box').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`practice21-${width}.png`)});await p.locator('.p21-drill1').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`drill21-${width}.png`)});}}
  if(process.env.P21_SCREENSHOT_DIR){await p.setViewportSize({width:1440,height:1100});await p.locator('.p21-drill1 .p21-set-switcher button').nth(1).click();await p.locator('.p21-drill1').screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,'drill21-set2.png')});}
  if(process.env.P21_SCREENSHOT_DIR){for(const width of [600,1440]){await p.setViewportSize({width,height:1100});for(const id of ['drill2Container','drill3Container'])await p.locator('#'+id).screenshot({path:path.join(process.env.P21_SCREENSHOT_DIR,`${id}-${width}.png`)});}}
- check(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 2.1 Ex1 and Drills 1-3',count);
+ check(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 2.1 Examples 1-2 and Drills 1-3',count);
 })().catch(e=>{console.error(e);process.exit(1)});

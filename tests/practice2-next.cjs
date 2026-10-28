@@ -37,12 +37,15 @@ function mock(){
    const colorsB=await p.locator('.p2x-example .p2x-reach').evaluateAll(es=>es.map(e=>getComputedStyle(e).backgroundColor));
    check(colorsA[0],colorsB[1],'near speaker color follows B');check(colorsA[1],colorsB[0],'near listener color follows B');check(colorsA[2],colorsB[2],'far region unchanged');
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
-   check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),2,'E3 and D3 use 2.1 thought bubble');
+   check(await p.locator('#drill3Container .p21-which-guide .p21-thought-cloud').count(),1,'Only E3 shows the unknown guide');
    check(await p.locator('#drill2Container .recording-table tr').count(),6,'three A-to-B price conversations');
    check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
    check(await p.locator('#drill1Container .recording-table tr').count(),3,'D1 has three statements');
    check(await p.locator('#drill3Container > .p2x-picture .p2x-speaker-guide').count(),0,'D3 has no redundant Who guide');
    check(await p.locator('#drill3Container > .example-box .p2x-speaker-guide').count(),1,'E3 keeps its Who guide');
+   check(await p.locator('.p2x-food-example .p2x-price').allTextContents(),['¥300','¥100','¥200'],'fruit prices updated');
+   check(await p.locator('.p2x-food-example .grammar-highlight').allTextContents().then(xs=>xs.some(x=>x==='だ'||x==='の')),false,'fruit noun has no accidental grammar highlighting');
+
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['B','A','B'],'D1 changes viewpoint on same near item');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.zone)),['A','A','far'],'D1 uses the same near item twice');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.textContent.includes('Price'))),true,'D1 does not reveal spoken price in cue');
@@ -66,8 +69,8 @@ function mock(){
    }
 
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
-   check(await p.locator('.p2x-example .p2x-stage > .p2x-speaker-guide').count(),1,'Who guide inside image');
-   check(await p.locator('.p2x-example .p2x-stage > .p2x-audio').count(),3,'three audio pairs inside image');
+   check(await p.locator('.p2x-example .p2x-picture > .p2x-speaker-guide').count(),1,'Who guide is above cropped image');
+   check(await p.locator('.p2x-example .p2x-audio').count(),3,'three audio pairs inside image');
    check(await p.locator('.p2x-speaker-models .p21-model-group').count(),2,'models grouped by speaker');
    check(await p.locator('.p2x-example .p2x-context-note').count(),0,'removed explanatory paragraph');
    await p.locator('.p2x-example .p21-item-audio button').first().click();
@@ -183,7 +186,7 @@ function mock(){
    })),true,number+' distance captions stay visible '+width+theme+hint);
    if(number==='2.2')check(await p.locator('.p2x-example .p2x-hat-picture').evaluate(e=>{
     const buttons=[...e.querySelectorAll('.p2x-audio button')].map(b=>b.getBoundingClientRect()),stage=e.querySelector('.p2x-stage').getBoundingClientRect();
-    return buttons.every((a,i)=>a.left>=stage.left&&a.right<=stage.right&&a.top>=stage.top&&a.bottom<=stage.bottom&&buttons.every((b,j)=>i===j||Math.min(a.right,b.right)<=Math.max(a.left,b.left)||Math.min(a.bottom,b.bottom)<=Math.max(a.top,b.top)));
+    const bounds=e.dataset.audioLayout==='tray'?e.getBoundingClientRect():stage;return buttons.every((a,i)=>a.left>=bounds.left&&a.right<=bounds.right&&a.top>=bounds.top&&a.bottom<=bounds.bottom&&buttons.every((b,j)=>i===j||Math.min(a.right,b.right)<=Math.max(a.left,b.left)||Math.min(a.bottom,b.bottom)<=Math.max(a.top,b.top)));
    }),true,'image buttons fit without overlap '+width+theme+hint);
    if(process.env.NEXT_SCREENSHOT_DIR&&width===1440&&theme==='light'&&hint==='hover'){
     fs.mkdirSync(process.env.NEXT_SCREENSHOT_DIR,{recursive:true});await p.locator('.p2x-example').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-example.png`)});await p.locator('#drill2Container > .p2x-picture').screenshot({path:path.join(process.env.NEXT_SCREENSHOT_DIR,`practice${number}-drill2.png`)});
