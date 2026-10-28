@@ -1398,8 +1398,7 @@ function practice2ShowNotice(resultSpan, message) {
         const context=node('p','p21-photo-context p2x-speaker-guide');
         if(call){context.dataset.prompt='📞 A is calling B.';context.dataset.playingLabel='📞 A is calling B.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
-        if(example){picture.append(context);if(!call)picture.append(node('p','p23-call-link','📞 A ↔ B'))
-        }
+        if(example&&!call){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'));}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
         photo.alt=indoor?'A at the bank and B at the cafe are on a phone call. C reads quietly at the library.':'A and B are on a phone call in different cities. C is reading a book in a third city, not in their conversation.';stage.append(photo);
@@ -1412,6 +1411,7 @@ function practice2ShowNotice(resultSpan, message) {
             if(times)imageHint(clock,{...o,hintText:o.timeHira});else clock.classList.add('p23-period-badge');region.append(clock);stage.append(region);
         }
         picture.append(stage);
+        if(example&&call)picture.append(context);
         container.append(picture);
         function select(speaker,zone){
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.dataset.nextSpeaker=speaker;

@@ -2930,3 +2930,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 .p23-practice-picture .p23-city-region { background: none; border-color: transparent; }
+
+/* Far-item explanation sits immediately to the right of the hat. */
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { left: calc(56.5% + 8px) !important; top: 17% !important; width: max-content; max-width: 40%; transform: none; }
+@media(max-width:700px) { .p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 8% !important; } }
+/* Call context belongs below the photograph, aligned with its left edge. */
+.p23-call-example > .p23-call-note { position: static; width: max-content; max-width: 100%; margin: 8px 0 0; padding: 0; }
+.p23-city-region .p2x-distance-label { border: 0; }

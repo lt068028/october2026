@@ -23,6 +23,10 @@ const root=path.resolve(__dirname,'..');
     const frames=await page.locator('.example-box .p2x-cropped-picture .p2x-stage').evaluateAll(es=>es.slice(0,3).map(e=>{const r=e.getBoundingClientRect();return[r.width,r.height]}));
     assert.equal(frames.length,3);for(const frame of frames){assert.ok(frame.every((x,i)=>Math.abs(x-frames[0][i])<.1),'all shop Examples use the same frame');checks++;}
    }
+   if(name==='practice2.3.html'){
+    const placement=await page.locator('.p23-call-note').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.parentElement.querySelector('.p23-city-stage').getBoundingClientRect();return{below:a.top-b.bottom,left:a.left-b.left};});
+    assert.ok(Math.abs(placement.below-8)<.1&&Math.abs(placement.left)<.1,'call note stays below and left-aligned with photograph');checks++;
+   }
    if(name==='practice2.1.html'){
     const box=page.locator('.p21-which-example');
     assert.equal(await box.locator('.p21-photo-stage button').count(),2);checks++;
