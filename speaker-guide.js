@@ -6,6 +6,15 @@ window.SpeakerGuide = Object.freeze({
         prompt.textContent='Who is speaking?';speaker.className='p21-current-speaker';speaker.hidden=true;
         guide.append(prompt,speaker);guide.setAttribute('role','status');guide.setAttribute('aria-live','polite');
     },
+    reset(guide) {
+        if(!guide)return;
+        guide.getAnimations().forEach(animation=>animation.cancel());
+        const prompt=guide.querySelector('span'),label=guide.querySelector('.p21-current-speaker');
+        if(prompt){prompt.textContent='Who is speaking?';prompt.hidden=false;}
+        if(label){label.textContent='';label.hidden=true;}
+        delete guide.dataset.speaker;guide.classList.remove('is-emphasized');
+        guide.closest('.p21-distance-board,.p2x-picture,.p21-drill-picture')?.querySelectorAll('[data-person]').forEach(e=>e.classList.remove('is-speaker'));
+    },
     play(guide,who) {
         if(!guide?.isConnected||!['A','B'].includes(who))return;
         guide.dataset.speaker=who;

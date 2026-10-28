@@ -268,7 +268,7 @@ function restorePlayButtons() {
 }
 
 function stopAllPlayback() {
-    document.querySelectorAll(".p2x-speaker-guide").forEach(e=>e.getAnimations().forEach(a=>a.cancel()));
+    document.querySelectorAll(".p2x-speaker-guide").forEach(e=>SpeakerGuide.reset(e));
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (currentUtteranceRef) {
@@ -1288,9 +1288,10 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=hats?{A:[photoKind==='onigiri'||photoKind==='bento'||photoKind==='fruit'?30:25,48],B:[74,46],far:[50,18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?{A:[photoKind==='clock'?26.3:photoKind==='onigiri'||photoKind==='bento'||photoKind==='fruit'?30:25,photoKind==='clock'?44:48],B:[photoKind==='clock'?73:74,photoKind==='clock'?48:46],far:[50,photoKind==='clock'?29:18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
+            if(photoKind==='clock'){target.style.width=(o.zone==='A'?11:10)+'%';target.style.aspectRatio=o.zone==='B'?'1.8':'1';}
             if(people) {target.append(node('span','p2x-person-name',noun(o)));}
             else {
                 const sprite=node('span','p2x-sprite');
@@ -1302,7 +1303,7 @@ function practice2ShowNotice(resultSpan, message) {
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
                     if(!example&&!model){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
-                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=({hat:{A:42,B:43,far:11},fruit:{A:41,B:43,far:14},clock:{A:34,B:42,far:6},bag:{A:38,B:37,far:8},onigiri:{A:42,B:42,far:12},bento:{A:41,B:41,far:12}}[o.kind]?.[o.zone]??11)+'%';tag.style.bottom='auto';stage.append(tag);}
+                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'||photoKind==='clock'&&o.zone==='A'?21:29)+'%';tag.style.bottom='auto';if(photoKind==='fruit')tag.dataset.itemTop={A:41,B:43,far:14}[o.zone];stage.append(tag);}
                     else target.append(tag);
                 }
             }
@@ -1340,22 +1341,20 @@ function practice2ShowNotice(resultSpan, message) {
         picture.append(stage);if(example&&!hats)picture.append(audioGrid);
         if(hats&&example){
             const tray=node('div','p2x-compact-audio');tray.setAttribute('aria-label','Model audio: left item, upper item, right item');picture.append(tray);
-            const media=matchMedia('(max-width:450px)');
+            const media=matchMedia('(max-width:700px)');
             const moveAudio=()=>{const compact=media.matches;picture.dataset.audioLayout=compact?'tray':'overlay';tray.hidden=!compact;for(const controls of picture.querySelectorAll('.p2x-audio'))(compact?tray:stage.querySelector('.p2x-scene-canvas')).append(controls);};
             moveAudio();media.addEventListener('change',moveAudio);shopAudioCleanups.push(()=>media.removeEventListener('change',moveAudio));
         }
         container.append(picture);
-        if(shop){
-            const canvas=stage.querySelector('.p2x-scene-canvas');
-            const layoutPrices=()=>{
-                const height=canvas.getBoundingClientRect().height,tags=[...canvas.querySelectorAll('.p2x-price')];
-                if(!height||!tags.length)return;
-                const crop=Math.min(...tags.map(tag=>parseFloat(tag.style.top)/100*height-tag.getBoundingClientRect().height-3))-3;
-                canvas.style.top=(-crop)+'px';canvas.style.setProperty('--shop-crop-top',crop+'px');
-                stage.style.height=(height*.94-crop)+'px';
+        if(photoKind==='fruit'){
+            const canvas=stage.querySelector('.p2x-scene-canvas'),tags=[...canvas.querySelectorAll('.p2x-price')];
+            const trimExistingWall=()=>{const height=canvas.getBoundingClientRect().height;if(!height)return;
+                for(const tag of tags)tag.style.top=Math.max(0,Number(tag.dataset.itemTop)/100*height-tag.getBoundingClientRect().height-3)+'px';
+                const crop=Math.max(0,Math.min(...tags.map(tag=>parseFloat(tag.style.top)))-3);
+                canvas.style.top=-crop+'px';stage.style.height=height*.86-crop+'px';context.style.top=crop+3+'px';
             };
-            const observer=new ResizeObserver(layoutPrices);observer.observe(canvas);
-            const frame=requestAnimationFrame(layoutPrices);shopAudioCleanups.push(()=>{observer.disconnect();cancelAnimationFrame(frame);});
+            const observer=new ResizeObserver(trimExistingWall);observer.observe(canvas);const frame=requestAnimationFrame(trimExistingWall);
+            shopAudioCleanups.push(()=>{observer.disconnect();cancelAnimationFrame(frame);});
         }
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
@@ -1479,7 +1478,7 @@ function practice2ShowNotice(resultSpan, message) {
                 }list.append(group);
             }
         }
-        box.append(list);d1.append(box);selectExample('A','A');
+        box.append(list);d1.append(box);selectExample('A');
         if(is22)renderPriceStatements(d1);
         else {
         panel(d1,is22?'Drill 1: この・その・あの + noun':'Drill 1: Describe each place',is22?'💡A, then B: Name each object and say its price.':(practice2State.describeSet===1?'💡A, then B: Say where each object is.':'💡A, then B: Name the three places.'));

@@ -32,6 +32,7 @@ function mock(){
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
+ check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').count(),0,'D3 does not repeat the do explanation');
  check(await p.locator('#drill3Container .p21-set-switcher button').count(),2,'two noun sets after phone example');
  for(const [i,expected]of ['わたしのすまほはこれですあなたのすまほはどれですか','これです'].entries()) {await p.locator('.p21-which-example button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
 
@@ -46,7 +47,7 @@ function mock(){
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
-   check(await p.locator('.p21-distance-board .p21-current-speaker').textContent(),speaker+' is speaking','speaker context');
+   check(await p.locator('.p21-distance-board > .p21-photo-context').textContent(),'Who is speaking?','speaker prompt restored after playback');
    check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');
@@ -74,7 +75,7 @@ function mock(){
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
  check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),false,'speaker emphasis clears after audio');
  await p.emulateMedia({reducedMotion:'reduce'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
  check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;}),true,'reduced motion uses static emphasis during playback');
@@ -220,7 +221,7 @@ function mock(){
  check(await p.locator('#drill2Container .p21-drill-item').evaluateAll(es=>es.every(e=>getComputedStyle(e).filter==='none')),true,'D2 image colors are preserved');
  check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2',''],'D3 numbering restarts per noun');
  check(await p.locator('#drill3Container tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A'],'D3 question roles alternate');
- const guide=await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').boundingBox(),scene=await p.locator('#drill3Container > .p21-drill-picture .p21-photo-stage').boundingBox();
+ const guide=await p.locator('.p21-which-example .p21-which-guide').boundingBox(),scene=await p.locator('.p21-which-example .p21-photo-stage').boundingBox();
  check(guide.x>=scene.x&&guide.y>=scene.y&&guide.x+guide.width<=scene.x+scene.width,true,'do guide inside picture');
  await p.locator('#drill3Container .p21-set-switcher').scrollIntoViewIfNeeded();
  const anchorY=await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top),url=p.url();
@@ -228,7 +229,7 @@ function mock(){
  check(Math.abs(await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top)-anchorY)<3,true,'D3 switching keeps its viewport position');
  check(p.url(),url,'D3 switch does not navigate');
  await p.locator('#drill3Container > .p21-drill-picture .p21-drill-item').first().click();check(p.url(),url,'D3 image does not navigate');
- check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
+ check(await p.locator('.p21-which-example .p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
  check(await p.locator('.p21-drill1 .p21-response-lead').count(),3,'No lead after stop');
  check(await p.locator('.p21-drill1 .p21-dialogue-practice .drill-cue-cell').nth(1).textContent().then(s=>!s.includes('＿')),true,'D1 B cue uses no blanks');
  await p.locator('#hintModeControl [data-value="hover"]').click();

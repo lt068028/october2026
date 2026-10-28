@@ -253,7 +253,7 @@ function restorePlayButtons() {
 
 function stopAllPlayback() {
     document.querySelectorAll('.p21-photo-context').forEach(context => {
-        context.getAnimations().forEach(animation => animation.cancel());
+        SpeakerGuide.reset(context);
     });
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
@@ -1409,7 +1409,7 @@ function practice2ShowNotice(resultSpan, message) {
         stage.append(photo);
         if(picture._whichGuide){
             const dots=node('span','p21-thought-dots');dots.setAttribute('aria-hidden','true');
-            stage.append(picture._whichGuide,dots);
+            if(context)picture._whichGuide.append(dots);else stage.append(dots);stage.append(picture._whichGuide);
         }
         for(const person of ['A','B']) {const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);}
         for(const o of objects) {
@@ -1424,6 +1424,7 @@ function practice2ShowNotice(resultSpan, message) {
             if(o.kind==='wallet')item.style.backgroundImage="url('assets/practice21-wallet-variants.png')";
             imageHint(item,o);stage.append(item);
         }
+        if(context){const canvas=node('div','p21-example-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}
         picture.append(stage);container.append(picture);
         const show=speaker=>{
             picture.dataset.speaker=speaker;
@@ -1481,7 +1482,7 @@ function practice2ShowNotice(resultSpan, message) {
         const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
         const nounItem=item(['dictionary','wallet'][s3]);
         const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
-        const show3=laterScene(d3,choices,true);
+        const show3=laterScene(d3,choices,false);
         // The phone is introduced in Example 2; the two Drill sets cover dictionary and wallet.
         const targets=[[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
