@@ -947,11 +947,11 @@ function practice2ShowNotice(resultSpan, message) {
         anchor.addEventListener('pointerleave',close);anchor.addEventListener('blur',close);
     }
 
-    function modelText(getText, object) {
+    function modelText(getText, object, placesOnly = false) {
         const span = node("span");
         const text = getText();
 
-        const pattern = /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|ですね|だよね|だね|だよ|です|だ|は、|が、|いくら|の)/g;
+        const pattern = placesOnly ? /(あそこ|ここ|そこ)/g : /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|ですね|だよね|だね|だよ|です|だ|は、|が、|いくら|の)/g;
 
         let position = 0;
         const protectedWord=object?noun(object):'';
@@ -1432,8 +1432,14 @@ function practice2ShowNotice(resultSpan, message) {
         cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
             const first=()=>i===0?statement(word('わたし','私'),noun(o)):i===1?question('Bさん',noun(o)):confirm('Cさん',noun(o));
             const second=()=>i===0?statement('ここ',period(o)):i===1?question('そこ',period(o)):confirm('あそこ',period(o));
-            const text=()=>first()+second();line.append(modelText(first,o),modelText(second,o));group.append(line);list.append(group);
-            const b=listen(()=>{selectEx('A',o.zone);return text();},'🔊きく',()=>selectEx.announce('A'));b.dataset.speaker='A';b.dataset.zone=o.zone;selectEx.placeButton(b,o);
+            const flow=node('span','p23-example-flow'),cue=node('span','p23-example-cue');
+            const reading={あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira];
+            cue.append(node('strong','grammar-highlight',['ここ','そこ','あそこ'][i]),document.createTextNode('／'));
+            const periodCue=node('span');periodCue.innerHTML=formatWord(o.periodHira,o.periodKanji,reading[0],reading[1]);cue.append(periodCue);
+            if(i)cue.append(document.createTextNode(i===1?(speechStyle==='formal'?'／〜か？':'／〜？'):'／〜ね'));
+            const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx('A',o.zone);return second();},'🔊きく',()=>selectEx.announce('A'));
+            b.dataset.speaker='A';b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);
+            flow.append(cue,audio,modelText(second,o,true));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
         });e1.append(list);d1.append(e1);
         panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ. Listen in the picture; record below.');
         const ds=cityObjects(true),select1=cityScene(d1,{objects:ds,drill:true});
