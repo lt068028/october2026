@@ -23,8 +23,8 @@ function mock(){
  await p.goto('http://cities.test/practice2.3.html');let count=0;const check=(a,b,msg)=>{assert.deepEqual(a,b,msg);count++};
  check(await p.locator('.example-box').count(),3,'three examples');
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
- check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ'],'E1 cues and ending guides use normal text');
- check(await p.locator('.p23-example-guide').allTextContents(),['…〜か？','…ね。'],'E1 guides follow the model controls');
+ check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','そこ','あそこ'],'E1 highlights only model demonstratives');
+ check(await p.locator('.p23-example-flow > span:last-child').allTextContents(),['ここは、あさです。','そこは、よるですか。','あそこは、ゆうがたですね。'],'E1 displays every full model sentence');
  check(await p.locator('.p23-example-cue .grammar-highlight').count(),0,'E1 cues have no gold');
  check(await p.locator('.p23-speaking-models .p21-model-line').evaluateAll(es=>es.map((e,i)=>e.textContent.includes(['にほん','イギリス','アメリカ'][i]))),[true,true,true],'E1 introduces the countries');
  check(await p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').count(),3,'D1 listen controls inside diagram');

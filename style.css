@@ -2985,3 +2985,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-phone-icon { width: 1.15em; height: 1.15em; flex: none; }
 .p23-call-example > .p23-call-note, .p23-call-link { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 .p23-call-note > :is(span,strong), .p23-call-link > span { min-width: 0; }
+
+.p23-speaking-models .p21-model-line { column-gap: 0; }
+
+/* The call context sits beside the Example heading, wrapping as space requires. */
+.p23-example-header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 14px; }
+.p23-example-header > .p21-distance-heading { margin: 0; }
+.p23-example-header > .p23-call-note { position: static; width: max-content; max-width: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text-primary); font: inherit; font-weight: 600; line-height: 1.4; text-shadow: none; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }

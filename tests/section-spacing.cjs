@@ -24,8 +24,8 @@ const root=path.resolve(__dirname,'..');
     assert.equal(frames.length,3);for(const frame of frames){assert.ok(frame.every((x,i)=>Math.abs(x-frames[0][i])<.1),'all shop Examples use the same frame');checks++;}
    }
    if(name==='practice2.3.html'){
-    const placement=await page.locator('.p23-call-note').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.parentElement.querySelector('.p23-city-stage').getBoundingClientRect();return{below:a.top-b.bottom,left:a.left-b.left};});
-    assert.ok(Math.abs(placement.below-8)<.1&&Math.abs(placement.left)<.1,'call note stays below and left-aligned with photograph');checks++;
+    const placement=await page.locator('.p23-call-note').evaluate(e=>{const a=e.getBoundingClientRect(),h=e.parentElement.querySelector('h2').getBoundingClientRect(),b=e.closest('.example-box').querySelector('.p23-city-stage').getBoundingClientRect();return{above:a.bottom<=b.top,right:a.left>=h.right,inHeader:e.parentElement.classList.contains('p23-example-header')};});
+    assert.ok(placement.inHeader&&placement.above&&(width<1000||placement.right),'call note joins the heading above the photograph');checks++;
    }
    if(name==='practice2.1.html'){
     const box=page.locator('.p21-which-example');
