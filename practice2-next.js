@@ -951,7 +951,7 @@ function practice2ShowNotice(resultSpan, message) {
         const span = node("span");
         const text = getText();
 
-        const pattern = /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|だよ|です|だ|は、|が、|いくら|の)/g;
+        const pattern = /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|ですね|だよね|だね|だよ|です|だ|は、|が、|いくら|の)/g;
 
         let position = 0;
         const protectedWord=object?noun(object):'';
@@ -1342,7 +1342,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(which) {
             if(is22) {
                 const guide=node('div','p21-which-guide');
-                const heading=node('strong');heading.append(node('span','p21-question-sound','ど：'),node('span','p21-question-description','Asking about the unknown'));guide.append(heading);
+                const heading=node('strong');heading.append(node('span','p21-question-sound','ど'),node('span','p21-question-description','Asking about the unknown'));heading.lastElementChild.innerHTML='Asking about <br>the unknown';guide.append(heading);
                 guide.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/></svg>');
                 const dots=node('span','p21-thought-dots');dots.setAttribute('aria-hidden','true');guide.append(dots);stage.append(guide);
             } else {
@@ -1425,12 +1425,14 @@ function practice2ShowNotice(resultSpan, message) {
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
-        const intro=(o,i)=>statement(i===0?word('わたし','私'):['','Bさん','Cさん'][i],noun(o));
+        const confirm=(subject,predicate)=>statement(subject,predicate).replace(/。$/,'ね。');
         const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
-        const selectEx=cityScene(e1,{example:true,times:true,call:true}),list=node('div','p21-model-list');
+        const selectEx=cityScene(e1,{example:true,times:true,call:true}),list=node('div','p21-model-list p23-speaking-models');
         cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
-            const text=()=>intro(o,i)+statement(demonstrative('A',o),period(o));line.append(modelText(()=>intro(o,i),o),node('br'),modelText(()=>statement(demonstrative('A',o),period(o)),o));group.append(line);list.append(group);
+            const first=()=>i===0?statement(word('わたし','私'),noun(o)):i===1?question('Bさん',noun(o)):confirm('Cさん',noun(o));
+            const second=()=>i===0?statement('ここ',period(o)):i===1?question('そこ',period(o)):confirm('あそこ',period(o));
+            const text=()=>first()+second();line.append(modelText(first,o),modelText(second,o));group.append(line);list.append(group);
             const b=listen(()=>{selectEx('A',o.zone);return text();},'🔊きく',()=>selectEx.announce('A'));b.dataset.speaker='A';b.dataset.zone=o.zone;selectEx.placeButton(b,o);
         });e1.append(list);d1.append(e1);
         panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ. Listen in the picture; record below.');

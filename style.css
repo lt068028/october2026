@@ -2961,3 +2961,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Keep the enlarged unknown label inside the visible lower gap. */
 .p2x-food-example .p21-which-guide { top: auto; bottom: calc(6% + 18px); max-width: 85%; transform: translateX(-50%); }
 .p2x-food-example .p21-question-description { white-space: nowrap; }
+
+/* One two-line phrase for the unknown across both Examples; no colon. */
+:is(.p21-which-example,.p2x-food-example) .p21-question-description { white-space: nowrap; }
+/* Move the far caption only while keeping at least 8px from the clock. */
+.p21-distance-area[data-zone="far"] .p21-area-caption { left: max(calc(43% - 4px),calc(35.3125% + 8px)); }
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { margin-top: -4px; }
+.p2x-cropped-picture .p2x-distance-label:not([data-zone="far"]) { margin-top: -4px; }
+/* A speaks three chunks, each containing two complete sentence units. */
+.p23-speaking-models { grid-template-columns: minmax(0,1fr); gap: 6px; }
+.p23-speaking-models .p21-model-line { display: flex; flex-wrap: wrap; gap: 2px .8em; align-items: baseline; }
+.p23-speaking-models .p21-model-line > span { max-width: 100%; min-width: 0; white-space: normal; }

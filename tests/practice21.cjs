@@ -229,7 +229,7 @@ function mock(){
  check(Math.abs(await p.locator('#drill3Container .p21-set-switcher button').first().evaluate(e=>e.getBoundingClientRect().top)-anchorY)<3,true,'D3 switching keeps its viewport position');
  check(p.url(),url,'D3 switch does not navigate');
  await p.locator('#drill3Container > .p21-drill-picture .p21-drill-item').first().click();check(p.url(),url,'D3 image does not navigate');
- check(await p.locator('.p21-which-example .p21-which-guide strong').textContent(),'ど：Asking about the unknown','approved do explanation');
+ check(await p.locator('.p21-which-example .p21-which-guide strong').textContent(),'どAsking about the unknown','approved do explanation');
  check(await p.locator('.p21-drill1 .p21-response-lead').count(),3,'No lead after stop');
  check(await p.locator('.p21-drill1 .p21-dialogue-practice .drill-cue-cell').nth(1).textContent().then(s=>!s.includes('＿')),true,'D1 B cue uses no blanks');
  await p.locator('#hintModeControl [data-value="hover"]').click();

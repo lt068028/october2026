@@ -34,7 +34,7 @@ function mock(){
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
   for(let i=0;i<3;i++){
-   const zone=['A','B','far'][i];await compare(p.locator('.p2x-example .p23-in-scene-audio button').nth(i),['私は、東京','Bさんは、ロンドン','Cさんは、ニューヨーク'][i]+end+['ここ','そこ','あそこ'][i]+'は、'+['朝','夜','夕方'][i]+end);
+   const zone=['A','B','far'][i];await compare(p.locator('.p2x-example .p23-in-scene-audio button').nth(i),i===0?'私は、東京'+end+'ここは、朝'+end:i===1?'Bさんは、ロンドン'+qend+'そこは、夜'+qend:'Cさんは、ニューヨーク'+end.replace('。','ね。')+'あそこは、夕方'+end.replace('。','ね。'));
    await compare(p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').nth(i),['ここ','そこ','あそこ'][i]+'は、'+['朝','夜','昼'][i]+end);
   }
   for(const set of [0,1]){
