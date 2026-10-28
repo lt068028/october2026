@@ -1512,7 +1512,8 @@ function practice2ShowNotice(resultSpan, message) {
     }
 
     function priceConversationExample(container) {
-        const objects=merchandise('clock'),sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
+        const objects=merchandise('clock');objects[1]={...objects[1],priceNumber:4000,priceHira:'よんせんえん',priceKanji:'四千円'};
+        const sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
         const select=scene(box,objects,{model:true}),q=node('p'),r=node('p');
         q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);

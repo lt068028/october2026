@@ -1422,6 +1422,7 @@ function practice2ShowNotice(resultSpan, message) {
             else if(o.kind==='notebook') {item.classList.remove('p21-choice-item');item.style.backgroundPosition='0% 100%';}
             else item.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;
             if(o.kind==='wallet')item.style.backgroundImage="url('assets/practice21-wallet-variants.png')";
+            if(o.kind==='dictionary')item.style.backgroundImage="url('assets/practice21-dictionary-labels.png')";
             imageHint(item,o);stage.append(item);
         }
         if(context){const canvas=node('div','p21-example-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}

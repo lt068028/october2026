@@ -2945,3 +2945,19 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-city-region[data-sound="そ"] .p2x-distance-label,
 .p23-city-region[data-sound="そ"] .p21-area-sound { color: #86efac; }
 .p23-city-region, .p23-city-region.is-target { border: 0; border-color: transparent; }
+
+/* Match all Lesson 2 distance/unknown annotations to one typographic scale. */
+.p21-area-caption, .p21-which-guide { font-family: inherit; font-weight: 700; }
+.p21-area-sound,
+:is(.p21-which-example,.p2x-food-example) .p21-question-sound { font-family: inherit; font-size: 28px; font-weight: 700; line-height: 1.15; }
+.p21-area-description,
+:is(.p21-which-example,.p2x-food-example) .p21-question-description { font-family: inherit; font-size: 18px; font-weight: 700; line-height: 1.2; }
+.p21-which-example .p21-which-guide { max-width: 40%; }
+.p2x-food-example .p21-question-description { white-space: normal; }
+/* Far label clears the upper shelf on smaller photographs. */
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 15% !important; }
+@media(max-width:700px) { .p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 4% !important; } }
+.p23-call-example > .p23-call-note { color: var(--text-primary); font-family: inherit; font-size: 1em; font-style: normal; font-weight: 600; line-height: 1.4; }
+/* Keep the enlarged unknown label inside the visible lower gap. */
+.p2x-food-example .p21-which-guide { top: auto; bottom: calc(6% + 18px); max-width: 85%; transform: translateX(-50%); }
+.p2x-food-example .p21-question-description { white-space: nowrap; }
