@@ -1259,7 +1259,7 @@ function practice2ShowNotice(resultSpan, message) {
         const shopGeometry={
             hats:{centers:[[27,54],[74,54],[50,24]],tops:[47,46,17]},
             bag:{centers:[[27,51],[73,52],[50,23]],tops:[41,43,14.5]},
-            clock:{centers:[[27.5,52],[72.5,54],[50,23]],tops:[44,49,15]},
+            clock:{centers:[[27.5,51],[72.5,54],[50,23]],tops:[42,49,15]},
             fruit:{centers:[[27.5,52],[72.5,53],[50,24]],tops:[46,48,19]},
             onigiri:{centers:[[27.5,54],[72.5,54],[50,25]],tops:[49,49,20]},
             bento:{centers:[[30,57],[73,57],[50,28]],tops:[50,50,19]}
@@ -1394,9 +1394,9 @@ function practice2ShowNotice(resultSpan, message) {
     };
     function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false,call=false}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
-        picture.classList.toggle('p23-indoor-picture',indoor);
+        picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        if(call){context.dataset.prompt='A is calling B';context.dataset.playingLabel='A is calling B';picture.classList.add('p23-call-example');}
+        if(call){context.dataset.prompt='📞 A is calling B.';context.dataset.playingLabel='📞 A is calling B.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
         if(example){picture.append(context);if(!call)picture.append(node('p','p23-call-link','📞 A ↔ B'))
         }
@@ -1405,7 +1405,7 @@ function practice2ShowNotice(resultSpan, message) {
         photo.alt=indoor?'A at the bank and B at the cafe are on a phone call. C reads quietly at the library.':'A and B are on a phone call in different cities. C is reading a book in a third city, not in their conversation.';stage.append(photo);
         for(const [i,o]of objects.entries()) {
             const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.style.left=(i*100/3)+'%';
-            const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);
+            if(example){const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);}
             const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);
             region.append(node('strong','p23-city-person',['A','B','C'][i]));
             const clock=node('span','p23-city-time',times?o.clock:indoor?'':word(o.periodHira,o.periodKanji));
@@ -1415,7 +1415,7 @@ function practice2ShowNotice(resultSpan, message) {
         container.append(picture);
         function select(speaker,zone){
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.dataset.nextSpeaker=speaker;
-            picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-target',e.dataset.zone===zone);e.querySelector('.p21-area-sound').textContent=value;e.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';});
+            picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-target',e.dataset.zone===zone);const caption=e.querySelector('.p2x-distance-label');if(caption){caption.querySelector('.p21-area-sound').textContent=value;caption.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';}});
             container.querySelectorAll('.p21-model-line').forEach(e=>e.classList.toggle('is-current-model',e.dataset.modelSpeaker===speaker&&e.dataset.zone===zone));
         }
         select.placeButton=(button,o)=>{const holder=node('div','p23-in-scene-audio');holder.dataset.zone=o.zone;holder.append(button);stage.querySelector(`.p23-city-region[data-zone="${o.zone}"]`).append(holder);};

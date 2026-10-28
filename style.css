@@ -2912,3 +2912,21 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-city-region[data-sound="あ"] .p2x-distance-label { color: #b45309; }
 .p23-call-example > .p2x-speaker-guide { margin-bottom: 8px; }
 .p23-call-example .p23-city-time { bottom: calc(5% + 40px); }
+
+/* Every part of the unknown bubble uses the same opaque fill and outline. */
+.p21-which-example .p21-thought-dots::before,
+.p21-which-example .p21-thought-dots::after { background: #ffe3e3; border-color: #b91c1c; }
+/* Start each near region immediately below its price tag. */
+.p2x-reach[data-reach="A"] { top: calc(47% - 3px); height: calc(26% + 3px); }
+.p2x-reach[data-reach="B"] { top: calc(46% - 3px); height: calc(27% + 3px); }
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 7% !important; }
+.p2x-reach[data-reach="far"] { top: 4%; height: 36%; }
+/* The call annotation lives outside the photograph and differs from Who prompts. */
+.p23-call-example { position: relative; }
+.p23-call-example > .p23-call-note { position: absolute; left: auto; right: calc(100% + 12px); top: 16px; width: 140px; max-width: none; margin: 0; padding: 4px; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: #334155; font: italic 700 20px/1.4 Georgia,serif; text-shadow: none; }
+.p23-city-region .p2x-distance-label { background: rgb(255 253 246 / 76%); }
+@media(max-width:1100px) {
+ .p23-call-example > .p23-call-note { position: static; width: max-content; max-width: 100%; margin: 0 0 8px; }
+}
+
+.p23-practice-picture .p23-city-region { background: none; border-color: transparent; }

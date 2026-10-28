@@ -26,6 +26,8 @@ function mock(){
  check(await p.locator('#drill1Container .recording-table .recording-actions button').count(),6,'D1 rows retain record and stop only');
  for(const id of [2,3])check(await p.locator('#drill'+id+'Container .recording-table tr').count(),6,'three conversations');
  check(await p.locator('.p23-city-photo').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>0)),true,'all scenes load');
+ check(await p.locator('.p23-practice-picture .p2x-distance-label').count(),0,'Drills omit concept captions');
+ check(await p.locator('.p23-practice-picture .p23-city-region').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle(e).borderTopColor==='rgba(0, 0, 0, 0)')),true,'Drills omit concept colors and frames');
  const compare=async(button,text)=>{await button.click();check(await p.evaluate(()=>t.spoken.at(-1).text),text,'TTS model');await p.evaluate(()=>t.spoken.at(-1).onend?.());};
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
