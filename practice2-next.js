@@ -1255,6 +1255,15 @@ function practice2ShowNotice(resultSpan, message) {
         const shop=is22&&!people;
         const hats=shop&&(example||Boolean(objects[0]?.photoKind));
         const photoKind=objects[0]?.photoKind;
+        // Coordinates refer to the photographed products, not the surrounding shelf.
+        const shopGeometry={
+            hats:{centers:[[27,54],[74,54],[50,24]],tops:[47,46,17]},
+            bag:{centers:[[27,54],[73,54],[50,26]],tops:[43,44,16]},
+            clock:{centers:[[26.5,55],[73,58],[50,23]],tops:[46,53,14]},
+            fruit:{centers:[[27.5,52],[72.5,53],[50,24]],tops:[46,48,19]},
+            onigiri:{centers:[[27.5,54],[72.5,54],[50,25]],tops:[49,49,20]},
+            bento:{centers:[[30,57],[73,57],[50,28]],tops:[50,50,19]}
+        }[photoKind||'hats'];
         const picture=node('div','p21-drill-picture p2x-picture');
         picture.classList.toggle('p2x-shop-picture',shop);picture.classList.toggle('p2x-cropped-picture',shop);
         picture.classList.toggle('p2x-hat-picture',hats);
@@ -1281,14 +1290,14 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const context=node('p','p21-photo-context p2x-speaker-guide');
         SpeakerGuide.init(context);
-        const peoplePositions=hats?{A:[11,70],B:[88,70]}:people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
+        const peoplePositions=hats?{A:[11,78],B:[88,78]}:people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
         for(const person of ['A','B']) {
             const label=node('strong','p2x-person',person);label.dataset.person=person;
             label.style.left=peoplePositions[person][0]+'%';label.style.top=peoplePositions[person][1]+'%';stage.append(label);
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=hats?{A:[photoKind==='clock'?26.3:photoKind==='onigiri'||photoKind==='bento'||photoKind==='fruit'?30:25,photoKind==='clock'?44:48],B:[photoKind==='clock'?73:74,photoKind==='clock'?48:46],far:[50,photoKind==='clock'?29:18]}[o.zone]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?shopGeometry.centers[['A','B','far'].indexOf(o.zone)]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(photoKind==='clock'){target.style.width=(o.zone==='A'?11:10)+'%';target.style.aspectRatio=o.zone==='B'?'1.8':'1';}
@@ -1303,7 +1312,11 @@ function practice2ShowNotice(resultSpan, message) {
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
                     if(!example&&!model){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
-                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'||photoKind==='clock'&&o.zone==='A'?21:29)+'%';tag.style.bottom='auto';if(photoKind==='fruit')tag.dataset.itemTop={A:41,B:43,far:14}[o.zone];stage.append(tag);}
+                    if(hats) {
+                        tag.style.left=position[0]+'%';
+                        const itemTop=shopGeometry.tops[['A','B','far'].indexOf(o.zone)];
+                        tag.style.top=`calc(${itemTop}% - 3px)`;tag.style.transform='translate(-50%,-100%)';tag.style.bottom='auto';stage.append(tag);
+                    }
                     else target.append(tag);
                 }
             }
@@ -1346,16 +1359,6 @@ function practice2ShowNotice(resultSpan, message) {
             moveAudio();media.addEventListener('change',moveAudio);shopAudioCleanups.push(()=>media.removeEventListener('change',moveAudio));
         }
         container.append(picture);
-        if(photoKind==='fruit'){
-            const canvas=stage.querySelector('.p2x-scene-canvas'),tags=[...canvas.querySelectorAll('.p2x-price')];
-            const trimExistingWall=()=>{const height=canvas.getBoundingClientRect().height;if(!height)return;
-                for(const tag of tags)tag.style.top=Math.max(0,Number(tag.dataset.itemTop)/100*height-tag.getBoundingClientRect().height-3)+'px';
-                const crop=Math.max(0,Math.min(...tags.map(tag=>parseFloat(tag.style.top)))-3);
-                canvas.style.top=-crop+'px';stage.style.height=height*.86-crop+'px';context.style.top=crop+3+'px';
-            };
-            const observer=new ResizeObserver(trimExistingWall);observer.observe(canvas);const frame=requestAnimationFrame(trimExistingWall);
-            shopAudioCleanups.push(()=>{observer.disconnect();cancelAnimationFrame(frame);});
-        }
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
             context.dataset.nextSpeaker=speaker;

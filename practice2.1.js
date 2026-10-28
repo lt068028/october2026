@@ -1475,8 +1475,14 @@ function practice2ShowNotice(resultSpan, message) {
         const mine=exampleObjects[0],yours=exampleObjects[1];
         const aText=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine))+whichQuestion(yours);
         const bText=()=>shortAnswer('B',yours);
-        const qLine=node('p'),rLine=node('p');qLine.append(node('strong','','A · Question: '),listen(()=>{showExample('A');return aText();},'🔊きく',()=>showExample.announce('A')),modelText(aText,phone));
-        rLine.append(node('strong','','B · Response: '),listen(()=>{showExample('B');return bText();},'🔊きく',()=>showExample.announce('B')),modelText(bText,phone));
+        const qLine=node('p'),rLine=node('p');
+        for(const [speaker,text] of [['A',aText],['B',bText]]) {
+            const button=listen(()=>{showExample(speaker);return text();},`${speaker}🔊きく`,()=>showExample.announce(speaker));
+            button.classList.add('p21-which-audio');button.dataset.speaker=speaker;
+            exampleBox.querySelector('.p21-example-scene-canvas').append(button);
+        }
+        qLine.append(node('strong','','A · Question: '),modelText(aText,phone));
+        rLine.append(node('strong','','B · Response: '),modelText(bText,phone));
         exampleBox.append(qLine,rLine);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');

@@ -1488,7 +1488,7 @@ function section(
     container.innerHTML = `
         <div
             class="info-panel ${className}"
-            style="margin-top:${margin}px;"
+            style="margin-top:var(${margin});"
         >
             <span class="info-panel-title">${title}</span>
             <span class="info-panel-desc instruction-steps">${instruction}</span>
@@ -1511,7 +1511,7 @@ function renderTask1() {
         "Drill 1: Basic Sentences",
         "💡Make 🟢 affirmative and 🔴 negative sentences.",
         "info-panel-task1",
-        25
+        "--example-drill-gap"
     );
 
     if (!list) return;
@@ -1624,7 +1624,7 @@ function renderTask2() {
         "Drill 2: Selectable Practice",
         "💡Choose X and Y, then make a sentence.",
         "info-panel-task2",
-        30
+        "--practice-section-gap"
     );
 
     if (!list) return;
@@ -1735,7 +1735,7 @@ function renderTask3() {
         "Drill 3: Free Practice",
         "💡Enter X and Y.\nMake a 🟢 affirmative or 🔴 negative sentence.",
         "info-panel-task3",
-        30
+        "--practice-section-gap"
     );
 
     if (!list) return;
