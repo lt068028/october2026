@@ -1428,18 +1428,22 @@ function practice2ShowNotice(resultSpan, message) {
         const confirm=(subject,predicate)=>statement(subject,predicate).replace(/。$/,'ね。');
         const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
-        const selectEx=cityScene(e1,{example:true,times:true,call:true}),list=node('div','p21-model-list p23-speaking-models');
-        cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
+        const countries=cs.map((o,i)=>({...o,...[
+            {hira:'にほん',kanji:'日本',romaji:'Nihon',meaning:'Japan'},
+            {hira:'イギリス',kanji:'イギリス',romaji:'Igirisu',meaning:'United Kingdom'},
+            {hira:'アメリカ',kanji:'アメリカ',romaji:'Amerika',meaning:'United States'}
+        ][i]}));
+        const selectEx=cityScene(e1,{example:true,times:true,call:true,objects:countries}),list=node('div','p21-model-list p23-speaking-models');
+        countries.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
             const first=()=>i===0?statement(word('わたし','私'),noun(o)):i===1?question('Bさん',noun(o)):confirm('Cさん',noun(o));
             const second=()=>i===0?statement('ここ',period(o)):i===1?question('そこ',period(o)):confirm('あそこ',period(o));
             const flow=node('span','p23-example-flow'),cue=node('span','p23-example-cue');
             const reading={あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira];
-            cue.append(node('strong','grammar-highlight',['ここ','そこ','あそこ'][i]),document.createTextNode('／'));
+            cue.append(document.createTextNode(['ここ','そこ','あそこ'][i]+'／'));
             const periodCue=node('span');periodCue.innerHTML=formatWord(o.periodHira,o.periodKanji,reading[0],reading[1]);cue.append(periodCue);
-            if(i)cue.append(document.createTextNode(i===1?(speechStyle==='formal'?'／〜か？':'／〜？'):'／〜ね'));
             const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx('A',o.zone);return second();},'🔊きく',()=>selectEx.announce('A'));
             b.dataset.speaker='A';b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);
-            flow.append(cue,audio,modelText(second,o,true));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
+            flow.append(cue,audio,i===0?modelText(second,o,true):node('span','p23-example-guide',i===1?(speechStyle==='formal'?'…〜か？':'…？'):'…ね。'));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
         });e1.append(list);d1.append(e1);
         panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ. Listen in the picture; record below.');
         const ds=cityObjects(true),select1=cityScene(d1,{objects:ds,drill:true});
