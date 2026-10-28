@@ -27,8 +27,8 @@ function mock(){
  check(await p.locator('.p23-example-flow > span:last-child').allTextContents(),['ここは、あさです。','そこは、よるですか。','あそこは、ゆうがたですね。'],'E1 displays every full model sentence');
  check(await p.locator('.p23-example-cue .grammar-highlight').count(),0,'E1 cues have no gold');
  check(await p.locator('.p23-speaking-models .p21-model-line').evaluateAll(es=>es.map((e,i)=>e.textContent.includes(['にほん','イギリス','アメリカ'][i]))),[true,true,true],'E1 introduces the countries');
- check(await p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').count(),3,'D1 listen controls inside diagram');
- check(await p.locator('#drill1Container .recording-table .recording-actions button').count(),6,'D1 rows retain record and stop only');
+ check(await p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').count(),0,'D1 has no diagram controls');
+ check(await p.locator('#drill1Container .recording-table .recording-actions button').count(),9,'D1 rows contain listen, record and stop');
  for(const id of [2,3])check(await p.locator('#drill'+id+'Container .recording-table tr').count(),6,'three conversations');
  check(await p.locator('.p23-city-photo').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>0)),true,'all scenes load');
  check(await p.locator('.p23-practice-picture .p2x-distance-label').count(),0,'Drills omit concept captions');
@@ -40,7 +40,7 @@ function mock(){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
   for(let i=0;i<3;i++){
    const zone=['A','B','far'][i];await compare(p.locator('.p2x-example .p23-example-audio button').nth(i),i===0?'ここは、朝'+end:i===1?'そこは、夜'+qend:'あそこは、夕方'+end.replace('。','ね。'));
-   await compare(p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').nth(i),['ここ','そこ','あそこ'][i]+'は、'+['朝','夜','昼'][i]+end);
+   await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),['ここ','そこ','あそこ'][i]+'は、'+['朝','夜','昼'][i]+end);
   }
   for(const set of [0,1]){
    await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();const who=set?'B':'A';
@@ -52,7 +52,7 @@ function mock(){
  const judgments=await p.evaluate(()=>{isAutoPlay=false;const samples=[['p23_time_d2_s0_r_1','午後10時です','午後十時です',true],['p23_time_d2_s0_r_1','ここは午後十時です','午後十時です',true],['p23_time_d2_s0_r_1','パリは午後十時です','午後十時です',true],['p23_time_d2_s0_r_1','大阪は午後十時です','午後十時です',false],['p23_time_d2_s0_r_1','そこは午後十時です','午後十時です',false],['p23_where_d3_r_0','喫茶店です','喫茶店です',true],['p23_where_d3_r_0','ここは喫茶店です','喫茶店です',true],['p23_where_d3_r_0','私は喫茶店です','喫茶店です',true],['p23_where_d3_r_0','銀行です','喫茶店です',false],['p23_where_d3_r_2','Cさんは図書館です','図書館です',true],['p23_where_d3_r_2','あそこは図書館です','図書館です',true],['p23_where_d3_r_2','ここは図書館です','図書館です',false]];return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,want,text];});});
  for(const[a,b,text]of judgments)check(a,b,text);
  await p.evaluate(()=>{isAutoPlay=false;const toggle=document.getElementById('toggleRecordMode');if(toggle.checked)toggle.click();t.speaking=true;});
- const first=p.locator('#drill1Container .recording-table tr').first();await p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await first.locator('.recording-actions button').first().click();await p.waitForTimeout(400);
+ const first=p.locator('#drill1Container .recording-table tr').first();await first.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await first.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
  await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await first.textContent().then(s=>s.includes('✅')),true,'diagram model and row recording share state');
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator('#hintModeControl [data-value="'+hint+'"]').click();check(await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)),[],'layout '+width+theme+hint);

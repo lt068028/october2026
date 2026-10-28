@@ -1453,9 +1453,9 @@ function practice2ShowNotice(resultSpan, message) {
             b.dataset.speaker='A';b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);
             flow.append(cue,audio,modelText(()=>speechStyle==='formal'?second().replace(/？$/,'。'):second(),o,true));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
         });e1.append(list);d1.append(e1);
-        panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ. Listen in the picture; record below.');
+        panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ.');
         const ds=cityObjects(true),select1=cityScene(d1,{objects:ds,drill:true});
-        ds.forEach((o,i)=>{const c=card(d1,String(i+1)),r=recordingRow(c,'q',`<strong>A:</strong> ${demonstrative('A',o)}／${formatWord(o.periodHira,o.periodKanji,{あさ:'asa',よる:'yoru',ひる:'hiru'}[o.periodHira],o.periodHira==='あさ'?'morning':o.periodHira==='よる'?'night':'afternoon')}`,`p23_period_d1_${i}`,()=>statement(demonstrative('A',o),period(o)));attachCity(r,'A',o,select1);select1.placeButton(r.listenBtn,o);});
+        ds.forEach((o,i)=>{const c=card(d1,String(i+1)),r=recordingRow(c,'q',`<strong>A:</strong> ${demonstrative('A',o)}／${formatWord(o.periodHira,o.periodKanji,{あさ:'asa',よる:'yoru',ひる:'hiru'}[o.periodHira],o.periodHira==='あさ'?'morning':o.periodHira==='よる'?'night':'afternoon')}`,`p23_period_d1_${i}`,()=>statement(demonstrative('A',o),period(o)));attachCity(r,'A',o,select1);});
         const e2=node('section','example-box p2x-dialogue-example'),selectE2=cityScene(e2,{example:true,times:true});
         addModel(e2,'A · Question: ',()=>question('そこ',word('いま','今')+word('なんじ','何時')),selectE2,'A',cs[1]);addModel(e2,'B · Response: ',()=>short(time(cs[1])),selectE2,'B',cs[1]);d2.append(e2);
         panel(d2,'Drill 2: Ask the time','💡Ask the time. Answer from the practice clock.');

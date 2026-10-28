@@ -2992,3 +2992,5 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-example-header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 8px 0 14px; }
 .p23-example-header > .p21-distance-heading { margin: 0; }
 .p23-example-header > .p23-call-note { position: static; width: max-content; max-width: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text-primary); font: inherit; font-weight: 600; line-height: 1.4; text-shadow: none; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+
+.p23-example-header > .p23-call-note { background: var(--bg-panel); padding: 4px 10px; border-radius: 6px; }
