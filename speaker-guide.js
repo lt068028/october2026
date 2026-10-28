@@ -21,7 +21,8 @@ window.SpeakerGuide = Object.freeze({
         guide.querySelector('span').textContent='';guide.querySelector('span').hidden=true;
         const label=guide.querySelector('.p21-current-speaker');label.hidden=false;label.textContent=guide.dataset.playingLabel||`${who} is speaking`;
         guide.classList.add('is-emphasized');guide.getAnimations().forEach(animation=>animation.cancel());
-        const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
+        const call=guide.classList.contains('p23-call-note');
+        const normal={backgroundColor:call?'transparent':'#fff5f5'},active={backgroundColor:call?'rgba(128,128,128,.16)':'#fecaca'};
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
         guide.animate(reduced?[active,active]:[normal,active,normal],{duration:1200,iterations:Infinity,easing:'ease-in-out'});
         const scene=guide.closest('.p21-distance-board,.p2x-picture,.p21-drill-picture');

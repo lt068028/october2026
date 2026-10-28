@@ -2980,3 +2980,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-example-cue { min-width: 0; }
 .p23-example-audio { display: inline-flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .p23-example-audio .example-button { margin: 0; }
+
+/* Approved phone symbol follows the surrounding text in both themes. */
+.p23-phone-icon { width: 1.15em; height: 1.15em; flex: none; }
+.p23-call-example > .p23-call-note, .p23-call-link { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.p23-call-note > :is(span,strong), .p23-call-link > span { min-width: 0; }

@@ -1392,13 +1392,20 @@ function practice2ShowNotice(resultSpan, message) {
         ];
         return data.map(([hira,kanji,romaji,meaning,periodHira,periodKanji,timeHira,timeKanji,clock],i)=>({hira,kanji,romaji,meaning,periodHira,periodKanji,timeHira,timeKanji,clock,zone:['A','B','far'][i],kind:'city'}));
     };
+    function phoneIcon() {
+        const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+        for(const [key,value] of Object.entries({class:'p23-phone-icon','aria-hidden':'true',viewBox:'0 0 24 24',fill:'none',stroke:'currentColor','stroke-width':'2','stroke-linecap':'round','stroke-linejoin':'round'}))svg.setAttribute(key,value);
+        svg.innerHTML='<path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.91-8.67A2 2 0 0 1 3.26 1h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.79a2 2 0 0 1-.45 2.11L7.24 8.89a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.89.34 1.83.58 2.79.7A2 2 0 0 1 22 16.92z"/>';
+        return svg;
+    }
     function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false,call=false}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        if(call){context.dataset.prompt='📞 A is calling B and talking about C.';context.dataset.playingLabel='📞 A is calling B and talking about C.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
+        if(call){context.dataset.prompt='A is calling B and talking about C.';context.dataset.playingLabel='A is calling B and talking about C.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
-        if(example&&!call){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'));}
+        if(call)context.prepend(phoneIcon());
+        if(example&&!call){picture.append(context);const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','A ↔ B'));picture.append(link);}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
         photo.alt=indoor?'A at the bank and B at the cafe are on a phone call. C reads quietly at the library.':'A and B are on a phone call in different cities. C is seated having a drink in a third city, not in their conversation.';stage.append(photo);
