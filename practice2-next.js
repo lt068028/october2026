@@ -1249,14 +1249,9 @@ function practice2ShowNotice(resultSpan, message) {
             };group.append(b);
         });container.append(group);return index;
     }
-    function emphasize(context) {
-        context.getAnimations().forEach(a=>a.cancel());
-        const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
-        const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-        context.animate(reduced?[active,active]:[normal,active,normal],{duration:reduced?1200:1200,iterations:context.closest('.p2x-hat-picture')?Infinity:reduced?1:3,easing:'ease-in-out'});
-    }
+    function emphasize(context) {SpeakerGuide.play(context,context.dataset.nextSpeaker);}
     const shopAudioCleanups=[];
-    function scene(container,objects,{example=false,people=false,which=false,model=false,speakerGuide=true}={}) {
+    function scene(container,objects,{example=false,people=false,which=false,model=false,speakerGuide=example||model}={}) {
         const shop=is22&&!people;
         const hats=shop&&(example||Boolean(objects[0]?.photoKind));
         const photoKind=objects[0]?.photoKind;
@@ -1285,7 +1280,7 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
+        SpeakerGuide.init(context);
         const peoplePositions=hats?{A:[11,70],B:[88,70]}:people?{A:[7,30],B:[88,27]}:is22?{A:[2,4],B:[94,4]}:{A:[6,17],B:[60,17]};
         for(const person of ['A','B']) {
             const label=node('strong','p2x-person',person);label.dataset.person=person;
@@ -1307,7 +1302,7 @@ function practice2ShowNotice(resultSpan, message) {
                 if(is22&&(!which||photoKind)) {
                     const tag=node('span','p2x-price',`¥${o.priceNumber.toLocaleString('en-US')}`);
                     if(!example&&!model){tag.classList.add('p2x-price-hint');imageHint(tag,{...o,hintText:o.priceHira});}
-                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=(o.zone==='far'?0:photoKind==='bag'?21:29)+'%';tag.style.bottom='auto';stage.append(tag);}
+                    if(hats) {tag.style.left=(photoKind==='clock'&&o.zone==='B'?73:position[0])+'%';tag.style.top=({hat:{A:42,B:43,far:11},fruit:{A:41,B:43,far:14},clock:{A:34,B:42,far:6},bag:{A:38,B:37,far:8},onigiri:{A:42,B:42,far:12},bento:{A:41,B:41,far:12}}[o.kind]?.[o.zone]??11)+'%';tag.style.bottom='auto';stage.append(tag);}
                     else target.append(tag);
                 }
             }
@@ -1320,7 +1315,7 @@ function practice2ShowNotice(resultSpan, message) {
                 buttons.style.left=(!is22?[17,50,83][i]:position[0])+'%';buttons.style.top=(is22?position[1]+27:73)+'%';
                 for(const speaker of ['A','B']) {
                     const b=listen(()=>{select(speaker,o.zone);return describe(speaker,o);},`${speaker}🔊きく`,()=>emphasize(context));
-                    b.dataset.speaker=speaker;b.dataset.zone=o.zone;b.addEventListener('focus',()=>select(speaker,o.zone));buttons.append(b);
+                    b.dataset.speaker=speaker;b.dataset.zone=o.zone;buttons.append(b);
                 }
                 buttons.style.order=(!is22?['A','B','far']:['A','far','B']).indexOf(o.zone);
                 if(hats) {
@@ -1340,20 +1335,32 @@ function practice2ShowNotice(resultSpan, message) {
                 const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
             }
         }
-        if(speakerGuide)picture.append(context);
+        if(speakerGuide){if(hats)stage.append(context);else picture.append(context);}
         if(shop){const canvas=node('div','p2x-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}
         picture.append(stage);if(example&&!hats)picture.append(audioGrid);
         if(hats&&example){
             const tray=node('div','p2x-compact-audio');tray.setAttribute('aria-label','Model audio: left item, upper item, right item');picture.append(tray);
-            const media=matchMedia('(max-width:700px)');
+            const media=matchMedia('(max-width:450px)');
             const moveAudio=()=>{const compact=media.matches;picture.dataset.audioLayout=compact?'tray':'overlay';tray.hidden=!compact;for(const controls of picture.querySelectorAll('.p2x-audio'))(compact?tray:stage.querySelector('.p2x-scene-canvas')).append(controls);};
             moveAudio();media.addEventListener('change',moveAudio);shopAudioCleanups.push(()=>media.removeEventListener('change',moveAudio));
         }
         container.append(picture);
+        if(shop){
+            const canvas=stage.querySelector('.p2x-scene-canvas');
+            const layoutPrices=()=>{
+                const height=canvas.getBoundingClientRect().height,tags=[...canvas.querySelectorAll('.p2x-price')];
+                if(!height||!tags.length)return;
+                const crop=Math.min(...tags.map(tag=>parseFloat(tag.style.top)/100*height-tag.getBoundingClientRect().height-3))-3;
+                canvas.style.top=(-crop)+'px';canvas.style.setProperty('--shop-crop-top',crop+'px');
+                stage.style.height=(height*.94-crop)+'px';
+            };
+            const observer=new ResizeObserver(layoutPrices);observer.observe(canvas);
+            const frame=requestAnimationFrame(layoutPrices);shopAudioCleanups.push(()=>{observer.disconnect();cancelAnimationFrame(frame);});
+        }
         function select(speaker,zone) {
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';
-            context.querySelector('strong').textContent=speaker;
-            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker));
+            context.dataset.nextSpeaker=speaker;
+            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker&&Boolean(context.dataset.speaker)));
             stage.querySelectorAll('.p2x-distance-label').forEach(e=>{
                 const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;
                 e.querySelector('strong').textContent=value;
@@ -1365,7 +1372,7 @@ function practice2ShowNotice(resultSpan, message) {
                 e.classList.toggle('is-current-model',selected);if(selected)e.setAttribute('aria-current','true');else e.removeAttribute('aria-current');
             });
         }
-        select('A');return select;
+        select.announce=speaker=>SpeakerGuide.play(context,speaker);select('A');return select;
     }
     function attach(view,speaker,o,select) {
         view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
@@ -1386,7 +1393,7 @@ function practice2ShowNotice(resultSpan, message) {
     function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);
-        const context=node('p','p21-photo-context p2x-speaker-guide');context.append(node('span','','Who is speaking?'),node('strong','p21-current-speaker','A'));
+        const context=node('p','p21-photo-context p2x-speaker-guide');SpeakerGuide.init(context);
         if(example){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'))
         }
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
@@ -1404,24 +1411,24 @@ function practice2ShowNotice(resultSpan, message) {
         if(!indoor)picture.append(node('p','p23-time-note','Practice times · not a live clock'));
         container.append(picture);
         function select(speaker,zone){
-            picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.querySelector('strong').textContent=speaker;
+            picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.dataset.nextSpeaker=speaker;
             picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-target',e.dataset.zone===zone);e.querySelector('.p21-area-sound').textContent=value;e.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';});
             container.querySelectorAll('.p21-model-line').forEach(e=>e.classList.toggle('is-current-model',e.dataset.modelSpeaker===speaker&&e.dataset.zone===zone));
         }
         select.placeButton=(button,o)=>{const holder=node('div','p23-in-scene-audio');holder.dataset.zone=o.zone;holder.append(button);stage.querySelector(`.p23-city-region[data-zone="${o.zone}"]`).append(holder);};
-        select('A');return select;
+        select.announce=speaker=>SpeakerGuide.play(context,speaker);select('A');return select;
     }
     function renderCitySections(){
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const intro=(o,i)=>statement(i===0?word('わたし','私'):['','Bさん','Cさん'][i],noun(o));
-        const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`);select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
+        const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
         const selectEx=cityScene(e1,{example:true}),list=node('div','p21-model-list');
         cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
             const text=()=>intro(o,i)+statement(demonstrative('A',o),period(o));line.append(modelText(()=>intro(o,i),o),node('br'),modelText(()=>statement(demonstrative('A',o),period(o)),o));group.append(line);list.append(group);
-            const b=listen(()=>{selectEx('A',o.zone);return text();},'🔊きく');b.dataset.speaker='A';b.dataset.zone=o.zone;selectEx.placeButton(b,o);
+            const b=listen(()=>{selectEx('A',o.zone);return text();},'🔊きく',()=>selectEx.announce('A'));b.dataset.speaker='A';b.dataset.zone=o.zone;selectEx.placeButton(b,o);
         });e1.append(list);d1.append(e1);
         panel(d1,'Drill 1: Describe the time of day','💡A: Use ここ／そこ／あそこ. Listen in the picture; record below.');
         const ds=cityObjects(true),select1=cityScene(d1,{objects:ds,drill:true});
@@ -1504,8 +1511,8 @@ function practice2ShowNotice(resultSpan, message) {
     function priceConversationExample(container) {
         const objects=merchandise('clock'),sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
         const select=scene(box,objects,{model:true}),q=node('p'),r=node('p');
-        q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');}),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
-        r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));}),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
+        q.append(node('strong','','A · Question: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
+        r.append(node('strong','','B · Response: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
     }
     function renderPriceDialogue(container) {
         priceConversationExample(container);
@@ -1523,8 +1530,8 @@ function practice2ShowNotice(resultSpan, message) {
         const selectExample=scene(box,exampleObjects,{which:true,model:true});
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
         const q=node('p'),r=node('p');
-        q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);}),modelText(()=>qText(sample),sample));
-        r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));}),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
+        q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
+        r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの + noun','💡A: Ask which group has that price. B: この／その／あの + noun. ※ Price = whole group. Nouns and この／その／あの keep the same form for one or more items.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{

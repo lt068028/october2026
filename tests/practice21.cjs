@@ -28,7 +28,7 @@ function mock(){
  check(await p.locator('.example-box').count(),2,'Ex1 and new Ex2');check(await p.locator('.p21-drill1 .drill-row').count(),2,'A and B practice groups');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
- check(await p.locator('.p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
+ check(await p.locator('.p21-distance-board > .p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
@@ -46,7 +46,7 @@ function mock(){
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
-   check(await p.locator('.p21-current-speaker').textContent(),speaker,'speaker context');
+   check(await p.locator('.p21-distance-board .p21-current-speaker').textContent(),speaker+' is speaking','speaker context');
    check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');
@@ -62,30 +62,30 @@ function mock(){
  check(await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').isDisabled(),true,'new audio remains playing after stale callback');
  check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed after stale callback');
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
- const attention=await p.locator('.p21-photo-context').evaluate(el=>{
+ const attention=await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{
   const animation=el.getAnimations()[0];
   return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),highlight:animation.effect.getKeyframes()[1].backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
  });
  check(attention,{outside:true,front:true,highlight:'rgb(254, 202, 202)',duration:1200,iterations:Infinity},'speaker guide pulses throughout playback');
- await p.locator('.p21-photo-context').evaluate(el=>{el.getAnimations()[0].currentTime=7200;});
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations()[0].playState),'running','attention continues beyond three cycles');
+ await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{el.getAnimations()[0].currentTime=7200;});
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations()[0].playState),'running','attention continues beyond three cycles');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS completion stops attention');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS completion stops attention');
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
- check(await p.locator('.p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),true,'speaker remains emphasized after audio');
  await p.emulateMedia({reducedMotion:'reduce'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
- check(await p.locator('.p21-photo-context').evaluate(el=>{const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;}),true,'reduced motion uses static emphasis during playback');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;}),true,'reduced motion uses static emphasis during playback');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.emulateMedia({reducedMotion:'no-preference'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
  await p.evaluate(()=>t.spoken.at(-1).onerror?.({error:'synthesis-failed'}));
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS failure stops attention');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS failure stops attention');
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
  await p.evaluate(()=>stopAllPlayback());
- check(await p.locator('.p21-photo-context').evaluate(el=>el.getAnimations().length),0,'explicit interruption stops attention');
+ check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'explicit interruption stops attention');
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
   check(await p.locator('.p21-area-caption').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)')),true,'region labels have no background panels');
@@ -120,7 +120,7 @@ function mock(){
  check(await p.locator('.p21-drill1 .p21-drill-item').count(),3,'three independent item layers');
  check(await p.evaluate(()=>practice2Normalize('Tシャツ')===practice2Normalize('ティーシャツ')),true,'T-shirt recognition forms agree');
  check(await p.evaluate(()=>practice2SpeechText('これはほんです。').includes('本')),true,'TTS uses kanji independently of display');
- check(await p.locator('.p21-example-item-hint.is-target').count(),1,'active example item is highlighted');
+ check(await p.locator('.p21-example-item-hint.is-target').count(),0,'no default target before a model is selected');
  check(await p.locator('.p21-distance-area.is-target .p21-item-audio').evaluateAll(es=>es.every(e=>getComputedStyle(e).outlineStyle==='none')),true,'active frame is on item rather than audio pair');
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji'])for(const set of [0,1]) {
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();

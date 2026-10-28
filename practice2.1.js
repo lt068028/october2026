@@ -1221,8 +1221,7 @@ function practice2ShowNotice(resultSpan, message) {
         photo.alt='A sits at the left end of a table with a book. B sits at the right end with a bag. A clock hangs on the wall, far from both.';
         photo.width=1536;photo.height=1024;stage.append(photo);
         const context=node('p','p21-photo-context');
-        const currentSpeaker=node('strong','p21-current-speaker');
-        context.append(node('span','','Who is speaking?'),currentSpeaker);
+        SpeakerGuide.init(context);
         const people=node('div','p21-distance-people');
         for(const person of ['A','B']) {
             const figure=node('div','p21-distance-person');figure.dataset.person=person;
@@ -1250,10 +1249,10 @@ function practice2ShowNotice(resultSpan, message) {
         function perspective(speaker,target) {
             people.querySelectorAll('[data-person]').forEach(person=>{
                 const active=person.dataset.person===speaker;
-                person.classList.toggle('is-speaker',active);
+                person.classList.toggle('is-speaker',active&&Boolean(context.dataset.speaker));
                 person.querySelector('strong').textContent=person.dataset.person;
             });
-            currentSpeaker.textContent=speaker;
+            context.dataset.nextSpeaker=speaker;
             board.dataset.speaker=speaker;
             areas.querySelectorAll('[data-zone]').forEach(area=>{
                 const sound=area.dataset.zone==='far'?'あ':area.dataset.zone===speaker?'こ':'そ';
@@ -1271,15 +1270,7 @@ function practice2ShowNotice(resultSpan, message) {
                 if(active)row.setAttribute('aria-current','true');else row.removeAttribute('aria-current');
             });
         }
-        function emphasizeSpeaker() {
-            context.getAnimations().forEach(animation=>animation.cancel());
-            context.classList.add('is-emphasized');
-            const normal={backgroundColor:'#fff5f5'},active={backgroundColor:'#fecaca'};
-            const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            context.animate(reduced?[active,active]:[normal,active,normal],{
-                duration:1200,iterations:Infinity,easing:'ease-in-out'
-            });
-        }
+        function emphasizeSpeaker() {SpeakerGuide.play(context,context.dataset.nextSpeaker);}
         for(const o of [objects[0],objects[2],objects[1]]) {
             const area=node('section','p21-distance-area');area.dataset.zone=o.zone;area.dataset.object=o.id;
             const caption=node('div','p21-area-caption');caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));
@@ -1289,7 +1280,7 @@ function practice2ShowNotice(resultSpan, message) {
             for(const speaker of ['A','B']) {
                 const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`,emphasizeSpeaker);
                 sound.dataset.speaker=speaker;sound.dataset.object=o.id;
-                sound.addEventListener('focus',()=>perspective(speaker,o.id));controls.append(sound);
+                controls.append(sound);
             }
             area.append(controls);areas.append(area);
         }
@@ -1302,7 +1293,7 @@ function practice2ShowNotice(resultSpan, message) {
             }
             modelList.append(group);
         }
-        box.append(modelList);container.append(box);perspective('A',1);
+        box.append(modelList);container.append(box);perspective('A');
         renderDrill1(container);
         renderLaterDrills();
     }
@@ -1404,6 +1395,8 @@ function practice2ShowNotice(resultSpan, message) {
     // Shared photo for naming and choosing tasks; all answers remain speaker-relative.
     function laterScene(container,objects,which=false) {
         const picture=node('div','p21-drill-picture p21-shelf-scene');
+        const context=container.classList.contains('example-box')?node('p','p21-photo-context'):null;
+        if(context){SpeakerGuide.init(context);picture.append(context);}
         if(which) {
             const guide=node('div','p21-which-guide');
             const heading=node('strong');heading.append(node('span','p21-question-sound','ど：'),node('span','p21-question-description','Asking about the unknown'));guide.append(heading);
@@ -1432,10 +1425,11 @@ function practice2ShowNotice(resultSpan, message) {
             imageHint(item,o);stage.append(item);
         }
         picture.append(stage);container.append(picture);
-        return speaker=>{
+        const show=speaker=>{
             picture.dataset.speaker=speaker;
-            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker));
+            stage.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===speaker&&(!context||Boolean(context.dataset.speaker))));
         };
+        show.announce=speaker=>SpeakerGuide.play(context,speaker);return show;
     }
     function bindSpeaker(view,speaker,showSpeaker) {
         view.row.dataset.drillSpeaker=speaker;
@@ -1480,8 +1474,8 @@ function practice2ShowNotice(resultSpan, message) {
         const mine=exampleObjects[0],yours=exampleObjects[1];
         const aText=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine))+whichQuestion(yours);
         const bText=()=>shortAnswer('B',yours);
-        const qLine=node('p'),rLine=node('p');qLine.append(node('strong','','A · Question: '),listen(()=>{showExample('A');return aText();}),modelText(aText,phone));
-        rLine.append(node('strong','','B · Response: '),listen(()=>{showExample('B');return bText();}),modelText(bText,phone));
+        const qLine=node('p'),rLine=node('p');qLine.append(node('strong','','A · Question: '),listen(()=>{showExample('A');return aText();},'🔊きく',()=>showExample.announce('A')),modelText(aText,phone));
+        rLine.append(node('strong','','B · Response: '),listen(()=>{showExample('B');return bText();},'🔊きく',()=>showExample.announce('B')),modelText(bText,phone));
         exampleBox.append(qLine,rLine);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');

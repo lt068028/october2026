@@ -69,7 +69,7 @@ function mock(){
    }
 
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
-   check(await p.locator('.p2x-example .p2x-picture > .p2x-speaker-guide').count(),1,'Who guide is above cropped image');
+   check(await p.locator('.p2x-example .p2x-scene-canvas > .p2x-speaker-guide').count(),1,'Who guide is inside cropped image');
    check(await p.locator('.p2x-example .p2x-audio').count(),3,'three audio pairs inside image');
    check(await p.locator('.p2x-speaker-models .p21-model-group').count(),2,'models grouped by speaker');
    check(await p.locator('.p2x-example .p2x-context-note').count(),0,'removed explanatory paragraph');

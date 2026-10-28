@@ -2825,3 +2825,34 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:700px) {
  .p23-indoor-picture .p21-area-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+/* Shared speaker guide: initial prompt, then a single named status during activity. */
+.p21-photo-context [hidden] { display: none !important; }
+.p21-distance-area[data-zone="A"] .p21-area-caption,
+.p21-distance-area[data-zone="B"] .p21-area-caption { margin-top: 0; }
+.p21-which-example .p21-photo-context { max-width: 40%; font-size: 16px; }
+/* Price and photo margins use the same 3px inset at every shop scene width. */
+.p2x-cropped-picture .p2x-stage { aspect-ratio: auto; background: #f2eee8; }
+.p2x-cropped-picture .p2x-photo:not(.p2x-reach-foreground) { clip-path: inset(0 0 6%); }
+.p2x-scene-canvas .p2x-price { transform: translate(-50%,calc(-100% - 3px)); }
+.p2x-scene-canvas .p2x-speaker-guide { position: absolute; left: 3px; top: calc(var(--shop-crop-top,0px) + 3px); transform: none; width: max-content; max-width: 20%; margin: 0; box-sizing: border-box; overflow-wrap: anywhere; }
+.p2x-cropped-picture .p2x-person { top: 78% !important; }
+.p2x-cropped-picture .p2x-person[data-person="A"] { left: 5% !important; }
+.p2x-cropped-picture .p2x-person[data-person="B"] { left: auto !important; right: 5%; }
+.p2x-cropped-picture .p2x-distance-label[data-zone="A"] { left: 20% !important; width: 28%; top: 58% !important; }
+.p2x-cropped-picture .p2x-distance-label[data-zone="B"] { left: 82% !important; width: 28%; top: 58% !important; }
+.p2x-cropped-picture .p2x-audio[data-zone="A"] { left: calc(32.5% + 5px) !important; top: 60% !important; transform: none; }
+.p2x-cropped-picture .p2x-audio[data-zone="B"] { left: calc(66.5% - 5px) !important; top: 25% !important; transform: translateX(-100%); }
+.p2x-cropped-picture .p2x-audio[data-zone="far"] { left: calc(43.5% - 5px) !important; top: 18% !important; transform: translate(-100%,-50%); }
+/* The two thought dots now lead directly from the left side of the cloud. */
+.p2x-cropped-picture .p21-which-guide .p21-thought-dots { left: -10px; top: 50%; transform: translateY(-50%); }
+.p2x-cropped-picture .p21-which-guide .p21-thought-dots::after { left: -10px; top: 2.5px; }
+@media(max-width:700px) { .p2x-scene-canvas .p2x-speaker-guide { font-size: 16px; line-height: 1.2; padding: 3px 4px; } }
+@media(max-width:450px) {
+ .p2x-scene-canvas .p2x-speaker-guide { max-width: 30%; font-size: 12px; }
+ .p2x-cropped-picture .p2x-person { top: 73% !important; }
+ .p2x-cropped-picture .p21-area-description { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { left: 82% !important; top: 9% !important; width: 28%; max-width: 28%; }
+.p2x-cropped-picture .p2x-scene-canvas .p2x-speaker-guide { max-width: 20%; white-space: normal; }
+@media(max-width:700px) { .p2x-cropped-picture .p2x-scene-canvas .p2x-speaker-guide { font-size: 16px; line-height: 1.2; } }
+@media(max-width:450px) { .p2x-cropped-picture .p2x-scene-canvas .p2x-speaker-guide { max-width: 30%; font-size: 12px; } }

@@ -1,0 +1,31 @@
+const {chromium}=require('playwright');
+const fs=require('fs'),path=require('path'),assert=require('assert/strict');
+const root=path.resolve(__dirname,'..');
+function mock(){
+ window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
+ Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
+ window.SpeechSynthesisUtterance=class{constructor(text){this.text=text}};
+ Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:()=>new Promise((resolve,reject)=>{const finish=()=>{if(t.deny)return reject(new DOMException('Denied','NotAllowedError'));const track={readyState:'live',stop(){this.readyState='ended'},addEventListener(){}};t.tracks.push(track);resolve({getTracks:()=>[track]})};t.requests.push(finish);if(!t.defer)finish()})}});
+ window.NativePitchWorker=window.Worker;
+ window.Worker=class{
+  constructor(){(t.workers ||= []).push(this)}
+  postMessage(){if(t.workerHang)return;queueMicrotask(()=>{if(!this.terminated)this.onmessage?.({data:{frames:[{time:0,f0:180},{time:.02,f0:190}]}})})}
+  terminate(){this.terminated=true}
+ };
+ window.MediaRecorder=class{constructor(stream){this.stream=stream;this.state='inactive';this.mimeType='audio/webm';t.recorders.push(this)}start(){this.state='recording'}stop(){this.state='inactive';setTimeout(()=>{this.ondataavailable?.({data:new Blob(['recorded'])});this.onstop?.()},0)}};
+ window.SpeechRecognition=class{constructor(){t.recognitions.push(this)}start(){}stop(){setTimeout(()=>this.onend?.(),0)}abort(){setTimeout(()=>this.onend?.(),0)}};
+ window.Audio=class{constructor(url){this.url=url;t.audios.push(this)}play(){this.paused=false;return Promise.resolve()}pause(){this.paused=true}};
+ window.AudioContext=class{constructor(){this.state='running';this.sampleRate=48000}resume(){return Promise.resolve()}close(){this.state='closed';return Promise.resolve()}createMediaStreamSource(){return{connect(){},disconnect(){}}}createAnalyser(){return{fftSize:2048,getFloatTimeDomainData(a){a.fill(t.speaking?.08:0)},disconnect(){}}}decodeAudioData(){const buffer={sampleRate:48000,numberOfChannels:1,length:48000,getChannelData:()=>new Float32Array(48000)};if(t.decodeDefer)return new Promise(resolve=>t.decodes.push(()=>resolve(buffer)));return Promise.resolve(buffer)}};
+}
+(async()=>{
+ const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});let count=0;const check=(a,v,msg)=>{assert.deepEqual(a,v,msg);count++};
+ for(const n of ['2.1','2.2','2.3']){const p=await b.newPage({viewport:{width:600,height:1000}});await p.addInitScript(mock);await p.route('http://guide.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':'text/html'});});await p.goto('http://guide.test/practice'+n+'.html');
+ const boxes=p.locator('.example-box');
+ for(let i=0;i<await boxes.count();i++){const box=boxes.nth(i),guide=box.locator('.p21-photo-context');if(!await guide.count())continue;check(await guide.textContent(),'Who is speaking?',n+' initial prompt');check(await guide.evaluate(e=>e.getAnimations().length),0,'initial guide does not blink');
+ let buttons;if(n==='2.1'&&i===0)buttons=[box.locator('.p21-item-audio [data-speaker="A"]').first(),box.locator('.p21-item-audio [data-speaker="B"]').first()];else if(n==='2.2'&&i===0)buttons=[box.locator('.p2x-audio [data-speaker="A"]').first(),box.locator('.p2x-audio [data-speaker="B"]').first()];else if(n==='2.3'&&i===0)buttons=[box.locator('.p23-in-scene-audio button').first()];else buttons=[box.locator('button.example-button').first(),box.locator('button.example-button').last()];
+ for(const [index,button]of buttons.entries()){const who=index?'B':'A';await button.click();check(await guide.textContent(),who+' is speaking','named speaker');check(await guide.evaluate(e=>e.getAnimations()[0].effect.getTiming().iterations),Infinity,'blink throughout playback');await p.evaluate(()=>t.spoken.at(-1).onend?.());check(await guide.evaluate(e=>e.getAnimations().length),0,'completion ends blink');check(await guide.textContent(),who+' is speaking','speaker name persists');}
+ }
+ if(n==='2.2')for(const width of [600,900,1440]){await p.setViewportSize({width,height:1000});await p.waitForTimeout(100);const layouts=await p.locator('.p2x-cropped-picture').evaluateAll(es=>es.map(e=>{const s=e.querySelector('.p2x-stage').getBoundingClientRect(),c=e.querySelector('.p2x-scene-canvas').getBoundingClientRect(),tags=[...e.querySelectorAll('.p2x-price')];return {top:Math.min(...tags.map(t=>t.getBoundingClientRect().top-s.top)),gaps:tags.map(t=>c.top+parseFloat(t.style.top)/100*c.height-t.getBoundingClientRect().bottom),inside:e.contains(e.querySelector('.p21-photo-context'))};}));for(const a of layouts){check(Math.abs(a.top-3)<.2,true,'shared 3px top margin');check(a.gaps.every(g=>Math.abs(g-3)<.2),true,'shared 3px price-to-item anchor gap');}}
+ await p.close();}
+ await b.close();console.log('PASS speaker guide and price layout',count);
+})().catch(e=>{console.error(e);process.exit(1)});
