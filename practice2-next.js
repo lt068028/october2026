@@ -1396,19 +1396,19 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        if(call){context.dataset.prompt='📞 A is calling B.';context.dataset.playingLabel='📞 A is calling B.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
+        if(call){context.dataset.prompt='📞 A is calling B and talking about C.';context.dataset.playingLabel='📞 A is calling B and talking about C.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
         if(example&&!call){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'));}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
-        photo.alt=indoor?'A at the bank and B at the cafe are on a phone call. C reads quietly at the library.':'A and B are on a phone call in different cities. C is reading a book in a third city, not in their conversation.';stage.append(photo);
+        photo.alt=indoor?'A at the bank and B at the cafe are on a phone call. C reads quietly at the library.':'A and B are on a phone call in different cities. C is seated having a drink in a third city, not in their conversation.';stage.append(photo);
         for(const [i,o]of objects.entries()) {
             const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.style.left=(i*100/3)+'%';
             if(example){const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);}
             const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);
             region.append(node('strong','p23-city-person',['A','B','C'][i]));
-            const clock=node('span','p23-city-time',times?o.clock:indoor?'':word(o.periodHira,o.periodKanji));
-            if(times)imageHint(clock,{...o,hintText:o.timeHira});else clock.classList.add('p23-period-badge');region.append(clock);stage.append(region);
+            if(times&&!call){const clock=node('span','p23-city-time',o.clock);imageHint(clock,{...o,hintText:o.timeHira});region.append(clock);}
+            stage.append(region);
         }
         picture.append(stage);
         if(example&&call)picture.append(context);

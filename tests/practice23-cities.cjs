@@ -27,6 +27,8 @@ function mock(){
  for(const id of [2,3])check(await p.locator('#drill'+id+'Container .recording-table tr').count(),6,'three conversations');
  check(await p.locator('.p23-city-photo').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>0)),true,'all scenes load');
  check(await p.locator('.p23-practice-picture .p2x-distance-label').count(),0,'Drills omit concept captions');
+ check(await p.locator('.p23-call-example .p23-city-time').count(),0,'E1 uses the scene to show time of day');
+ check(await p.locator('#drill2Container .p23-city-time').count()>0,true,'time questions retain their clock cues');
  check(await p.locator('.p23-practice-picture .p23-city-region').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle(e).borderTopColor==='rgba(0, 0, 0, 0)')),true,'Drills omit concept colors and frames');
  const compare=async(button,text)=>{await button.click();check(await p.evaluate(()=>t.spoken.at(-1).text),text,'TTS model');await p.evaluate(()=>t.spoken.at(-1).onend?.());};
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){

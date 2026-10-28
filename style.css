@@ -2940,3 +2940,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Confirmed opacity by distance concept; listener value remains under comparison. */
 .p23-city-region:is([data-sound="こ"],[data-sound="あ"]) .p2x-distance-label { background: rgb(255 253 246 / 40%); }
 .p23-city-region[data-sound="そ"] .p2x-distance-label { background: rgb(255 253 246 / 10%); }
+
+/* Selected brightness; scene cuts need no additional concept outlines. */
+.p23-city-region[data-sound="そ"] .p2x-distance-label,
+.p23-city-region[data-sound="そ"] .p21-area-sound { color: #86efac; }
+.p23-city-region, .p23-city-region.is-target { border: 0; border-color: transparent; }
