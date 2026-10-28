@@ -1258,8 +1258,8 @@ function practice2ShowNotice(resultSpan, message) {
         // Coordinates refer to the photographed products, not the surrounding shelf.
         const shopGeometry={
             hats:{centers:[[27,54],[74,54],[50,24]],tops:[47,46,17]},
-            bag:{centers:[[27,54],[73,54],[50,26]],tops:[43,44,16]},
-            clock:{centers:[[26.5,55],[73,58],[50,23]],tops:[46,53,14]},
+            bag:{centers:[[27,51],[73,52],[50,23]],tops:[41,43,14.5]},
+            clock:{centers:[[27.5,52],[72.5,54],[50,23]],tops:[44,49,15]},
             fruit:{centers:[[27.5,52],[72.5,53],[50,24]],tops:[46,48,19]},
             onigiri:{centers:[[27.5,54],[72.5,54],[50,25]],tops:[49,49,20]},
             bento:{centers:[[30,57],[73,57],[50,28]],tops:[50,50,19]}
@@ -1392,11 +1392,13 @@ function practice2ShowNotice(resultSpan, message) {
         ];
         return data.map(([hira,kanji,romaji,meaning,periodHira,periodKanji,timeHira,timeKanji,clock],i)=>({hira,kanji,romaji,meaning,periodHira,periodKanji,timeHira,timeKanji,clock,zone:['A','B','far'][i],kind:'city'}));
     };
-    function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false}={}) {
+    function cityScene(container,{example=false,times=false,objects=cityObjects(),drill=false,indoor=false,call=false}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);
-        const context=node('p','p21-photo-context p2x-speaker-guide');SpeakerGuide.init(context);
-        if(example){picture.append(context);picture.append(node('p','p23-call-link','📞 A ↔ B'))
+        const context=node('p','p21-photo-context p2x-speaker-guide');
+        if(call){context.dataset.prompt='A is calling B';context.dataset.playingLabel='A is calling B';picture.classList.add('p23-call-example');}
+        SpeakerGuide.init(context);
+        if(example){picture.append(context);if(!call)picture.append(node('p','p23-call-link','📞 A ↔ B'))
         }
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
@@ -1410,7 +1412,6 @@ function practice2ShowNotice(resultSpan, message) {
             if(times)imageHint(clock,{...o,hintText:o.timeHira});else clock.classList.add('p23-period-badge');region.append(clock);stage.append(region);
         }
         picture.append(stage);
-        if(!indoor)picture.append(node('p','p23-time-note','Practice times · not a live clock'));
         container.append(picture);
         function select(speaker,zone){
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.dataset.nextSpeaker=speaker;
@@ -1427,7 +1428,7 @@ function practice2ShowNotice(resultSpan, message) {
         const intro=(o,i)=>statement(i===0?word('わたし','私'):['','Bさん','Cさん'][i],noun(o));
         const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
-        const selectEx=cityScene(e1,{example:true}),list=node('div','p21-model-list');
+        const selectEx=cityScene(e1,{example:true,times:true,call:true}),list=node('div','p21-model-list');
         cs.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
             const text=()=>intro(o,i)+statement(demonstrative('A',o),period(o));line.append(modelText(()=>intro(o,i),o),node('br'),modelText(()=>statement(demonstrative('A',o),period(o)),o));group.append(line);list.append(group);
             const b=listen(()=>{selectEx('A',o.zone);return text();},'🔊きく',()=>selectEx.announce('A'));b.dataset.speaker='A';b.dataset.zone=o.zone;selectEx.placeButton(b,o);

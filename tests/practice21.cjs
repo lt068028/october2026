@@ -34,7 +34,7 @@ function mock(){
  check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
  check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').count(),0,'D3 does not repeat the do explanation');
  check(await p.locator('#drill3Container .p21-set-switcher button').count(),2,'two noun sets after phone example');
- for(const [i,expected]of ['わたしのすまほはこれですあなたのすまほはどれですか','これです'].entries()) {await p.locator('.p21-which-example button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
+ for(const [i,expected]of ['わたしのすまほはこれですあなたのすまほはどれですか','あれです'].entries()) {await p.locator('.p21-which-example button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
 
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');

@@ -931,11 +931,11 @@ function practice2ShowNotice(resultSpan, message) {
         anchor.addEventListener('pointerleave',close);anchor.addEventListener('blur',close);
     }
 
-    function modelText(getText, object) {
+    function modelText(getText, object, onlyWhich = false) {
         const span = node("span");
         const text = getText();
 
-        const pattern =
+        const pattern = onlyWhich ? /どれ/g :
             /(これ|それ|あれ|どれ|の(?=ほん|本|ペン|かばん|鞄|さいふ|財布|かさ|傘|とけい|時計)|じゃないです|じゃないよ|じゃない|なんですか|何ですか|ですか|だよ|です|だ|はい|いいえ|ううん|うん|は、)/g;
 
         let position = 0;
@@ -1472,7 +1472,7 @@ function practice2ShowNotice(resultSpan, message) {
         const exampleBox=node('section','example-box p21-which-example');
         const phone=item('phone'),exampleObjects=['red','blue','green'].map((colorName,i)=>({...phone,colorName,zone:['A','B','far'][i]}));
         const showExample=laterScene(exampleBox,exampleObjects,true);
-        const mine=exampleObjects[0],yours=exampleObjects[1];
+        const mine=exampleObjects[0],yours=exampleObjects[2];
         const aText=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine))+whichQuestion(yours);
         const bText=()=>shortAnswer('B',yours);
         const qLine=node('p'),rLine=node('p');
@@ -1481,8 +1481,8 @@ function practice2ShowNotice(resultSpan, message) {
             button.classList.add('p21-which-audio');button.dataset.speaker=speaker;
             exampleBox.querySelector('.p21-example-scene-canvas').append(button);
         }
-        qLine.append(node('strong','','A · Question: '),modelText(aText,phone));
-        rLine.append(node('strong','','B · Response: '),modelText(bText,phone));
+        qLine.append(node('strong','','A · Question: '),modelText(aText,phone,true));
+        rLine.append(node('strong','','B · Response: '),modelText(bText,phone,true));
         exampleBox.append(qLine,rLine);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');

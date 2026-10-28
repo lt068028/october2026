@@ -2882,3 +2882,33 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p2x-reach-foreground[data-zone="A"] { clip-path: polygon(21.5% 58.5%,21.8% 53%,23% 50%,25% 48%,27% 48%,29% 50%,30% 54%,32.4% 58%,32% 60.5%,29% 60.8%,27.5% 59.5%,25.5% 60%,22% 59.5%); }
 .p2x-reach-foreground[data-zone="B"] { clip-path: polygon(66% 57%,69.5% 55%,70% 50%,71% 47%,74% 46%,76% 48%,77.5% 54%,82% 57%,81% 60%,77% 62%,71% 62%,66% 60%); }
 .p2x-reach-foreground[data-zone="far"] { clip-path: polygon(44% 29%,46% 27%,46.5% 20%,48% 16%,50% 18%,52% 16%,54% 19%,54.5% 27%,56% 29%,55% 31%,45% 31%); }
+
+/* Keep the guide text inside its cloud, including dakuten and first/last letters. */
+.p21-which-guide .p21-thought-cloud { inset: -6px -12px; width: calc(100% + 24px); height: calc(100% + 22px); }
+.p21-which-guide { padding: 8px 18px; }
+.p21-distance-area[data-zone="B"] .p21-area-caption { translate: -8px 0; }
+/* Speaker prompts use the same text and padding across the two lesson scenes. */
+.practice21-page .p21-photo-context,
+.p2x-cropped-picture .p2x-scene-canvas .p2x-speaker-guide { font-size: 20px; line-height: 1.2; padding: 4px 8px; }
+@media(min-width:701px) {
+ .p2x-cropped-picture .p2x-audio:not([data-zone="far"]) { top: 36.5% !important; }
+ .p2x-cropped-picture .p2x-audio[data-zone="far"] { left: calc(43.5% - 3px) !important; top: 9% !important; }
+}
+.p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 29% !important; left: 74% !important; }
+.p2x-reach[data-reach="far"] { top: 13%; height: 42%; }
+
+.p2x-food-example .p21-which-guide { transform: translate(-50%,-4px); }
+/* Narrow photographs keep the far caption above the right-hand price. */
+@media(max-width:700px) {
+ .p2x-cropped-picture .p2x-distance-label[data-zone="far"] { top: 14% !important; width: 34%; }
+ .p2x-cropped-picture .p2x-distance-label[data-zone="far"] .p21-area-description { white-space: nowrap; }
+ .p2x-reach[data-reach="far"] { left: 35%; top: 10%; width: 56%; height: 40%; }
+}
+
+/* Place labels stay legible over the city photograph. */
+.p23-city-region .p2x-distance-label { width: max-content; max-width: calc(100% - 12px); box-sizing: border-box; padding: 4px 8px; border: 1px solid currentColor; border-radius: 8px; background: #fffdf6f2; text-shadow: none; }
+.p23-city-region[data-sound="こ"] .p2x-distance-label { color: #1d4ed8; }
+.p23-city-region[data-sound="そ"] .p2x-distance-label { color: #15803d; }
+.p23-city-region[data-sound="あ"] .p2x-distance-label { color: #b45309; }
+.p23-call-example > .p2x-speaker-guide { margin-bottom: 8px; }
+.p23-call-example .p23-city-time { bottom: calc(5% + 40px); }
