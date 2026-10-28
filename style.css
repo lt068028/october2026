@@ -2939,3 +2939,4 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-city-region .p2x-distance-label { border: 0; }
 /* Confirmed opacity by distance concept; listener value remains under comparison. */
 .p23-city-region:is([data-sound="こ"],[data-sound="あ"]) .p2x-distance-label { background: rgb(255 253 246 / 40%); }
+.p23-city-region[data-sound="そ"] .p2x-distance-label { background: rgb(255 253 246 / 10%); }
