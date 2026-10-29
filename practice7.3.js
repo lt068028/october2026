@@ -578,7 +578,7 @@ function word(key) {
     const text = escape(
         scriptMode === 'kanji' ? w.kanji : w.hira
     );
-    const hint = escape(w.romaji + ', ' + w.meaning);
+    const hint = escape(w.romaji === w.meaning ? w.romaji : w.romaji + ', ' + w.meaning);
 
     if (hintMode === 'off') {
         return `<span class="target-word">${text}</span>`;

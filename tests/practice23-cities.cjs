@@ -56,7 +56,7 @@ function mock(){
    check(await p.locator('#drill1Container .p23-city-time:not(.p23-city-name)').allTextContents(),set===2?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
    check(await p.locator('#drill1Container .p23-city-name').allTextContents(),set===1?[script==='hiragana'?'おおさか':'大阪','パリ','ロサンゼルス']:[],'only Cities shows city names on the images');
    check(await p.locator('#drill1Container .p23-city-time').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgb(23, 43, 70)'&&getComputedStyle(e).color==='rgb(255, 255, 255)')),true,'time and city information share the dark style');
-   const hintMeanings=set===0?['Japan','France','United States']:set===2?['6 a.m.; 6:00 (あさろくじ)','10 p.m.; 22:00 (よるじゅうじ)','1 p.m.; 13:00 (ごごいちじ)']:['Osaka','Paris','Los Angeles'];
+   const hintMeanings=set===0?['Japan','France','United States']:set===2?['6 a.m.','10 p.m.','1 p.m.']:['Osaka','Paris','Los Angeles'];
    check(await p.locator('#drill1Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
    const firstHint=p.locator('#drill1Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
    check((await p.locator('#'+await firstHint.getAttribute('aria-describedby')).textContent()).includes(hintMeanings[0]),true,'the visible hover tooltip follows the category');
@@ -74,6 +74,7 @@ function mock(){
    const answers=set===0?['喫茶店','銀行','図書館']:['ここ','あそこ','あそこ','ここ'];
    const speakers=set===0?['A','B','B','A','B','A']:['B','A','B','A','B','A','A','B'];
    check(await p.locator('#drill2Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
+   check(await p.locator('#drill2Container > .p23-city-picture .p23-city-hint').count(),set===0?3:0,'Item1/2 omit facility image hints');
    const responseCues=await visibleTexts('#drill2Container .recording-table tr:nth-child(2) .drill-cue-cell');
    check(responseCues,set===2?['A·Response:あそこ／ここ','A·Response:そこ／あそこ','A·Response:ここ／あそこ','B·Response:あそこ／ここ']:set===0?['B·Response:ここ／'+ (script==='hiragana'?'きっさてん':'喫茶店'),'A·Response:ここ／'+(script==='hiragana'?'ぎんこう':'銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
    check(await p.locator('#drill2Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
@@ -89,7 +90,7 @@ function mock(){
    const questions=mode===3?['そこは、何曜日','そこは、何曜日','あそこは、何曜日']:mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
    const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこも、土曜日']:mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['ここは、パリ','ここは、大阪','あそこは、ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
    if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／パリ','A·Response:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'B·Response:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
-   if(mode===3){check(await visibleTexts('#drill3Container .p23-city-time'),script==='hiragana'?['にちようび','どようび','どようび']:['日曜日','土曜日','土曜日'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['A·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'B·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'A·Question:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
+   if(mode===3){const dayCard=p.locator('#drill3Container .p23-city-time').first();await dayCard.focus();check(await p.locator('#'+await dayCard.getAttribute('aria-describedby')).textContent(),'にちようび','English day card keeps Japanese hover');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／Sat.','A·Response:ここ／Sun.','B·Response:あそこ／Sat.'],'Day cues use English abbreviations');const dayHint=p.locator('#drill3Container .recording-table tr').nth(1).locator('.tooltip-wrap');await dayHint.dispatchEvent('pointerover');check(await dayHint.locator('.tooltip-tip').textContent(),'doyōbi, どようび','Day cue retains Japanese reading in hover');check(await visibleTexts('#drill3Container .p23-city-time'),['Sun.','Sat.','Sat.'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['A·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'B·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'A·Question:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),roles,'D3 role and place references are consistent');
    for(let i=0;i<3;i++){

@@ -14,7 +14,7 @@ const PracticeNext = (()=>{
     ];
     const people=[
         {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary (blue cardigan)',kind:'person-mary'},
-        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi (green sweater)',kind:'person-takeshi'},
+        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'green sweater',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
     const readings=[['何曜日','なんようび'],['土曜日','どようび'],['日曜日','にちようび'],['二十二時','にじゅうにじ'],['22時','にじゅうにじ'],['十三時','じゅうさんじ'],['13時','じゅうさんじ'],['六時','ろくじ'],['6時','ろくじ'],['十時','じゅうじ'],['10時','じゅうじ'],['一時','いちじ'],['1時','いちじ'],['朝六時','あさろくじ'],['朝6時','あさろくじ'],['夜十時','よるじゅうじ'],['夜10時','よるじゅうじ'],['百円','ひゃくえん'],['二百円','にひゃくえん'],['Aさん','えーさん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
@@ -397,7 +397,7 @@ function formatWord(word, kanji, romaji, meaning) {
     const displayWord =
         (scriptMode === "kanji" && kanji) ? kanji : word;
 
-    const hintStr = `${romaji}, ${meaning}`;
+    const hintStr = romaji === meaning ? romaji : `${romaji}, ${meaning}`;
 
     // OFF: Japanese word only
     if (hintMode === "off") {
@@ -946,7 +946,7 @@ function practice2ShowNotice(resultSpan, message) {
     function imageHint(anchor,o) {
         if(hintMode==='off')return;
         anchor.classList.add('p21-image-hint');anchor.tabIndex=0;
-        const tipText=o.hintText||`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`;
+        const tipText=o.hintText||`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji===o.meaning?o.romaji:o.romaji+", "+o.meaning})`;
         anchor.setAttribute('aria-label',o.hintText?`${anchor.textContent}: ${tipText}`:tipText);
         let host=null;
         function close() {
@@ -1338,7 +1338,7 @@ function practice2ShowNotice(resultSpan, message) {
                     else target.append(tag);
                 }
             }
-            imageHint(target,photoKind==='fruit'?{...o,hintText:['りんご (ringo, apple)','バナナ (banana, banana)','みかん (mikan, mandarin)'][i]}:o);stage.append(target);
+            imageHint(target,photoKind==='fruit'?{...o,hintText:['りんご (ringo, apple)','バナナ (banana)','みかん (mikan, mandarin)'][i]}:o);stage.append(target);
             if(example) {
                 const region=node('div','p2x-distance-label');region.dataset.zone=o.zone;
                 region.style.left=(hats?{A:30,B:70,far:68}[o.zone]:position[0])+'%';region.style.top=(hats?(o.zone==='far'?9:57):is22?position[1]+20:39)+'%';
@@ -1416,7 +1416,7 @@ function practice2ShowNotice(resultSpan, message) {
         svg.innerHTML='<path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.91-8.67A2 2 0 0 1 3.26 1h3a2 2 0 0 1 2 1.72c.12.96.36 1.9.7 2.79a2 2 0 0 1-.45 2.11L7.24 8.89a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.89.34 1.83.58 2.79.7A2 2 0 0 1 22 16.92z"/>';
         return svg;
     }
-    function cityScene(container,{example=false,times=false,cityLabels=false,objects=cityObjects(),drill=false,indoor=false,call=false}={}) {
+    function cityScene(container,{example=false,times=false,cityLabels=false,objects=cityObjects(),drill=false,indoor=false,call=false,placeHints=true}={}) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
@@ -1430,7 +1430,7 @@ function practice2ShowNotice(resultSpan, message) {
         for(const [i,o]of objects.entries()) {
             const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.style.left=(i*100/3)+'%';
             if(example){const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);}
-            const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);
+            if(placeHints){const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);}
             region.append(node('strong','p23-city-person',['A','B','C'][i]));
             if(times&&!call){const clock=node('span','p23-city-time',o.clock);imageHint(clock,{...o,hintText:o.timeHira});region.append(clock);}
             if(cityLabels){const label=node('span','p23-city-time p23-city-name',noun(o));imageHint(label,o);region.append(label);}
@@ -1512,7 +1512,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(whereSet===1){const instruction=whereContainer.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
         setButtons(whereContainer,['People','Item1','Item2'],'whereDrillSet');
         const wherePlaces=PracticeNext.places.map(o=>({...o}));
-        const selectWhere=cityScene(whereContainer,{indoor:true,objects:wherePlaces});
+        const selectWhere=cityScene(whereContainer,{indoor:true,objects:wherePlaces,placeHints:whereSet===0});
         const wherePicture=whereContainer.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
         const objectKinds=['bag','book','notebook','pen'];
         const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:['A','far','far','B'][i]}));
@@ -1551,7 +1551,7 @@ function practice2ShowNotice(resultSpan, message) {
         const ds=cityObjects(true).map((o,i)=>({...o,country:PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i]),clock:['6:00','22:00','13:00'][i],timeHira:['あさろくじ','よるじゅうじ','ごごいちじ'][i],timeKanji:['朝六時','夜十時','午後一時'][i]}));
         const drillClockPlaces=ds.map(o=>set1===1?o:{...o,...o.country});
         const timeHints=[['asa rokuji','6 a.m.'],['yoru jūji','10 p.m.'],['gogo ichiji','1 p.m.']];
-        const hintPlaces=drillClockPlaces.map((o,i)=>set1===2?{...o,hira:o.timeHira,kanji:o.timeKanji,romaji:timeHints[i][0],meaning:`${timeHints[i][1]}; ${o.clock} (${o.timeHira})`}:o);
+        const hintPlaces=drillClockPlaces.map((o,i)=>set1===2?{...o,hira:o.timeHira,kanji:o.timeKanji,romaji:timeHints[i][0],meaning:timeHints[i][1]}:o);
         const select1=cityScene(describeContainer,{objects:hintPlaces,drill:true,times:set1===2,cityLabels:set1===1});
         describeContainer.querySelector(':scope > .p23-city-picture').classList.add('p23-describe-picture');
         drillClockPlaces.forEach((o,i)=>{
@@ -1566,7 +1566,7 @@ function practice2ShowNotice(resultSpan, message) {
         const dialogueMode=setButtons(d3,['Country','Cities','Time','Day'],'cityDialogueSet');
         const days=[{hira:'にちようび',kanji:'日曜日',romaji:'nichiyōbi',meaning:'Sunday'},{hira:'どようび',kanji:'土曜日',romaji:'doyōbi',meaning:'Saturday'},{hira:'どようび',kanji:'土曜日',romaji:'doyōbi',meaning:'Saturday'}];
         const locations=ds;
-        const dialogueHints=locations.map((o,i)=>dialogueMode===3?{...o,...days[i],clock:word(days[i].hira,days[i].kanji),timeHira:days[i].hira}:dialogueMode===0?{...o,...o.country}:dialogueMode===2?{...o,hira:o.timeHira,kanji:o.timeKanji,romaji:timeHints[i][0],meaning:`${timeHints[i][1]}; ${o.clock} (${o.timeHira})`}:o);
+        const dialogueHints=locations.map((o,i)=>dialogueMode===3?{...o,...days[i],clock:i===0?'Sun.':'Sat.',timeHira:days[i].hira}:dialogueMode===0?{...o,...o.country}:dialogueMode===2?{...o,hira:o.timeHira,kanji:o.timeKanji,romaji:timeHints[i][0],meaning:timeHints[i][1]}:o);
         const selectDialogue=cityScene(d3,{objects:dialogueHints,drill:true,times:dialogueMode===2||dialogueMode===3,cityLabels:dialogueMode===1});
         d3.querySelector('.p23-city-picture').classList.add('p23-describe-picture','p23-dialogue-picture');
         const turns=dialogueMode===0?[
@@ -1589,7 +1589,7 @@ function practice2ShowNotice(resultSpan, message) {
             const rpredicate=()=>dialogueMode===3?word(days[index].hira,days[index].kanji):dialogueMode===0?noun(o.country):dialogueMode===1?cityPhrase():time(o);
             const whereCue=()=>formatWord(o.country.hira+'のどこ',o.country.kanji+'のどこ',o.country.romaji+' no doko','where in '+o.country.meaning);
             const qcue=dialogueMode===3?formatWord('なんようび','何曜日',"nan'yōbi",'what day of the week'):dialogueMode===0?'どこ':dialogueMode===1?whereCue():word('なんじ','何時');
-            const rcue=dialogueMode===3?vocabulary(days[index]):dialogueMode===0?vocabulary(o.country):dialogueMode===1?vocabulary(o):formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
+            const rcue=dialogueMode===3?formatWord(index===0?'Sun.':'Sat.',index===0?'Sun.':'Sat.',days[index].romaji,days[index].hira):dialogueMode===0?vocabulary(o.country):dialogueMode===1?vocabulary(o):formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${qsubject}／${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()));
             const responseSubject=dialogueMode===1?(index===2?'あそこ':'ここ'):rsubject;
             const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${responseSubject}／${rcue}`,prefix+'_r',()=>{const text=statement(responseSubject,dialogueMode===1?noun(o):rpredicate());return dialogueMode===3&&i===2?text.replace(responseSubject+'は、',responseSubject+'も、'):text;});

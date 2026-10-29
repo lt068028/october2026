@@ -364,7 +364,7 @@ function formatWord(word, kanji, romaji, meaning) {
     const displayWord =
         (scriptMode === "kanji" && kanji) ? kanji : word;
 
-    const hintStr = `${romaji}, ${meaning}`;
+    const hintStr = romaji === meaning ? romaji : `${romaji}, ${meaning}`;
 
     // OFF: Japanese word only
     if (hintMode === "off") {
@@ -913,7 +913,7 @@ function practice2ShowNotice(resultSpan, message) {
     function imageHint(anchor,o) {
         if(hintMode==='off')return;
         anchor.classList.add('p21-image-hint');anchor.tabIndex=0;
-        anchor.setAttribute('aria-label',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
+        anchor.setAttribute('aria-label',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji===o.meaning?o.romaji:o.romaji+", "+o.meaning})`);
         let host=null;
         function close() {
             if(anchor.matches(':hover, :focus'))return;
@@ -922,7 +922,7 @@ function practice2ShowNotice(resultSpan, message) {
         function show() {
             if(host)return;
             host=node('span','tooltip-wrap p21-image-tip-host');
-            const tip=node('span','tooltip-tip',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji}, ${o.meaning})`);
+            const tip=node('span','tooltip-tip',`${o.colorName?o.colorName+" ":""}${noun(o)} (${o.romaji===o.meaning?o.romaji:o.romaji+", "+o.meaning})`);
             tip.id=`p21-image-tip-${++imageHintSerial}`;tip.setAttribute('role','tooltip');host.append(tip);
             anchor.dataset.portalTip=tip.id;anchor.setAttribute('aria-describedby',tip.id);
             document.body.append(host);window.DrillTooltips.position(anchor,tip);
