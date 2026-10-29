@@ -1,5 +1,7 @@
 # 練習2：指示語のタスク仕様
 
+
+練習2以降の会話では、文脈上「も」が適しているときはモデルに「も」を使用する。[共通方針・全ページ点検](PROJECT_SPEC.md)を適用し、正しい「は」版や自然な短答も行ごとの登録範囲で許容する。
 更新：2026-10-27。**現在の実装・評価対象は2.1のExample 1とDrill 1～3。追加のExampleは設けない。** 2.2・2.3の初期実装は[PRACTICE22_23_SPEC](PRACTICE22_23_SPEC.md)を参照。旧版の全Drill構成はPROJECT_SPEC §58とGit履歴4c76063に残す。
 
 - ページ名・HTML title・Index：**Practice 2.1: これ・それ・あれ・どれ — Demonstrative Pronouns**。2.2はDemonstrative Adjectivesで対比する。
