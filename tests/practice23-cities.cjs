@@ -86,6 +86,7 @@ function mock(){
    await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
    const questions=mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
    const replies=mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['パリ','大阪','ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
+   if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／パリ','A·Response:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'B·Response:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),roles,'D3 role and place references are consistent');
    for(let i=0;i<3;i++){

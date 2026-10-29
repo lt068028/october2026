@@ -1588,12 +1588,11 @@ function practice2ShowNotice(resultSpan, message) {
             const cityPhrase=()=>noun(o.country)+'の'+noun(o);
             const qpredicate=()=>dialogueMode===0?'どこ':dialogueMode===1?noun(o.country)+'のどこ':word('なんじ','何時');
             const rpredicate=()=>dialogueMode===0?noun(o.country):dialogueMode===1?cityPhrase():time(o);
-            const cityCue=()=>formatWord(o.country.hira+'の'+o.hira,o.country.kanji+'の'+o.kanji,o.country.romaji+' no '+o.romaji,o.meaning+', '+o.country.meaning);
             const whereCue=()=>formatWord(o.country.hira+'のどこ',o.country.kanji+'のどこ',o.country.romaji+' no doko','where in '+o.country.meaning);
             const qcue=dialogueMode===0?'どこ':dialogueMode===1?whereCue():word('なんじ','何時');
-            const rcue=dialogueMode===0?vocabulary(o.country):dialogueMode===1?cityCue():formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
+            const rcue=dialogueMode===0?vocabulary(o.country):dialogueMode===1?vocabulary(o):formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${qsubject}／${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()));
-            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${rsubject}／${rcue}`,prefix+'_r',()=>dialogueMode===1?short(noun(o)):statement(rsubject,rpredicate()));
+            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${dialogueMode===1?(index===2?'あそこ':'ここ'):rsubject}／${rcue}`,prefix+'_r',()=>dialogueMode===1?short(noun(o)):statement(rsubject,rpredicate()));
             practice2State.replyReferences[prefix+'_r']=()=>{
                 const alternatives=[short(rpredicate())];
                 if(dialogueMode===0)alternatives.push(statement(index===2?'あそこ':word('わたし','私'),rpredicate()));
