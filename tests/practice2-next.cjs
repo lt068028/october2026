@@ -101,7 +101,7 @@ function mock(){
    check(await p.locator(personSection+' tr[data-drill-speaker]').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A','A','B'],'mixed speaker roles');
    for(let i=0;i<3;i++){
     const q=['その','その','あの'][i]+'人は誰'+(style==='formal'?'ですか':'');
-    const r=i===1?'メアリーさん'+end:['この人はたけしさん','', 'あの人はロバートさん'][i]+end;
+    const r=['この人はたけしさん','この人はメアリーさん','あの人はロバートさん'][i]+end;
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Q');
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 response');
    }

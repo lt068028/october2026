@@ -392,12 +392,7 @@ function formatWord(word, kanji, romaji, meaning) {
     }
 
     // Vocab Hover: Show vocabulary hints on hover
-    return `
-        <span class="tooltip-wrap">
-            <span class="target-word">${displayWord}</span>
-            <span class="tooltip-tip">${hintStr}</span>
-        </span>
-    `;
+    return `<span class="tooltip-wrap"><span class="target-word">${displayWord}</span><span class="tooltip-tip">${hintStr}</span></span>`;
 }
 
 function initSettingsPanel() {
@@ -1207,7 +1202,7 @@ function practice2ShowNotice(resultSpan, message) {
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
         const source=view.cueCell.querySelector('strong'),role=source&&/Question|Response/.test(source.textContent)?source.cloneNode(true):null;
-        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
     };
     const nameQuestion=(speaker,o)=>question(pro(speaker,o),word(speechStyle==='formal'?'なん':'なに','何'));
     const shortAnswer=(speaker,o)=>pro(speaker,o)+({formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle]);

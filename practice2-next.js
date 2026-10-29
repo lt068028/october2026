@@ -425,12 +425,7 @@ function formatWord(word, kanji, romaji, meaning) {
     }
 
     // Vocab Hover: Show vocabulary hints on hover
-    return `
-        <span class="tooltip-wrap">
-            <span class="target-word">${displayWord}</span>
-            <span class="tooltip-tip">${hintStr}</span>
-        </span>
-    `;
+    return `<span class="tooltip-wrap"><span class="target-word">${displayWord}</span><span class="tooltip-tip">${hintStr}</span></span>`;
 }
 
 function initSettingsPanel() {
@@ -1473,7 +1468,7 @@ function practice2ShowNotice(resultSpan, message) {
         const englishCue=(view,parts)=>{
             if(!practice2State.englishCues)return;
             const role=view.cueCell.querySelector('strong')?.cloneNode(true);
-            view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
+            view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
         };
         const cs=cityObjects(),whereContainer=document.getElementById('drill2Container'),describeContainer=document.getElementById('drill1Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
@@ -1745,27 +1740,28 @@ function practice2ShowNotice(resultSpan, message) {
         else instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
         setButtons(container,['Set 1','Set 2'],'peopleConversationSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
-        const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:false},{asker:'A',answerer:'B',object:objects[2],full:true}];
+        const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:true},{asker:'A',answerer:'B',object:objects[2],full:true}];
         turns.forEach(({asker,answerer,object:o,full},i)=>{
             const c=card(container,String(i+1)),prefix=relationshipSet?'p22_people_relations':'p22_people_mixed';
             const subject=speaker=>demonstrative(speaker,o)+word('ひと','人');
+            const personCue=speaker=>{const d=demonstrative(speaker,o);return formatWord(d+'ひと',d+'人',({この:'kono',その:'sono',あの:'ano'}[d])+' hito',({この:'this person',その:'that person',あの:'that person over there'}[d]));};
             if(relationshipSet){
                 const relation=[{hira:'おとうと',kanji:'弟',romaji:'otōto',meaning:'younger brother'},{hira:'ともだち',kanji:'友達',romaji:'tomodachi',meaning:'friend'},{hira:'せんせい',kanji:'先生',romaji:'sensei',meaning:'teacher'}][i];
                 const predicate=()=>word('わたし','私')+'の'+noun(relation);
                 const correct=()=>statement(subject(answerer),predicate());
                 const no=()=>speechStyle==='casual'?'ううん、':'いいえ、';
                 const classmate=()=>answerer+'さんのクラスメート';
-                const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}${formatWord('ひと','人','hito','person')}／${answerer}さんの${formatWord('クラスメート','クラスメート','kurasumēto','classmate')}`,`${prefix}_q_${i}`,()=>question(subject(asker),classmate()));
+                const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${personCue(asker)}／${formatWord(answerer+'さんのクラスメート',answerer+'さんのクラスメート',answerer+'-san no kurasumēto',answerer+"’s classmate")}`,`${prefix}_q_${i}`,()=>question(subject(asker),classmate()));
                 const key=`${prefix}_r_${i}`;
                 practice2State.replyReferences[key]=()=>[no()+correct(),no()+short(predicate()),no()+short(noun(relation)),response(word('わたし','私')+'のクラスメート',false)+correct(),response(word('わたし','私')+'のクラスメート',false)+short(predicate()),response(word('わたし','私')+'のクラスメート',false)+short(noun(relation))];
-                const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${demonstrative(answerer,o)}${formatWord('ひと','人','hito','person')}／${formatWord('わたし','私','watashi','I')}の${vocabulary(relation)}`,key,()=>no()+correct());
+                const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${personCue(answerer)}／${formatWord('わたしの'+relation.hira,'私の'+relation.kanji,'watashi no '+relation.romaji,'my '+relation.meaning)}`,key,()=>no()+correct());
                 r.actions.append(node('span','p21-response-lead',speechStyle==='casual'?'ううん…':'いいえ…'));
                 attach(q,asker,o,select);attach(r,answerer,o,select);return;
             }
-            const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}${formatWord('ひと','人','hito','person')}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')));
+            const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${personCue(asker)}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')));
             const key=`${prefix}_r_${i}`;
             practice2State.replyReferences[key]=()=>[short(noun(o)+'さん'),short(noun(o)),statement(subject(answerer),noun(o)+'さん'),statement(subject(answerer),noun(o))];
-            const cue=(full?demonstrative(answerer,o)+formatWord('ひと','人','hito','person')+'／':'')+vocabulary(o);
+            const cue=(full?personCue(answerer)+'／':'')+vocabulary(o);
             const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${cue}`,key,()=>full?statement(subject(answerer),noun(o)+'さん'):short(noun(o)+'さん'));
             attach(q,asker,o,select);attach(r,answerer,o,select);
         });select('A');

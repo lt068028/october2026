@@ -148,3 +148,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.2のD3は食品選択、D4は新疑問詞だれの独立課題。practice2-next.cjsはE4導入、A/B各3会話と人物名/指示語判定、食品と人物の結果独立保持を確認。
 
 - 練習2人物名赤点滅：`node tests/lesson2-speaker-pulse.cjs`。2.1/2.2の全セット・全Example/Drillモデル、マイク準備/録音/録音再生、解除/受け渡し/古い終了通知、reduced-motion。2.3はpractice23-cities.cjs。Whoガイド背景点滅はspeaker-guide.cjsで別確認。
+
+- 練習2の未指定空白：`node tests/lesson2-cue-spacing.cjs`。全セット・両Script・全Vocab・English cuesを走査し、語内/区切り前後の余計な空白を検出する。
