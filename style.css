@@ -3075,6 +3075,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-describe-picture .p23-city-name { right: 4px; bottom: 4px; }
 
 /* 2.2 people set: names stay below faces in the compact photograph. */
-.p2x-people-picture .p2x-person-target { height: 66%; }
-.p2x-people-picture .p2x-person-target[data-zone="far"] { width: 12%; height: 60%; }
+.p2x-people-picture .p2x-person-target { height: 83%; }
+.p2x-people-picture .p2x-person-target[data-zone="far"] { width: 12%; height: 44%; }
 .p2x-people-picture .p2x-person-name { top: auto; bottom: 4px; }
