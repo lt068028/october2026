@@ -22,6 +22,7 @@ function mock(){
  await p.route('http://cities.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':'text/html'});});
  await p.goto('http://cities.test/practice2.3.html');let count=0;const check=(a,b,msg)=>{assert.deepEqual(a,b,msg);count++};
  check(await p.locator('.example-box').count(),3,'three examples');
+ check(await p.locator('[data-set-state="cityDrillSet"] button').allTextContents(),['Places','Time','People'],'D1 category names omit Set');
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','そこ','あそこ'],'E1 highlights only model demonstratives');
  check(await p.locator('.p23-example-flow > span:last-child').allTextContents(),['ここは、あさです。','そこは、よるですか。','あそこは、ゆうがたですね。'],'E1 displays every full model sentence');
@@ -43,6 +44,7 @@ function mock(){
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
+   check(await p.locator('#drill1Container .p23-city-time').allTextContents(),set===1?['06:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D1 roles are A');
    for(let i=0;i<3;i++){
     const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:['私','Bさん','Cさん'][i]+'は、'+loc+end;
