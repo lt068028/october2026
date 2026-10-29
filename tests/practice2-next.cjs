@@ -62,7 +62,7 @@ function mock(){
    check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2','','3',''],'D3 numbered 1 through 3');
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','A','B','A','B'],'D3 A asks only');
    check(await p.locator('#drill1Container,#drill2Container,#drill3Container').evaluateAll(es=>es.every(e=>e.firstElementChild.matches('.example-box')&&Boolean(e.firstElementChild.nextElementSibling?.matches('.info-panel')))),true,'each Example precedes its Drill');
-   check(await p.locator('#drill4Container > .example-box').count(),0,'E4 removed');check(await p.locator('#drill4Container > .info-panel .info-panel-desc').textContent(),'💡Use だれ to ask who someone is.','D4 introduces who in instruction');check(await p.locator('#drill4Container .info-panel-desc strong.grammar-highlight').textContent(),'だれ','who is highlighted');check(await p.locator('#drill4Container > .info-panel .info-panel-title').textContent(),'Drill 4: この人はだれですか','D4 title');check(await p.locator('#peopleContainer').count(),0,'old under-review people section removed');check(await p.locator('[data-set-state="choosingSet"] button').allTextContents(),['おにぎり','おべんとう'],'D3 contains only noun-selection topics');
+   check(await p.locator('#drill4Container > .example-box').count(),0,'E4 removed');check(await p.locator('#drill4Container > .info-panel .info-panel-desc').textContent(),'💡Use だれ to ask who someone is.','D4 introduces who in instruction');check(await p.locator('#drill4Container .info-panel-desc strong.grammar-highlight').textContent(),'だれ','who is highlighted');check(await p.locator('#drill4Container > .info-panel .info-panel-title').textContent(),'Drill 4: どの人ですか？だれですか？','D4 title');check(await p.locator('#peopleContainer').count(),0,'old under-review people section removed');check(await p.locator('[data-set-state="choosingSet"] button').allTextContents(),['おにぎり','おべんとう'],'D3 contains only noun-selection topics');
    check(await p.locator('.p2x-price-example button,.p2x-food-example button').evaluateAll(es=>es.every(e=>e.firstChild.textContent==='🔊きく')),true,'no repeated A/B on example buttons');
 
    check(await p.locator('.p2x-price-example').evaluate(e=>getComputedStyle(e,'::before').content!=='none'),true,'Example2 badge restored');
@@ -107,9 +107,9 @@ function mock(){
    }
    await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
    for(let i=0;i<3;i++){
-    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','Bさんのクラスメートはどの人'][i]+(style==='formal'?'ですか':'');
+    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','どの人がBさんのクラスメート'][i]+(style==='formal'?'ですか':'');
     const no=style==='casual'?'ううん':'いいえ';
-    const r=(i===2?'私のクラスメートはあの人':no+['この人は私の弟','この人は私の友達'][i])+end;
+    const r=(i===2?'あの人':no+['この人は私の弟','この人は私の友達'][i])+end;
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Set2 question');
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 Set2 correction');
    }
