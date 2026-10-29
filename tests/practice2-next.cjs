@@ -26,6 +26,10 @@ function mock(){
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
   const personSection=number==='2.2'?'#drill4Container':'#drill2Container';
+  check(await p.locator('.p2x-people-picture .p2x-person-name').count(),0,'no visible person names');
+  const peopleTargets=p.locator('.p2x-people-picture .p2x-person-target');
+  for(let i=0;i<3;i++){await peopleTargets.nth(i).hover();check(await p.locator('.p21-image-tip-host .tooltip-tip').last().textContent(),['メアリー','たけし','ロバート'][i],'person hover is name only');await p.mouse.move(0,0);}
+
   check(await p.locator('#drill1Container > .info-panel .info-panel-desc').textContent(),'💡Name the item and say its price.','D1 concise instruction');
   check(await p.locator('#drill2Container > .info-panel .info-panel-desc').textContent(),'💡A: Ask the price and answer.','D2 requested instruction');
   check(await p.locator('#drill3Container > .info-panel .info-panel-desc').textContent(),'💡Ask with どの＋noun.','D3 keeps instruction icon');

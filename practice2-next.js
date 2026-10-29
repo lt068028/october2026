@@ -13,9 +13,9 @@ const PracticeNext = (()=>{
         {hira:'アメリカ',kanji:'アメリカ',romaji:'Amerika',meaning:'United States',kind:'country'}
     ];
     const people=[
-        {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary (blue cardigan)',kind:'person-mary'},
-        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'mustard shirt, glasses',kind:'person-takeshi'},
-        {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
+        {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary',kind:'person-mary'},
+        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'Takeshi',kind:'person-takeshi'},
+        {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert',kind:'person-robert'}
     ];
     const readings=[['弟','おとうと'],['友達','ともだち'],['先生','せんせい'],['クラスメイト','クラスメート'],['何曜日','なんようび'],['土曜日','どようび'],['日曜日','にちようび'],['二十二時','にじゅうにじ'],['22時','にじゅうにじ'],['十三時','じゅうさんじ'],['13時','じゅうさんじ'],['六時','ろくじ'],['6時','ろくじ'],['十時','じゅうじ'],['10時','じゅうじ'],['一時','いちじ'],['1時','いちじ'],['朝六時','あさろくじ'],['朝6時','あさろくじ'],['夜十時','よるじゅうじ'],['夜10時','よるじゅうじ'],['百円','ひゃくえん'],['二百円','にひゃくえん'],['Aさん','えーさん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
     return {items:[...Practice21.items,...places,...people,...cities,...countries,{hira:'おおさか',kanji:'大阪',romaji:'Ōsaka',meaning:'Osaka',kind:'city'},{hira:'パリ',kanji:'パリ',romaji:'Pari',meaning:'Paris',kind:'city'},{hira:'ロサンゼルス',kanji:'ロサンゼルス',romaji:'Rosanzerusu',meaning:'Los Angeles',kind:'city'},{hira:'くだもの',kanji:'果物',romaji:'kudamono',meaning:'fruit',kind:'fruit'}],places,people,cities,countries,readings};
@@ -1336,8 +1336,7 @@ function practice2ShowNotice(resultSpan, message) {
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(photoKind==='clock'){target.style.width=(o.zone==='A'?11:10)+'%';target.style.aspectRatio=o.zone==='B'?'1.8':'1';}
-            if(people) {target.append(node('span','p2x-person-name',noun(o)));}
-            else {
+            if(!people) {
                 const sprite=node('span','p2x-sprite');
                 if(o.kind==='hat'||o.photoKind) {sprite.style.background='none';}
                 else if(o.kind==='place') {sprite.classList.add('p2x-place-target');}
@@ -1355,7 +1354,9 @@ function practice2ShowNotice(resultSpan, message) {
                     else target.append(tag);
                 }
             }
-            imageHint(target,photoKind==='fruit'?{...o,hintText:['りんご (ringo, apple)','バナナ (banana)','みかん (mikan, mandarin)'][i]}:o);stage.append(target);
+            imageHint(target,people?{...o,hintText:noun(o)}:photoKind==='fruit'?{...o,hintText:['りんご (ringo, apple)','バナナ (banana)','みかん (mikan, mandarin)'][i]}:o);
+            if(people)target.setAttribute('aria-label',noun(o));
+            stage.append(target);
             if(example) {
                 const region=node('div','p2x-distance-label');region.dataset.zone=o.zone;
                 region.style.left=(hats?{A:30,B:70,far:68}[o.zone]:position[0])+'%';region.style.top=(hats?(o.zone==='far'?9:57):is22?position[1]+20:39)+'%';
