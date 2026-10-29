@@ -17,7 +17,7 @@
   - 文法練習：`practice1.1.html` / `practice1.1.js`、`practice1.2.html` / `practice1.2.js`、`practice2.1.html` / `practice2.1.js` / `practice2.1-scenes.js`、`practice2.2.html` / `practice2.3.html` / `practice2-next.js`、`practice7.1.html` / `practice7.1.js`、`practice7.2.html` / `practice7.2.js`、`practice7.3.html` / `practice7.3.js`
   - 作文練習：`composition1.html` / `composition1.js`
   - 発音練習：`pronunciation1.html` / `pronunciation1.js`、`pronunciation2.html` / `pronunciation2.js`
-  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全11練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象10ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全11練習ページの説明枠配置・操作条件説明）、`practice7-categories.js`（練習7の区分幅・字間）
+  - 共通ファイル：`style.css`（全ページ共通スタイル）、`vocab.json`（語彙データ）、`drill-audio-session.js`（全11練習ページの操作ロック・再生／マイクのライフサイクル制御）、`drill-answer-rules.js`（認識対象10ページのFormal質問チェック・数字比較補助）、`tooltip-layout.js`（全11練習ページの説明枠配置・操作条件説明）、`settings-appearance.js`（全11練習ページのグローバル設定の絵文字構造統一）、`practice7-categories.js`（練習7の区分幅・字間）
   - ※注：`shared-tts.js`（旧 Supertonic 3 試験用モジュール）と専用の状態表示CSSは2026-10-25に撤去した。導入検討・不採用の経緯は `docs/HANDOVER.md` §2に記録する。現行TTSは全11練習ページの各JSにあるブラウザ標準 `speechSynthesis` を使用する。
 
 ---
@@ -1042,3 +1042,10 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 - 2026-10-28追補：練習2の領域概念の説明札・色・枠はExampleのみ。2.3の全Drillから撤去。2.3 E1電話案内を図左外へ（狭幅では図直前）、概念札の背景は76%不透明度。2.1 E2の吹き出し小丸も本体と同じ不透明色に統一。
 
 - 2026-10-29追補：7.3のEnglish/Japanese cues切替後は、再描画後に最初のExampleへ移動し、その上に本文1行分の余白を確保する。7.2の既存動作を踏襲。詳細はUI_LAYOUT_SPEC最新節。
+
+### グローバル設定：選択状態と利用可否の表示（2026-10-29確定）
+- 全11練習ページのScript Mode / Speech Style / Vocab / Autostop / Autoplayと音声選択の設定ボタンに同じ原則を適用。利用可能な選択肢は未選択でも絵文字をカラー・不透明度100%にする。選択中は既存の背景色/太字/aria-pressedで明示する。
+- システム上選択不可かつ未選択の選択肢だけ、絵文字を白黒（grayscale100%）・不透明度55%にする。発音1のWith漢字と発音2のCasualに同じルールを適用。Casualの親ボタンに重ねてopacityを掛けない。
+- 発音1のHiraganaは選択済みの固定機能なのでカラーを維持する。録音中などの一時ロックでも、選択中の設定はカラーを維持し、未選択のロック対象は白黒55%。ロック/復元の動作は変更しない。
+- Autostop/AutoplayのOFFは選択可能な状態なので絵文字をカラーに保つ。ON/OFFはスイッチの位置と既存のラベルで示す。システム上無効化されたOFFスイッチの絵文字は白黒55%。
+- settings-appearance.jsが設定内の直接記載された絵文字もicon-emojiへ正規化し、動的再描画後も統一を維持。色と不透明度はstyle.cssの共通ルールで管理する。本文やタスク操作ボタンの絵文字は対象外。

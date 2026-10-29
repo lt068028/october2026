@@ -124,3 +124,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/section-spacing.cjs`：全11練習ページのExample→Drill 24px、2.1 E2図内音声・不透明ど案内、2.2 Example画像枠の統一を600/1440pxで検証。
 
 - `node tests/english-cue-navigation.cjs`：7.3の下部パネルから英語/日本語へ切り替え、最初のExample上に1行分の余白を残して戻ることを375/600/900/1440px・かな/漢字で確認する。
+
+- `node tests/settings-availability.cjs`：全11ページで設定絵文字の利用可否と選択状態を明暗テーマ・選択切替・再描画・OFFスイッチ・一時ロック/復元で照合。選択可能はカラー100%、不可かつ未選択は白黒55%、発音1の固定Hiragana/発音2Casualを含む。

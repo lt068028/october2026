@@ -59,11 +59,6 @@
     font-weight: normal !important;
 }
 
-#scriptModeControl
-.pronunciation-kanji-disabled .icon-emoji {
-    filter: grayscale(100%) !important;
-    opacity: 1 !important;
-}
 
 @media (prefers-color-scheme: dark) {
     #scriptModeControl
@@ -1970,7 +1965,7 @@ label:has(> input:disabled) .slider {
 
 /* Pronunciation 2 offers Formal and Informal only. */
 .segmented-option.pronunciation-style-disabled:disabled {
-    opacity: 0.45;
+    opacity: 1;
     color: var(--text-secondary);
     background: var(--bg-panel);
     /* A filter on the button changes the containing block of its fixed tooltip. */
@@ -2379,7 +2374,6 @@ body.site-scale {
 .selection-help-wrap > button:disabled { pointer-events: none; }
 .selection-help-wrap:focus-visible > .custom-tip-box { visibility: visible; opacity: 1; }
 
-.segmented-option.pronunciation-style-disabled .icon-emoji { filter: grayscale(1); }
 
 /* Practice 2.1: numbered SVG objects and speaker-relative demonstrations. */
 .practice21-page .p21-diagram { margin: 12px 0 18px; }
@@ -3039,8 +3033,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .p23-conversation-models .p23-model-answer { grid-column: 2 / -1; }
 }
 
-/* Adopt harmony option 3; keep the selected 40% opacity pending comparison. */
-.p23-city-stage .p23-unknown-guide { --p23-unknown-opacity: .4; right: calc(66.666667% + 18px); bottom: 18px; width: 132px; }
+/* Adopt harmony option 3 with the selected 60% opacity. */
+.p23-city-stage .p23-unknown-guide { --p23-unknown-opacity: .6; right: calc(66.666667% + 18px); bottom: 18px; width: 132px; }
 .p23-unknown-guide .p21-thought-cloud path { fill: rgb(255 253 246 / var(--p23-unknown-opacity)); stroke: none; }
 .p23-unknown-guide .p21-thought-dots::before,.p23-unknown-guide .p21-thought-dots::after { background: rgb(255 253 246 / var(--p23-unknown-opacity)); border: 0; }
 @media(max-width:700px) {
@@ -3049,3 +3043,16 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 /* Cities uses the same bottom-right card as Time; long names use smaller text. */
 #drill1Container > .p23-practice-picture .p23-city-name { max-width: calc(100% - 20px); box-sizing: border-box; padding: 5px 6px; font-size: clamp(10px,2vw,20px); }
+
+/* Available choices keep their icon color, even when they are not selected/OFF. */
+:is(.compact-settings,.voice-guide-footer) .icon-emoji {
+    filter: none !important;
+    opacity: 1 !important;
+    transition: none;
+}
+/* The active fixed choice (e.g. pronunciation 1 Hiragana) remains in color. */
+:is(.compact-settings,.voice-guide-footer) button:is(:disabled,[aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .icon-emoji,
+.compact-settings .settings-onoff:has(input:disabled:not(:checked)) .icon-emoji {
+    filter: grayscale(100%) !important;
+    opacity: .55 !important;
+}
