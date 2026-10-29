@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
  const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const p=await b.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.route('http://navigation.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.json')?'application/json':'text/html'});});let checks=0;
- for(const name of ['practice7.3','practice2.3'])for(const width of [375,600,900,1440])for(const script of ['hiragana','kanji']){
+ for(const name of ['practice7.3','practice2.3','practice2.1'])for(const width of [375,600,900,1440])for(const script of ['hiragana','kanji']){
   await p.setViewportSize({width,height:900});await p.goto('http://navigation.test/'+name+'.html');
   await p.locator('#scriptModeControl [data-value="'+script+'"]').click();
   for(const english of [true,false]){

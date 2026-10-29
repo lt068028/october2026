@@ -2,7 +2,7 @@
 
 
 練習2以降の会話では、文脈上「も」が適しているときはモデルに「も」を使用する。[共通方針・全ページ点検](PROJECT_SPEC.md)を適用し、正しい「は」版や自然な短答も行ごとの登録範囲で許容する。
-更新：2026-10-27。**現在の実装・評価対象は2.1のExample 1とDrill 1～3。追加のExampleは設けない。** 2.2・2.3の初期実装は[PRACTICE22_23_SPEC](PRACTICE22_23_SPEC.md)を参照。旧版の全Drill構成はPROJECT_SPEC §58とGit履歴4c76063に残す。
+更新：2026-10-29。**現在の実装・評価対象は2.1のExample 1・2、Drill 1～3とD4のEnglish cues切り替え。** 2.2・2.3の初期実装は[PRACTICE22_23_SPEC](PRACTICE22_23_SPEC.md)を参照。旧版の全Drill構成はPROJECT_SPEC §58とGit履歴4c76063に残す。
 
 - ページ名・HTML title・Index：**Practice 2.1: これ・それ・あれ・どれ — Demonstrative Pronouns**。2.2はDemonstrative Adjectivesで対比する。
 
@@ -221,3 +221,11 @@ Script Modeに応じて本・カバン・時計へ切り替える。Formalはで
 - 2.1サイズ調整（2026-10-27）：D1 Tシャツは幅17％→20％、上端寄りで机との間を確保。Set 2のノート・鉛筆は14％→12％。D2のおにぎり・サンドイッチは透明包装のコンビニ商品風に変更し、中身が見える画像を使う。
 
 - モデル音は表示にかかわらず漢字かな交じりへ変換する。表示・認識比較は変更しない。詳細はTTS_MODEL_AUDIT。
+
+## D4：Practice with English cues（2026-10-29）
+
+- ページ末尾に練習2.3と同じ案内パネルとDisplay English Cues / Display Japanese Cuesボタンを設置する。D1〜D3の問題キューだけを切り替え、Example・画像・画像ヒントは維持。
+- D1 Set1のこれ/それ/あれをthis/that/that (over there)へ、Set2の質問を指示語＋誤った品名、返答をno＋正しい品名へ。D2は指示語＋what、D3はyou＋品名＋which one。D3の色キューは元から英語なので色表示ごと維持。
+- モデル音声/期待文/許容回答は日本語のまま。録音/認識結果/判定・課題別キーを維持。セットやScript Mode/Vocab/Speech Styleを変えても英語選択を維持、再読込を越える永続化は追加しない。
+- 準備/録音中は切り替えを禁止する。切り替え時に再生を中断し、Ex1上端に本文1行分の余白を残してsmoothスクロールする。移動先をD1へ変更する案はユーザー検討中で、確定までは他ページと同じEx1を維持。
+- D4は独立の録音問題を複製しない。前セクションとの間隔は共通40px。

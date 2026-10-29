@@ -140,3 +140,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.3 DayはSun./Sat.表示と日本語ホバー、Item1/Item2は背景施設ヒントなし・品物ヒントあり、Timeは重複しないヒントをpractice23-cities.cjsで確認。
 
 - 2.3 D4 English cues：D1〜D3の各セット/トピックの英語化、日本語復帰、音声日本語/録音判定保持/録音ロック/狭幅をpractice23-cities.cjs、7.3と共通のEx1移動位置をenglish-cue-navigation.cjsで確認。
+
+- 2.1 D4：各セット英語化/日本語復帰・録音保持・日本語音声・色キュー・録音中の切替ロックをpractice21.cjs、Ex1への移動をenglish-cue-navigation.cjsで検証。

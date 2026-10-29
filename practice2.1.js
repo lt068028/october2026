@@ -528,7 +528,7 @@ function practice2SyncRecordingUI() {
 
     const controls = document.querySelectorAll(
         "#drill1Container button, #drill1Container select, " +
-        "#drill2Container button, #drill2Container select, #drill3Container button"
+        "#drill2Container button, #drill2Container select, #drill3Container button, #drill4Container button"
     );
 
     if (blocked) {
@@ -1186,6 +1186,12 @@ function practice2ShowNotice(resultSpan, message) {
 
     const noun=o=>word(o.hira,o.kanji);
     const pro=(speaker,o)=>Practice21.pronoun(speaker,o.zone);
+    const englishObject=pronoun=>({'これ':'this','それ':'that','あれ':'that (over there)'}[pronoun]);
+    const englishCue=(view,parts)=>{
+        if(!practice2State.englishCues)return;
+        const source=view.cueCell.querySelector('strong'),role=source&&/Question|Response/.test(source.textContent)?source.cloneNode(true):null;
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
+    };
     const nameQuestion=(speaker,o)=>question(pro(speaker,o),word(speechStyle==='formal'?'なん':'なに','何'));
     const shortAnswer=(speaker,o)=>pro(speaker,o)+({formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle]);
     const whichQuestion=o=>question('あなたの'+noun(o),'どれ');
@@ -1208,7 +1214,7 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=diagram(box,objects,speaker,target);box.prepend(picture);
     }
     function renderSections() {
-        for(const id of ['drill2Container','drill3Container']) {
+        for(const id of ['drill2Container','drill3Container','drill4Container']) {
             const section=document.getElementById(id);section.replaceChildren();section.hidden=true;
         }
         const container=document.getElementById('drill1Container');container.replaceChildren();
@@ -1296,6 +1302,7 @@ function practice2ShowNotice(resultSpan, message) {
         box.append(modelList);container.append(box);perspective('A');
         renderDrill1(container);
         renderLaterDrills();
+        renderEnglishCuePanel();
     }
 
     function renderDrill1(container) {
@@ -1355,6 +1362,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const cue=`<strong class="grammar-highlight">${pronoun}は</strong>…`;
                 const getText=()=>statement(pronoun,noun(o));
                 const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText);
+                englishCue(view,[englishObject(pronoun),'…']);
                 view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
                 view.listenBtn.addEventListener('click',()=>showSpeaker(speaker));
                 view.recordBtn.addEventListener('click',()=>showSpeaker(speaker));
@@ -1382,6 +1390,7 @@ function practice2ShowNotice(resultSpan, message) {
                     })].flatMap(text=>[text,text.replace(/^(?:いいえ|ううん)、/,'')]);
                 };
                 const r=recordingRow(current,'a',answerCue,key,answer);
+                englishCue(q,[englishObject(pro('A',o)),wrong[i].meaning]);englishCue(r,['no',o.meaning]);
                 r.actions.append(node('span','p21-response-lead',`${prefix}…`));
                 for(const [view,speaker] of [[q,'A'],[r,'B']]) {
                     view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
@@ -1467,6 +1476,7 @@ function practice2ShowNotice(resultSpan, message) {
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o))];
             const r=recordingRow(current,'a','<strong>B · Response:</strong> …',key,()=>noun(o)+ending);
+            englishCue(q,[englishObject(pro('A',o)),'what']);
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
         const d3=document.getElementById('drill3Container');d3.hidden=false;
@@ -1502,8 +1512,23 @@ function practice2ShowNotice(resultSpan, message) {
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro(answering,o),word('わたしの','私の')+noun(o)),statement(word('わたしの','私の')+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),word('わたしの','私の')),pro(answering,o)+'が'+word('わたしの','私の')+noun(o)+ending];
             const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
+            englishCue(q,['you',o.meaning,'which one']);
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
+    }
+
+    function renderEnglishCuePanel() {
+        const container=document.getElementById('drill4Container');container.hidden=false;
+        const panel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
+        copy.append(node('span','info-panel-title drill-cue-title','Drill 4: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–3.'));
+        const toggle=node('button','drill-cue-button',practice2State.englishCues?'Display Japanese Cues':'Display English Cues');toggle.type='button';
+        toggle.classList.toggle('is-english',Boolean(practice2State.englishCues));toggle.setAttribute('aria-pressed',String(Boolean(practice2State.englishCues)));
+        toggle.onclick=()=>{
+            if(busy())return;
+            practice2State.englishCues=!practice2State.englishCues;renderAll();
+            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .example-box');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
+        };
+        panel.append(copy,toggle);container.append(panel);
     }
 
     function installSettings() {

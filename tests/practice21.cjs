@@ -268,6 +268,7 @@ function mock(){
   await p.locator(container+' tr').nth(row).locator('.recording-actions button').nth(1).click();
   await p.waitForTimeout(400);
   check(await p.locator('#drill2Container .p21-set-switcher button').first().isDisabled(),true,'recording locks later set switches');
+  check(await p.locator('.drill-cue-button').isDisabled(),true,'recording locks English cue switch');
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},text);
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
  }
@@ -285,9 +286,18 @@ function mock(){
   const key='p21_d3_s0_r_1',v=practice2State.views[key];
   return ['blueです','これです'].map(text=>{processResult(text,'あれです。',()=> 'あれです。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});
  });check(invalid,[false,false],'D3 rejects color answers and wrong pronouns');
+ const englishToggle=p.locator('#drill4Container .drill-cue-button');check(await englishToggle.getAttribute('aria-pressed'),'false','Japanese cues are default');await englishToggle.click();
+ check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'true','English cues enabled');
+ for(const set of [0,1]){await p.locator('.p21-drill1 .p21-set-switcher button').nth(set).click();check(await p.locator('.p21-drill1 .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D1 sets use English cues');}
+ for(const set of [0,1]){await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill2Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D2 sets use English cues');}
+ for(const set of [0,1]){await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill3Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D3 sets use English cues');check(await p.locator('#drill3Container .p21-color-cue').count(),2,'English mode preserves color cues');}
+ await p.locator('#drill2Container .p21-set-switcher button').first().click();check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),true,'English mode preserves recorded result');
+ await p.locator('#drill2Container tr').nth(1).locator('.recording-actions button').first().click();check(await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return practice2Normalize(u.text)}),'おにぎりです','English cues keep Japanese audio');
+ await p.locator('#scriptModeControl [data-value="kanji"]').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'true','script change keeps English selection');
+ await p.locator('.drill-cue-button').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'false','Japanese cues restored');check((await p.locator('#drill2Container .drill-cue-cell').first().textContent()).includes('これ'),true,'D2 Japanese pronoun restored');check(await p.locator('.drill-cue-button').count(),1,'D4 panel is not duplicated');
  for(const width of [600,900,1440,1920]) {
   await p.setViewportSize({width,height:1100});
-  check(await p.locator('.p21-drill1,.p21-drill-picture,.p21-speaker-practice').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'Drill fits viewport');
+  check(await p.locator('.p21-drill1,.p21-drill-picture,.p21-speaker-practice,.drill-cue-panel').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'Drill fits viewport');
   const ratio=await p.locator('.p21-drill1 .p21-drill-picture').evaluate(e=>e.clientWidth/e.parentElement.clientWidth);
   check(Math.abs(ratio-(width>900?.6:1))<.03,true,'60 percent Drill scene');
  }
