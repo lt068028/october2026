@@ -1627,7 +1627,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     function renderSections() {
         shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
-        for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?[]:['drill4Container'])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
+        for(const id of ['drill1Container','drill2Container','drill3Container','drill4Container']){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
         if(!is22){renderCitySections();return;}
         const d1=document.getElementById('drill1Container');
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
@@ -1670,7 +1670,7 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         }
-        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));}
+        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderPeopleChoosing(document.getElementById('drill4Container'));}
         else {renderDialogue();renderChoosing();}
     }
     function renderPriceStatements(container) {
@@ -1702,7 +1702,6 @@ function practice2ShowNotice(resultSpan, message) {
         });
     }
     function renderFoodChoosing(container) {
-        if(practice2State.choosingSet===2){renderPeopleChoosing(container);return;}
         const exampleObjects=merchandise('fruit'),sample=exampleObjects[0],box=node('section','example-box p2x-dialogue-example p2x-food-example');
         const selectExample=scene(box,exampleObjects,{which:true,model:true});
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
@@ -1710,7 +1709,7 @@ function practice2ShowNotice(resultSpan, message) {
         q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの + noun','💡A: Ask which group has that price. B: この／その／あの + noun. ※ Price = whole group. Nouns and この／その／あの keep the same form for one or more items.');
-        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当'),'この人はだれ'],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
+        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
@@ -1723,15 +1722,14 @@ function practice2ShowNotice(resultSpan, message) {
         const set=practice2State.dialogueSet===1?1:0,asker=set===0?'A':'B',answerer=asker==='A'?'B':'A';
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]})),sample=objects[0];
         const box=node('section','example-box p2x-dialogue-example p2x-people-example');
-        box.append(node('p','p2x-context-note','どれ = which one? · だれ = who?'));
+        box.append(node('h2','p21-distance-heading','だれ = who?'));
         const showExample=scene(box,objects,{people:true,model:true});
         const qtext=()=>question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰')),rtext=()=>short(noun(sample)+'さん');
         for(const [role,speaker,text]of [['Question',asker,qtext],['Response',answerer,rtext]]){
             const line=node('p');line.append(node('strong','',`${speaker} · ${role}: `),listen(()=>{showExample(speaker,sample.zone);return text();},'🔊きく',()=>showExample.announce(speaker)),modelText(text,sample));box.append(line);
         }
         container.append(box);
-        panel(container,'Drill 3: この人はだれですか','💡Ask who each person is. Answer with the name.');
-        setButtons(container,['おにぎり',word('おべんとう','お弁当'),'この人はだれ'],'choosingSet');
+        panel(container,'Drill 4: この人はだれですか','💡Ask who each person is. Answer with the name.');
         setButtons(container,['A asks','B asks'],'dialogueSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
         objects.forEach((o,i)=>{
@@ -1914,7 +1912,7 @@ function practice2ShowNotice(resultSpan, message) {
     function alignColumns() {
         for (const id of [
             "drill1Container",
-            "drill2Container", "drill3Container"
+            "drill2Container", "drill3Container", "drill4Container"
         ]) {
             const tables = [
                 ...document.querySelectorAll(

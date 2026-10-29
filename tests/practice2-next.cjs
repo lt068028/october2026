@@ -25,7 +25,7 @@ function mock(){
   const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(mock);
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
-  const personSection=number==='2.2'?'#drill3Container':'#drill2Container';
+  const personSection=number==='2.2'?'#drill4Container':'#drill2Container';
   check(await p.title(),number==='2.2'?'Practice 2.2: この・その・あの・どの — Demonstrative Adjectives':'Practice 2.3: ここ・そこ・あそこ・どこ',number+' page title');
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
@@ -54,8 +54,8 @@ function mock(){
    check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 has three conversations');
    check(await p.locator('#drill3Container .drill-number-cell').allTextContents(),['1','','2','','3',''],'D3 numbered 1 through 3');
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','A','B','A','B'],'D3 A asks only');
-   check(await p.locator('#drill1Container,#drill2Container,#drill3Container').evaluateAll(es=>es.every(e=>e.firstElementChild.matches('.example-box')&&Boolean(e.firstElementChild.nextElementSibling?.matches('.info-panel')))),true,'each Example precedes its Drill');
-   check(await p.locator('#peopleContainer').count(),0,'old under-review people section removed');check(await p.locator('[data-set-state="choosingSet"] button').allTextContents(),['おにぎり','おべんとう','この人はだれ'],'D3 includes people topic');
+   check(await p.locator('#drill1Container,#drill2Container,#drill3Container,#drill4Container').evaluateAll(es=>es.every(e=>e.firstElementChild.matches('.example-box')&&Boolean(e.firstElementChild.nextElementSibling?.matches('.info-panel')))),true,'each Example precedes its Drill');
+   check(await p.locator('#drill4Container > .example-box h2').textContent(),'だれ = who?','D4 introduces who independently');check(await p.locator('#drill4Container > .info-panel .info-panel-title').textContent(),'Drill 4: この人はだれですか','D4 title');check(await p.locator('#peopleContainer').count(),0,'old under-review people section removed');check(await p.locator('[data-set-state="choosingSet"] button').allTextContents(),['おにぎり','おべんとう'],'D3 contains only noun-selection topics');
    check(await p.locator('.p2x-price-example button,.p2x-food-example button').evaluateAll(es=>es.every(e=>e.firstChild.textContent==='🔊きく')),true,'no repeated A/B on example buttons');
 
    check(await p.locator('.p2x-price-example').evaluate(e=>getComputedStyle(e,'::before').content!=='none'),true,'Example2 badge restored');
@@ -90,7 +90,6 @@ function mock(){
     const model=number==='2.2'?adj+'帽子は'+['千円','三千円','四千円'][i]+end:loc+'は'+['銀行','喫茶店','図書館'][i]+end;
     await compare(p.locator(`.p2x-example .p21-item-audio [data-speaker="${speaker}"][data-zone="${zone}"]`),model,'Example '+speaker+zone);
    }
-   await p.locator('[data-set-state="choosingSet"] button').nth(2).click();
    for(const set of [0,1]){
     await p.locator('[data-set-state="dialogueSet"] button').nth(set).click();
     const asker=number==='2.2'&&set===1?'B':'A';
@@ -163,10 +162,10 @@ function mock(){
    return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,want,text];});
   },number);
   for(const [actual,want,text]of judgments)check(actual,want,number+' answer '+text);
-  await p.locator('[data-set-state="choosingSet"] button').nth(2).click();await p.locator('[data-set-state="dialogueSet"] button').first().click();
+  await p.locator('[data-set-state="dialogueSet"] button').first().click();
   const peopleResults=await p.evaluate(()=>{const key='p22_d2_s0_r_0',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,true,false,false],'people name and responder perspective');
   for(const width of [375,600,1440]){await p.setViewportSize({width,height:1000});check(await p.locator('.p2x-people-picture .p2x-stage').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect();return Math.abs(a.width/a.height-2)<.02&&[...e.querySelectorAll('.p2x-person-name,.p2x-person')].every(n=>{const r=n.getBoundingClientRect();return r.left>=a.left&&r.right<=a.right&&r.top>=a.top&&r.bottom<=a.bottom})})),true,'wide people picture and labels fit '+width);}
-  await p.locator('[data-set-state="choosingSet"] button').first().click();await p.locator('[data-set-state="choosingSet"] button').nth(2).click();check(await p.evaluate(()=>practice2State.savedResults.p22_d2_s0_r_0.rawTranscript),'ロバートさんです','people results survive food-topic switching');
+  await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();check(await p.evaluate(()=>practice2State.savedResults.p22_d2_s0_r_0.rawTranscript),'ロバートさんです','people results survive food-topic switching');
   await p.locator('[data-set-state="choosingSet"] button').first().click();
   // Exercise the microphone path, set locking and result restoration with real callbacks.
   await p.locator('#drill1Container .p21-set-switcher button').first().click();
