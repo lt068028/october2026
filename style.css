@@ -3055,3 +3055,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-where-item.is-target { outline: 2px solid var(--accent-color); outline-offset: 1px; }
 
 .p23-locative-options { white-space: nowrap; }
+
+/* D2 Time option 3; keep A/B/C and city-name cards in their original style. */
+.p23-describe-picture .p23-city-time:not(.p23-city-name) {
+    font-family: "Noto Sans CJK JP", sans-serif;
+    font-weight: 600;
+    color: #fff;
+    background: #172b46;
+    box-shadow: 0 1px 4px #0004;
+}
