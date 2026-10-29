@@ -101,6 +101,16 @@ function mock(){
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Q');
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 response');
    }
+   await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
+   for(let i=0;i<3;i++){
+    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','あの人はBさんのクラスメート'][i]+(style==='formal'?'ですか':'');
+    const no=style==='casual'?'ううん':'いいえ';
+    const r=no+['この人は私の弟','この人は私の友達','あの人は私の先生'][i]+end;
+    await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Set2 question');
+    await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 Set2 correction');
+   }
+   check(await p.locator(personSection+' .p21-response-lead').allTextContents(),Array(3).fill(style==='casual'?'ううん…':'いいえ…'),'Set2 negative lead');
+   await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
    if(number==='2.2') {
     for(const set of [0,1]) {
      await p.locator('#drill1Container .p21-set-switcher button').nth(set).click();
@@ -163,6 +173,13 @@ function mock(){
   },number);
   for(const [actual,want,text]of judgments)check(actual,want,number+' answer '+text);
   const peopleResults=await p.evaluate(()=>{const key='p22_people_mixed_r_1',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,false,true,false],'people name and responder perspective');
+  await p.locator('#speechStyleControl [data-value="formal"]').click();
+  await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
+  const relationships=await p.evaluate(()=>{const key='p22_people_relations_r_0',v=practice2State.views[key],model='いいえ、この人は私の弟です';return ['いいえ、この人は私の弟です','いいえ、私の弟です','いいえ、弟です','いいえ、私のクラスメートじゃないです。この人は私の弟です','はい、この人は私の弟です','いいえ、その人は私の弟です','いいえ、この人は私の先生です'].map(text=>{processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});});check(relationships,[true,true,true,true,false,false,false],'Set2 accepts natural correction and rejects wrong relation, perspective or yes');
+  await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
+  await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
+  check(await p.evaluate(()=>practice2State.savedResults.p22_people_relations_r_0.rawTranscript),'いいえ、この人は私の先生です','Set2 result survives switching');
+  await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
   for(const width of [375,600,1440]){await p.setViewportSize({width,height:1000});check(await p.locator('.p2x-people-picture .p2x-stage').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect();return Math.abs(a.width/a.height-2)<.02&&[...e.querySelectorAll('.p2x-person-name,.p2x-person')].every(n=>{const r=n.getBoundingClientRect();return r.left>=a.left&&r.right<=a.right&&r.top>=a.top&&r.bottom<=a.bottom})})),true,'wide people picture and labels fit '+width);}
   await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();check(await p.evaluate(()=>practice2State.savedResults.p22_people_mixed_r_1.rawTranscript),'ロバートさんです','people results survive food-topic switching');
   await p.locator('[data-set-state="choosingSet"] button').first().click();

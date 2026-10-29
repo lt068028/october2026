@@ -1140,7 +1140,7 @@
   },
   {
     "page": "2.2",
-    "id": "D4-People-S1-Example-Q",
+    "id": "D4-S1-0-Q",
     "type": "model",
     "tokens": [
       "人",
@@ -1149,66 +1149,16 @@
   },
   {
     "page": "2.2",
-    "id": "D4-People-S1-Example-R",
-    "type": "model",
-    "tokens": [
-      "メアリー"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-Example-Q",
+    "id": "D4-S1-0-R",
     "type": "model",
     "tokens": [
       "人",
-      "誰"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-Example-R",
-    "type": "model",
-    "tokens": [
-      "メアリー"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S1-メアリー-Q",
-    "type": "model",
-    "tokens": [
-      "人",
-      "誰"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S1-メアリー-R",
-    "type": "model",
-    "tokens": [
-      "メアリー"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S1-たけし-Q",
-    "type": "model",
-    "tokens": [
-      "人",
-      "誰"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S1-たけし-R",
-    "type": "model",
-    "tokens": [
       "たけし"
     ]
   },
   {
     "page": "2.2",
-    "id": "D4-People-S1-ロバート-Q",
+    "id": "D4-S1-1-Q",
     "type": "model",
     "tokens": [
       "人",
@@ -1217,24 +1167,7 @@
   },
   {
     "page": "2.2",
-    "id": "D4-People-S1-ロバート-R",
-    "type": "model",
-    "tokens": [
-      "ロバート"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-メアリー-Q",
-    "type": "model",
-    "tokens": [
-      "人",
-      "誰"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-メアリー-R",
+    "id": "D4-S1-1-R",
     "type": "model",
     "tokens": [
       "メアリー"
@@ -1242,7 +1175,7 @@
   },
   {
     "page": "2.2",
-    "id": "D4-People-S2-たけし-Q",
+    "id": "D4-S1-2-Q",
     "type": "model",
     "tokens": [
       "人",
@@ -1251,27 +1184,68 @@
   },
   {
     "page": "2.2",
-    "id": "D4-People-S2-たけし-R",
-    "type": "model",
-    "tokens": [
-      "たけし"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-ロバート-Q",
+    "id": "D4-S1-2-R",
     "type": "model",
     "tokens": [
       "人",
-      "誰"
-    ]
-  },
-  {
-    "page": "2.2",
-    "id": "D4-People-S2-ロバート-R",
-    "type": "model",
-    "tokens": [
       "ロバート"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-0-Q",
+    "type": "model",
+    "tokens": [
+      "人",
+      "クラスメート"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-0-R",
+    "type": "model",
+    "tokens": [
+      "人",
+      "私",
+      "弟"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-1-Q",
+    "type": "model",
+    "tokens": [
+      "人",
+      "クラスメート"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-1-R",
+    "type": "model",
+    "tokens": [
+      "人",
+      "私",
+      "友達"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-2-Q",
+    "type": "model",
+    "tokens": [
+      "人",
+      "クラスメート"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D4-S2-2-R",
+    "type": "model",
+    "tokens": [
+      "人",
+      "私",
+      "先生"
     ]
   },
   {

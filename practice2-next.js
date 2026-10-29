@@ -14,10 +14,10 @@ const PracticeNext = (()=>{
     ];
     const people=[
         {hira:'メアリー',kanji:'メアリー',romaji:'Mearī',meaning:'Mary (blue cardigan)',kind:'person-mary'},
-        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'green sweater',kind:'person-takeshi'},
+        {hira:'たけし',kanji:'たけし',romaji:'Takeshi',meaning:'mustard shirt, glasses',kind:'person-takeshi'},
         {hira:'ロバート',kanji:'ロバート',romaji:'Robāto',meaning:'Robert (red sweater)',kind:'person-robert'}
     ];
-    const readings=[['何曜日','なんようび'],['土曜日','どようび'],['日曜日','にちようび'],['二十二時','にじゅうにじ'],['22時','にじゅうにじ'],['十三時','じゅうさんじ'],['13時','じゅうさんじ'],['六時','ろくじ'],['6時','ろくじ'],['十時','じゅうじ'],['10時','じゅうじ'],['一時','いちじ'],['1時','いちじ'],['朝六時','あさろくじ'],['朝6時','あさろくじ'],['夜十時','よるじゅうじ'],['夜10時','よるじゅうじ'],['百円','ひゃくえん'],['二百円','にひゃくえん'],['Aさん','えーさん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
+    const readings=[['弟','おとうと'],['友達','ともだち'],['先生','せんせい'],['クラスメイト','クラスメート'],['何曜日','なんようび'],['土曜日','どようび'],['日曜日','にちようび'],['二十二時','にじゅうにじ'],['22時','にじゅうにじ'],['十三時','じゅうさんじ'],['13時','じゅうさんじ'],['六時','ろくじ'],['6時','ろくじ'],['十時','じゅうじ'],['10時','じゅうじ'],['一時','いちじ'],['1時','いちじ'],['朝六時','あさろくじ'],['朝6時','あさろくじ'],['夜十時','よるじゅうじ'],['夜10時','よるじゅうじ'],['百円','ひゃくえん'],['二百円','にひゃくえん'],['Aさん','えーさん'],['Bさん','びーさん'],['Cさん','しーさん'],['午前6時','ごぜんろくじ'],['午後9時','ごごくじ'],['午後5時','ごごごじ'],['午後2時','ごごにじ'],['午前六時','ごぜんろくじ'],['午後九時','ごごくじ'],['午後五時','ごごごじ'],['午後二時','ごごにじ'],['朝','あさ'],['昼','ひる'],['夜','よる'],['夕方','ゆうがた'],['大阪','おおさか'],['果物','くだもの'],['午後10時','ごごじゅうじ'],['午後1時','ごごいちじ'],['午前9時','ごぜんくじ'],['午後十時','ごごじゅうじ'],['午後一時','ごごいちじ'],['午前九時','ごぜんくじ'],['何時','なんじ'],['今','いま'],['何','なに'],['五千円','ごせんえん'],['六千円','ろくせんえん'],['八千円','はっせんえん'],['九千円','きゅうせんえん'],['一万円','いちまんえん'],['弁当','べんとう'],['六百円','ろっぴゃくえん'],['九百円','きゅうひゃくえん'],['四百円','よんひゃくえん'],['帽子','ぼうし'],['四千円','よんせんえん'],['人','ひと'],['誰','だれ'],['私','わたし'],['武','たけし'],['三万円','さんまんえん'],['3万円','さんまんえん'],['3千円','さんぜんえん'],['2千円','にせんえん'],['3百円','さんびゃくえん'],['円','えん'],['30000円','さんまんえん'],['30,000円','さんまんえん'],['三千円','さんぜんえん'],['3000円','さんぜんえん'],['3,000円','さんぜんえん'],['二千円','にせんえん'],['2000円','にせんえん'],['2,000円','にせんえん'],['三百円','さんびゃくえん'],['300円','さんびゃくえん'],['千円','せんえん']];
     return {items:[...Practice21.items,...places,...people,...cities,...countries,{hira:'おおさか',kanji:'大阪',romaji:'Ōsaka',meaning:'Osaka',kind:'city'},{hira:'パリ',kanji:'パリ',romaji:'Pari',meaning:'Paris',kind:'city'},{hira:'ロサンゼルス',kanji:'ロサンゼルス',romaji:'Rosanzerusu',meaning:'Los Angeles',kind:'city'},{hira:'くだもの',kanji:'果物',romaji:'kudamono',meaning:'fruit',kind:'fruit'}],places,people,cities,countries,readings};
 })();
 // Practice 2.2 / 2.3: visual demonstratives. Recorder/settings derived from Practice 1.2.
@@ -1736,15 +1736,31 @@ function practice2ShowNotice(resultSpan, message) {
         });
     }
     function renderPeopleChoosing(container) {
+        const relationshipSet=practice2State.peopleConversationSet===1;
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
         panel(container,'Drill 4: この人はだれですか','');
         const instruction=container.lastElementChild.querySelector('.info-panel-desc');
-        instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
+        if(relationshipSet)instruction.textContent='💡Ask about each person. Say no and give the correct relationship.';
+        else instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
+        setButtons(container,['Set 1','Set 2'],'peopleConversationSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
         const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:false},{asker:'A',answerer:'B',object:objects[2],full:true}];
         turns.forEach(({asker,answerer,object:o,full},i)=>{
-            const c=card(container,String(i+1)),prefix='p22_people_mixed';
+            const c=card(container,String(i+1)),prefix=relationshipSet?'p22_people_relations':'p22_people_mixed';
             const subject=speaker=>demonstrative(speaker,o)+word('ひと','人');
+            if(relationshipSet){
+                const relation=[{hira:'おとうと',kanji:'弟',romaji:'otōto',meaning:'younger brother'},{hira:'ともだち',kanji:'友達',romaji:'tomodachi',meaning:'friend'},{hira:'せんせい',kanji:'先生',romaji:'sensei',meaning:'teacher'}][i];
+                const predicate=()=>word('わたし','私')+'の'+noun(relation);
+                const correct=()=>statement(subject(answerer),predicate());
+                const no=()=>speechStyle==='casual'?'ううん、':'いいえ、';
+                const classmate=()=>answerer+'さんのクラスメート';
+                const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}${formatWord('ひと','人','hito','person')}／${answerer}さんの${formatWord('クラスメート','クラスメート','kurasumēto','classmate')}`,`${prefix}_q_${i}`,()=>question(subject(asker),classmate()));
+                const key=`${prefix}_r_${i}`;
+                practice2State.replyReferences[key]=()=>[no()+correct(),no()+short(predicate()),no()+short(noun(relation)),response(word('わたし','私')+'のクラスメート',false)+correct(),response(word('わたし','私')+'のクラスメート',false)+short(predicate()),response(word('わたし','私')+'のクラスメート',false)+short(noun(relation))];
+                const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${demonstrative(answerer,o)}${formatWord('ひと','人','hito','person')}／${formatWord('わたし','私','watashi','I')}の${vocabulary(relation)}`,key,()=>no()+correct());
+                r.actions.append(node('span','p21-response-lead',speechStyle==='casual'?'ううん…':'いいえ…'));
+                attach(q,asker,o,select);attach(r,answerer,o,select);return;
+            }
             const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}${formatWord('ひと','人','hito','person')}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')));
             const key=`${prefix}_r_${i}`;
             practice2State.replyReferences[key]=()=>[short(noun(o)+'さん'),short(noun(o)),statement(subject(answerer),noun(o)+'さん'),statement(subject(answerer),noun(o))];
