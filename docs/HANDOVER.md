@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 自動確認：構文/差分正常、375/600/1440px×A/B視点で画像比率2:1・全人物ラベルの枠内配置を確認。1440pxのページ描画も目視確認。
+
+- 2026-10-29 / Codex：開始main 3358881、workクリーン同期確認。2.2 D4人物写真のBだけ短髪/黒縁眼鏡/淡い黄色シャツへ変更してタケシとの差を明確化。構図・ラベル位置維持。assets/practice22-people.png差替、alt/人物仕様更新。生成原本は/workspace/generated_images/exec-f172a072-7399-44bd-8229-4b5625fc514b.pngに保全。ユーザー公開実機未確認。
+
 - 検証：node --check practice2-next.js、git diff --check正常。node tests/practice2-next.cjs 414項目合格（E4なし・D4新説明/強調・既存モデル/録音/判定/狭幅を含む）。
 
 - 2026-10-29 / Codex：開始main d0b7bcb、workクリーン同期確認。2.2 Ex4撤去、D4説明を「💡Use だれ to ask who someone is.」にし、だれだけ共通grammar-highlightで太字＋ゴールド。D4人物画像・問題・モデル・許容回答・録音キー維持。PRACTICE22_23_SPEC/COMMON_RULE_AUDIT更新。実機未確認。
