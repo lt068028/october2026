@@ -2994,3 +2994,21 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p23-example-header > .p23-call-note { position: static; width: max-content; max-width: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text-primary); font: inherit; font-weight: 600; line-height: 1.4; text-shadow: none; display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; }
 
 .p23-example-header > .p23-call-note { background: var(--bg-panel); padding: 4px 10px; border-radius: 6px; }
+
+/* 2.3 Ex1: aligned five-line conversation and an unknown-place thought bubble. */
+.p23-conversation-models .p21-model-line { display: grid; grid-template-columns: 1.6em max-content minmax(0,1fr); gap: 4px 8px; align-items: baseline; margin: 0; }
+.p23-conversation-models .p23-example-audio { align-self: start; }
+.p23-city-stage .p23-unknown-guide { left: auto; right: calc(66.666667% + 14px); top: auto; bottom: 16px; width: max-content; max-width: calc(33.333333% - 40px); padding: 4px 8px; color: #b91c1c; text-shadow: none; z-index: 5; }
+.p23-unknown-guide .p21-thought-cloud path { fill: #ffe3e3; stroke: #b91c1c; stroke-width: 2; }
+.p23-unknown-guide .p21-question-sound { font-size: 28px; line-height: 1.15; }
+.p23-unknown-guide .p21-question-description { font-size: 18px; line-height: 1.2; white-space: nowrap; }
+.p23-unknown-guide .p21-thought-dots { left: -13px; top: 65%; }
+.p23-unknown-guide .p21-thought-dots::before,.p23-unknown-guide .p21-thought-dots::after { background: #ffe3e3; border-color: #b91c1c; }
+.p23-unknown-guide .p21-thought-dots::after { left: -10px; top: 10px; }
+@media(max-width:700px) {
+ .p23-unknown-guide .p21-question-description { font-size: clamp(9px,1.65vw,16px); }
+ .p23-unknown-guide .p21-question-sound { font-size: clamp(18px,4vw,28px); }
+ .p23-city-stage .p23-unknown-guide { right: calc(66.666667% + 8px); max-width: calc(33.333333% - 26px); bottom: 12px; padding: 2px 4px; }
+}
+
+@media(max-width:450px) { .p23-unknown-guide .p21-question-description { display: none; } }

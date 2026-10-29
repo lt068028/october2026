@@ -24,10 +24,11 @@ function mock(){
  check(await p.locator('.example-box').count(),3,'three examples');
  check(await p.locator('[data-set-state="cityDrillSet"] button').allTextContents(),['Places','Time','People'],'D1 category names omit Set');
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
- check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','そこ','あそこ'],'E1 highlights only model demonstratives');
- check(await p.locator('.p23-example-flow > span:last-child').allTextContents(),['ここは、あさです。','そこは、よるですか。','あそこは、ゆうがたですね。'],'E1 displays every full model sentence');
- check(await p.locator('.p23-example-cue .grammar-highlight').count(),0,'E1 cues have no gold');
- check(await p.locator('.p23-speaking-models .p21-model-line').evaluateAll(es=>es.map((e,i)=>e.textContent.includes(['にほん','イギリス','アメリカ'][i]))),[true,true,true],'E1 introduces the countries');
+ check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
+ check(await p.locator('.p23-speaking-models .p21-model-line > span:last-child').evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');})),['わたしは、にほんです。ここは、あさです。','Bさんは、どこですか。','わたしは、イギリスです。ここは、よるです。','Cさんは、どこですか。','Cさんは、アメリカです。あそこは、ゆうがたです。'],'E1 displays five conversation lines');
+ check(await p.locator('.p23-model-speaker').allTextContents(),['A:','','B:','A:','B:'],'A question continues at the same text column');
+ check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'model voices follow A/A/B/A/B');
+ check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('#drill1Container > .p2x-picture .p23-in-scene-audio button').count(),0,'D1 has no diagram controls');
  check(await p.locator('#drill1Container .recording-table .recording-actions button').count(),9,'D1 rows contain listen, record and stop');
  for(const id of [2,3])check(await p.locator('#drill'+id+'Container .recording-table tr').count(),6,'three conversations');
@@ -39,8 +40,10 @@ function mock(){
  const compare=async(button,text)=>{await button.click();check(await p.evaluate(()=>t.spoken.at(-1).text),text,'TTS model');await p.evaluate(()=>t.spoken.at(-1).onend?.());};
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
-  for(let i=0;i<3;i++){
-   const zone=['A','B','far'][i];await compare(p.locator('.p2x-example .p23-example-audio button').nth(i),i===0?'ここは、朝'+end:i===1?'そこは、夜'+qend:'あそこは、夕方'+end.replace('。','ね。'));
+  const exModels=['私は、日本'+end+'ここは、朝'+end,'Bさんは、どこ'+qend,'私は、イギリス'+end+'ここは、夜'+end,'Cさんは、どこ'+qend,'Cさんは、アメリカ'+end+'あそこは、夕方'+end];
+  for(let i=0;i<5;i++){
+   await compare(p.locator('.p2x-example .p23-example-audio button').nth(i),exModels[i]);
+   check(await p.locator('.p23-call-example').getAttribute('data-speaker'),['A','A','B','A','B'][i],'picture switches to the current speaker');
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
@@ -69,6 +72,8 @@ function mock(){
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator('#hintModeControl [data-value="'+hint+'"]').click();check(await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)),[],'layout '+width+theme+hint);
   check(await p.locator('.p23-city-picture').evaluateAll(es=>es.every(e=>{const r=e.querySelector('img').getBoundingClientRect();return [...e.querySelectorAll('.p21-area-sound')].every(c=>{const q=c.getBoundingClientRect();return q.top>=r.top&&q.bottom<=r.bottom&&q.left>=r.left&&q.right<=r.right})})),true,'distance sounds stay inside the photograph '+width+theme+hint);
+  check(await p.locator('.p23-unknown-guide').evaluate(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-stage').getBoundingClientRect();return a.left>=r.left&&a.right<=r.left+r.width/3+1&&a.top>=r.top&&a.bottom<=r.bottom;}),true,'unknown guide stays in A picture '+width+theme+hint);
+  check(await p.locator('.p23-conversation-models .p21-model-line > span:last-child').evaluateAll(es=>es.every(e=>Math.abs(e.getBoundingClientRect().left-es[0].getBoundingClientRect().left)<1)),true,'all five text starts align');
   check(await p.locator('.p23-in-scene-audio button').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),b=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom})),true,'buttons inside each panel');
  }
  check(errors,[],'no browser errors');await browser.close();console.log('PASS city tasks',count);

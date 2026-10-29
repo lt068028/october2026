@@ -957,7 +957,7 @@ function practice2ShowNotice(resultSpan, message) {
         const span = node("span");
         const text = getText();
 
-        const pattern = placesOnly ? /(あそこ|ここ|そこ)/g : /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|ですね|だよね|だね|だよ|です|だ|は、|が、|いくら|の)/g;
+        const pattern = placesOnly ? /(あそこ|ここ|そこ|どこ)/g : /(この|その|あの|どの|ここ|そこ|あそこ|どこ|だれ|誰|ですか|ですね|だよね|だね|だよ|です|だ|は、|が、|いくら|の)/g;
 
         let position = 0;
         const protectedWord=object?noun(object):'';
@@ -1438,22 +1438,29 @@ function practice2ShowNotice(resultSpan, message) {
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
-        const confirm=(subject,predicate)=>statement(subject,predicate).replace(/。$/,'ね。');
         const addModel=(box,label,text,select,who,o)=>{const p=node('p'),b=listen(()=>{select(who,o.zone);return text();},`${who}🔊きく`,()=>select.announce(who));select.placeButton(b,{zone:who});p.append(node('strong','',label),modelText(text,o));box.append(p);};
-        const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ'));
+        const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ・どこ'));
         const countries=cs.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','イギリス','アメリカ'][i])}));
         const selectEx=cityScene(e1,{example:true,times:true,call:true,objects:countries}),list=node('div','p21-model-list p23-speaking-models');
         const header=node('div','p23-example-header');header.append(e1.querySelector('.p21-distance-heading'),e1.querySelector('.p23-call-note'));e1.prepend(header);
-        countries.forEach((o,i)=>{const group=node('section','p21-model-group'),line=node('p','p21-model-line');line.dataset.modelSpeaker='A';line.dataset.zone=o.zone;
-            const first=()=>i===0?statement(word('わたし','私'),noun(o)):i===1?question('Bさん',noun(o)):confirm('Cさん',noun(o));
-            const second=()=>i===0?statement('ここ',period(o)):i===1?question('そこ',period(o)):confirm('あそこ',period(o));
-            const flow=node('span','p23-example-flow'),cue=node('span','p23-example-cue');
-            const reading={あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira];
-            cue.append(document.createTextNode(['ここ','そこ','あそこ'][i]+'／'));
-            const periodCue=node('span');periodCue.innerHTML=formatWord(o.periodHira,o.periodKanji,reading[0],reading[1]);cue.append(periodCue);
-            const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx('A',o.zone);return second();},'🔊きく',()=>selectEx.announce('A'));
-            b.dataset.speaker='A';b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);
-            flow.append(cue,audio,modelText(()=>speechStyle==='formal'?second().replace(/？$/,'。'):second(),o,true));line.append(modelText(first,o,true),flow);group.append(line);list.append(group);
+        const unknown=node('div','p21-which-guide p23-unknown-guide');
+        const unknownHeading=node('strong');unknownHeading.append(node('span','p21-question-sound','ど'),node('span','p21-question-description'));
+        unknownHeading.lastElementChild.innerHTML='Asking about<br>the unknown';unknown.append(unknownHeading);
+        unknown.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/></svg>');
+        const dots=node('span','p21-thought-dots');dots.setAttribute('aria-hidden','true');unknown.append(dots);e1.querySelector('.p23-city-stage').append(unknown);
+        list.classList.add('p23-conversation-models');
+        const sentences=[
+            {who:'A',label:'A:',object:countries[0],text:()=>statement(word('わたし','私'),noun(countries[0]))+statement('ここ',period(countries[0]))},
+            {who:'A',label:'',object:countries[1],text:()=>question('Bさん','どこ')},
+            {who:'B',label:'B:',object:countries[1],text:()=>statement(word('わたし','私'),noun(countries[1]))+statement('ここ',period(countries[1]))},
+            {who:'A',label:'A:',object:countries[2],text:()=>question('Cさん','どこ')},
+            {who:'B',label:'B:',object:countries[2],text:()=>statement('Cさん',noun(countries[2]))+statement('あそこ',period(countries[2]))}
+        ];
+        sentences.forEach(({who,label,object:o,text})=>{
+            const line=node('p','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
+            const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
+            b.dataset.speaker=who;b.dataset.zone=o.zone;audio.append(b);
+            line.append(node('strong','p23-model-speaker',label),audio,modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true));list.append(line);
         });e1.append(list);d1.append(e1);
         const selected=practice2State.cityDrillSet??0;
         panel(d1,'Drill 1: From A’s point of view',[

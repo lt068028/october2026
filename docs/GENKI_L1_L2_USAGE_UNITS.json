@@ -1276,50 +1276,42 @@
   },
   {
     "page": "2.3",
-    "id": "E1-0-intro",
+    "id": "E1-A-intro",
     "type": "model",
     "tokens": [
       "私",
-      "日本"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "E1-0-period",
-    "type": "model",
-    "tokens": [
+      "日本",
       "朝"
     ]
   },
   {
     "page": "2.3",
-    "id": "E1-1-intro",
+    "id": "E1-A-question-B",
     "type": "model",
-    "tokens": [
-      "イギリス"
-    ]
+    "tokens": []
   },
   {
     "page": "2.3",
-    "id": "E1-1-period",
+    "id": "E1-B-self",
     "type": "model",
     "tokens": [
+      "私",
+      "イギリス",
       "夜"
     ]
   },
   {
     "page": "2.3",
-    "id": "E1-2-intro",
+    "id": "E1-A-question-C",
     "type": "model",
-    "tokens": [
-      "アメリカ"
-    ]
+    "tokens": []
   },
   {
     "page": "2.3",
-    "id": "E1-2-period",
+    "id": "E1-B-about-C",
     "type": "model",
     "tokens": [
+      "アメリカ",
       "夕方"
     ]
   },
