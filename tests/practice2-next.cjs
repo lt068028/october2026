@@ -107,13 +107,13 @@ function mock(){
    }
    await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
    for(let i=0;i<3;i++){
-    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','あの人はBさんのクラスメート'][i]+(style==='formal'?'ですか':'');
+    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','Bさんのクラスメートはどの人'][i]+(style==='formal'?'ですか':'');
     const no=style==='casual'?'ううん':'いいえ';
-    const r=no+['この人は私の弟','この人は私の友達','あの人は私の先生'][i]+end;
+    const r=(i===2?'私のクラスメートはあの人':no+['この人は私の弟','この人は私の友達'][i])+end;
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Set2 question');
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 Set2 correction');
    }
-   check(await p.locator(personSection+' .p21-response-lead').allTextContents(),Array(3).fill(style==='casual'?'ううん…':'いいえ…'),'Set2 negative lead');
+   check(await p.locator(personSection+' .p21-response-lead').allTextContents(),Array(2).fill(style==='casual'?'ううん…':'いいえ…'),'Set2 negative lead');
    await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
    if(number==='2.2') {
     for(const set of [0,1]) {
@@ -179,6 +179,7 @@ function mock(){
   const peopleResults=await p.evaluate(()=>{const key='p22_people_mixed_r_1',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,false,true,false],'people name and responder perspective');
   await p.locator('#speechStyleControl [data-value="formal"]').click();
   await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
+  const classmateAnswers=await p.evaluate(()=>{const key='p22_people_classmate_r_2',v=practice2State.views[key],model='私のクラスメートはあの人です';return ['私のクラスメートはあの人です','あの人です','私のクラスメートはこの人です','いいえ、あの人です','あの人は私の先生です'].map(text=>{processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});});check(classmateAnswers,[true,true,false,false,false],'classmate selection uses far person without no');
   const relationships=await p.evaluate(()=>{const key='p22_people_relations_r_0',v=practice2State.views[key],model='いいえ、この人は私の弟です';return ['いいえ、この人は私の弟です','いいえ、私の弟です','いいえ、弟です','いいえ、私のクラスメートじゃないです。この人は私の弟です','はい、この人は私の弟です','いいえ、その人は私の弟です','いいえ、この人は私の先生です'].map(text=>{processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});});check(relationships,[true,true,true,true,false,false,false],'Set2 accepts natural correction and rejects wrong relation, perspective or yes');
   await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
   await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();

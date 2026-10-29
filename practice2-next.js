@@ -1736,7 +1736,7 @@ function practice2ShowNotice(resultSpan, message) {
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
         panel(container,'Drill 4: この人はだれですか','');
         const instruction=container.lastElementChild.querySelector('.info-panel-desc');
-        if(relationshipSet)instruction.textContent='💡Ask about each person. Say no and give the correct relationship.';
+        if(relationshipSet)instruction.textContent='💡Ask about each person.';
         else instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
         setButtons(container,['Set 1','Set 2'],'peopleConversationSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
@@ -1746,7 +1746,16 @@ function practice2ShowNotice(resultSpan, message) {
             const subject=speaker=>demonstrative(speaker,o)+word('ひと','人');
             const personCue=speaker=>{const d=demonstrative(speaker,o);return formatWord(d+'ひと',d+'人',({この:'kono',その:'sono',あの:'ano'}[d])+' hito',({この:'this person',その:'that person',あの:'that person over there'}[d]));};
             if(relationshipSet){
-                const relation=[{hira:'おとうと',kanji:'弟',romaji:'otōto',meaning:'younger brother'},{hira:'ともだち',kanji:'友達',romaji:'tomodachi',meaning:'friend'},{hira:'せんせい',kanji:'先生',romaji:'sensei',meaning:'teacher'}][i];
+                if(i===2){
+                    const key='p22_people_classmate';
+                    const mine=()=>word('わたし','私')+'のクラスメート';
+                    const which=()=>word('どのひと','どの人');
+                    const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${formatWord('Bさんのクラスメート','Bさんのクラスメート','B-san no kurasumēto','B’s classmate')}／${formatWord('どのひと','どの人','dono hito','which person')}`,key+'_q_2',()=>question('Bさんのクラスメート',which()));
+                    practice2State.replyReferences[key+'_r_2']=()=>[short(subject(answerer)),statement(mine(),subject(answerer))];
+                    const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${formatWord('わたしのクラスメート','私のクラスメート','watashi no kurasumēto','my classmate')}／${personCue(answerer)}`,key+'_r_2',()=>statement(mine(),subject(answerer)));
+                    attach(q,asker,o,select);attach(r,answerer,o,select);return;
+                }
+                const relation=[{hira:'おとうと',kanji:'弟',romaji:'otōto',meaning:'younger brother'},{hira:'ともだち',kanji:'友達',romaji:'tomodachi',meaning:'friend'}][i];
                 const predicate=()=>word('わたし','私')+'の'+noun(relation);
                 const correct=()=>statement(subject(answerer),predicate());
                 const no=()=>speechStyle==='casual'?'ううん、':'いいえ、';

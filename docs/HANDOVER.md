@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 検証：practice2-next.cjs 439項目（新Whモデル全Speech/Script、短答/誤指示語/不要否定/旧先生回答の判定）、lesson2-speaker-pulse.cjs 946項目合格。構文/差分正常。
+
+- 2026-10-29 / Codex：開始main 5123d9a、クリーン同期確認。2.2 D4 Set2 Q3をA「Bさんのクラスメート／どのひと」→B「私のクラスメート／あのひと」へ変更。モデル全文、あの人です短答許容、いいえ導入/停止右いいえ…はQ3のみ撤去。1/2維持。Set2説明から全問否定指示を外し「💡Ask about each person.」。Q3新キーp22_people_classmate。仕様・語彙枠更新、実機未確認。
+
 - 2026-10-29 / Codex：開始main dc7d12b。全練習2キュー空白監査。Hover用formatWordのHTML整形空白が未指定の空白を作る原因。2.1/2.2共用2.3をcompact HTMLへ、English cues区切り前後も空白なし。D4のこの/その/あのひと・所有関係を単一語句にしてDisplayも途中分断しない。2.2 D4 Set 1 2A「このひと／メアリー」、モデル「この人はメアリーさんです」へ変更。語彙枠監査も更新。
 - 監査2226行状態、修正前211種類（日本語141/英語70）をCUE_SPACING_AUDITへ全件掲載。修正後35種類は英語語句の必要空白のみ。D2説明のA役割曖昧さ/D4見出しとSet 2/2.2English cues未実装なども同書に整理、無断変更なし。検証：cue-spacing 2226行合格、practice2-next 438、practice21 810、practice23-cities 2205合格。構文/差分正常。公開実機未確認。
 
