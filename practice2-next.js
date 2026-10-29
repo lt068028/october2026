@@ -1708,7 +1708,7 @@ function practice2ShowNotice(resultSpan, message) {
         const q=node('p'),r=node('p');
         q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
-        panel(container,'Drill 3: どの + noun','💡A: Ask which group has that price. B: この／その／あの + noun. ※ Price = whole group. Nouns and この／その／あの keep the same form for one or more items.');
+        panel(container,'Drill 3: どの + noun','Ask with どの＋noun.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
