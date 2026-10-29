@@ -1471,6 +1471,7 @@ function practice2ShowNotice(resultSpan, message) {
             const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));
             line.append(node('strong','p23-model-speaker',label??who+':'),introduction,prompt,exampleCueAudio(sentence),answer);list.append(line);
         });e1.append(list);d1.append(e1);
+        const unknownOffset={x:0,y:0};
         function alignExampleCues() {
             if(!list.isConnected)return;
             let width=0;
@@ -1483,8 +1484,14 @@ function practice2ShowNotice(resultSpan, message) {
             const available=list.clientWidth-role-audio-gap*3;
             const value=Math.max(0,Math.min(width,available))+'px';
             if(list.style.getPropertyValue('--p23-example-cue-width')!==value)list.style.setProperty('--p23-example-cue-width',value);
+            // The SVG cloud extends beyond its label: align its visible contour.
+            const frame=unknown.closest('.p23-city-stage').getBoundingClientRect();
+            const contour=unknown.querySelector('path').getBoundingClientRect();
+            const dx=frame.left+frame.width/3-4-contour.right,dy=frame.bottom-4-contour.bottom;
+            if(Math.abs(dx)>.1||Math.abs(dy)>.1){unknownOffset.x+=dx;unknownOffset.y+=dy;unknown.style.translate=`${unknownOffset.x}px ${unknownOffset.y}px`;}
+
         }
-        practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);alignExampleCues();
+        practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);practice2State.exampleCueObserver.observe(unknown.closest('.p23-city-stage'));alignExampleCues();
         // D1 builds the location question first, using facilities and marked items.
         const whereSet=practice2State.whereDrillSet??0;
         panel(d1,'Drill 1: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':'💡Ask where each framed item is. Answer with ');
