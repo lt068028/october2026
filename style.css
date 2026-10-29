@@ -3008,7 +3008,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:450px) { .p23-unknown-guide .p21-question-description { display: none; } }
 
 /* Adopt the D1 24-hour clock: opaque white card, legible numerals. */
-.p23-describe-picture .p23-city-time { right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }
+.p23-describe-picture .p23-city-time { right: 4px; bottom: 4px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }
 
 /* 2.3 Ex1: introductions are separate lines; all six cues share their start. */
 .practice-next-page .p23-conversation-models { display: grid; grid-template-columns: max-content var(--p23-example-cue-width,max-content) max-content minmax(0,1fr); align-items: baseline; gap: 8px 6px; }
@@ -3068,8 +3068,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* D1 target cards share a top-left origin and size; additional cards stack down. */
 .p23-where-picture .p23-city-region { top: 0; container-type: inline-size; }
 .p23-where-picture .p23-where-item { width: 28%; transform: none; aspect-ratio: 1; }
-.p23-where-picture .p23-city-person.is-question-speaker { color: #dc2626; animation: p23-question-speaker .8s ease-in-out infinite; }
-@keyframes p23-question-speaker { 0%,100% { color: #dc2626; background: #fff; } 50% { color: #7f1d1d; background: #fecaca; } }
-@media(prefers-reduced-motion:reduce) { .p23-where-picture .p23-city-person.is-question-speaker { animation: none; background: #fecaca; } }
+.p23-city-picture .p23-city-person.is-speaking { color: #dc2626; animation: p23-speaking .8s ease-in-out infinite; }
+@keyframes p23-speaking { 0%,100% { color: #dc2626; background: #fff; } 50% { color: #7f1d1d; background: #fecaca; } }
+@media(prefers-reduced-motion:reduce) { .p23-city-picture .p23-city-person.is-speaking { animation: none; background: #fecaca; } }
 /* City information follows Time's look, with a four-pixel edge clearance. */
 .p23-describe-picture .p23-city-name { right: 4px; bottom: 4px; }
