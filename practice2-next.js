@@ -1464,20 +1464,23 @@ function practice2ShowNotice(resultSpan, message) {
         });e1.append(list);d1.append(e1);
         const selected=practice2State.cityDrillSet??0;
         panel(d1,'Drill 1: From A’s point of view',[
-            '💡You are A. Say the place.',
+            '💡You are A. Say the country.',
             '💡You are A. Say the time of day.',
-            '💡You are A. Say where each person is.'
+            '💡You are A. Say the city.'
         ][selected]);
-        const set1=setButtons(d1,['Places','Time','People'],'cityDrillSet');
-        const ds=cityObjects(true),drillPlaces=ds.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i])}));
+        const set1=setButtons(d1,['Country','Time','Cities'],'cityDrillSet');
+        const ds=cityObjects(true),drillPlaces=ds.map((o,i)=>set1===2?o:{...o,...PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i])});
         // D1 uses simultaneous winter-standard times (Japan is on the following day).
         const drillClockPlaces=drillPlaces.map((o,i)=>i===0?{...o,clock:'6:00'}:i===2?{...o,clock:'13:00',timeHira:'ごごいちじ',timeKanji:'午後一時'}:o);
-        const select1=cityScene(d1,{objects:drillClockPlaces,drill:true,times:set1===1});
-        drillPlaces.forEach((o,i)=>{
-            const c=card(d1,String(i+1)),person=i===0?word('わたし','私'):['','Bさん','Cさん'][i];
-            const model=()=>set1===0?statement(demonstrative('A',o),noun(o)):set1===1?statement(demonstrative('A',o),period(o)):statement(person,demonstrative('A',o));
-            const cue=set1===0?vocabulary(o):set1===1?formatWord(o.periodHira,o.periodKanji,{あさ:'asa',よる:'yoru',ひる:'hiru'}[o.periodHira],{あさ:'morning',よる:'night',ひる:'afternoon'}[o.periodHira]):i===0?formatWord('わたし','私','watashi','I'):person;
-            const r=recordingRow(c,'q',`<strong>A:</strong> ${cue}`,`p23_describe_s${set1}_${i}`,model);attachCity(r,'A',o,select1);
+        const periodHints={あさ:['asa','morning'],よる:['yoru','night'],ひる:['hiru','afternoon']};
+        const hintPlaces=drillClockPlaces.map(o=>set1===1?{...o,hira:o.periodHira,kanji:o.periodKanji,romaji:periodHints[o.periodHira][0],meaning:`${periodHints[o.periodHira][1]}; ${o.clock} (${o.timeHira})`}:o);
+        const select1=cityScene(d1,{objects:hintPlaces,drill:true,times:set1===1});
+        drillClockPlaces.forEach((o,i)=>{
+            const c=card(d1,String(i+1));
+            const model=()=>statement(demonstrative('A',o),set1===1?period(o):noun(o));
+            const cue=set1===1?formatWord(o.periodHira,o.periodKanji,...periodHints[o.periodHira]):vocabulary(o);
+            const key=set1===2?`p23_describe_cities_${i}`:`p23_describe_s${set1}_${i}`;
+            const r=recordingRow(c,'q',`<strong>A:</strong> ${cue}`,key,model);attachCity(r,'A',o,select1);
         });
         const e2=node('section','example-box p2x-dialogue-example'),selectE2=cityScene(e2,{example:true,times:true});
         addModel(e2,'A · Question: ',()=>question('そこ',word('いま','今')+word('なんじ','何時')),selectE2,'A',cs[1]);addModel(e2,'B · Response: ',()=>short(time(cs[1])),selectE2,'B',cs[1]);d2.append(e2);

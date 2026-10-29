@@ -22,7 +22,7 @@ function mock(){
  await p.route('http://cities.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':'text/html'});});
  await p.goto('http://cities.test/practice2.3.html');let count=0;const check=(a,b,msg)=>{assert.deepEqual(a,b,msg);count++};
  check(await p.locator('.example-box').count(),3,'three examples');
- check(await p.locator('[data-set-state="cityDrillSet"] button').allTextContents(),['Places','Time','People'],'D1 category names omit Set');
+ check(await p.locator('[data-set-state="cityDrillSet"] button').allTextContents(),['Country','Time','Cities'],'D1 category names omit Set');
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
  check(await p.locator('.p23-speaking-models .p21-model-line > span:last-child').evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');})),['わたしは、にほんです。ここは、あさです。','Bさんは、どこですか。','わたしは、イギリスです。ここは、よるです。','Cさんは、どこですか。','Cさんは、アメリカです。あそこは、ゆうがたです。'],'E1 displays five conversation lines');
@@ -48,9 +48,13 @@ function mock(){
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
    check(await p.locator('#drill1Container .p23-city-time').allTextContents(),set===1?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
+   const hintMeanings=set===0?['Japan','France','United States']:set===1?['morning; 6:00 (ごぜんろくじ)','night; 22:00 (ごごじゅうじ)','afternoon; 13:00 (ごごいちじ)']:['Osaka','Paris','Los Angeles'];
+   check(await p.locator('#drill1Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
+   const firstHint=p.locator('#drill1Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
+   check((await p.locator('#'+await firstHint.getAttribute('aria-describedby')).textContent()).includes(hintMeanings[0]),true,'the visible hover tooltip follows the category');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D1 roles are A');
    for(let i=0;i<3;i++){
-    const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:['私','Bさん','Cさん'][i]+'は、'+loc+end;
+    const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:loc+'は、'+['大阪','パリ','ロサンゼルス'][i]+end;
     await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
    }
   }
