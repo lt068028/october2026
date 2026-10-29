@@ -1,5 +1,7 @@
 # October2026 機能仕様書（PROJECT_SPEC）
 
+> **練習2の話者表示（現行）**：2.1/2.2/2.3の全A/B発話で、実際の再生・マイク準備・録音中の画像内A/Bを赤点滅する。終了/中断で解除。Who背景点滅とは別機能。適用箇所・例外・検証は[LESSON2_SPEAKER_AUDIT.md](LESSON2_SPEAKER_AUDIT.md)。
+
 共通ルールの仕様/実装照合・適用範囲・未完了事項：[COMMON_RULE_AUDIT.md](COMMON_RULE_AUDIT.md)。
 
 > **Drill説明の先頭（現行共通仕様）**：全ページのDrill説明は💡から始める。文言短縮時も💡を残す。2.2 D3は「💡Ask with どの＋noun.」。

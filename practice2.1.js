@@ -219,6 +219,19 @@ let currentPlayTimeoutId = null;
 let activePlayButtons = [];
 let currentUtteranceRef = null;
 
+function practice2SyncPhotoSpeaker() {
+    const key = activeRecognitionSession?.rowKey || practice2State.startingRow;
+    const control = activePlayButtons[0];
+    const row = key ? [...document.querySelectorAll('tr[data-speaker-recording-key]')].find(e => e.dataset.speakerRecordingKey === key) : control?.closest('tr');
+    const scope = row?.closest('.p21-drill1') || row?.closest('[id$="Container"]');
+    const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture');
+    const who = row?.dataset.drillSpeaker || control?.dataset.speaker || picture?.dataset.speaker;
+    document.querySelectorAll('.p21-distance-person[data-person], .p2x-person[data-person]').forEach(e => {
+        const owner = e.closest('.p21-distance-board, .p21-drill-picture, .p2x-picture');
+        e.classList.toggle('is-speaking', Boolean(key || control) && owner === picture && ['A','B'].includes(who) && e.dataset.person === who);
+    });
+}
+
 function setPlayingStateMultiple(buttons, text) {
     stopAllPlayback();
     activePlayButtons = buttons;
@@ -233,6 +246,7 @@ function setPlayingStateMultiple(buttons, text) {
         btn.disabled = true;
         btn.textContent = text;
     });
+    practice2SyncPhotoSpeaker();
 }
 
 function restorePlayButtons() {
@@ -249,6 +263,7 @@ function restorePlayButtons() {
     });
 
     activePlayButtons = [];
+    practice2SyncPhotoSpeaker();
 }
 
 function stopAllPlayback() {
@@ -898,6 +913,7 @@ function practice2ShowNotice(resultSpan, message) {
                 );
 
                 onPlay?.();
+                practice2SyncPhotoSpeaker();
                 speakText(
                     practice2SpeechText(text),
                     0.75,
@@ -1067,6 +1083,7 @@ function practice2ShowNotice(resultSpan, message) {
         enabled = true
     ) {
         const row = node("tr");
+        row.dataset.speakerRecordingKey = key;
 
         const numberCell = node(
             "td",
@@ -1718,6 +1735,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     practice2SyncRecordingUI = function() {
         originalSync();
+        practice2SyncPhotoSpeaker();
 
         document.querySelectorAll(
             ".compact-settings .segmented-option, " +

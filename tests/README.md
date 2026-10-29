@@ -146,3 +146,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.2 D3人物セット：3題材切替/A asks・B asks各3会話、旧人物キー/認識結果保持、名前と指示語の判定、2:1画像・ラベル範囲をpractice2-next.cjsで確認。
 
 - 2.2のD3は食品選択、D4は新疑問詞だれの独立課題。practice2-next.cjsはE4導入、A/B各3会話と人物名/指示語判定、食品と人物の結果独立保持を確認。
+
+- 練習2人物名赤点滅：`node tests/lesson2-speaker-pulse.cjs`。2.1/2.2の全セット・全Example/Drillモデル、マイク準備/録音/録音再生、解除/受け渡し/古い終了通知、reduced-motion。2.3はpractice23-cities.cjs。Whoガイド背景点滅はspeaker-guide.cjsで別確認。

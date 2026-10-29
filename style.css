@@ -3078,3 +3078,20 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p2x-people-picture .p2x-person-target { height: 83%; }
 .p2x-people-picture .p2x-person-target[data-zone="far"] { width: 12%; height: 44%; }
 .p2x-people-picture .p2x-person-name { top: auto; bottom: 4px; }
+
+/* Lesson 2: active A/B markers follow playback and microphone lifecycle. */
+.p21-distance-person.is-speaking,
+.p2x-person.is-speaking,
+.p21-distance-person.is-speaking .p21-person-caption {
+    color: #dc2626;
+    animation: p23-speaking .8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+    .p21-distance-person.is-speaking,
+    .p2x-person.is-speaking,
+    .p21-distance-person.is-speaking .p21-person-caption {
+        animation: none;
+        color: #dc2626;
+        background: #fecaca;
+    }
+}
