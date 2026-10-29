@@ -33,9 +33,9 @@ function mock(){
  check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','','A:','B:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
- check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item 1','Item 2'],'D1 has people, WH and Y/N item tasks');
- check(await p.locator('#drill1Container .recording-table tr').count(),6,'D1 starts with three where conversations');
- check(await p.locator('#drill2Container .recording-table tr').count(),3,'former D1 is now D2');
+ check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item1','Item2'],'D1 has people, WH and Y/N item tasks');
+ check(await p.locator('#drill2Container .recording-table tr').count(),6,'D1 starts with three where conversations');
+ check(await p.locator('#drill1Container .recording-table tr').count(),3,'former D1 is now D2');
  check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 contains three conversations');
  check(await p.locator('[data-set-state="cityDialogueSet"] button').allTextContents(),['Country','Cities','Time','Day'],'D3 adds Day after the D2 topics');
  check(await p.locator('.p23-city-photo').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>0)),true,'all scenes load');
@@ -53,18 +53,18 @@ function mock(){
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
-   check(await p.locator('#drill2Container .p23-city-time:not(.p23-city-name)').allTextContents(),set===2?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
-   check(await p.locator('#drill2Container .p23-city-name').allTextContents(),set===1?[script==='hiragana'?'おおさか':'大阪','パリ','ロサンゼルス']:[],'only Cities shows city names on the images');
-   check(await p.locator('#drill2Container .p23-city-time').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgb(23, 43, 70)'&&getComputedStyle(e).color==='rgb(255, 255, 255)')),true,'time and city information share the dark style');
+   check(await p.locator('#drill1Container .p23-city-time:not(.p23-city-name)').allTextContents(),set===2?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
+   check(await p.locator('#drill1Container .p23-city-name').allTextContents(),set===1?[script==='hiragana'?'おおさか':'大阪','パリ','ロサンゼルス']:[],'only Cities shows city names on the images');
+   check(await p.locator('#drill1Container .p23-city-time').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgb(23, 43, 70)'&&getComputedStyle(e).color==='rgb(255, 255, 255)')),true,'time and city information share the dark style');
    const hintMeanings=set===0?['Japan','France','United States']:set===2?['6 a.m.; 6:00 (あさろくじ)','10 p.m.; 22:00 (よるじゅうじ)','1 p.m.; 13:00 (ごごいちじ)']:['Osaka','Paris','Los Angeles'];
-   check(await p.locator('#drill2Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
-   const firstHint=p.locator('#drill2Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
+   check(await p.locator('#drill1Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
+   const firstHint=p.locator('#drill1Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
    check((await p.locator('#'+await firstHint.getAttribute('aria-describedby')).textContent()).includes(hintMeanings[0]),true,'the visible hover tooltip follows the category');
-   check(await p.locator('#drill2Container .drill-cue-cell strong').count(),0,'D2 cues omit redundant A labels');
-   check(await p.locator('#drill2Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D2 roles are A');
+   check(await p.locator('#drill1Container .drill-cue-cell strong').count(),0,'D2 cues omit redundant A labels');
+   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D2 roles are A');
    for(let i=0;i<3;i++){
     const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===2?loc+'は、'+['朝六時','夜十時','午後一時'][i]+end:loc+'は、'+['大阪','パリ','ロサンゼルス'][i]+end;
-    await compare(p.locator('#drill2Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
+    await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
    }
   }
   for(const set of [0,1,2]){
@@ -72,14 +72,14 @@ function mock(){
    const nouns=set===0?['Bさん','Aさん','Cさん']:['カバン','本','ノート','ペン'];
    const answers=set===0?['喫茶店','銀行','図書館']:['ここ','あそこ','あそこ','ここ'];
    const speakers=set===0?['A','B','B','A','B','A']:['B','A','B','A','B','A','A','B'];
-   check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
-   const responseCues=await visibleTexts('#drill1Container .recording-table tr:nth-child(2) .drill-cue-cell');
+   check(await p.locator('#drill2Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
+   const responseCues=await visibleTexts('#drill2Container .recording-table tr:nth-child(2) .drill-cue-cell');
    check(responseCues,set===2?['A·Response:あそこ／'+(script==='hiragana'?'かばん':'カバン')+'／ここ','A·Response:そこ／'+(script==='hiragana'?'ほん':'本')+'／あそこ','A·Response:ここ／ノート／あそこ','B·Response:あそこ／ペン／ここ']:set===0?['B·Response:'+ (script==='hiragana'?'わたし／きっさてん':'私／喫茶店'),'A·Response:'+(script==='hiragana'?'わたし／ぎんこう':'私／銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
-   check(await p.locator('#drill1Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
-   if(set===2)check(await p.locator('#drill1Container .p21-response-lead').allTextContents(),Array(4).fill(style==='casual'?'ううん…':'いいえ…'),'negative lead follows Stop');
+   check(await p.locator('#drill2Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
+   if(set===2)check(await p.locator('#drill2Container .p21-response-lead').allTextContents(),Array(4).fill(style==='casual'?'ううん…':'いいえ…'),'negative lead follows Stop');
    for(let i=0;i<nouns.length;i++){
-    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、'+(set===2?['あそこ','ここ','そこ','あそこ'][i]:'どこ')+qend);
-    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===0?['私','私','Cさん'][i]:nouns[i])+'は、'+answers[i]+end);
+    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、'+(set===2?['あそこ','ここ','そこ','あそこ'][i]:'どこ')+qend);
+    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===2?'':(set===0?['私','私','Cさん'][i]:nouns[i])+'は、')+answers[i]+end);
     if(set)check(await p.locator('.p23-where-item.is-target').getAttribute('data-kind'),['bag','book','notebook','pen'][i],'listen highlights the matching object');
    }
   }
@@ -107,7 +107,7 @@ function mock(){
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
- await judge([['p23_where_d1_s2_0_r','いいえ、あそこじゃないです。カバンはここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','ここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','いいえ、ここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','あそこです','いいえ、あそこじゃないです。カバンはここです',false],['p23_where_d1_s2_0_r','いいえ','いいえ、あそこじゃないです。カバンはここです',false],['p23_where_d1_s2_1_r','いいえ、そこじゃないです。本はあそこです','いいえ、そこじゃないです。本はあそこです',true],['p23_where_d1_s2_1_r','ここは本です','いいえ、そこじゃないです。本はあそこです',false]]);
+ await judge([['p23_where_d1_s2_0_r','いいえ、あそこじゃないです。カバンはここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','いいえ、ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','あそこです','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_0_r','いいえ','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_1_r','いいえ、そこじゃないです。本はあそこです','いいえ、そこじゃないです。あそこです',true],['p23_where_d1_s2_1_r','ここは本です','いいえ、そこじゃないです。あそこです',false]]);
  for(const mode of [0,1,2,3]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
   await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこは土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこは土曜日です',false]]:mode===0?[
@@ -122,19 +122,19 @@ function mock(){
  await p.locator('[data-set-state="cityDialogueSet"] button').first().click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),true,'D3 Country results survive topic switching');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(1).click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),false,'D3 topic results stay separate');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(2).click();
- const questionButton=p.locator('#drill1Container .recording-table tr').first().locator('.recording-actions button').first();const responseButton=p.locator('#drill1Container .recording-table tr').nth(1).locator('.recording-actions button').first();
+ const questionButton=p.locator('#drill2Container .recording-table tr').first().locator('.recording-actions button').first();const responseButton=p.locator('#drill2Container .recording-table tr').nth(1).locator('.recording-actions button').first();
  await questionButton.click();await p.evaluate(()=>window.oldCityEnd=t.spoken.at(-1).onend);await responseButton.click();await p.evaluate(()=>oldCityEnd?.());check(await p.locator('.p23-city-person.is-speaking').allTextContents(),['A'],'interrupted question does not clear the responder marker');await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.evaluate(()=>{isAutoPlay=false;const toggle=document.getElementById('toggleRecordMode');if(toggle.checked)toggle.click();t.speaking=true;});
  for(const rowIndex of [0,1]){
-  const row=p.locator('#drill1Container .recording-table tr').nth(rowIndex);await row.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await row.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
+  const row=p.locator('#drill2Container .recording-table tr').nth(rowIndex);await row.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await row.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
   check(await p.locator('.p23-city-person.is-speaking').allTextContents(),[rowIndex===0?'B':'A'],'both questioner and responder flash during recording');
   check(await p.locator('[data-set-state] button').evaluateAll(es=>es.every(e=>e.disabled)),true,'recording locks all task switching');
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await row.textContent().then(s=>s.includes('✅')),true,'question and full response recordings are judged');
   check(await p.locator('.p23-city-person.is-speaking').count(),0,'recording completion clears the marker');
  }
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
- check(await p.locator('#drill1Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'Item 2 full response results survive switching');
- await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();check(await p.locator('#drill1Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),false,'Item 1 and Item 2 results stay separate');
+ check(await p.locator('#drill2Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'Item 2 full response results survive switching');
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();check(await p.locator('#drill2Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),false,'Item 1 and Item 2 results stay separate');
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
  await p.locator('[data-set-state="cityDrillSet"] button').nth(1).click();
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
@@ -145,8 +145,8 @@ function mock(){
   check(await p.locator('.p23-conversation-models').evaluate(e=>Math.abs(e.querySelector('.p21-model-line > .p23-example-cue').getBoundingClientRect().width-parseFloat(e.style.getPropertyValue('--p23-example-cue-width')))<1),true,'shared cue width follows content, without surplus space');
   check(await p.locator('.p23-conversation-models .p21-model-line > .p23-example-cue').evaluateAll(es=>es.every(e=>Math.abs(e.getBoundingClientRect().left-es[0].getBoundingClientRect().left)<1)),true,'primary cue starts align');
   check(await p.locator('.p23-describe-picture .p23-city-time').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&Math.abs(r.bottom-a.bottom-4)<1;})),true,'Time and Cities use the same corner clearance in both drills');
-  check(await p.locator('#drill2Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&Math.abs(r.bottom-a.bottom-4)<1;})),true,'city labels leave four pixels to the right and bottom frame');
-  check(await p.locator('#drill2Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1;})),true,'city labels fit inside each image');
+  check(await p.locator('#drill1Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&Math.abs(r.bottom-a.bottom-4)<1;})),true,'city labels leave four pixels to the right and bottom frame');
+  check(await p.locator('#drill1Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1;})),true,'city labels fit inside each image');
   check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect(),first=es[0].getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&a.top>=r.top+3&&Math.abs(a.width-first.width)<1&&Math.abs(a.height-first.height)<1;})),true,'all item cards share a right edge and size');
   check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&a.top>=r.top&&a.bottom<=r.bottom;})),true,'all framed objects stay inside their facility image');
   check(await p.locator('.p23-in-scene-audio button').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),b=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom})),true,'buttons inside each panel');

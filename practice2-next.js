@@ -1451,7 +1451,7 @@ function practice2ShowNotice(resultSpan, message) {
         practice2State.exampleCueObserver?.disconnect();
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const identifySpeaker=(view,key)=>{view.row.dataset.p23RecordingKey=key;};
-        const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
+        const cs=cityObjects(),whereContainer=document.getElementById('drill2Container'),describeContainer=document.getElementById('drill1Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ・どこ'));
         const countries=cs.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','イギリス','アメリカ'][i])}));
@@ -1484,7 +1484,7 @@ function practice2ShowNotice(resultSpan, message) {
             line.append(node('strong','p23-model-speaker',label??who+':'),introduction);
             if(cue){const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));line.append(prompt,exampleCueAudio(sentence),answer);}
             list.append(line);
-        });e1.append(list);d1.append(e1);
+        });e1.append(list);describeContainer.append(e1);
         const unknownOffset={x:0,y:0};
         function alignExampleCues() {
             if(!list.isConnected)return;
@@ -1506,14 +1506,14 @@ function practice2ShowNotice(resultSpan, message) {
 
         }
         practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);practice2State.exampleCueObserver.observe(unknown.closest('.p23-city-stage'));alignExampleCues();
-        // D1 builds the location question first, using facilities and marked items.
+        // D2 builds location conversations, after the simpler D1 statements.
         const whereSet=[0,1,2].includes(practice2State.whereDrillSet)?practice2State.whereDrillSet:0;practice2State.whereDrillSet=whereSet;
-        panel(d1,'Drill 1: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':whereSet===2?'💡Check the location. Say no and give the correct location.':'💡Ask where each framed item is. Answer with ');
-        if(whereSet===1){const instruction=d1.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
-        setButtons(d1,['People','Item 1','Item 2'],'whereDrillSet');
+        panel(whereContainer,'Drill 2: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':whereSet===2?'💡Check the location. Say no and give the correct location.':'💡Ask where each framed item is. Answer with ');
+        if(whereSet===1){const instruction=whereContainer.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
+        setButtons(whereContainer,['People','Item1','Item2'],'whereDrillSet');
         const wherePlaces=PracticeNext.places.map(o=>({...o}));
-        const selectWhere=cityScene(d1,{indoor:true,objects:wherePlaces});
-        const wherePicture=d1.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
+        const selectWhere=cityScene(whereContainer,{indoor:true,objects:wherePlaces});
+        const wherePicture=whereContainer.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
         const objectKinds=['bag','book','notebook','pen'];
         const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:['A','far','far','B'][i]}));
         const counters={A:0,B:0,far:0};
@@ -1530,11 +1530,11 @@ function practice2ShowNotice(resultSpan, message) {
             {ask:'B',reply:'A',object:wherePlaces[2],subject:()=>'Cさん'}
         ]:whereObjects.map((o,i)=>({ask:i===3?'A':'B',reply:i===3?'B':'A',object:o,subject:()=>noun(o)}));
         whereConversations.forEach(({ask,reply,object:o,subject},i)=>{
-            const c=card(d1,String(i+1)),prefix=`p23_where_d1_s${whereSet}_${i}`,loc=demonstrative(reply,o);
+            const c=card(whereContainer,String(i+1)),prefix=`p23_where_d1_s${whereSet}_${i}`,loc=demonstrative(reply,o);
             const replySubject=()=>whereSet===0?(subject()==='Cさん'?'Cさん':word('わたし','私')):noun(o);
             const wrongPlace={zone:['far','B','A','far'][i]},wrongQuestion=demonstrative(ask,wrongPlace),wrongReply=demonstrative(reply,wrongPlace);
             const correct=()=>statement(replySubject(),whereSet===0?noun(o):loc);
-            const answer=()=>whereSet===2?response(wrongReply,false)+correct():correct();
+            const answer=()=>whereSet===2?response(wrongReply,false)+short(loc):correct();
             practice2State.replyReferences[prefix+'_r']=()=>whereSet===2?[correct(),short(loc),response(wrongReply,false)+short(loc),...[...(negativeForms.slice(0,speechStyle==='formal'?4:6)),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])].flatMap(negative=>[wrongReply+negative+'。'+correct(),wrongReply+negative+'。'+short(loc)]).flatMap(text=>[text,(speechStyle==='casual'?'ううん、':'いいえ、')+text]),(speechStyle==='casual'?'ううん、':'いいえ、')+correct(),(speechStyle==='casual'?'ううん、':'いいえ、')+short(loc)]:whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Cさん'?'Cさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
             const cue=whereSet===0?subject():vocabulary(o);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${cue}／${whereSet===2?wrongQuestion:'どこ'}`,prefix+'_q',()=>question(subject(),whereSet===2?wrongQuestion:'どこ'));
@@ -1546,27 +1546,27 @@ function practice2ShowNotice(resultSpan, message) {
             attachCity(q,ask,o,select);attachCity(r,reply,o,select);
         });
         const selected=practice2State.cityDrillSet??0;
-        panel(d2,'Drill 2: From A’s point of view',[
+        panel(describeContainer,'Drill 1: From A’s point of view',[
             '💡You are A. Say the country.',
             '💡You are A. Say the city.',
             '💡You are A. Say the time.'
         ][selected]);
-        const set1=setButtons(d2,['Country','Cities','Time'],'cityDrillSet');
-        // D2 and D3 share the same locations and simultaneous winter-standard times.
+        const set1=setButtons(describeContainer,['Country','Cities','Time'],'cityDrillSet');
+        // D1 and D3 share the same locations and simultaneous winter-standard times.
         const ds=cityObjects(true).map((o,i)=>({...o,country:PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i]),clock:['6:00','22:00','13:00'][i],timeHira:['あさろくじ','よるじゅうじ','ごごいちじ'][i],timeKanji:['朝六時','夜十時','午後一時'][i]}));
         const drillClockPlaces=ds.map(o=>set1===1?o:{...o,...o.country});
         const timeHints=[['asa rokuji','6 a.m.'],['yoru jūji','10 p.m.'],['gogo ichiji','1 p.m.']];
         const hintPlaces=drillClockPlaces.map((o,i)=>set1===2?{...o,hira:o.timeHira,kanji:o.timeKanji,romaji:timeHints[i][0],meaning:`${timeHints[i][1]}; ${o.clock} (${o.timeHira})`}:o);
-        const select1=cityScene(d2,{objects:hintPlaces,drill:true,times:set1===2,cityLabels:set1===1});
-        d2.querySelector('.p23-city-picture').classList.add('p23-describe-picture');
+        const select1=cityScene(describeContainer,{objects:hintPlaces,drill:true,times:set1===2,cityLabels:set1===1});
+        describeContainer.querySelector(':scope > .p23-city-picture').classList.add('p23-describe-picture');
         drillClockPlaces.forEach((o,i)=>{
-            const c=card(d2,String(i+1));
+            const c=card(describeContainer,String(i+1));
             const model=()=>statement(demonstrative('A',o),set1===2?time(o):noun(o));
             const cue=set1===2?formatWord(o.timeHira,o.timeKanji,...timeHints[i]):vocabulary(o);
             const key=set1===1?`p23_describe_cities_${i}`:set1===2?`p23_describe_time_${i}`:`p23_describe_s${set1}_${i}`;
             const r=recordingRow(c,'q',cue,key,model);attachCity(r,'A',o,select1);identifySpeaker(r,key);
         });
-        // D3 reuses the D2 settings and scene for real question/response turns.
+        // D3 reuses the D1 settings and scene for real question/response turns.
         panel(d3,'Drill 3: Ask and answer','💡Ask your partner. Answer from the speaker’s point of view.');
         const dialogueMode=setButtons(d3,['Country','Cities','Time','Day'],'cityDialogueSet');
         const days=[{hira:'にちようび',kanji:'日曜日',romaji:'nichiyōbi',meaning:'Sunday'},{hira:'どようび',kanji:'土曜日',romaji:'doyōbi',meaning:'Saturday'},{hira:'どようび',kanji:'土曜日',romaji:'doyōbi',meaning:'Saturday'}];
