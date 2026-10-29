@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 検証：node --check practice2-next.js、git diff --check正常。node tests/practice2-next.cjs 414項目合格（E4なし・D4新説明/強調・既存モデル/録音/判定/狭幅を含む）。
+
+- 2026-10-29 / Codex：開始main d0b7bcb、workクリーン同期確認。2.2 Ex4撤去、D4説明を「💡Use だれ to ask who someone is.」にし、だれだけ共通grammar-highlightで太字＋ゴールド。D4人物画像・問題・モデル・許容回答・録音キー維持。PRACTICE22_23_SPEC/COMMON_RULE_AUDIT更新。実機未確認。
+
 - 今回自動検証：node --check practice2-next.js、git diff --check、node tests/practice2-next.cjs（412項目合格）。仕様照合一覧は静的確認を含み、全ページ全操作の再検証完了とはしない。
 
 - 2026-10-29 / Codex：開始main f6c6595、workクリーン・同期確認。2.2 D1「💡Name the item and say its price.」/D2「💡A: Ask the price and answer.」へ指定どおり変更。A質問/B返答の役割・必須回答要素は変更なし。Ex4撤去は意見のみ、未実施。共通仕様照合COMMON_RULE_AUDITを追加、旧2.1例文構成/2.2 D3補足記述を訂正、練習2語彙Hoverの適用例外を明記。話者赤点滅全3ページ統一は未完了。実機未確認。

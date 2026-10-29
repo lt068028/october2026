@@ -1720,16 +1720,10 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function renderPeopleChoosing(container) {
         const set=practice2State.dialogueSet===1?1:0,asker=set===0?'A':'B',answerer=asker==='A'?'B':'A';
-        const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]})),sample=objects[0];
-        const box=node('section','example-box p2x-dialogue-example p2x-people-example');
-        box.append(node('h2','p21-distance-heading','だれ = who?'));
-        const showExample=scene(box,objects,{people:true,model:true});
-        const qtext=()=>question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰')),rtext=()=>short(noun(sample)+'さん');
-        for(const [role,speaker,text]of [['Question',asker,qtext],['Response',answerer,rtext]]){
-            const line=node('p');line.append(node('strong','',`${speaker} · ${role}: `),listen(()=>{showExample(speaker,sample.zone);return text();},'🔊きく',()=>showExample.announce(speaker)),modelText(text,sample));box.append(line);
-        }
-        container.append(box);
-        panel(container,'Drill 4: この人はだれですか','💡Ask who each person is. Answer with the name.');
+        const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
+        panel(container,'Drill 4: この人はだれですか','');
+        const instruction=container.lastElementChild.querySelector('.info-panel-desc');
+        instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
         setButtons(container,['A asks','B asks'],'dialogueSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
         objects.forEach((o,i)=>{
