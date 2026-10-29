@@ -30,6 +30,7 @@ add('2.2','E3-Q',['果物','円']);add('2.2','E3-R',['果物']);
 for(const [set,food] of ['おにぎり','お弁当'].entries())for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-A-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-A-${i}-R`,[food]);}
 for(const [i,name] of ['たけし','メアリー','ロバート'].entries()){add('2.2',`D4-S1-${i}-Q`,['人','誰']);add('2.2',`D4-S1-${i}-R`,['人',name]);}
 for(const [i,relation]of ['弟','友達','クラスメート'].entries()){add('2.2',`D4-S2-${i}-Q`,['人','クラスメート']);add('2.2',`D4-S2-${i}-R`,i===2?['人']:['人','私',relation]);}
+for(const mode of ['Adjectives','Pronouns'])for(let i=0;i<3;i++){add('2.2',`D5-${mode}-${i}-Q`,i===2?['先生','傘']:['傘']);add('2.2',`D5-${mode}-${i}-R`,mode==='Adjectives'?['傘']:[]);}
 add('2.3','E1-A-intro',['私','日本']);
 add('2.3','E1-A-morning',['朝']);
 add('2.3','E1-A-question-B',[]);

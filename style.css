@@ -3095,3 +3095,20 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         background: #fecaca;
     }
 }
+
+/* D5 compares two forms against the same umbrella scene. */
+.p2x-umbrella-picture { width: 60%; margin: 12px auto; }
+.p2x-umbrella-picture .p2x-stage { aspect-ratio: 3 / 1; }
+.p2x-umbrella-picture .p2x-photo { top: -18%; }
+.p2x-umbrella-picture .p2x-person { top: 64%; }
+.p2x-umbrella-picture .p2x-person[data-person="A"] { left: 5%; }
+.p2x-umbrella-picture .p2x-person[data-person="B"] { right: 5%; }
+.p2x-umbrella-target { position: absolute; top: 53%; height: 37%; width: 7%; transform: translateX(-50%); border-radius: 5px; }
+.p2x-umbrella-target.is-target { outline: 2px solid #2563eb; background: rgb(59 130 246 / 9%); }
+.p2x-umbrella-owner { position: absolute; top: 0; left: 50%; transform: translate(-50%,-100%); white-space: nowrap; padding: 1px 3px; color: #111827; background: #fffef0; border-radius: 3px; font-size: 13px; }
+.p2x-umbrella-target[data-owner="A"] .p2x-umbrella-owner { left: -15%; }
+.p2x-umbrella-target[data-owner="B"] .p2x-umbrella-owner { left: 115%; }
+@media(max-width:900px) { .p2x-umbrella-picture { width: 100%; } }
+
+#drill5Container .p2x-comparison-mode { display: block; color: var(--text-secondary); font-size: .85em; }
+#drill5Container .tooltip-tip:not([data-viewport-tip]) { position: fixed; top: 0; left: 0; bottom: auto; transform: none; }

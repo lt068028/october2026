@@ -150,3 +150,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 練習2人物名赤点滅：`node tests/lesson2-speaker-pulse.cjs`。2.1/2.2の全セット・全Example/Drillモデル、マイク準備/録音/録音再生、解除/受け渡し/古い終了通知、reduced-motion。2.3はpractice23-cities.cjs。Whoガイド背景点滅はspeaker-guide.cjsで別確認。
 
 - 練習2の未指定空白：`node tests/lesson2-cue-spacing.cjs`。全セット・両Script・全Vocab・English cuesを走査し、語内/区切り前後の余計な空白を検出する。
+
+- 2.2 D5傘比較：`node tests/practice22-umbrellas.cjs`。同じ傘のAdjectives/Pronouns、全Speech/Scriptモデル、指示語/形式誤答判定、所有対象/話者同期、録音排他と保持、375/600/1440px通常/ダークの枠内配置。

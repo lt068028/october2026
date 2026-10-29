@@ -571,7 +571,7 @@ function practice2SyncRecordingUI() {
 
     const controls = document.querySelectorAll(
         "#drill1Container button, #drill1Container select, " +
-        "#drill2Container button, #drill2Container select, #drill3Container button, #drill4Container button"
+        "#drill2Container button, #drill2Container select, #drill3Container button, #drill4Container button, #drill5Container button"
     );
 
     if (blocked) {
@@ -1640,7 +1640,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     function renderSections() {
         shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
-        for(const id of ['drill1Container','drill2Container','drill3Container','drill4Container']){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
+        for(const id of ['drill1Container','drill2Container','drill3Container','drill4Container','drill5Container']){const c=document.getElementById(id);if(c){c.replaceChildren();c.hidden=false;}}
         if(!is22){renderCitySections();return;}
         const d1=document.getElementById('drill1Container');
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
@@ -1683,7 +1683,7 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         }
-        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderPeopleChoosing(document.getElementById('drill4Container'));}
+        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderPeopleChoosing(document.getElementById('drill4Container'));renderUmbrellaComparison(document.getElementById('drill5Container'));}
         else {renderDialogue();renderChoosing();}
     }
     function renderPriceStatements(container) {
@@ -1774,6 +1774,37 @@ function practice2ShowNotice(resultSpan, message) {
             const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${cue}`,key,()=>full?statement(subject(answerer),noun(o)+'さん'):short(noun(o)+'さん'));
             attach(q,asker,o,select);attach(r,answerer,o,select);
         });select('A');
+    }
+
+    function renderUmbrellaComparison(container) {
+        panel(container,'Drill 5: どのかさ・どれ','💡Compare the same umbrella: どのかさ → そのかさ; どれ → それ.');
+        const picture=node('div','p2x-picture p2x-umbrella-picture'),stage=node('div','p2x-stage');
+        const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.png';photo.width=1774;photo.height=887;
+        photo.alt='A stands at the left and B at the right of a long umbrella rack. A’s red umbrella and B’s blue umbrella are both near B. The teacher’s yellow umbrella is far from both.';stage.append(photo);
+        for(const who of ['A','B']){const label=node('strong','p2x-person',who);label.dataset.person=who;stage.append(label);}
+        const umbrellas=[{owner:'A',zone:'B',x:74.6,label:'Aさんの'},{owner:'B',zone:'B',x:80.7,label:'Bさんの'},{owner:'teacher',zone:'far',x:46.6,label:word('せんせいの','先生の')}];
+        for(const o of umbrellas){const target=node('span','p2x-umbrella-target');target.dataset.owner=o.owner;target.style.left=o.x+'%';target.append(node('span','p2x-umbrella-owner',o.label));imageHint(target,{hintText:o.label+word('かさ','傘')});target.setAttribute('aria-label',o.label+word('かさ','傘'));stage.append(target);}
+        picture.append(stage);container.append(picture);
+        const select=(who,owner)=>{picture.dataset.speaker=who;stage.querySelectorAll('.p2x-umbrella-target').forEach(e=>e.classList.toggle('is-target',e.dataset.owner===owner));};
+        const turns=[{asker:'B',answerer:'A',o:umbrellas[0],adj:'その',pro:'それ'},{asker:'A',answerer:'B',o:umbrellas[1],adj:'この',pro:'これ'},{asker:'B',answerer:'A',o:umbrellas[2],adj:'あの',pro:'あれ'}];
+        const umbrella=()=>word('かさ','傘');
+        turns.forEach(({asker,answerer,o,adj,pro},i)=>{
+            const current=card(container,String(i+1));
+            for(const mode of ['adjective','pronoun']){
+                const title=mode==='adjective'?'Adjectives':'Pronouns',prefix=`p22_d5_${mode}_${i}`;
+                const owner=()=>o.owner==='teacher'?word('せんせいの','先生の'):o.owner+'さんの';
+                const subject=()=>owner()+umbrella();
+                const wh=()=>mode==='adjective'?word('どのかさ','どの傘'):'どれ';
+                const answer=()=>mode==='adjective'?adj+umbrella():pro;
+                const ownerCue=formatWord((o.owner==='teacher'?'せんせいの':o.owner+'さんの')+'かさ',(o.owner==='teacher'?'先生の':o.owner+'さんの')+'傘',(o.owner==='teacher'?'sensei no':o.owner+'-san no')+' kasa',(o.owner==='teacher'?'the teacher':o.owner)+'’s umbrella');
+                const whCue=mode==='adjective'?formatWord('どのかさ','どの傘','dono kasa','which umbrella'):formatWord('どれ','どれ','dore','which one');
+                const q=recordingRow(current,mode==='adjective'?'q':'a',`<strong><span class="p2x-comparison-mode">${title}</span>${asker} · Question:</strong> ${ownerCue}／${whCue}`,prefix+'_q',()=>question(subject(),wh()));
+                const replyCue=mode==='adjective'?formatWord(adj+'かさ',adj+'傘',({この:'kono',その:'sono',あの:'ano'}[adj])+' kasa',adj==='この'?'this umbrella':adj==='その'?'that umbrella':'that umbrella over there'):formatWord(pro,pro,{これ:'kore',それ:'sore',あれ:'are'}[pro],pro==='これ'?'this one':pro==='それ'?'that one':'that one over there');
+                practice2State.replyReferences[prefix+'_r']=()=>[short(answer()),statement(subject(),answer())];
+                const r=recordingRow(current,'a',`<strong><span class="p2x-comparison-mode">${title}</span>${answerer} · Response:</strong> ${replyCue}`,prefix+'_r',()=>short(answer()));
+                for(const [view,who]of [[q,asker],[r,answerer]]){view.row.dataset.drillSpeaker=who;view.row.dataset.exerciseMode=mode;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(who,o.owner));}
+            }
+        });
     }
 
     function renderDialogue() {
@@ -1945,7 +1976,7 @@ function practice2ShowNotice(resultSpan, message) {
     function alignColumns() {
         for (const id of [
             "drill1Container",
-            "drill2Container", "drill3Container", "drill4Container"
+            "drill2Container", "drill3Container", "drill4Container", "drill5Container"
         ]) {
             const tables = [
                 ...document.querySelectorAll(

@@ -1248,6 +1248,98 @@
     ]
   },
   {
+    "page": "2.2",
+    "id": "D5-Adjectives-0-Q",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Adjectives-0-R",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Adjectives-1-Q",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Adjectives-1-R",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Adjectives-2-Q",
+    "type": "model",
+    "tokens": [
+      "先生",
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Adjectives-2-R",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-0-Q",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-0-R",
+    "type": "model",
+    "tokens": []
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-1-Q",
+    "type": "model",
+    "tokens": [
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-1-R",
+    "type": "model",
+    "tokens": []
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-2-Q",
+    "type": "model",
+    "tokens": [
+      "先生",
+      "傘"
+    ]
+  },
+  {
+    "page": "2.2",
+    "id": "D5-Pronouns-2-R",
+    "type": "model",
+    "tokens": []
+  },
+  {
     "page": "2.3",
     "id": "E1-A-intro",
     "type": "model",
