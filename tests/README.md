@@ -138,3 +138,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.3のD1/D2交換後は新D1＝単文、新D2＝所在会話。Item2の否定＋短い場所モデル、許容する品名付き全文と旧録音キー保持を確認。
 
 - 2.3 DayはSun./Sat.表示と日本語ホバー、Item1/Item2は背景施設ヒントなし・品物ヒントあり、Timeは重複しないヒントをpractice23-cities.cjsで確認。
+
+- 2.3 D4 English cues：D1〜D3の各セット/トピックの英語化、日本語復帰、音声日本語/録音判定保持/録音ロック/狭幅をpractice23-cities.cjs、7.3と共通のEx1移動位置をenglish-cue-navigation.cjsで確認。
