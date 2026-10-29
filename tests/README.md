@@ -126,3 +126,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/english-cue-navigation.cjs`：7.3の下部パネルから英語/日本語へ切り替え、最初のExample上に1行分の余白を残して戻ることを375/600/900/1440px・かな/漢字で確認する。
 
 - `node tests/settings-availability.cjs`：全11ページで設定絵文字の利用可否と選択状態を明暗テーマ・選択切替・再描画・OFFスイッチ・一時ロック/復元で照合。選択可能はカラー100%、不可かつ未選択は白黒55%、発音1の固定Hiragana/発音2Casualを含む。
+
+- `node tests/practice23-cities.cjs`：現行2.3のEx1→D1人物/持ち物所在→D2 Country/Time/Citiesを検証。物の配置・返答者の指示語、短答/全文と誤答拒否、対象強調、セットごとの録音保持/録音中のロック、375/600/900/1440px表示を含む。

@@ -3008,7 +3008,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:450px) { .p23-unknown-guide .p21-question-description { display: none; } }
 
 /* Adopt the D1 24-hour clock: opaque white card, legible numerals. */
-#drill1Container > .p23-practice-picture .p23-city-time { right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }
+.p23-describe-picture .p23-city-time { right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }
 
 /* 2.3 Ex1: share intrinsic introduction, cue, listen and model columns. */
 .practice-next-page .p23-conversation-models { display: grid; grid-template-columns: max-content max-content var(--p23-example-cue-width,max-content) max-content minmax(0,1fr); align-items: baseline; gap: 8px 6px; }
@@ -3042,7 +3042,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 /* Cities uses the same bottom-right card as Time; long names use smaller text. */
-#drill1Container > .p23-practice-picture .p23-city-name { max-width: calc(100% - 20px); box-sizing: border-box; padding: 5px 6px; font-size: clamp(10px,2vw,20px); }
+.p23-describe-picture .p23-city-name { max-width: calc(100% - 20px); box-sizing: border-box; padding: 5px 6px; font-size: clamp(10px,2vw,20px); }
 
 /* Available choices keep their icon color, even when they are not selected/OFF. */
 :is(.compact-settings,.voice-guide-footer) .icon-emoji {
@@ -3056,3 +3056,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     filter: grayscale(100%) !important;
     opacity: .55 !important;
 }
+
+/* Mark the four target items so background books and personal belongings are unambiguous. */
+.p23-where-item { position: absolute; width: 28%; aspect-ratio: 1; transform: translate(-50%,-100%); pointer-events: auto; box-sizing: border-box; padding: 2px; border: 1px solid #64748b; border-radius: 5px; background: rgb(255 253 246 / 85%); z-index: 2; }
+.p23-where-sprite { display: block; width: 100%; height: 100%; background-image: url('assets/practice23-where-items.png'); background-size: 200% 200%; background-repeat: no-repeat; }
+.p23-where-item.is-target { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+
+.p23-locative-options { white-space: nowrap; }
