@@ -3046,3 +3046,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:700px) {
  .p23-city-stage .p23-unknown-guide { right: calc(66.666667% + 8px); bottom: 12px; width: max-content; }
 }
+
+/* Cities uses the same bottom-right card as Time; long names use smaller text. */
+#drill1Container > .p23-practice-picture .p23-city-name { max-width: calc(100% - 20px); box-sizing: border-box; padding: 5px 6px; font-size: clamp(10px,2vw,20px); }

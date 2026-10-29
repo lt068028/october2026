@@ -50,14 +50,15 @@ function mock(){
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
-   check(await p.locator('#drill1Container .p23-city-time').allTextContents(),set===1?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
-   const hintMeanings=set===0?['Japan','France','United States']:set===1?['morning; 6:00 (ごぜんろくじ)','night; 22:00 (ごごじゅうじ)','afternoon; 13:00 (ごごいちじ)']:['Osaka','Paris','Los Angeles'];
+   check(await p.locator('#drill1Container .p23-city-time:not(.p23-city-name)').allTextContents(),set===1?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
+   check(await p.locator('#drill1Container .p23-city-name').allTextContents(),set===2?[script==='hiragana'?'おおさか':'大阪','パリ','ロサンゼルス']:[],'only Cities shows city names on the images');
+   const hintMeanings=set===0?['Japan','France','United States']:set===1?['6 a.m.; 6:00 (あさろくじ)','10 p.m.; 22:00 (よるじゅうじ)','1 p.m.; 13:00 (ごごいちじ)']:['Osaka','Paris','Los Angeles'];
    check(await p.locator('#drill1Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
    const firstHint=p.locator('#drill1Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
    check((await p.locator('#'+await firstHint.getAttribute('aria-describedby')).textContent()).includes(hintMeanings[0]),true,'the visible hover tooltip follows the category');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D1 roles are A');
    for(let i=0;i<3;i++){
-    const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:loc+'は、'+['大阪','パリ','ロサンゼルス'][i]+end;
+    const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝六時','夜十時','午後一時'][i]+end:loc+'は、'+['大阪','パリ','ロサンゼルス'][i]+end;
     await compare(p.locator('#drill1Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
    }
   }
@@ -82,6 +83,7 @@ function mock(){
   check(await p.locator('.p23-unknown-guide').evaluate(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-stage').getBoundingClientRect();return a.left>=r.left&&a.right<=r.left+r.width/3+1&&a.top>=r.top&&a.bottom<=r.bottom;}),true,'unknown guide stays in A picture '+width+theme+hint);
   check(await p.locator('.p23-conversation-models').evaluate(e=>Math.abs(e.querySelector('.p21-model-line > .p23-example-cue').getBoundingClientRect().width-parseFloat(e.style.getPropertyValue('--p23-example-cue-width')))<1),true,'shared cue width follows content, without surplus space');
   check(await p.locator('.p23-conversation-models .p21-model-line > .p23-example-cue').evaluateAll(es=>es.every(e=>Math.abs(e.getBoundingClientRect().left-es[0].getBoundingClientRect().left)<1)),true,'primary cue starts align');
+  check(await p.locator('#drill1Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1;})),true,'city labels fit inside each image');
   check(await p.locator('.p23-in-scene-audio button').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),b=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom})),true,'buttons inside each panel');
  }
  check(errors,[],'no browser errors');await browser.close();console.log('PASS city tasks',count);
