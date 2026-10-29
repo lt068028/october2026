@@ -30,11 +30,14 @@ add('2.2','E3-Q',['果物','円']);add('2.2','E3-R',['果物']);
 for(const [set,food] of ['おにぎり','お弁当'].entries())for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-A-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-A-${i}-R`,[food]);}
 for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add('2.2',`People-S${set}-Example-R`,['メアリー']);}
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
-add('2.3','E1-A-intro',['私','日本','朝']);
+add('2.3','E1-A-intro',['私','日本']);
+add('2.3','E1-A-morning',['朝']);
+add('2.3','E1-A-intro-B',['イギリス']);
 add('2.3','E1-A-question-B',[]);
-add('2.3','E1-B-self',['私','イギリス','夜']);
+add('2.3','E1-B-night',['夜']);
 add('2.3','E1-A-question-C',[]);
-add('2.3','E1-B-about-C',['アメリカ','夕方']);
+add('2.3','E1-B-about-C',['アメリカ']);
+add('2.3','E1-B-evening',['夕方']);
 for(let i=0;i<3;i++){add('2.3',`D1-S1-${i}`,[['日本','フランス','アメリカ'][i]]);add('2.3',`D1-S2-${i}`,[['朝','夜','昼'][i]]);add('2.3',`D1-S3-${i}`,[['大阪','パリ','ロサンゼルス'][i]]);}
 add('2.3','E2-Q',['今','何時']);add('2.3','E2-R',['午後九時']);
 for(const speaker of ['A','B'])for(let i=0;i<3;i++){add('2.3',`D2-${speaker}-${i}-Q`,['今','何時']);add('2.3',`D2-${speaker}-${i}-R`,[['午前六時','午後十時','午後二時'][i]]);}

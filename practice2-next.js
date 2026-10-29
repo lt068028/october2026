@@ -1435,6 +1435,7 @@ function practice2ShowNotice(resultSpan, message) {
         select.announce=speaker=>SpeakerGuide.play(context,speaker);select('A');return select;
     }
     function renderCitySections(){
+        practice2State.exampleCueObserver?.disconnect();
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const cs=cityObjects(),d1=document.getElementById('drill1Container'),d2=document.getElementById('drill2Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
@@ -1449,19 +1450,41 @@ function practice2ShowNotice(resultSpan, message) {
         unknown.insertAdjacentHTML('afterbegin','<svg class="p21-thought-cloud" viewBox="0 0 300 110" preserveAspectRatio="none" aria-hidden="true"><path d="M35 20C35 7 65 2 82 12C96-1 130-1 145 10C165-1 197 1 208 13C230 5 261 13 261 28C286 30 295 50 279 62C291 78 270 92 248 87C231 101 200 96 189 87C170 99 139 99 124 88C102 99 72 96 62 85C34 91 12 78 21 61C4 45 10 26 35 20Z"/></svg>');
         const dots=node('span','p21-thought-dots');dots.setAttribute('aria-hidden','true');unknown.append(dots);e1.querySelector('.p23-city-stage').append(unknown);
         list.classList.add('p23-conversation-models');
+        const periodCue=o=>formatWord(o.periodHira,o.periodKanji,...{あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira]);
         const sentences=[
-            {who:'A',label:'A:',object:countries[0],text:()=>statement(word('わたし','私'),noun(countries[0]))+statement('ここ',period(countries[0]))},
-            {who:'A',label:'',object:countries[1],text:()=>question('Bさん','どこ')},
-            {who:'B',label:'B:',object:countries[1],text:()=>statement(word('わたし','私'),noun(countries[1]))+statement('ここ',period(countries[1]))},
-            {who:'A',label:'A:',object:countries[2],text:()=>question('Cさん','どこ')},
-            {who:'B',label:'B:',object:countries[2],text:()=>statement('Cさん',noun(countries[2]))+statement('あそこ',period(countries[2]))}
+            {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
+            {who:'A',object:countries[1],intro:()=>question('Bさん',noun(countries[1])),cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
+            {who:'B',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
+            {who:'A',object:countries[2],cue:()=>'Cさん／どこ',text:()=>question('Cさん','どこ')},
+            {who:'B',object:countries[2],cue:()=>`Cさん／${vocabulary(countries[2])}`,text:()=>statement('Cさん',noun(countries[2])),extra:{who:'B',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}}
         ];
-        sentences.forEach(({who,label,object:o,text})=>{
-            const line=node('p','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
+        function exampleCueAudio({who,object:o,text}) {
             const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
-            b.dataset.speaker=who;b.dataset.zone=o.zone;audio.append(b);
-            line.append(node('strong','p23-model-speaker',label),audio,modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true));list.append(line);
+            b.dataset.speaker=who;b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);return audio;
+        }
+        const displayModel=({text,object:o})=>modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true);
+        sentences.forEach(sentence=>{
+            const {who,object:o,intro,cue,extra}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
+            const introduction=node('span','p23-model-intro');if(intro)introduction.append(modelText(intro,o,true));
+            const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();
+            const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));
+            if(extra){const continuation=node('span','p23-extra-model'),extraCue=node('span','p23-example-cue');extraCue.innerHTML=extra.cue();continuation.append(extraCue,exampleCueAudio(extra),displayModel(extra));answer.append(continuation);}
+            line.append(node('strong','p23-model-speaker',who+':'),introduction,prompt,exampleCueAudio(sentence),answer);list.append(line);
         });e1.append(list);d1.append(e1);
+        function alignExampleCues() {
+            if(!list.isConnected)return;
+            let width=0;
+            list.querySelectorAll('.p21-model-line > .p23-example-cue').forEach(cue=>{
+                const measure=cue.cloneNode(true);measure.style.cssText='position:absolute;display:inline-block;width:max-content;max-width:none;white-space:normal;visibility:hidden;';list.append(measure);width=Math.max(width,measure.getBoundingClientRect().width);measure.remove();
+            });
+            const gap=parseFloat(getComputedStyle(list).columnGap)||0;
+            const role=list.querySelector('.p23-model-speaker').getBoundingClientRect().width;
+            const audio=list.querySelector('.p23-example-audio').getBoundingClientRect().width;
+            const available=list.clientWidth-role-audio-gap*3;
+            const value=Math.max(0,Math.min(width,available))+'px';
+            if(list.style.getPropertyValue('--p23-example-cue-width')!==value)list.style.setProperty('--p23-example-cue-width',value);
+        }
+        practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);alignExampleCues();
         const selected=practice2State.cityDrillSet??0;
         panel(d1,'Drill 1: From A’s point of view',[
             '💡You are A. Say the country.',

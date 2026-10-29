@@ -1280,8 +1280,23 @@
     "type": "model",
     "tokens": [
       "私",
-      "日本",
+      "日本"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "E1-A-morning",
+    "type": "model",
+    "tokens": [
       "朝"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "E1-A-intro-B",
+    "type": "model",
+    "tokens": [
+      "イギリス"
     ]
   },
   {
@@ -1292,11 +1307,9 @@
   },
   {
     "page": "2.3",
-    "id": "E1-B-self",
+    "id": "E1-B-night",
     "type": "model",
     "tokens": [
-      "私",
-      "イギリス",
       "夜"
     ]
   },
@@ -1311,7 +1324,14 @@
     "id": "E1-B-about-C",
     "type": "model",
     "tokens": [
-      "アメリカ",
+      "アメリカ"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "E1-B-evening",
+    "type": "model",
+    "tokens": [
       "夕方"
     ]
   },
