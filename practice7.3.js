@@ -1430,6 +1430,24 @@ function render() {
             stopPlayback();
             englishCues = !englishCues;
             render();
+
+            // Match 7.2: return to Example 1 with one line of context above it.
+            requestAnimationFrame(() => {
+                const example = document.querySelector(
+                    '#drill1Container .example-box'
+                );
+                if (!example) return;
+                const computed = getComputedStyle(example);
+                const fontSize = parseFloat(computed.fontSize) || 16;
+                const lineHeight =
+                    parseFloat(computed.lineHeight) || fontSize * 1.5;
+                const top = window.scrollY +
+                    example.getBoundingClientRect().top - lineHeight;
+                window.scrollTo({
+                    top: Math.max(0, top),
+                    behavior: 'smooth'
+                });
+            });
         }
     );
 

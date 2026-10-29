@@ -122,3 +122,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/speaker-guide.cjs`：練習2の全Exampleの初期Who、A/Bへの文言変更、Playing中の点滅と終了時Whoへの復帰、2.1 E2の画像内配置・D3案内撤去・財布位置、2.2に白い上部帯を足さないことを600/900/1440pxで検証。
 
 - `node tests/section-spacing.cjs`：全11練習ページのExample→Drill 24px、2.1 E2図内音声・不透明ど案内、2.2 Example画像枠の統一を600/1440pxで検証。
+
+- `node tests/english-cue-navigation.cjs`：7.3の下部パネルから英語/日本語へ切り替え、最初のExample上に1行分の余白を残して戻ることを375/600/900/1440px・かな/漢字で確認する。
