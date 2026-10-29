@@ -3012,3 +3012,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 @media(max-width:450px) { .p23-unknown-guide .p21-question-description { display: none; } }
+
+/* Adopt the D1 24-hour clock: opaque white card, legible numerals. */
+#drill1Container > .p23-practice-picture .p23-city-time { right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }

@@ -1471,7 +1471,7 @@ function practice2ShowNotice(resultSpan, message) {
         const set1=setButtons(d1,['Places','Time','People'],'cityDrillSet');
         const ds=cityObjects(true),drillPlaces=ds.map((o,i)=>({...o,...PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i])}));
         // D1 uses simultaneous winter-standard times (Japan is on the following day).
-        const drillClockPlaces=drillPlaces.map((o,i)=>i===2?{...o,clock:'13:00',timeHira:'ごごいちじ',timeKanji:'午後一時'}:o);
+        const drillClockPlaces=drillPlaces.map((o,i)=>i===0?{...o,clock:'6:00'}:i===2?{...o,clock:'13:00',timeHira:'ごごいちじ',timeKanji:'午後一時'}:o);
         const select1=cityScene(d1,{objects:drillClockPlaces,drill:true,times:set1===1});
         drillPlaces.forEach((o,i)=>{
             const c=card(d1,String(i+1)),person=i===0?word('わたし','私'):['','Bさん','Cさん'][i];

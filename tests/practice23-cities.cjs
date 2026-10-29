@@ -47,7 +47,7 @@ function mock(){
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="cityDrillSet"] button').nth(set).click();
-   check(await p.locator('#drill1Container .p23-city-time').allTextContents(),set===1?['06:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
+   check(await p.locator('#drill1Container .p23-city-time').allTextContents(),set===1?['6:00','22:00','13:00']:[],'only Time shows simultaneous standard-time clocks');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D1 roles are A');
    for(let i=0;i<3;i++){
     const loc=['ここ','そこ','あそこ'][i],text=set===0?loc+'は、'+['日本','フランス','アメリカ'][i]+end:set===1?loc+'は、'+['朝','夜','昼'][i]+end:['私','Bさん','Cさん'][i]+'は、'+loc+end;
