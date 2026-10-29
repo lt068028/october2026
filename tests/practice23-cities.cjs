@@ -37,7 +37,7 @@ function mock(){
  check(await p.locator('#drill1Container .recording-table tr').count(),6,'D1 starts with three where conversations');
  check(await p.locator('#drill2Container .recording-table tr').count(),3,'former D1 is now D2');
  check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 contains three conversations');
- check(await p.locator('[data-set-state="cityDialogueSet"] button').allTextContents(),['Country','Cities','Time'],'D3 reuses the D2 topics');
+ check(await p.locator('[data-set-state="cityDialogueSet"] button').allTextContents(),['Country','Cities','Time','Day'],'D3 adds Day after the D2 topics');
  check(await p.locator('.p23-city-photo').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>0)),true,'all scenes load');
  check(await p.locator('.p23-practice-picture .p2x-distance-label').count(),0,'Drills omit concept captions');
  check(await p.locator('.p23-call-example .p23-city-time').count(),0,'E1 uses the scene to show time of day');
@@ -82,11 +82,12 @@ function mock(){
     if(set)check(await p.locator('.p23-where-item.is-target').getAttribute('data-kind'),['bag','book','notebook','pen'][i],'listen highlights the matching object');
    }
   }
-  for(const mode of [0,1,2]){
+  for(const mode of [0,1,2,3]){
    await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
-   const questions=mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
-   const replies=mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['パリ','大阪','ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
+   const questions=mode===3?['そこは、何曜日','そこは、何曜日','あそこは、何曜日']:mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
+   const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこは、土曜日']:mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['パリ','大阪','ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
    if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／パリ','A·Response:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'B·Response:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
+   if(mode===3){check(await visibleTexts('#drill3Container .p23-city-time'),script==='hiragana'?['にちようび','どようび','どようび']:['日曜日','土曜日','土曜日'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['A·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'B·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'A·Question:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),roles,'D3 role and place references are consistent');
    for(let i=0;i<3;i++){
@@ -104,9 +105,9 @@ function mock(){
  await judge([['p23_where_d1_s0_0_r','カフェです','私は喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','私は喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Cさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
- for(const mode of [0,1,2]){
+ for(const mode of [0,1,2,3]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
-  await judge(mode===0?[
+  await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこは土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこは土曜日です',false]]:mode===0?[
    ['p23_dialogue_s0_0_r','フランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','私はフランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','そこはフランスです','ここはフランスです',false],['p23_dialogue_s0_2_r','アメリカです','Cさんはアメリカです',true],['p23_dialogue_s0_2_r','あそこはアメリカです','Cさんはアメリカです',true]
   ]:mode===1?[
    ['p23_dialogue_s1_0_r','フランスのパリです','パリです',true],['p23_dialogue_s1_0_r','ここはフランスのパリです','パリです',true],['p23_dialogue_s1_0_r','パリです','パリです',true],['p23_dialogue_s1_0_r','ここはパリです','パリです',true],['p23_dialogue_s1_0_r','日本のパリです','パリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','ロサンゼルスです',true],['p23_dialogue_s1_2_r','Cさんはアメリカのニューヨークです','ロサンゼルスです',false]
@@ -114,6 +115,7 @@ function mock(){
    ['p23_dialogue_s2_0_r','夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','ここは午後10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','22時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','パリは夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','そこは夜十時です','ここは夜十時です',false],['p23_dialogue_s2_2_r','午後1時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','13時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','午前1時です','あそこは午後一時です',false]
   ]);
  }
+ await p.locator('[data-set-state="cityDialogueSet"] button').nth(3).click();check(await p.evaluate(()=>practice2State.savedResults.p23_dialogue_s3_2_r.isCorrect),false,'Day results survive switching');
  await p.locator('[data-set-state="cityDialogueSet"] button').first().click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),true,'D3 Country results survive topic switching');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(1).click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),false,'D3 topic results stay separate');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(2).click();
@@ -144,5 +146,7 @@ function mock(){
   check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&a.top>=r.top&&a.bottom<=r.bottom;})),true,'all framed objects stay inside their facility image');
   check(await p.locator('.p23-in-scene-audio button').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),b=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom})),true,'buttons inside each panel');
  }
+ await p.locator('[data-set-state="cityDialogueSet"] button').nth(3).click();
+ for(const width of [375,600,1440]){await p.setViewportSize({width,height:900});check(await p.locator('#drill3Container .p23-city-time').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1})),true,'Day labels fit '+width);}
  check(errors,[],'no browser errors');await browser.close();console.log('PASS city tasks',count);
 })().catch(e=>{console.error(e);process.exit(1)});

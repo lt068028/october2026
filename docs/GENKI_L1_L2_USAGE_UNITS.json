@@ -1653,5 +1653,53 @@
     "tokens": [
       "午後一時"
     ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-0-Q",
+    "type": "model",
+    "tokens": [
+      "何曜日"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-0-R",
+    "type": "model",
+    "tokens": [
+      "土曜日"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-1-Q",
+    "type": "model",
+    "tokens": [
+      "何曜日"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-1-R",
+    "type": "model",
+    "tokens": [
+      "日曜日"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-2-Q",
+    "type": "model",
+    "tokens": [
+      "何曜日"
+    ]
+  },
+  {
+    "page": "2.3",
+    "id": "D3-Day-2-R",
+    "type": "model",
+    "tokens": [
+      "土曜日"
+    ]
   }
 ]
