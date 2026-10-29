@@ -1290,7 +1290,7 @@ function practice2ShowNotice(resultSpan, message) {
         const stage=node('div','p2x-stage');
         const image=node('img','p2x-photo');
         image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':hats?(photoKind?`assets/practice22-${photoKind}.png`:'assets/practice22-hats.png'):'assets/practice22-shelves.png';
-        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A is seated on the left and B on the right. Mary is near A, Takeshi is near B, and Robert is far from both.':hats?'Rear view of A on the left and B on the right, with a baseball cap near A, a sun hat near B, and a fedora on the upper central shelf.':'A stands on the left beside a nearby shelf, B stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
+        image.alt=!is22?'Three comic panels: A is on the first floor at the bank, B on the second floor at the cafe, and neither is on the third floor at the library.':people?'A and Mary sit side by side on the left sofa. B and Takeshi sit side by side on the right sofa. Robert stands at the back, far from both groups.':hats?'Rear view of A on the left and B on the right, with a baseball cap near A, a sun hat near B, and a fedora on the upper central shelf.':'A stands on the left beside a nearby shelf, B stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
         if(photoKind)image.alt=`A stands on the left and B on the right, seen from behind. ${photoKind==='fruit'?'Apples, bananas, and mandarins':photoKind==='onigiri'?'Three groups of two rice balls':photoKind==='bento'?'Three groups of two boxed lunches':photoKind==='bag'?'Three differently shaped bags':'Three differently shaped clocks and watches'}: one near A, one near B, and one on the upper shelf far from both.`;
         image.width=shop?1774:is22?1536:2172;image.height=shop?887:is22?1024:724;stage.append(image);
         if(is22&&example&&!people) {
@@ -1315,7 +1315,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=hats?shopGeometry.centers[['A','B','far'].indexOf(o.zone)]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,51],B:[72,51],far:[51,36]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?shopGeometry.centers[['A','B','far'].indexOf(o.zone)]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,64],B:[72,64],far:[51,36]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(photoKind==='clock'){target.style.width=(o.zone==='A'?11:10)+'%';target.style.aspectRatio=o.zone==='B'?'1.8':'1';}
