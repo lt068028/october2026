@@ -26,9 +26,9 @@ function mock(){
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
  const visibleTexts=async(selector)=>p.locator(selector).evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');}));
- check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','わたしは、フランスです。','','','Cさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
+ check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','わたしは、イギリスです。','','','Cさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
  check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Bさん／どこ','ここ／よる','Cさん／どこ','あそこ／ゆうがた'],'E1 cue sequence');
- check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、フランスです。','Cさんは、アメリカです。'],'E1 text-only introductions');
+ check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Cさんは、アメリカです。'],'E1 text-only introductions');
  check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Bさんは、どこですか。','ここは、よるです。','Cさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
  check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','','A:','B:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');

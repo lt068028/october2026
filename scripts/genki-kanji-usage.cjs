@@ -33,7 +33,7 @@ for(const set of [1,2])for(const name of ['メアリー','たけし','ロバー�
 add('2.3','E1-A-intro',['私','日本']);
 add('2.3','E1-A-morning',['朝']);
 add('2.3','E1-A-question-B',[]);
-add('2.3','E1-B-intro',['私','フランス']);
+add('2.3','E1-B-intro',['私','イギリス']);
 add('2.3','E1-B-night',['夜']);
 add('2.3','E1-A-question-C',[]);
 add('2.3','E1-B-intro-C',['アメリカ']);

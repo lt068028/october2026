@@ -1467,7 +1467,7 @@ function practice2ShowNotice(resultSpan, message) {
         const sentences=[
             {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
             {who:'A',object:countries[1],cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
-            {who:'B',object:countries[1],intro:()=>statement(word('わたし','私'),noun(PracticeNext.countries.find(c=>c.hira==='フランス')))},
+            {who:'B',object:countries[1],intro:()=>statement(word('わたし','私'),noun(countries[1]))},
             {who:'B',label:'',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
             {who:'A',object:countries[2],cue:()=>'Cさん／どこ',text:()=>question('Cさん','どこ')},
             {who:'B',object:countries[2],intro:()=>statement('Cさん',noun(countries[2]))},
