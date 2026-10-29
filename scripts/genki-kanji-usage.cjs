@@ -28,8 +28,8 @@ add('2.2','E2-Q',['時計']);add('2.2','E2-R',['時計','円']);
 for(const [set,k] of ['bag','clock'].entries())for(let i=0;i<3;i++){add('2.2',`D2-S${set+1}-A-${i}-Q`,[item(k)]);add('2.2',`D2-S${set+1}-A-${i}-R`,[item(k),'円']);}
 add('2.2','E3-Q',['果物','円']);add('2.2','E3-R',['果物']);
 for(const [set,food] of ['おにぎり','お弁当'].entries())for(let i=0;i<3;i++){add('2.2',`D3-S${set+1}-A-${i}-Q`,[food,'円']);add('2.2',`D3-S${set+1}-A-${i}-R`,[food]);}
-for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add('2.2',`People-S${set}-Example-R`,['メアリー']);}
-for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
+for(const set of [1,2]){add('2.2',`D3-People-S${set}-Example-Q`,['人','誰']);add('2.2',`D3-People-S${set}-Example-R`,['メアリー']);}
+for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`D3-People-S${set}-${name}-Q`,['人','誰']);add('2.2',`D3-People-S${set}-${name}-R`,[name]);}
 add('2.3','E1-A-intro',['私','日本']);
 add('2.3','E1-A-morning',['朝']);
 add('2.3','E1-A-question-B',[]);

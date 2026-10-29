@@ -2557,7 +2557,7 @@ body.site-scale {
 .p2x-example-picture { width: 75%; }
 .p2x-stage { position: relative; aspect-ratio: 1536 / 740; overflow: hidden; border-radius: 8px; isolation: isolate; }
 .p2x-photo { position: absolute; top: 0; left: 0; display: block; width: 100%; height: auto; }
-.p2x-people-picture .p2x-stage { aspect-ratio: 3 / 2; }
+.p2x-people-picture .p2x-stage { aspect-ratio: 2 / 1; }
 .p2x-floor-picture .p2x-stage { aspect-ratio: 3 / 1; }
 .p2x-speaker-guide { position: relative; top: auto; left: auto; z-index: 10; display: inline-flex; color: #e60012; background: #fff5f5; text-shadow: none; margin: 0 0 10px; }
 .p2x-person { position: absolute; z-index: 3; padding: 0 5px; color: #111827; background: #fffef0; border-radius: 4px; }
@@ -3073,3 +3073,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(prefers-reduced-motion:reduce) { .p23-city-picture .p23-city-person.is-speaking { animation: none; background: #fecaca; } }
 /* City information follows Time's look, with a four-pixel edge clearance. */
 .p23-describe-picture .p23-city-name { right: 4px; bottom: 4px; }
+
+/* 2.2 people set: names stay below faces in the compact photograph. */
+.p2x-people-picture .p2x-person-target { height: 90%; }
+.p2x-people-picture .p2x-person-target[data-zone="far"] { width: 12%; height: 60%; }
+.p2x-people-picture .p2x-person-name { top: auto; bottom: 4px; }

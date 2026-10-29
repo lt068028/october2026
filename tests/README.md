@@ -142,3 +142,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.3 D4 English cues：D1〜D3の各セット/トピックの英語化、日本語復帰、音声日本語/録音判定保持/録音ロック/狭幅をpractice23-cities.cjs、7.3と共通のEx1移動位置をenglish-cue-navigation.cjsで確認。
 
 - 2.1 D4：各セット英語化/日本語復帰・録音保持・日本語音声・色キュー・録音中の切替ロックをpractice21.cjs、Ex1への移動をenglish-cue-navigation.cjsで検証。
+
+- 2.2 D3人物セット：3題材切替/A asks・B asks各3会話、旧人物キー/認識結果保持、名前と指示語の判定、2:1画像・ラベル範囲をpractice2-next.cjsで確認。

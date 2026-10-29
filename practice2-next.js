@@ -1315,7 +1315,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const audioGrid=node('div','p2x-audio-grid');
         for(const [i,o] of objects.entries()) {
-            const position=hats?shopGeometry.centers[['A','B','far'].indexOf(o.zone)]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,48],B:[73,46],far:[50,35]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
+            const position=hats?shopGeometry.centers[['A','B','far'].indexOf(o.zone)]:!is22?{A:[20,84],B:[51,84],far:[84,76]}[o.zone]:people?{A:[28,51],B:[72,51],far:[51,36]}[o.zone]:{A:[25,52],B:[73,53],far:[50,23.5]}[o.zone];
             const target=node('div',people?'p2x-person-target':'p2x-object');target.dataset.zone=o.zone;target.dataset.kind=o.kind;target.dataset.color=o.colorName||'';
             target.style.left=position[0]+'%';target.style.top=position[1]+'%';
             if(photoKind==='clock'){target.style.width=(o.zone==='A'?11:10)+'%';target.style.aspectRatio=o.zone==='B'?'1.8':'1';}
@@ -1627,7 +1627,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     function renderSections() {
         shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
-        for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?['peopleContainer']:['drill4Container'])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
+        for(const id of ['drill1Container','drill2Container','drill3Container',...(is22?[]:['drill4Container'])]){const c=document.getElementById(id);c.replaceChildren();c.hidden=false;}
         if(!is22){renderCitySections();return;}
         const d1=document.getElementById('drill1Container');
         const exObjects=is22?[['A','せんえん','千円',1000],['B','さんぜんえん','三千円',3000],['far','よんせんえん','四千円',4000]].map(([zone,priceHira,priceKanji,priceNumber])=>({kind:'hat',hira:'ぼうし',kanji:'帽子',romaji:'bōshi',meaning:'hat',zone,priceHira,priceKanji,priceNumber})):places();
@@ -1670,7 +1670,7 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         }
-        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderDialogue();}
+        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));}
         else {renderDialogue();renderChoosing();}
     }
     function renderPriceStatements(container) {
@@ -1702,6 +1702,7 @@ function practice2ShowNotice(resultSpan, message) {
         });
     }
     function renderFoodChoosing(container) {
+        if(practice2State.choosingSet===2){renderPeopleChoosing(container);return;}
         const exampleObjects=merchandise('fruit'),sample=exampleObjects[0],box=node('section','example-box p2x-dialogue-example p2x-food-example');
         const selectExample=scene(box,exampleObjects,{which:true,model:true});
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
@@ -1709,7 +1710,7 @@ function practice2ShowNotice(resultSpan, message) {
         q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの + noun','💡A: Ask which group has that price. B: この／その／あの + noun. ※ Price = whole group. Nouns and この／その／あの keep the same form for one or more items.');
-        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
+        const set=setButtons(container,['おにぎり',word('おべんとう','お弁当'),'この人はだれ'],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
@@ -1718,6 +1719,32 @@ function practice2ShowNotice(resultSpan, message) {
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
+    function renderPeopleChoosing(container) {
+        const set=practice2State.dialogueSet===1?1:0,asker=set===0?'A':'B',answerer=asker==='A'?'B':'A';
+        const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]})),sample=objects[0];
+        const box=node('section','example-box p2x-dialogue-example p2x-people-example');
+        box.append(node('p','p2x-context-note','どれ = which one? · だれ = who?'));
+        const showExample=scene(box,objects,{people:true,model:true});
+        const qtext=()=>question(demonstrative(asker,sample)+word('ひと','人'),word('だれ','誰')),rtext=()=>short(noun(sample)+'さん');
+        for(const [role,speaker,text]of [['Question',asker,qtext],['Response',answerer,rtext]]){
+            const line=node('p');line.append(node('strong','',`${speaker} · ${role}: `),listen(()=>{showExample(speaker,sample.zone);return text();},'🔊きく',()=>showExample.announce(speaker)),modelText(text,sample));box.append(line);
+        }
+        container.append(box);
+        panel(container,'Drill 3: この人はだれですか','💡Ask who each person is. Answer with the name.');
+        setButtons(container,['おにぎり',word('おべんとう','お弁当'),'この人はだれ'],'choosingSet');
+        setButtons(container,['A asks','B asks'],'dialogueSet');
+        const select=scene(container,objects,{people:true,speakerGuide:false});
+        objects.forEach((o,i)=>{
+            const c=card(container,String(i+1)),prefix=`p22_d2_s${set}`;
+            const subject=()=>demonstrative(asker,o)+word('ひと','人');
+            const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}／${formatWord('ひと','人','hito','person')}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(),word('だれ','誰')));
+            const key=`${prefix}_r_${i}`;
+            practice2State.replyReferences[key]=()=>[short(noun(o)),statement(demonstrative(answerer,o)+word('ひと','人'),noun(o)+'さん'),statement(demonstrative(answerer,o)+word('ひと','人'),noun(o))];
+            const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> …`,key,()=>short(noun(o)+'さん'));
+            attach(q,asker,o,select);attach(r,answerer,o,select);
+        });select(asker);
+    }
+
     function renderDialogue() {
         const d2=document.getElementById(is22?'peopleContainer':'drill2Container');
         panel(d2,is22?'この人はだれですか — Under review':'Drill 2: Where is it?',is22?'💡A: Ask who each person is. B: Answer with the name.':'💡A: Ask where each object is. B: Answer with ここ／そこ／あそこ.');
