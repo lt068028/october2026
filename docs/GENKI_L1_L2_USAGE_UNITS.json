@@ -1313,7 +1313,7 @@
   },
   {
     "page": "2.3",
-    "id": "E1-B-about-C",
+    "id": "E1-B-intro-C",
     "type": "model",
     "tokens": [
       "アメリカ"
@@ -1422,62 +1422,6 @@
   {
     "page": "2.3",
     "id": "D1-Items1-pen-R",
-    "type": "model",
-    "tokens": []
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-bag-Q",
-    "type": "model",
-    "tokens": [
-      "カバン"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-bag-R",
-    "type": "model",
-    "tokens": []
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-book-Q",
-    "type": "model",
-    "tokens": [
-      "本"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-book-R",
-    "type": "model",
-    "tokens": []
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-notebook-Q",
-    "type": "model",
-    "tokens": [
-      "ノート"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-notebook-R",
-    "type": "model",
-    "tokens": []
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-pen-Q",
-    "type": "model",
-    "tokens": [
-      "ペン"
-    ]
-  },
-  {
-    "page": "2.3",
-    "id": "D1-Items2-pen-R",
     "type": "model",
     "tokens": []
   },

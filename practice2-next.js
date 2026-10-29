@@ -1456,7 +1456,7 @@ function practice2ShowNotice(resultSpan, message) {
             {who:'A',object:countries[1],cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
             {who:'B',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
             {who:'A',object:countries[2],cue:()=>'Cさん／どこ',text:()=>question('Cさん','どこ')},
-            {who:'B',object:countries[2],cue:()=>`Cさん／${vocabulary(countries[2])}`,text:()=>statement('Cさん',noun(countries[2]))},
+            {who:'B',object:countries[2],intro:()=>statement('Cさん',noun(countries[2]))},
             {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
@@ -1467,9 +1467,9 @@ function practice2ShowNotice(resultSpan, message) {
         sentences.forEach(sentence=>{
             const {who,object:o,intro,cue,label}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
             const introduction=node('span','p23-model-intro');if(intro)introduction.append(modelText(intro,o,true));
-            const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();
-            const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));
-            line.append(node('strong','p23-model-speaker',label??who+':'),introduction,prompt,exampleCueAudio(sentence),answer);list.append(line);
+            line.append(node('strong','p23-model-speaker',label??who+':'),introduction);
+            if(cue){const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));line.append(prompt,exampleCueAudio(sentence),answer);}
+            list.append(line);
         });e1.append(list);d1.append(e1);
         const unknownOffset={x:0,y:0};
         function alignExampleCues() {
@@ -1493,15 +1493,15 @@ function practice2ShowNotice(resultSpan, message) {
         }
         practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);practice2State.exampleCueObserver.observe(unknown.closest('.p23-city-stage'));alignExampleCues();
         // D1 builds the location question first, using facilities and marked items.
-        const whereSet=practice2State.whereDrillSet??0;
+        const whereSet=practice2State.whereDrillSet===1?1:0;practice2State.whereDrillSet=whereSet;
         panel(d1,'Drill 1: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':'💡Ask where each framed item is. Answer with ');
         if(whereSet){const instruction=d1.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
-        setButtons(d1,['People','Items 1','Items 2'],'whereDrillSet');
+        setButtons(d1,['People','Item'],'whereDrillSet');
         const wherePlaces=PracticeNext.places.map(o=>({...o}));
         const selectWhere=cityScene(d1,{indoor:true,objects:wherePlaces});
         const wherePicture=d1.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
         const objectKinds=['bag','book','notebook','pen'];
-        const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:(whereSet===1?['A','B','far','B']:['far','A','B','A'])[i]}));
+        const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:['A','B','far','B'][i]}));
         const counters={A:0,B:0,far:0};
         whereObjects.forEach(o=>{
             const target=node('span','p23-where-item');target.dataset.kind=o.kind;target.dataset.zone=o.zone;
@@ -1515,7 +1515,7 @@ function practice2ShowNotice(resultSpan, message) {
             {ask:'A',reply:'B',object:wherePlaces[1],subject:()=>'あなた'},
             {ask:'B',reply:'A',object:wherePlaces[0],subject:()=>'あなた'},
             {ask:'A',reply:'B',object:wherePlaces[2],subject:()=>'Cさん'}
-        ]:whereObjects.map(o=>({ask:whereSet===1?'A':'B',reply:whereSet===1?'B':'A',object:o,subject:()=>noun(o)}));
+        ]:whereObjects.map(o=>({ask:'A',reply:'B',object:o,subject:()=>noun(o)}));
         whereConversations.forEach(({ask,reply,object:o,subject},i)=>{
             const c=card(d1,String(i+1)),prefix=`p23_where_d1_s${whereSet}_${i}`,loc=demonstrative(reply,o);
             const answer=()=>short(whereSet===0?noun(o):loc);
