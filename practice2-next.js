@@ -1777,16 +1777,16 @@ function practice2ShowNotice(resultSpan, message) {
     }
 
     function renderUmbrellaComparison(container) {
-        panel(container,'Drill 5: どのかさ・どれ','💡Compare the same umbrella: どのかさ → そのかさ; どれ → それ.');
+        panel(container,'Drill 5: どのかさ・どれ','💡Compare the same umbrella: どのかさ → このかさ; どれ → これ.');
         const picture=node('div','p2x-picture p2x-umbrella-picture'),stage=node('div','p2x-stage');
-        const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.png';photo.width=1774;photo.height=887;
-        photo.alt='A stands at the left and B at the right of a long umbrella rack. A’s red umbrella and B’s blue umbrella are both near B. The teacher’s yellow umbrella is far from both.';stage.append(photo);
+        const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.png';photo.width=2135;photo.height=736;
+        photo.alt='A stands at the left and B at the right of a long umbrella rack. A’s red umbrella is near A and B’s blue umbrella is near B. The teacher’s yellow umbrella is far from both.';stage.append(photo);
         for(const who of ['A','B']){const label=node('strong','p2x-person',who);label.dataset.person=who;stage.append(label);}
-        const umbrellas=[{owner:'A',zone:'B',x:74.6,label:'Aさんの'},{owner:'B',zone:'B',x:80.7,label:'Bさんの'},{owner:'teacher',zone:'far',x:46.6,label:word('せんせいの','先生の')}];
+        const umbrellas=[{owner:'A',zone:'A',x:17.7,label:'Aさんの'},{owner:'B',zone:'B',x:80.7,label:'Bさんの'},{owner:'teacher',zone:'far',x:46.6,label:word('せんせいの','先生の')}];
         for(const o of umbrellas){const target=node('span','p2x-umbrella-target');target.dataset.owner=o.owner;target.style.left=o.x+'%';target.append(node('span','p2x-umbrella-owner',o.label));imageHint(target,{hintText:o.label+word('かさ','傘')});target.setAttribute('aria-label',o.label+word('かさ','傘'));stage.append(target);}
         picture.append(stage);container.append(picture);
         const select=(who,owner)=>{picture.dataset.speaker=who;stage.querySelectorAll('.p2x-umbrella-target').forEach(e=>e.classList.toggle('is-target',e.dataset.owner===owner));};
-        const turns=[{asker:'B',answerer:'A',o:umbrellas[0],adj:'その',pro:'それ'},{asker:'A',answerer:'B',o:umbrellas[1],adj:'この',pro:'これ'},{asker:'B',answerer:'A',o:umbrellas[2],adj:'あの',pro:'あれ'}];
+        const turns=[{asker:'B',answerer:'A',o:umbrellas[0],adj:'この',pro:'これ'},{asker:'A',answerer:'B',o:umbrellas[1],adj:'この',pro:'これ'},{asker:'B',answerer:'A',o:umbrellas[2],adj:'あの',pro:'あれ'}];
         const umbrella=()=>word('かさ','傘');
         turns.forEach(({asker,answerer,o,adj,pro},i)=>{
             const current=card(container,String(i+1));
