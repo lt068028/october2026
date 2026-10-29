@@ -1534,8 +1534,8 @@ function practice2ShowNotice(resultSpan, message) {
             const replySubject=()=>whereSet===0?(subject()==='Cさん'?'Cさん':'ここ'):noun(o);
             const wrongPlace={zone:['far','B','A','far'][i]},wrongQuestion=demonstrative(ask,wrongPlace),wrongReply=demonstrative(reply,wrongPlace);
             const correct=()=>statement(replySubject(),whereSet===0?noun(o):loc);
-            const answer=()=>whereSet===2?response(wrongReply,false)+short(loc):correct();
-            practice2State.replyReferences[prefix+'_r']=()=>whereSet===2?[correct(),short(loc),response(wrongReply,false)+short(loc),...[...(negativeForms.slice(0,speechStyle==='formal'?4:6)),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])].flatMap(negative=>[wrongReply+negative+'。'+correct(),wrongReply+negative+'。'+short(loc)]).flatMap(text=>[text,(speechStyle==='casual'?'ううん、':'いいえ、')+text]),(speechStyle==='casual'?'ううん、':'いいえ、')+correct(),(speechStyle==='casual'?'ううん、':'いいえ、')+short(loc)]:whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Cさん'?'Cさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
+            const answer=()=>whereSet===2?response(wrongReply,false)+short(loc):whereSet===1&&i===2?correct().replace(replySubject()+'は、',replySubject()+'も、'):correct();
+            practice2State.replyReferences[prefix+'_r']=()=>whereSet===2?[correct(),short(loc),...(i===2?[correct().replace(replySubject()+'は、',replySubject()+'も、'),response(wrongReply,false)+correct().replace(replySubject()+'は、',replySubject()+'も、')]:[]),response(wrongReply,false)+short(loc),...[...(negativeForms.slice(0,speechStyle==='formal'?4:6)),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])].flatMap(negative=>[wrongReply+negative+'。'+correct(),wrongReply+negative+'。'+short(loc)]).flatMap(text=>[text,(speechStyle==='casual'?'ううん、':'いいえ、')+text]),(speechStyle==='casual'?'ううん、':'いいえ、')+correct(),(speechStyle==='casual'?'ううん、':'いいえ、')+short(loc)]:whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Cさん'?'Cさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
             const cue=whereSet===0?subject():vocabulary(o);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${cue}／${whereSet===2?wrongQuestion:'どこ'}`,prefix+'_q',()=>question(subject(),whereSet===2?wrongQuestion:'どこ'));
             const replyCue=whereSet===0?replySubject():vocabulary(o);
@@ -1545,12 +1545,7 @@ function practice2ShowNotice(resultSpan, message) {
             const select=(who,zone)=>{selectWhere(who,zone);wherePicture.querySelectorAll('.p23-where-item').forEach(e=>e.classList.toggle('is-target',e.dataset.kind===o.kind));};
             attachCity(q,ask,o,select);attachCity(r,reply,o,select);
         });
-        const selected=practice2State.cityDrillSet??0;
-        panel(describeContainer,'Drill 1: From A’s point of view',[
-            '💡You are A. Say the country.',
-            '💡You are A. Say the city.',
-            '💡You are A. Say the time.'
-        ][selected]);
+        panel(describeContainer,'Drill 1: From A’s point of view','💡You are A. Make each sentence using ここ, そこ, or あそこ.');
         const set1=setButtons(describeContainer,['Country','Cities','Time'],'cityDrillSet');
         // D1 and D3 share the same locations and simultaneous winter-standard times.
         const ds=cityObjects(true).map((o,i)=>({...o,country:PracticeNext.countries.find(c=>c.hira===['にほん','フランス','アメリカ'][i]),clock:['6:00','22:00','13:00'][i],timeHira:['あさろくじ','よるじゅうじ','ごごいちじ'][i],timeKanji:['朝六時','夜十時','午後一時'][i]}));
@@ -1597,11 +1592,12 @@ function practice2ShowNotice(resultSpan, message) {
             const rcue=dialogueMode===3?vocabulary(days[index]):dialogueMode===0?vocabulary(o.country):dialogueMode===1?vocabulary(o):formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${qsubject}／${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()));
             const responseSubject=dialogueMode===1?(index===2?'あそこ':'ここ'):rsubject;
-            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${responseSubject}／${rcue}`,prefix+'_r',()=>statement(responseSubject,dialogueMode===1?noun(o):rpredicate()));
+            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${responseSubject}／${rcue}`,prefix+'_r',()=>{const text=statement(responseSubject,dialogueMode===1?noun(o):rpredicate());return dialogueMode===3&&i===2?text.replace(responseSubject+'は、',responseSubject+'も、'):text;});
             practice2State.replyReferences[prefix+'_r']=()=>{
                 const alternatives=[short(rpredicate())];
                 if(dialogueMode===0)alternatives.push(statement(index===2?'あそこ':word('わたし','私'),rpredicate()));
                 if(dialogueMode===1)alternatives.push(short(noun(o)),short(cityPhrase()),statement(rsubject,cityPhrase()),statement(rsubject,noun(o)),statement(index===2?'あそこ':word('わたし','私'),cityPhrase()),statement(index===2?'あそこ':word('わたし','私'),noun(o)));
+                if(dialogueMode===3)alternatives.push(statement(rsubject,rpredicate()));
                 if(dialogueMode===2)for(const variant of [['朝六時','午前六時','六時'],['夜十時','午後十時','二十二時','十時'],['午後一時','十三時','一時']][index])alternatives.push(short(variant),statement(rsubject,variant),statement(noun(o),variant),statement(noun(o.country),variant));
                 return alternatives;
             };

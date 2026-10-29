@@ -60,6 +60,7 @@ function mock(){
    check(await p.locator('#drill1Container > .p23-city-picture .p23-city-hint').evaluateAll((es,words)=>es.map((e,i)=>e.getAttribute('aria-label').includes(words[i])),hintMeanings),[true,true,true],'image hints match the selected category');
    const firstHint=p.locator('#drill1Container > .p23-city-picture .p23-city-hint').first();await firstHint.focus();
    check((await p.locator('#'+await firstHint.getAttribute('aria-describedby')).textContent()).includes(hintMeanings[0]),true,'the visible hover tooltip follows the category');
+   check(await p.locator('#drill1Container .info-panel-desc').textContent(),'💡You are A. Make each sentence using ここ, そこ, or あそこ.','D1 explicitly requests demonstratives');
    check(await p.locator('#drill1Container .drill-cue-cell strong').count(),0,'D2 cues omit redundant A labels');
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.every(e=>e.dataset.drillSpeaker==='A')),true,'all D2 roles are A');
    for(let i=0;i<3;i++){
@@ -79,14 +80,14 @@ function mock(){
    if(set===2)check(await p.locator('#drill2Container .p21-response-lead').allTextContents(),Array(4).fill(style==='casual'?'ううん…':'いいえ…'),'negative lead follows Stop');
    for(let i=0;i<nouns.length;i++){
     await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、'+(set===2?['あそこ','ここ','そこ','あそこ'][i]:'どこ')+qend);
-    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===2?'':(set===0?['ここ','ここ','Cさん'][i]:nouns[i])+'は、')+answers[i]+end);
+    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===2?'':(set===0?['ここ','ここ','Cさん'][i]:nouns[i])+(set===1&&i===2?'も、':'は、'))+answers[i]+end);
     if(set)check(await p.locator('.p23-where-item.is-target').getAttribute('data-kind'),['bag','book','notebook','pen'][i],'listen highlights the matching object');
    }
   }
   for(const mode of [0,1,2,3]){
    await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
    const questions=mode===3?['そこは、何曜日','そこは、何曜日','あそこは、何曜日']:mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
-   const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこは、土曜日']:mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['ここは、パリ','ここは、大阪','あそこは、ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
+   const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこも、土曜日']:mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['ここは、パリ','ここは、大阪','あそこは、ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
    if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／パリ','A·Response:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'B·Response:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
    if(mode===3){check(await visibleTexts('#drill3Container .p23-city-time'),script==='hiragana'?['にちようび','どようび','どようび']:['日曜日','土曜日','土曜日'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['A·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'B·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'A·Question:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
@@ -105,12 +106,12 @@ function mock(){
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
  await judge([['p23_where_d1_s0_0_r','カフェです','ここは喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','ここは喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Cさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
- await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
+ await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','ノートもあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ノートはあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','あそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートもあそこです',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
- await judge([['p23_where_d1_s2_0_r','いいえ、あそこじゃないです。カバンはここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','いいえ、ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','あそこです','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_0_r','いいえ','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_1_r','いいえ、そこじゃないです。本はあそこです','いいえ、そこじゃないです。あそこです',true],['p23_where_d1_s2_1_r','ここは本です','いいえ、そこじゃないです。あそこです',false]]);
+ await judge([['p23_where_d1_s2_2_r','ノートもあそこです','いいえ、ここじゃないです。あそこです',true],['p23_where_d1_s2_2_r','いいえ、ここじゃないです。ノートもあそこです','いいえ、ここじゃないです。あそこです',true],['p23_where_d1_s2_0_r','いいえ、あそこじゃないです。カバンはここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','いいえ、ここです','いいえ、あそこじゃないです。ここです',true],['p23_where_d1_s2_0_r','あそこです','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_0_r','いいえ','いいえ、あそこじゃないです。ここです',false],['p23_where_d1_s2_1_r','いいえ、そこじゃないです。本はあそこです','いいえ、そこじゃないです。あそこです',true],['p23_where_d1_s2_1_r','ここは本です','いいえ、そこじゃないです。あそこです',false]]);
  for(const mode of [0,1,2,3]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
-  await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこは土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこは土曜日です',false]]:mode===0?[
+  await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこも土曜日です','あそこも土曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこも土曜日です',true],['p23_dialogue_s3_2_r','どようびです','あそこも土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこも土曜日です',false]]:mode===0?[
    ['p23_dialogue_s0_0_r','フランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','私はフランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','そこはフランスです','ここはフランスです',false],['p23_dialogue_s0_2_r','アメリカです','Cさんはアメリカです',true],['p23_dialogue_s0_2_r','あそこはアメリカです','Cさんはアメリカです',true]
   ]:mode===1?[
    ['p23_dialogue_s1_0_r','フランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはフランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','パリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはパリです','ここはパリです',true],['p23_dialogue_s1_0_r','日本のパリです','ここはパリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','あそこはロサンゼルスです',true],['p23_dialogue_s1_2_r','Cさんはアメリカのニューヨークです','あそこはロサンゼルスです',false]
