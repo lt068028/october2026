@@ -3065,7 +3065,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     box-shadow: 0 1px 4px #0004;
 }
 
-/* D1 target cards share a top-left origin and size; additional cards stack down. */
+/* D1 target cards share a top-right origin and size; additional cards stack down. */
 .p23-where-picture .p23-city-region { top: 0; container-type: inline-size; }
 .p23-where-picture .p23-where-item { width: 28%; transform: none; aspect-ratio: 1; }
 .p23-city-picture .p23-city-person.is-speaking { color: #dc2626; animation: p23-speaking .8s ease-in-out infinite; }

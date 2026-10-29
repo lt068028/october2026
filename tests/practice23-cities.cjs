@@ -26,10 +26,11 @@ function mock(){
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
  const visibleTexts=async(selector)=>p.locator(selector).evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');}));
- check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','','','Cさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
+ check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','わたしは、フランスです。','','','Cさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
  check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Bさん／どこ','ここ／よる','Cさん／どこ','あそこ／ゆうがた'],'E1 cue sequence');
+ check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、フランスです。','Cさんは、アメリカです。'],'E1 text-only introductions');
  check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Bさんは、どこですか。','ここは、よるです。','Cさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
- check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','A:','B:',''],'model row roles');
+ check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','','A:','B:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item'],'D1 has person and item tasks');
@@ -69,11 +70,11 @@ function mock(){
   for(const set of [0,1]){
    await p.locator('[data-set-state="whereDrillSet"] button').nth(set).click();
    const nouns=set===0?['Bさん','Aさん','Cさん']:['カバン','本','ノート','ペン'];
-   const answers=set===0?['喫茶店','銀行','図書館']:['ここ','そこ','あそこ','そこ'];
-   const speakers=set===0?['A','B','B','A','B','A']:Array(4).fill(['B','A']).flat();
+   const answers=set===0?['喫茶店','銀行','図書館']:['ここ','あそこ','あそこ','ここ'];
+   const speakers=set===0?['A','B','B','A','B','A']:['B','A','B','A','B','A','A','B'];
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
    const responseCues=await visibleTexts('#drill1Container .recording-table tr:nth-child(2) .drill-cue-cell');
-   check(responseCues,set===0?['B·Response:'+ (script==='hiragana'?'わたし':'私'),'A·Response:'+(script==='hiragana'?'わたし':'私'),'A·Response:Cさん']:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','A·Response:ペン'],'response cues name the intended subject');
+   check(responseCues,set===0?['B·Response:'+ (script==='hiragana'?'わたし／きっさてん':'私／喫茶店'),'A·Response:'+(script==='hiragana'?'わたし／ぎんこう':'私／銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
    check(await p.locator('#drill1Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
    for(let i=0;i<nouns.length;i++){
     await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、どこ'+qend);
@@ -84,7 +85,7 @@ function mock(){
   for(const mode of [0,1,2]){
    await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
    const questions=mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
-   const replies=mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['ここは、フランスのパリ','ここは、日本の大阪','Cさんは、アメリカのロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
+   const replies=mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['パリ','大阪','ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),roles,'D3 role and place references are consistent');
    for(let i=0;i<3;i++){
@@ -101,13 +102,13 @@ function mock(){
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
  await judge([['p23_where_d1_s0_0_r','カフェです','私は喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','私は喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Cさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
- await judge([['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','そこです','本はそこです',true],['p23_where_d1_s1_1_r','本はここです','本はそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
+ await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
  for(const mode of [0,1,2]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
   await judge(mode===0?[
    ['p23_dialogue_s0_0_r','フランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','私はフランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','そこはフランスです','ここはフランスです',false],['p23_dialogue_s0_2_r','アメリカです','Cさんはアメリカです',true],['p23_dialogue_s0_2_r','あそこはアメリカです','Cさんはアメリカです',true]
   ]:mode===1?[
-   ['p23_dialogue_s1_0_r','パリです','ここはフランスのパリです',true],['p23_dialogue_s1_0_r','ここはパリです','ここはフランスのパリです',true],['p23_dialogue_s1_0_r','日本のパリです','ここはフランスのパリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','Cさんはアメリカのロサンゼルスです',true],['p23_dialogue_s1_2_r','Cさんはアメリカのニューヨークです','Cさんはアメリカのロサンゼルスです',false]
+   ['p23_dialogue_s1_0_r','フランスのパリです','パリです',true],['p23_dialogue_s1_0_r','ここはフランスのパリです','パリです',true],['p23_dialogue_s1_0_r','パリです','パリです',true],['p23_dialogue_s1_0_r','ここはパリです','パリです',true],['p23_dialogue_s1_0_r','日本のパリです','パリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','ロサンゼルスです',true],['p23_dialogue_s1_2_r','Cさんはアメリカのニューヨークです','ロサンゼルスです',false]
   ]:[
    ['p23_dialogue_s2_0_r','夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','ここは午後10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','22時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','パリは夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','そこは夜十時です','ここは夜十時です',false],['p23_dialogue_s2_2_r','午後1時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','13時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','午前1時です','あそこは午後一時です',false]
   ]);
@@ -138,7 +139,7 @@ function mock(){
   check(await p.locator('.p23-describe-picture .p23-city-time').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&Math.abs(r.bottom-a.bottom-4)<1;})),true,'Time and Cities use the same corner clearance in both drills');
   check(await p.locator('#drill2Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&Math.abs(r.bottom-a.bottom-4)<1;})),true,'city labels leave four pixels to the right and bottom frame');
   check(await p.locator('#drill2Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1;})),true,'city labels fit inside each image');
-  check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect(),first=es[0].getBoundingClientRect();return Math.abs(a.left-r.left-4)<1&&a.top>=r.top+3&&Math.abs(a.width-first.width)<1&&Math.abs(a.height-first.height)<1;})),true,'all item cards share a left edge and size');
+  check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect(),first=es[0].getBoundingClientRect();return Math.abs(r.right-a.right-4)<1&&a.top>=r.top+3&&Math.abs(a.width-first.width)<1&&Math.abs(a.height-first.height)<1;})),true,'all item cards share a right edge and size');
   check(await p.locator('.p23-where-item').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&a.top>=r.top&&a.bottom<=r.bottom;})),true,'all framed objects stay inside their facility image');
   check(await p.locator('.p23-in-scene-audio button').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),b=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=b.left&&a.right<=b.right&&a.top>=b.top&&a.bottom<=b.bottom})),true,'buttons inside each panel');
  }

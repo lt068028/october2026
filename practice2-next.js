@@ -1467,7 +1467,8 @@ function practice2ShowNotice(resultSpan, message) {
         const sentences=[
             {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
             {who:'A',object:countries[1],cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
-            {who:'B',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
+            {who:'B',object:countries[1],intro:()=>statement(word('わたし','私'),noun(PracticeNext.countries.find(c=>c.hira==='フランス')))},
+            {who:'B',label:'',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
             {who:'A',object:countries[2],cue:()=>'Cさん／どこ',text:()=>question('Cさん','どこ')},
             {who:'B',object:countries[2],intro:()=>statement('Cさん',noun(countries[2]))},
             {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
@@ -1514,12 +1515,12 @@ function practice2ShowNotice(resultSpan, message) {
         const selectWhere=cityScene(d1,{indoor:true,objects:wherePlaces});
         const wherePicture=d1.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
         const objectKinds=['bag','book','notebook','pen'];
-        const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:['A','B','far','B'][i]}));
+        const whereObjects=whereSet===0?[]:objectKinds.map((kind,i)=>({...PracticeNext.items.find(o=>o.kind===kind),zone:['A','far','far','B'][i]}));
         const counters={A:0,B:0,far:0};
         whereObjects.forEach(o=>{
             const target=node('span','p23-where-item');target.dataset.kind=o.kind;target.dataset.zone=o.zone;
             const slot=counters[o.zone]++;
-            target.style.left='4px';target.style.top=`calc(4px + ${slot} * (28cqw + 4px))`;
+            target.style.right='4px';target.style.top=`calc(4px + ${slot} * (28cqw + 4px))`;
             const sprite=node('span','p23-where-sprite');sprite.style.backgroundPosition={bag:'0% 0%',book:'100% 0%',notebook:'0% 100%',pen:'100% 100%'}[o.kind];target.append(sprite);imageHint(target,o);
             wherePicture.querySelector(`.p23-city-region[data-zone="${o.zone}"]`).append(target);
         });
@@ -1527,7 +1528,7 @@ function practice2ShowNotice(resultSpan, message) {
             {ask:'A',reply:'B',object:wherePlaces[1],subject:()=>'Bさん'},
             {ask:'B',reply:'A',object:wherePlaces[0],subject:()=>'Aさん'},
             {ask:'B',reply:'A',object:wherePlaces[2],subject:()=>'Cさん'}
-        ]:whereObjects.map(o=>({ask:'B',reply:'A',object:o,subject:()=>noun(o)}));
+        ]:whereObjects.map((o,i)=>({ask:i===3?'A':'B',reply:i===3?'B':'A',object:o,subject:()=>noun(o)}));
         whereConversations.forEach(({ask,reply,object:o,subject},i)=>{
             const c=card(d1,String(i+1)),prefix=`p23_where_d1_s${whereSet}_${i}`,loc=demonstrative(reply,o);
             const replySubject=()=>whereSet===0?(subject()==='Cさん'?'Cさん':word('わたし','私')):noun(o);
@@ -1536,7 +1537,7 @@ function practice2ShowNotice(resultSpan, message) {
             const cue=whereSet===0?subject():vocabulary(o);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${cue}／どこ`,prefix+'_q',()=>question(subject(),'どこ'));
             const replyCue=whereSet===0?(subject()==='Cさん'?'Cさん':word('わたし','私')):vocabulary(o);
-            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${replyCue}`,prefix+'_r',answer);
+            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${replyCue}${whereSet===0?'／'+vocabulary(o):i===3?'／'+loc:''}`,prefix+'_r',answer);
             identifySpeaker(q,prefix+'_q');identifySpeaker(r,prefix+'_r');
             const select=(who,zone)=>{selectWhere(who,zone);wherePicture.querySelectorAll('.p23-where-item').forEach(e=>e.classList.toggle('is-target',e.dataset.kind===o.kind));};
             attachCity(q,ask,o,select);attachCity(r,reply,o,select);
@@ -1592,11 +1593,11 @@ function practice2ShowNotice(resultSpan, message) {
             const qcue=dialogueMode===0?'どこ':dialogueMode===1?whereCue():word('なんじ','何時');
             const rcue=dialogueMode===0?vocabulary(o.country):dialogueMode===1?cityCue():formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
             const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${qsubject}／${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()));
-            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${rsubject}／${rcue}`,prefix+'_r',()=>statement(rsubject,rpredicate()));
+            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${rsubject}／${rcue}`,prefix+'_r',()=>dialogueMode===1?short(noun(o)):statement(rsubject,rpredicate()));
             practice2State.replyReferences[prefix+'_r']=()=>{
                 const alternatives=[short(rpredicate())];
                 if(dialogueMode===0)alternatives.push(statement(index===2?'あそこ':word('わたし','私'),rpredicate()));
-                if(dialogueMode===1)alternatives.push(short(noun(o)),statement(rsubject,noun(o)),statement(index===2?'あそこ':word('わたし','私'),cityPhrase()),statement(index===2?'あそこ':word('わたし','私'),noun(o)));
+                if(dialogueMode===1)alternatives.push(short(cityPhrase()),statement(rsubject,cityPhrase()),statement(rsubject,noun(o)),statement(index===2?'あそこ':word('わたし','私'),cityPhrase()),statement(index===2?'あそこ':word('わたし','私'),noun(o)));
                 if(dialogueMode===2)for(const variant of [['朝六時','午前六時','六時'],['夜十時','午後十時','二十二時','十時'],['午後一時','十三時','一時']][index])alternatives.push(short(variant),statement(rsubject,variant),statement(noun(o),variant),statement(noun(o.country),variant));
                 return alternatives;
             };

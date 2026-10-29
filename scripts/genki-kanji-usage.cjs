@@ -33,6 +33,7 @@ for(const set of [1,2])for(const name of ['メアリー','たけし','ロバー�
 add('2.3','E1-A-intro',['私','日本']);
 add('2.3','E1-A-morning',['朝']);
 add('2.3','E1-A-question-B',[]);
+add('2.3','E1-B-intro',['私','フランス']);
 add('2.3','E1-B-night',['夜']);
 add('2.3','E1-A-question-C',[]);
 add('2.3','E1-B-intro-C',['アメリカ']);
@@ -41,7 +42,7 @@ for(const [i,place]of ['喫茶店','銀行','図書館'].entries()){add('2.3',`D
 for(const set of [1])for(const kind of ['bag','book','notebook','pen']){add('2.3',`D1-Items${set}-${kind}-Q`,[item(kind)]);add('2.3',`D1-Items${set}-${kind}-R`,[item(kind)]);}
 for(let i=0;i<3;i++){add('2.3',`D2-Country-${i}`,[['日本','フランス','アメリカ'][i]]);add('2.3',`D2-Time-${i}`,[['朝六時','夜十時','午後一時'][i]]);add('2.3',`D2-Cities-${i}`,[['大阪','パリ','ロサンゼルス'][i]]);}
 
-for(const [i,index]of [1,0,2].entries()){const country=['日本','フランス','アメリカ'][index],city=['大阪','パリ','ロサンゼルス'][index],time=['朝六時','夜十時','午後一時'][index];add('2.3',`D3-Country-${i}-Q`,[]);add('2.3',`D3-Country-${i}-R`,[country]);add('2.3',`D3-Cities-${i}-Q`,[country]);add('2.3',`D3-Cities-${i}-R`,[country,city]);add('2.3',`D3-Time-${i}-Q`,['何時']);add('2.3',`D3-Time-${i}-R`,[time]);}
+for(const [i,index]of [1,0,2].entries()){const country=['日本','フランス','アメリカ'][index],city=['大阪','パリ','ロサンゼルス'][index],time=['朝六時','夜十時','午後一時'][index];add('2.3',`D3-Country-${i}-Q`,[]);add('2.3',`D3-Country-${i}-R`,[country]);add('2.3',`D3-Cities-${i}-Q`,[country]);add('2.3',`D3-Cities-${i}-R`,[city]);add('2.3',`D3-Time-${i}-Q`,['何時']);add('2.3',`D3-Time-${i}-R`,[time]);}
 
 const lessons={
 L1:'今|英語|学生|語|日本語|高校|午後|午前|歳|時|人|日本人|専攻|専門|先生|大学|電話|友達|名前|何|日本|年生|半|番号|私|留学生|韓国|中国|科学|アジア研究|国際関係|工学|生物学|人類学|政治|文学|歴史|仕事|医者|会社員|看護師|高校生|主婦|大学院生|大学生|弁護士|お母さん|お父さん|お姉さん|お兄さん|妹|弟|家族|国'.split('|'),
