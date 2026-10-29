@@ -3459,11 +3459,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         renderAll();
 
-        document.getElementById(
-            'practice71Example'
-        )?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
+        requestAnimationFrame(() => {
+            const heading = document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');
+            if (!heading) return;
+            const style = getComputedStyle(heading);
+            const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.5;
+            window.scrollTo({top: Math.max(0, window.scrollY + heading.getBoundingClientRect().top - line), behavior: 'smooth'});
         });
     }
 

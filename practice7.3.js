@@ -1431,10 +1431,10 @@ function render() {
             englishCues = !englishCues;
             render();
 
-            // Match 7.2: return to Example 1 with one line of context above it.
+            // Return to the first Drill heading with one line of context above it.
             requestAnimationFrame(() => {
                 const example = document.querySelector(
-                    '#drill1Container .example-box'
+                    '#drill1Container .info-panel:not(.drill-cue-panel)'
                 );
                 if (!example) return;
                 const computed = getComputedStyle(example);

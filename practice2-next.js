@@ -1620,7 +1620,7 @@ function practice2ShowNotice(resultSpan, message) {
         toggle.onclick=()=>{
             if(busy())return;
             practice2State.englishCues=!practice2State.englishCues;renderAll();
-            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .example-box');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
+            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
         };
         cuePanel.append(copy,toggle);d4.append(cuePanel);
     }
@@ -1708,7 +1708,7 @@ function practice2ShowNotice(resultSpan, message) {
         const q=node('p'),r=node('p');
         q.append(node('strong','','A · Question: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
         r.append(node('strong','','B · Response: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
-        panel(container,'Drill 3: どの + noun','Ask with どの＋noun.');
+        panel(container,'Drill 3: どの + noun','💡Ask with どの＋noun.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;

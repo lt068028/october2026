@@ -2885,7 +2885,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             requestAnimationFrame(() => {
                 const example = document.querySelector(
-                    "#drill1Container .example-box"
+                    "#drill1Container .info-panel:not(.drill-cue-panel)"
                 );
                 if (!example) return;
 

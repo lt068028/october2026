@@ -1526,7 +1526,7 @@ function practice2ShowNotice(resultSpan, message) {
         toggle.onclick=()=>{
             if(busy())return;
             practice2State.englishCues=!practice2State.englishCues;renderAll();
-            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .example-box');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
+            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
         };
         panel.append(copy,toggle);container.append(panel);
     }
