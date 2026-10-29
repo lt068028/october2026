@@ -1293,14 +1293,6 @@
   },
   {
     "page": "2.3",
-    "id": "E1-A-intro-B",
-    "type": "model",
-    "tokens": [
-      "イギリス"
-    ]
-  },
-  {
-    "page": "2.3",
     "id": "E1-A-question-B",
     "type": "model",
     "tokens": []

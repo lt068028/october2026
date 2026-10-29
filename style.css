@@ -3010,25 +3010,17 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Adopt the D1 24-hour clock: opaque white card, legible numerals. */
 .p23-describe-picture .p23-city-time { right: 10px; bottom: 10px; padding: 5px 10px; border-radius: 6px; font-size: clamp(16px,2.2vw,24px); font-weight: 700; line-height: 1.2; white-space: nowrap; color: #111827; background: #fff; box-shadow: 0 1px 5px #0005; }
 
-/* 2.3 Ex1: share intrinsic introduction, cue, listen and model columns. */
-.practice-next-page .p23-conversation-models { display: grid; grid-template-columns: max-content max-content var(--p23-example-cue-width,max-content) max-content minmax(0,1fr); align-items: baseline; gap: 8px 6px; }
+/* 2.3 Ex1: introductions are separate lines; all six cues share their start. */
+.practice-next-page .p23-conversation-models { display: grid; grid-template-columns: max-content var(--p23-example-cue-width,max-content) max-content minmax(0,1fr); align-items: baseline; gap: 8px 6px; }
 .p23-conversation-models .p21-model-line { display: contents; }
 .p23-conversation-models .p23-model-speaker { grid-column: 1; }
-.p23-conversation-models .p23-model-intro { grid-column: 2; }
-.p23-conversation-models .p21-model-line > .p23-example-cue { grid-column: 3; }
-.p23-conversation-models .p21-model-line > .p23-example-audio { grid-column: 4; }
-.p23-conversation-models .p23-model-answer { grid-column: 5; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
-.p23-conversation-models .p23-extra-model { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; max-width: 100%; min-width: 0; }
+.p23-conversation-models .p23-model-intro { grid-column: 2 / -1; }
+.p23-conversation-models .p23-model-intro:empty { display: none; }
+.p23-conversation-models .p21-model-line > .p23-example-cue { grid-column: 2; }
+.p23-conversation-models .p21-model-line > .p23-example-audio { grid-column: 3; }
+.p23-conversation-models .p23-model-answer { grid-column: 4; min-width: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 8px; }
 .p23-conversation-models .p23-example-cue { min-width: 0; }
 .p23-conversation-models .p23-example-cue > .display-cue-unit { display: block; }
-@container (max-width:850px) {
- .practice-next-page .p23-conversation-models { grid-template-columns: max-content var(--p23-example-cue-width,max-content) max-content minmax(0,1fr); }
- .p23-conversation-models .p23-model-intro { grid-column: 2 / -1; }
- .p23-conversation-models .p23-model-intro:empty { display: none; }
- .p23-conversation-models .p21-model-line > .p23-example-cue { grid-column: 2; }
- .p23-conversation-models .p21-model-line > .p23-example-audio { grid-column: 3; }
- .p23-conversation-models .p23-model-answer { grid-column: 4; }
-}
 @container (max-width:550px) {
  .p23-conversation-models .p23-model-answer { grid-column: 2 / -1; }
 }

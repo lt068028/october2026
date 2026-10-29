@@ -32,7 +32,6 @@ for(const set of [1,2]){add('2.2',`People-S${set}-Example-Q`,['人','誰']);add(
 for(const set of [1,2])for(const name of ['メアリー','たけし','ロバート']){add('2.2',`People-S${set}-${name}-Q`,['人','誰']);add('2.2',`People-S${set}-${name}-R`,[name]);}
 add('2.3','E1-A-intro',['私','日本']);
 add('2.3','E1-A-morning',['朝']);
-add('2.3','E1-A-intro-B',['イギリス']);
 add('2.3','E1-A-question-B',[]);
 add('2.3','E1-B-night',['夜']);
 add('2.3','E1-A-question-C',[]);

@@ -26,10 +26,10 @@ function mock(){
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
  const visibleTexts=async(selector)=>p.locator(selector).evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');}));
- check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','Bさんは、イギリスですか？','','',''],'E1 introductions share their own column');
+ check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','','','',''],'E1 has only the separate Japan introduction');
  check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Bさん／どこ','ここ／よる','Cさん／どこ','Cさん／アメリカ','あそこ／ゆうがた'],'E1 cue sequence');
- check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Bさんは、どこですか。','ここは、よるです。','Cさんは、どこですか。','Cさんは、アメリカです。'],'E1 primary models');
- check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','A:','B:'],'model row roles');
+ check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Bさんは、どこですか。','ここは、よるです。','Cさんは、どこですか。','Cさんは、アメリカです。','あそこは、ゆうがたです。'],'E1 primary models');
+ check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','A:','B:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B','B'],'six model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Items 1','Items 2'],'D1 has person and item tasks');
@@ -97,6 +97,7 @@ function mock(){
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator('#hintModeControl [data-value="'+hint+'"]').click();check(await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)),[],'layout '+width+theme+hint);
   check(await p.locator('.p23-city-picture').evaluateAll(es=>es.every(e=>{const r=e.querySelector('img').getBoundingClientRect();return [...e.querySelectorAll('.p21-area-sound')].every(c=>{const q=c.getBoundingClientRect();return q.top>=r.top&&q.bottom<=r.bottom&&q.left>=r.left&&q.right<=r.right})})),true,'distance sounds stay inside the photograph '+width+theme+hint);
   check(await p.locator('.p23-unknown-guide').evaluate(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-stage').getBoundingClientRect();return a.left>=r.left&&a.right<=r.left+r.width/3+1&&a.top>=r.top&&a.bottom<=r.bottom;}),true,'unknown guide stays in A picture '+width+theme+hint);
+  check(await p.locator('.p23-conversation-models').evaluate(e=>{const intro=e.querySelector('.p23-model-intro').getBoundingClientRect(),cues=[...e.querySelectorAll('.p21-model-line > .p23-example-cue')].map(x=>x.getBoundingClientRect()),america=e.querySelectorAll('.p23-model-answer')[4].getBoundingClientRect();return intro.bottom<=cues[0].top+1&&america.bottom<=cues[5].top+1&&Math.abs(cues[0].left-cues[5].left)<1;}),true,'Japan introduction and final evening cue start on separate aligned lines');
   check(await p.locator('.p23-conversation-models').evaluate(e=>Math.abs(e.querySelector('.p21-model-line > .p23-example-cue').getBoundingClientRect().width-parseFloat(e.style.getPropertyValue('--p23-example-cue-width')))<1),true,'shared cue width follows content, without surplus space');
   check(await p.locator('.p23-conversation-models .p21-model-line > .p23-example-cue').evaluateAll(es=>es.every(e=>Math.abs(e.getBoundingClientRect().left-es[0].getBoundingClientRect().left)<1)),true,'primary cue starts align');
   check(await p.locator('#drill2Container .p23-city-name').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect(),r=e.closest('.p23-city-region').getBoundingClientRect();return a.left>=r.left&&a.right<=r.right&&e.scrollWidth<=e.clientWidth+1;})),true,'city labels fit inside each image');

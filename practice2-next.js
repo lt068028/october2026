@@ -1453,10 +1453,11 @@ function practice2ShowNotice(resultSpan, message) {
         const periodCue=o=>formatWord(o.periodHira,o.periodKanji,...{あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira]);
         const sentences=[
             {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
-            {who:'A',object:countries[1],intro:()=>question('Bさん',noun(countries[1])),cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
+            {who:'A',object:countries[1],cue:()=>'Bさん／どこ',text:()=>question('Bさん','どこ')},
             {who:'B',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
             {who:'A',object:countries[2],cue:()=>'Cさん／どこ',text:()=>question('Cさん','どこ')},
-            {who:'B',object:countries[2],cue:()=>`Cさん／${vocabulary(countries[2])}`,text:()=>statement('Cさん',noun(countries[2])),extra:{who:'B',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}}
+            {who:'B',object:countries[2],cue:()=>`Cさん／${vocabulary(countries[2])}`,text:()=>statement('Cさん',noun(countries[2]))},
+            {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
             const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
@@ -1464,12 +1465,11 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const displayModel=({text,object:o})=>modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true);
         sentences.forEach(sentence=>{
-            const {who,object:o,intro,cue,extra}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
+            const {who,object:o,intro,cue,label}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
             const introduction=node('span','p23-model-intro');if(intro)introduction.append(modelText(intro,o,true));
             const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();
             const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));
-            if(extra){const continuation=node('span','p23-extra-model'),extraCue=node('span','p23-example-cue');extraCue.innerHTML=extra.cue();continuation.append(extraCue,exampleCueAudio(extra),displayModel(extra));answer.append(continuation);}
-            line.append(node('strong','p23-model-speaker',who+':'),introduction,prompt,exampleCueAudio(sentence),answer);list.append(line);
+            line.append(node('strong','p23-model-speaker',label??who+':'),introduction,prompt,exampleCueAudio(sentence),answer);list.append(line);
         });e1.append(list);d1.append(e1);
         function alignExampleCues() {
             if(!list.isConnected)return;
