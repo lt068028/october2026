@@ -32,9 +32,14 @@ function mock(){
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
+ check(await p.locator('.p21-which-models > p').count(),3,'three separate model sentences');
+ const whatReadings=await p.evaluate(()=>['なん','なに','何'].map(reading=>practice2SpeechText('これは'+reading+'ですか')));check(whatReadings.every(t=>t.includes('なんですか')),true,'formal TTS uses explicit nan desu ka');
+ check(await p.evaluate(()=>practice2ToHiragana('これは何ですか')),'これはなんですか','contextual kana display');
+ const whatAnswers=await p.evaluate(()=>{const key='p21_d2_s0_q_0',v=practice2State.views[key],autoplay=isAutoPlay;isAutoPlay=false;const answers=['これはなんですか','これはなにですか','これは何ですか'].map(text=>{processResult(text,'これはなんですか',()=> 'これはなんですか',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,practice2State.savedResults[key].rawTranscript];});isAutoPlay=autoplay;return answers;});check(whatAnswers,[[true,'これはなんですか'],[true,'これはなにですか'],[true,'これは何ですか']],'both readings accepted and raw transcript preserved');
+
  check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').count(),0,'D3 does not repeat the do explanation');
  check(await p.locator('#drill3Container .p21-set-switcher button').count(),2,'two noun sets after phone example');
- for(const [i,expected]of ['わたしのすまほはこれですあなたのすまほはどれですか','あれです'].entries()) {await p.locator('.p21-which-example button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
+ for(const [i,expected]of ['わたしのすまほはこれです','bさんのすまほはどれですか','あれです'].entries()) {await p.locator('.p21-which-models button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
 
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');
@@ -201,7 +206,7 @@ function mock(){
    for(let i=0;i<6;i++) {
     await p.locator('#drill2Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
-    const j=Math.floor(i/2),expected=i%2?nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なにですか':'なに');
+    const j=Math.floor(i/2),expected=i%2?['それ','これ','あれ'][j]+'は'+nouns[j]+(style==='formal'?'です':'だ'):['これ','それ','あれ'][j]+'は'+(style==='formal'?'なんですか':'なに');
     check(text,expected,'D2 naming model');
    }
   }
@@ -212,7 +217,7 @@ function mock(){
     await p.locator('#drill3Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
     const target=[[1,2],[2,0]][set][Math.floor(i/2)],noun=['じしょ','さいふ'][set];
-    const expected=i%2?(Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):'あなたの'+noun+'はどれ'+(style==='formal'?'ですか':'');
+    const expected=i%2?(set===0||Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):(set===0?(Math.floor(i/2)===0?'bさんの':'aさんの'):'あなたの')+noun+'はどれ'+(style==='formal'?'ですか':'');
     check(text,expected,'D3 color cue, B perspective');
    }
   }
@@ -292,7 +297,7 @@ function mock(){
  for(const set of [0,1]){await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill2Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D2 sets use English cues');}
  for(const set of [0,1]){await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill3Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D3 sets use English cues');check(await p.locator('#drill3Container .p21-color-cue').count(),2,'English mode preserves color cues');}
  await p.locator('#drill2Container .p21-set-switcher button').first().click();check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),true,'English mode preserves recorded result');
- await p.locator('#drill2Container tr').nth(1).locator('.recording-actions button').first().click();check(await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return practice2Normalize(u.text)}),'おにぎりです','English cues keep Japanese audio');
+ await p.locator('#drill2Container tr').nth(1).locator('.recording-actions button').first().click();check(await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return practice2Normalize(u.text)}),'それはおにぎりです','English cues keep Japanese audio');
  await p.locator('#scriptModeControl [data-value="kanji"]').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'true','script change keeps English selection');
  await p.locator('.drill-cue-button').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'false','Japanese cues restored');check((await p.locator('#drill2Container .drill-cue-cell').first().textContent()).includes('これ'),true,'D2 Japanese pronoun restored');check(await p.locator('.drill-cue-button').count(),1,'D4 panel is not duplicated');
  for(const width of [600,900,1440,1920]) {

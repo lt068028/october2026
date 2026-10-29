@@ -11,7 +11,7 @@ const mock=source.slice(source.indexOf('function mock()'),source.indexOf('(async
   await p.route('http://pulse.test/*.html',r=>r.fulfill({body:fs.readFileSync(path.join(root,new URL(r.request().url()).pathname)),contentType:'text/html'}));
   await p.goto('http://pulse.test/'+name+'.html');
   const marker='.p21-distance-person.is-speaking, .p2x-person.is-speaking';
-  async function verify(who,label){assert.deepEqual(await p.locator(marker).evaluateAll(es=>es.map(e=>e.dataset.person)),[who],label);assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).animationName),'p23-speaking');count+=2;}
+  async function verify(who,label){assert.deepEqual(await p.locator(marker).evaluateAll(es=>es.map(e=>e.dataset.person)),[who],label);assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).animationName),'p23-speaking');assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).outlineColor),'rgb(230, 0, 18)');count+=3;}
   async function checkCurrent(label){
    const examples=p.locator('.example-box button.example-button');
    for(let i=0;i<await examples.count();i++){

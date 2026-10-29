@@ -152,3 +152,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 練習2の未指定空白：`node tests/lesson2-cue-spacing.cjs`。全セット・両Script・全Vocab・English cuesを走査し、語内/区切り前後の余計な空白を検出する。
 
 - 2.2 D5傘比較：`node tests/practice22-umbrellas.cjs`。同じ傘のAdjectives/Pronouns、全Speech/Scriptモデル、指示語/形式誤答判定、所有対象/話者同期、録音排他と保持、375/600/1440px通常/ダークの枠内配置。
+
+- 通常Drillのリレー間隔0秒：`node tests/relay-zero-gap.cjs`。全11ページの実録音後経路で、疑似TTS終了の同一コールバック内にAudio.playが呼ばれることを確認。録音内の無音や実機の音響的間隔の検証とは区別。

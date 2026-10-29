@@ -18,7 +18,7 @@ for(const k of ['book','bag','clock'])for(const speaker of ['A','B'])add('2.1','
 for(const k of ['pen','newspaper','hat'])for(const speaker of ['A','B'])add('2.1','D1-S1-'+k+'-'+speaker,[item(k)]);
 for(const [i,k] of ['notebook','pencil','tshirt'].entries()){add('2.1',`D1-S2-${i}-Q`,[item(['pencil','tshirt','notebook'][i])]);add('2.1',`D1-S2-${i}-R`,[item(k)]);}
 for(const [set,kinds] of [['onigiri','bento','sandwich'],['sweatshirt','jeans','shoes']].entries())for(const [i,k]of kinds.entries()){add('2.1',`D2-S${set+1}-${i}-Q`,['何']);add('2.1',`D2-S${set+1}-${i}-R`,[item(k)]);}
-add('2.1','E2-A',['私','スマホ']);
+add('2.1','E2-A-intro',['私','スマホ']);add('2.1','E2-A-question',['スマホ']);add('2.1','E2-B-response',[]);
 for(const k of ['dictionary','wallet'])for(const i of [1,2])add('2.1',`D3-${k}-${i}-Q`,[item(k)]);
 // Short D3 answers have no noun; no lexical item is added for those slots.
 // New Lesson 2 pages use the same item assets; count the authored lexical slots, not allowed variants.

@@ -2413,7 +2413,7 @@ body.site-scale {
 .p21-distance-person { position: absolute; z-index: 3; top: 32%; color: #111827; background: #fffffff0; border-radius: 4px; padding: 0 6px; }
 .p21-distance-person[data-person="A"] { left: 7%; }
 .p21-distance-person[data-person="B"] { right: 7%; }
-.p21-distance-person.is-speaker { outline: 2px solid #1d4ed8; }
+.p21-distance-person.is-speaker { outline: 2px solid #e60012; }
 .p21-table-regions { position: absolute; inset: 0; z-index: 1; pointer-events: none; clip-path: polygon(14.97% 40%,84.96% 40%,87.76% 89.32%,11.91% 89.32%); }
 .p21-reach { position: absolute; pointer-events: none; }
 .p21-reach[data-reach="A"] { left: 11%; top: 40%; width: 29%; height: 50%; border-radius: 0 45% 40% 0; }
@@ -2561,7 +2561,7 @@ body.site-scale {
 .p2x-floor-picture .p2x-stage { aspect-ratio: 3 / 1; }
 .p2x-speaker-guide { position: relative; top: auto; left: auto; z-index: 10; display: inline-flex; color: #e60012; background: #fff5f5; text-shadow: none; margin: 0 0 10px; }
 .p2x-person { position: absolute; z-index: 3; padding: 0 5px; color: #111827; background: #fffef0; border-radius: 4px; }
-.p2x-person.is-speaker { outline: 3px solid #ef4444; }
+.p2x-person.is-speaker { outline: 2px solid #e60012; }
 .p2x-object { position: absolute; z-index: 2; width: 14%; aspect-ratio: 1; transform: translate(-50%,-50%); }
 .p2x-floor-picture .p2x-object { width: 8%; }
 .p2x-object[data-kind="place"] { width: 29%; height: 70%; top: 58% !important; aspect-ratio: auto; }
@@ -3108,3 +3108,28 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:900px) { .p2x-umbrella-picture { width: 100%; } }
 
 #drill5Container .tooltip-tip:not([data-viewport-tip]) { position: fixed; top: 0; left: 0; bottom: auto; transform: none; }
+
+/* Lesson 2: active speaker borders use the same red as Who is speaking. */
+:is(.p21-distance-person,.p2x-person,.p23-city-person).is-speaking { outline: 2px solid #e60012; }
+.p21-which-audio { top: auto; bottom: 9%; }
+.p21-which-audio[data-speaker="A"] { left: 24%; }
+.p21-which-audio[data-speaker="B"] { right: 24%; }
+.p21-which-models { display: grid; grid-template-columns: minmax(0,1fr); gap: 6px; margin-top: 12px; }
+.p21-which-model-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px; margin: 0; }
+@media(max-width:450px) {
+ .p21-which-audio[data-speaker="A"] { left: 10%; }
+ .p21-which-audio[data-speaker="B"] { right: 10%; }
+}
+/* Share the two A cue columns; B has no reserved cue slot. */
+.p21-which-models { grid-template-columns: max-content fit-content(45%) max-content max-content minmax(0,1fr); }
+.p21-which-model-line:has(.p21-which-cue) { display: contents; }
+.p21-which-model-line:not(:has(.p21-which-cue)) { grid-column: 1 / -1; }
+.p21-which-models > p > :last-child { min-width: 0; overflow-wrap: anywhere; }
+@container(max-width:850px) {
+ .p21-which-models { grid-template-columns: max-content max-content minmax(0,1fr); }
+ .p21-which-model-line:has(.p21-which-cue) > :nth-child(1) { grid-column: 1; }
+ .p21-which-model-line:has(.p21-which-cue) > :nth-child(2) { grid-column: 2 / -1; }
+ .p21-which-model-line:has(.p21-which-cue) > :nth-child(3) { grid-column: 1; }
+ .p21-which-model-line:has(.p21-which-cue) > :nth-child(4) { grid-column: 2; }
+ .p21-which-model-line:has(.p21-which-cue) > :nth-child(5) { grid-column: 3; }
+}

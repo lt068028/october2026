@@ -303,7 +303,7 @@ function stopAllPlayback() {
 function convertToHiragana(text) {
     let value=String(text??'');
     for(const o of Practice21.items) value=value.split(o.kanji).join(o.hira);
-    return value.replace(/鞄/g,'かばん').replace(/何/g,'なに');
+    return value.replace(/鞄/g,'かばん').replace(/何(?=ですか)/g,'なん').replace(/何/g,'なに');
 }
 
 function speakText(text, rate = 0.75, onEndCallback) {
@@ -1486,9 +1486,10 @@ function practice2ShowNotice(resultSpan, message) {
             const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
             const key=`p21_d2_s${s2}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
-            practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o))];
-            const r=recordingRow(current,'a','<strong>B · Response:</strong> …',key,()=>noun(o)+ending);
+            practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o)),noun(o)+ending];
+            const r=recordingRow(current,'a',`<strong>B · Response:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)));
             englishCue(q,[englishObject(pro('A',o)),'what']);
+            englishCue(r,[englishObject(pro('B',o)),o.meaning]);
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
         const d3=document.getElementById('drill3Container');d3.hidden=false;
@@ -1496,17 +1497,26 @@ function practice2ShowNotice(resultSpan, message) {
         const phone=item('phone'),exampleObjects=['red','blue','green'].map((colorName,i)=>({...phone,colorName,zone:['A','B','far'][i]}));
         const showExample=laterScene(exampleBox,exampleObjects,true);
         const mine=exampleObjects[0],yours=exampleObjects[2];
-        const aText=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine))+whichQuestion(yours);
-        const bText=()=>shortAnswer('B',yours);
-        const qLine=node('p'),rLine=node('p');
-        for(const [speaker,text] of [['A',aText],['B',bText]]) {
+        const intro=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine));
+        const ask=()=>question('Bさんの'+noun(yours),'どれ');
+        const reply=()=>shortAnswer('B',yours);
+        for(const [speaker,text] of [['A',ask],['B',reply]]) {
             const button=listen(()=>{showExample(speaker);return text();},`${speaker}🔊きく`,()=>showExample.announce(speaker));
             button.classList.add('p21-which-audio');button.dataset.speaker=speaker;
             exampleBox.querySelector('.p21-example-scene-canvas').append(button);
         }
-        qLine.append(node('strong','','A · Question: '),modelText(aText,phone,true));
-        rLine.append(node('strong','','B · Response: '),modelText(bText,phone,true));
-        exampleBox.append(qLine,rLine);d3.append(exampleBox);showExample('A');
+        const models=node('div','p21-which-models');
+        for(const [speaker,text,cue,part]of [
+            ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'／これ','intro'],
+            ['A',ask,formatWord('Bさんのスマホ','Bさんのスマホ','B-san no sumaho','B’s smartphone')+'／どれ','question'],
+            ['B',reply,'','response']]){
+            const line=node('p','p21-which-model-line');line.dataset.part=part;
+            line.append(node('strong','',speaker+'：'));
+            if(cue){const prompt=node('span','p21-which-cue');prompt.innerHTML=cue;line.append(prompt,node('span','','👉️'));}
+            const sound=listen(()=>{showExample(speaker);return text();},'🔊きく',()=>showExample.announce(speaker));sound.dataset.speaker=speaker;
+            line.append(sound,modelText(text,phone,true));models.append(line);
+        }
+        exampleBox.append(models);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);
         const s3=setButtons(d3,[noun(item('dictionary')),noun(item('wallet'))],'choosingSet');
         const nounItem=item(['dictionary','wallet'][s3]);
@@ -1515,16 +1525,18 @@ function practice2ShowNotice(resultSpan, message) {
         // The phone is introduced in Example 2; the two Drill sets cover dictionary and wallet.
         const targets=[[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
-            const o=choices[target],current=card(d3,String(i+1)),asking=i===0?'A':'B',answering=i===0?'B':'A';
+            const o=choices[target],current=card(d3,String(i+1)),asking=s3===0?'A':i===0?'A':'B',answering=s3===0?'B':i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
-            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> ${formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>whichQuestion(o));
+            const owner=s3===0?(i===0?'B':'A'):answering;
+            const possessive=()=>owner===answering?word('わたしの','私の'):owner+'さんの';
+            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> ${s3===0?owner+'さん':formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>s3===0?question(owner+'さんの'+noun(o),'どれ'):whichQuestion(o));
             const cue=node('span');cue.innerHTML=`<strong>${answering} · Response:</strong> `;
             const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
-            practice2State.replyReferences[key]=()=>[statement(pro(answering,o),word('わたしの','私の')+noun(o)),statement(word('わたしの','私の')+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),word('わたしの','私の')),pro(answering,o)+'が'+word('わたしの','私の')+noun(o)+ending];
+            practice2State.replyReferences[key]=()=>[statement(pro(answering,o),possessive()+noun(o)),statement(possessive()+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),possessive()),pro(answering,o)+'が'+possessive()+noun(o)+ending];
             const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
-            englishCue(q,['you',o.meaning,'which one']);
+            englishCue(q,[s3===0?owner:'you',o.meaning,'which one']);
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
     }
@@ -1803,7 +1815,8 @@ function practice2SpeechText(text) {
     let value = String(text ?? "").trim().replace(/^ううん、/, "ううんん、");
     const pairs=Practice21.items.filter(o=>o.hira!==o.kanji).map(o=>[o.hira,o.kanji]).sort((a,b)=>b[0].length-a[0].length);
     for(const [from,to]of pairs)value=value.split(from).join(to);
-    value=value.replace(/(?:なん|なに)(?=ですか|[？?。]|$)/g,'何');
+    value=value.replace(/何(?=ですか)/g,'なん');
+    value=value.replace(/(?:なん|なに)(?=ですか|[？?。]|$)/g,(reading,offset,text)=>text.startsWith('ですか',offset+reading.length)?'なん':'何');
     let prefix = "";
 
     // 「はい」の「は」を助詞として処理しない。

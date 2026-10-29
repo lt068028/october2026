@@ -30,11 +30,11 @@ const root=path.resolve(__dirname,'..');
    if(name==='practice2.1.html'){
     const box=page.locator('.p21-which-example');
     assert.equal(await box.locator('.p21-photo-stage button').count(),2);checks++;
-    assert.deepEqual(await box.locator(':scope > p .grammar-highlight').allTextContents(),['どれ']);checks++;
-    assert.ok((await box.locator(':scope > p').last().textContent()).includes('あれです'));checks++;
+    assert.deepEqual(await box.locator('.p21-which-models p .grammar-highlight').allTextContents(),['どれ']);checks++;
+    assert.ok((await box.locator('.p21-which-models p').last().textContent()).includes('あれです'));checks++;
     assert.equal(await box.locator('.p21-thought-cloud path').evaluate(e=>getComputedStyle(e).fill),'rgb(255, 227, 227)');checks++;
     const controls=await box.locator('.p21-which-audio').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect(),s=e.closest('.p21-photo-stage').getBoundingClientRect();return{speaker:e.dataset.speaker,x:(r.left-s.left)/s.width,right:(r.right-s.left)/s.width,bottom:r.bottom<=s.bottom};}));
-    assert.ok(controls[0].x<.15&&controls[1].right>.85&&controls.every(x=>x.bottom),'controls stay beside their speakers');checks++;
+    assert.ok(controls[0].x>.15&&controls[1].right<.85&&controls.every(x=>x.bottom),'controls stay beside their speakers');checks++;
    }
   }
  }

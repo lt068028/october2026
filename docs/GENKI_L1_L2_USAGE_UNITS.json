@@ -753,12 +753,26 @@
   },
   {
     "page": "2.1",
-    "id": "E2-A",
+    "id": "E2-A-intro",
     "type": "model",
     "tokens": [
       "私",
       "スマホ"
     ]
+  },
+  {
+    "page": "2.1",
+    "id": "E2-A-question",
+    "type": "model",
+    "tokens": [
+      "スマホ"
+    ]
+  },
+  {
+    "page": "2.1",
+    "id": "E2-B-response",
+    "type": "model",
+    "tokens": []
   },
   {
     "page": "2.1",
