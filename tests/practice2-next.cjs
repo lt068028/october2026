@@ -26,6 +26,9 @@ function mock(){
   await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
   const personSection=number==='2.2'?'#drill4Container':'#drill2Container';
+  check(await p.locator('#drill1Container > .info-panel .info-panel-desc').textContent(),'💡Name the item and say its price.','D1 concise instruction');
+  check(await p.locator('#drill2Container > .info-panel .info-panel-desc').textContent(),'💡A: Ask the price and answer.','D2 requested instruction');
+  check(await p.locator('#drill3Container > .info-panel .info-panel-desc').textContent(),'💡Ask with どの＋noun.','D3 keeps instruction icon');
   check(await p.title(),number==='2.2'?'Practice 2.2: この・その・あの・どの — Demonstrative Adjectives':'Practice 2.3: ここ・そこ・あそこ・どこ',number+' page title');
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');

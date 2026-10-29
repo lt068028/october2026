@@ -1,5 +1,7 @@
 # October2026 機能仕様書（PROJECT_SPEC）
 
+共通ルールの仕様/実装照合・適用範囲・未完了事項：[COMMON_RULE_AUDIT.md](COMMON_RULE_AUDIT.md)。
+
 > **Drill説明の先頭（現行共通仕様）**：全ページのDrill説明は💡から始める。文言短縮時も💡を残す。2.2 D3は「💡Ask with どの＋noun.」。
 
 > **English cuesの現行ジャンプ仕様（2026-10-29）**：英語／日本語キュー切替後はExampleを既習とみなし、Drill 1の見出しへsmoothスクロールする。上端に本文1行分の余白を残す。対象はEnglish cues実装済みの2.1・2.3・7.1・7.2・7.3。7.1は同一問題領域の段階切替のため、段階名がDrill 2/3になっていても最初の問題見出しへ移動する。2.2には現時点でEnglish cues切替がない。後述のEx1へ戻る記述は旧仕様。

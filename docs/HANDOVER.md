@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 今回自動検証：node --check practice2-next.js、git diff --check、node tests/practice2-next.cjs（412項目合格）。仕様照合一覧は静的確認を含み、全ページ全操作の再検証完了とはしない。
+
+- 2026-10-29 / Codex：開始main f6c6595、workクリーン・同期確認。2.2 D1「💡Name the item and say its price.」/D2「💡A: Ask the price and answer.」へ指定どおり変更。A質問/B返答の役割・必須回答要素は変更なし。Ex4撤去は意見のみ、未実施。共通仕様照合COMMON_RULE_AUDITを追加、旧2.1例文構成/2.2 D3補足記述を訂正、練習2語彙Hoverの適用例外を明記。話者赤点滅全3ページ統一は未完了。実機未確認。
+
 - 追加確認：全11ページの初期表示にあるDrill説明33欄はすべて💡始まり（2.2 D3を復元）。共通仕様をPROJECT_SPEC/UI_LAYOUT_SPECに追記。D1/D2短縮案は提案のみ、未変更。English cue navigationは5ページ×4幅×2Script×英日切替、241検証合格。構文・差分正常、公開実機未確認。
 
 - 2026-10-29 / Codex：English cues実装済み全5ページ（2.1/2.3/7.1/7.2/7.3）の英日切替後ジャンプを、Exampleから最初のDrill見出し＋本文1行余白へ変更。2.2はEnglish cues未実装。仕様4文書の冒頭に現行仕様を明記。話者赤点滅の全ページ統一・現況一覧は未完了。

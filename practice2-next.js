@@ -1674,7 +1674,7 @@ function practice2ShowNotice(resultSpan, message) {
         else {renderDialogue();renderChoosing();}
     }
     function renderPriceStatements(container) {
-        panel(container,'Drill 1: Describe the price','💡Follow the speaker cue. Use この／その／あの + noun and say the picture price.');
+        panel(container,'Drill 1: Describe the price','💡Name the item and say its price.');
         const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects,{speakerGuide:false});
         [['B',objects[0]],['A',objects[0]],['B',objects[2]]].forEach(([speaker,o],i)=>{
             const current=card(container,String(i+1));
@@ -1692,7 +1692,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function renderPriceDialogue(container) {
         priceConversationExample(container);
-        panel(container,'Drill 2: Ask the price','💡A asks three prices. B answers with この／その／あの + noun and the price.');
+        panel(container,'Drill 2: Ask the price','💡A: Ask the price and answer.');
         const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'priceDialogueSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects);
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_price_s${set}_A_${i}`;
