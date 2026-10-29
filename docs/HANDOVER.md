@@ -1,6 +1,6 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
-- 追加確認：全11ページの初期表示にあるDrill説明30欄はすべて💡始まり（2.2 D3を復元）。共通仕様をPROJECT_SPEC/UI_LAYOUT_SPECに追記。D1/D2短縮案は提案のみ、未変更。English cue navigationは5ページ×4幅×2Script×英日切替、241検証合格。構文・差分正常、公開実機未確認。
+- 追加確認：全11ページの初期表示にあるDrill説明33欄はすべて💡始まり（2.2 D3を復元）。共通仕様をPROJECT_SPEC/UI_LAYOUT_SPECに追記。D1/D2短縮案は提案のみ、未変更。English cue navigationは5ページ×4幅×2Script×英日切替、241検証合格。構文・差分正常、公開実機未確認。
 
 - 2026-10-29 / Codex：English cues実装済み全5ページ（2.1/2.3/7.1/7.2/7.3）の英日切替後ジャンプを、Exampleから最初のDrill見出し＋本文1行余白へ変更。2.2はEnglish cues未実装。仕様4文書の冒頭に現行仕様を明記。話者赤点滅の全ページ統一・現況一覧は未完了。
 
