@@ -33,7 +33,7 @@ function mock(){
  check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','','A:','B:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
- check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item'],'D1 has person and item tasks');
+ check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item 1','Item 2'],'D1 has people, WH and Y/N item tasks');
  check(await p.locator('#drill1Container .recording-table tr').count(),6,'D1 starts with three where conversations');
  check(await p.locator('#drill2Container .recording-table tr').count(),3,'former D1 is now D2');
  check(await p.locator('#drill3Container .recording-table tr').count(),6,'D3 contains three conversations');
@@ -67,18 +67,19 @@ function mock(){
     await compare(p.locator('#drill2Container .recording-table tr').nth(i).locator('.recording-actions button').first(),text);
    }
   }
-  for(const set of [0,1]){
+  for(const set of [0,1,2]){
    await p.locator('[data-set-state="whereDrillSet"] button').nth(set).click();
    const nouns=set===0?['Bさん','Aさん','Cさん']:['カバン','本','ノート','ペン'];
    const answers=set===0?['喫茶店','銀行','図書館']:['ここ','あそこ','あそこ','ここ'];
    const speakers=set===0?['A','B','B','A','B','A']:['B','A','B','A','B','A','A','B'];
    check(await p.locator('#drill1Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
    const responseCues=await visibleTexts('#drill1Container .recording-table tr:nth-child(2) .drill-cue-cell');
-   check(responseCues,set===0?['B·Response:'+ (script==='hiragana'?'わたし／きっさてん':'私／喫茶店'),'A·Response:'+(script==='hiragana'?'わたし／ぎんこう':'私／銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
+   check(responseCues,set===2?['A·Response:あそこ／'+(script==='hiragana'?'かばん':'カバン')+'／ここ','A·Response:そこ／'+(script==='hiragana'?'ほん':'本')+'／あそこ','A·Response:ここ／ノート／あそこ','B·Response:あそこ／ペン／ここ']:set===0?['B·Response:'+ (script==='hiragana'?'わたし／きっさてん':'私／喫茶店'),'A·Response:'+(script==='hiragana'?'わたし／ぎんこう':'私／銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
    check(await p.locator('#drill1Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
+   if(set===2)check(await p.locator('#drill1Container .p21-response-lead').allTextContents(),Array(4).fill(style==='casual'?'ううん…':'いいえ…'),'negative lead follows Stop');
    for(let i=0;i<nouns.length;i++){
-    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、どこ'+qend);
-    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===0?['私','私','Cさん'][i]:nouns[i])+'は、'+answers[i]+end);
+    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、'+(set===2?['あそこ','ここ','そこ','あそこ'][i]:'どこ')+qend);
+    await compare(p.locator('#drill1Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===0?['私','私','Cさん'][i]:nouns[i])+'は、'+answers[i]+end);
     if(set)check(await p.locator('.p23-where-item.is-target').getAttribute('data-kind'),['bag','book','notebook','pen'][i],'listen highlights the matching object');
    }
   }
@@ -105,6 +106,8 @@ function mock(){
  await judge([['p23_where_d1_s0_0_r','カフェです','私は喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','私は喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','私は喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Cさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','あそこです','ノートはあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートはあそこです',false]]);
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
+ await judge([['p23_where_d1_s2_0_r','いいえ、あそこじゃないです。カバンはここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','ここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','いいえ、ここです','いいえ、あそこじゃないです。カバンはここです',true],['p23_where_d1_s2_0_r','あそこです','いいえ、あそこじゃないです。カバンはここです',false],['p23_where_d1_s2_0_r','いいえ','いいえ、あそこじゃないです。カバンはここです',false],['p23_where_d1_s2_1_r','いいえ、そこじゃないです。本はあそこです','いいえ、そこじゃないです。本はあそこです',true],['p23_where_d1_s2_1_r','ここは本です','いいえ、そこじゃないです。本はあそこです',false]]);
  for(const mode of [0,1,2,3]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
   await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこは土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこは土曜日です',false]]:mode===0?[
@@ -129,8 +132,10 @@ function mock(){
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await row.textContent().then(s=>s.includes('✅')),true,'question and full response recordings are judged');
   check(await p.locator('.p23-city-person.is-speaking').count(),0,'recording completion clears the marker');
  }
- await p.locator('[data-set-state="whereDrillSet"] button').first().click();await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
- check(await p.locator('#drill1Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'D1 full response results survive switching');
+ await p.locator('[data-set-state="whereDrillSet"] button').first().click();await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
+ check(await p.locator('#drill1Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'Item 2 full response results survive switching');
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();check(await p.locator('#drill1Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),false,'Item 1 and Item 2 results stay separate');
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
  await p.locator('[data-set-state="cityDrillSet"] button').nth(1).click();
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator('#hintModeControl [data-value="'+hint+'"]').click();check(await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)),[],'layout '+width+theme+hint);

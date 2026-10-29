@@ -1507,10 +1507,10 @@ function practice2ShowNotice(resultSpan, message) {
         }
         practice2State.exampleCueObserver=new ResizeObserver(alignExampleCues);practice2State.exampleCueObserver.observe(list);practice2State.exampleCueObserver.observe(unknown.closest('.p23-city-stage'));alignExampleCues();
         // D1 builds the location question first, using facilities and marked items.
-        const whereSet=practice2State.whereDrillSet===1?1:0;practice2State.whereDrillSet=whereSet;
-        panel(d1,'Drill 1: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':'💡Ask where each framed item is. Answer with ');
-        if(whereSet){const instruction=d1.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
-        setButtons(d1,['People','Item'],'whereDrillSet');
+        const whereSet=[0,1,2].includes(practice2State.whereDrillSet)?practice2State.whereDrillSet:0;practice2State.whereDrillSet=whereSet;
+        panel(d1,'Drill 1: Where?',whereSet===0?'💡Ask where each person is. Answer with the place.':whereSet===2?'💡Check the location. Say no and give the correct location.':'💡Ask where each framed item is. Answer with ');
+        if(whereSet===1){const instruction=d1.lastElementChild.querySelector('.info-panel-desc');instruction.append(node('span','p23-locative-options','ここ／そこ／あそこ'),document.createTextNode('.'));}
+        setButtons(d1,['People','Item 1','Item 2'],'whereDrillSet');
         const wherePlaces=PracticeNext.places.map(o=>({...o}));
         const selectWhere=cityScene(d1,{indoor:true,objects:wherePlaces});
         const wherePicture=d1.querySelector(':scope > .p23-city-picture');wherePicture.classList.add('p23-where-picture');
@@ -1532,13 +1532,16 @@ function practice2ShowNotice(resultSpan, message) {
         whereConversations.forEach(({ask,reply,object:o,subject},i)=>{
             const c=card(d1,String(i+1)),prefix=`p23_where_d1_s${whereSet}_${i}`,loc=demonstrative(reply,o);
             const replySubject=()=>whereSet===0?(subject()==='Cさん'?'Cさん':word('わたし','私')):noun(o);
-            const answer=()=>statement(replySubject(),whereSet===0?noun(o):loc);
-            practice2State.replyReferences[prefix+'_r']=()=>whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Cさん'?'Cさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
+            const wrongPlace={zone:['far','B','A','far'][i]},wrongQuestion=demonstrative(ask,wrongPlace),wrongReply=demonstrative(reply,wrongPlace);
+            const correct=()=>statement(replySubject(),whereSet===0?noun(o):loc);
+            const answer=()=>whereSet===2?response(wrongReply,false)+correct():correct();
+            practice2State.replyReferences[prefix+'_r']=()=>whereSet===2?[correct(),short(loc),response(wrongReply,false)+short(loc),...[...(negativeForms.slice(0,speechStyle==='formal'?4:6)),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])].flatMap(negative=>[wrongReply+negative+'。'+correct(),wrongReply+negative+'。'+short(loc)]).flatMap(text=>[text,(speechStyle==='casual'?'ううん、':'いいえ、')+text]),(speechStyle==='casual'?'ううん、':'いいえ、')+correct(),(speechStyle==='casual'?'ううん、':'いいえ、')+short(loc)]:whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Cさん'?'Cさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
             const cue=whereSet===0?subject():vocabulary(o);
-            const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${cue}／どこ`,prefix+'_q',()=>question(subject(),'どこ'));
+            const q=recordingRow(c,'q',`<strong>${ask} · Question:</strong> ${cue}／${whereSet===2?wrongQuestion:'どこ'}`,prefix+'_q',()=>question(subject(),whereSet===2?wrongQuestion:'どこ'));
             const replyCue=whereSet===0?(subject()==='Cさん'?'Cさん':word('わたし','私')):vocabulary(o);
-            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${replyCue}${whereSet===0?'／'+vocabulary(o):i===3?'／'+loc:''}`,prefix+'_r',answer);
+            const r=recordingRow(c,'a',`<strong>${reply} · Response:</strong> ${whereSet===2?wrongReply+'／'+replyCue+'／'+loc:replyCue+(whereSet===0?'／'+vocabulary(o):i===3?'／'+loc:'')}`,prefix+'_r',answer);
             identifySpeaker(q,prefix+'_q');identifySpeaker(r,prefix+'_r');
+            if(whereSet===2)r.actions.append(node('span','p21-response-lead',speechStyle==='casual'?'ううん…':'いいえ…'));
             const select=(who,zone)=>{selectWhere(who,zone);wherePicture.querySelectorAll('.p23-where-item').forEach(e=>e.classList.toggle('is-target',e.dataset.kind===o.kind));};
             attachCity(q,ask,o,select);attachCity(r,reply,o,select);
         });

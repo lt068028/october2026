@@ -40,6 +40,7 @@ add('2.3','E1-B-intro-C',['アメリカ']);
 add('2.3','E1-B-evening',['夕方']);
 for(const [i,place]of ['喫茶店','銀行','図書館'].entries()){add('2.3',`D1-People-${i}-Q`,[]);add('2.3',`D1-People-${i}-R`,i<2?[place,'私']:[place]);}
 for(const set of [1])for(const kind of ['bag','book','notebook','pen']){add('2.3',`D1-Items${set}-${kind}-Q`,[item(kind)]);add('2.3',`D1-Items${set}-${kind}-R`,[item(kind)]);}
+for(const kind of ['bag','book','notebook','pen']){add('2.3',`D1-Items2-${kind}-Q`,[item(kind)]);add('2.3',`D1-Items2-${kind}-R`,[item(kind)]);}
 for(let i=0;i<3;i++){add('2.3',`D2-Country-${i}`,[['日本','フランス','アメリカ'][i]]);add('2.3',`D2-Time-${i}`,[['朝六時','夜十時','午後一時'][i]]);add('2.3',`D2-Cities-${i}`,[['大阪','パリ','ロサンゼルス'][i]]);}
 
 for(const [i,index]of [1,0,2].entries()){const country=['日本','フランス','アメリカ'][index],city=['大阪','パリ','ロサンゼルス'][index],time=['朝六時','夜十時','午後一時'][index];add('2.3',`D3-Country-${i}-Q`,[]);add('2.3',`D3-Country-${i}-R`,[country]);add('2.3',`D3-Cities-${i}-Q`,[country]);add('2.3',`D3-Cities-${i}-R`,[city]);add('2.3',`D3-Time-${i}-Q`,['何時']);add('2.3',`D3-Time-${i}-R`,[time]);}
