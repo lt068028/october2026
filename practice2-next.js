@@ -1736,22 +1736,22 @@ function practice2ShowNotice(resultSpan, message) {
         });
     }
     function renderPeopleChoosing(container) {
-        const set=practice2State.dialogueSet===1?1:0,asker=set===0?'A':'B',answerer=asker==='A'?'B':'A';
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
         panel(container,'Drill 4: この人はだれですか','');
         const instruction=container.lastElementChild.querySelector('.info-panel-desc');
         instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
-        setButtons(container,['A asks','B asks'],'dialogueSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
-        objects.forEach((o,i)=>{
-            const c=card(container,String(i+1)),prefix=`p22_d2_s${set}`;
-            const subject=()=>demonstrative(asker,o)+word('ひと','人');
-            const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}／${formatWord('ひと','人','hito','person')}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(),word('だれ','誰')));
+        const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:false},{asker:'A',answerer:'B',object:objects[2],full:true}];
+        turns.forEach(({asker,answerer,object:o,full},i)=>{
+            const c=card(container,String(i+1)),prefix='p22_people_mixed';
+            const subject=speaker=>demonstrative(speaker,o)+word('ひと','人');
+            const q=recordingRow(c,'q',`<strong>${asker} · Question:</strong> ${demonstrative(asker,o)}${formatWord('ひと','人','hito','person')}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')));
             const key=`${prefix}_r_${i}`;
-            practice2State.replyReferences[key]=()=>[short(noun(o)),statement(demonstrative(answerer,o)+word('ひと','人'),noun(o)+'さん'),statement(demonstrative(answerer,o)+word('ひと','人'),noun(o))];
-            const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> …`,key,()=>short(noun(o)+'さん'));
+            practice2State.replyReferences[key]=()=>[short(noun(o)+'さん'),short(noun(o)),statement(subject(answerer),noun(o)+'さん'),statement(subject(answerer),noun(o))];
+            const cue=(full?demonstrative(answerer,o)+formatWord('ひと','人','hito','person')+'／':'')+vocabulary(o);
+            const r=recordingRow(c,'a',`<strong>${answerer} · Response:</strong> ${cue}`,key,()=>full?statement(subject(answerer),noun(o)+'さん'):short(noun(o)+'さん'));
             attach(q,asker,o,select);attach(r,answerer,o,select);
-        });select(asker);
+        });select('A');
     }
 
     function renderDialogue() {

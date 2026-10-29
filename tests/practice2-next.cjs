@@ -93,16 +93,13 @@ function mock(){
     const model=number==='2.2'?adj+'帽子は'+['千円','三千円','四千円'][i]+end:loc+'は'+['銀行','喫茶店','図書館'][i]+end;
     await compare(p.locator(`.p2x-example .p21-item-audio [data-speaker="${speaker}"][data-zone="${zone}"]`),model,'Example '+speaker+zone);
    }
-   for(const set of [0,1]){
-    await p.locator('[data-set-state="dialogueSet"] button').nth(set).click();
-    const asker=number==='2.2'&&set===1?'B':'A';
-    for(let i=0;i<3;i++){
-     const adj=i===2?'あの':asker===['A','B','far'][i]?'この':'その';
-     const q=number==='2.2'?adj+'人は誰'+(style==='formal'?'ですか':''):['スマホ','財布','辞書','ノート','辞書','財布'][set*3+i]+'はどこ'+(style==='formal'?'ですか':'');
-     const r=number==='2.2'?['メアリー','たけし','ロバート'][i]+'さん'+end:['そこ','ここ','あそこ'][i]+end;
-     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D2 Q');
-     await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D2 response');
-    }
+   check(await p.locator('[data-set-state="dialogueSet"]').count(),0,'people speaker switches removed');
+   check(await p.locator(personSection+' tr[data-drill-speaker]').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),['A','B','B','A','A','B'],'mixed speaker roles');
+   for(let i=0;i<3;i++){
+    const q=['その','その','あの'][i]+'人は誰'+(style==='formal'?'ですか':'');
+    const r=i===1?'メアリーさん'+end:['この人はたけしさん','', 'あの人はロバートさん'][i]+end;
+    await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Q');
+    await compare(p.locator(personSection+' .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),r,'D4 response');
    }
    if(number==='2.2') {
     for(const set of [0,1]) {
@@ -165,10 +162,9 @@ function mock(){
    return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,want,text];});
   },number);
   for(const [actual,want,text]of judgments)check(actual,want,number+' answer '+text);
-  await p.locator('[data-set-state="dialogueSet"] button').first().click();
-  const peopleResults=await p.evaluate(()=>{const key='p22_d2_s0_r_0',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,true,false,false],'people name and responder perspective');
+  const peopleResults=await p.evaluate(()=>{const key='p22_people_mixed_r_1',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,false,true,false],'people name and responder perspective');
   for(const width of [375,600,1440]){await p.setViewportSize({width,height:1000});check(await p.locator('.p2x-people-picture .p2x-stage').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect();return Math.abs(a.width/a.height-2)<.02&&[...e.querySelectorAll('.p2x-person-name,.p2x-person')].every(n=>{const r=n.getBoundingClientRect();return r.left>=a.left&&r.right<=a.right&&r.top>=a.top&&r.bottom<=a.bottom})})),true,'wide people picture and labels fit '+width);}
-  await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();check(await p.evaluate(()=>practice2State.savedResults.p22_d2_s0_r_0.rawTranscript),'ロバートさんです','people results survive food-topic switching');
+  await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();check(await p.evaluate(()=>practice2State.savedResults.p22_people_mixed_r_1.rawTranscript),'ロバートさんです','people results survive food-topic switching');
   await p.locator('[data-set-state="choosingSet"] button').first().click();
   // Exercise the microphone path, set locking and result restoration with real callbacks.
   await p.locator('#drill1Container .p21-set-switcher button').first().click();
