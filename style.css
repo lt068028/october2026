@@ -3056,11 +3056,20 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .p23-locative-options { white-space: nowrap; }
 
-/* D2 Time option 3; keep A/B/C and city-name cards in their original style. */
-.p23-describe-picture .p23-city-time:not(.p23-city-name) {
+/* D2 information cards use option 3; A/B/C retain their white cards. */
+.p23-describe-picture .p23-city-time {
     font-family: "Noto Sans CJK JP", sans-serif;
     font-weight: 600;
     color: #fff;
     background: #172b46;
     box-shadow: 0 1px 4px #0004;
 }
+
+/* D1 target cards share a top-left origin and size; additional cards stack down. */
+.p23-where-picture .p23-city-region { top: 0; container-type: inline-size; }
+.p23-where-picture .p23-where-item { width: 28%; transform: none; aspect-ratio: 1; }
+.p23-where-picture .p23-city-person.is-question-speaker { color: #dc2626; animation: p23-question-speaker .8s ease-in-out infinite; }
+@keyframes p23-question-speaker { 0%,100% { color: #dc2626; background: #fff; } 50% { color: #7f1d1d; background: #fecaca; } }
+@media(prefers-reduced-motion:reduce) { .p23-where-picture .p23-city-person.is-question-speaker { animation: none; background: #fecaca; } }
+/* City information follows Time's look, with a four-pixel edge clearance. */
+.p23-describe-picture .p23-city-name { right: 4px; bottom: 4px; }
