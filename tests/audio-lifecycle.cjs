@@ -2,12 +2,12 @@
 const {chromium}=require('playwright');
 const fs=require('fs'); const assert=require('assert');
 const root=(process.env.DRILL_ROOT || require('path').resolve(__dirname,'..'))+'/';
-const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
+const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','composition1','pronunciation1','pronunciation2'];
 function instrument(path,source){
  if(path==='drill-audio-session.js')return source+`;const originalRegister=DrillAudio.registerPitch;DrillAudio.registerPitch=(state,redraw)=>{(window.__states ||= []).push(state);originalRegister(state,redraw)};`;
  if(pages.some(p=>path===p+'.js')){
-  const extra=path==='practice7.3.js'?`window.__speak=done=>speak('テスト',null,done);window.__stop=stopPlayback;`:`window.__speak=done=>speakText('テスト',0.9,done);window.__stop=stopAllPlayback;`;
-  if(path==='practice7.3.js'){const pos=source.lastIndexOf('})();');return source.slice(0,pos)+extra+source.slice(pos)}
+  const extra=['practice7.3.js','practice8.1.js'].includes(path)?`window.__speak=done=>speak('テスト',null,done);window.__stop=stopPlayback;`:`window.__speak=done=>speakText('テスト',0.9,done);window.__stop=stopAllPlayback;`;
+  if(['practice7.3.js','practice8.1.js'].includes(path)){const pos=source.lastIndexOf('})();');return source.slice(0,pos)+extra+source.slice(pos)}
   return source+'\n'+extra;
  }
  return source;

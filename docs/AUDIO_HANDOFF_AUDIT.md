@@ -14,13 +14,14 @@
 | 7.1 | 0秒 | 同上 |
 | 7.2 | 0秒 | 同上 |
 | 7.3 | 0秒 | 同上 |
+| 8.1 | 0秒 | 同上 |
 | composition1 | 0秒 | 同上 |
 | pronunciation1 通常Drill | 0秒 | 同上 |
 | pronunciation2 通常Drill | 0秒 | 同上 |
 
 全ページはdrill-audio-session.jsのplayRelayを使用。発音Labやモデルのない自由録音は、録音だけを再生する既存仕様なので2音声間隔の対象外。
 
-検証：node tests/relay-zero-gap.cjs。疑似TTS/録音APIで、実際の録音完了経路からリレーを開始し、TTS終了コールバックから戻る前にAudio.playが呼ばれることを全11ページで検証。実音声を試聴した検証ではない。
+検証：node tests/relay-zero-gap.cjs。疑似TTS/録音APIで、実際の録音完了経路からリレーを開始し、TTS終了コールバックから戻る前にAudio.playが呼ばれることを全12ページで検証（8.1追加：2026-10-30）。実音声を試聴した検証ではない。
 
 ## 聞こえる無音と区別すること
 
