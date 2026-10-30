@@ -27,6 +27,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('.example-box').evaluateAll(es=>es.every(e=>e.classList.contains('example-text-layout'))),true,'Examples use common alignment component');
  check(await page.locator('.p81-kind,.p81-target').evaluateAll(es=>es.every(e=>e.classList.contains('example-label-title'))),true,'ordinary headings use Practice 1 component');
  check(await page.locator('#drill1 .example-box .p81-kind').allTextContents(),['Noun','Verb＋の'],'labels identify the compared forms');
+ check(await page.locator('#drill1 .p81-card .p81-kind').count(),0,'Noun and Verb labels are Example-only');
  check(await page.locator('.p81-example-row > button').evaluateAll(es=>es.every(e=>getComputedStyle(e).alignSelf==='auto')),true,'no page-specific vertical alignment override');
  check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example3 topic and nominalizer highlighted');
  check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(202, 138, 4)','common light gold');

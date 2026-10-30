@@ -148,8 +148,8 @@ function makeRow(id,spec,extra={}) {
 }
 function rowsFor(si) {
     if(si===0)return compareActions.map((a,i)=>[
-        makeRow(`compare-${i}-noun`,{...a,noun:true,adjective:'like'},{kind:'Noun'}),
-        makeRow(`compare-${i}-action`,{...a,adjective:'like'},{kind:'Verb＋の'})]);
+        makeRow(`compare-${i}-noun`,{...a,noun:true,adjective:'like'}),
+        makeRow(`compare-${i}-action`,{...a,adjective:'like'})]);
     if(si===1)return selfActions.map((a,i)=>{
         const adjective=i%2?'dislike':'like',id=`self-${i}`,answer=choices.get(id+'-response');
         return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Question'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'Response',pending:!answer})];
