@@ -1,5 +1,12 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 Ex4整列・D5行頭指定（2026-10-30 / Europe/Vienna / Codex）
+
+- 開始main `cf13501`、workクリーン。ユーザー指示によりEx4の2行目以降の副詞開始位置を先頭のぜんぜんへ合わせ、👉️直前の共通列へ寄せる。本文の〃は先頭文「のが」のがと同じ中心位置へ。内容幅の計測とgrid列を使用し、top/transform等の固定座標補正はしない。語彙ヒント・漢字/ひらがな・文体・リサイズ時に追従。音声は省略せず全文のまま。
+- D5は英語の印象2択を撤去し、各行の頭にBoastful/Confident、Modest/Uncomfortable等の固定指定を共通項目名スタイルで表示。通常Drill内の区分非表示に対する今回の承認例外としてUI_LAYOUT_SPEC/PRACTICE8_SPECに明記。Ex5項目名もBoastful/Confidentへ合わせる。説明をMake both sentences to match the labels. Compare how they sound.へ。２行の録音・モデル再生・結果・採点・個別音声の保持は維持。英語印象の選択状態/結果処理のみ撤去。
+- 検証：practice81 856項目合格。375/600/900/1440/1920px、通常/ダーク、副詞の頭と〃の実座標、本文基線、D5固定指定と両行の録音保持を確認。追加の表示マトリクス48項目（ひらがな/漢字×Formal/Casual×Off/Hover/Display×600/1440pxで副詞頭/〃中心）合格。通常/ダークの描画を目視確認、構文・差分チェック済み。
+- 保存先main。Vercelデプロイ完了・ユーザー実機確認は未了。最終コミットIDはGit履歴と終了報告を参照。
+
 ## 表示指摘への追従（2026-10-30 / Europe/Vienna / Codex）
 
 - 開始main `8c0e88c`、workクリーン・GitHub main一致を確認。ユーザーの修正依頼に対応。

@@ -6,7 +6,7 @@ const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
-const views=new Map(),saved=new Map(),choices=new Map(),impressionChoices=new Map();
+const views=new Map(),saved=new Map(),choices=new Map();
 const words={};
 function W(id,kanji,hira,romaji,meaning) {
     words[id]={kanji,hira,romaji,meaning};
@@ -107,7 +107,7 @@ const sections=[
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: Compare expressions',instruction:'💡Listen and say both sentences. Choose how each sounds.'}
+    {title:'Drill 5: Compare expressions',instruction:'💡Make both sentences to match the labels. Compare how they sound.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -156,7 +156,7 @@ function rowsFor(si) {
     });
     if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degrees.map((s,i)=>{const id=`degree-${i}`;return [makeRow(id,{...s,adverb:selected(id,s.initial)},{selectKind:'adverb'})];});
-    return comparisons.map((spec,i)=>spec.options.map(adjective=>makeRow(`comparison-${i}-${adjective}`,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`})));
+    return comparisons.map((spec,i)=>spec.options.map(adjective=>makeRow(`comparison-${i}-${adjective}`,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`,kind:spec.impressionWords[adjective]})));
 }
 function matchesAnswer(raw,r) {
     if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return false;
@@ -653,13 +653,6 @@ function showResult(key,notice='') {
     }
     if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
 }
-function showImpression(key) {
-    const view=views.get(key);if(!view?.impressionResult)return;
-    const choice=impressionChoices.get(key);
-    for(const b of view.impressionButtons)b.setAttribute('aria-pressed',String(b.dataset.impressionChoice===choice));
-    view.impressionResult.hidden=!choice;
-    view.impressionResult.textContent=!choice?'':choice===view.r.adjective?'✓ '+view.r.impressions[choice].label:'Compare the two expressions again.';
-}
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
@@ -682,23 +675,33 @@ function addSelect(cue,r,key) {
     };
 }
 function addExample(root,si) {
-    const ex=node('div','example-box example-text-layout p81-example');
+    const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');
     const samples=[
         [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Verb＋の'})],
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
-        [makeRow('ex5-self-praise',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Self-praise'}),makeRow('ex5-strength',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Strength'})]
+        [makeRow('ex5-self-praise',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Boastful'}),makeRow('ex5-strength',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Confident'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
         const repeatPrefix=si===3&&index>0;
         const row=node('div','p81-example-row');
         const kind=node('span',r.qa?'example-label-title':'example-label-title p81-kind',r.kind?r.kind+(r.qa?':':''):'');
-        const cue=node('span','p81-example-cue');cue.innerHTML=cues(r,repeatPrefix?[r.adverb,r.adjective]:null);
+        const cue=node('span','p81-example-cue');
+        if(si===3){
+            if(!repeatPrefix){const prefix=node('span','p81-degree-cue-prefix');prefix.innerHTML=cues(r,[r.object,r.verb])+(hintMode==='paren'?'':'／');cue.append(prefix);}
+            const tail=node('span','p81-degree-cue-tail');tail.innerHTML=cues(r,[r.adverb,r.adjective]);cue.append(tail);
+        }else cue.innerHTML=cues(r);
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
+        if(si===3){
+            const prefix=node('span','p81-degree-model-prefix'),tail=node('span','p81-degree-model-tail');
+            if(repeatPrefix){prefix.append(text.querySelector('.p81-ditto'));tail.append(...text.childNodes);}
+            else {const html=text.innerHTML,mark='<strong class="p81-gold grammar-highlight">のが</strong>',end=html.indexOf(mark)+mark.length;prefix.innerHTML=html.slice(0,end);tail.innerHTML=html.slice(end);}
+            text.replaceChildren(prefix,tail);
+        }
         if(hasKinds)row.append(kind);else row.classList.add('p81-no-kind');
         row.append(cue,arrow,listen,text);ex.append(row);
     }
@@ -744,22 +747,11 @@ function render() {
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
                 actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
-                const impressionButtons=[];
-                let impressionResult=null;
-                if(r.comparison){
-                    const group=node('div','p81-impression-choices');group.setAttribute('role','group');group.setAttribute('aria-label','How does this sentence sound?');
-                    for(const option of r.options){
-                        const choose=button(r.impressionWords[option],()=>{if(session||preparing)return;impressionChoices.set(key,option);showImpression(key);});
-                        choose.classList.add('p81-impression-choice');choose.dataset.impressionChoice=option;choose.dataset.impressionRow=r.id;choose.setAttribute('aria-pressed','false');
-                        group.append(choose);impressionButtons.push(choose);
-                    }
-                    line.append(group);impressionResult=node('div','p81-impression-result');impressionResult.hidden=true;impressionResult.setAttribute('role','status');
-                }
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
-                cell.append(line,correction,feeling);if(impressionResult)cell.append(impressionResult);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,impressionButtons,impressionResult});showResult(key);showImpression(key);
+                cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);
+                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
             });
             card.append(table);group.append(card);
         });
@@ -768,6 +760,13 @@ function render() {
     ConversationDisplay.format();measureCues();sync();
 }
 function measureCues() {
+    document.querySelectorAll('.p81-degree-example').forEach(ex=>{
+        const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
+        const tailWidth=Math.max(...[...ex.querySelectorAll('.p81-degree-cue-tail')].map(measure));
+        const prefix=ex.querySelector('.p81-degree-model-prefix');
+        ex.style.setProperty('--degree-tail-width',tailWidth+'px');
+        ex.style.setProperty('--degree-prefix-width',measure(prefix)+'px');
+    });
     document.querySelectorAll('.p81-section').forEach(group=>{
         const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
         for(const cell of cells) {

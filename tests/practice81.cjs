@@ -14,7 +14,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   let source=fs.readFileSync(file);
   if(file.endsWith('practice8.1.js')){
    const s=source.toString(),i=s.lastIndexOf('})();');
-   source=s.slice(0,i)+`window.audit81={rowsFor,matchesAnswer,feedback,sentenceFor,makeRow,keyFor,saved,views,choices,impressionChoices,showResult,normalize,speechText,sections,comparisons};`+s.slice(i);
+   source=s.slice(0,i)+`window.audit81={rowsFor,matchesAnswer,feedback,sentenceFor,makeRow,keyFor,saved,views,choices,showResult,normalize,speechText,sections,comparisons};`+s.slice(i);
   }
   return r.fulfill({body:source,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.html')?'text/html':'image/png'});
  });
@@ -65,7 +65,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-card').evaluateAll(es=>es.every(e=>e.querySelectorAll('tr').length===2)),true,'two fixed rows per situation');
  check(await page.locator('#drill5 [data-set],#drill5 .p81-tabs,#drill5 .p81-target').count(),0,'no set buttons or target tasks');
  check(await page.locator('#drill5 .p81-card select').count(),0,'no expression switching dropdown');
- check(await page.locator('#drill5 .p81-impression-choice').count(),20,'two English words visible on each row before recording');
+ check(await page.locator('#drill5 .p81-impression-choice').count(),0,'impression selection replaced by fixed row labels');
  check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>!e.disabled)),true,'listening and recording do not require an impression choice');
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example5 topic and nominalizer highlighted');
@@ -131,14 +131,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
   const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
   check(out.correct,true,'fixed comparison model accepted');check(out.wrong,false,'other expression belongs to its own row');
-  check(await row.locator('.p81-impression-choice').allTextContents(),out.labels,'same two English choices displayed on both rows');
-  const before=await page.evaluate(()=>t.spoken.length);
-  await row.locator(`[data-impression-choice="${pair.find(x=>x!==value)}"]`).click();
-  check(await row.locator('.p81-impression-result').textContent(),'Compare the two expressions again.','incorrect impression invites comparison');
-  await row.locator(`[data-impression-choice="${value}"]`).click();
-  check(await row.locator('.p81-impression-result').textContent(),'✓ '+out.feedback.label,'impression feedback works before recording');
-  check(await page.evaluate(()=>t.spoken.length),before,'English selection never auto-plays or records');
-  check(await row.locator('.result-text').textContent(),'(Not recorded yet)','impression selection does not fabricate recording');
+  check(await row.locator('.p81-kind').textContent(),out.labels[pair.indexOf(value)],'English impression specifies the row before recording');
   await row.locator('.recording-actions button').first().click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),out.text,'independent full model for each visible row');await page.evaluate(()=>t.spoken.at(-1).onend());
  }
@@ -166,12 +159,10 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const first=page.locator('[data-row="comparison-0-good"]'),second=page.locator('[data-row="comparison-0-strong"]');
  await first.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===2);
- check(await second.locator('.p81-impression-choice').first().isDisabled(),true,'all impression choices lock during recording');
  await page.evaluate(()=>{const result=[{transcript:'私は写真を撮るのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-0:good'));
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first expression recording correct');
  check(await second.locator('.result-text').textContent(),'(Not recorded yet)','second recording remains independent');
- check(await first.locator('.p81-impression-result').textContent(),'✓ May sound boastful.','first impression remains visible');
  await second.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===3);
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first result stays on screen while recording the second');
@@ -179,22 +170,25 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-0:strong'));
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'second expression recording correct');
  check(await first.locator('.result-text').textContent().then(s=>s.includes('上手')&&s.includes('✅')),true,'first recording still visible after second completes');
- check(await second.locator('.p81-impression-result').textContent(),'✓ Sounds confident.','second impression visible alongside first');
  check(await page.evaluate(()=>audit81.saved.get('comparison-0:good').url!==audit81.saved.get('comparison-0:strong').url),true,'separate audio for both rows');
- await second.locator('[data-impression-choice="good"]').click();
- check(await first.locator('.p81-impression-result').textContent(),'✓ May sound boastful.','changing one impression never clears the other');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'changing impression never regrades the recording');
- await second.locator('[data-impression-choice="strong"]').click();
  await page.locator('#scriptModeControl [data-value="hiragana"]').click();
  check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはしゃしんをとるのがじょうずです')),true,'first Hiragana recording survives redraw');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはしゃしんをとるのがとくいです')),true,'second Hiragana recording survives redraw');
- check(await page.locator('#drill5 .p81-card').first().locator('.p81-impression-choice[aria-pressed="true"]').count(),2,'both impression choices survive redraw');
  for(const style of ['casual','formal'])await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve first recorded judgment');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve second recorded judgment');
  await page.locator('#scriptModeControl [data-value="kanji"]').click();
  for(const width of [375,600,900,1440,1920])for(const scheme of ['light','dark']){
   await page.setViewportSize({width,height:1000});await page.emulateMedia({colorScheme:scheme});
+  const degree=await page.locator('#drill4 .example-box').evaluate(ex=>{
+    const xs=[...ex.querySelectorAll('.p81-degree-cue-tail')].map(e=>e.getBoundingClientRect().left);
+    const ga=ex.querySelector('.p81-degree-model-prefix .p81-gold').firstChild,range=document.createRange();range.setStart(ga,1);range.setEnd(ga,2);const r=range.getBoundingClientRect();
+    const ditto=[...ex.querySelectorAll('.p81-ditto')].map(e=>{const b=e.getBoundingClientRect();return Math.abs((b.left+b.right-r.left-r.right)/2);});
+    return {spread:Math.max(...xs)-Math.min(...xs),ditto};
+  });
+  check(degree.spread<1,true,'degree cue suffixes share the same start');
+  check(degree.ditto.every(x=>x<1),true,'ditto shares が center');
   const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));
   check(layout.overflow,false,'no page overflow '+width+' '+scheme);
   const styles=await page.evaluate(()=>({labels:[...document.querySelectorAll('.p81-kind:not(.conversation-role),.p81-target')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight),c.backgroundColor];}),adverbs:[...document.querySelectorAll('#drill4 .example-box .p81-model .degree-adverb')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight)];}),negative:getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,positive:getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color}));
@@ -207,7 +201,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    const comparisonBaselines=await page.locator('#drill5 tr').evaluateAll(rows=>rows.map(row=>{const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};return baseline(row.querySelector('.prompt-label'))-baseline(row.querySelector('.recording-actions button'));}));
    for(const delta of comparisonBaselines)check(Math.abs(delta)<.5,true,'comparison cue and listen text share the first baseline');
    for(const xs of await page.locator('.example-box').evaluateAll(es=>es.map(e=>[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect().left))))check(Math.max(...xs)-Math.min(...xs)<1,true,'Example listen columns aligned');
-   const baselineDeltas=await page.locator('.p81-example-row').evaluateAll(rows=>rows.map(row=>{const b=row.querySelector('button'),m=row.querySelector('.p81-model');const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};return baseline(b)-baseline(m);}));
+   const baselineDeltas=await page.locator('.p81-example-row').evaluateAll(rows=>rows.map(row=>{const b=row.querySelector('button'),m=row.querySelector('.p81-model');const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};return baseline(b)-baseline(m.querySelector('.p81-degree-model-prefix')||m);}));
    for(const delta of baselineDeltas)check(Math.abs(delta)<.5,true,'Example button and model text baseline align');
 
    await page.screenshot({path:'/tmp/practice81-'+scheme+'.png',fullPage:true});
