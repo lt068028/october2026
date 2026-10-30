@@ -3167,6 +3167,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-degree-marks { display: block; border-bottom: 3px solid currentColor; font-weight: 700; margin-bottom: 6px; }
 .practice81-page .p81-degree-label { display: block; overflow-wrap: anywhere; font-size: .85em; }
 .practice81-page .p81-scenario { margin: 0 0 12px; font-size: .9em; }
+.practice81-page .p81-impression-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.practice81-page .p81-impression-choice[aria-pressed="true"] { outline: 2px solid var(--accent-color); outline-offset: 1px; }
+.practice81-page .p81-impression-result { margin-top: 6px; font-size: .85em; }
+.practice81-page .p81-comparison-card .recording-result { flex-basis: 100%; }
+.site-scale.practice81-page .p81-comparison-card .p81-table { align-items: baseline; }
+.practice81-page .p81-comparison-card .drill-number-cell { align-self: center; }
+.practice81-page .p81-comparison-card .p81-impression-result { text-align: right; }
 .practice81-page .p81-feedback { display: inline-block; margin-top: 8px; padding: 4px 8px; border-radius: 4px; font-size: .9em; font-weight: 700; }
 .practice81-page .p81-feedback[data-tone="fit"] { background: #d9f1e6; color: #155537; }
 .practice81-page .p81-feedback[data-tone="caution"] { background: #ffebc5; color: #744300; }

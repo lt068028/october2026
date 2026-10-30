@@ -6,7 +6,7 @@ const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
-const views=new Map(),saved=new Map(),choices=new Map();
+const views=new Map(),saved=new Map(),choices=new Map(),impressionChoices=new Map();
 const words={};
 function W(id,kanji,hira,romaji,meaning) {
     words[id]={kanji,hira,romaji,meaning};
@@ -96,18 +96,18 @@ const degrees=[
 ];
 // Each pair shares its speaker, action and situation. Impressions describe this context only.
 const comparisons=[
-    {subject:'i',...action('photo','take'),options:['good','strong'],scenario:'Talk about your own photography.',impressions:{good:{label:'May sound boastful.',tone:'caution'},strong:{label:'Sounds confident.',tone:'fit'}}},
-    {subject:'i',...action('english','speak'),options:['bad','difficult'],scenario:'Talk about speaking English yourself.',impressions:{bad:{label:'Sounds modest. Focus on skill.',tone:'fit'},difficult:{label:'Focus on personal difficulty.',tone:'fit'}}},
-    {subject:'friend',...action('song','sing'),options:['good','bad'],scenario:'Describe your friend’s singing after hearing it.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},bad:{label:'May sound too direct.',tone:'caution'}}},
-    {subject:'student',...action('cook','do'),options:['good','difficult'],scenario:'Describe your friend’s cooking, based on what they told or showed you.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},difficult:{label:'Describes their difficulty.',tone:'fit'}}},
-    {subject:'japaneseTeacher',...action('japanese','speak'),noun:true,options:['good','bad'],scenario:'As a beginner, comment on an experienced Japanese teacher’s Japanese.',impressions:{good:{label:'May sound arrogant.',tone:'caution'},bad:{label:'May sound rude.',tone:'caution'}}}
+    {subject:'i',...action('photo','take'),options:['good','strong'],impressionWords:{"good":"Boastful","strong":"Confident"},scenario:'Talk about your own photography.',impressions:{good:{label:'May sound boastful.',tone:'caution'},strong:{label:'Sounds confident.',tone:'fit'}}},
+    {subject:'i',...action('english','speak'),options:['bad','difficult'],impressionWords:{"bad":"Modest","difficult":"Uncomfortable"},scenario:'Talk about speaking English yourself.',impressions:{bad:{label:'Sounds modest. Focus on skill.',tone:'fit'},difficult:{label:'Focus on personal difficulty.',tone:'fit'}}},
+    {subject:'friend',...action('song','sing'),options:['good','bad'],impressionWords:{"good":"Praising","bad":"Direct"},scenario:'Describe your friend’s singing after hearing it.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},bad:{label:'May sound too direct.',tone:'caution'}}},
+    {subject:'student',...action('cook','do'),options:['good','difficult'],impressionWords:{"good":"Praising","difficult":"Descriptive"},scenario:'Describe your friend’s cooking, based on what they told or showed you.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},difficult:{label:'Describes their difficulty.',tone:'fit'}}},
+    {subject:'japaneseTeacher',...action('japanese','speak'),noun:true,options:['good','bad'],impressionWords:{"good":"Arrogant","bad":"Rude"},scenario:'As a beginner, comment on an experienced Japanese teacher’s Japanese.',impressions:{good:{label:'May sound arrogant.',tone:'caution'},bad:{label:'May sound rude.',tone:'caution'}}}
 ];
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: Compare expressions',instruction:'💡Choose either expression. Listen and compare how it sounds.'}
+    {title:'Drill 5: Compare expressions',instruction:'💡Listen and say both sentences. Choose how each sounds.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -156,7 +156,7 @@ function rowsFor(si) {
     });
     if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degrees.map((s,i)=>{const id=`degree-${i}`;return [makeRow(id,{...s,adverb:selected(id,s.initial)},{selectKind:'adverb'})];});
-    return comparisons.map((spec,i)=>{const id=`comparison-${i}`,choice=choices.get(id);return [makeRow(id,{...spec,adjective:choice||spec.options[0]},{selectKind:'comparison',situation:true,pending:!choice})];});
+    return comparisons.map((spec,i)=>spec.options.map(adjective=>makeRow(`comparison-${i}-${adjective}`,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`})));
 }
 function matchesAnswer(raw,r) {
     if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return false;
@@ -171,7 +171,7 @@ function feedback(r,raw) {
     const adjective=recordedAdjective(raw);
     return adjective?r.impressions?.[adjective]||null:null;
 }
-function keyFor(r){return r.id+':'+(r.qa==='response'?(r.pending?'unselected':r.answer):r.selectKind==='adverb'?r.adverb:r.selectKind?(r.pending?'unselected':r.adjective):'fixed');}
+function keyFor(r){if(r.comparison)return r.comparisonBase+':'+r.adjective;return r.id+':' +(r.qa==='response'?(r.pending?'unselected':r.answer):r.selectKind==='adverb'?r.adverb:r.selectKind?(r.pending?'unselected':r.adjective):'fixed');}
 
 function word(id) {
     const w=words[id],text=escape(w[scriptMode==='kanji'?'kanji':'hira']);
@@ -183,7 +183,7 @@ function word(id) {
 }
 function cues(r,visibleIds) {
     if(r.qa==='response')return '';
-    const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='comparison'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
+    const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
 }
@@ -643,7 +643,7 @@ function showResult(key,notice='') {
             }
             v.correction.textContent='🔥Keep going! Try once more!';v.correction.hidden=false;
         }
-        if(value.feedback) {
+        if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
     }else v.result.textContent='(Not recorded yet)';
@@ -653,18 +653,24 @@ function showResult(key,notice='') {
     }
     if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
 }
+function showImpression(key) {
+    const view=views.get(key);if(!view?.impressionResult)return;
+    const choice=impressionChoices.get(key);
+    for(const b of view.impressionButtons)b.setAttribute('aria-pressed',String(b.dataset.impressionChoice===choice));
+    view.impressionResult.hidden=!choice;
+    view.impressionResult.textContent=!choice?'':choice===view.r.adjective?'✓ '+view.r.impressions[choice].label:'Compare the two expressions again.';
+}
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
     const select=node('select','custom-select p81-select');
-    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:r.selectKind==='comparison'?r.options:adjectives;
+    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
     select.setAttribute('aria-label',r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
-    if(r.situation){const placeholder=node('option','','Select…');placeholder.value='';placeholder.disabled=true;select.append(placeholder);}
     for(const id of ids){const opt=node('option','',words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
     select.value=r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
     if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
-    if(['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
+    if(['adverb','ability'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     hint.textContent=hintMode==='off'?'':select.value?words[select.value].romaji+', '+words[select.value].meaning:'Choose an expression first.';
     if(hintMode==='hover'){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
@@ -720,6 +726,7 @@ function render() {
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
             if(rows[0].scenario)card.append(node('p','p81-scenario',rows[0].scenario));
+            if(rows[0].comparison)card.classList.add('p81-comparison-card');
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             rows.forEach((r,ri)=>{
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
@@ -736,11 +743,23 @@ function render() {
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
                 actions.append(listen,rec,stop);
-                const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions,wrap);
+                const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
+                const impressionButtons=[];
+                let impressionResult=null;
+                if(r.comparison){
+                    const group=node('div','p81-impression-choices');group.setAttribute('role','group');group.setAttribute('aria-label','How does this sentence sound?');
+                    for(const option of r.options){
+                        const choose=button(r.impressionWords[option],()=>{if(session||preparing)return;impressionChoices.set(key,option);showImpression(key);});
+                        choose.classList.add('p81-impression-choice');choose.dataset.impressionChoice=option;choose.dataset.impressionRow=r.id;choose.setAttribute('aria-pressed','false');
+                        group.append(choose);impressionButtons.push(choose);
+                    }
+                    line.append(group);impressionResult=node('div','p81-impression-result');impressionResult.hidden=true;impressionResult.setAttribute('role','status');
+                }
+                line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
-                cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
+                cell.append(line,correction,feeling);if(impressionResult)cell.append(impressionResult);tr.append(cue,cell);body.append(tr);
+                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,impressionButtons,impressionResult});showResult(key);showImpression(key);
             });
             card.append(table);group.append(card);
         });
@@ -887,7 +906,7 @@ async function record(key, r) {
                 url,
                 raw: s.raw,
                 modelText:r.text, modelHira:r.hira, refs:[...r.refs],
-                feedback:r.situation&&matchesAnswer(s.raw,r)?feedback(r,s.raw):null,
+                feedback:r.comparison&&matchesAnswer(s.raw,r)?feedback(r,s.raw):null,
                 correct:
                     Boolean(s.raw.trim()) &&
                     matchesAnswer(s.raw, r)
