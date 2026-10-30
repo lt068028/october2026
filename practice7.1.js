@@ -592,6 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (blocked()) return;
 
         baseRender();
+        ConversationDisplay.format();
 
         const root = document.getElementById(
             'drill1Container'
@@ -3503,6 +3504,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
     renderAll = function () {
         applyStage();
         baseRender();
+        ConversationDisplay.format();
 
         const container =
             document.getElementById('drill1Container');

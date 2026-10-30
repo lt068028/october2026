@@ -3236,13 +3236,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .degree-adverb, .custom-select.degree-adverb { font-weight: 700; }
 
 /* Practice 2.2 approved Q/A pilot: circles are roles; rounded rectangles are people. */
-[data-practice="2.2"] .p22-conversation-role { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; color: inherit; }
-[data-practice="2.2"] .p22-role-circle { display: inline-flex; justify-content: center; align-items: center; width: 1.35em; height: 1.35em; border: 1px solid currentColor; border-radius: 50%; font-size: .85em; line-height: 1; }
-[data-practice="2.2"] .p22-person-badge { display: inline-block; padding: 0 5px; color: #111827; background: #fffef0; border-radius: 4px; }
-[data-practice="2.2"] .p22-person-badge.is-speaking { color: #dc2626; outline: 2px solid #e60012; animation: p23-speaking .8s ease-in-out infinite; }
 [data-practice="2.2"] .p22-conversation-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 [data-practice="2.2"] .p22-cue-arrow { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
-@media(prefers-reduced-motion: reduce) { [data-practice="2.2"] .p22-person-badge.is-speaking { animation: none; background: #fecaca; } }
 
 /* Practice 2.2 Ex2/Ex3 share intrinsic cue/arrow/audio tracks across Q and A. */
 [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) { display: grid; grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); column-gap: 8px; }
@@ -3253,14 +3248,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width:700px) {
  [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) { grid-template-columns: max-content minmax(0,1fr) max-content max-content; }
  [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
-}
-
-/* Practice 2.2 only: approved purple / blue speaker palette ③; active speakers retain these colors. */
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #6d28d9; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #7dd3fc; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
-@media(prefers-color-scheme: dark) {
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #c4b5fd; --p22-person-fg: #2e1065; background: var(--p22-person-bg); color: var(--p22-person-fg); }
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #67e8f9; --p22-person-fg: #083344; background: var(--p22-person-bg); color: var(--p22-person-fg); }
 }
 
 /* Practice 1.1: narrow examples keep arrow/audio columns shared across rows. */
@@ -3297,16 +3284,32 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @container(min-width:851px) {
  .site-scale.practice1-page .example-box .drill-example-table { border-collapse: separate; border-spacing: 0 var(--example-row-gap); }
 }
-/* Practice 2.2: speaking people retain their palette and pulse a contrasting frame. */
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking {
- color: var(--p22-person-fg); background: var(--p22-person-bg);
- outline: 2px solid #fff; outline-offset: 1px;
- animation: p22-speaker-focus 1.2s ease-in-out infinite;
-}
+/* Shared speaker frame animation, originally approved in Practice 2.2. */
 @keyframes p22-speaker-focus {
  0%,100% { box-shadow: 0 0 0 4px #334155; }
  50% { box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
 }
-@media(prefers-reduced-motion:reduce) {
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking { animation: none; box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
+/* Shared roles and people: promoted from the approved Practice 2.2 display. */
+.site-scale .conversation-role { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; color: var(--text-primary); font-weight: 700; }
+.site-scale .conversation-role-circle { display: inline-flex; justify-content: center; align-items: center; width: 1.35em; height: 1.35em; border: 1px solid currentColor; border-radius: 50%; font-size: .85em; line-height: 1; flex-shrink: 0; }
+.site-scale .conversation-person { display: inline-block; padding: 0 5px; border-radius: 4px; font-weight: 700; }
+.site-scale .conversation-person[data-person="A"] { --person-bg: #6d28d9; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }
+.site-scale .conversation-person[data-person="B"] { --person-bg: #7dd3fc; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }
+.site-scale .conversation-person .p21-person-caption { color: inherit; background: transparent; animation: none; }
+.site-scale .conversation-person.is-speaking { background: var(--person-bg); color: var(--person-fg); outline: 2px solid #fff; outline-offset: 1px; animation: p22-speaker-focus 1.2s ease-in-out infinite; }
+.site-scale .p21-drill-item.is-target { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+@media(prefers-color-scheme:dark) {
+ .site-scale .conversation-person[data-person="A"] { --person-bg: #c4b5fd; --person-fg: #2e1065; }
+ .site-scale .conversation-person[data-person="B"] { --person-bg: #67e8f9; --person-fg: #083344; }
 }
+@media(prefers-reduced-motion:reduce) {
+ .site-scale .conversation-person.is-speaking { animation: none; box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
+}
+
+.site-scale .conversation-person.is-speaker:not(.is-speaking) { outline: none; }
+@media(max-width:450px) {
+ .site-scale .p21-distance-board .p21-distance-area .example-button { min-width: 0; padding-inline: 4px; }
+ .site-scale .p21-distance-board .p21-item-audio { min-width: 0; max-width: 100%; }
+}
+
+.site-scale .conversation-person:not([data-conversation-image]) { justify-self: start; }

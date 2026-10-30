@@ -2183,6 +2183,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         installSettings();
         renderSections();
+        ConversationDisplay.format();
         alignColumns();
         practice2SyncRecordingUI();
     };

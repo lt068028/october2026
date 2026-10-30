@@ -226,6 +226,7 @@ function practice2SyncPhotoSpeaker() {
     const scope = row?.closest('.p21-drill1') || row?.closest('[id$="Container"]');
     const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture');
     const who = row?.dataset.drillSpeaker || control?.dataset.speaker || picture?.dataset.speaker;
+    ConversationDisplay.syncSpeaker({key,row,control,picture,who});
     document.querySelectorAll('.p21-distance-person[data-person], .p2x-person[data-person]').forEach(e => {
         const owner = e.closest('.p21-distance-board, .p21-drill-picture, .p2x-picture');
         e.classList.toggle('is-speaking', Boolean(key || control) && owner === picture && ['A','B'].includes(who) && e.dataset.person === who);
@@ -1202,7 +1203,7 @@ function practice2ShowNotice(resultSpan, message) {
     const englishObject=pronoun=>({'これ':'this','それ':'that','あれ':'that (over there)'}[pronoun]);
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
-        const source=view.cueCell.querySelector('strong'),role=source&&/Question|Response/.test(source.textContent)?source.cloneNode(true):null;
+        const source=view.cueCell.querySelector('strong'),role=source&&(/^(?:[XYZ] · )?[QA]:$|^[XYZ][:：]?$/.test(source.textContent.trim())||source.classList.contains('conversation-role')||source.classList.contains('conversation-person'))?source.cloneNode(true):null;
         view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
     };
     const nameQuestion=(speaker,o)=>question(pro(speaker,o),word(speechStyle==='formal'?'なん':'なに','何'));
@@ -1262,7 +1263,7 @@ function practice2ShowNotice(resultSpan, message) {
             const hotspot=node('span','p21-example-item-hint');hotspot.dataset.kind=o.kind;
             imageHint(hotspot,o);stage.append(hotspot);
         }
-        board.append(stage,context);
+        board.append(stage);
         const areas=node('div','p21-distance-areas');
         const modelList=node('div','p21-model-list');
         function perspective(speaker,target) {
@@ -1418,7 +1419,7 @@ function practice2ShowNotice(resultSpan, message) {
     function laterScene(container,objects,which=false) {
         const picture=node('div','p21-drill-picture p21-shelf-scene');
         const context=container.classList.contains('example-box')?node('p','p21-photo-context'):null;
-        if(context){SpeakerGuide.init(context);picture.append(context);}
+        if(context){SpeakerGuide.init(context);}
         if(which) {
             const guide=node('div','p21-which-guide');
             const heading=node('strong');heading.append(node('span','p21-question-sound','ど'),node('span','p21-question-description','Asking about the unknown'));heading.lastElementChild.innerHTML='Asking about <br>the unknown';guide.append(heading);
@@ -1497,13 +1498,14 @@ function practice2ShowNotice(resultSpan, message) {
         const exampleBox=node('section','example-box p21-which-example');
         const phone=item('phone'),exampleObjects=['red','blue','green'].map((colorName,i)=>({...phone,colorName,zone:['A','B','far'][i]}));
         const showExample=laterScene(exampleBox,exampleObjects,true);
+        exampleBox.querySelector('.p21-drill-picture').dataset.whTargets='true';
         const mine=exampleObjects[0],yours=exampleObjects[2];
         const intro=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine));
         const ask=()=>question('Yさんの'+noun(yours),'どれ');
         const reply=()=>shortAnswer('B',yours);
         for(const [speaker,text] of [['A',ask],['B',reply]]) {
             const button=listen(()=>{showExample(speaker);return text();},`${speakerName(speaker)}🔊きく`,()=>showExample.announce(speaker));
-            button.classList.add('p21-which-audio');button.dataset.speaker=speaker;
+            button.classList.add('p21-which-audio');button.dataset.speaker=speaker;button.dataset.part=speaker==='A'?'question':'response';button.dataset.targetPolicy=speaker==='A'?'question':'answer';button.dataset.targetZone=yours.zone;
             exampleBox.querySelector('.p21-example-scene-canvas').append(button);
         }
         const models=node('div','p21-which-models');
@@ -1511,10 +1513,10 @@ function practice2ShowNotice(resultSpan, message) {
             ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'／これ','intro'],
             ['A',ask,formatWord('Yさんのスマホ','Yさんのスマホ','Y-san no sumaho','Y’s smartphone')+'／どれ','question'],
             ['B',reply,'','response']]){
-            const line=node('p','p21-which-model-line');line.dataset.part=part;
+            const line=node('p','p21-which-model-line');line.dataset.part=part;line.dataset.modelSpeaker=speaker;
             line.append(node('strong','',speakerName(speaker)+'：'));
             if(cue){const prompt=node('span','p21-which-cue');prompt.innerHTML=cue;line.append(prompt,node('span','','👉️'));}
-            const sound=listen(()=>{showExample(speaker);return text();},'🔊きく',()=>showExample.announce(speaker));sound.dataset.speaker=speaker;
+            const sound=listen(()=>{showExample(speaker);return text();},'🔊きく',()=>showExample.announce(speaker));sound.dataset.speaker=speaker;sound.dataset.targetPolicy=part==='question'?'question':'answer';sound.dataset.targetZone=part==='intro'?mine.zone:yours.zone;
             line.append(sound,modelText(text,phone,true));models.append(line);
         }
         exampleBox.append(models);d3.append(exampleBox);showExample('A');
@@ -1523,6 +1525,7 @@ function practice2ShowNotice(resultSpan, message) {
         const nounItem=item(['dictionary','wallet'][s3]);
         const choices=['red','blue','green'].map((colorName,i)=>({...nounItem,zone:['A','B','far'][i],colorName}));
         const show3=laterScene(d3,choices,false);
+        d3.querySelector(':scope > .p21-drill-picture').dataset.whTargets='true';
         // The phone is introduced in Example 2; the two Drill sets cover dictionary and wallet.
         const targets=[[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
@@ -1538,6 +1541,7 @@ function practice2ShowNotice(resultSpan, message) {
             practice2State.replyReferences[key]=()=>[statement(pro(answering,o),possessive()+noun(o)),statement(possessive()+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),possessive()),pro(answering,o)+'が'+possessive()+noun(o)+ending];
             const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
             englishCue(q,[s3===0?speakerName(owner):'you',o.meaning,'which one']);
+            q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';r.row.dataset.targetZone=o.zone;
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
     }
@@ -1776,6 +1780,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         installSettings();
         renderSections();
+        ConversationDisplay.format();
         alignColumns();
         practice2SyncRecordingUI();
         Practice21.refreshTargets();

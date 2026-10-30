@@ -256,15 +256,9 @@ function practice2SyncPhotoSpeaker() {
     const control = activePlayButtons[0];
     const row = key ? [...document.querySelectorAll('tr[data-speaker-recording-key]')].find(e => e.dataset.speakerRecordingKey === key) : control?.closest('tr');
     const scope = row?.closest('.p21-drill1') || row?.closest('[id$="Container"]');
-    const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture');
+    const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture, :scope > .p23-city-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture, .p23-city-picture');
     const who = row?.dataset.drillSpeaker || control?.dataset.speaker || picture?.dataset.speaker;
-    document.querySelectorAll('[data-practice="2.2"] .p22-person-badge').forEach(e => {
-        const group=e.closest('.p2x-speaker-group');
-        const owner=e.closest('tr') || e.closest('.p22-conversation-line');
-        const groupPicture=group?.closest('.example-box')?.querySelector('.p2x-picture');
-        const active=group ? Boolean(key || control) && groupPicture===picture : key ? owner===row : Boolean(control && owner?.contains(control));
-        e.classList.toggle('is-speaking',active && e.dataset.person===who);
-    });
+    ConversationDisplay.syncSpeaker({key,row,control,picture,who});
     document.querySelectorAll('.p21-distance-person[data-person], .p2x-person[data-person]').forEach(e => {
         const owner = e.closest('.p21-distance-board, .p21-drill-picture, .p2x-picture');
         e.classList.toggle('is-speaking', Boolean(key || control) && owner === picture && ['A','B'].includes(who) && e.dataset.person === who);
@@ -1388,7 +1382,6 @@ function practice2ShowNotice(resultSpan, message) {
                 const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
             }
         }
-        if(speakerGuide&&!is22){if(hats)stage.append(context);else picture.append(context);}
         if(shop){const canvas=node('div','p2x-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}
         picture.append(stage);if(example&&!hats)picture.append(audioGrid);
         if(hats&&example){
@@ -1417,7 +1410,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function attach(view,speaker,o,select) {
         view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;
-        for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>select(speaker,o.zone));
+        for(const control of [view.listenBtn,view.recordBtn])for(const event of ['click','focus'])control.addEventListener(event,()=>select(speaker,view.row.dataset.targetPolicy?(event==='focus'||view.row.dataset.targetPolicy==='question'?null:o.zone):o.zone));
     }
     const cityObjects=(drill=false)=>{
         const data=drill?[
@@ -1444,7 +1437,7 @@ function practice2ShowNotice(resultSpan, message) {
         if(call){context.dataset.prompt='X is calling Y and talking about Z.';context.dataset.playingLabel='X is calling Y and talking about Z.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
         if(call)context.prepend(phoneIcon());
-        if(example&&!call){picture.append(context);const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','X ↔ Y'));picture.append(link);}
+        if(example&&!call){const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','X ↔ Y'));picture.append(link);}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
         photo.alt=indoor?'X at the bank and Y at the cafe are on a phone call. Z reads quietly at the library.':'X and Y are on a phone call in different cities. Z is seated having a drink in a third city, not in their conversation.';stage.append(photo);
@@ -1493,11 +1486,11 @@ function practice2ShowNotice(resultSpan, message) {
         const periodCue=o=>formatWord(o.periodHira,o.periodKanji,...{あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira]);
         const sentences=[
             {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
-            {who:'A',object:countries[1],cue:()=>'Yさん／どこ',text:()=>question('Yさん','どこ')},
-            {who:'B',object:countries[1],intro:()=>statement(word('わたし','私'),noun(countries[1]))},
+            {who:'A',role:'question',object:countries[1],cue:()=>'Yさん／どこ',text:()=>question('Yさん','どこ')},
+            {who:'B',role:'answer',object:countries[1],intro:()=>statement(word('わたし','私'),noun(countries[1]))},
             {who:'B',label:'',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
-            {who:'A',object:countries[2],cue:()=>'Zさん／どこ',text:()=>question('Zさん','どこ')},
-            {who:'B',object:countries[2],intro:()=>statement('Zさん',noun(countries[2]))},
+            {who:'A',role:'question',object:countries[2],cue:()=>'Zさん／どこ',text:()=>question('Zさん','どこ')},
+            {who:'B',role:'answer',object:countries[2],intro:()=>statement('Zさん',noun(countries[2]))},
             {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
@@ -1506,12 +1499,12 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const displayModel=({text,object:o})=>modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true);
         sentences.forEach(sentence=>{
-            const {who,object:o,intro,cue,label}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;
+            const {who,object:o,intro,cue,label}=sentence,line=node('div','p21-model-line');line.dataset.modelSpeaker=who;line.dataset.zone=o.zone;if(sentence.role)line.dataset.conversationRole=sentence.role;
             const introduction=node('span','p23-model-intro');if(intro)introduction.append(modelText(intro,o,true));
             line.append(node('strong','p23-model-speaker',label??speakerName(who)+':'),introduction);
             if(cue){const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));line.append(prompt,exampleCueAudio(sentence),answer);}
             list.append(line);
-        });e1.append(list);describeContainer.append(e1);
+        });e1.append(list);describeContainer.append(e1);ConversationDisplay.format();
         const unknownOffset={x:0,y:0};
         function alignExampleCues() {
             if(!list.isConnected)return;
@@ -1520,7 +1513,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const measure=cue.cloneNode(true);measure.style.cssText='position:absolute;display:inline-block;width:max-content;max-width:none;white-space:normal;visibility:hidden;';list.append(measure);width=Math.max(width,measure.getBoundingClientRect().width);measure.remove();
             });
             const gap=parseFloat(getComputedStyle(list).columnGap)||0;
-            const role=list.querySelector('.p23-model-speaker').getBoundingClientRect().width;
+            const role=Math.max(...[...list.querySelectorAll('.p23-model-speaker')].map(e=>e.getBoundingClientRect().width));
             const audio=list.querySelector('.p23-example-audio').getBoundingClientRect().width;
             const available=list.clientWidth-role-audio-gap*3;
             const value=Math.max(0,Math.min(width,available))+'px';
@@ -1646,27 +1639,7 @@ function practice2ShowNotice(resultSpan, message) {
         cuePanel.append(copy,toggle);d4.append(cuePanel);
     }
 
-    // Practice 2.2 pilot: a role circle and a separate, picture-matched person badge.
-    function formatConversationRoles() {
-        if (!is22) return;
-        document.querySelectorAll('.drill-cue-cell > strong, .p2x-dialogue-example > p > strong').forEach(label => {
-            const match = label.textContent.trim().match(/^([XYZ]) · ([QA]):$/);
-            if (!match) return;
-            const [,name,role] = match;
-            label.className = 'p22-conversation-role';
-            const circle = node('span','p22-role-circle',role);
-            circle.setAttribute('aria-label',role === 'Q' ? 'Question' : 'Answer');
-            const person = node('span','p22-person-badge',name);
-            person.dataset.person = ({X:'A',Y:'B',Z:'C'})[name];
-            label.replaceChildren(circle,person);
-        });
-        document.querySelectorAll('.drill-cue-cell > strong, .p2x-speaker-group > h3').forEach(label => {
-            const match=label.textContent.trim().match(/^([XYZ]):?$/);
-            if(!match)return;
-            label.classList.add('p22-person-badge');label.textContent=match[1];
-            label.dataset.person=({X:'A',Y:'B',Z:'C'})[match[1]];
-        });
-    }
+    function formatConversationRoles() { ConversationDisplay.format(); }
 
     function renderSections() {
         shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
@@ -1752,17 +1725,21 @@ function practice2ShowNotice(resultSpan, message) {
     function renderFoodChoosing(container) {
         const exampleObjects=merchandise('fruit'),sample=exampleObjects[0],box=node('section','example-box p2x-dialogue-example p2x-food-example');
         const selectExample=scene(box,exampleObjects,{which:true,model:true});
+        box.querySelector('.p2x-picture').dataset.whTargets='true';
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
         const q=node('p','example-text-layout p22-conversation-line'),r=node('p','example-text-layout p22-conversation-line');
-        q.append(node('strong','','X · Q: '),exampleCue(`どの／${vocabulary(sample)}／${priceCue(sample)}`),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
-        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}／${vocabulary(sample)}`),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
+        q.append(node('strong','','X · Q: '),exampleCue(`どの／${vocabulary(sample)}／${priceCue(sample)}`),listen(()=>{selectExample('A',null);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
+        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}／${vocabulary(sample)}`),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));for(const [line,policy]of [[q,'question'],[r,'answer']]){const b=line.querySelector('button');b.dataset.targetPolicy=policy;b.dataset.targetZone=sample.zone;}
+        box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの＋Noun','💡Ask with どの＋noun.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
+        container.querySelector(':scope > .p2x-picture').dataset.whTargets='true';
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_food_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>X · Q:</strong> どの／${vocabulary(o)}／${priceCue(o)}`,prefix+'_q',()=>qText(o));
             practice2State.replyReferences[prefix+'_r']=()=>[adnominal('B',o)+'が、'+price(o)+ending(),statement(adnominal('B',o),price(o))];
             const r=recordingRow(current,'a','<strong>Y · A:</strong> …',prefix+'_r',()=>short(adnominal('B',o)));
+            q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
@@ -1788,6 +1765,8 @@ function practice2ShowNotice(resultSpan, message) {
                     const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${formatWord('Yさんのクラスメート','Yさんのクラスメート','Y-san no kurasumēto','Y’s classmate')}／${formatWord('どのひと','どの人','dono hito','which person')}`,key+'_q_2',()=>question('Yさんのクラスメート',which()));
                     practice2State.replyReferences[key+'_r_2']=()=>[short(subject(answerer)),statement(mine(),subject(answerer))];
                     const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${personCue(answerer)}`,key+'_r_2',()=>short(subject(answerer)));
+                    q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';
+                    container.querySelector(':scope > .p2x-picture').dataset.whTargets='true';
                     attach(q,asker,o,select);attach(r,answerer,o,select);return;
                 }
                 const relation=[{hira:'おとうと',kanji:'弟',romaji:'otōto',meaning:'younger brother'},{hira:'ともだち',kanji:'友達',romaji:'tomodachi',meaning:'friend'}][i];
@@ -1820,7 +1799,7 @@ function practice2ShowNotice(resultSpan, message) {
         for(const who of ['A','B']){const label=node('strong','p2x-person',speakerName(who));label.dataset.person=who;stage.append(label);}
         const umbrellas=[{owner:'A',zone:'far',x:46.6,label:'Xさんの'},{owner:'B',zone:'B',x:80.7,label:'Yさんの'},{owner:'teacher',zone:'A',x:17.7,label:word('せんせいの','先生の')}];
         for(const o of umbrellas){const target=node('span','p2x-umbrella-target');target.dataset.owner=o.owner;target.style.left=o.x+'%';imageHint(target,{hintText:o.label+word('かさ','傘')});target.setAttribute('aria-label',o.label+word('かさ','傘'));stage.append(target);}
-        picture.append(stage);container.append(picture);
+        picture.dataset.whTargets='true';picture.append(stage);container.append(picture);
         const select=(who,owner)=>{picture.dataset.speaker=who;stage.querySelectorAll('.p2x-umbrella-target').forEach(e=>e.classList.toggle('is-target',e.dataset.owner===owner));};
         const turns=[{asker:'B',answerer:'A',o:umbrellas[0],adj:'あの',pro:'あれ'},{asker:'A',answerer:'B',o:umbrellas[1],adj:'この',pro:'これ'},{asker:'B',answerer:'A',o:umbrellas[2],adj:'この',pro:'これ'}];
         const umbrella=()=>word('かさ','傘');
@@ -1838,7 +1817,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const replyCue=mode==='adjective'?formatWord(adj+'かさ',adj+'傘',({この:'kono',その:'sono',あの:'ano'}[adj])+' kasa',adj==='この'?'this umbrella':adj==='その'?'that umbrella':'that umbrella over there'):formatWord(pro,pro,{これ:'kore',それ:'sore',あれ:'are'}[pro],pro==='これ'?'this one':pro==='それ'?'that one':'that one over there');
                 practice2State.replyReferences[prefix+'_r']=()=>[short(answer()),statement(subject(),answer())];
                 const r=recordingRow(current,'a',`<strong>${speakerName(answerer)} · A:</strong> ${replyCue}`,prefix+'_r',()=>short(answer()));
-                for(const [view,who]of [[q,asker],[r,answerer]]){view.row.dataset.drillSpeaker=who;view.row.dataset.exerciseMode=mode;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(who,o.owner));}
+                for(const [view,who]of [[q,asker],[r,answerer]]){view.row.dataset.drillSpeaker=who;view.row.dataset.exerciseMode=mode;view.row.dataset.targetPolicy=view===q?'question':'answer';view.row.dataset.targetOwner=o.owner;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(who,view===q?null:o.owner));}
             }
         });
     }

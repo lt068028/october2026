@@ -8,6 +8,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  const check=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);checks++};
  async function open(context,name='practice1.2'){
   const page=await context.newPage();page.setDefaultTimeout(10000);page.errors=[];page.on('pageerror',e=>page.errors.push(e.message));
+  await page.addInitScript(()=>{Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[],addEventListener(){},cancel(){},speak(){}}});window.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};});
   await page.route('http://drill.test/**',r=>{
    const file=path.join(root,new URL(r.request().url()).pathname);
    if(!fs.existsSync(file))return r.fulfill({status:404,body:''});
@@ -17,11 +18,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  }
 
  const context=await browser.newContext();
+ const smoke=process.env.EXAMPLE_ORDER_SMOKE==='1';
  for(const name of ['practice7.1','practice7.2','practice7.3']) {
+  console.log('Checking '+name);
   const p=await open(context,name);
-  for(const width of [1440,1100,900,600]) for(const theme of ['light','dark']) {
+  for(const width of (smoke?[1440,600]:[1440,1100,900,600])) for(const theme of ['light','dark']) {
    await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
    for(const style of ['formal','informal','casual']) for(const hint of ['off','hover','paren']) for(const script of ['hiragana','kanji']) {
+    if(smoke&&(hint!==({formal:'off',informal:'hover',casual:'paren'})[style]||script!==(theme==='light'?'hiragana':'kanji')))continue;
     await p.evaluate(([style,hint,script])=>{
      document.querySelector(`#speechStyleControl [data-value="${style}"]`).click();
      document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
@@ -29,15 +33,17 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     },[style,hint,script]);
     check(await p.locator('.practice7-category').evaluateAll(es=>{
      if(!es.length)return false;
-     return es.every(e=>{
-      const group=e.closest('.example-box')||e.closest('#drill1List, #drill1Container');
-      const badges=[...group.querySelectorAll('.practice7-category')].filter(b=>b.closest('.example-box')===e.closest('.example-box'));
+     const groups=new Map();
+     es.forEach(e=>{const group=e.closest('.example-box')||e.closest('#drill1List, #drill1Container');if(!groups.has(group))groups.set(group,[]);groups.get(group).push(e);});
+     return [...groups.values()].every(badges=>{
+      const e=badges[0];
       const widths=badges.map(b=>b.getBoundingClientRect().width);
       const natural=badges.map(b=>{
        const clone=b.cloneNode(true);clone.classList.remove('practice7-category');clone.textContent=b.textContent;
        b.after(clone);const w=clone.getBoundingClientRect().width;clone.remove();return w;
       });
       const max=Math.max(...natural);
+      return badges.every(e=>{
       const label=e.querySelector('.practice7-category-label');
       const measure=text=>{const probe=document.createElement('span');probe.style.display='inline-block';probe.style.flexShrink='0';probe.textContent=text;e.append(probe);const w=probe.getBoundingClientRect().width;probe.remove();return w;};
       const gap=parseFloat(label.style.columnGap);
@@ -47,6 +53,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
       const own=natural[badges.indexOf(e)];
       const expected=max-own<0.01?0:Math.min(3.5,Math.max(0,(max-own+textWidth-characterWidth)/Math.max(1,chars.length-1)));
       return widths.every(w=>Math.abs(w-max)<1)&&gap>=0&&gap<=3.5&&Math.abs(gap-expected)<0.02;
+      });
 
      });
     }),true,`${name} shared category background equals natural longest width`);

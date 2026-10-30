@@ -28,7 +28,7 @@ function mock(){
  check(await p.locator('.example-box').count(),2,'Ex1 and new Ex2');check(await p.locator('.p21-drill1 .drill-row').count(),2,'A and B practice groups');
  check(await p.locator('.p21-item-audio button').count(),6,'six audio buttons near objects');
  check(await p.locator('.p21-photo').evaluateAll(es=>es.every(im=>im.complete&&im.naturalWidth>0)),true,'photo loaded');
- check(await p.locator('.p21-distance-board > .p21-photo-context span').textContent(),'Who is speaking?','speaker guide');
+ check(await p.locator('.p21-photo-context').count(),0,'Who guide removed');
  check(await p.locator('.p21-photo-foreground').count(),3,'only objects restored; hand masking removed');
  check(await p.locator('.p21-model-line').count(),6,'six models below diagram');
  check(await p.locator('.p21-which-example').count(),1,'Ex2 introduces which one');
@@ -52,7 +52,7 @@ function mock(){
    const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
-   check(await p.locator('.p21-distance-board > .p21-photo-context').textContent(),'Who is speaking?','speaker prompt restored after playback');
+   check(await p.locator('.p21-distance-person.is-speaking').count(),0,'speaker frame cleared after playback');
    check(await p.locator('.p21-person-caption').allTextContents(),['X','Y'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');
@@ -68,30 +68,29 @@ function mock(){
  check(await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').isDisabled(),true,'new audio remains playing after stale callback');
  check(await p.locator('.p21-person-caption').allTextContents(),['X','Y'],'person labels remain fixed after stale callback');
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
- const attention=await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{
-  const animation=el.getAnimations()[0];
-  return {outside:el.parentElement.classList.contains('p21-distance-board'),front:Number(getComputedStyle(el).zIndex)>Number(getComputedStyle(document.querySelector('.p21-distance-areas')).zIndex),highlight:animation.effect.getKeyframes()[1].backgroundColor,duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations};
+ const attention=await p.locator('.p21-distance-person.is-speaking').evaluate(el=>{
+  const animation=el.getAnimations()[0];return {duration:animation.effect.getTiming().duration,iterations:animation.effect.getTiming().iterations,outline:getComputedStyle(el).outlineColor};
  });
- check(attention,{outside:true,front:true,highlight:'rgb(254, 202, 202)',duration:1200,iterations:Infinity},'speaker guide pulses throughout playback');
- await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{el.getAnimations()[0].currentTime=7200;});
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations()[0].playState),'running','attention continues beyond three cycles');
+ check(attention,{duration:1200,iterations:Infinity,outline:'rgb(255, 255, 255)'},'speaker frame pulses throughout playback');
+ await p.locator('.p21-distance-person.is-speaking').evaluate(el=>{el.getAnimations()[0].currentTime=7200;});
+ check(await p.locator('.p21-distance-person.is-speaking').evaluate(el=>el.getAnimations()[0].playState),'running','attention continues beyond three cycles');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS completion stops attention');
+ check(await p.locator('.p21-distance-person.is-speaking').count(),0,'TTS completion stops attention');
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
+ check(await p.locator('.p21-distance-person.is-speaking').evaluate(el=>el.getAnimations().length),1,'same speaker restarts attention');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.classList.contains('is-emphasized')),false,'speaker emphasis clears after audio');
+ check(await p.locator('.p21-distance-person.is-speaking').count(),0,'speaker emphasis clears after audio');
  await p.emulateMedia({reducedMotion:'reduce'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{const frames=el.getAnimations()[0].effect.getKeyframes();return frames[0].backgroundColor===frames[1].backgroundColor;}),true,'reduced motion uses static emphasis during playback');
+ check(await p.locator('.p21-distance-person.is-speaking').evaluate(el=>getComputedStyle(el).animationName==='none'&&getComputedStyle(el).boxShadow.includes('rgb(255, 255, 255)')),true,'reduced motion uses static emphasis during playback');
  await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.emulateMedia({reducedMotion:'no-preference'});
  await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').click();
  await p.evaluate(()=>t.spoken.at(-1).onerror?.({error:'synthesis-failed'}));
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'TTS failure stops attention');
+ check(await p.locator('.p21-distance-person.is-speaking').count(),0,'TTS failure stops attention');
  await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').click();
  await p.evaluate(()=>stopAllPlayback());
- check(await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>el.getAnimations().length),0,'explicit interruption stops attention');
+ check(await p.locator('.p21-distance-person.is-speaking').count(),0,'explicit interruption stops attention');
  for(const width of [600,900,1440,1920])for(const theme of ['light','dark']) {
   await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
   check(await p.locator('.p21-area-caption').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)')),true,'region labels have no background panels');

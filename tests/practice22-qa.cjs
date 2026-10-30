@@ -13,7 +13,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  for(const width of [375,600,900,1440])for(const dark of [false,true]){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:dark?'dark':'light'});
   const lines=p.locator('.p22-conversation-line');check(await lines.count(),4);
-  check(await lines.evaluateAll(es=>es.every(e=>[...e.children].map(c=>c.className).join('|').startsWith('p22-conversation-role|p22-cue-arrow|'))),true);
+  check(await lines.evaluateAll(es=>es.every(e=>e.children[0].classList.contains('conversation-role')&&e.children[1].classList.contains('p22-cue-arrow'))),true);
   check(await p.locator('.p22-role-circle').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='50%' && e.textContent.match(/^[QA]$/))),true);
   check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='4px')),true);
   check(await lines.evaluateAll(es=>es.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),true);

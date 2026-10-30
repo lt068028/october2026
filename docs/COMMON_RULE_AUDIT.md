@@ -1,3 +1,5 @@
+> **全ページ共通表示（2026-10-30実装）**：丸囲みQ/A→角丸X/Y→キュー→👉️→きく→モデル全文を該当箇所へ展開。人物色と白い外枠の伸縮を画像内外で共通化し、実際の話者のみ再生・準備・録音・録音再生中に強調、終了・中断で解除する。Who案内は2.1/2.2から撤去し、2.3の通話場面説明と第三者Zは維持。「どの／どれ」の質問・選択・録音準備では正答対象を囲まず、指示語を使う返答時だけ対象を示す。人物未指定の課題には人物を追加しない。詳細は[UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)と[UI_ROLLOUT_REVIEW.md](UI_ROLLOUT_REVIEW.md)。
+
 # 共通仕様の照合（2026-10-29）
 
 - 8.1のゴールド・Y/N Example・D5初期表示の原因調査と是正：[PRACTICE81_INHERITANCE_AUDIT.md](PRACTICE81_INHERITANCE_AUDIT.md)。ゴールド規定は既存で実装取り込み漏れ。Y/N Exampleの適用範囲はUI_LAYOUT_SPECで明文化。

@@ -42,7 +42,7 @@ const mock=source.slice(source.indexOf('function mock()'),source.indexOf('(async
  for(const name of ['practice1.2','practice7.1','practice7.2','practice7.3','practice8.1']){
   await page.goto('http://names.test/'+name+'.html');
   const labels=await page.locator('.example-box .example-label-title').allTextContents();
-  check(labels.some(s=>s.trim()==='Q:'),true,name+' Question is Q');check(labels.some(s=>s.trim()==='A:'),true,name+' Answer is A');
+  check(await page.locator('.example-box .conversation-role-circle').allTextContents().then(xs=>xs.includes('Q')),true,name+' Question is Q');check(await page.locator('.example-box .conversation-role-circle').allTextContents().then(xs=>xs.includes('A')),true,name+' Answer is A');
   check(labels.some(s=>/Question:|Response:/.test(s)),false,name+' old full labels removed');
  }
  check(errors,[],'no runtime errors');await browser.close();console.log('PASS labels and speakers',checks);

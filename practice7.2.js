@@ -3476,6 +3476,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         installSettings();
         updateLayout();
         updateExample();
+        ConversationDisplay.format();
     };
 
     const originalSync = practice7SyncRecordingUI;

@@ -765,7 +765,7 @@ function render() {
         });
         root.append(group);
     });
-    measureCues();sync();
+    ConversationDisplay.format();measureCues();sync();
 }
 function measureCues() {
     document.querySelectorAll('.p81-section').forEach(group=>{
