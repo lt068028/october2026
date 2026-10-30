@@ -107,7 +107,7 @@ function mock(){
    }
    await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
    for(let i=0;i<3;i++){
-    const q=['その人はYさんのクラスメート','その人はXさんのクラスメート','どの人がYさんのクラスメート'][i]+(style==='formal'?'ですか':'');
+    const q=['その人はYさんのクラスメート','その人はXさんのクラスメート','Yさんのクラスメートはどの人'][i]+(style==='formal'?'ですか':'');
     const no=style==='casual'?'ううん':'いいえ';
     const r=(i===2?'あの人':no+['この人は私の弟','この人は私の友達'][i])+end;
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Set2 question');

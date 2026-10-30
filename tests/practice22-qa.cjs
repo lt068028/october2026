@@ -22,7 +22,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
    const audio=await p.locator(example+' > p > button').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(audio[0]-audio[1])<1,true);
   }
   check(await p.locator('.p22-person-badge,.p2x-person').evaluateAll((es,dark)=>es.every(e=>{
-   const expected=dark?{A:['rgb(196, 181, 253)','rgb(46, 16, 101)'],B:['rgb(209, 213, 219)','rgb(31, 41, 55)']}:{A:['rgb(109, 40, 217)','rgb(255, 255, 255)'],B:['rgb(75, 85, 99)','rgb(255, 255, 255)']};
+   const expected=dark?{A:['rgb(196, 181, 253)','rgb(46, 16, 101)'],B:['rgb(103, 232, 249)','rgb(8, 51, 68)']}:{A:['rgb(109, 40, 217)','rgb(255, 255, 255)'],B:['rgb(125, 211, 252)','rgb(255, 255, 255)']};
    const s=getComputedStyle(e),want=expected[e.dataset.person];return !want||(s.backgroundColor===want[0]&&s.color===want[1]&&Number(s.fontWeight)>=700);
   }),dark),true);
  }

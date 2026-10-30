@@ -3255,12 +3255,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
 }
 
-/* Practice 2.2 only: approved speaker palette ②; active speakers retain red. */
+/* Practice 2.2 only: approved purple / blue speaker palette ③; active speakers retain red. */
 [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #6d28d9; color: #fff; }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #4b5563; color: #fff; }
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #7dd3fc; color: #fff; }
 @media(prefers-color-scheme: dark) {
  [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #c4b5fd; color: #2e1065; }
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #d1d5db; color: #1f2937; }
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #67e8f9; color: #083344; }
 }
 
 /* Practice 1.1: narrow examples keep arrow/audio columns shared across rows. */
