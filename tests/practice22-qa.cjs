@@ -40,7 +40,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
     const image=picture?.querySelector('.p2x-person[data-person="'+who+'"]');
     const dark=matchMedia('(prefers-color-scheme:dark)').matches;
     const activeColor=who==='A'?(dark?'rgb(196, 181, 253)':'rgb(109, 40, 217)'):(dark?'rgb(103, 232, 249)':'rgb(125, 211, 252)');
-    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking')&&[badge,image].every(x=>{const s=getComputedStyle(x);return s.backgroundColor===activeColor&&s.animationName==='p22-speaker-focus'&&s.outlineColor==='rgb(255, 255, 255)'&&x.getAnimations()[0].effect.getKeyframes().every(f=>f.boxShadow.includes(who==='A'?'rgb(76, 29, 149)':'rgb(7, 89, 133)'));});
+    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking')&&[badge,image].every(x=>{const s=getComputedStyle(x);return s.backgroundColor===activeColor&&s.animationName==='p22-speaker-focus'&&s.outlineColor==='rgb(255, 255, 255)'&&x.getAnimations()[0].effect.getKeyframes().every(f=>f.boxShadow.includes('rgb(51, 65, 85)'))&&x.getAnimations()[0].effect.getKeyframes().some(f=>f.boxShadow.includes('rgb(255, 255, 255)'));});
    }),true);
    await p.evaluate(()=>t.spoken.at(-1).onend());check(await p.locator('.p22-person-badge.is-speaking').count(),0);
   }
@@ -59,7 +59,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  check(await p.locator('#drill5Container .p22-role-circle').allTextContents(),['Q','A','Q','A','Q','A']);
  for(const selector of ['.p2x-price-example','.p2x-food-example']){await p.locator(selector).screenshot({path:'/tmp/'+selector.slice(1)+'-qa.png'});}
  await p.emulateMedia({reducedMotion:'reduce'});await button.click();
- check(await p.locator('.p22-person-badge.is-speaking').evaluate(e=>{const s=getComputedStyle(e);return s.animationName==='none'&&s.boxShadow.includes('rgb(76, 29, 149)')&&s.boxShadow.endsWith('8px')}),true);
+ check(await p.locator('.p22-person-badge.is-speaking').evaluate(e=>{const s=getComputedStyle(e);return s.animationName==='none'&&s.boxShadow.includes('rgb(255, 255, 255)')&&s.boxShadow.includes('rgb(51, 65, 85)')&&s.boxShadow.endsWith('8px')}),true);
  await p.evaluate(()=>t.spoken.at(-1).onend());await p.emulateMedia({reducedMotion:'no-preference'});
  for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.locator('.p2x-price-example').screenshot({path:'/tmp/p22-speaker-colors-'+theme+'.png'});}
  await p.goto('http://qa.test/practice2.3.html');check(await p.locator('.p22-role-circle').count(),0);
