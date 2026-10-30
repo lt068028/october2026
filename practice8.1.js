@@ -7,7 +7,6 @@ let scriptMode='kanji',hintMode='hover',speechStyle='formal';
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map();
-let situationSet='situations';
 const words={};
 function W(id,kanji,hira,romaji,meaning) {
     words[id]={kanji,hira,romaji,meaning};
@@ -95,21 +94,20 @@ const degrees=[
     {...action('oldbook','discard'),adjective:'like',initial:'amari'},
     {...action('study','begin'),adjective:'like',initial:'zenzen'}
 ];
-const comfortActions=[action('english','speak'),action('cook','do'),action('song','sing'),action('kanji','remember')];
-// These prompts define the intended context. They never claim to measure vocal politeness.
-const situations=[
-    {subject:'i',...action('kanji','write'),initial:'bad',scenario:'Describe your own limited skill modestly.',target:'Modest',fit:'bad'},
-    {subject:'i',...action('cook','do'),initial:'strong',scenario:'State one of your strengths with confidence.',target:'Confident',fit:'strong'},
-    {subject:'i',...action('photo','take'),initial:'good',scenario:'Praise your own skill as if you were grading yourself.',target:'Boastful',fit:'good'},
-    {subject:'teacher',...action('kanji','write'),initial:'bad',scenario:'Tell your teacher directly that their writing skill is poor.',target:'Rude',fit:'bad'},
-    {subject:'japaneseTeacher',...action('japanese','speak'),noun:true,initial:'good',scenario:'As a beginner, grade your experienced Japanese teacher’s Japanese.',target:'Arrogant',fit:'good'}
+// Each pair shares its speaker, action and situation. Impressions describe this context only.
+const comparisons=[
+    {subject:'i',...action('photo','take'),options:['good','strong'],scenario:'Talk about your own photography.',impressions:{good:{label:'May sound boastful.',tone:'caution'},strong:{label:'Sounds confident.',tone:'fit'}}},
+    {subject:'i',...action('english','speak'),options:['bad','difficult'],scenario:'Talk about speaking English yourself.',impressions:{bad:{label:'Sounds modest. Focus on skill.',tone:'fit'},difficult:{label:'Focus on personal difficulty.',tone:'fit'}}},
+    {subject:'friend',...action('song','sing'),options:['good','bad'],scenario:'Describe your friend’s singing after hearing it.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},bad:{label:'May sound too direct.',tone:'caution'}}},
+    {subject:'student',...action('cook','do'),options:['good','difficult'],scenario:'Describe your friend’s cooking, based on what they told or showed you.',impressions:{good:{label:'Praise for their skill.',tone:'fit'},difficult:{label:'Describes their difficulty.',tone:'fit'}}},
+    {subject:'japaneseTeacher',...action('japanese','speak'),noun:true,options:['good','bad'],scenario:'As a beginner, comment on an experienced Japanese teacher’s Japanese.',impressions:{good:{label:'May sound arrogant.',tone:'caution'},bad:{label:'May sound rude.',tone:'caution'}}}
 ];
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: How does it sound?',instruction:'💡Choose words to sound Modest, Confident, Boastful, Rude or Arrogant.'}
+    {title:'Drill 5: Compare expressions',instruction:'💡Choose either expression. Listen and compare how it sounds.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -127,7 +125,7 @@ function makeRow(id,spec,extra={}) {
     const r={id,...spec,...extra};
     r.text=sentenceFor(r,speechStyle,true);r.hira=sentenceFor(r,speechStyle,false);
     r.refs=[];
-    const possible=r.situation?adjectives:[r.adjective];
+    const possible=[r.adjective];
     for(const a of possible)for(const explicitSelf of r.subject?[false]:[false,true]) {
         const variant=explicitSelf?{...r,subject:r.qa==='question'?'you':'i'}:r;
         for(const kanji of [true,false]) {
@@ -158,10 +156,7 @@ function rowsFor(si) {
     });
     if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degrees.map((s,i)=>{const id=`degree-${i}`;return [makeRow(id,{...s,adverb:selected(id,s.initial)},{selectKind:'adverb'})];});
-    if(situationSet==='compare')return comfortActions.map((s,i)=>[
-        makeRow(`skill-${i}`,{...s,subject:'i',adjective:'bad'},{kind:'Skill'}),
-        makeRow(`comfort-${i}`,{...s,subject:'i',adjective:'difficult'},{kind:'Comfort'})]);
-    return situations.map((s,i)=>{const id=`situation-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.initial)},{selectKind:'adjective',situation:true,pending:!choices.has(id)})];});
+    return comparisons.map((spec,i)=>{const id=`comparison-${i}`,choice=choices.get(id);return [makeRow(id,{...spec,adjective:choice||spec.options[0]},{selectKind:'comparison',situation:true,pending:!choice})];});
 }
 function matchesAnswer(raw,r) {
     if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return false;
@@ -173,14 +168,8 @@ function recordedAdjective(raw) {
     return adjectives.find(key=>n.endsWith(words[key].hira+'です')||n.endsWith(words[key].hira+'だ')||n.endsWith(words[key].hira));
 }
 function feedback(r,raw) {
-    const a=recordedAdjective(raw);if(!a)return null;
-    let impression;
-    if(r.subject==='i')impression=({good:'Boastful',bad:'Modest',strong:'Confident',difficult:'Natural'})[a];
-    else if(a==='bad')impression='Rude';
-    else if(r.target==='Arrogant'&&a==='good')impression='Arrogant';
-    else impression='Natural';
-    const match=impression===r.target;
-    return {label:(['Boastful','Rude','Arrogant'].includes(impression)?'May sound ':'Sounds ')+impression.toLowerCase()+'. '+(match?'✓ Matches the target.':'Try the target: '+r.target+'.'),tone:match?'fit':'caution'};
+    const adjective=recordedAdjective(raw);
+    return adjective?r.impressions?.[adjective]||null:null;
 }
 function keyFor(r){return r.id+':'+(r.qa==='response'?(r.pending?'unselected':r.answer):r.selectKind==='adverb'?r.adverb:r.selectKind?(r.pending?'unselected':r.adjective):'fixed');}
 
@@ -194,7 +183,7 @@ function word(id) {
 }
 function cues(r) {
     if(r.qa==='response')return '';
-    const ids=[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='adjective'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
+    const ids=[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='comparison'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
 }
@@ -667,14 +656,14 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
     const select=node('select','custom-select p81-select');
-    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
+    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:r.selectKind==='comparison'?r.options:adjectives;
     select.setAttribute('aria-label',r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
     if(r.situation){const placeholder=node('option','','Select…');placeholder.value='';placeholder.disabled=true;select.append(placeholder);}
     for(const id of ids){const opt=node('option','',words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
     select.value=r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
     if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
-    if(['adverb','ability'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
+    if(['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     hint.textContent=hintMode==='off'?'':select.value?words[select.value].romaji+', '+words[select.value].meaning:'Choose an expression first.';
     if(hintMode==='hover'){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
@@ -692,9 +681,7 @@ function addExample(root,si) {
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
-        situationSet==='compare'
-            ?[makeRow('ex5-skill',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Skill'}),makeRow('ex5-comfort',{...comfortActions[3],subject:'i',adjective:'difficult',highlightTopic:true},{kind:'Comfort'})]
-            :[makeRow('ex5-modest',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Modest'}),makeRow('ex5-boastful',{...comfortActions[3],subject:'i',adjective:'good',highlightTopic:true},{kind:'Boastful'})]
+        [makeRow('ex5-self-praise',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Self-praise'}),makeRow('ex5-strength',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Strength'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const r of samples) {
@@ -726,18 +713,11 @@ function render() {
         const group=node('section','p81-section');group.id='drill'+(si+1);
         addExample(group,si);
         const panel=node('div','info-panel info-panel-task1');
-        panel.append(node('span','info-panel-title',si===4&&situationSet==='compare'?'Drill 5: Skill / Comfort':section.title),node('span','info-panel-desc',si===4&&situationSet==='compare'?'💡Describe your Skill and Comfort.':section.instruction));group.append(panel);
+        panel.append(node('span','info-panel-title',section.title),node('span','info-panel-desc',section.instruction));group.append(panel);
         if(si===3)addScale(group);
-        if(si===4) {
-            const tabs=node('div','p81-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Drill 5 practice');
-            for(const [id,label]of [['situations','Target impression'],['compare','Skill / Comfort']]) {
-                const b=button(label,()=>{if(session||preparing)return;stopPlayback();situationSet=id;render();});b.dataset.set=id;b.classList.toggle('is-selected',id===situationSet);b.setAttribute('aria-pressed',String(id===situationSet));tabs.append(b);
-            }
-            group.append(tabs);
-        }
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(rows[0].scenario){const scene=node('p','p81-scenario');scene.append(node('strong','example-label-title p81-target','Target: '+rows[0].target),document.createTextNode(' '+rows[0].scenario));card.append(scene);}
+            if(rows[0].scenario)card.append(node('p','p81-scenario',rows[0].scenario));
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             rows.forEach((r,ri)=>{
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;

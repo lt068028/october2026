@@ -3166,8 +3166,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-degree-point { text-align: center; min-width: 0; }
 .practice81-page .p81-degree-marks { display: block; border-bottom: 3px solid currentColor; font-weight: 700; margin-bottom: 6px; }
 .practice81-page .p81-degree-label { display: block; overflow-wrap: anywhere; font-size: .85em; }
-.practice81-page .p81-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
-.practice81-page .p81-tabs .is-selected { outline: 2px solid var(--text-primary); outline-offset: 1px; }
 .practice81-page .p81-scenario { margin: 0 0 12px; font-size: .9em; }
 .practice81-page .p81-feedback { display: inline-block; margin-top: 8px; padding: 4px 8px; border-radius: 4px; font-size: .9em; font-weight: 700; }
 .practice81-page .p81-feedback[data-tone="fit"] { background: #d9f1e6; color: #155537; }
@@ -3199,7 +3197,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .practice81-page .p81-no-kind .p81-model { grid-column: 1 / -1; }
 }
 
-.practice81-page .p81-target { display: inline-block; margin-right: 8px; }
 .practice81-page .p81-select { margin-right: 4px; }
 /* Shared intrinsic Example columns keep Q/R and Skill/Comfort listen buttons aligned. */
 .practice81-page .p81-example { display: grid; grid-template-columns: max-content fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); gap: 12px 6px; }
