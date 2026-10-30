@@ -24,6 +24,10 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(/p81-gold[^{}]*\{[^}]*color\s*:/.test(fs.readFileSync(path.join(root,'style.css'),'utf8')),false,'no duplicated page-specific gold color');
  check(await page.locator('.p81-section').count(),5,'five Drills');
  check(await page.locator('.example-box').count(),5,'five preceding Examples');
+ check(await page.locator('.example-box').evaluateAll(es=>es.every(e=>e.classList.contains('example-text-layout'))),true,'Examples use common alignment component');
+ check(await page.locator('.p81-kind,.p81-target').evaluateAll(es=>es.every(e=>e.classList.contains('example-label-title'))),true,'ordinary headings use Practice 1 component');
+ check(await page.locator('#drill1 .example-box .p81-kind').allTextContents(),['Noun','Verb＋の'],'labels identify the compared forms');
+ check(await page.locator('.p81-example-row > button').evaluateAll(es=>es.every(e=>getComputedStyle(e).alignSelf==='auto')),true,'no page-specific vertical alignment override');
  check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example3 topic and nominalizer highlighted');
  check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(202, 138, 4)','common light gold');
  check(await page.evaluate(()=>audit81.speechText('ううん、好きじゃない。')),'ううんん、好きじゃない。','No TTS only pronunciation exception');
@@ -96,7 +100,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  for(const adv of ['zenzen','amari','chotto','maamaa','totemo','sugoku']){
   await page.locator('[data-choice="degree-0"]').selectOption(adv);
   const out=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(3)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)};});
-  check(out.valid,true,'selected degree accepted '+adv);check(out.opposite,false,'wrong polarity rejected '+adv);check(out.text.includes('じゃない'),['zenzen','amari'].includes(adv),'degree polarity '+adv);
+  check(await page.locator('[data-choice="degree-0"]').evaluate((e,negative)=>getComputedStyle(e).color===getComputedStyle(document.querySelector(negative?'.p81-degree-point.degree-negative':'.p81-degree-point.degree-positive')).color,['zenzen','amari'].includes(adv)),true,'selected adverb shares guide color');check(out.valid,true,'selected degree accepted '+adv);check(out.opposite,false,'wrong polarity rejected '+adv);check(out.text.includes('じゃない'),['zenzen','amari'].includes(adv),'degree polarity '+adv);
  }
  await page.locator('[data-response="self-3-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
@@ -140,8 +144,12 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  
  for(const width of [375,600,900,1440,1920])for(const scheme of ['light','dark']){
   await page.setViewportSize({width,height:1000});await page.emulateMedia({colorScheme:scheme});
-  const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.positive')).color]}));
-  check(layout.overflow,false,'no page overflow '+width+' '+scheme);check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),scheme==='dark'?'rgb(251, 191, 36)':'rgb(202, 138, 4)','gold follows common theme specification');check(layout.panels.every(g=>Math.abs(g-24)<.5),true,'shared Example spacing');check(layout.colors[0]===layout.colors[1],false,'polarity colors differ');
+  const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));
+  check(layout.overflow,false,'no page overflow '+width+' '+scheme);
+  const styles=await page.evaluate(()=>({labels:[...document.querySelectorAll('.p81-kind,.p81-target')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight),c.backgroundColor];}),adverbs:[...document.querySelectorAll('#drill4 .example-box .p81-model .degree-adverb')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight)];}),negative:getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,positive:getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color}));
+  check(styles.labels.every(([c,w,b])=>c===(scheme==='dark'?'rgb(253, 224, 71)':'rgb(245, 127, 23)')&&w>=700&&b==='rgba(0, 0, 0, 0)'),true,'ordinary heading defaults, no badge');
+  check(styles.adverbs.length,6,'six emphasized model adverbs');
+  check(styles.adverbs.every(([c,w],i)=>c===(i<2?styles.negative:styles.positive)&&w>=700),true,'model adverbs share red/blue guide colors and bold weight');check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),scheme==='dark'?'rgb(251, 191, 36)':'rgb(202, 138, 4)','gold follows common theme specification');check(layout.panels.every(g=>Math.abs(g-24)<.5),true,'shared Example spacing');check(layout.colors[0]===layout.colors[1],false,'polarity colors differ');
   if(width===1440){
    const tracks=await page.evaluate(()=>[...document.querySelectorAll('.p81-section')].map(s=>[...s.querySelectorAll('.p81-card .recording-actions')].map(e=>e.getBoundingClientRect().left)));
    for(const xs of tracks)check(Math.max(...xs)-Math.min(...xs)<1,true,'listen column shared by longest cue');

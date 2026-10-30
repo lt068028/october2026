@@ -3142,16 +3142,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-example-row {
     display: grid;
     grid-template-columns: max-content fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr);
-    align-items: baseline; gap: 6px;
+    gap: 6px;
 }
 .practice81-page .p81-example-row + .p81-example-row { margin-top: 12px; }
 .practice81-page .p81-example-row > * { min-width: 0; }
 .practice81-page .p81-model { overflow-wrap: anywhere; }
-.practice81-page .p81-kind {
-    display: inline-block; padding: 2px 6px; border-radius: 4px;
-    background: var(--bg-panel); color: var(--text-primary);
-    font-size: .82em; font-weight: 700; white-space: nowrap;
-}
 .practice81-page .prompt-label > .p81-kind { margin-right: 8px; }
 .practice81-page .p81-select { font: inherit; max-width: 100%; min-height: 34px; margin-left: 6px; }
 .site-scale.practice81-page .p81-card .p81-table {
@@ -3171,10 +3166,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-degree-point { text-align: center; min-width: 0; }
 .practice81-page .p81-degree-marks { display: block; border-bottom: 3px solid currentColor; font-weight: 700; margin-bottom: 6px; }
 .practice81-page .p81-degree-label { display: block; overflow-wrap: anywhere; font-size: .85em; }
-.practice81-page .p81-degree-point.negative { color: #b42335; }
-.practice81-page .p81-degree-point.positive { color: #145bb6; }
-@media (prefers-color-scheme: dark) { .practice81-page .p81-degree-point.negative { color: #ff94a0; } }
-@media (prefers-color-scheme: dark) { .practice81-page .p81-degree-point.positive { color: #8fc4ff; } }
 .practice81-page .p81-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
 .practice81-page .p81-tabs .is-selected { outline: 2px solid var(--text-primary); outline-offset: 1px; }
 .practice81-page .p81-scenario { margin: 0 0 12px; font-size: .9em; }
@@ -3208,10 +3199,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .practice81-page .p81-no-kind .p81-model { grid-column: 1 / -1; }
 }
 
-.practice81-page .p81-target { display: inline-block; margin-right: 8px; color: var(--text-primary); }
+.practice81-page .p81-target { display: inline-block; margin-right: 8px; }
 .practice81-page .p81-select { margin-right: 4px; }
 /* Shared intrinsic Example columns keep Q/R and Skill/Comfort listen buttons aligned. */
-.practice81-page .p81-example { display: grid; grid-template-columns: max-content fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); gap: 12px 6px; align-items: baseline; }
+.practice81-page .p81-example { display: grid; grid-template-columns: max-content fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); gap: 12px 6px; }
 .practice81-page .p81-example-row { display: contents; }
 .practice81-page .p81-example-cue { grid-column: 2; }
 .practice81-page .p81-arrow { grid-column: 3; }
@@ -3229,4 +3220,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .practice81-page .p81-example .p81-no-kind .p81-model { grid-column: 1 / -1; }
 }
 
-.practice81-page .p81-kind:empty { padding: 0; background: transparent; }
+
+/* Shared defaults: page-specific Example layouts inherit text alignment and label colors. */
+.example-text-layout { align-items: baseline; }
+:root { --degree-positive-color: #145bb6; --degree-negative-color: #b42335; }
+@media (prefers-color-scheme: dark) {
+    :root { --degree-positive-color: #8fc4ff; --degree-negative-color: #ff94a0; }
+}
+.degree-positive { color: var(--degree-positive-color); }
+.degree-negative { color: var(--degree-negative-color); }
+.degree-adverb, .custom-select.degree-adverb { font-weight: 700; }

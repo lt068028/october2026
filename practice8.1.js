@@ -151,7 +151,7 @@ function makeRow(id,spec,extra={}) {
 function rowsFor(si) {
     if(si===0)return compareActions.map((a,i)=>[
         makeRow(`compare-${i}-noun`,{...a,noun:true,adjective:'like'},{kind:'Noun'}),
-        makeRow(`compare-${i}-action`,{...a,adjective:'like'},{kind:'Action'})]);
+        makeRow(`compare-${i}-action`,{...a,adjective:'like'},{kind:'Verb＋の'})]);
     if(si===1)return selfActions.map((a,i)=>{
         const adjective=i%2?'dislike':'like',id=`self-${i}`,answer=choices.get(id+'-response');
         return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Question'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'Response',pending:!answer})];
@@ -187,9 +187,10 @@ function keyFor(r){return r.id+':'+(r.qa==='response'?(r.pending?'unselected':r.
 function word(id) {
     const w=words[id],text=escape(w[scriptMode==='kanji'?'kanji':'hira']);
     const tip=escape(w.romaji+', '+w.meaning);
-    if(hintMode==='off')return `<span class="target-word">${text}</span>`;
-    if(hintMode==='paren')return `<span class="target-word">${text}</span><span class="vocab-inline">(${tip})</span>`;
-    return `<span class="tooltip-wrap"><span class="target-word">${text}</span><span class="tooltip-tip">${tip}</span></span>`;
+    const display=adverbs.includes(id)?`<strong class="degree-adverb degree-${['amari','zenzen'].includes(id)?'negative':'positive'}">${text}</strong>`:text;
+    if(hintMode==='off')return `<span class="target-word">${display}</span>`;
+    if(hintMode==='paren')return `<span class="target-word">${display}</span><span class="vocab-inline">(${tip})</span>`;
+    return `<span class="tooltip-wrap"><span class="target-word">${display}</span><span class="tooltip-tip">${tip}</span></span>`;
 }
 function cues(r) {
     if(r.qa==='response')return '';
@@ -670,8 +671,9 @@ function addSelect(cue,r,key) {
     select.setAttribute('aria-label',r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
     if(r.situation){const placeholder=node('option','','Select…');placeholder.value='';placeholder.disabled=true;select.append(placeholder);}
-    for(const id of ids){const opt=node('option','',words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;select.append(opt);}
+    for(const id of ids){const opt=node('option','',words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
     select.value=r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
+    if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
     if(['adverb','ability'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     hint.textContent=hintMode==='off'?'':select.value?words[select.value].romaji+', '+words[select.value].meaning:'Choose an expression first.';
@@ -684,9 +686,9 @@ function addSelect(cue,r,key) {
     };
 }
 function addExample(root,si) {
-    const ex=node('div','example-box p81-example');
+    const ex=node('div','example-box example-text-layout p81-example');
     const samples=[
-        [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Action'})],
+        [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Verb＋の'})],
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
@@ -697,7 +699,7 @@ function addExample(root,si) {
     const hasKinds=samples.some(r=>r.kind);
     for(const r of samples) {
         const row=node('div','p81-example-row');
-        const kind=node('span',r.qa?'example-label-title':'p81-kind',r.kind?r.kind+(r.qa?':':''):'');
+        const kind=node('span',r.qa?'example-label-title':'example-label-title p81-kind',r.kind?r.kind+(r.qa?':':''):'');
         const cue=node('span','p81-example-cue');cue.innerHTML=cues(r);
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
@@ -711,7 +713,7 @@ function addScale(root) {
     const scale=node('div','p81-degree-scale');scale.setAttribute('aria-label','Degree guide: negative and affirmative forms, approximate strength');
     const groups=[['zenzen','−−−','negative'],['amari','−','negative'],['chotto','＋','positive'],['maamaa','＋＋','positive'],['totemo','＋＋＋','positive']];
     groups.forEach(([id,marks,sign])=>{
-        const point=node('div','p81-degree-point '+sign);
+        const point=node('div','p81-degree-point degree-'+sign);
         const mark=node('span','p81-degree-marks',marks);mark.setAttribute('aria-hidden','true');
         const label=node('span','p81-degree-label');label.innerHTML=word(id)+(id==='totemo'?'／'+word('sugoku'):'')+(['zenzen','amari'].includes(id)?'<span>〜ない</span>':'');
         point.append(mark,label);scale.append(point);
@@ -735,13 +737,13 @@ function render() {
         }
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(rows[0].scenario){const scene=node('p','p81-scenario');scene.append(node('strong','p81-target','Target: '+rows[0].target),document.createTextNode(' '+rows[0].scenario));card.append(scene);}
+            if(rows[0].scenario){const scene=node('p','p81-scenario');scene.append(node('strong','example-label-title p81-target','Target: '+rows[0].target),document.createTextNode(' '+rows[0].scenario));card.append(scene);}
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             rows.forEach((r,ri)=>{
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
                 if(!ri){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
                 const cue=node('td','prompt-label drill-cue-cell');
-                if(r.kind)cue.append(node('span','p81-kind',r.kind));
+                if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);addSelect(cue,r,key);
                 if(r.selectKind==='adverb'){cue.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cue.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
