@@ -1,5 +1,10 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `396ecd1`、クリーン・fetch同期確認。8.1 Exampleの低い音声文字は独自align-self:startが親Gridのbaselineを上書きしたため。1440px Chromiumの先頭モデルで1.2/7.3は基線差0px、8.1は4px。個別指定を削除して共通揃えに従わせ、差0pxを確認。従来はX列整列だけの検証だったため、広幅の全Example行に文字基線の検証を追加。
+- D3は指定6人物の動作を固定し、上手/苦手をプルダウンに変更。Ex3は同じ友達・撮影の動作について2評価文を常時表示。Ex4は同じ料理を作る動作・好きに6副詞を付けた6文を常時表示、各文を独立再生。副詞の追加強調、項目名統一、Ex5のすごい導入は提案のみで未実装。
+- 検証：practice81 668、section-spacing 62合格。通常/ダーク、375〜1920px、全文体/表記/語彙設定、広幅の全Exampleの基線・共有音声列、D3両選択のモデルと判定を確認。公開後の実機と発音品質は未確認。
+- ルール追従の助言：共通クラス/部品の利用、実計算値・表示モデル数・初期状態・基線を確認するテスト、CIでの公開前必須化を提案。CIや共通Example生成部品の新設は今回未実施。原因・仕様はPRACTICE81_INHERITANCE_AUDIT/PRACTICE8_SPEC/UI_LAYOUT_SPECへ記録。
+
 - 2026-10-30 / Codex：開始main `6be63f3`、クリーン・fetch同期確認。8.1の色の原因調査：初回a4bc73eで既存の共通値/grammar-highlightを使わず独自色を指定し、初回テストは個数のみで値の照合なし。6be63f3の色値修正からさらに、今回は共通クラスを直接使いページ固有色指定を撤去（色自体は現行維持）。証跡と是正はPRACTICE81_INHERITANCE_AUDIT。
 - Ex2：質問・肯定・否定の3モデルを常時表示し、🔊きく/🔊🙆/🔊🙅を縦に整列。既存1.2/7.1/7.2/7.3から共通仕様を特定してUI_LAYOUT_SPECへ明文化。前回はDrillのNoだけを実装してExample配列へ追加していなかった。Ex5は両セットではとのがを強調。
 - D5：前回は新課題をSituationsへ実装したが初期値compareを維持したため旧内容だけに見えた。Target impressionを初期値/先頭タブへ変更し、見出し・説明・Example5も連動。Modest/Confident/Boastful/Rude/Arrogantが最初から表示。Skill/Comfortは補助セットとして保持。

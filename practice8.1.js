@@ -107,7 +107,7 @@ const situations=[
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
-    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Use the cues to describe each person’s skill or difficulty.'},
+    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
     {title:'Drill 5: How does it sound?',instruction:'💡Choose words to sound Modest, Confident, Boastful, Rude or Arrogant.'}
 ];
@@ -156,7 +156,7 @@ function rowsFor(si) {
         const adjective=i%2?'dislike':'like',id=`self-${i}`,answer=choices.get(id+'-response');
         return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Question'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'Response',pending:!answer})];
     });
-    if(si===2)return people.map((s,i)=>[makeRow(`people-${i}`,s)]);
+    if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degrees.map((s,i)=>{const id=`degree-${i}`;return [makeRow(id,{...s,adverb:selected(id,s.initial)},{selectKind:'adverb'})];});
     if(situationSet==='compare')return comfortActions.map((s,i)=>[
         makeRow(`skill-${i}`,{...s,subject:'i',adjective:'bad'},{kind:'Skill'}),
@@ -193,7 +193,7 @@ function word(id) {
 }
 function cues(r) {
     if(r.qa==='response')return '';
-    const ids=[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='adjective'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
+    const ids=[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='adjective'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
 }
@@ -666,13 +666,13 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
     const select=node('select','custom-select p81-select');
-    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:adjectives;
-    select.setAttribute('aria-label',r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':'Choice of words');
+    const ids=r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
+    select.setAttribute('aria-label',r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
     if(r.situation){const placeholder=node('option','','Select…');placeholder.value='';placeholder.disabled=true;select.append(placeholder);}
     for(const id of ids){const opt=node('option','',words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;select.append(opt);}
     select.value=r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
-    if(r.selectKind==='adverb'&&hintMode!=='paren')cue.append(document.createTextNode('／'));
+    if(['adverb','ability'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     hint.textContent=hintMode==='off'?'':select.value?words[select.value].romaji+', '+words[select.value].meaning:'Choose an expression first.';
     if(hintMode==='hover'){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
@@ -688,8 +688,8 @@ function addExample(root,si) {
     const samples=[
         [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Action'})],
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
-        [makeRow('ex3',{...people[0],highlightTopic:true})],
-        [makeRow('ex4',{...degrees[0],adverb:'amari'})],
+        [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
+        adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
         situationSet==='compare'
             ?[makeRow('ex5-skill',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Skill'}),makeRow('ex5-comfort',{...comfortActions[3],subject:'i',adjective:'difficult',highlightTopic:true},{kind:'Comfort'})]
             :[makeRow('ex5-modest',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Modest'}),makeRow('ex5-boastful',{...comfortActions[3],subject:'i',adjective:'good',highlightTopic:true},{kind:'Boastful'})]

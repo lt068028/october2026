@@ -24,7 +24,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(/p81-gold[^{}]*\{[^}]*color\s*:/.test(fs.readFileSync(path.join(root,'style.css'),'utf8')),false,'no duplicated page-specific gold color');
  check(await page.locator('.p81-section').count(),5,'five Drills');
  check(await page.locator('.example-box').count(),5,'five preceding Examples');
- check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが'],'Example3 topic and nominalizer highlighted');
+ check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example3 topic and nominalizer highlighted');
  check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(202, 138, 4)','common light gold');
  check(await page.evaluate(()=>audit81.speechText('ううん、好きじゃない。')),'ううんん、好きじゃない。','No TTS only pronunciation exception');
  check(await page.locator('.info-panel-desc').allTextContents().then(a=>a.every(s=>s.startsWith('💡'))),true,'instructions start with bulb');
@@ -35,6 +35,10 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('[data-row="self-0-response"] .recording-actions button').nth(1).isDisabled(),true,'reply record locked before selection');
  for(let i=0;i<4;i++)await page.locator(`[data-response="self-${i}-response"][data-answer="yes"]`).click();
  check(await page.locator('#drill3 tr').count(),6,'six people');
+ check(await page.locator('#drill3 .p81-card select').count(),6,'six ability selectors');
+ check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
+ check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','料理を作るのがあまり好きじゃないです。','料理を作るのがちょっと好きです。','料理を作るのがまあまあ好きです。','料理を作るのがとても好きです。','料理を作るのがすごく好きです。'],'degree Examples compare the same activity');
  check(await page.locator('#drill4 select').count(),6,'six degree rows');
  check(await page.locator('#drill5 tr').count(),5,'target impression opens by default');
  check(await page.locator('#drill5 .p81-target').allTextContents(),['Target: Modest','Target: Confident','Target: Boastful','Target: Rude','Target: Arrogant'],'all five targets visible immediately');
@@ -73,7 +77,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
     check(await page.locator('.p81-card').count(),23,`${style}/${script}/${hint} content retained`);
-    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?15:14,'gold structure in all Examples');
+    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?22:21,'gold structure in all Examples');
    }
   }
  }
@@ -84,6 +88,11 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(forms,[true,true,false],'full or short negative accepted, opposite rejected');
  check(await page.evaluate(()=>audit81.rowsFor(1).map(rs=>rs[0].adjective)),['like','dislike','like','dislike'],'fixed alternating preference cues');
  const order=await page.locator('[data-row="degree-0"] .prompt-label').evaluate(e=>e.textContent);check(order.indexOf('作る')<order.indexOf('とても')&&order.indexOf('とても')<order.lastIndexOf('好き'),true,'verb then adverb dropdown then adjective');
+ for(const value of ['good','difficult']){
+  await page.locator('[data-choice="people-0"]').selectOption(value);
+  const row=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(2)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),other:a.matchesAnswer(r.text.replace(r.adjective==='good'?'上手':'苦手',r.adjective==='good'?'苦手':'上手'),r)};});
+  check(row.valid,true,'ability selection accepted');check(row.other,false,'ability selection is required');check(row.text.includes(value==='good'?'上手':'苦手'),true,'ability model follows choice');
+ }
  for(const adv of ['zenzen','amari','chotto','maamaa','totemo','sugoku']){
   await page.locator('[data-choice="degree-0"]').selectOption(adv);
   const out=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(3)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)};});
@@ -137,6 +146,9 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    const tracks=await page.evaluate(()=>[...document.querySelectorAll('.p81-section')].map(s=>[...s.querySelectorAll('.p81-card .recording-actions')].map(e=>e.getBoundingClientRect().left)));
    for(const xs of tracks)check(Math.max(...xs)-Math.min(...xs)<1,true,'listen column shared by longest cue');
    for(const xs of await page.locator('.example-box').evaluateAll(es=>es.map(e=>[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect().left))))check(Math.max(...xs)-Math.min(...xs)<1,true,'Example listen columns aligned');
+   const baselineDeltas=await page.locator('.p81-example-row').evaluateAll(rows=>rows.map(row=>{const b=row.querySelector('button'),m=row.querySelector('.p81-model');const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};return baseline(b)-baseline(m);}));
+   for(const delta of baselineDeltas)check(Math.abs(delta)<.5,true,'Example button and model text baseline align');
+
    await page.screenshot({path:'/tmp/practice81-'+scheme+'.png',fullPage:true});
    await page.locator('#drill4').screenshot({path:'/tmp/practice81-degree-'+scheme+'.png'});
    await page.locator('#drill5').screenshot({path:'/tmp/practice81-feedback-'+scheme+'.png'});

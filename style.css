@@ -3146,7 +3146,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 .practice81-page .p81-example-row + .p81-example-row { margin-top: 12px; }
 .practice81-page .p81-example-row > * { min-width: 0; }
-.practice81-page .p81-example-row > button { align-self: start; }
 .practice81-page .p81-model { overflow-wrap: anywhere; }
 .practice81-page .p81-kind {
     display: inline-block; padding: 2px 6px; border-radius: 4px;
