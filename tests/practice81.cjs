@@ -43,7 +43,23 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill3 .p81-card select').count(),6,'six ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
- check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','料理を作るのがあまり好きじゃないです。','料理を作るのがちょっと好きです。','料理を作るのがまあまあ好きです。','料理を作るのがとても好きです。','料理を作るのがすごく好きです。'],'degree Examples compare the same activity');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃 あまり好きじゃないです。','〃 ちょっと好きです。','〃 まあまあ好きです。','〃 とても好きです。','〃 すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks');
+ check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','あまり／好き','ちょっと／好き','まあまあ／好き','とても／好き','すごく／好き'],'only the first degree cue repeats the common action');
+ check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作るのが'),'ditto marks retain the omitted meaning for accessibility');
+ for(const style of ['formal','informal','casual'])for(const script of ['kanji','hiragana']){
+  await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
+  await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
+  const prefixes=await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label')));
+  check(prefixes,Array(5).fill(script==='kanji'?'料理を作るのが':'りょうりをつくるのが'),'ditto follows the selected script');
+  for(let i=0;i<6;i++){
+   await page.locator('#drill4 .example-box button').nth(i).click();
+   const ending=i<2?(style==='formal'?'じゃないです。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
+   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが'+['ぜんぜん','あまり','ちょっと','まあまあ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
+   await page.evaluate(()=>t.spoken.at(-1).onend());
+  }
+ }
+ await page.locator('#speechStyleControl [data-value="formal"]').click();
+ await page.locator('#scriptModeControl [data-value="kanji"]').click();
  check(await page.locator('#drill4 select').count(),6,'six degree rows');
  check(await page.locator('#drill5 tr').count(),5,'five expression pairs');
  check(await page.locator('#drill5 [data-set],#drill5 .p81-tabs,#drill5 .p81-target').count(),0,'no set buttons or target tasks');
@@ -82,7 +98,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
     check(await page.locator('.p81-card').count(),24,`${style}/${script}/${hint} content retained`);
-    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?22:21,'gold structure in all Examples');
+    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?17:16,'gold structure excludes the five omitted nominalizers');
+    check(await page.locator('#drill4 .example-box .p81-gold').count(),1,'only the full first model shows the nominalizer');
    }
   }
  }

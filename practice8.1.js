@@ -181,17 +181,18 @@ function word(id) {
     if(hintMode==='paren')return `<span class="target-word">${display}</span><span class="vocab-inline">(${tip})</span>`;
     return `<span class="tooltip-wrap"><span class="target-word">${display}</span><span class="tooltip-tip">${tip}</span></span>`;
 }
-function cues(r) {
+function cues(r,visibleIds) {
     if(r.qa==='response')return '';
-    const ids=[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='comparison'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
+    const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='comparison'||r.selectKind==='ability'||r.selectKind==='adverb'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
 }
 
-function modelHTML(r) {
-    const text=scriptMode==='kanji'?r.text:r.hira;
+function modelHTML(r,repeatPrefix=false) {
+    const fullText=scriptMode==='kanji'?r.text:r.hira;
+    const text=repeatPrefix?sentenceFor({...r,short:true},speechStyle,scriptMode==='kanji'):fullText;
     const tokens=[...Object.values(words)].map(w=>w[scriptMode==='kanji'?'kanji':'hira']).sort((a,b)=>b.length-a.length);
-    let out='',i=0;
+    let out=repeatPrefix?`<span class="p81-ditto" role="img" aria-label="${escape(fullText.slice(0,fullText.length-text.length))}">〃</span> `:'',i=0;
     while(i<text.length) {
         const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
         const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
@@ -684,13 +685,14 @@ function addExample(root,si) {
         [makeRow('ex5-self-praise',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Self-praise'}),makeRow('ex5-strength',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Strength'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
-    for(const r of samples) {
+    for(const [index,r] of samples.entries()) {
+        const repeatPrefix=si===3&&index>0;
         const row=node('div','p81-example-row');
         const kind=node('span',r.qa?'example-label-title':'example-label-title p81-kind',r.kind?r.kind+(r.qa?':':''):'');
-        const cue=node('span','p81-example-cue');cue.innerHTML=cues(r);
+        const cue=node('span','p81-example-cue');cue.innerHTML=cues(r,repeatPrefix?[r.adverb,r.adjective]:null);
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
-        const text=node('span','p81-model');text.innerHTML=modelHTML(r);
+        const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
         if(hasKinds)row.append(kind);else row.classList.add('p81-no-kind');
         row.append(cue,arrow,listen,text);ex.append(row);
     }

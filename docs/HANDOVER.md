@@ -1,5 +1,10 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `07bd13c`、workクリーン。git fetchは認証エラー、GitHub連携のcommit/main照会と最新AGENTS/RELAY_WORKFLOW/PROJECT_SPEC/HANDOVER取得でmainとHEAD一致を確認。通常Gitの認証設定は変更せず、今回の保存はGitHub連携を使う。
+- 8.1 Example4：先頭行のキューと本文は全文、後続5行のキューは副詞／好きから表示。本文の共通する料理を作るのがは〃で省略。〃には省略前の表記に対応するアクセシビリティ用ラベルを設定。音声は全6行とも完全なモデルを再生する。Drill4のキュー・モデル・判定は維持。PRACTICE8_SPEC/UI_LAYOUT_SPEC更新。
+- 検証：practice81 773項目合格。全文体×両表記×6音声の全文再生、6行の表示、〃のラベル、全モード/通常・ダーク/375〜1920pxの既存表示・録音・判定を確認。通常/ダーク画面を保存しダークを目視。公開後の実機と実際の発音品質は未確認。
+- Compareの次案は確認待ち：ユーザーのDrill6は現行Drill5のCompare expressionsを指す想定。「2文を並べ、各行右側でBoastful/Confident等の英語2択から聞こえ方を選ぶ」理解を質問。返答前なのでD5の問題構成・選択欄・採点は変更せず、現行5問を維持。Q/Rの3案選定も引き続き未確定。
+
 - 2026-10-30 / Codex：開始main `4a0e087`、workクリーン・追加ネットワーク権限でfetch同期確認。ユーザー指示により8.1 D1のNoun/Verb＋の区分を撤去し、Example1だけに維持。AGENTS/UI_LAYOUT_SPEC/PRACTICE8_SPECへ「通常区分はExample内、Drillの時制区分は比較問題のみ」を明記。Question/Responseは会話役割表示として別扱い。
 - 練習7の3ページをブラウザDOMで点検：Drill内の時制区分は7.1のHabit/Ongoing比較18個、7.2のPast/Present State比較14個、7.3のPast/Past Ongoing比較6個のみ。単一区分Drillへの表示なし、追加修正不要。
 - Question/Responseは未選定の3案をassets/review/practice81-qr-options.htmlへ作成。①行頭Q:/R:、②きくボタン内Q/R、③小さな正式名見出しを上段へ。通常/ダーク画像も同ディレクトリへ。共通130%の本文/ボタン・共有音声列を維持した比較用の静的見本で、本体の役割表示は変更しない。推奨は①。③は今回の見本で①より高さ70px増加。比較用ボタンは非操作。
