@@ -18,7 +18,7 @@ window.ConversationDisplay = (() => {
         document.querySelectorAll(selectors).forEach(label=>{
             if(label.dataset.conversationLabel||label.classList.contains('conversation-role')||label.classList.contains('conversation-person')||label.closest('[data-conversation-image]'))return;
             const text=label.textContent.trim();
-            let pair=text.match(/^([XYZ]) · ([QA]):$/);const role=text.match(/^([QA]):$/),name=text.match(/^([XYZ])[:：]?$/);
+            let pair=text.match(/^([XYZ]) · ([QA]):$/);const role=text.match(/^([QA]):?$/),name=text.match(/^([XYZ])[:：]?$/);
             const part=label.closest(lineSelector)?.dataset.part||label.closest(lineSelector)?.dataset.conversationRole;
             if(name&&['question','response','answer'].includes(part))pair=[text,name[1],part==='question'?'Q':'A'];
             if(pair||role){

@@ -59,6 +59,16 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    check(await p.evaluate(()=>practice7Data.every(v=>!/[0-9]+(?:時|個|年前)/.test(v.pastSentence+v.perfectSentence+v.xKanji+v.yKanji))),true,'p72 model kanji numerals');
   }
   if(name==='practice7.3'){
+   for(const style of ['formal','informal','casual']){
+    await p.locator('#speechStyleControl [data-value="'+style+'"]').click();
+    const ending=style==='formal'?'いました':style==='informal'?'いた':'た';
+    for(const time of ['今朝','けさ','今日の朝'])check(await p.evaluate(a=>qaMatch(a),time+'友達に会って'+ending),true,'p73 this morning alias '+style+'/'+time);
+    for(const time of ['昨夜','昨晩','さくや','さくばん','昨日の晩'])check(await p.evaluate(a=>qaMatch(a,2),time+'出かけて'+ending),true,'p73 last night alias '+style+'/'+time);
+    for(const [time,i,verb]of [['先ほど',4,'電話をかけて'],['昨日のお昼',3,'お風呂に入って']])check(await p.evaluate(({a,i})=>qaMatch(a,i),{a:time+verb+ending,i}),true,'p73 English cue synonym '+time);
+    check(await p.evaluate(a=>qaMatch(a),'昨夜友達に会って'+ending),false,'p73 night is not morning');
+    check(await p.evaluate(a=>qaMatch(a,2),'今朝出かけて'+ending),false,'p73 morning is not night');
+   }
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
    for(const a of ['会っていました','はい会っていました','今日の午前中会っていました','今日の午前中今日の午前中会っていました','友達に友達に会っていました','はいはい会っていました'])check(await p.evaluate(a=>qaMatch(a),a),true,'p73 allowed '+a);
    for(const a of ['今日の午後会っていました','昨日の夜会っていました','今日の午前中昨日の夜会っていました','会っていました？','会っていましたか','はい'])check(await p.evaluate(a=>qaMatch(a),a),false,'p73 reject '+a);
    for(const [a,expected] of [['会っていませんでした',true],['今日の午前中会っていませんでした',true],['昨日の夜会っていませんでした',false],['はい会っていませんでした',false],['いいえ会っていました',false]])check(await p.evaluate(a=>qaMatch(a,0,'no'),a),expected,'p73 negative '+a);
@@ -70,6 +80,9 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    check(await p.evaluate(()=>answerMatch('昨日の午前中何をしていました','昨日の午前中何をしていましたか')),false,'formal question requires ka');
    check(await p.evaluate(()=>answerMatch('昨日の午前中何をしていましたか？','昨日の午前中何をしていましたか。')),true,'formal ka question accepted');
    check(await p.evaluate(()=>answerMatch('昨日の朝じゅうじ手紙を書いていました','昨日の朝十時手紙を書いていました')),true,'p73 numeric kana');
+   for(const [a,m]of [['昨日の午前十時手紙を書いていました','昨日の朝十時手紙を書いていました'],['昨日の午後八時歌を歌っていました','昨日の夜八時歌を歌っていました'],['昨日の午後九時漢字を覚えていました','昨日の夜九時漢字を覚えていました']])check(await p.evaluate(({a,m})=>answerMatch(a,m),{a,m}),true,'p73 equivalent am/pm time '+a);
+   check(await p.evaluate(()=>answerMatch('昨日の午前九時手紙を書いていました','昨日の朝十時手紙を書いていました')),false,'p73 different hour rejected');
+
    check(await p.evaluate(()=>answerRows().every(r=>!/[0-9]+(?:時|個|年前)/.test(r.text))),true,'p73 model kanji numerals');
    check(await p.evaluate(()=>answerExamples().every(r=>r.marks.every(m=>!/[0-9]+(?:時|個|年前)/.test(m)))),true,'p73 highlighted model tokens also use kanji numerals');
    // Exercise the real recording-result predicate with row time metadata in every style.
@@ -121,6 +134,16 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    }),true,'p12 casual topic particle optional in full response');
   }
   if(name==='practice7.3'){
+   for(const style of ['formal','informal','casual']){
+    await p.locator('#speechStyleControl [data-value="'+style+'"]').click();
+    const ending=style==='formal'?'いました':style==='informal'?'いた':'た';
+    for(const time of ['今朝','けさ','今日の朝'])check(await p.evaluate(a=>qaMatch(a),time+'友達に会って'+ending),true,'p73 this morning alias '+style+'/'+time);
+    for(const time of ['昨夜','昨晩','さくや','さくばん','昨日の晩'])check(await p.evaluate(a=>qaMatch(a,2),time+'出かけて'+ending),true,'p73 last night alias '+style+'/'+time);
+    for(const [time,i,verb]of [['先ほど',4,'電話をかけて'],['昨日のお昼',3,'お風呂に入って']])check(await p.evaluate(({a,i})=>qaMatch(a,i),{a:time+verb+ending,i}),true,'p73 English cue synonym '+time);
+    check(await p.evaluate(a=>qaMatch(a),'昨夜友達に会って'+ending),false,'p73 night is not morning');
+    check(await p.evaluate(a=>qaMatch(a,2),'今朝出かけて'+ending),false,'p73 morning is not night');
+   }
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
    await p.locator('#speechStyleControl [data-value="formal"]').click();
    for(const [text,section,index,want] of [
     ['母を手伝っていました',1,0,true],['昨日の午前中母を手伝っていました',1,0,true],

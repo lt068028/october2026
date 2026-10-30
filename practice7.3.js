@@ -2175,8 +2175,23 @@ function qa73Model(cues, kind) {
 // 動詞部分を必須とし、対応する時間・名詞・応答語の省略を許容。
 const qa73BaseNormalize = normalize;
 
+// Answer matching only: equivalent time expressions must not rewrite STT display.
+function qa73NormalizeTime(text) {
+    return qa73BaseNormalize(String(text ?? '')
+        .replace(/今朝/g, 'けさ').replace(/昨夜/g, 'さくや')
+        .replace(/昨晩/g, 'さくばん').replace(/昨日の晩/g, 'きのうのばん')
+        .replace(/先ほど/g, 'さきほど').replace(/午前(?!中)/g, 'ごぜん'))
+        .replace(/けさ|きょうのあさ(?![0-9])/g, 'きょうのごぜんちゅう')
+        .replace(/きのうのあさ(?![0-9])/g, 'きのうのごぜんちゅう')
+        .replace(/さくや|さくばん|きのうのばん/g, 'きのうのよる')
+        .replace(/さきほど/g, 'さっき')
+        .replace(/きのうのおひる/g, 'きのうのひる')
+        .replace(/きのうのごぜん(?=10じ)/g, 'きのうのあさ')
+        .replace(/きのうのごご(?=(?:8|9)じ)/g, 'きのうのよる');
+}
+
 normalize = function (text) {
-    let value = qa73BaseNormalize(String(text ?? '').replace(/私/g, 'わたし'));
+    let value = qa73NormalizeTime(String(text ?? '').replace(/私/g, 'わたし'));
 
     // 「会う」の相手を示す「友達に／友達と」を同じ判定にする。
     if (
@@ -2271,11 +2286,11 @@ function matchesAnswer(actual, target) {
     if (target.answerTime && target.answerKind !== 'q') {
         const data = qa73Verbs[target.cues[target.cues.length - 1]];
         // Remove the verb before looking for 今: いました contains いま.
-        const spoken = qa73BaseNormalize(actual).replace(new RegExp(
+        const spoken = qa73NormalizeTime(actual).replace(new RegExp(
             qa73BaseNormalize(data[0]) + '(?:いませんでした|いました|いなかった|いた|なかった|た)', 'g'
         ), '');
         const times = spoken.match(/きょうの(?:ごぜんちゅう|ごご)|きのうの(?:よる|ひる)|さっき|いま/g) || [];
-        if (times.some(time => time !== qa73BaseNormalize(target.answerTime))) return false;
+        if (times.some(time => time !== qa73NormalizeTime(target.answerTime))) return false;
     }
     const candidates = [target.hira, ...(target.replyHiras || [])];
     if (target.replyHiras) {

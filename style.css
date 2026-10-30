@@ -3313,3 +3313,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 .site-scale .conversation-person:not([data-conversation-image]) { justify-self: start; }
+
+/* Standalone people share the person position of Q/A + person labels. */
+.site-scale :is(.p21-which-model-line > .conversation-person,.p23-model-speaker.conversation-person) { justify-self: end; }
+/* Color cues use the same colored-circle emoji as the other practice prompts. */
+.p21-color-cue::before { content: none; }

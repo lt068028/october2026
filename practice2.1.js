@@ -1241,7 +1241,6 @@ function practice2ShowNotice(resultSpan, message) {
         photo.alt='X sits at the left end of a table with a book. Y sits at the right end with a bag. A clock hangs on the wall, far from both.';
         photo.width=1536;photo.height=1024;stage.append(photo);
         const context=node('p','p21-photo-context');
-        SpeakerGuide.init(context);
         const people=node('div','p21-distance-people');
         for(const person of ['A','B']) {
             const figure=node('div','p21-distance-person');figure.dataset.person=person;
@@ -1419,7 +1418,6 @@ function practice2ShowNotice(resultSpan, message) {
     function laterScene(container,objects,which=false) {
         const picture=node('div','p21-drill-picture p21-shelf-scene');
         const context=container.classList.contains('example-box')?node('p','p21-photo-context'):null;
-        if(context){SpeakerGuide.init(context);}
         if(which) {
             const guide=node('div','p21-which-guide');
             const heading=node('strong');heading.append(node('span','p21-question-sound','ど'),node('span','p21-question-description','Asking about the unknown'));heading.lastElementChild.innerHTML='Asking about <br>the unknown';guide.append(heading);
@@ -1512,7 +1510,7 @@ function practice2ShowNotice(resultSpan, message) {
         for(const [speaker,text,cue,part]of [
             ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'／これ','intro'],
             ['A',ask,formatWord('Yさんのスマホ','Yさんのスマホ','Y-san no sumaho','Y’s smartphone')+'／どれ','question'],
-            ['B',reply,'','response']]){
+            ['B',reply,formatWord('あれ','あれ','are','that one over there'),'response']]){
             const line=node('p','p21-which-model-line');line.dataset.part=part;line.dataset.modelSpeaker=speaker;
             line.append(node('strong','',speakerName(speaker)+'：'));
             if(cue){const prompt=node('span','p21-which-cue');prompt.innerHTML=cue;line.append(prompt,node('span','','👉️'));}
@@ -1535,7 +1533,7 @@ function practice2ShowNotice(resultSpan, message) {
             const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
             const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${s3===0?speakerName(owner)+'さん':formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>s3===0?question(speakerName(owner)+'さんの'+noun(o),'どれ'):whichQuestion(o));
             const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
-            const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
+            const color=node('span','p21-color-cue',({red:'🔴',blue:'🔵',green:'🟢'})[o.colorName]);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro(answering,o),possessive()+noun(o)),statement(possessive()+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),possessive()),pro(answering,o)+'が'+possessive()+noun(o)+ending];

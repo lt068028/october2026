@@ -13,6 +13,31 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
  }
  if(['practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1'].includes(name))eq(await p.locator('.conversation-role-circle').count()>0,true,name+' adopted roles');
  else eq(await p.locator('.conversation-person').count(),0,name+' no invented people');
+ if(name==='practice1.1'){
+  eq(await p.locator('#task2Container select').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),['N₁','N₂','N₁','N₂','N₁','N₂'],'noun slots are not people');
+  eq(await p.locator('#task3Container input').evaluateAll(es=>es.map(e=>e.placeholder)),['N₁','N₂','N₁','N₂','N₁','N₂'],'free noun placeholders');
+ }
+ if(name==='practice1.2'){
+  await p.locator('#scriptModeControl [data-value="kanji"]').click();
+  eq((await p.locator('#drill2Container .info-panel-desc').textContent()).includes('+ 専攻.'),true,'major instruction follows Kanji');
+ }
+ if(name==='practice8.1')eq(await p.locator('#drill2 .p81-card .conversation-role-circle').count(),8,'all D2 Q/A roles are circles');
+ if(name==='practice2.1'){
+  for(const width of [600,1440]){
+   await p.setViewportSize({width,height:1100});
+   const xs=await p.locator('.p21-which-model-line').evaluateAll(es=>es.slice(0,2).map(e=>e.querySelector('.conversation-person').getBoundingClientRect().x));
+   eq(Math.abs(xs[0]-xs[1])<1,true,'2.1 Example2 X shares person column '+width);
+  }
+  eq(await p.locator('.p21-which-model-line').nth(2).locator('.p21-which-cue .target-word').textContent(),'あれ','response has demonstrative cue');
+  eq(await p.locator('#drill3Container .p21-color-cue').allTextContents(),['🔵','🟢'],'color prompts use circle emojis');
+ }
+ if(name==='practice2.3'){
+  for(const width of [600,1440]){
+   await p.setViewportSize({width,height:1100});
+   const xs=await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es=>es.slice(0,2).map(e=>(e.querySelector('.conversation-person')||e).getBoundingClientRect().x));
+   eq(Math.abs(xs[0]-xs[1])<1,true,'2.3 intro X shares Q person column '+width);
+  }
+ }
  if(name.startsWith('practice2.')){
   eq(await p.locator('.p21-photo-context:not(.p23-call-note)').count(),0,name+' no Who guide');
   if(name==='practice2.3')eq(await p.locator('.p23-call-note').textContent(),'X is calling Y and talking about Z.','scenario retained');

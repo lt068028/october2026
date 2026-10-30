@@ -932,8 +932,8 @@ function syncRecordingButtons() {
             blocked || !view.ready();
 
         const prerequisite = !view.ready()
-            ? view.rowKey.startsWith('task2_') ? 'Select X and Y first.'
-                : view.rowKey.startsWith('task3_') ? 'Enter X and Y first.' : ''
+            ? view.rowKey.startsWith('task2_') ? 'Select N₁ and N₂ first.'
+                : view.rowKey.startsWith('task3_') ? 'Enter N₁ and N₂ first.' : ''
             : '';
         [view.listen, view.record].forEach(button => {
             if (prerequisite) {
@@ -1619,7 +1619,7 @@ function renderTask2() {
     const list = section(
         "task2Container",
         "Drill 2: Selectable Practice",
-        "💡Choose X and Y, then make a sentence.",
+        "💡Choose N₁ and N₂, then make a sentence.",
         "info-panel-task2",
         "--practice-section-gap"
     );
@@ -1633,11 +1633,11 @@ function renderTask2() {
             practice1State.customSelects[key] || {};
 
         const selectX = makeSelect(
-            optionsX, "X", old.x
+            optionsX, "N₁", old.x
         );
 
         const selectY = makeSelect(
-            optionsY, "Y", old.y
+            optionsY, "N₂", old.y
         );
 
         const getEntry = (keys, value) => {
@@ -1730,7 +1730,7 @@ function renderTask3() {
     const list = section(
         "task3Container",
         "Drill 3: Free Practice",
-        "💡Enter X and Y.\nMake a 🟢 affirmative or 🔴 negative sentence.",
+        "💡Enter N₁ and N₂.\nMake a 🟢 affirmative or 🔴 negative sentence.",
         "info-panel-task3",
         "--practice-section-gap"
     );
@@ -1753,7 +1753,7 @@ function renderTask3() {
 
         [inputX, inputY].forEach((input, index) => {
             input.type = "text";
-            input.placeholder = index === 0 ? "X" : "Y";
+            input.placeholder = index === 0 ? "N₁" : "N₂";
 
             input.setAttribute(
                 "aria-label",

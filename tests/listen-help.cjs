@@ -24,7 +24,7 @@ const root=path.resolve(__dirname,'..');
    check(await p.locator('.selection-help-wrap').count(),before-2,name+' reason removed after Y/N selection');
   }
   if(name==='practice1.1') {
-   for(const [id,help,kind] of [['task2Container','Select X and Y first.','select'],['task3Container','Enter X and Y first.','input']]) {
+   for(const [id,help,kind] of [['task2Container','Select N₁ and N₂ first.','select'],['task3Container','Enter N₁ and N₂ first.','input']]) {
     const row=p.locator('#'+id+' .drill-row').first();
     check(await row.locator('.selection-help-wrap').count(),2,id+' both actions explain prerequisite');
     check(await row.locator('.selection-help-wrap .custom-tip-box').allTextContents(),[help,help],id+' correct reason');

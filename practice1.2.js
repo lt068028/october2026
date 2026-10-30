@@ -1798,7 +1798,7 @@ function practice2ShowNotice(resultSpan, message) {
         const second = section(
             "drill2Container",
             "Drill 2: Wh- Questions",
-            "💡Ask about a major.\nSelect a major; use person + の + せんこう."
+            "💡Ask about a major.\nSelect a major; use person + の + " + word("せんこう", "専攻") + "."
         );
 
         example(second.container, [
