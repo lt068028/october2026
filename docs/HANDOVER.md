@@ -1,5 +1,8 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `8fc233b`、workクリーン・GitHub最新4ルール文書確認。2.2の広がる外枠を白＋グレーから、各人物の濃い色へ変更。X#4c1d95/Y#075985のbox-shadowを1.2秒周期で4→8→4px、細い2px白輪郭は固定。人物本体の色・文字・ボタン位置は維持。reduced-motionは濃い人物色の8px枠で静止。通常/ダーク共通。Who案内の撤去と終了時枠解除を維持。UI_LAYOUT_SPEC等へ反映。
+- practice22-qa 540項目合格。全発話の画像内外の枠アニメーション色と、reduced-motion時の色/8px静止を確認。公開後の実機確認は未了。
+
 - 2026-10-30 / Codex：開始main `8f89617`、workクリーン・GitHub最新4ルール文書確認。2.2のWho is speaking?/X/Y is speaking案内をDOMから撤去。画像内外のX/Yは人物色③を維持し、白い輪郭＋濃い外周の枠を1.2秒周期でゆっくり点滅する方式へ変更。濃色反転と赤点滅は2.2では使わない。reduced-motionは明るい枠の静止表示。2.1/2.3は維持。
 - Playing/マイク準備/録音/録音再生の既存状態に同期し、終了/中断/エラーで枠を解除。Who案内は非表示CSSではなくsceneで配置しない。ボタン・領域説明の座標、時計/値段/会話、共通縦余白は維持。撤去前mainと比較して幅375/600/900/1440の全Exampleボタン矩形40件が一致。UI_LAYOUT_SPEC等を現仕様へ更新。
 - practice22-qa 539、speaker-guide82合格。通常/ダーク・両セット・全音声の枠強調と解除を確認。lesson2-speaker-pulse 1631、practice2-next441、example-vertical-spacing164も合格。描画も目視確認。公開後の実機確認は未了。

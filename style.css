@@ -3256,8 +3256,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 /* Practice 2.2 only: approved purple / blue speaker palette ③; active speakers retain these colors. */
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #6d28d9; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #7dd3fc; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-ring: #4c1d95; --p22-person-bg: #6d28d9; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-ring: #075985; --p22-person-bg: #7dd3fc; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
 @media(prefers-color-scheme: dark) {
  [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #c4b5fd; --p22-person-fg: #2e1065; background: var(--p22-person-bg); color: var(--p22-person-fg); }
  [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #67e8f9; --p22-person-fg: #083344; background: var(--p22-person-bg); color: var(--p22-person-fg); }
@@ -3304,9 +3304,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  animation: p22-speaker-focus 1.2s ease-in-out infinite;
 }
 @keyframes p22-speaker-focus {
- 0%,100% { box-shadow: 0 0 0 4px #334155; }
- 50% { box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
+ 0%,100% { box-shadow: 0 0 0 4px var(--p22-person-ring); }
+ 50% { box-shadow: 0 0 0 8px var(--p22-person-ring); }
 }
 @media(prefers-reduced-motion:reduce) {
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking { animation: none; box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking { animation: none; box-shadow: 0 0 0 8px var(--p22-person-ring); }
 }
