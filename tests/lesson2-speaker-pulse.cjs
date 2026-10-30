@@ -11,12 +11,12 @@ const mock=source.slice(source.indexOf('function mock()'),source.indexOf('(async
   await p.route('http://pulse.test/*.html',r=>r.fulfill({body:fs.readFileSync(path.join(root,new URL(r.request().url()).pathname)),contentType:'text/html'}));
   await p.goto('http://pulse.test/'+name+'.html');
   const marker='.p21-distance-person.is-speaking, .p2x-person.is-speaking';
-  async function verify(who,label){assert.deepEqual(await p.locator(marker).evaluateAll(es=>es.map(e=>e.dataset.person)),[who],label);assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).animationName),'p23-speaking');assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).outlineColor),'rgb(230, 0, 18)');count+=3;}
+  async function verify(who,label){assert.deepEqual(await p.locator(marker).evaluateAll(es=>es.map(e=>e.dataset.person)),[who],label);assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).animationName),name==='practice2.2'?'none':'p23-speaking');assert.equal(await p.locator(marker).evaluate(e=>getComputedStyle(e).outlineColor),name==='practice2.2'?(who==='A'?'rgb(76, 29, 149)':'rgb(7, 89, 133)'):'rgb(230, 0, 18)');count+=3;}
   async function checkCurrent(label){
    const examples=p.locator('.example-box button.example-button');
    for(let i=0;i<await examples.count();i++){
     const button=examples.nth(i);const text=await button.textContent();if(!text.includes('きく'))continue;
-    await button.click();const who=await button.evaluate(e=>e.dataset.speaker||e.closest('p')?.querySelector('strong')?.textContent.trim()[0]||e.textContent.trim()[0]);
+    await button.click();const who=await button.evaluate(e=>e.dataset.speaker||e.closest('p')?.querySelector('.p22-person-badge')?.textContent.trim()||e.closest('p')?.querySelector('strong')?.textContent.trim()[0]||e.textContent.trim()[0]);
     // Image audio labels retain A/B in originalHtml while Playing.
     const shown=({X:'A',Y:'B'})[who]||who; const fallback=await button.evaluate(e=>(e.dataset.originalHtml||'').match(/[XY]/)?.[0]);const expected=['A','B'].includes(shown)?shown:({X:'A',Y:'B'})[fallback];
     await verify(expected,label+' Example '+i);await p.evaluate(()=>t.spoken.at(-1).onend?.());assert.equal(await p.locator(marker).count(),0,'Example clears');count++;

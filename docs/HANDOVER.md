@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `e9cfe19`、workクリーン・GitHub最新4ルール文書確認。全公開ページのExample縦余白を共通変数へ。独立例文/共有grid行8px、同一グループ折返し4px、画像から例文群12px。ブラウザp margin/行追加margin/cell上下paddingの重複を除去。Example→Drill24px・セクション40pxは維持。発音/作文は該当Exampleなし。全HTMLのCSSキャッシュ版を更新。
+- 2.2だけWho案内を通常#334155文字/#f1f5f9背景、ダークは反転した無彩色へ。speaker-guideのアニメーションを2.2では実行しない。図内外の人物は実際の再生/準備/録音/録音再生中、X濃紫#4c1d95/Y濃青#075985＋白文字/同色2px枠へ静的反転し、終了/中断で復帰。2.1/2.3の赤点滅は維持。2.2 Ex2の時計/値段/会話は維持。
+- UI_LAYOUT_SPEC/PROJECT_SPEC/PRACTICE22_23_SPEC/LESSON2_SPEAKER_AUDITを更新。Example縦余白164、section-spacing62、speaker-guide123、practice22-qa539合格。通常/ダークの2.2を描画確認。practice81 881、lesson2-speaker-pulse 1631、example-arrow-alignment44、common-yn-examples125も合格。公開後の実機確認は未了。
+
 - 2026-10-30 / Codex：開始main `e76e674`、workクリーン・GitHub最新4ルール文書確認。D4 S2 3Qの「Yさんのクラスメートは、どの人ですか」を確定採用。共通question関数でFormal/Informal/Casualの語尾へ対応。キュー順、話者X→Y、返答「あのひと」と許容回答を維持。
 - 青系比較③のペアを2.2だけ実装。Xは通常#6d28d9白文字/ダーク#c4b5fd濃紫文字を維持。Yは通常#7dd3fc白文字（ユーザーの「知ろほんと」を白フォントと解釈）、ダーク#67e8f9濃紺#083344。画像内外の同色と再生/録音中の赤点滅を維持。通常Yの白文字は明るい水色と明度差が小さい点を実装前に報告。UI_LAYOUT_SPEC/PRACTICE22_23_SPECを確定仕様に更新。practice22-qa 539、practice2-next 441合格。通常/ダーク描画も確認。公開後の実機確認は未了。
 

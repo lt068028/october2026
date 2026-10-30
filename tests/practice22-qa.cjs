@@ -37,7 +37,8 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
     const badge=row?.querySelector('.p22-person-badge')||e.closest('.p22-conversation-line')?.querySelector('.p22-person-badge')||[...ex.querySelectorAll('.p2x-speaker-group .p22-person-badge')].find(x=>x.dataset.person===who);
     const picture=row?row.closest('[id$="Container"]')?.querySelector(':scope > .p2x-picture'):ex?.querySelector('.p2x-picture');
     const image=picture?.querySelector('.p2x-person[data-person="'+who+'"]');
-    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking');
+    const activeColor=who==='A'?'rgb(76, 29, 149)':'rgb(7, 89, 133)';
+    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking')&&[badge,image].every(x=>{const s=getComputedStyle(x);return s.backgroundColor===activeColor&&s.color==='rgb(255, 255, 255)'&&s.animationName==='none';});
    }),true);
    await p.evaluate(()=>t.spoken.at(-1).onend());check(await p.locator('.p22-person-badge.is-speaking').count(),0);
   }

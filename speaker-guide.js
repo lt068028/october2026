@@ -27,7 +27,7 @@ window.SpeakerGuide = Object.freeze({
         const call=guide.classList.contains('p23-call-note');
         const normal={backgroundColor:call?'transparent':'#fff5f5'},active={backgroundColor:call?'rgba(128,128,128,.16)':'#fecaca'};
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-        guide.animate(reduced?[active,active]:[normal,active,normal],{duration:1200,iterations:Infinity,easing:'ease-in-out'});
+        if(!guide.closest('[data-practice="2.2"]'))guide.animate(reduced?[active,active]:[normal,active,normal],{duration:1200,iterations:Infinity,easing:'ease-in-out'});
         const scene=guide.closest('.p21-distance-board,.p2x-picture,.p21-drill-picture');
         scene?.querySelectorAll('[data-person]').forEach(e=>e.classList.toggle('is-speaker',e.dataset.person===who));
     }
