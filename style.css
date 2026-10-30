@@ -3254,3 +3254,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  [data-practice="2.2"] .p2x-food-example { grid-template-columns: max-content minmax(0,1fr) max-content max-content; }
  [data-practice="2.2"] .p2x-food-example > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
 }
+
+/* Practice 2.2 only: approved speaker palette ②; active speakers retain red. */
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #6d28d9; color: #fff; }
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #4b5563; color: #fff; }
+@media(prefers-color-scheme: dark) {
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #c4b5fd; color: #2e1065; }
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #d1d5db; color: #1f2937; }
+}

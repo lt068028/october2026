@@ -18,7 +18,10 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   check(await lines.evaluateAll(es=>es.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),true);
   check(await lines.evaluateAll(es=>es.every(e=>getComputedStyle(e).alignItems==='baseline')),true);
   const arrows=await p.locator('.p2x-food-example .p22-example-arrow').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(arrows[0]-arrows[1])<1,true);
-  check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgb(255, 254, 240)' && Number(getComputedStyle(e).fontWeight)>=700)),true);
+  check(await p.locator('.p22-person-badge,.p2x-person').evaluateAll((es,dark)=>es.every(e=>{
+   const expected=dark?{A:['rgb(196, 181, 253)','rgb(46, 16, 101)'],B:['rgb(209, 213, 219)','rgb(31, 41, 55)']}:{A:['rgb(109, 40, 217)','rgb(255, 255, 255)'],B:['rgb(75, 85, 99)','rgb(255, 255, 255)']};
+   const s=getComputedStyle(e),want=expected[e.dataset.person];return !want||(s.backgroundColor===want[0]&&s.color===want[1]&&Number(s.fontWeight)>=700);
+  }),dark),true);
  }
  // Audit every visible audio row, then every alternate set in D1-D5.
  async function auditAudio(){
@@ -48,6 +51,8 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  await p.locator('#drill5Container .p21-set-switcher button').nth(1).click();
  check(await p.locator('#drill5Container .p22-role-circle').allTextContents(),['Q','A','Q','A','Q','A']);
  for(const selector of ['.p2x-price-example','.p2x-food-example']){await p.locator(selector).screenshot({path:'/tmp/'+selector.slice(1)+'-qa.png'});}
+ for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.locator('.p2x-price-example').screenshot({path:'/tmp/p22-speaker-colors-'+theme+'.png'});}
  await p.goto('http://qa.test/practice2.3.html');check(await p.locator('.p22-role-circle').count(),0);
+ check(await p.locator('.p2x-person').evaluateAll(es=>es.every(e=>!['rgb(109, 40, 217)','rgb(196, 181, 253)','rgb(75, 85, 99)','rgb(209, 213, 219)'].includes(getComputedStyle(e).backgroundColor))),true);
  console.log('PASS '+count);await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
