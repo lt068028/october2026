@@ -14,7 +14,7 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
    for(const sel of ['.p2x-speaker-sentences','.p2x-price-example','.p2x-food-example']){
     const gap=await p.locator(sel).first().evaluate(e=>{const rows=e.querySelectorAll(':scope > p');return rows[1].getBoundingClientRect().top-rows[0].getBoundingClientRect().bottom;});eq(Math.abs(gap-8)<.1,true,sel+' actual 8px gap');
    }
-   eq(await p.locator('.p2x-speaker-guide').evaluateAll(es=>es.every(e=>{const s=getComputedStyle(e);return s.color===(matchMedia('(prefers-color-scheme:dark)').matches?'rgb(241, 245, 249)':'rgb(51, 65, 85)')})),true,'neutral guides');
+   eq(await p.locator('.p2x-speaker-guide').count(),0,'Who guides removed');
   }
  }
 }

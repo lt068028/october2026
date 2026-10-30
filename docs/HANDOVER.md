@@ -1,5 +1,9 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `8f89617`、workクリーン・GitHub最新4ルール文書確認。2.2のWho is speaking?/X/Y is speaking案内をDOMから撤去。画像内外のX/Yは人物色③を維持し、白い輪郭＋濃い外周の枠を1.2秒周期でゆっくり点滅する方式へ変更。濃色反転と赤点滅は2.2では使わない。reduced-motionは明るい枠の静止表示。2.1/2.3は維持。
+- Playing/マイク準備/録音/録音再生の既存状態に同期し、終了/中断/エラーで枠を解除。Who案内は非表示CSSではなくsceneで配置しない。ボタン・領域説明の座標、時計/値段/会話、共通縦余白は維持。撤去前mainと比較して幅375/600/900/1440の全Exampleボタン矩形40件が一致。UI_LAYOUT_SPEC等を現仕様へ更新。
+- practice22-qa 539、speaker-guide82合格。通常/ダーク・両セット・全音声の枠強調と解除を確認。lesson2-speaker-pulse 1631、practice2-next441、example-vertical-spacing164も合格。描画も目視確認。公開後の実機確認は未了。
+
 - 2026-10-30 / Codex：開始main `e9cfe19`、workクリーン・GitHub最新4ルール文書確認。全公開ページのExample縦余白を共通変数へ。独立例文/共有grid行8px、同一グループ折返し4px、画像から例文群12px。ブラウザp margin/行追加margin/cell上下paddingの重複を除去。Example→Drill24px・セクション40pxは維持。発音/作文は該当Exampleなし。全HTMLのCSSキャッシュ版を更新。
 - 2.2だけWho案内を通常#334155文字/#f1f5f9背景、ダークは反転した無彩色へ。speaker-guideのアニメーションを2.2では実行しない。図内外の人物は実際の再生/準備/録音/録音再生中、X濃紫#4c1d95/Y濃青#075985＋白文字/同色2px枠へ静的反転し、終了/中断で復帰。2.1/2.3の赤点滅は維持。2.2 Ex2の時計/値段/会話は維持。
 - UI_LAYOUT_SPEC/PROJECT_SPEC/PRACTICE22_23_SPEC/LESSON2_SPEAKER_AUDITを更新。Example縦余白164、section-spacing62、speaker-guide123、practice22-qa539合格。通常/ダークの2.2を描画確認。practice81 881、lesson2-speaker-pulse 1631、example-arrow-alignment44、common-yn-examples125も合格。公開後の実機確認は未了。

@@ -183,4 +183,4 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 - `node tests/example-arrow-alignment.cjs`：練習1/2/7/8の9ページ、幅600/1440の初期表示で同一Example内の👉️開始位置を比較する。
 
-- `node tests/example-vertical-spacing.cjs`：全12練習ページの共通縦余白値・幅600/1440・通常/ダーク、2.2 E1/E2/E3の実測8px、無彩色ガイドと画像内外の発話強調を確認。
+- `node tests/example-vertical-spacing.cjs`：全12練習ページの共通縦余白値・幅600/1440・通常/ダーク、2.2 E1/E2/E3の実測8px、Who案内撤去と画像内外の発話強調を確認。

@@ -49,7 +49,7 @@ function mock(){
    check(await p.locator('.p2x-price-example h3').count(),0,'redundant Example heading removed');
    check(await p.locator('#drill1Container .recording-table tr').count(),3,'D1 has three statements');
    check(await p.locator('#drill3Container > .p2x-picture .p2x-speaker-guide').count(),0,'D3 has no redundant Who guide');
-   check(await p.locator('#drill3Container > .example-box .p2x-speaker-guide').count(),1,'E3 keeps its Who guide');
+   check(await p.locator('#drill3Container > .example-box .p2x-speaker-guide').count(),0,'E3 has no redundant Who guide');
    check(await p.locator('.p2x-food-example .p2x-price').allTextContents(),['¥300','¥100','¥200'],'fruit prices updated');
    check(await p.locator('.p2x-food-example .grammar-highlight').allTextContents().then(xs=>xs.some(x=>x==='だ'||x==='の')),false,'fruit noun has no accidental grammar highlighting');
 
@@ -76,15 +76,15 @@ function mock(){
    }
 
    check(await p.locator('.p2x-example .p2x-price').allTextContents(),['¥1,000','¥3,000','¥4,000'],'hat prices match object order');
-   check(await p.locator('.p2x-example .p2x-scene-canvas > .p2x-speaker-guide').count(),1,'Who guide is inside cropped image');
+   check(await p.locator('.p2x-example .p2x-scene-canvas > .p2x-speaker-guide').count(),0,'Who guide removed without moving buttons');
    check(await p.locator('.p2x-example .p2x-audio').count(),3,'three audio pairs inside image');
    check(await p.locator('.p2x-speaker-models .p21-model-group').count(),2,'models grouped by speaker');
    check(await p.locator('.p2x-example .p2x-context-note').count(),0,'removed explanatory paragraph');
    await p.locator('.p2x-example .p21-item-audio button').first().click();
-   check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations()[0].effect.getTiming().iterations),Infinity,'guide continues during playback');
+   check(await p.locator('.p2x-example .p2x-person.is-speaking').evaluate(e=>getComputedStyle(e).animationName),'p22-speaker-focus','speaker frame pulses during playback');
    check(await p.evaluate(()=>t.spoken.at(-1).text.includes('千円')&&!t.spoken.at(-1).text.includes('せんえん')),true,'TTS price is kanji with hiragana display');
    await p.evaluate(()=>t.spoken.at(-1).onend?.());
-   check(await p.locator('.p2x-example .p2x-speaker-guide').evaluate(e=>e.getAnimations().length),0,'guide stops with playback');
+   check(await p.locator('.p2x-example .p2x-person.is-speaking').count(),0,'speaker frame stops with playback');
   }
   for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
    await p.locator(`#speechStyleControl [data-value="${style}"]`).click();await p.locator(`#scriptModeControl [data-value="${script}"]`).click();

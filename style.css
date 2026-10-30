@@ -3255,12 +3255,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
 }
 
-/* Practice 2.2 only: approved purple / blue speaker palette ③; active speakers retain red. */
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #6d28d9; color: #fff; }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #7dd3fc; color: #fff; }
+/* Practice 2.2 only: approved purple / blue speaker palette ③; active speakers retain these colors. */
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #6d28d9; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #7dd3fc; --p22-person-fg: #fff; background: var(--p22-person-bg); color: var(--p22-person-fg); }
 @media(prefers-color-scheme: dark) {
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #c4b5fd; color: #2e1065; }
- [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #67e8f9; color: #083344; }
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]{ --p22-person-bg: #c4b5fd; --p22-person-fg: #2e1065; background: var(--p22-person-bg); color: var(--p22-person-fg); }
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]{ --p22-person-bg: #67e8f9; --p22-person-fg: #083344; background: var(--p22-person-bg); color: var(--p22-person-fg); }
 }
 
 /* Practice 1.1: narrow examples keep arrow/audio columns shared across rows. */
@@ -3297,12 +3297,16 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @container(min-width:851px) {
  .site-scale.practice1-page .example-box .drill-example-table { border-collapse: separate; border-spacing: 0 var(--example-row-gap); }
 }
-/* Practice 2.2 trial: neutral guide; speaking people keep their own hue. */
-[data-practice="2.2"] .p2x-picture .p2x-speaker-guide,
-[data-practice="2.2"] .p2x-picture .p2x-speaker-guide.is-emphasized { color: #334155; background: #f1f5f9; border: 1px solid #64748b; box-shadow: none; text-shadow: none; }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"].is-speaking { color: #fff; background: #4c1d95; outline: 2px solid #4c1d95; animation: none; }
-[data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"].is-speaking { color: #fff; background: #075985; outline: 2px solid #075985; animation: none; }
-@media(prefers-color-scheme:dark) {
- [data-practice="2.2"] .p2x-picture .p2x-speaker-guide,
- [data-practice="2.2"] .p2x-picture .p2x-speaker-guide.is-emphasized { color: #f1f5f9; background: #334155; border-color: #94a3b8; }
+/* Practice 2.2: speaking people retain their palette and pulse a contrasting frame. */
+[data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking {
+ color: var(--p22-person-fg); background: var(--p22-person-bg);
+ outline: 2px solid #fff; outline-offset: 1px;
+ animation: p22-speaker-focus 1.2s ease-in-out infinite;
+}
+@keyframes p22-speaker-focus {
+ 0%,100% { box-shadow: 0 0 0 4px #334155; }
+ 50% { box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
+}
+@media(prefers-reduced-motion:reduce) {
+ [data-practice="2.2"] :is(.p22-person-badge,.p2x-person).is-speaking { animation: none; box-shadow: 0 0 0 6px #fff, 0 0 0 8px #334155; }
 }

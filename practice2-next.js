@@ -1388,7 +1388,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const guide=node('div','p2x-unknown-guide');guide.append(node('strong','','ど：'),node('span','','Asking about the unknown'));picture.append(guide);
             }
         }
-        if(speakerGuide){if(hats)stage.append(context);else picture.append(context);}
+        if(speakerGuide&&!is22){if(hats)stage.append(context);else picture.append(context);}
         if(shop){const canvas=node('div','p2x-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}
         picture.append(stage);if(example&&!hats)picture.append(audioGrid);
         if(hats&&example){

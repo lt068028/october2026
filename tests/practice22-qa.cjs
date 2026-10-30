@@ -8,6 +8,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  const p=await browser.newPage();await p.addInitScript(mock);
  await p.route('http://qa.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({status:fs.existsSync(file)?200:404,body:fs.existsSync(file)?fs.readFileSync(file):'',contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
  await p.goto('http://qa.test/practice2.2.html');
+ assert.equal(await p.locator('.p2x-speaker-guide').count(),0);
  let count=0;const check=(a,b)=>{assert.deepEqual(a,b);count++};
  for(const width of [375,600,900,1440])for(const dark of [false,true]){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:dark?'dark':'light'});
@@ -37,8 +38,9 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
     const badge=row?.querySelector('.p22-person-badge')||e.closest('.p22-conversation-line')?.querySelector('.p22-person-badge')||[...ex.querySelectorAll('.p2x-speaker-group .p22-person-badge')].find(x=>x.dataset.person===who);
     const picture=row?row.closest('[id$="Container"]')?.querySelector(':scope > .p2x-picture'):ex?.querySelector('.p2x-picture');
     const image=picture?.querySelector('.p2x-person[data-person="'+who+'"]');
-    const activeColor=who==='A'?'rgb(76, 29, 149)':'rgb(7, 89, 133)';
-    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking')&&[badge,image].every(x=>{const s=getComputedStyle(x);return s.backgroundColor===activeColor&&s.color==='rgb(255, 255, 255)'&&s.animationName==='none';});
+    const dark=matchMedia('(prefers-color-scheme:dark)').matches;
+    const activeColor=who==='A'?(dark?'rgb(196, 181, 253)':'rgb(109, 40, 217)'):(dark?'rgb(103, 232, 249)':'rgb(125, 211, 252)');
+    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking')&&[badge,image].every(x=>{const s=getComputedStyle(x);return s.backgroundColor===activeColor&&s.animationName==='p22-speaker-focus'&&s.outlineColor==='rgb(255, 255, 255)';});
    }),true);
    await p.evaluate(()=>t.spoken.at(-1).onend());check(await p.locator('.p22-person-badge.is-speaking').count(),0);
   }
