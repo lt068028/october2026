@@ -442,3 +442,5 @@ L1・L2ページはHiragana初期表示。練習2のWith漢字は参考漢字表
 ## 練習8.1（2026-10-30）
 
 PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承。D1のNoun/Action、D5のSkill/Comfortを表示。D4程度ガイドは否定赤・肯定青＋符号を併記。言い方フィードバックはD5 Situationsの録音結果下のみ。未表示ヒントは固定配置で横幅に影響させず、Hover時は共通tooltip-layoutで画面内へ補正。
+
+- 8.1改訂（2026-10-30）：文法ゴールドを共通#ca8a04/#fbbf24へ修正。Ex3の主題はも強調。ExampleのQ/R等は内容に基づく共通列で音声を整列。D4は目的語/動詞/副詞選択/ADJ。D2返答およびD5 Situationsの選択前理由はListenとRecordの両方に表示し、選択後は撤去。色候補3案は比較用で、規定色変更の採用は保留。
