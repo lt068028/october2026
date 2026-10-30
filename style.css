@@ -3148,8 +3148,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-example-row > * { min-width: 0; }
 .practice81-page .p81-example-row > button { align-self: start; }
 .practice81-page .p81-model { overflow-wrap: anywhere; }
-.practice81-page .p81-gold { color: #ca8a04; font-weight: 700; }
-@media (prefers-color-scheme: dark) { .practice81-page .p81-gold { color: #fbbf24; } }
 .practice81-page .p81-kind {
     display: inline-block; padding: 2px 6px; border-radius: 4px;
     background: var(--bg-panel); color: var(--text-primary);
@@ -3231,3 +3229,5 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .practice81-page .p81-example:has(> .p81-no-kind) { grid-template-columns: minmax(0,1fr) max-content max-content; }
     .practice81-page .p81-example .p81-no-kind .p81-model { grid-column: 1 / -1; }
 }
+
+.practice81-page .p81-kind:empty { padding: 0; background: transparent; }

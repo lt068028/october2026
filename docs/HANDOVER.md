@@ -1,5 +1,10 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `6be63f3`、クリーン・fetch同期確認。8.1の色の原因調査：初回a4bc73eで既存の共通値/grammar-highlightを使わず独自色を指定し、初回テストは個数のみで値の照合なし。6be63f3の色値修正からさらに、今回は共通クラスを直接使いページ固有色指定を撤去（色自体は現行維持）。証跡と是正はPRACTICE81_INHERITANCE_AUDIT。
+- Ex2：質問・肯定・否定の3モデルを常時表示し、🔊きく/🔊🙆/🔊🙅を縦に整列。既存1.2/7.1/7.2/7.3から共通仕様を特定してUI_LAYOUT_SPECへ明文化。前回はDrillのNoだけを実装してExample配列へ追加していなかった。Ex5は両セットではとのがを強調。
+- D5：前回は新課題をSituationsへ実装したが初期値compareを維持したため旧内容だけに見えた。Target impressionを初期値/先頭タブへ変更し、見出し・説明・Example5も連動。Modest/Confident/Boastful/Rude/Arrogantが最初から表示。Skill/Comfortは補助セットとして保持。
+- 検証：common-yn-examples既存4ページ＋8.1の全文体125項目、section-spacing62合格。practice81 628項目合格。公開後の実機と実際の音声品質は未確認。
+
 - 2026-10-30 / Codex：開始main `a4bc73e`。8.1改訂：固有ゴールドが共通仕様と不一致だったため通常#ca8a04/ダーク#fbbf24へ修正。明るめ3案はassets/review/practice81-gold-1〜3.png（通常/ダーク例文背景）として提示、採用は未決定。Ex3のはを強調。D2は固定交互の好き/きらいによる4組のY/N Q/Rへ変更し、返答は選択後にListen/Record解除・前提理由Hover・短答モデル/完全回答許容・各選択の録音保持。D4は目的語/動詞/副詞選択/ADJへ。Example音声列は内容幅を共有して整列。
 - D5 Situations：目標Modest/Confident/Boastful/Rude/Arrogantを提示し、日本語評価語を選ぶ課題へ変更。選択前は操作ロック。熟練した日本語教師を初学者が評価する設定の「日本語の先生は、日本語が上手です」を追加。文法正答と目標印象の達成は分離、負の印象の一致も行動推奨ではない。Skill/Comfort比較セットは維持。詳細はPRACTICE8_SPEC。
 - 検証：practice81 615、audio-relay全12ページ420、section-spacing62合格。通常/ダークの規定色、全文体のY/N両選択、モデルと許容、D5印象、選択前ロック、録音保持、375〜1920pxのはみ出し・列整列を確認。公開後の実機・実音声は未確認。

@@ -20,6 +20,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  });
  await page.goto('http://practice81.test/practice8.1.html');
  check(errors,[],'initial render');
+ check(await page.locator('.p81-gold').evaluateAll(es=>es.every(e=>e.classList.contains('grammar-highlight'))),true,'gold uses the common class');
+ check(/p81-gold[^{}]*\{[^}]*color\s*:/.test(fs.readFileSync(path.join(root,'style.css'),'utf8')),false,'no duplicated page-specific gold color');
  check(await page.locator('.p81-section').count(),5,'five Drills');
  check(await page.locator('.example-box').count(),5,'five preceding Examples');
  check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが'],'Example3 topic and nominalizer highlighted');
@@ -34,7 +36,18 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  for(let i=0;i<4;i++)await page.locator(`[data-response="self-${i}-response"][data-answer="yes"]`).click();
  check(await page.locator('#drill3 tr').count(),6,'six people');
  check(await page.locator('#drill4 select').count(),6,'six degree rows');
- check(await page.locator('#drill5 tr').count(),8,'four Skill Comfort pairs');
+ check(await page.locator('#drill5 tr').count(),5,'target impression opens by default');
+ check(await page.locator('#drill5 .p81-target').allTextContents(),['Target: Modest','Target: Confident','Target: Boastful','Target: Rude','Target: Arrogant'],'all five targets visible immediately');
+ check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example5 topic and nominalizer highlighted');
+ check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
+ check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['本を読むのが好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
+ for(const label of ['🔊🙆','🔊🙅']){
+  const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
+  check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
+  await page.evaluate(()=>t.spoken.at(-1).onend());check(await page.evaluate(()=>t.spoken.length),before+1,'Example playback does not select Drill response');check(await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed'))),selections,'Example leaves Y/N selections unchanged');
+ }
+ await page.locator('[data-set="compare"]').click();
+ check(await page.locator('#drill5 tr').count(),8,'Skill Comfort comparison retained');
  const comparisons=await page.evaluate(()=>audit81.rowsFor(0).map(rs=>rs.map(r=>r.text)));
  check(comparisons,[['本が好きです。','本を読むのが好きです。'],['音楽が好きです。','音楽を聞くのが好きです。'],['写真が好きです。','写真を撮るのが好きです。']],'noun versus action');
  check(await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][0];return [a.matchesAnswer('あなたは本を読むのが好きですか',r),a.matchesAnswer('私は本を読むのが好きですか',r)];}),[true,false],'question addresses the listener');
@@ -60,7 +73,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
     check(await page.locator('.p81-card').count(),23,`${style}/${script}/${hint} content retained`);
-    check(await page.locator('.example-box .p81-gold').count(),8,'gold structure in all Examples');
+    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?15:14,'gold structure in all Examples');
    }
   }
  }
@@ -96,7 +109,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  await page.waitForFunction(()=>t.recognitions.length>0);
  await page.evaluate(()=>{t.speaking=true;const result=[{transcript:'  本を読むのが好きです。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  check(await page.locator('[data-choice="degree-0"]').isDisabled(),true,'selections lock while recording');
- await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>t.spoken.length>0);
+ await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>t.spoken.length>2);
  const zero=await page.evaluate(()=>{const before=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===before+1;});check(zero,true,'same callback relay');
  check(await page.locator('[data-row="self-0-response"] .result-text').textContent().then(t=>t.includes('✅')),true,'actual recognition graded');
  await page.locator('[data-response="self-0-response"][data-answer="no"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent(),'(Not recorded yet)','different choice independent');

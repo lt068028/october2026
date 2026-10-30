@@ -1,5 +1,7 @@
 # 共通仕様の照合（2026-10-29）
 
+- 8.1のゴールド・Y/N Example・D5初期表示の原因調査と是正：[PRACTICE81_INHERITANCE_AUDIT.md](PRACTICE81_INHERITANCE_AUDIT.md)。ゴールド規定は既存で実装取り込み漏れ。Y/N Exampleの適用範囲はUI_LAYOUT_SPECで明文化。
+
 - 2026-10-30：8.1を追加。共通設定・STT・録音ライフサイクル・0秒リレーの対象を拡張。詳細と初回実装の境界は[PRACTICE8_SPEC.md](PRACTICE8_SPEC.md)。以下の初期点検件数は当時の記録。
 
 - 2026-10-30確定ルール・全11対象ページへ実装：[STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)。専攻表記の強制は1.2だけ。他ページへ無条件の共通化をしない。

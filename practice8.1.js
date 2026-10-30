@@ -7,7 +7,7 @@ let scriptMode='kanji',hintMode='hover',speechStyle='formal';
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map();
-let situationSet='compare';
+let situationSet='situations';
 const words={};
 function W(id,kanji,hira,romaji,meaning) {
     words[id]={kanji,hira,romaji,meaning};
@@ -109,7 +109,7 @@ const sections=[
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Use the cues to describe each person’s skill or difficulty.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: Skill, comfort & choice of words',instruction:'💡Compare Skill and Comfort. In Situations, choose words to match the target impression.'}
+    {title:'Drill 5: How does it sound?',instruction:'💡Choose words to sound Modest, Confident, Boastful, Rude or Arrogant.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -203,8 +203,9 @@ function modelHTML(r) {
     const tokens=[...Object.values(words)].map(w=>w[scriptMode==='kanji'?'kanji':'hira']).sort((a,b)=>b.length-a.length);
     let out='',i=0;
     while(i<text.length) {
-        const gold=text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null;
-        if(gold){out+=`<strong class="p81-gold">${gold}</strong>`;i+=gold.length;continue;}
+        const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
+        const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
+        if(gold){out+=`<strong class="p81-gold grammar-highlight">${gold}</strong>`;i+=gold.length;continue;}
         const token=tokens.find(t=>text.startsWith(t,i));
         const id=token&&Object.keys(words).find(k=>words[k][scriptMode==='kanji'?'kanji':'hira']===token);
         if(id){out+=word(id);i+=token.length;}else{out+=escape(text[i]);i++;}
@@ -686,19 +687,22 @@ function addExample(root,si) {
     const ex=node('div','example-box p81-example');
     const samples=[
         [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Action'})],
-        [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response'})],
+        [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3',{...people[0],highlightTopic:true})],
         [makeRow('ex4',{...degrees[0],adverb:'amari'})],
-        [makeRow('ex5-skill',{...comfortActions[3],subject:'i',adjective:'bad'},{kind:'Skill'}),makeRow('ex5-comfort',{...comfortActions[3],subject:'i',adjective:'difficult'},{kind:'Comfort'})]
+        situationSet==='compare'
+            ?[makeRow('ex5-skill',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Skill'}),makeRow('ex5-comfort',{...comfortActions[3],subject:'i',adjective:'difficult',highlightTopic:true},{kind:'Comfort'})]
+            :[makeRow('ex5-modest',{...comfortActions[3],subject:'i',adjective:'bad',highlightTopic:true},{kind:'Modest'}),makeRow('ex5-boastful',{...comfortActions[3],subject:'i',adjective:'good',highlightTopic:true},{kind:'Boastful'})]
     ][si];
+    const hasKinds=samples.some(r=>r.kind);
     for(const r of samples) {
         const row=node('div','p81-example-row');
-        const kind=node('span','p81-kind',r.kind||'');
+        const kind=node('span',r.qa?'example-label-title':'p81-kind',r.kind?r.kind+(r.qa?':':''):'');
         const cue=node('span','p81-example-cue');cue.innerHTML=cues(r);
-        const arrow=node('span','p81-arrow','👉️');
-        const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
+        const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
+        const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r);
-        if(r.kind)row.append(kind);else row.classList.add('p81-no-kind');
+        if(hasKinds)row.append(kind);else row.classList.add('p81-no-kind');
         row.append(cue,arrow,listen,text);ex.append(row);
     }
     root.append(ex);
@@ -720,11 +724,11 @@ function render() {
         const group=node('section','p81-section');group.id='drill'+(si+1);
         addExample(group,si);
         const panel=node('div','info-panel info-panel-task1');
-        panel.append(node('span','info-panel-title',section.title),node('span','info-panel-desc',section.instruction));group.append(panel);
+        panel.append(node('span','info-panel-title',si===4&&situationSet==='compare'?'Drill 5: Skill / Comfort':section.title),node('span','info-panel-desc',si===4&&situationSet==='compare'?'💡Describe your Skill and Comfort.':section.instruction));group.append(panel);
         if(si===3)addScale(group);
         if(si===4) {
             const tabs=node('div','p81-tabs');tabs.setAttribute('role','group');tabs.setAttribute('aria-label','Drill 5 practice');
-            for(const [id,label]of [['compare','Skill / Comfort'],['situations','Situations']]) {
+            for(const [id,label]of [['situations','Target impression'],['compare','Skill / Comfort']]) {
                 const b=button(label,()=>{if(session||preparing)return;stopPlayback();situationSet=id;render();});b.dataset.set=id;b.classList.toggle('is-selected',id===situationSet);b.setAttribute('aria-pressed',String(id===situationSet));tabs.append(b);
             }
             group.append(tabs);
