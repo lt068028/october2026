@@ -891,6 +891,7 @@ function p2BestDiff(raw, references) {
 }
 
 function p2Show(view, notice = "") {
+    drill1Data.forEach(o=>STTDisplay.register(o.kanji,o.hira));
     const saved = savedResults[view.key];
 
     view.result.replaceChildren();
@@ -921,15 +922,14 @@ function p2Show(view, notice = "") {
             ).correct;
         }
 
-        const displayed = useHiraganaOnly
-            ? convertToHiragana(saved.rawTranscript)
-            : saved.rawTranscript;
+        const displayed = STTDisplay.format(saved.rawTranscript, {mode:useHiraganaOnly?'hiragana':'kanji', anchor:view.result, context:saved.modelKanji||''});
 
-        const diff = p2BestDiff(
+        let diff = p2BestDiff(
             displayed,
             saved.references
         );
 
+        diff = STTDisplay.projectDiff(diff, displayed);
         for (let i = 0; i <= diff.chars.length; i++) {
             if (!saved.isCorrect && diff.gaps.has(i)) {
                 append("＿", true);

@@ -1,6 +1,6 @@
 # 共通仕様の照合（2026-10-29）
 
-- 2026-10-30確定ルールと未実装差分：[STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)。専攻表記の強制は1.2だけ。他ページへ無条件の共通化をしない。
+- 2026-10-30確定ルール・全10対象ページへ実装：[STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)。専攻表記の強制は1.2だけ。他ページへ無条件の共通化をしない。
 
 - 追加点検：練習2キューの空白混入は[CUE_SPACING_AUDIT.md](CUE_SPACING_AUDIT.md)。未指定スペースを追加しない規則をUI_LAYOUT_SPECに明記。
 

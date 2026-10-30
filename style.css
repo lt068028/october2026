@@ -3133,3 +3133,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .p21-which-model-line:has(.p21-which-cue) > :nth-child(4) { grid-column: 2; }
  .p21-which-model-line:has(.p21-which-cue) > :nth-child(5) { grid-column: 3; }
 }
+
+/* STT keeps recognition whitespace; wrap without normalizing the source. */
+.result-text { white-space: pre-wrap; overflow-wrap: anywhere; }

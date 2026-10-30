@@ -458,6 +458,7 @@ function initSettingsPanel() {
     }
 }
 function renderAll() {
+    drill1Data.forEach(o=>STTDisplay.register(o.jaKanji,o.jaHira));
     ++compositionState.playback;
     stopAllPlayback();
 
@@ -872,15 +873,14 @@ function compositionShow(view, message = "") {
             ).cost === 0;
         }
 
-        const displayed = useHiraganaOnly
-            ? convertToHiragana(saved.rawTranscript)
-            : saved.rawTranscript;
+        const displayed = STTDisplay.format(saved.rawTranscript, {mode:useHiraganaOnly?'hiragana':'kanji', anchor:view.resultSpan, context:saved.modelKanji||''});
 
-        const diff = compositionBestDiff(
+        let diff = compositionBestDiff(
             displayed,
             saved.references
         );
 
+        diff = STTDisplay.projectDiff(diff, displayed);
         for (let i = 0; i <= diff.chars.length; i++) {
             if (!saved.isCorrect && diff.gaps.has(i)) {
                 append("＿", "var(--error-text)");
@@ -920,9 +920,7 @@ function compositionShow(view, message = "") {
         // 音声専用モードへ切り替えても、以前の抽出文は残す。
         append(
             (
-                useHiraganaOnly
-                    ? convertToHiragana(saved.rawTranscript)
-                    : saved.rawTranscript
+                STTDisplay.format(saved.rawTranscript, {mode:useHiraganaOnly?'hiragana':'kanji', anchor:view.resultSpan})
             ) + " "
         );
     } else {
@@ -1508,7 +1506,7 @@ async function compositionRecord(rowIndex) {
             if (old) URL.revokeObjectURL(old);
 
             savedResults[rowIndex] = {
-                rawTranscript: session.raw.trim(),
+                rawTranscript: session.raw,
                 audioOnly
             };
         }

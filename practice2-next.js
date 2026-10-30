@@ -409,6 +409,7 @@ function setupFooterGuide() {
 }
 
 function formatWord(word, kanji, romaji, meaning) {
+    STTDisplay.register(kanji, word, meaning);
     const displayWord =
         (scriptMode === "kanji" && kanji) ? kanji : word;
 
@@ -800,7 +801,7 @@ function practice2ShowNotice(resultSpan, message) {
         const acceptedTexts=[...new Set([expectedText,modelText,...(practice2State.replyReferences?.[key]?.()||[])])];
         const saved = {
             acceptedTexts,
-            rawTranscript: String(rawTranscript ?? "").trim(),
+            rawTranscript: String(rawTranscript ?? ""),
             expectedText,
             modelText,
             speechStyle,
@@ -833,9 +834,7 @@ function practice2ShowNotice(resultSpan, message) {
     };
 
     practice2ShowResult = function(view, saved, key, rate) {
-        const displayed = scriptMode === "hiragana"
-            ? practice2ToHiragana(saved.rawTranscript)
-            : String(saved.rawTranscript ?? "");
+        const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
 
         view.resultSpan.replaceChildren();
         view.resultSpan.style.color = "var(--text-primary)";
@@ -875,6 +874,7 @@ function practice2ShowNotice(resultSpan, message) {
                 }
             }
 
+            best = STTDisplay.projectDiff(best, displayed);
             if (!best) {
                 view.resultSpan.append(
                     document.createTextNode(displayed)
@@ -2345,9 +2345,7 @@ function practice2FindDiff(actual, reference) {
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
-    const displayed = scriptMode === "hiragana"
-        ? practice2ToHiragana(saved.rawTranscript)
-        : String(saved.rawTranscript ?? "");
+    const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
 
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
@@ -2383,6 +2381,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
             }
         }
 
+        best = STTDisplay.projectDiff(best, displayed);
         if (!best) {
             view.resultSpan.appendChild(
                 document.createTextNode(displayed)
@@ -3057,7 +3056,7 @@ function processResult(
     playRate,
     rowKey
 ) {
-    const transcript = String(rawTranscript ?? "").trim();
+    const transcript = String(rawTranscript ?? "");
     const modelText = getExpectedKanjiFn();
     const normalized = practice2Normalize(transcript);
 

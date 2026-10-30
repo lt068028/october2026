@@ -154,3 +154,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - 2.2 D5傘比較：`node tests/practice22-umbrellas.cjs`。同じ傘のAdjectives/Pronouns、全Speech/Scriptモデル、指示語/形式誤答判定、所有対象/話者同期、録音排他と保持、375/600/1440px通常/ダークの枠内配置。
 
 - 通常Drillのリレー間隔0秒：`node tests/relay-zero-gap.cjs`。全11ページの実録音後経路で、疑似TTS終了の同一コールバック内にAudio.playが呼ばれることを確認。録音内の無音や実機の音響的間隔の検証とは区別。
+
+- STT表示規則：`node tests/stt-display.cjs`。全10対象ページのひらがな保持、課別カタカナ、専攻限定、Tシャツ/Form境界、同音語、全角記号・空白、誤答差分の文字対応を検証。音声認識品質の検証とは区別。

@@ -1192,6 +1192,7 @@ function setupFooterGuide() {
 }
 
 function formatWord(word, kanji, romaji, meaning) {
+    STTDisplay.register(kanji, word, meaning);
     const displayWord =
         (scriptMode === "kanji" && kanji) ? kanji : word;
 
@@ -1931,9 +1932,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
             normalized === practice7Normalize(text)
         );
     }
-    const displayed = scriptMode === "hiragana"
-        ? practice7ToHiragana(saved.rawTranscript)
-        : String(saved.rawTranscript ?? "");
+    const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
 
@@ -1974,6 +1973,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
             view.resultSpan.appendChild(span);
         };
 
+        best = STTDisplay.projectDiff(best, displayed);
         if (best) {
             for (
                 let index = 0;
@@ -2622,7 +2622,7 @@ function processResult(
     playRate,
     rowKey
 ) {
-    const transcript = String(rawTranscript ?? "").trim();
+    const transcript = String(rawTranscript ?? "");
     const modelText = getExpectedKanjiFn();
     const normalized = practice7Normalize(transcript);
 

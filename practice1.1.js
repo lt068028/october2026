@@ -630,6 +630,7 @@ function initSettingsPanel() {
 }
 
 function formatWord(word, kanji, romaji, meaning) {
+    STTDisplay.register(kanji, word, meaning);
     const text = escapeHtml(
         scriptMode === "kanji" && kanji ? kanji : word
     );
@@ -1335,12 +1336,7 @@ function displayResult(view, message = "") {
         view.result.textContent = AUDIO_ONLY_MESSAGE;
 
     } else if (saved?.rawTranscript !== undefined) {
-        const displayed =
-            scriptMode === "hiragana" && !saved.freeInput
-                ? normalizeHiraganaTranscript(
-                    saved.rawTranscript
-                )
-                : saved.rawTranscript;
+        const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.result, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
 
         view.result.textContent = "";
         view.result.style.color = "var(--text-primary)";
@@ -1351,12 +1347,13 @@ function displayResult(view, message = "") {
             );
 
         } else {
-            const diff = practice1ResultDiff(
+            let diff = practice1ResultDiff(
                 displayed,
                 saved,
                 view
             );
 
+            diff = STTDisplay.projectDiff(diff, displayed);
             const red = text => {
                 const span = document.createElement("span");
 
@@ -2002,7 +1999,7 @@ async function startRecording(initialView) {
                 practice1State.savedResults[rowKey] = {
                     audioOnly: false,
                     freeInput: initialView.freeInput,
-                    rawTranscript: session.transcript.trim(),
+                    rawTranscript: session.transcript,
                     expectedText: expected,
                     modelText: model,
 

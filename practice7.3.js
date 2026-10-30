@@ -5,7 +5,7 @@
 (() => {
 "use strict";
 
-const W = (kanji, hira, romaji, meaning) => ({
+const W = (kanji, hira, romaji, meaning) => (STTDisplay.register(kanji,hira,meaning), {
     kanji: DrillAnswer.kanjiNumbers(kanji), hira, romaji, meaning
 });
 
@@ -1101,6 +1101,7 @@ function findDiff(actual, reference) {
 }
 
 function showResult(key, notice = '') {
+    for(const section of sections)for(const rows of [section.example,...section.items])for(const r of rows)STTDisplay.register(r.text,r.hira);
     const v = views.get(key);
     if (!v) return;
 
@@ -1116,9 +1117,7 @@ function showResult(key, notice = '') {
     }
 
     if (value?.raw) {
-        const displayed = scriptMode === 'hiragana'
-            ? hira(value.raw)
-            : value.raw;
+        const displayed = STTDisplay.format(value.raw, {mode:scriptMode, anchor:v.result, context:v.r.text});
 
         if (value.correct) {
             v.result.append(
@@ -1130,10 +1129,11 @@ function showResult(key, notice = '') {
                 value.modelHira || v.r.hira
             ];
 
-            const best = refs
+            let best = refs
                 .map(ref => findDiff(displayed, ref))
                 .sort((a, b) => a.cost - b.cost)[0];
 
+            best = STTDisplay.projectDiff(best, displayed);
             const red = text => {
                 const span = document.createElement('span');
                 span.style.color = 'var(--error-text)';
@@ -1606,7 +1606,7 @@ async function record(key, r) {
 
             saved.set(key, {
                 url,
-                raw: s.raw.trim(),
+                raw: s.raw,
                 correct:
                     Boolean(s.raw.trim()) &&
                     matchesAnswer(s.raw, r)
