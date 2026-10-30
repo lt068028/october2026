@@ -17,7 +17,10 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='4px')),true);
   check(await lines.evaluateAll(es=>es.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),true);
   check(await lines.evaluateAll(es=>es.every(e=>getComputedStyle(e).alignItems==='baseline')),true);
-  const arrows=await p.locator('.p2x-food-example .p22-example-arrow').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(arrows[0]-arrows[1])<1,true);
+  for(const example of ['.p2x-price-example','.p2x-food-example']){
+   const arrows=await p.locator(example+' .p22-example-arrow').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(arrows[0]-arrows[1])<1,true);
+   const audio=await p.locator(example+' > p > button').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(audio[0]-audio[1])<1,true);
+  }
   check(await p.locator('.p22-person-badge,.p2x-person').evaluateAll((es,dark)=>es.every(e=>{
    const expected=dark?{A:['rgb(196, 181, 253)','rgb(46, 16, 101)'],B:['rgb(209, 213, 219)','rgb(31, 41, 55)']}:{A:['rgb(109, 40, 217)','rgb(255, 255, 255)'],B:['rgb(75, 85, 99)','rgb(255, 255, 255)']};
    const s=getComputedStyle(e),want=expected[e.dataset.person];return !want||(s.backgroundColor===want[0]&&s.color===want[1]&&Number(s.fontWeight)>=700);
@@ -44,6 +47,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   const switcher=p.locator('#drill'+drill+'Container .p21-set-switcher button');
   if(await switcher.count()>1){await switcher.nth(1).click();await auditAudio();}
  }
+ check(await p.locator('[data-speaker-recording-key="p22_people_classmate_q_2"] .drill-cue-cell').evaluate(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());return c.textContent.replace(/\s/g,'')}),'QXYさんのクラスメート／どのひと');
  const button=p.locator('.p2x-price-example > .p22-conversation-line button').first();await button.click();
  check(await p.locator('.p2x-price-example > p .p22-person-badge.is-speaking').allTextContents(),['X']);
  check(await p.locator('.p22-role-circle.is-speaking').count(),0);

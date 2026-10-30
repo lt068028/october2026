@@ -3244,15 +3244,15 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 [data-practice="2.2"] .p22-cue-arrow { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
 @media(prefers-reduced-motion: reduce) { [data-practice="2.2"] .p22-person-badge.is-speaking { animation: none; background: #fecaca; } }
 
-/* Ex3 shares intrinsic cue/arrow/audio tracks across Q and A. */
-[data-practice="2.2"] .p2x-food-example { display: grid; grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); column-gap: 8px; }
-[data-practice="2.2"] .p2x-food-example > .p2x-picture { grid-column: 1 / -1; }
-[data-practice="2.2"] .p2x-food-example > .p22-conversation-line { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 8px; }
-[data-practice="2.2"] .p2x-food-example .p22-cue-arrow { display: contents; }
-[data-practice="2.2"] .p2x-food-example .p22-example-cue { min-width: 0; overflow-wrap: anywhere; }
+/* Practice 2.2 Ex2/Ex3 share intrinsic cue/arrow/audio tracks across Q and A. */
+[data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) { display: grid; grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); column-gap: 8px; }
+[data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p2x-picture { grid-column: 1 / -1; }
+[data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p22-conversation-line { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 8px; }
+[data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) .p22-cue-arrow { display: contents; }
+[data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) .p22-example-cue { min-width: 0; overflow-wrap: anywhere; }
 @media(max-width:700px) {
- [data-practice="2.2"] .p2x-food-example { grid-template-columns: max-content minmax(0,1fr) max-content max-content; }
- [data-practice="2.2"] .p2x-food-example > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
+ [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) { grid-template-columns: max-content minmax(0,1fr) max-content max-content; }
+ [data-practice="2.2"] :is(.p2x-price-example,.p2x-food-example) > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
 }
 
 /* Practice 2.2 only: approved speaker palette ②; active speakers retain red. */
@@ -3261,4 +3261,16 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(prefers-color-scheme: dark) {
  [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="A"]:not(.is-speaking) { background: #c4b5fd; color: #2e1065; }
  [data-practice="2.2"] :is(.p22-person-badge,.p2x-person)[data-person="B"]:not(.is-speaking) { background: #d1d5db; color: #1f2937; }
+}
+
+/* Practice 1.1: narrow examples keep arrow/audio columns shared across rows. */
+@container(max-width:850px) {
+ .practice1-page .example-box .drill-example-table { display:grid; grid-template-columns:minmax(0,1fr) max-content max-content; gap:4px; align-items:baseline; }
+ .practice1-page .example-box .drill-example-table > tbody,
+ .practice1-page .example-box .drill-example-table tr { display:contents; }
+ .practice1-page .example-box .drill-example-table td:first-child,
+ .practice1-page .example-box .drill-example-table td:last-child { grid-column:1 / -1; }
+ .practice1-page .example-box .drill-example-table td:nth-child(2) { grid-column:1; }
+ .practice1-page .example-box .drill-example-table td:nth-child(3) { grid-column:2; }
+ .practice1-page .example-box .drill-example-table td:nth-child(4) { grid-column:3; }
 }

@@ -1785,7 +1785,7 @@ function practice2ShowNotice(resultSpan, message) {
                     const key='p22_people_classmate';
                     const mine=()=>word('わたし','私')+'のクラスメート';
                     const which=()=>word('どのひと','どの人');
-                    const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${formatWord('どのひと','どの人','dono hito','which person')}／${formatWord('Yさんのクラスメート','Yさんのクラスメート','Y-san no kurasumēto','Y’s classmate')}`,key+'_q_2',()=>`${which()}が、Yさんのクラスメート${speechStyle==='formal'?'ですか？':'？'}`);
+                    const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${formatWord('Yさんのクラスメート','Yさんのクラスメート','Y-san no kurasumēto','Y’s classmate')}／${formatWord('どのひと','どの人','dono hito','which person')}`,key+'_q_2',()=>`${which()}が、Yさんのクラスメート${speechStyle==='formal'?'ですか？':'？'}`);
                     practice2State.replyReferences[key+'_r_2']=()=>[short(subject(answerer)),statement(mine(),subject(answerer))];
                     const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${personCue(answerer)}`,key+'_r_2',()=>short(subject(answerer)));
                     attach(q,asker,o,select);attach(r,answerer,o,select);return;
