@@ -174,3 +174,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 `node tests/practice81.cjs`は、Example1のNoun/Verb＋のを維持し、対応Drillの区分が0個であることも確認する。Question/Responseは役割表示として維持。比較用HTML/画像の3案は未採用であり、本体の期待値へ混ぜない。
 
 - Example4の省略表示：先頭行は全文、後続5行は副詞からのキュー・〃からの本文であることと、省略部分のアクセシビリティ用ラベルを確認。全3文体×両表記×6ボタンで、省略記号を含めず完全なモデル音声を再生することを検証する。
+
+## 文型・人物・Q/Aの共通表記
+
+`node tests/labels-and-speakers.cjs`で、1.1/1.2のtitle・h1・Index、全7対象JSのQ/A、練習2全3ページ・各セットのX/Y/Zラベルと旧名の不存在、文字/ひらがな/カタカナの名前照合、TTS専用読みを確認する。内部A/B/Cと画面名は別の期待値で検証。既存のpractice21/practice2-next/practice23-cities/practice22-umbrellas/speaker-guide/lesson2-speaker-pulseも新しい表示・モデルに合わせた期待値で維持する。

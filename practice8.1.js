@@ -152,7 +152,7 @@ function rowsFor(si) {
         makeRow(`compare-${i}-action`,{...a,adjective:'like'})]);
     if(si===1)return selfActions.map((a,i)=>{
         const adjective=i%2?'dislike':'like',id=`self-${i}`,answer=choices.get(id+'-response');
-        return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Question'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'Response',pending:!answer})];
+        return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Q'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'A',pending:!answer})];
     });
     if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degrees.map((s,i)=>{const id=`degree-${i}`;return [makeRow(id,{...s,adverb:selected(id,s.initial)},{selectKind:'adverb'})];});
@@ -679,7 +679,7 @@ function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');
     const samples=[
         [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Verb＋の'})],
-        [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Question'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'Response',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
+        [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
         [makeRow('ex5-self-praise',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Self-praise'}),makeRow('ex5-strength',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Strength'})]

@@ -1,5 +1,8 @@
 # October2026 機能仕様書（PROJECT_SPEC）
 
+
+> **現行表記（2026-10-30）**：名詞文はN₁はN₂です、画面の人物はX/Y/Z（Xさん等）、会話の役割はQ:/A:。表示と内部A/B/C IDの分離・TTS読み・判定・適用範囲は[共通UI仕様](UI_LAYOUT_SPEC.md)の「共通表記の現行ルール」を正とする。後述の旧A/B/C・Question/Response表記はその対応で読み替える。
+
 > **練習8.1（2026-10-30）**：名詞／動作比較、自分の好み、人物指定の技能、程度副詞、最後に同じ場面で2つの表現の聞こえ方を比較する。D5のTarget/Skillセットは廃止。構成・許容回答・選択ごとの録音保持・言い方評価の範囲は[PRACTICE8_SPEC.md](PRACTICE8_SPEC.md)。
 
 > **STT表示ルール（2026-10-30実装）**：[STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)を優先する。既存ひらがな/句読点/空白の保持、練習1のみカタカナをひらがな化、2以降カタカナ保持、Tシャツ/Form例外、専攻は1.2限定。表示専用STTDisplayを全11対象ページへ適用。原文・判定・TTSは分離する。
@@ -10,7 +13,7 @@
 
 練習2のキューに未指定のスペースを入れない。UI_LAYOUT_SPECの現行空白規則とCUE_SPACING_AUDITの一覧を参照。
 
-> **練習2の話者表示（現行）**：2.1/2.2/2.3の全A/B発話で、実際の再生・マイク準備・録音中の画像内A/Bを赤点滅する。終了/中断で解除。Who背景点滅とは別機能。適用箇所・例外・検証は[LESSON2_SPEAKER_AUDIT.md](LESSON2_SPEAKER_AUDIT.md)。
+> **練習2の話者表示（現行）**：2.1/2.2/2.3の全X/Y発話で、実際の再生・マイク準備・録音中の画像内X/Yを赤点滅する。終了/中断で解除。Who背景点滅とは別機能。適用箇所・例外・検証は[LESSON2_SPEAKER_AUDIT.md](LESSON2_SPEAKER_AUDIT.md)。
 
 共通ルールの仕様/実装照合・適用範囲・未完了事項：[COMMON_RULE_AUDIT.md](COMMON_RULE_AUDIT.md)。
 

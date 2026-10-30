@@ -1,5 +1,14 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+- 2026-10-30 / Codex：開始main `d38dc18`、workクリーン。GitHub連携で最新mainとAGENTS/RELAY_WORKFLOW/PROJECT_SPEC/HANDOVERを取得し一致確認。ユーザー確定の文型「N₁はN₂です」、人物Xさん/Yさん/Zさん、会話のQ/Aを実装。
+- 1.1/1.2のHTML title・h1・IndexをN₁はN₂です/ですかへ統一。Question:/Response:は1.2、2.1、2.2/2.3、7.1/7.2/7.3、8.1の既存位置でQ:/A:へ短縮。独立した段や音声ボタン内の役割表示は追加せず、共通の色・基線・音声列を維持。
+- 練習2の人物名は画像のX/Y/Z、キュー・モデルのXさん/Yさん/Zさん、Who/通話案内、所有物/クラスメート/英語キュー/画像代替文まで更新。メアリー・たけし・ロバートは維持。位置・指示語・録音キー・CSS・datasetは既存A/B/Cを保ち、SpeakerGuide.nameで画面名に変換。赤点滅・所有関係・視点を保持。
+- TTS専用はえっくすさん/わいさん/ぜっとさんへ明示。判定は英字/かな/カタカナ/小文字/全角の人物名を照合し、長い英字人名の末尾は変換しない。STT原文表示・一般語のかな規則は変更なし。キャッシュ混在を防ぐため変更したJSの読み込みURLを20261030-labelsへ更新。
+- 共通表記はUI_LAYOUT_SPECの先頭を正とし、PROJECT_SPEC/PRACTICE2_SPEC/PRACTICE22_23_SPEC/LESSON2_SPEAKER_AUDITから参照。AGENTSとPRACTICE8_SPECも更新。旧比較画像/履歴は記録として維持し、Q/R案選定待ちはQ/A採用で解決。Compareの英語印象2択は今回指示の対象外で引き続き確認待ち。
+- 自動検証：labels-and-speakers100、practice21 815、practice2-next439、practice23-cities2566、practice22-umbrellas321、practice81 773、speaker-guide123、lesson2-speaker-pulse1631、common-yn-examples125、section-spacing62、tts-model-script22、stt-display194、audio-relay420、answer-rules279合格。構文/差分正常、2.1/2.2/2.3の通常/ダーク画面を保存し2.2/2.3を目視。音声の実機品質・公開デプロイ・ユーザー確認は未実施。
+- 練習7の追加配置検証：全文体/全幅のexample-orderは長時間のため手動停止（合格と扱わない）。元のテストは変更せず、今回対象の600/1440px・通常/ダーク・Formal/Casual・OFF/Display・漢字の48条件へ絞った一時テストは198項目合格。
+- 保存：GitHub連携でmainへ通常の親子関係を維持して反映する。通常Gitの認証設定は変更しない。公開後は新しいQ/A表記と人物名・実際のTTS読みをユーザー実機で確認する。
+
 - 2026-10-30 / Codex：開始main `07bd13c`、workクリーン。git fetchは認証エラー、GitHub連携のcommit/main照会と最新AGENTS/RELAY_WORKFLOW/PROJECT_SPEC/HANDOVER取得でmainとHEAD一致を確認。通常Gitの認証設定は変更せず、今回の保存はGitHub連携を使う。
 - 8.1 Example4：先頭行のキューと本文は全文、後続5行のキューは副詞／好きから表示。本文の共通する料理を作るのがは〃で省略。〃には省略前の表記に対応するアクセシビリティ用ラベルを設定。音声は全6行とも完全なモデルを再生する。Drill4のキュー・モデル・判定は維持。PRACTICE8_SPEC/UI_LAYOUT_SPEC更新。
 - 検証：practice81 773項目合格。全文体×両表記×6音声の全文再生、6行の表示、〃のラベル、全モード/通常・ダーク/375〜1920pxの既存表示・録音・判定を確認。通常/ダーク画面を保存しダークを目視。公開後の実機と実際の発音品質は未確認。

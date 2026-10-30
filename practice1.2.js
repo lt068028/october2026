@@ -1418,7 +1418,7 @@ function practice2ShowNotice(resultSpan, message) {
         let responseCell = null;
 
         for (const [label, cue, getText, buttonLabel] of lines) {
-            if (label === "Response:" && !responseCue) {
+            if (label === "A:" && !responseCue) {
                 if (!responseCell) {
                     const row = node("tr");
                     const labelCell = node("td");
@@ -1654,7 +1654,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         example(first.container, [
             [
-                "Question:",
+                "Q:",
                 father + (hintMode === "paren" ? "" : "／") + nurse,
                 () => question(
                     word("おとうさん", "お父さん"),
@@ -1662,7 +1662,7 @@ function practice2ShowNotice(resultSpan, message) {
                 )
             ],
             [
-                "Response:",
+                "A:",
                 nurse,
                 () => response(
                     word("かんごし", "看護師"),
@@ -1671,7 +1671,7 @@ function practice2ShowNotice(resultSpan, message) {
                 "🔊🙆"
             ],
             [
-                "Response:",
+                "A:",
                 nurse,
                 () => response(
                     word("かんごし", "看護師"),
@@ -1803,7 +1803,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         example(second.container, [
             [
-                "Question:",
+                "Q:",
                 formatWord(
                     "あなた",
                     "あなた",
@@ -1828,7 +1828,7 @@ function practice2ShowNotice(resultSpan, message) {
                 )
             ],
             [
-                "Response:",
+                "A:",
                 formatWord("あなた", "あなた", "anata", "you")
                 + (hintMode === "paren" ? "" : "／")
                 + formatWord("せんこう", "専攻", "senkō", "major")
@@ -2242,7 +2242,7 @@ function practice2SpeechText(text) {
         value = value.slice(response[0].length);
     }
 
-    // このページの文型「XはYです」の区切り。
+    // このページの文型「N₁はN₂です」の区切り。
     value = value.replace(/は[、,\s]*/, "は、");
 
     // 否定文の読み上げ用の区切り。

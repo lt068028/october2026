@@ -31,7 +31,7 @@ function mock(){
   for(let i=0;i<3;i++){await peopleTargets.nth(i).hover();check(await p.locator('.p21-image-tip-host .tooltip-tip').last().textContent(),['メアリー','たけし','ロバート'][i],'person hover is name only');await p.mouse.move(0,0);}
 
   check(await p.locator('#drill1Container > .info-panel .info-panel-desc').textContent(),'💡Name the item and say its price.','D1 concise instruction');
-  check(await p.locator('#drill2Container > .info-panel .info-panel-desc').textContent(),'💡A: Ask the price and answer.','D2 requested instruction');
+  check(await p.locator('#drill2Container > .info-panel .info-panel-desc').textContent(),'💡X: Ask the price and answer.','D2 requested instruction');
   check(await p.locator('#drill3Container > .info-panel .info-panel-desc').textContent(),'💡Ask with どの＋noun.','D3 keeps instruction icon');
   check(await p.title(),number==='2.2'?'Practice 2.2: この・その・あの・どの — Demonstrative Adjectives':'Practice 2.3: ここ・そこ・あそこ・どこ',number+' page title');
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
@@ -107,7 +107,7 @@ function mock(){
    }
    await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
    for(let i=0;i<3;i++){
-    const q=['その人はBさんのクラスメート','その人はAさんのクラスメート','どの人がBさんのクラスメート'][i]+(style==='formal'?'ですか':'');
+    const q=['その人はYさんのクラスメート','その人はXさんのクラスメート','どの人がYさんのクラスメート'][i]+(style==='formal'?'ですか':'');
     const no=style==='casual'?'ううん':'いいえ';
     const r=(i===2?'あの人':no+['この人は私の弟','この人は私の友達'][i])+end;
     await compare(p.locator(personSection+' .recording-table tr').nth(i*2).locator('.recording-actions button').first(),q,'D4 Set2 question');

@@ -26,11 +26,11 @@ function mock(){
  check(await p.locator('.p2x-example .p23-in-scene-audio button').count(),0,'E1 model controls are beside the cues');
  check(await p.locator('.p23-speaking-models .grammar-highlight').allTextContents(),['ここ','どこ','ここ','どこ','あそこ'],'E1 highlights place demonstratives and questions only');
  const visibleTexts=async(selector)=>p.locator(selector).evaluateAll(es=>es.map(e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return copy.textContent.replace(/\s+/g,'');}));
- check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','わたしは、イギリスです。','','','Cさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
- check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Bさん／どこ','ここ／よる','Cさん／どこ','あそこ／ゆうがた'],'E1 cue sequence');
- check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Cさんは、アメリカです。'],'E1 text-only introductions');
- check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Bさんは、どこですか。','ここは、よるです。','Cさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
- check(await p.locator('.p23-model-speaker').allTextContents(),['A:','A:','B:','','A:','B:',''],'model row roles');
+ check(await visibleTexts('.p23-model-intro'),['わたしは、にほんです。','','わたしは、イギリスです。','','','Zさんは、アメリカです。',''],'E1 Japan and C country text stay as standalone introductions');
+ check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Yさん／どこ','ここ／よる','Zさん／どこ','あそこ／ゆうがた'],'E1 cue sequence');
+ check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Zさんは、アメリカです。'],'E1 text-only introductions');
+ check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Yさんは、どこですか。','ここは、よるです。','Zさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
+ check(await p.locator('.p23-model-speaker').allTextContents(),['X:','X:','Y:','','X:','Y:',''],'model row roles');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item1','Item2'],'D1 has people, WH and Y/N item tasks');
@@ -42,11 +42,11 @@ function mock(){
  check(await p.locator('.p23-practice-picture .p2x-distance-label').count(),0,'Drills omit concept captions');
  check(await p.locator('.p23-call-example .p23-city-time').count(),0,'E1 uses the scene to show time of day');
  check(await p.locator('.p23-practice-picture .p23-city-region').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgba(0, 0, 0, 0)'&&getComputedStyle(e).borderTopColor==='rgba(0, 0, 0, 0)')),true,'Drills omit concept colors and frames');
- const compare=async(button,text)=>{await button.click();check(await p.evaluate(()=>t.spoken.at(-1).text),text,'TTS model');const who=await button.evaluate(e=>e.closest('tr')?.dataset.drillSpeaker||e.dataset.speaker);check(await p.locator('.p23-city-person.is-speaking').allTextContents(),who?[who]:[],'the current speaker flashes for every question, response and model');if(who){check(await p.locator('.is-speaking').evaluate(e=>e.getAnimations().length>0),true,'speaker marker animates');check(await p.locator('.is-speaking').evaluate(e=>getComputedStyle(e).outlineColor),'rgb(230, 0, 18)','speaker border matches Who guide');}await p.evaluate(()=>t.spoken.at(-1).onend?.());check(await p.locator('.p23-city-person.is-speaking').count(),0,'speaker marker stops on completion');};
+ const compare=async(button,text)=>{await button.click();check(await p.evaluate(()=>t.spoken.at(-1).text),text.replace(/Xさん/g,'えっくすさん').replace(/Yさん/g,'わいさん').replace(/Zさん/g,'ぜっとさん'),'TTS model');const who=await button.evaluate(e=>e.closest('tr')?.dataset.drillSpeaker||e.dataset.speaker);check(await p.locator('.p23-city-person.is-speaking').allTextContents(),who?[({A:'X',B:'Y',C:'Z'})[who]]:[],'the current speaker flashes for every question, response and model');if(who){check(await p.locator('.is-speaking').evaluate(e=>e.getAnimations().length>0),true,'speaker marker animates');check(await p.locator('.is-speaking').evaluate(e=>getComputedStyle(e).outlineColor),'rgb(230, 0, 18)','speaker border matches Who guide');}await p.evaluate(()=>t.spoken.at(-1).onend?.());check(await p.locator('.p23-city-person.is-speaking').count(),0,'speaker marker stops on completion');};
 
  for(const style of ['formal','informal','casual'])for(const script of ['hiragana','kanji']){
   await p.locator('#speechStyleControl [data-value="'+style+'"]').click();await p.locator('#scriptModeControl [data-value="'+script+'"]').click();const end={formal:'です。',informal:'だ。',casual:'だよ。'}[style],qend=style==='formal'?'ですか？':'？';
-  const exModels=['ここは、朝'+end,'Bさんは、どこ'+qend,'ここは、夜'+end,'Cさんは、どこ'+qend,'あそこは、夕方'+end];
+  const exModels=['ここは、朝'+end,'Yさんは、どこ'+qend,'ここは、夜'+end,'Zさんは、どこ'+qend,'あそこは、夕方'+end];
   for(let i=0;i<5;i++){
    await compare(p.locator('.p2x-example .p23-example-audio button').nth(i),exModels[i]);
    check(await p.locator('.p23-call-example').getAttribute('data-speaker'),['A','A','B','A','B'][i],'picture switches to the current speaker');
@@ -70,27 +70,27 @@ function mock(){
   }
   for(const set of [0,1,2]){
    await p.locator('[data-set-state="whereDrillSet"] button').nth(set).click();
-   const nouns=set===0?['Bさん','Aさん','Cさん']:['カバン','本','ノート','ペン'];
+   const nouns=set===0?['Yさん','Xさん','Zさん']:['カバン','本','ノート','ペン'];
    const answers=set===0?['喫茶店','銀行','図書館']:['ここ','あそこ','あそこ','ここ'];
    const speakers=set===0?['A','B','B','A','B','A']:['B','A','B','A','B','A','A','B'];
    check(await p.locator('#drill2Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),speakers,'C remains a topic, never a speaking role');
    check(await p.locator('#drill2Container > .p23-city-picture .p23-city-hint').count(),set===0?3:0,'Item1/2 omit facility image hints');
    const responseCues=await visibleTexts('#drill2Container .recording-table tr:nth-child(2) .drill-cue-cell');
-   check(responseCues,set===2?['A·Response:あそこ／ここ','A·Response:そこ／あそこ','A·Response:ここ／あそこ','B·Response:あそこ／ここ']:set===0?['B·Response:ここ／'+ (script==='hiragana'?'きっさてん':'喫茶店'),'A·Response:ここ／'+(script==='hiragana'?'ぎんこう':'銀行'),'A·Response:Cさん／'+(script==='hiragana'?'としょかん':'図書館')]:['A·Response:'+(script==='hiragana'?'かばん':'カバン'),'A·Response:'+(script==='hiragana'?'ほん':'本'),'A·Response:ノート','B·Response:ペン／ここ'],'response cues name the intended subject');
+   check(responseCues,set===2?['X·A:あそこ／ここ','X·A:そこ／あそこ','X·A:ここ／あそこ','Y·A:あそこ／ここ']:set===0?['Y·A:ここ／'+ (script==='hiragana'?'きっさてん':'喫茶店'),'X·A:ここ／'+(script==='hiragana'?'ぎんこう':'銀行'),'X·A:Zさん／'+(script==='hiragana'?'としょかん':'図書館')]:['X·A:'+(script==='hiragana'?'かばん':'カバン'),'X·A:'+(script==='hiragana'?'ほん':'本'),'X·A:ノート','Y·A:ペン／ここ'],'response cues name the intended subject');
    check(await p.locator('#drill2Container .p23-where-item').count(),set===0?0:4,'item sets show four framed objects');
    if(set===2)check(await p.locator('#drill2Container .p21-response-lead').allTextContents(),Array(4).fill(style==='casual'?'ううん…':'いいえ…'),'negative lead follows Stop');
    for(let i=0;i<nouns.length;i++){
     await compare(p.locator('#drill2Container .recording-table tr').nth(i*2).locator('.recording-actions button').first(),nouns[i]+'は、'+(set===2?['あそこ','ここ','そこ','あそこ'][i]:'どこ')+qend);
-    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===2?'':(set===0?['ここ','ここ','Cさん'][i]:nouns[i])+(set===1&&i===2?'も、':'は、'))+answers[i]+end);
+    await compare(p.locator('#drill2Container .recording-table tr').nth(i*2+1).locator('.recording-actions button').first(),(set===2?(style==='casual'?'ううんん、':'いいえ、')+['あそこ','そこ','ここ','あそこ'][i]+(style==='formal'?'じゃ、ないです。':style==='informal'?'じゃない。':'じゃないよ。'):'')+(set===2?'':(set===0?['ここ','ここ','Zさん'][i]:nouns[i])+(set===1&&i===2?'も、':'は、'))+answers[i]+end);
     if(set)check(await p.locator('.p23-where-item.is-target').getAttribute('data-kind'),['bag','book','notebook','pen'][i],'listen highlights the matching object');
    }
   }
   for(const mode of [0,1,2,3]){
    await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
-   const questions=mode===3?['そこは、何曜日','そこは、何曜日','あそこは、何曜日']:mode===0?['そこは、どこ','そこは、どこ','Cさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Cさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
-   const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこも、土曜日']:mode===0?['ここは、フランス','ここは、日本','Cさんは、アメリカ']:mode===1?['ここは、パリ','ここは、大阪','あそこは、ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
-   if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／パリ','A·Response:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'B·Response:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
-   if(mode===3){const dayCard=p.locator('#drill3Container .p23-city-time').first();await dayCard.focus();check(await p.locator('#'+await dayCard.getAttribute('aria-describedby')).textContent(),'にちようび','English day card keeps Japanese hover');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['B·Response:ここ／'+(script==='hiragana'?'どようび':'土曜日'),'A·Response:ここ／'+(script==='hiragana'?'にちようび':'日曜日'),'B·Response:あそこ／'+(script==='hiragana'?'どようび':'土曜日')],'Day cues use Japanese weekdays');const dayHint=p.locator('#drill3Container .recording-table tr').nth(1).locator('.tooltip-wrap');await dayHint.dispatchEvent('pointerover');check(await dayHint.locator('.tooltip-tip').textContent(),'doyōbi, Saturday','Day cue retains normal vocabulary hover');check(await visibleTexts('#drill3Container .p23-city-time'),['Sun.','Sat.','Sat.'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['A·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'B·Question:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'A·Question:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
+   const questions=mode===3?['そこは、何曜日','そこは、何曜日','あそこは、何曜日']:mode===0?['そこは、どこ','そこは、どこ','Zさんは、どこ']:mode===1?['そこは、フランスのどこ','そこは、日本のどこ','Zさんは、アメリカのどこ']:['そこは、何時','そこは、何時','あそこは、何時'];
+   const replies=mode===3?['ここは、土曜日','ここは、日曜日','あそこも、土曜日']:mode===0?['ここは、フランス','ここは、日本','Zさんは、アメリカ']:mode===1?['ここは、パリ','ここは、大阪','あそこは、ロサンゼルス']:['ここは、夜十時','ここは、朝六時','あそこは、午後一時'];
+   if(mode===1)check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['Y·A:ここ／パリ','X·A:ここ／'+(script==='hiragana'?'おおさか':'大阪'),'Y·A:あそこ／ロサンゼルス'],'Cities cues use only deictic and city');
+   if(mode===3){const dayCard=p.locator('#drill3Container .p23-city-time').first();await dayCard.focus();check(await p.locator('#'+await dayCard.getAttribute('aria-describedby')).textContent(),'にちようび','English day card keeps Japanese hover');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(2) .drill-cue-cell'),['Y·A:ここ／'+(script==='hiragana'?'どようび':'土曜日'),'X·A:ここ／'+(script==='hiragana'?'にちようび':'日曜日'),'Y·A:あそこ／'+(script==='hiragana'?'どようび':'土曜日')],'Day cues use Japanese weekdays');const dayHint=p.locator('#drill3Container .recording-table tr').nth(1).locator('.tooltip-wrap');await dayHint.dispatchEvent('pointerover');check(await dayHint.locator('.tooltip-tip').textContent(),'doyōbi, Saturday','Day cue retains normal vocabulary hover');check(await visibleTexts('#drill3Container .p23-city-time'),['Sun.','Sat.','Sat.'],'Day labels match local dates');check(await visibleTexts('#drill3Container .recording-table tr:nth-child(1) .drill-cue-cell'),['X·Q:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'Y·Q:そこ／'+(script==='hiragana'?'なんようび':'何曜日'),'X·Q:あそこ／'+(script==='hiragana'?'なんようび':'何曜日')],'Day question cues');}
    const roles=mode===0?['A','B','B','A','B','A']:['A','B','B','A','A','B'];
    check(await p.locator('#drill3Container .recording-table tr').evaluateAll(es=>es.map(e=>e.dataset.drillSpeaker)),roles,'D3 role and place references are consistent');
    for(let i=0;i<3;i++){
@@ -105,7 +105,7 @@ function mock(){
   for(const [actual,want,text]of results)check(actual,want,text);
  }
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
- await judge([['p23_where_d1_s0_0_r','カフェです','ここは喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','ここは喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Cさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Cさんは図書館です',false]]);
+ await judge([['p23_where_d1_s0_0_r','カフェです','ここは喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','ここは喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Zさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','ノートもあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ノートはあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','あそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートもあそこです',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
@@ -113,9 +113,9 @@ function mock(){
  for(const mode of [0,1,2,3]){
   await p.locator('[data-set-state="cityDialogueSet"] button').nth(mode).click();
   await judge(mode===3?[['p23_dialogue_s3_0_r','土曜日です','ここは土曜日です',true],['p23_dialogue_s3_0_r','日曜日です','ここは土曜日です',false],['p23_dialogue_s3_0_r','そこは土曜日です','ここは土曜日です',false],['p23_dialogue_s3_1_r','にちようびです','ここは日曜日です',true],['p23_dialogue_s3_2_r','あそこも土曜日です','あそこも土曜日です',true],['p23_dialogue_s3_2_r','あそこは土曜日です','あそこも土曜日です',true],['p23_dialogue_s3_2_r','どようびです','あそこも土曜日です',true],['p23_dialogue_s3_2_r','日曜日です','あそこも土曜日です',false]]:mode===0?[
-   ['p23_dialogue_s0_0_r','フランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','私はフランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','そこはフランスです','ここはフランスです',false],['p23_dialogue_s0_2_r','アメリカです','Cさんはアメリカです',true],['p23_dialogue_s0_2_r','あそこはアメリカです','Cさんはアメリカです',true]
+   ['p23_dialogue_s0_0_r','フランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','私はフランスです','ここはフランスです',true],['p23_dialogue_s0_0_r','そこはフランスです','ここはフランスです',false],['p23_dialogue_s0_2_r','アメリカです','Zさんはアメリカです',true],['p23_dialogue_s0_2_r','あそこはアメリカです','Zさんはアメリカです',true]
   ]:mode===1?[
-   ['p23_dialogue_s1_0_r','フランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはフランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','パリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはパリです','ここはパリです',true],['p23_dialogue_s1_0_r','日本のパリです','ここはパリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','あそこはロサンゼルスです',true],['p23_dialogue_s1_2_r','Cさんはアメリカのニューヨークです','あそこはロサンゼルスです',false]
+   ['p23_dialogue_s1_0_r','フランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはフランスのパリです','ここはパリです',true],['p23_dialogue_s1_0_r','パリです','ここはパリです',true],['p23_dialogue_s1_0_r','ここはパリです','ここはパリです',true],['p23_dialogue_s1_0_r','日本のパリです','ここはパリです',false],['p23_dialogue_s1_2_r','ロサンゼルスです','あそこはロサンゼルスです',true],['p23_dialogue_s1_2_r','Zさんはアメリカのニューヨークです','あそこはロサンゼルスです',false]
   ]:[
    ['p23_dialogue_s2_0_r','夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','ここは午後10時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','22時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','パリは夜十時です','ここは夜十時です',true],['p23_dialogue_s2_0_r','そこは夜十時です','ここは夜十時です',false],['p23_dialogue_s2_2_r','午後1時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','13時です','あそこは午後一時です',true],['p23_dialogue_s2_2_r','午前1時です','あそこは午後一時です',false]
   ]);
@@ -125,11 +125,11 @@ function mock(){
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(1).click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),false,'D3 topic results stay separate');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(2).click();
  const questionButton=p.locator('#drill2Container .recording-table tr').first().locator('.recording-actions button').first();const responseButton=p.locator('#drill2Container .recording-table tr').nth(1).locator('.recording-actions button').first();
- await questionButton.click();await p.evaluate(()=>window.oldCityEnd=t.spoken.at(-1).onend);await responseButton.click();await p.evaluate(()=>oldCityEnd?.());check(await p.locator('.p23-city-person.is-speaking').allTextContents(),['A'],'interrupted question does not clear the responder marker');await p.evaluate(()=>t.spoken.at(-1).onend?.());
+ await questionButton.click();await p.evaluate(()=>window.oldCityEnd=t.spoken.at(-1).onend);await responseButton.click();await p.evaluate(()=>oldCityEnd?.());check(await p.locator('.p23-city-person.is-speaking').allTextContents(),['X'],'interrupted question does not clear the responder marker');await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.evaluate(()=>{isAutoPlay=false;const toggle=document.getElementById('toggleRecordMode');if(toggle.checked)toggle.click();t.speaking=true;});
  for(const rowIndex of [0,1]){
   const row=p.locator('#drill2Container .recording-table tr').nth(rowIndex);await row.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await row.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
-  check(await p.locator('.p23-city-person.is-speaking').allTextContents(),[rowIndex===0?'B':'A'],'both questioner and responder flash during recording');
+  check(await p.locator('.p23-city-person.is-speaking').allTextContents(),[rowIndex===0?'Y':'X'],'both questioner and responder flash during recording');
   check(await p.locator('[data-set-state] button, .drill-cue-button').evaluateAll(es=>es.every(e=>e.disabled)),true,'recording locks all task switching');
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await row.textContent().then(s=>s.includes('✅')),true,'question and full response recordings are judged');
   check(await p.locator('.p23-city-person.is-speaking').count(),0,'recording completion clears the marker');

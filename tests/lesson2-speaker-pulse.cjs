@@ -18,7 +18,7 @@ const mock=source.slice(source.indexOf('function mock()'),source.indexOf('(async
     const button=examples.nth(i);const text=await button.textContent();if(!text.includes('きく'))continue;
     await button.click();const who=await button.evaluate(e=>e.dataset.speaker||e.closest('p')?.querySelector('strong')?.textContent.trim()[0]||e.textContent.trim()[0]);
     // Image audio labels retain A/B in originalHtml while Playing.
-    const expected=['A','B'].includes(who)?who:await button.evaluate(e=>(e.dataset.originalHtml||'').match(/[AB]/)?.[0]);
+    const shown=({X:'A',Y:'B'})[who]||who; const fallback=await button.evaluate(e=>(e.dataset.originalHtml||'').match(/[XY]/)?.[0]);const expected=['A','B'].includes(shown)?shown:({X:'A',Y:'B'})[fallback];
     await verify(expected,label+' Example '+i);await p.evaluate(()=>t.spoken.at(-1).onend?.());assert.equal(await p.locator(marker).count(),0,'Example clears');count++;
    }
    const rows=p.locator('tr[data-drill-speaker]');

@@ -301,7 +301,7 @@ function stopAllPlayback() {
 
 // このページの語彙の読みを正規化する。
 function convertToHiragana(text) {
-    let value=String(text??'');
+    let value=SpeakerGuide.readNames(String(text??''));
     for(const o of Practice21.items) value=value.split(o.kanji).join(o.hira);
     return value.replace(/鞄/g,'かばん').replace(/何(?=ですか)/g,'なん').replace(/何/g,'なに');
 }
@@ -610,6 +610,7 @@ function practice2ShowNotice(resultSpan, message) {
 // Practice 2.1：共通UI・文体・判定
 (() => {
     let speechStyle = "formal";
+    const speakerName = who => SpeakerGuide.name(who);
 
     const busy = () => Boolean(
         activeRecognitionSession || practice2State.startingRow
@@ -988,7 +989,7 @@ function practice2ShowNotice(resultSpan, message) {
         let responseCell = null;
 
         for (const [label, cue, getText, buttonLabel] of lines) {
-            if (label === "Response:" && !responseCue) {
+            if (label === "A:" && !responseCue) {
                 if (!responseCell) {
                     const row = node("tr");
                     const labelCell = node("td");
@@ -1208,12 +1209,12 @@ function practice2ShowNotice(resultSpan, message) {
     const shortAnswer=(speaker,o)=>pro(speaker,o)+({formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle]);
     const whichQuestion=o=>question('あなたの'+noun(o),'どれ');
     function prompt(speaker,o,extra='') {
-        return `<span class="p21-cue"><span class="p21-role">[Speaker] ${speaker}</span>／<span>[Object] ${o.id}</span>${extra?'／'+extra:''}</span>`;
+        return `<span class="p21-cue"><span class="p21-role">[Speaker] ${speakerName(speaker)}</span>／<span>[Object] ${o.id}</span>${extra?'／'+extra:''}</span>`;
     }
     function tag(view,speaker,o) {view.row.dataset.speaker=speaker;view.row.dataset.object=o.id;return view;}
     function diagram(container,objects,speaker,target) {
         const box=node('div','p21-diagram p21-drill-scene');box.innerHTML=Practice21.scene(objects,speaker,target);
-        box.append(node('p','p21-scene-context',`Speaker ${speaker} → Object ${target}`));container.append(box);return box;
+        box.append(node('p','p21-scene-context',`Speaker ${speakerName(speaker)} → Object ${target}`));container.append(box);return box;
     }
     function exampleDiagram(container,objects,rows) {
         const box=container.querySelector('.example-box');
@@ -1236,14 +1237,14 @@ function practice2ShowNotice(resultSpan, message) {
         const board=node('div','p21-distance-board');
         const stage=node('div','p21-photo-stage');
         const photo=node('img','p21-photo');photo.src='assets/practice21-table.png';
-        photo.alt='A sits at the left end of a table with a book. B sits at the right end with a bag. A clock hangs on the wall, far from both.';
+        photo.alt='X sits at the left end of a table with a book. Y sits at the right end with a bag. A clock hangs on the wall, far from both.';
         photo.width=1536;photo.height=1024;stage.append(photo);
         const context=node('p','p21-photo-context');
         SpeakerGuide.init(context);
         const people=node('div','p21-distance-people');
         for(const person of ['A','B']) {
             const figure=node('div','p21-distance-person');figure.dataset.person=person;
-            figure.append(node('strong','p21-person-caption',person));people.append(figure);
+            figure.append(node('strong','p21-person-caption',speakerName(person)));people.append(figure);
         }
         stage.append(people);
         const tableRegions=node('div','p21-table-regions');
@@ -1268,7 +1269,7 @@ function practice2ShowNotice(resultSpan, message) {
             people.querySelectorAll('[data-person]').forEach(person=>{
                 const active=person.dataset.person===speaker;
                 person.classList.toggle('is-speaker',active&&Boolean(context.dataset.speaker));
-                person.querySelector('strong').textContent=person.dataset.person;
+                person.querySelector('strong').textContent=speakerName(person.dataset.person);
             });
             context.dataset.nextSpeaker=speaker;
             board.dataset.speaker=speaker;
@@ -1296,7 +1297,7 @@ function practice2ShowNotice(resultSpan, message) {
             area.append(node('span','p21-object-number',`Object ${o.id}`));
             const controls=node('div','p21-item-audio');
             for(const speaker of ['A','B']) {
-                const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speaker}🔊きく`,emphasizeSpeaker);
+                const sound=listen(()=>{perspective(speaker,o.id);return statement(pro(speaker,o),noun(o));},`${speakerName(speaker)}🔊きく`,emphasizeSpeaker);
                 sound.dataset.speaker=speaker;sound.dataset.object=o.id;
                 controls.append(sound);
             }
@@ -1307,7 +1308,7 @@ function practice2ShowNotice(resultSpan, message) {
             const group=node('section','p21-model-group');const heading=node('h3');heading.innerHTML=formatWord(o.hira,o.kanji,o.romaji,o.meaning);group.append(heading);
             for(const speaker of ['A','B']) {
                 const row=node('p','p21-model-line');row.dataset.modelSpeaker=speaker;row.dataset.object=o.id;
-                row.append(node('strong','',`${speaker}：`),modelText(()=>statement(pro(speaker,o),noun(o)),o));group.append(row);
+                row.append(node('strong','',`${speakerName(speaker)}：`),modelText(()=>statement(pro(speaker,o),noun(o)),o));group.append(row);
             }
             modelList.append(group);
         }
@@ -1325,7 +1326,7 @@ function practice2ShowNotice(resultSpan, message) {
         const drill=node('section','p21-drill1');
         const panel=node('div','info-panel info-panel-task1');
         panel.append(node('span','info-panel-title','Drill 1: Describe the objects'),
-            node('span','info-panel-desc',setIndex===0?'💡Complete three sentences as A, then as B.':'💡A: Ask. B: Say no and give the correct name.'));
+            node('span','info-panel-desc',setIndex===0?'💡Complete three sentences as X, then as Y.':'💡X: Ask. Y: Say no and give the correct name.'));
         drill.append(panel);
         const switcher=node('div','p21-set-switcher');
         switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
@@ -1340,10 +1341,10 @@ function practice2ShowNotice(resultSpan, message) {
         const stage=node('div','p21-photo-stage');
         const background=node('img','p21-photo');background.src='assets/practice21-empty-table.png';
         background.width=1536;background.height=1024;
-        background.alt='A sits at the left end of a table; B sits at the right. One object is near each person and another hangs on the distant wall.';
+        background.alt='X sits at the left end of a table; Y sits at the right. One object is near each person and another hangs on the distant wall.';
         stage.append(background);
         for(const person of ['A','B']) {
-            const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);
+            const label=node('strong','p21-distance-person',speakerName(person));label.dataset.person=person;stage.append(label);
         }
         const foodSprites={pencil:[0,0],onigiri:[50,0],bento:[100,0],sandwich:[0,50]};
         const sprites={pen:[0,0],wallet:[50,0],hat:[100,0],notebook:[0,100],dictionary:[50,100],bag:[100,100]};
@@ -1366,7 +1367,7 @@ function practice2ShowNotice(resultSpan, message) {
             picture.dataset.speaker=speaker;
         }
         if(setIndex===0)for(const speaker of ['A','B']) {
-            const current=card(drill,`${speaker}：`);
+            const current=card(drill,`${speakerName(speaker)}：`);
             current.body.closest('.drill-row').classList.add('p21-speaker-practice');
             const ordered=speaker==='A'?objects:[objects[1],objects[0],objects[2]];
             ordered.forEach((o,i)=>{
@@ -1386,10 +1387,10 @@ function practice2ShowNotice(resultSpan, message) {
             objects.forEach((o,i)=>{
                 const current=card(drill,String(i+1));
                 current.body.closest('.drill-row').classList.add('p21-dialogue-practice');
-                const questionCue=`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
+                const questionCue=`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
                 const prefix=speechStyle==='casual'?'ううん':'いいえ';
                 const ending={formal:'です',informal:'だ',casual:'だよ'}[speechStyle];
-                const answerCue=`<strong>B · Response:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
+                const answerCue=`<strong>Y · A:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
                 const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])));
                 const key=`p21_d1_s1_r_${i}`;
                 const answer=()=>`${prefix}、${noun(o)}${ending}。`;
@@ -1426,13 +1427,13 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const stage=node('div','p21-photo-stage');
         const photo=node('img','p21-photo');photo.src='assets/practice21-shelf-table.png';photo.width=1536;photo.height=1024;
-        photo.alt='A sits on the left, B on the right. Objects are near A, near B, and on a shelf far from both.';
+        photo.alt='X sits on the left, Y on the right. Objects are near X, near Y, and on a shelf far from both.';
         stage.append(photo);
         if(picture._whichGuide){
             const dots=node('span','p21-thought-dots');dots.setAttribute('aria-hidden','true');
             if(context)picture._whichGuide.append(dots);else stage.append(dots);stage.append(picture._whichGuide);
         }
-        for(const person of ['A','B']) {const label=node('strong','p21-distance-person',person);label.dataset.person=person;stage.append(label);}
+        for(const person of ['A','B']) {const label=node('strong','p21-distance-person',speakerName(person));label.dataset.person=person;stage.append(label);}
         for(const o of objects) {
             const item=node('div','p21-drill-item p21-choice-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;item.dataset.color=o.colorName||'';
             item.setAttribute('role','img');item.setAttribute('aria-label',`${o.colorName||''} ${o.meaning}`.trim());
@@ -1475,7 +1476,7 @@ function practice2ShowNotice(resultSpan, message) {
     function renderLaterDrills() {
         const item=kind=>Practice21.items.find(o=>o.kind===kind);
         const d2=document.getElementById('drill2Container');d2.hidden=false;
-        const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡A: Ask what each object is. B: Answer.'));d2.append(panel2);
+        const panel2=node('div','info-panel info-panel-task1');panel2.append(node('span','info-panel-title','Drill 2: What is it?'),node('span','info-panel-desc','💡X: Ask what each object is. Y: Answer.'));d2.append(panel2);
         const s2=setButtons(d2,['Set 1','Set 2'],'namingSet');
         const kinds=s2===0?['onigiri','bento','sandwich']:['sweatshirt','jeans','shoes'];
         const objects=kinds.map((kind,i)=>({...item(kind),zone:['A','B','far'][i]}));
@@ -1483,11 +1484,11 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
-            const q=recordingRow(current,'q',`<strong>A · Question:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
+            const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
             const key=`p21_d2_s${s2}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o)),noun(o)+ending];
-            const r=recordingRow(current,'a',`<strong>B · Response:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)));
+            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)));
             englishCue(q,[englishObject(pro('A',o)),'what']);
             englishCue(r,[englishObject(pro('B',o)),o.meaning]);
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
@@ -1498,20 +1499,20 @@ function practice2ShowNotice(resultSpan, message) {
         const showExample=laterScene(exampleBox,exampleObjects,true);
         const mine=exampleObjects[0],yours=exampleObjects[2];
         const intro=()=>statement(word('わたしの','私の')+noun(mine),pro('A',mine));
-        const ask=()=>question('Bさんの'+noun(yours),'どれ');
+        const ask=()=>question('Yさんの'+noun(yours),'どれ');
         const reply=()=>shortAnswer('B',yours);
         for(const [speaker,text] of [['A',ask],['B',reply]]) {
-            const button=listen(()=>{showExample(speaker);return text();},`${speaker}🔊きく`,()=>showExample.announce(speaker));
+            const button=listen(()=>{showExample(speaker);return text();},`${speakerName(speaker)}🔊きく`,()=>showExample.announce(speaker));
             button.classList.add('p21-which-audio');button.dataset.speaker=speaker;
             exampleBox.querySelector('.p21-example-scene-canvas').append(button);
         }
         const models=node('div','p21-which-models');
         for(const [speaker,text,cue,part]of [
             ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'／これ','intro'],
-            ['A',ask,formatWord('Bさんのスマホ','Bさんのスマホ','B-san no sumaho','B’s smartphone')+'／どれ','question'],
+            ['A',ask,formatWord('Yさんのスマホ','Yさんのスマホ','Y-san no sumaho','Y’s smartphone')+'／どれ','question'],
             ['B',reply,'','response']]){
             const line=node('p','p21-which-model-line');line.dataset.part=part;
-            line.append(node('strong','',speaker+'：'));
+            line.append(node('strong','',speakerName(speaker)+'：'));
             if(cue){const prompt=node('span','p21-which-cue');prompt.innerHTML=cue;line.append(prompt,node('span','','👉️'));}
             const sound=listen(()=>{showExample(speaker);return text();},'🔊きく',()=>showExample.announce(speaker));sound.dataset.speaker=speaker;
             line.append(sound,modelText(text,phone,true));models.append(line);
@@ -1528,15 +1529,15 @@ function practice2ShowNotice(resultSpan, message) {
             const o=choices[target],current=card(d3,String(i+1)),asking=s3===0?'A':i===0?'A':'B',answering=s3===0?'B':i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
             const owner=s3===0?(i===0?'B':'A'):answering;
-            const possessive=()=>owner===answering?word('わたしの','私の'):owner+'さんの';
-            const q=recordingRow(current,'q',`<strong>${asking} · Question:</strong> ${s3===0?owner+'さん':formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>s3===0?question(owner+'さんの'+noun(o),'どれ'):whichQuestion(o));
-            const cue=node('span');cue.innerHTML=`<strong>${answering} · Response:</strong> `;
+            const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
+            const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${s3===0?speakerName(owner)+'さん':formatWord('あなた','あなた','anata','you')}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>s3===0?question(speakerName(owner)+'さんの'+noun(o),'どれ'):whichQuestion(o));
+            const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
             const color=node('span','p21-color-cue',o.colorName);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro(answering,o),possessive()+noun(o)),statement(possessive()+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),possessive()),pro(answering,o)+'が'+possessive()+noun(o)+ending];
             const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
-            englishCue(q,[s3===0?owner:'you',o.meaning,'which one']);
+            englishCue(q,[s3===0?speakerName(owner):'you',o.meaning,'which one']);
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);
         });show3('A');
     }
@@ -1827,7 +1828,7 @@ function practice2SpeechText(text) {
         value = value.slice(response[0].length);
     }
 
-    // このページの文型「XはYです」の区切り。
+    // このページの文型「N₁はN₂です」の区切り。
     value = value.replace(/は[、,\s]*/, "は、");
 
     // 否定文の読み上げ用の区切り。
@@ -1836,7 +1837,7 @@ function practice2SpeechText(text) {
         "じゃ、ないです"
     );
 
-    return prefix + value;
+    return SpeakerGuide.readNames(prefix + value);
 }// 比較用の読みを作る。
 // 文末専用の「わ→は」が単語の途中に適用されることを防ぐ。
 function practice2DiffReading(text) {

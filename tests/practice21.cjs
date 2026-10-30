@@ -39,7 +39,7 @@ function mock(){
 
  check(await p.locator('#drill3Container > .p21-drill-picture .p21-which-guide').count(),0,'D3 does not repeat the do explanation');
  check(await p.locator('#drill3Container .p21-set-switcher button').count(),2,'two noun sets after phone example');
- for(const [i,expected]of ['わたしのすまほはこれです','bさんのすまほはどれですか','あれです'].entries()) {await p.locator('.p21-which-models button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
+ for(const [i,expected]of ['わたしのすまほはこれです','わいさんのすまほはどれですか','あれです'].entries()) {await p.locator('.p21-which-models button').nth(i).click();const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});check(text,expected,'Ex2 ownership and reply model');}
 
  check(await p.locator('.p21-model-group h3 .target-word').allTextContents(),['ほん','かばん','とけい'],'three distinct objects');
  check(await p.locator('.p21-distance-board .p21-distance-person').count(),2,'only two people');
@@ -53,7 +53,7 @@ function mock(){
    const pro=object===3?'あれ':(speaker==='A'?object===1:object===2)?'これ':'それ';
    check(text,pro+'は'+noun+(style==='formal'?'です':'だ'),'speaker-relative model');
    check(await p.locator('.p21-distance-board > .p21-photo-context').textContent(),'Who is speaking?','speaker prompt restored after playback');
-   check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed');
+   check(await p.locator('.p21-person-caption').allTextContents(),['X','Y'],'person labels remain fixed');
    check(await p.locator('[data-zone="A"] .p21-area-sound').textContent(),speaker==='A'?'こ':'そ','A area sound follows speaker');
    check(await p.locator('[data-zone="B"] .p21-area-sound').textContent(),speaker==='B'?'こ':'そ','B area sound follows speaker');
    check(await p.locator('[data-zone="far"] .p21-area-sound').textContent(),'あ','far sound stable');
@@ -66,7 +66,7 @@ function mock(){
  await p.evaluate(()=>t.late21?.());
  check(await p.locator('.p21-item-audio button[data-speaker="A"][data-object="1"]').isEnabled(),true,'previous audio button restored');
  check(await p.locator('.p21-item-audio button[data-speaker="B"][data-object="1"]').isDisabled(),true,'new audio remains playing after stale callback');
- check(await p.locator('.p21-person-caption').allTextContents(),['A','B'],'person labels remain fixed after stale callback');
+ check(await p.locator('.p21-person-caption').allTextContents(),['X','Y'],'person labels remain fixed after stale callback');
  check(await p.locator('.p21-distance-board').getAttribute('data-speaker'),'B','stale audio cannot change perspective');
  const attention=await p.locator('.p21-distance-board > .p21-photo-context').evaluate(el=>{
   const animation=el.getAnimations()[0];
@@ -217,7 +217,7 @@ function mock(){
     await p.locator('#drill3Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
     const target=[[1,2],[2,0]][set][Math.floor(i/2)],noun=['じしょ','さいふ'][set];
-    const expected=i%2?(set===0||Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):(set===0?(Math.floor(i/2)===0?'bさんの':'aさんの'):'あなたの')+noun+'はどれ'+(style==='formal'?'ですか':'');
+    const expected=i%2?(set===0||Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):(set===0?(Math.floor(i/2)===0?'わいさんの':'えっくすさんの'):'あなたの')+noun+'はどれ'+(style==='formal'?'ですか':'');
     check(text,expected,'D3 color cue, B perspective');
    }
   }

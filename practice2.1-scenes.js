@@ -51,7 +51,7 @@ const Practice21 = (() => {
             const [x,y]=positions[o.zone][counts[o.zone]++];
             return `<g class="p21-object${o.id===target?' is-target':''}" data-object="${o.id}" transform="translate(${x} ${y})"><rect class="p21-object-frame" x="-43" y="-44" width="86" height="101" rx="9"/>${icon(o)}<text y="49" text-anchor="middle">Object ${o.id}</text></g>`;
         }).join('');
-        return `<svg class="p21-scene" viewBox="0 0 760 320" role="img" aria-labelledby="${titleId}"><title id="${titleId}">A and B face each other. Objects near each person and a shelf far from both.${objects.map(o=>` Object ${o.id}: ${o.meaning}, ${o.zone==='far'?'far from both':'near '+o.zone}.`).join('')}${speaker?' Speaker '+speaker+'.':''}${target?' Target Object '+target+'.':''}</title><rect class="p21-room" x="2" y="2" width="756" height="316" rx="12"/><rect class="p21-far" x="220" y="20" width="320" height="138" rx="12"/><text x="380" y="43" text-anchor="middle">Far from A and B</text><rect class="p21-person-zone" x="28" y="163" width="290" height="143" rx="16"/><rect class="p21-person-zone" x="442" y="163" width="290" height="143" rx="16"/><path class="p21-facing" d="M102 240H130M126 233L134 240L126 247M658 240H630M634 233L626 240L634 247"/>${['A','B'].map((p,i)=>`<g class="p21-person${p===speaker?' is-speaker':''}" transform="translate(${i?690:70} 215)"><circle r="26"/><text y="7" text-anchor="middle">${p}</text><text class="p21-speaking-label" y="57" text-anchor="middle">Speaking</text><text class="p21-listening-label" y="57" text-anchor="middle">Listening</text></g>`).join('')}${marks}</svg>`;
+        return `<svg class="p21-scene" viewBox="0 0 760 320" role="img" aria-labelledby="${titleId}"><title id="${titleId}">X and Y face each other. Objects near each person and a shelf far from both.${objects.map(o=>` Object ${o.id}: ${o.meaning}, ${o.zone==='far'?'far from both':'near '+SpeakerGuide.name(o.zone)}.`).join('')}${speaker?' Speaker '+SpeakerGuide.name(speaker)+'.':''}${target?' Target Object '+target+'.':''}</title><rect class="p21-room" x="2" y="2" width="756" height="316" rx="12"/><rect class="p21-far" x="220" y="20" width="320" height="138" rx="12"/><text x="380" y="43" text-anchor="middle">Far from X and Y</text><rect class="p21-person-zone" x="28" y="163" width="290" height="143" rx="16"/><rect class="p21-person-zone" x="442" y="163" width="290" height="143" rx="16"/><path class="p21-facing" d="M102 240H130M126 233L134 240L126 247M658 240H630M634 233L626 240L634 247"/>${['A','B'].map((p,i)=>`<g class="p21-person${p===speaker?' is-speaker':''}" transform="translate(${i?690:70} 215)"><circle r="26"/><text y="7" text-anchor="middle">${SpeakerGuide.name(p)}</text><text class="p21-speaking-label" y="57" text-anchor="middle">Speaking</text><text class="p21-listening-label" y="57" text-anchor="middle">Listening</text></g>`).join('')}${marks}</svg>`;
     }
     function refreshTargets() {
         document.querySelectorAll('.practice21-page .recording-table tr[data-speaker], .practice21-page .drill-example-table tr[data-speaker]').forEach(row=>{
@@ -66,12 +66,12 @@ const Practice21 = (() => {
         if(!svg)return;
         svg.querySelectorAll('.p21-object').forEach(o=>o.classList.toggle('is-target',o.dataset.object===row.dataset.object));
         svg.querySelectorAll('.p21-person').forEach(p=>{
-            const selected=p.querySelector('text').textContent===row.dataset.speaker;
+            const selected=p.querySelector('text').textContent===SpeakerGuide.name(row.dataset.speaker);
             p.classList.toggle('is-speaker',selected);
         });
         const title=svg.querySelector('title');
-        title.textContent=title.textContent.replace(/ Speaker [AB]\./,` Speaker ${row.dataset.speaker}.`).replace(/ Target Object \d+\./,` Target Object ${row.dataset.object}.`);
-        root.querySelector('.p21-scene-context').textContent=`Speaker ${row.dataset.speaker} → Object ${row.dataset.object}`;
+        title.textContent=title.textContent.replace(/ Speaker [XY]\./,` Speaker ${SpeakerGuide.name(row.dataset.speaker)}.`).replace(/ Target Object \d+\./,` Target Object ${row.dataset.object}.`);
+        root.querySelector('.p21-scene-context').textContent=`Speaker ${SpeakerGuide.name(row.dataset.speaker)} → Object ${row.dataset.object}`;
     }
     return {items,variants,tasks3,scene,pronoun,refreshTargets,icon};
 })();

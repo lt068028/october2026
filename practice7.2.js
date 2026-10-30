@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const label = node('td');
 
         label.append(
-            node('strong', 'example-label-title', 'Question:')
+            node('strong', 'example-label-title', 'Q:')
         );
 
         const cues = node('td');
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ['yes', 'no'].forEach((kind, index) => {
             const row = node('tr', 'example-response-row');
             const label = node('td');
-            if (!index) label.append(node('strong', 'example-label-title', 'Response:'));
+            if (!index) label.append(node('strong', 'example-label-title', 'A:'));
             const cues = node('td', 'example-empty-cell');
             const arrow = node('td', 'example-empty-cell');
             const sound = node('td', 'example-audio-cell');

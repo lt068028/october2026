@@ -192,7 +192,7 @@ const sections = [
 
         example: pair(
             row(
-                "Question:",
+                "Q:",
                 ["night8", "do"],
                 "昨日の夜8時、何をしていましたか。",
                 "きのうのよる8じ、なにをしていましたか。",
@@ -203,7 +203,7 @@ const sections = [
                 ]
             ),
             row(
-                "Response:",
+                "A:",
                 ["night8", "wait"],
                 "昨日の夜8時、友だちを待っていました。",
                 "きのうのよる8じ、ともだちをまっていました。",
@@ -218,13 +218,13 @@ const sections = [
         items: [
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["morning", "do"],
                     "昨日の午前中、何をしていましたか。",
                     "きのうのごぜんちゅう、なにをしていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["morning", "mother", "help"],
                     "昨日の午前中、母を手伝っていました。",
                     "きのうのごぜんちゅう、ははをてつだっていました。"
@@ -232,13 +232,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["afternoon", "do"],
                     "昨日の午後、何をしていましたか。",
                     "きのうのごご、なにをしていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["afternoon", "sister", "english", "teach"],
                     "昨日の午後、妹に英語を教えていました。",
                     "きのうのごご、いもうとにえいごをおしえていました。"
@@ -246,13 +246,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["night9", "do"],
                     "昨日の夜9時、何をしていましたか。",
                     "きのうのよる9じ、なにをしていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["night9", "kanji", "memorize"],
                     "昨日の夜9時、漢字を覚えていました。",
                     "きのうのよる9じ、かんじをおぼえていました。"
@@ -269,14 +269,14 @@ const sections = [
 
         example: pair(
             row(
-                "Question:",
+                "Q:",
                 ["until", "sleep"],
                 "いつまで寝ていましたか。",
                 "いつまでねていましたか。",
                 ["いつまで", "ていましたか"]
             ),
             row(
-                "Response:",
+                "A:",
                 ["nine", "sleep"],
                 "朝9時まで寝ていました。",
                 "あさ9じまでねていました。",
@@ -287,13 +287,13 @@ const sections = [
         items: [
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["until", "company", "work"],
                     "いつまであの会社で働いていましたか。",
                     "いつまであのかいしゃではたらいていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["lastyear", "company", "work"],
                     "去年まで、あの会社で働いていました。",
                     "きょねんまで、あのかいしゃではたらいていました。"
@@ -301,13 +301,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["until", "tokyo", "live"],
                     "いつまで東京に住んでいましたか。",
                     "いつまでとうきょうにすんでいましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["three", "tokyo", "live"],
                     "3年前まで、東京に住んでいました。",
                     "3ねんまえまで、とうきょうにすんでいました。"
@@ -315,13 +315,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["until", "marry"],
                     "いつまで結婚していましたか。",
                     "いつまでけっこんしていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["lastyear", "marry"],
                     "去年まで結婚していました。",
                     "きょねんまでけっこんしていました。"
@@ -329,13 +329,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["until", "bicycle", "borrow"],
                     "いつまで自転車を借りていましたか。",
                     "いつまでじてんしゃをかりていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["untilYesterday", "bicycle", "borrow"],
                     "昨日まで自転車を借りていました。",
                     "きのうまでじてんしゃをかりていました。"
@@ -343,13 +343,13 @@ const sections = [
             ),
             pair(
                 row(
-                    "Question:",
+                    "Q:",
                     ["until", "homework", "forget"],
                     "いつまで宿題のことを忘れていましたか。",
                     "いつまでしゅくだいのことをわすれていましたか。"
                 ),
                 row(
-                    "Response:",
+                    "A:",
                     ["earlier", "homework", "forget"],
                     "さっきまで、宿題のことを忘れていました。",
                     "さっきまで、しゅくだいのことをわすれていました。"
@@ -418,13 +418,13 @@ sections[2].instruction =
 
 sections[2].items[0] = pair(
     row(
-        'Question:',
+        'Q:',
         ['until', 'car', 'hold'],
         'いつまで車を持っていましたか。',
         'いつまでくるまをもっていましたか。'
     ),
     row(
-        'Response:',
+        'A:',
         ['lastyear', 'car', 'hold'],
         '去年まで、車を持っていました。',
         'きょねんまで、くるまをもっていました。'
@@ -546,7 +546,7 @@ function convert(text, question = false, keepParticles = false) {
 }
 
 function model(r) {
-    const question = r.label === 'Question:';
+    const question = r.label === 'Q:';
 
     return {
         ...r,
@@ -1200,7 +1200,7 @@ function render() {
         const eb = document.createElement('tbody');
         et.append(eb);
 
-        const questionResponse = section.example.some(source => source.label === 'Question:');
+        const questionResponse = section.example.some(source => source.label === 'Q:');
         if (questionResponse) {
             const heading = document.createElement('div');
             heading.className = 'example-category-heading';
@@ -1214,7 +1214,7 @@ function render() {
             const kind = document.createElement('td');
             kind.className = 'p73-example-kind';
             if (!questionResponse) kind.innerHTML = badge(r, si);
-            if (/^(Question|Response):$/.test(r.label)) {
+            if (/^(Q|A):$/.test(r.label)) {
                 const role = document.createElement('strong');
                 role.className = 'example-label-title';
                 role.textContent = r.label;
@@ -2159,7 +2159,7 @@ function qa73Model(cues, kind) {
             : (speechStyle === 'casual' ? 'よ。' : '。'));
 
     return Object.assign(row(
-        question ? 'Question:' : 'Response:',
+        question ? 'Q:' : 'A:',
         cues,
         text,
         hira(text),
@@ -2364,13 +2364,13 @@ render = function () {
     const q = qa73Model(qa73.example, 'q');
     const tr = document.createElement('tr');
 
-    ['Question:', null, '👉', null, null]
+    ['Q:', null, '👉', null, null]
         .forEach((content, index) => {
             const td = document.createElement('td');
 
             if (index === 0) {
                 td.className = 'p73-example-kind';
-                td.innerHTML = '<strong class="example-label-title">Question:</strong>';
+                td.innerHTML = '<strong class="example-label-title">Q:</strong>';
             }
 
             if (index === 1) {
@@ -2398,7 +2398,7 @@ render = function () {
         const row = document.createElement('tr');
         row.className = 'example-response-row';
         const cells = Array.from({length: 5}, () => document.createElement('td'));
-        if (!index) cells[0].innerHTML = '<strong class="example-label-title">Response:</strong>';
+        if (!index) cells[0].innerHTML = '<strong class="example-label-title">A:</strong>';
         cells[1].className = cells[2].className = 'example-empty-cell';
         cells[3].className = 'example-audio-cell';
         cells[4].className = 'p73-example-model';

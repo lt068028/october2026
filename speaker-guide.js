@@ -1,5 +1,8 @@
 // One state and animation policy for the Lesson 2 speaker guides.
 window.SpeakerGuide = Object.freeze({
+    // Stable perspective IDs stay A/B/C; only learner-facing names change.
+    name(who) { return ({A:'X',B:'Y',C:'Z'})[who] || who; },
+    readNames(text) { return String(text).replace(/(?<![A-Za-z])[XYZ]さん/gi, name => ({'Xさん':'えっくすさん','Yさん':'わいさん','Zさん':'ぜっとさん'})[name.toUpperCase()]); },
     init(guide) {
         guide.replaceChildren();
         const prompt=document.createElement('span'),speaker=document.createElement('strong');
@@ -19,7 +22,7 @@ window.SpeakerGuide = Object.freeze({
         if(!guide?.isConnected||!['A','B'].includes(who))return;
         guide.dataset.speaker=who;
         guide.querySelector('span').textContent='';guide.querySelector('span').hidden=true;
-        const label=guide.querySelector('.p21-current-speaker');label.hidden=false;label.textContent=guide.dataset.playingLabel||`${who} is speaking`;
+        const label=guide.querySelector('.p21-current-speaker');label.hidden=false;label.textContent=guide.dataset.playingLabel||`${this.name(who)} is speaking`;
         guide.classList.add('is-emphasized');guide.getAnimations().forEach(animation=>animation.cancel());
         const call=guide.classList.contains('p23-call-note');
         const normal={backgroundColor:call?'transparent':'#fff5f5'},active={backgroundColor:call?'rgba(128,128,128,.16)':'#fecaca'};
