@@ -17,7 +17,29 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='4px')),true);
   check(await lines.evaluateAll(es=>es.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),true);
   check(await lines.evaluateAll(es=>es.every(e=>getComputedStyle(e).alignItems==='baseline')),true);
+  const arrows=await p.locator('.p2x-food-example .p22-example-arrow').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().x));check(Math.abs(arrows[0]-arrows[1])<1,true);
   check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).backgroundColor==='rgb(255, 254, 240)' && Number(getComputedStyle(e).fontWeight)>=700)),true);
+ }
+ // Audit every visible audio row, then every alternate set in D1-D5.
+ async function auditAudio(){
+  const controls=p.locator('.p2x-example .p2x-audio button, .p22-conversation-line button, tr[data-speaker-recording-key] .recording-actions button:first-child');
+  const n=await controls.count();
+  for(let i=0;i<n;i++){
+   const b=controls.nth(i);await b.click();
+   check(await b.evaluate(e=>{
+    const row=e.closest('tr'),ex=e.closest('.example-box'),who=row?.dataset.drillSpeaker||e.dataset.speaker||ex?.querySelector('.p2x-picture')?.dataset.speaker;
+    const badge=row?.querySelector('.p22-person-badge')||e.closest('.p22-conversation-line')?.querySelector('.p22-person-badge')||[...ex.querySelectorAll('.p2x-speaker-group .p22-person-badge')].find(x=>x.dataset.person===who);
+    const picture=row?row.closest('[id$="Container"]')?.querySelector(':scope > .p2x-picture'):ex?.querySelector('.p2x-picture');
+    const image=picture?.querySelector('.p2x-person[data-person="'+who+'"]');
+    return !!badge?.classList.contains('is-speaking')&&!!image?.classList.contains('is-speaking');
+   }),true);
+   await p.evaluate(()=>t.spoken.at(-1).onend());check(await p.locator('.p22-person-badge.is-speaking').count(),0);
+  }
+ }
+ await auditAudio();
+ for(let drill=1;drill<=5;drill++){
+  const switcher=p.locator('#drill'+drill+'Container .p21-set-switcher button');
+  if(await switcher.count()>1){await switcher.nth(1).click();await auditAudio();}
  }
  const button=p.locator('.p2x-price-example > .p22-conversation-line button').first();await button.click();
  check(await p.locator('.p2x-price-example > p .p22-person-badge.is-speaking').allTextContents(),['X']);

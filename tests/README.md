@@ -179,4 +179,4 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 `node tests/labels-and-speakers.cjs`で、1.1/1.2のtitle・h1・Index、全7対象JSのQ/A、練習2全3ページ・各セットのX/Y/Zラベルと旧名の不存在、文字/ひらがな/カタカナの名前照合、TTS専用読みを確認する。内部A/B/Cと画面名は別の期待値で検証。既存のpractice21/practice2-next/practice23-cities/practice22-umbrellas/speaker-guide/lesson2-speaker-pulseも新しい表示・モデルに合わせた期待値で維持する。
 
-- `node tests/practice22-qa.cjs`：2.2限定Q/A円形・人物角丸の試験。順序、幅別表示、話者点滅、再描画、2.3への非影響。
+- `node tests/practice22-qa.cjs`：2.2限定Q/A円形・人物角丸の試験。順序、幅別表示、Ex3矢印の共有列、Ex1/Ex2/Ex3とD1〜D5両セットの図内外話者点滅・終了解除、再描画、2.3への非影響。

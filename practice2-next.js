@@ -259,8 +259,10 @@ function practice2SyncPhotoSpeaker() {
     const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture');
     const who = row?.dataset.drillSpeaker || control?.dataset.speaker || picture?.dataset.speaker;
     document.querySelectorAll('[data-practice="2.2"] .p22-person-badge').forEach(e => {
+        const group=e.closest('.p2x-speaker-group');
         const owner=e.closest('tr') || e.closest('.p22-conversation-line');
-        const active=key ? owner===row : Boolean(control && owner?.contains(control));
+        const groupPicture=group?.closest('.example-box')?.querySelector('.p2x-picture');
+        const active=group ? Boolean(key || control) && groupPicture===picture : key ? owner===row : Boolean(control && owner?.contains(control));
         e.classList.toggle('is-speaking',active && e.dataset.person===who);
     });
     document.querySelectorAll('.p21-distance-person[data-person], .p2x-person[data-person]').forEach(e => {

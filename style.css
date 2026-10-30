@@ -3243,3 +3243,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 [data-practice="2.2"] .p22-conversation-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
 [data-practice="2.2"] .p22-cue-arrow { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
 @media(prefers-reduced-motion: reduce) { [data-practice="2.2"] .p22-person-badge.is-speaking { animation: none; background: #fecaca; } }
+
+/* Ex3 shares intrinsic cue/arrow/audio tracks across Q and A. */
+[data-practice="2.2"] .p2x-food-example { display: grid; grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); column-gap: 8px; }
+[data-practice="2.2"] .p2x-food-example > .p2x-picture { grid-column: 1 / -1; }
+[data-practice="2.2"] .p2x-food-example > .p22-conversation-line { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; column-gap: 8px; }
+[data-practice="2.2"] .p2x-food-example .p22-cue-arrow { display: contents; }
+[data-practice="2.2"] .p2x-food-example .p22-example-cue { min-width: 0; overflow-wrap: anywhere; }
+@media(max-width:700px) {
+ [data-practice="2.2"] .p2x-food-example { grid-template-columns: max-content minmax(0,1fr) max-content max-content; }
+ [data-practice="2.2"] .p2x-food-example > .p22-conversation-line > span:last-child { grid-column: 2 / -1; }
+}

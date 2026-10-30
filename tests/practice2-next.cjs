@@ -195,6 +195,8 @@ function mock(){
   const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});
   await first.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
   check(await p.locator('#drill1Container .p21-set-switcher button').first().isDisabled(),true,number+' sets locked in recording');
+  check(await first.locator('.p22-person-badge.is-speaking').allTextContents(),['Y'],'outside speaker badge pulses in recording');
+  check(await p.locator('#drill1Container > .p2x-picture .p2x-person.is-speaking').allTextContents(),['Y'],'picture speaker pulses with outside badge');
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
   check(await first.textContent().then(s=>s.includes('✅')),true,number+' actual record and recognition');
