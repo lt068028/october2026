@@ -258,6 +258,11 @@ function practice2SyncPhotoSpeaker() {
     const scope = row?.closest('.p21-drill1') || row?.closest('[id$="Container"]');
     const picture = row ? scope?.querySelector(':scope > .p21-drill-picture, :scope > .p2x-picture') : control?.closest('.example-box')?.querySelector('.p21-distance-board, .p21-drill-picture, .p2x-picture');
     const who = row?.dataset.drillSpeaker || control?.dataset.speaker || picture?.dataset.speaker;
+    document.querySelectorAll('[data-practice="2.2"] .p22-person-badge').forEach(e => {
+        const owner=e.closest('tr') || e.closest('.p22-conversation-line');
+        const active=key ? owner===row : Boolean(control && owner?.contains(control));
+        e.classList.toggle('is-speaking',active && e.dataset.person===who);
+    });
     document.querySelectorAll('.p21-distance-person[data-person], .p2x-person[data-person]').forEach(e => {
         const owner = e.closest('.p21-distance-board, .p21-drill-picture, .p2x-picture');
         e.classList.toggle('is-speaking', Boolean(key || control) && owner === picture && ['A','B'].includes(who) && e.dataset.person === who);
@@ -1639,6 +1644,28 @@ function practice2ShowNotice(resultSpan, message) {
         cuePanel.append(copy,toggle);d4.append(cuePanel);
     }
 
+    // Practice 2.2 pilot: a role circle and a separate, picture-matched person badge.
+    function formatConversationRoles() {
+        if (!is22) return;
+        document.querySelectorAll('.drill-cue-cell > strong, .p2x-dialogue-example > p > strong').forEach(label => {
+            const match = label.textContent.trim().match(/^([XYZ]) · ([QA]):$/);
+            if (!match) return;
+            const [,name,role] = match;
+            label.className = 'p22-conversation-role';
+            const circle = node('span','p22-role-circle',role);
+            circle.setAttribute('aria-label',role === 'Q' ? 'Question' : 'Answer');
+            const person = node('span','p22-person-badge',name);
+            person.dataset.person = ({X:'A',Y:'B',Z:'C'})[name];
+            label.replaceChildren(circle,person);
+        });
+        document.querySelectorAll('.drill-cue-cell > strong, .p2x-speaker-group > h3').forEach(label => {
+            const match=label.textContent.trim().match(/^([XYZ]):?$/);
+            if(!match)return;
+            label.classList.add('p22-person-badge');label.textContent=match[1];
+            label.dataset.person=({X:'A',Y:'B',Z:'C'})[match[1]];
+        });
+    }
+
     function renderSections() {
         shopAudioCleanups.splice(0).forEach(cleanup=>cleanup());
         for(const id of ['drill1Container','drill2Container','drill3Container','drill4Container','drill5Container']){const c=document.getElementById(id);if(c){c.replaceChildren();c.hidden=false;}}
@@ -1697,12 +1724,17 @@ function practice2ShowNotice(resultSpan, message) {
         select('B');
     }
 
+    function exampleCue(html) {
+        const cue=node('span','p22-example-cue');cue.innerHTML=html;
+        const group=node('span','p22-cue-arrow');group.append(cue,node('span','p22-example-arrow','👉️'));
+        return group;
+    }
     function priceConversationExample(container) {
         const objects=merchandise('clock');objects[1]={...objects[1],priceNumber:4000,priceHira:'よんせんえん',priceKanji:'四千円'};
         const sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
-        const select=scene(box,objects,{model:true}),q=node('p'),r=node('p');
-        q.append(node('strong','','X · Q: '),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
-        r.append(node('strong','','Y · A: '),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
+        const select=scene(box,objects,{model:true}),q=node('p','example-text-layout p22-conversation-line'),r=node('p','example-text-layout p22-conversation-line');
+        q.append(node('strong','','X · Q: '),exampleCue(`${demonstrative('A',sample)}／${vocabulary(sample)}／${formatWord('いくら','いくら','ikura','how much')}`),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
+        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}／${vocabulary(sample)}／${priceCue(sample)}`),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
     }
     function renderPriceDialogue(container) {
         priceConversationExample(container);
@@ -1719,9 +1751,9 @@ function practice2ShowNotice(resultSpan, message) {
         const exampleObjects=merchandise('fruit'),sample=exampleObjects[0],box=node('section','example-box p2x-dialogue-example p2x-food-example');
         const selectExample=scene(box,exampleObjects,{which:true,model:true});
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
-        const q=node('p'),r=node('p');
-        q.append(node('strong','','X · Q: '),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
-        r.append(node('strong','','Y · A: '),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
+        const q=node('p','example-text-layout p22-conversation-line'),r=node('p','example-text-layout p22-conversation-line');
+        q.append(node('strong','','X · Q: '),exampleCue(`どの／${vocabulary(sample)}／${priceCue(sample)}`),listen(()=>{selectExample('A',sample.zone);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
+        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}／${vocabulary(sample)}`),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの＋Noun','💡Ask with どの＋noun.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});
         objects.forEach((o,i)=>{
@@ -2080,6 +2112,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         installSettings();
         renderSections();
+        formatConversationRoles();
         alignColumns();
         practice2SyncRecordingUI();
 

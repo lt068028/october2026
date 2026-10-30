@@ -3234,3 +3234,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .degree-positive { color: var(--degree-positive-color); }
 .degree-negative { color: var(--degree-negative-color); }
 .degree-adverb, .custom-select.degree-adverb { font-weight: 700; }
+
+/* Practice 2.2 approved Q/A pilot: circles are roles; rounded rectangles are people. */
+[data-practice="2.2"] .p22-conversation-role { display: inline-flex; align-items: baseline; gap: 6px; white-space: nowrap; color: inherit; }
+[data-practice="2.2"] .p22-role-circle { display: inline-flex; justify-content: center; align-items: center; width: 1.35em; height: 1.35em; border: 1px solid currentColor; border-radius: 50%; font-size: .85em; line-height: 1; }
+[data-practice="2.2"] .p22-person-badge { display: inline-block; padding: 0 5px; color: #111827; background: #fffef0; border-radius: 4px; }
+[data-practice="2.2"] .p22-person-badge.is-speaking { color: #dc2626; outline: 2px solid #e60012; animation: p23-speaking .8s ease-in-out infinite; }
+[data-practice="2.2"] .p22-conversation-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+[data-practice="2.2"] .p22-cue-arrow { display: inline-flex; align-items: baseline; gap: 4px; flex-wrap: wrap; }
+@media(prefers-reduced-motion: reduce) { [data-practice="2.2"] .p22-person-badge.is-speaking { animation: none; background: #fecaca; } }
