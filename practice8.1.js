@@ -57,6 +57,7 @@ W("person","この人","このひと","kono hito","this person");
 W("siblings","兄弟","きょうだい","kyōdai","siblings");
 W("write","書く","かく","kaku","to write");
 W("kanji","漢字","かんじ","kanji","kanji");
+W("katakana","カタカナ","カタカナ","katakana","katakana");
 W("cook","料理","りょうり","ryōri","cooking");
 W("sing","歌う","うたう","utau","to sing");
 W("song","歌","うた","uta","song");
@@ -113,7 +114,7 @@ const selfActions=[action('coffee','drink'),action('room','clean'),action('break
 const people=[
     {subject:'classmate',...action('grammar','teach'),adjective:'good'},
     {subject:'student',...action('letter','write'),adjective:'good'},
-    {subject:'child',...action('kanji','remember'),adjective:'difficult'},
+    {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
 ];
 const degrees=[
