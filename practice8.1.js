@@ -750,10 +750,11 @@ function render() {
                 if(!ri){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
                 const cue=node('td','prompt-label drill-cue-cell');
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
-                const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);addSelect(cue,r,key);
-                if(r.selectKind==='adverb'){cue.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cue.append(tail);}
+                const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
+                const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
+                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
-                    const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);
+                    const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
@@ -784,6 +785,16 @@ function measureCues() {
         ex.style.setProperty('--degree-prefix-width',measure(prefix)+'px');
     });
     document.querySelectorAll('.p81-section').forEach(group=>{
+        // Share the longest English label width within this Drill, not its text length.
+        group.style.removeProperty('--p81-kind-width');
+        const labels=[...group.querySelectorAll('.p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind')];
+        if(labels.length){
+            const width=Math.max(...labels.map(label=>{
+                const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
+                group.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;
+            }));
+            group.style.setProperty('--p81-kind-width',width+'px');
+        }
         const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
         for(const cell of cells) {
             const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(e=>e.remove());

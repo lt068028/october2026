@@ -3352,3 +3352,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .practice82-page #drill1 .p81-example-row > button { grid-column: 3; }
  .practice82-page #drill1 .p81-model { grid-column: 1 / -1; }
 }
+
+/* Keep Japanese cue starts aligned after English labels within each Practice 8.1 Drill. */
+.practice81-page .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind { display: inline-block; width: var(--p81-kind-width,max-content); white-space: nowrap; }
+
+.practice81-page .p81-card .prompt-label:has(> .p81-cue-body) { display: grid; grid-template-columns: var(--p81-kind-width,max-content) minmax(0,1fr); column-gap: 8px; align-items: baseline; }
+.practice81-page .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind { margin-right: 0; }
+.practice81-page .p81-cue-body { min-width: 0; }
+.practice81-page .p81-cue-body .display-cue-unit > .target-word { white-space: normal; overflow-wrap: anywhere; }
+.practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
