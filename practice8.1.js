@@ -113,18 +113,18 @@ const comparisons=[
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
  const explanations={
-  Skillful:'An outside judgment of someone’s ability. You can praise a skill even if you do not share it.',
-  Observed:'A guess, based on observation, about someone’s own strengths or difficulties.',
-  Poor:'Judges ability: the person does not perform the activity well.',
-  Uncomfortable:'The activity feels uncomfortable; this does not necessarily mean the person lacks skill.',
-  Unnatural:'下手 describes skill. Since 早く起きる is not a skill, 苦手 is more natural.',
-  Boastful:'上手 for your own ability can sound like self-praise.',
-  Natural:'得意 naturally describes your own strength without sounding boastful.',
-  Praise:'Praises a friend’s demonstrated ability; you do not need to share that skill.',
-  Blunt:'下手 directly judges a friend’s ability and can sound hurtful.',
-  Tactful:'苦手 describes difficulty more gently than judging someone’s ability.',
-  Presumptuous:'A beginner judging a teacher’s Japanese may sound overconfident.',
-  Harsh:'下手 is a strong negative judgment, especially about a teacher’s expertise.'
+  Skillful:'The speaker thinks the subject is good at the activity.',
+  Observed:'The speaker guesses that the subject sees the activity as a personal strength or difficulty.',
+  Poor:'The speaker thinks the subject does not do the activity well.',
+  Uncomfortable:'The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill.',
+  Unnatural:'The speaker thinks the subject does not do the activity well. 下手 is usually used for skills, so 苦手 is more natural for waking up early.',
+  Boastful:'When describing their own ability, the speaker may sound as if they are praising themselves.',
+  Natural:'When describing their own strength, the speaker sounds natural and does not seem to be boasting.',
+  Praise:'The speaker praises an ability they have observed; they do not need to share that skill.',
+  Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
+  Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
+  Presumptuous:'A beginner may sound overconfident when judging a teacher’s Japanese.',
+  Harsh:'The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s expertise.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
