@@ -129,11 +129,11 @@ comparisons.forEach(spec=>{
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
 const sections=[
-    {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
-    {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
-    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
-    {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: Choose, Record & Learn',instruction:'💡Choose the adjective that fits each label. Record the sentence, then read the explanation.'}
+    {title:'Drill 1: Nounが好き／Verbのが好き'},
+    {title:'Drill 2: Verbのが好き／きらい'},
+    {title:'Drill 3: Verbのが上手／苦手'},
+    {title:'Drill 4: Degree adverbs'},
+    {title:'Drill 5: How Do These Expressions Differ?'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -755,7 +755,7 @@ function render() {
         const group=node('section','p81-section');group.id='drill'+(si+1);
         addExample(group,si);
         const panel=node('div','info-panel info-panel-task1');
-        panel.append(node('span','info-panel-title',section.title),node('span','info-panel-desc',section.instruction));group.append(panel);
+        panel.append(node('span','info-panel-title',section.title));group.append(panel);
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
@@ -771,7 +771,7 @@ function render() {
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
-                if(r.comparison)cueBody.append(listen);
+                if(r.comparison){listen.classList.add('p81-cue-listen');cueBody.append(listen);}
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
@@ -804,16 +804,18 @@ function measureCues() {
         ex.style.setProperty('--degree-prefix-width',measure(prefix)+'px');
     });
     document.querySelectorAll('.p81-section').forEach(group=>{
-        // Share the longest English label width within this Drill, not its text length.
+        // Align the Japanese cue starts within each comparison pair, not across the Drill.
         group.style.removeProperty('--p81-kind-width');
-        const labels=[...group.querySelectorAll('.p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind')];
-        if(labels.length){
+        group.querySelectorAll('.p81-comparison-card').forEach(card=>{
+            card.style.removeProperty('--p81-kind-width');
+            const labels=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body) > .p81-kind')];
+            if(!labels.length)return;
             const width=Math.max(...labels.map(label=>{
                 const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
-                group.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;
+                card.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;
             }));
-            group.style.setProperty('--p81-kind-width',width+'px');
-        }
+            card.style.setProperty('--p81-kind-width',width+'px');
+        });
         const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
         for(const cell of cells) {
             const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(e=>e.remove());
