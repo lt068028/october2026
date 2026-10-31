@@ -672,7 +672,7 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else if(v.r.comparison){v.result.append(node('span','not-recorded-yet','(Not recorded yet)'));}
+    }else if(v.r.comparison){v.result.append(node('span','not-recorded-yet','… Not yet'));}
     else v.result.textContent='(Not recorded yet)';
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
@@ -771,7 +771,7 @@ function render() {
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
-                if(r.comparison){listen.classList.add('p81-cue-listen');cueBody.append(listen);}
+                if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
@@ -779,7 +779,7 @@ function render() {
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
+                actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
@@ -824,9 +824,8 @@ function measureCues() {
         }
         for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
         if(group.id==='drill5'&&innerWidth>600){
-            // Reserve the recording/stop control width; the listen button is part of the cue,
-            // so it is measured together with the wrapped cue and selected adjective.
-            // not the original nowrap line or the empty cue cell rectangle.
+            // Reserve the complete, non-wrapping listen/record/stop control row.
+            // Measure only the wrapped cue and selected adjective in the cue cell.
             const actionsWidth=Math.max(...[...group.querySelectorAll('.recording-actions')].map(actions=>{
                 const buttons=[...actions.querySelectorAll('button')];return buttons.reduce((sum,b)=>sum+b.getBoundingClientRect().width,0)+(buttons.length-1)*(parseFloat(getComputedStyle(actions).columnGap)||0);
             }));

@@ -3363,7 +3363,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-cue-body .display-cue-unit > .target-word { white-space: normal; overflow-wrap: anywhere; }
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
-.practice81-page #drill5 .p81-cue-listen { margin-left: 4px; }
+.practice81-page #drill5 .p81-cue-listen { margin-left: 0; }
+.practice81-page #drill5 .recording-actions { flex-wrap: nowrap; }
 
 .practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-cue-body { white-space: nowrap; }
 .practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-select { max-width: none; white-space: nowrap; }
@@ -3374,12 +3375,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale.practice81-page #drill5 .p81-card .p81-table .p81-controls { grid-column: 2; }
 .practice81-page #drill5 .p81-scenario-number { font-weight: 700; margin-right: 4px; }
 .practice81-page #drill5 .not-recorded-yet { color: var(--text-secondary); }
-.practice81-page #drill5 .p81-comparison-card[data-item="1"] .not-recorded-yet { font-size: .95em; }
-.practice81-page #drill5 .p81-comparison-card[data-item="2"] .not-recorded-yet { font-size: .9em; }
-.practice81-page #drill5 .p81-comparison-card[data-item="3"] .not-recorded-yet { font-size: .85em; }
-.practice81-page #drill5 .p81-comparison-card[data-item="4"] .not-recorded-yet { font-size: .8em; }
-.practice81-page #drill5 .p81-comparison-card[data-item="5"] .not-recorded-yet { font-size: .75em; }
-.practice81-page #drill5 .p81-comparison-card:is([data-item="6"],[data-item="7"]) .not-recorded-yet { font-size: .85em; }
+.practice81-page #drill5 .not-recorded-yet { font-size: .75em; }
 @media(max-width:600px) {
  .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
  .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,

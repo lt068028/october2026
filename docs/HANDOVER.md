@@ -1,5 +1,10 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D5の操作ボタン・未録音表示（2026-10-31 / Europe/Vienna / Codex）
+
+- 「きく」「とる」「停止」を同じ操作列に隣接配置し、折り返さない。D5全問の未録音表示を「… Not yet」、0.75emへ統一。
+- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。`git diff --check` 合格。自動テストは未実施。コミット／Push／Vercel反映待ち。
+
 ## 8.1 D5の学習前後表示・結果サイズ（2026-10-31 / Europe/Vienna / Codex）
 
 - ユーザー訂正に従い変更はD5のみ。D4の直前変更を取り消し、D1〜D4の説明文を復元。D5はMeaning／Speaker & listener区分を撤去、各ペアの番号を状況文へ移動、7番のAdj折返しを防止。
