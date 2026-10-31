@@ -50,6 +50,9 @@ W("laundry","洗濯","せんたく","sentaku","laundry");
 W("do","する","する","suru","to do");
 W("friend","友達","ともだち","tomodachi","friend");
 W("classmate","クラスメート","クラスメート","kurasumēto","classmate");
+W("senior","先輩","せんぱい","senpai","senior student or colleague");
+W("mountain","山","やま","yama","mountain");
+W("climb","登る","のぼる","noboru","to climb");
 W("teacher","先生","せんせい","sensei","teacher");
 W("student","留学生","りゅうがくせい","ryūgakusei","international student");
 W("child","子ども","こども","kodomo","child");
@@ -113,7 +116,7 @@ const compareActions=[action('book','read'),action('music','listen'),action('cyc
 const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
     {subject:'classmate',...action('grammar','teach'),adjective:'good'},
-    {subject:'student',...action('letter','write'),adjective:'good'},
+    {subject:'senior',...action('mountain','climb','に'),adjective:'good'},
     {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
 ];
