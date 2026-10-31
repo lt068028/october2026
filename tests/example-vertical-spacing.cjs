@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'..'),source=fs.readFileSync(path.join(__dirna
 const mock=new Function(source.slice(source.indexOf('function mock()'),source.indexOf('(async()=>'))+';return mock')();
 (async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage();await p.addInitScript(mock);let count=0;const eq=(a,e,label)=>{assert.deepEqual(a,e,label);count++};
 await p.route('http://vertical.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({status:fs.existsSync(f)?200:404,body:fs.existsSync(f)?fs.readFileSync(f):'',contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':f.endsWith('.json')?'application/json':'text/html'});});
-for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','pronunciation1','pronunciation2','composition1']){
+for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','pronunciation1','pronunciation2','composition1']){
  await p.goto('http://vertical.test/'+name+'.html');
  for(const width of [600,1440])for(const theme of ['light','dark']){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});

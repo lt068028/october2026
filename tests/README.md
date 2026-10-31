@@ -183,13 +183,16 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 - `node tests/example-arrow-alignment.cjs`：練習1/2/7/8の9ページ、幅600/1440の初期表示で同一Example内の👉️開始位置を比較する。
 
-- `node tests/example-vertical-spacing.cjs`：全12練習ページの共通縦余白値・幅600/1440・通常/ダーク、2.2 E1/E2/E3の実測8px、Who案内撤去と画像内外の発話強調を確認。
+- `node tests/example-vertical-spacing.cjs`：全13練習ページの共通縦余白値・幅600/1440・通常/ダーク、2.2 E1/E2/E3の実測8px、Who案内撤去と画像内外の発話強調を確認。
 
 
 ## 共通会話表示
 
-`node tests/shared-conversation-display.cjs`：全12練習ページの適用範囲、幅375/600/900/1440・通常/ダーク、Q/Aと人物色、画像内外の発話同期、どの/どれ質問で正答を先に示さないこと、返答時と停止時の対象表示を確認する。
+`node tests/shared-conversation-display.cjs`：全13練習ページの適用範囲、幅375/600/900/1440・通常/ダーク、Q/Aと人物色、画像内外の発話同期、どの/どれ質問で正答を先に示さないこと、返答時と停止時の対象表示を確認する。
 
 `lesson2-speaker-pulse.cjs`は練習2の画像内外の人物色・白い外枠と準備/録音/再生/終了を確認する。`practice21.cjs`等の旧Who案内検査は、撤去と現在の枠強調へ更新済み。
 
 `EXAMPLE_ORDER_SMOKE=1 node tests/example-order.cjs`は練習7の600/1440px・両テーマで全3文体/全3ヒント/両文字モードを分散した代表組合せを検査する。環境変数なしは従来の全組合せ検査。
+
+
+`node tests/practice82.cjs`：8.2の全モデルと３文体/２表記/３ヒント、何か/何も/何でもと否定形、Y/NのListen/Record解除、短答、実録音/原文保持/０秒リレー/中断、狭幅と通常/ダークを検証する。共通表示・Example縦余白にも8.2を含める。

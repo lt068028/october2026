@@ -3330,3 +3330,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-phase { font-weight: 700; margin: 16px 0 8px; }
 .practice81-page .p81-choice-feedback { font-size: .85em; margin: 0 0 4px; }
 @media(max-width:760px) { .practice81-page .p81-meaning-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; } }
+
+/* Practice 8.2 uses the established Practice 8 layout, with wrapping concept names. */
+.practice82-page .p81-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
+@media(max-width:760px) { .practice82-page .p81-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; } }

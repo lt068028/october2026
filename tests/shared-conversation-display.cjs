@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'..'),s=fs.readFileSync(path.join(__dirname,'p
 const mock=new Function(s.slice(s.indexOf('function mock()'),s.indexOf('(async()=>'))+';return mock')();
 (async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});let count=0;const eq=(a,e,label)=>{assert.deepEqual(a,e,label);count++};
 const p=await b.newPage();await p.addInitScript(mock);await p.route('http://shared.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({status:fs.existsSync(f)?200:404,body:fs.existsSync(f)?fs.readFileSync(f):'',contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':f.endsWith('.json')?'application/json':'text/html'});});
-for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','pronunciation1','pronunciation2','composition1']){
+for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','pronunciation1','pronunciation2','composition1']){
  const errors=[];const error=e=>errors.push(e.message);p.on('pageerror',error);await p.goto('http://shared.test/'+name+'.html');
  for(const width of [375,600,900,1440])for(const dark of [false,true]){
   await p.setViewportSize({width,height:1100});await p.emulateMedia({colorScheme:dark?'dark':'light'});
@@ -11,7 +11,7 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
   eq(await p.locator('.conversation-person[data-person="A"],.conversation-person[data-person="B"]').evaluateAll((es,dark)=>es.every(e=>{const st=getComputedStyle(e),bg=e.dataset.person==='A'?(dark?'rgb(196, 181, 253)':'rgb(109, 40, 217)'):(dark?'rgb(103, 232, 249)':'rgb(125, 211, 252)');return st.backgroundColor===bg&&st.borderRadius==='4px'}),dark),true,name+' person palette');
   eq(await p.locator('.example-box').evaluateAll(es=>{const tips=[...document.querySelectorAll('.tooltip-tip,.custom-tip-box')].filter(e=>getComputedStyle(e).visibility==='hidden');const styles=tips.map(e=>e.style.display);tips.forEach(e=>e.style.display='none');const overflow=es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className);tips.forEach((e,i)=>e.style.display=styles[i]);return overflow;}),[],name+' Example fits '+width);
  }
- if(['practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1'].includes(name))eq(await p.locator('.conversation-role-circle').count()>0,true,name+' adopted roles');
+ if(['practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2'].includes(name))eq(await p.locator('.conversation-role-circle').count()>0,true,name+' adopted roles');
  else eq(await p.locator('.conversation-person').count(),0,name+' no invented people');
  if(name==='practice1.1'){
   eq(await p.locator('#task2Container select').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),['N₁','N₂','N₁','N₂','N₁','N₂'],'noun slots are not people');
