@@ -653,9 +653,11 @@ function findDiff(actual, reference) {
 function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
+    if(v.notYet)v.notYet.hidden=Boolean(value?.url||session?.key===key);
+    if(v.quizNote)v.quizNote.hidden=!v.r.quizChoice||Boolean(value?.url)||session?.key===key;
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
-    if(session?.key===key){v.result.textContent='Recording...';return;}
+    if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.1'});
         if(value.correct)v.result.append(document.createTextNode(displayed+' ✅ '));
@@ -672,7 +674,7 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else{v.result.append(node('span','not-recorded-yet','… Not yet'));}
+    }else if(!v.r.comparison){v.result.append(node('span','not-recorded-yet','… Not yet'));}
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);
@@ -777,9 +779,9 @@ function render() {
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
-                const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');
-                actions.append(listen,rec,stop);
-                if(r.comparison){actions.classList.add('p81-cue-actions');cueBody.append(actions);}
+                const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
+                if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=true;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
+                else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
@@ -787,7 +789,7 @@ function render() {
                 let quizNote=null;
                 if(r.comparison){const quiz=node('p','p81-choice-feedback');quiz.setAttribute('role','status');quiz.hidden=!r.quizChoice;quiz.textContent=r.quizChoice?(r.pending?'Try the other adjective for this label.':'Correct choice. Record the sentence to see the explanation.'):'';quizNote=quiz;}
                 cell.append(line,correction,feeling);if(quizNote)cell.append(quizNote);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
+                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,quizNote,notYet});showResult(key);
             });
             card.append(table);group.append(card);
         });
