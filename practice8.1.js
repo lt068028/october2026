@@ -34,6 +34,9 @@ W("answer","答える","こたえる","kotaeru","to answer");
 W("motorcycle","バイク","バイク","baiku","motorcycle");
 W("father","父","ちち","chichi","my father");
 W("olderSister","姉","あね","ane","my older sister");
+W("youngerBrother","弟","おとうと","otōto","younger brother");
+W("youngerSister","妹","いもうと","imōto","younger sister");
+W("olderBrother","兄","あに","ani","my older brother");
 W("computer","パソコン","ぱそこん","pasokon","computer");
 W("use","使う","つかう","tsukau","to use");
 W("luggage","荷物","にもつ","nimotsu","luggage");
@@ -64,6 +67,9 @@ W("katakana","カタカナ","カタカナ","katakana","katakana");
 W("cook","料理","りょうり","ryōri","cooking");
 W("sing","歌う","うたう","utau","to sing");
 W("song","歌","うた","uta","song");
+W("karaoke","カラオケ","カラオケ","karaoke","karaoke");
+W("shower","シャワー","シャワー","shawā","shower");
+W("bathe","浴びる","あびる","abiru","to take a shower");
 W("car","車","くるま","kuruma","car");
 W("drive","運転する","うんてんする","unten suru","to drive");
 W("remember","覚える","おぼえる","oboeru","to memorize");
@@ -123,7 +129,7 @@ const people=[
 const degrees=[
     {...action('car','wash'),adjective:'like',initial:'totemo'},
     {...action('oldmag','discard'),adjective:'dislike',initial:'sugoku'},
-    {subject:'friend',...action('computer','use'),adjective:'good',initial:'maamaa'},
+    {subject:'youngerBrother',...action('computer','use'),adjective:'good',initial:'maamaa'},
     {...action('tomato','cut'),adjective:'bad',initial:'chotto'},
     {...action('luggage','carry'),adjective:'like',initial:'amari'},
     {...action('homework','begin'),adjective:'like',initial:'zenzen'}
@@ -135,7 +141,7 @@ const comparisons=[
  {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Observed','Unnatural'],scenario:'Describe difficulty getting up early, then compare it with an unusual skill judgment.'},
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
  {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have seen your friend write kanji and infer that they see it as a strength.'},
- {phase:'Impression',subject:'friend',...action('song','sing'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your friend sing, choose a direct judgment or a more considerate way to describe difficulty.'},
+ {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your older brother sing karaoke, choose a direct judgment or a more considerate way to describe difficulty.'},
  {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Direct evaluation','Assumed self-view'],scenario:'As a beginner, compare directly judging a Japanese teacher’s ability with guessing how they view it.'}
 ];
 comparisons.forEach(spec=>{
@@ -737,8 +743,8 @@ function addExample(root,si) {
     const samples=[
         [makeRow('ex1-noun',{...action('movie','make'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('movie','make'),adjective:'like'},{kind:'Verb＋の'})],
         [makeRow('ex2-q',{...action('television','watch'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
-        [makeRow('ex3-good',{subject:'friend',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'friend',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
-        adverbs.map(adverb=>makeRow('ex4-'+adverb,{...action('flower','grow'),adjective:'like',adverb})),
+        [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
+        adverbs.map(adverb=>makeRow('ex4-'+adverb,{...action('shower','bathe'),adjective:'like',adverb})),
         [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
