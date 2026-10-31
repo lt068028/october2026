@@ -36,6 +36,7 @@ W("father","父","ちち","chichi","my father");
 W("olderSister","姉","あね","ane","my older sister");
 W("youngerBrother","弟","おとうと","otōto","younger brother");
 W("youngerSister","妹","いもうと","imōto","younger sister");
+W("grandmother","祖母","そぼ","sobo","my grandmother");
 W("olderBrother","兄","あに","ani","my older brother");
 W("computer","パソコン","ぱそこん","pasokon","computer");
 W("use","使う","つかう","tsukau","to use");
@@ -70,6 +71,8 @@ W("song","歌","うた","uta","song");
 W("karaoke","カラオケ","カラオケ","karaoke","karaoke");
 W("shower","シャワー","シャワー","shawā","shower");
 W("bathe","浴びる","あびる","abiru","to take a shower");
+W("sea","海","うみ","umi","sea");
+W("swim","泳ぐ","およぐ","oyogu","to swim");
 W("car","車","くるま","kuruma","car");
 W("drive","運転する","うんてんする","unten suru","to drive");
 W("remember","覚える","おぼえる","oboeru","to memorize");
@@ -122,7 +125,7 @@ const compareActions=[action('book','read'),action('music','listen'),action('cyc
 const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
     {subject:'classmate',...action('grammar','teach'),adjective:'good'},
-    {subject:'senior',...action('mountain','climb','に'),adjective:'good'},
+    {subject:'grandmother',...action('sea','swim','で'),adjective:'good'},
     {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
 ];
