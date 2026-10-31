@@ -38,7 +38,7 @@ CasualのNoは表示ううん、TTS専用ううんん。うんん/ううんん�
 
 | 人物 | 動作 | 評価語 |
 | --- | --- | --- |
-| 先生 | 文法を教える | 上手 |
+| クラスメート | 文法を教える | 上手 |
 | 留学生 | 手紙を書く | 上手 |
 | 子ども | 漢字を覚える | 苦手 |
 | 兄弟 | バイクを運転する | 苦手 |
@@ -90,12 +90,12 @@ Adj選択時は正誤メッセージを出さない。同じペアのどちら�
 |  |  | Unnatural → 下手 | 下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural. |
 | 4 Speaker & listener | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | When describing their own ability, the speaker may sound as if they are praising themselves. |
 |  |  | Natural → 得意 | When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability. |
-| 5 Speaker & listener | 留学生の友達は日本語を話すのが…：実際の会話を聞いている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
+| 5 Speaker & listener | 留学生の友達は漢字を書くのが…：実際に書く様子を見ている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
 |  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
 | 6 Speaker & listener | 友達は歌を歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
 |  |  | Tactful → 苦手 | The speaker describes the subject’s difficulty more gently than judging their ability. |
-| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が教師の日本語能力を評価 | Presumptuous → 上手 | A beginner may sound overconfident when judging a teacher’s Japanese. |
-|  |  | Harsh → 下手 | The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s Japanese. |
+| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が能力の直接評価と自己認識の推測を比較 | Direct evaluation → 上手 | 上手 directly describes the teacher’s speaking ability. From a beginner, this may sound presumptuous. |
+|  |  | Assumed self-view → 得意 | 得意 suggests the teacher sees Japanese as a personal strength. A beginner may sound presumptuous by assuming how the teacher views their own ability. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
 
@@ -112,13 +112,13 @@ Exampleと対応Drillで同じ完成文を反復しない。D5第1問は父の�
 | Example2 | テレビ | 見る | D2と語彙を分ける |
 | D2 | コーヒー／部屋／朝ご飯／服 | 飲む／掃除する／食べる／買う | Q/A内の反復 |
 | Example3 | 写真 | 撮る | D3の4問と語彙を分ける |
-| D3 | 文法／手紙／漢字／バイク | 教える／書く／覚える／運転する | 4問 |
+| D3 | 文法／手紙／漢字／バイク | 教える／書く／覚える／運転する | 4問。D3-1の人物はクラスメート |
 | Example4 | 花 | 育てる | 副詞6語の比較内で反復 |
 | D4 | 車／古い雑誌／パソコン／トマト／荷物／宿題 | 洗う／捨てる／使う／切る／持っていく／始める | 6問 |
 | Example5 | ギター | 弾く | 上手／得意の意味比較内で反復 |
-| D5 | 料理／英語／早起き／日本語／質問 | する／話す／起きる／歌う／答える | ペア内比較に必要な動詞反復を含む。D5-1の話者は父。D5-7は先生が質問に答える場面 |
+| D5 | 料理／英語／早起き／日本語／漢字／歌 | する／話す／起きる／書く／歌う | ペア内比較に必要な動詞反復を含む。D5-1の話者は父。D5-5はD3-3と漢字が重なるユーザー指定の例外 |
 
-同一会話のQ/A、同じ課題内で対照する2行・副詞6行・D5の意味／対人印象比較は、学習目標に必要な反復として扱う。それ以外はExampleとDrill間を含め、同じ動詞・具体的目的語を別枠へ重ねない。提示案で重なっていた日本語（D3-1／D5-5・7）と車（D3-4／D4-1）は、D3-1を文法を教える、D3-4をバイクを運転する、D5-7を質問に答えるへ置き換えて解消した。
+同一会話のQ/A、同じ課題内で対照する2行・副詞6行・D5の意味／対人印象比較は、学習目標に必要な反復として扱う。それ以外はExampleとDrill間を含め、同じ動詞・具体的目的語を別枠へ重ねない。今回の指定による例外として、D5-5「漢字を書く」はD3-2「手紙を書く」と動詞が重なり、D3-3「漢字を覚える」と目的語が重なる。D5-7は日本語を話すキューで上手（能力の直接評価）と得意（本人の自己認識の推測）を比べる。
 
 ## 表記・音声・判定・保持
 

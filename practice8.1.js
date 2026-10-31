@@ -49,6 +49,7 @@ W("clean","掃除する","そうじする","sōji suru","to clean");
 W("laundry","洗濯","せんたく","sentaku","laundry");
 W("do","する","する","suru","to do");
 W("friend","友達","ともだち","tomodachi","friend");
+W("classmate","クラスメート","クラスメート","kurasumēto","classmate");
 W("teacher","先生","せんせい","sensei","teacher");
 W("student","留学生","りゅうがくせい","ryūgakusei","international student");
 W("child","子ども","こども","kodomo","child");
@@ -110,7 +111,7 @@ const action=(object,verb,particle='を')=>({object,verb,particle});
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
 const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'teacher',...action('grammar','teach'),adjective:'good'},
+    {subject:'classmate',...action('grammar','teach'),adjective:'good'},
     {subject:'student',...action('letter','write'),adjective:'good'},
     {subject:'child',...action('kanji','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
@@ -129,9 +130,9 @@ const comparisons=[
  {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Distinguish low speaking ability from feeling uncomfortable speaking English.'},
  {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Observed','Unnatural'],scenario:'Describe difficulty getting up early, then compare it with an unusual skill judgment.'},
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
- {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have heard your friend speak Japanese and infer that they see it as a strength.'},
+ {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have seen your friend write kanji and infer that they see it as a strength.'},
  {phase:'Impression',subject:'friend',...action('song','sing'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your friend sing, choose a direct judgment or a more considerate way to describe difficulty.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s Japanese.'}
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Direct evaluation','Assumed self-view'],scenario:'As a beginner, compare directly judging a Japanese teacher’s ability with guessing how they view it.'}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
@@ -146,8 +147,8 @@ comparisons.forEach(spec=>{
   Praise:'The speaker praises an ability they have observed; they do not need to share that skill.',
   Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
   Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
-  Presumptuous:'A beginner may sound overconfident when judging a teacher’s Japanese.',
-  Harsh:'The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s Japanese.'
+  'Direct evaluation':'上手 directly describes the teacher’s speaking ability. From a beginner, this may sound presumptuous.',
+  'Assumed self-view':'得意 suggests the teacher sees Japanese as a personal strength. A beginner may sound presumptuous by assuming how the teacher views their own ability.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
  if(spec.object==='early')spec.impressions.difficult='The speaker thinks getting up early is difficult for them.';
