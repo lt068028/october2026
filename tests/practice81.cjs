@@ -61,12 +61,12 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  await page.locator('#speechStyleControl [data-value="formal"]').click();
  await page.locator('#scriptModeControl [data-value="kanji"]').click();
  check(await page.locator('#drill4 select').count(),6,'six degree rows');
- check(await page.locator('#drill5 tr').count(),10,'both rows of all five expression pairs stay visible');
+ check(await page.locator('#drill5 tr').count(),14,'both rows of all seven expression pairs stay visible');
  check(await page.locator('#drill5 .p81-card').evaluateAll(es=>es.every(e=>e.querySelectorAll('tr').length===2)),true,'two fixed rows per situation');
  check(await page.locator('#drill5 [data-set],#drill5 .p81-tabs,#drill5 .p81-target').count(),0,'no set buttons or target tasks');
- check(await page.locator('#drill5 .p81-card select').count(),0,'no expression switching dropdown');
+ check(await page.locator('#drill5 .p81-card select').count(),14,'one adjective quiz per row');
  check(await page.locator('#drill5 .p81-impression-choice').count(),0,'impression selection replaced by fixed row labels');
- check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>!e.disabled)),true,'listening and recording do not require an impression choice');
+ check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>e.disabled)),true,'model and recording wait for matching adjective');
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example5 topic and nominalizer highlighted');
  check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
@@ -75,6 +75,14 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
   await page.evaluate(()=>t.spoken.at(-1).onend());check(await page.evaluate(()=>t.spoken.length),before+1,'Example playback does not select Drill response');check(await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed'))),selections,'Example leaves Y/N selections unchanged');
+ }
+ for(const r of await page.evaluate(()=>audit81.rowsFor(4).flat().map(r=>({id:r.id,expected:r.adjective,other:r.options.find(x=>x!==r.adjective)})))){
+  const row=page.locator(`[data-row="${r.id}"]`);
+  await row.locator('select').selectOption(r.other);
+  check(await row.locator('.recording-actions button').first().isDisabled(),true,'mismatched adjective stays locked');
+  check(await row.locator('.p81-choice-feedback').textContent(),'Try the other adjective for this label.','quiz feedback without recording');
+  await row.locator('select').selectOption(r.expected);
+  check(await row.locator('.recording-actions button').first().isDisabled(),false,'matching adjective unlocks');
  }
  const comparisons=await page.evaluate(()=>audit81.rowsFor(0).map(rs=>rs.map(r=>r.text)));
  check(comparisons,[['本が好きです。','本を読むのが好きです。'],['音楽が好きです。','音楽を聞くのが好きです。'],['写真が好きです。','写真を撮るのが好きです。']],'noun versus action');
@@ -100,7 +108,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    await page.locator('#scriptModeControl [data-value="'+script+'"]').click();
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
-    check(await page.locator('.p81-card').count(),24,`${style}/${script}/${hint} content retained`);
+    check(await page.locator('.p81-card').count(),26,`${style}/${script}/${hint} content retained`);
     check(await page.locator('.example-box .p81-gold').count(),style==='formal'?17:16,'gold structure excludes the five omitted nominalizers');
     check(await page.locator('#drill4 .example-box .p81-gold').count(),1,'only the full first model shows the nominalizer');
    }
@@ -125,7 +133,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  }
  await page.locator('[data-response="self-3-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
- const expectedPairs=[['good','strong'],['bad','difficult'],['good','bad'],['good','difficult'],['good','bad']];
+ const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['good','strong'],['good','strong'],['good','bad'],['good','bad']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
@@ -135,10 +143,6 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   await row.locator('.recording-actions button').first().click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),out.text,'independent full model for each visible row');await page.evaluate(()=>t.spoken.at(-1).onend());
  }
- const feedback=await page.evaluate(()=>audit81.comparisons.map(s=>Object.fromEntries(s.options.map(key=>[key,s.impressions[key].label]))));
- check(feedback[0],{good:'May sound boastful.',strong:'Sounds confident.'},'self praise versus strength');
- check(feedback[1],{bad:'Sounds modest. Focus on skill.',difficult:'Focus on personal difficulty.'},'skill versus personal difficulty');
- check(feedback[4],{good:'May sound arrogant.',bad:'May sound rude.'},'expert context distinguishes two direct evaluations');
  // Record and verify zero configured relay gap, saved raw, and selection-specific records.
  await page.locator('label.switch').first().click();
  await page.locator('[data-response="self-0-response"][data-answer="yes"]').click();
@@ -156,25 +160,25 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  // A saved result must not acquire a social judgment just from redrawing it.
  check(await page.locator('#drill2 .p81-feedback:not([hidden])').count(),0,'no pragmatics outside D5');
  check(await page.evaluate(()=>audit81.saved.get('self-0-response:yes').raw),'  本を読むのが好きです。　','recognition raw whitespace saved');
- const first=page.locator('[data-row="comparison-0-good"]'),second=page.locator('[data-row="comparison-0-strong"]');
+ const first=page.locator('[data-row="comparison-3-good"]'),second=page.locator('[data-row="comparison-3-strong"]');
  await first.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===2);
- await page.evaluate(()=>{const result=[{transcript:'私は写真を撮るのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
- await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-0:good'));
+ await page.evaluate(()=>{const result=[{transcript:'私は料理をするのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-good:good'));
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first expression recording correct');
  check(await second.locator('.result-text').textContent(),'(Not recorded yet)','second recording remains independent');
  await second.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===3);
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first result stays on screen while recording the second');
- await page.evaluate(()=>{const result=[{transcript:'私は写真を撮るのが得意です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
- await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-0:strong'));
+ await page.evaluate(()=>{const result=[{transcript:'私は料理をするのが得意です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-strong:strong'));
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'second expression recording correct');
  check(await first.locator('.result-text').textContent().then(s=>s.includes('上手')&&s.includes('✅')),true,'first recording still visible after second completes');
- check(await page.evaluate(()=>audit81.saved.get('comparison-0:good').url!==audit81.saved.get('comparison-0:strong').url),true,'separate audio for both rows');
+ check(await page.evaluate(()=>audit81.saved.get('comparison-3-good:good').url!==audit81.saved.get('comparison-3-strong:strong').url),true,'separate audio for both rows');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'changing impression never regrades the recording');
  await page.locator('#scriptModeControl [data-value="hiragana"]').click();
- check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはしゃしんをとるのがじょうずです')),true,'first Hiragana recording survives redraw');
- check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはしゃしんをとるのがとくいです')),true,'second Hiragana recording survives redraw');
+ check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはりょうりをするのがじょうずです')),true,'first Hiragana recording survives redraw');
+ check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはりょうりをするのがとくいです')),true,'second Hiragana recording survives redraw');
  for(const style of ['casual','formal'])await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve first recorded judgment');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve second recorded judgment');
