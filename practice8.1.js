@@ -654,7 +654,7 @@ function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
     if(v.notYet)v.notYet.hidden=Boolean(value?.raw||value?.url||session?.key===key);
-    if(v.nuance)v.nuance.hidden=!Boolean(value?.url);
+    if(v.nuance)v.nuance.hidden=false;
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
@@ -783,7 +783,7 @@ function render() {
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
                 let nuance=null;
-                if(r.comparison){nuance=node('div','p81-nuance-note');nuance.hidden=true;nuance.setAttribute('role','note');nuance.append(node('div','p81-nuance-note-title','✨Notice the difference:'),node('div','p81-nuance-note-text',r.impressions[r.adjective]));}
+                if(r.comparison){nuance=node('div','p81-nuance-note');nuance.hidden=false;nuance.setAttribute('role','note');nuance.append(node('div','p81-nuance-note-title','✨Notice the difference:'),node('div','p81-nuance-note-text',r.impressions[r.adjective]));}
                 cell.append(line,correction,feeling);if(nuance)cell.append(nuance);tr.append(cue,cell);body.append(tr);
                 views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance});showResult(key);
             });
