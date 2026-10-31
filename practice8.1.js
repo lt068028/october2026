@@ -15,6 +15,26 @@ function W(id,kanji,hira,romaji,meaning) {
 W("you","あなた","あなた","anata","you");
 W("i","私","わたし","watashi","I");
 W("book","本","ほん","hon","book");
+W("movie","映画","えいが","eiga","movie");
+W("television","テレビ","てれび","terebi","television");
+W("watch","見る","みる","miru","to watch");
+W("cycling","自転車","じてんしゃ","jitensha","bicycle");
+W("ride","乗る","のる","noru","to ride");
+W("coffee","コーヒー","コーヒー","kōhī","coffee");
+W("drink","飲む","のむ","nomu","to drink");
+W("clothes","服","ふく","fuku","clothes");
+W("buy","買う","かう","kau","to buy");
+W("guitar","ギター","ギター","gitā","guitar");
+W("play","弾く","ひく","hiku","to play an instrument");
+W("teach","教える","おしえる","oshieru","to teach");
+W("letter","手紙","てがみ","tegami","letter");
+W("father","父","ちち","chichi","my father");
+W("olderSister","姉","あね","ane","my older sister");
+W("computer","パソコン","ぱそこん","pasokon","computer");
+W("use","使う","つかう","tsukau","to use");
+W("luggage","荷物","にもつ","nimotsu","luggage");
+W("carry","持っていく","もっていく","motteiku","to take along");
+W("homework","宿題","しゅくだい","shukudai","homework");
 W("music","音楽","おんがく","ongaku","music");
 W("photo","写真","しゃしん","shashin","photograph");
 W("read","読む","よむ","yomu","to read");
@@ -45,7 +65,7 @@ W("wash","洗う","あらう","arau","to wash");
 W("cut","切る","きる","kiru","to cut");
 W("tomato","トマト","トマト","tomato","tomato");
 W("breakfast","朝ご飯","あさごはん","asagohan","breakfast");
-W("oldbook","古い本","ふるいほん","furui hon","old book");
+W("oldmag","古い雑誌","ふるいざっし","furui zasshi","old magazine");
 W("discard","捨てる","すてる","suteru","to throw away");
 W("study","勉強","べんきょう","benkyō","studying");
 W("begin","始める","はじめる","hajimeru","to begin");
@@ -82,27 +102,25 @@ function normalize(text) {
     return hira(text).replace(/(?:ではありません|じゃありません|ではないです)/g,'じゃないです').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^(?:ううんん|うんん)/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');
 }
 const action=(object,verb,particle='を')=>({object,verb,particle});
-const compareActions=[action('book','read'),action('music','listen'),action('photo','take')];
-const selfActions=[action('book','read'),action('room','clean'),action('photo','take'),action('laundry','do')];
+const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
+const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'friend',...action('photo','take'),adjective:'good'},
-    {subject:'teacher',...action('kanji','write'),adjective:'good'},
-    {subject:'student',...action('cook','do'),adjective:'difficult'},
+    {subject:'teacher',...action('japanese','teach'),adjective:'good'},
+    {subject:'student',...action('letter','write'),adjective:'good'},
     {subject:'child',...action('kanji','remember'),adjective:'difficult'},
-    {subject:'person',...action('song','sing'),adjective:'good'},
     {subject:'siblings',...action('car','drive'),adjective:'difficult'}
 ];
 const degrees=[
-    {...action('cook','make'),adjective:'like',initial:'totemo'},
-    {...action('car','wash'),adjective:'dislike',initial:'sugoku'},
-    {subject:'friend',...action('tomato','cut'),adjective:'good',initial:'maamaa'},
-    {...action('breakfast','make'),adjective:'bad',initial:'chotto'},
-    {...action('oldbook','discard'),adjective:'like',initial:'amari'},
-    {...action('study','begin'),adjective:'like',initial:'zenzen'}
+    {...action('car','wash'),adjective:'like',initial:'totemo'},
+    {...action('oldmag','discard'),adjective:'dislike',initial:'sugoku'},
+    {subject:'friend',...action('computer','use'),adjective:'good',initial:'maamaa'},
+    {...action('tomato','cut'),adjective:'bad',initial:'chotto'},
+    {...action('luggage','carry'),adjective:'like',initial:'amari'},
+    {...action('homework','begin'),adjective:'like',initial:'zenzen'}
 ];
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'mother',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'You have tried your mother’s cooking. From what you have seen, you think she sees cooking as one of her strengths.'},
+ {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'You have tried your father’s cooking. From what you have seen, you think he sees cooking as one of his strengths.'},
  {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Distinguish low speaking ability from feeling uncomfortable speaking English.'},
  {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Observed','Unnatural'],scenario:'Describe difficulty getting up early, then compare it with an unusual skill judgment.'},
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
@@ -654,7 +672,7 @@ function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
     if(v.notYet)v.notYet.hidden=Boolean(value?.raw||value?.url||session?.key===key);
-    if(v.nuance)v.nuance.hidden=false;
+    if(v.nuance){const pairHasRecording=[...views.entries()].some(([pairKey,pairView])=>pairView.r.comparisonBase===v.r.comparisonBase&&Boolean(saved.get(pairKey)?.url));views.forEach(pairView=>{if(pairView.r.comparisonBase===v.r.comparisonBase&&pairView.nuance)pairView.nuance.hidden=!pairHasRecording;});}
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
@@ -706,11 +724,11 @@ function addSelect(cue,r,key) {
 function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');if(si===4)ex.classList.add('p81-meaning-example');
     const samples=[
-        [makeRow('ex1-noun',{...compareActions[0],noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...compareActions[0],adjective:'like'},{kind:'Verb＋の'})],
-        [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
-        [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
-        adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
-        [makeRow('ex5-skill',{subject:'mother',...action('flower','grow'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'mother',...action('flower','grow'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
+        [makeRow('ex1-noun',{...action('movie','make'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('movie','make'),adjective:'like'},{kind:'Verb＋の'})],
+        [makeRow('ex2-q',{...action('television','watch'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
+        [makeRow('ex3-good',{subject:'friend',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'friend',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
+        adverbs.map(adverb=>makeRow('ex4-'+adverb,{...action('flower','grow'),adjective:'like',adverb})),
+        [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
@@ -760,6 +778,7 @@ function render() {
             if(rows[0].scenario){const scenario=node('p','p81-scenario');if(si===4)scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].scenario));else scenario.textContent=rows[0].scenario;card.append(scenario);}
             if(rows[0].comparison)card.classList.add('p81-comparison-card');
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
+            let pairNotice=null;if(rows[0].comparison){pairNotice=node('div','p81-nuance-note');pairNotice.hidden=true;pairNotice.setAttribute('role','note');pairNotice.append(node('div','p81-nuance-note-title','✨Notice the difference:'));rows.forEach(item=>{const noteLine=node('div','p81-nuance-note-text');noteLine.append(node('strong','p81-nuance-adjective',words[item.adjective].kanji+'：'),document.createTextNode(item.impressions[item.adjective]));pairNotice.append(noteLine);});}
             rows.forEach((r,ri)=>{
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
                 if(!ri&&si!==4){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
@@ -782,12 +801,10 @@ function render() {
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
-                let nuance=null;
-                if(r.comparison){nuance=node('div','p81-nuance-note');nuance.hidden=false;nuance.setAttribute('role','note');nuance.append(node('div','p81-nuance-note-title','✨Notice the difference:'),node('div','p81-nuance-note-text',r.impressions[r.adjective]));}
-                cell.append(line,correction,feeling);if(nuance)cell.append(nuance);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance});showResult(key);
+                cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);
+                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance:pairNotice});showResult(key);
             });
-            card.append(table);group.append(card);
+            card.append(table);if(pairNotice)card.append(pairNotice);group.append(card);
         });
         root.append(group);
     });
