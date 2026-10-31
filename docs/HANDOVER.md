@@ -1,5 +1,10 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D1〜D5のタスク説明とD5間隔（2026-10-31 / Europe/Vienna / Codex）
+
+- 全Drillタイトル直下に簡潔なタスク説明を追加。D5は英語hintと日本語キューの間隔を8pxにし、Adj選択後4pxで「きく」を配置。
+- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。`git diff --check` 合格。自動テスト未実施。
+
 ## 8.1 D5の操作ボタン・未録音表示（2026-10-31 / Europe/Vienna / Codex）
 
 - 「きく」「とる」「停止」を同じ操作列に隣接配置し、折り返さない。D5全問の未録音表示を「… Not yet」、0.75emへ統一。

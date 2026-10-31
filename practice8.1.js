@@ -129,11 +129,11 @@ comparisons.forEach(spec=>{
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
 const sections=[
-    {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
-    {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
-    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
-    {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: How Do These Expressions Differ?'}
+    {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Say if you like the thing or activity.'},
+    {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask, choose Yes/No, then answer.'},
+    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手, then record.'},
+    {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb, then record. Use a negative form with あまり or ぜんぜん.'},
+    {title:'Drill 5: How Do These Expressions Differ?',instruction:'💡Choose the best adjective for each label, then record.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -773,13 +773,14 @@ function render() {
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
                 if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
+                if(r.comparison)cueBody.append(listen);
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                actions.append(listen,rec,stop);
+                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
