@@ -3367,9 +3367,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
 .practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) { column-gap: 8px; row-gap: 8px; }
-.practice81-page #drill5 .p81-cue-actions { display: flex; flex-wrap: wrap; gap: 4px 8px; width: calc(100% - 8px); margin-left: 8px; box-sizing: border-box; white-space: normal; vertical-align: baseline; }
+.practice81-page #drill5 .p81-cue-body { display: flex; flex-wrap: wrap; align-items: baseline; }
+.practice81-page #drill5 .p81-cue-actions { display: flex; flex: 1 0 max-content; flex-wrap: wrap; justify-content: space-between; gap: 4px 8px; min-width: 0; max-width: 100%; margin-left: 8px; white-space: normal; vertical-align: baseline; }
 .practice81-page #drill5 .p81-cue-actions > .not-recorded-yet { margin-left: auto; }
 .practice81-page #drill5 .p81-cue-button-group { display: inline-flex; flex-wrap: nowrap; gap: 2px; white-space: nowrap; }
+.practice81-page #drill5 .p81-cue-button-group,
 .practice81-page #drill5 .p81-cue-button-group > button { flex-shrink: 0; }
 .practice81-page #drill5 .p81-scenario-number { font-weight: 700; margin-right: 4px; }
 .not-recorded-yet { color: var(--text-secondary); display: inline-block; font-size: .75em; white-space: nowrap; }

@@ -1,5 +1,11 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## D5のきく改行とNot yet消失（2026-10-31 / Europe/Vienna / Codex）
+
+- 原因：Not yet要素を作成した後、録音ボタン群へappendしておらずDOMに追加されていなかった。さらに操作列自体を全幅flexにしたことで、Adjの後の同一行フローが失われた。
+- 修正：D5のキュー行を折返し可能なflexにし、操作列は残り幅を使ってボタン群をAdjの後ろ、Not yetを列の右端へ配置。3ボタン群はnowrap。Not yetは録音/保存中だけ非表示にする。Practice 8.1のCSS/JSキャッシュキーを更新。
+- `git diff --check`確認予定。自動テスト未実施。
+
 ## 未録音表示の全ページ統一（2026-10-31 / Europe/Vienna / Codex）
 
 - 仕様確定：録音結果欄の未録音表示は「… Not yet」、0.75em、secondary色。文字列は一塊で改行せず、狭い幅では全体を次行へ送る。録音準備状態の「Not recorded yet」は対象外。

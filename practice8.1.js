@@ -780,7 +780,7 @@ function render() {
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
-                if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup);cueBody.append(actions);}
+                if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
                 else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
                 line.append(wrap);
