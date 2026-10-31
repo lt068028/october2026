@@ -131,25 +131,26 @@ const comparisons=[
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
  {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have heard your friend speak Japanese and infer that they see it as a strength.'},
  {phase:'Impression',subject:'friend',...action('song','sing'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your friend sing, choose a direct judgment or a more considerate way to describe difficulty.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('question','answer','に'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s answers to questions.'}
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s Japanese.'}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
  const explanations={
   Skillful:'The speaker thinks the subject is good at the activity.',
-  Observed:'The speaker guesses that the subject sees the activity as a personal strength or difficulty.',
+  Observed:'The speaker guesses that the subject sees the activity as a personal strength.',
   Poor:'The speaker thinks the subject does not do the activity well.',
   Uncomfortable:'The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill.',
-  Unnatural:'The speaker thinks the subject does not do the activity well. 下手 is usually used for skills, so 苦手 is more natural for waking up early.',
+  Unnatural:'下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural.',
   Boastful:'When describing their own ability, the speaker may sound as if they are praising themselves.',
-  Natural:'When describing their own strength, the speaker sounds natural and does not seem to be boasting.',
+  Natural:'When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability.',
   Praise:'The speaker praises an ability they have observed; they do not need to share that skill.',
   Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
   Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
   Presumptuous:'A beginner may sound overconfident when judging a teacher’s Japanese.',
-  Harsh:'The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s expertise.'
+  Harsh:'The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s Japanese.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
+ if(spec.object==='early')spec.impressions.difficult='The speaker thinks getting up early is difficult for them.';
 });
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Say if you like the thing or activity.'},

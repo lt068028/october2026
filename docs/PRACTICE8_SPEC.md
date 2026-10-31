@@ -78,24 +78,24 @@ Drill見出しの直下に、英語ラベルに合うAdjを選び録音する旨
 
 前半は意味、後半は対人印象の順に７問×２行とする。Meaning／Speaker & listenerの区分見出しは表示しない。D5各問の番号は状況文の先頭に置き、表の独立番号列は設けない。D5,6は上手／下手の対を避け、下手／苦手の言い方の差を扱う。
 
-Adj選択時は正誤メッセージを出さない。同じペアのどちらか一方で録音URLが保存された時点で、そのペアの2項目を「上手：説明」「得意：説明」のように語ごとに明示した一つの解説ブロックで同時に表示する。録音前はブロック全体を隠す。ブロックには見出し「✨Notice the difference:」を置き、ページ幅の50％とする。ブロックは右側に配置し、内部の見出しと説明文も右揃えにする。幅に応じて本文を自然に折り返す。
+Adj選択時は正誤メッセージを出さない。同じペアのどちらか一方で録音URLが保存された時点で、そのペアの2項目を「上手：説明」「得意：説明」のように語ごとに明示した一つの解説ブロックで同時に表示する。録音前はブロック全体を隠す。ブロックには見出し「✨Notice the difference:」を置き、ページ幅の60％とする。ブロックは右側に配置し、内部の見出しと説明文も右揃えにする。幅に応じて本文を自然に折り返す。
 
 | 順 | 場面 | ラベル → 選ぶAdj | ペアの録音後に同一ブロック内で表示する英語解説 |
 | --- | --- | --- | --- |
 | 1 Meaning | 父は料理をするのが…：料理を実際に食べ、父が料理を強みと考えていると推測できる | Skillful → 上手 | The speaker thinks the subject is good at the activity. |
-|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength or difficulty. |
+|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
 | 2 Meaning | 私は英語を話すのが…：技能の低さと、話す際の居心地の悪さを区別 | Poor → 下手 | The speaker thinks the subject does not do the activity well. |
 |  |  | Uncomfortable → 苦手 | The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill. |
-| 3 Meaning | 私は早く起きるのが… | Observed → 苦手 | The speaker guesses that the subject sees the activity as a personal strength or difficulty. |
-|  |  | Unnatural → 下手 | The speaker thinks the subject does not do the activity well. 下手 is usually used for skills, so 苦手 is more natural for waking up early. |
+| 3 Meaning | 私は早く起きるのが… | Observed → 苦手 | The speaker thinks getting up early is difficult for the subject. |
+|  |  | Unnatural → 下手 | 下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural. |
 | 4 Speaker & listener | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | When describing their own ability, the speaker may sound as if they are praising themselves. |
-|  |  | Natural → 得意 | When describing their own strength, the speaker sounds natural and does not seem to be boasting. |
+|  |  | Natural → 得意 | When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability. |
 | 5 Speaker & listener | 留学生の友達は日本語を話すのが…：実際の会話を聞いている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
-|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength or difficulty. |
+|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
 | 6 Speaker & listener | 友達は歌を歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
 |  |  | Tactful → 苦手 | The speaker describes the subject’s difficulty more gently than judging their ability. |
-| 7 Speaker & listener | 日本語の先生は質問に答えるのが…：初級学習者が教師の応答能力を評価 | Presumptuous → 上手 | A beginner may sound overconfident when judging a teacher’s answers. |
-|  |  | Harsh → 下手 | The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s answers. |
+| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が教師の日本語能力を評価 | Presumptuous → 上手 | A beginner may sound overconfident when judging a teacher’s Japanese. |
+|  |  | Harsh → 下手 | The speaker makes a strong negative judgment, which can sound especially harsh about a teacher’s Japanese. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
 
