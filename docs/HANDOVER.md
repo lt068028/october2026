@@ -1,5 +1,11 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D5の7問目で録音ボタンが重なる修正（2026-10-31 / Europe/Vienna / Codex）
+
+- 原因：D5の7問目はキュー／Adjをnowrapにする一方、600px超では録音操作を隣列に固定。幅計算が制約幅より長いnowrap内容のオーバーフローを隣列へ許していた。
+- 修正：D5は全幅1列のカードにし、「きく・とる・停止」をAdj後8pxの専用行へまとめ、ボタン間2px・nowrapとする。キューとAdjは折り返し可能。
+- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。`git diff --check` 合格。自動テスト未実施。
+
 ## 8.1 D1〜D5のタスク説明とD5間隔（2026-10-31 / Europe/Vienna / Codex）
 
 - 全Drillタイトル直下に簡潔なタスク説明を追加。D5は英語hintと日本語キューの間隔を8pxにし、Adj選択後4pxで「きく」を配置。

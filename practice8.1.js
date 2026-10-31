@@ -770,18 +770,18 @@ function render() {
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
+                const rec=button('🎙️とる',()=>record(key,r));
+                const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
                 if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
-                if(r.comparison)cueBody.append(listen);
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
-                const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
-                const rec=button('🎙️とる',()=>record(key,r));
-                const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
-                const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
+                const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');
+                actions.append(listen,rec,stop);
+                if(r.comparison){actions.classList.add('p81-cue-actions');cue.append(actions);}
+                const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
@@ -824,30 +824,7 @@ function measureCues() {
             group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();
         }
         for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
-        if(group.id==='drill5'&&innerWidth>600){
-            // Reserve the complete, non-wrapping listen/record/stop control row.
-            // Measure only the wrapped cue and selected adjective in the cue cell.
-            const actionsWidth=Math.max(...[...group.querySelectorAll('.recording-actions')].map(actions=>{
-                const buttons=[...actions.querySelectorAll('button')];return buttons.reduce((sum,b)=>sum+b.getBoundingClientRect().width,0)+(buttons.length-1)*(parseFloat(getComputedStyle(actions).columnGap)||0);
-            }));
-            let track=Math.min(width,...[...cards].map(card=>{const table=card.querySelector('table'),gap=parseFloat(getComputedStyle(table).columnGap)||0,number=card.querySelector('.drill-number-cell'),used=table.clientWidth-(number?number.getBoundingClientRect().width:0)-gap*(number?2:1)-actionsWidth;return Math.min(card.querySelector('.prompt-label').getBoundingClientRect().width,used);}));
-            const apply=()=>cards.forEach(card=>card.style.setProperty('--p81-cue-width',Math.max(0,track)+'px'));
-            const contentWidth=cell=>{
-                const left=cell.getBoundingClientRect().left;let right=left;
-                const walker=document.createTreeWalker(cell,NodeFilter.SHOW_TEXT);
-                while(walker.nextNode()){
-                    const t=walker.currentNode;if(!t.textContent.trim()||t.parentElement.closest('.tooltip-tip,.custom-tip-box,select,button'))continue;
-                    const range=document.createRange();range.selectNodeContents(t);for(const box of range.getClientRects())right=Math.max(right,box.right);
-                }
-                cell.querySelectorAll('select,button').forEach(e=>right=Math.max(right,e.getBoundingClientRect().right));
-                return right-left;
-            };
-            apply();
-            for(let pass=0;pass<32;pass++){
-                const used=Math.ceil(Math.max(...[...cells].map(contentWidth)));
-                if(track-used<1)break;track=used;apply();
-            }
-        }
+
 
     });
 }
