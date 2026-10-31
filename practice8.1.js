@@ -129,10 +129,10 @@ comparisons.forEach(spec=>{
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
 const sections=[
-    {title:'Drill 1: Nounが好き／Verbのが好き'},
-    {title:'Drill 2: Verbのが好き／きらい'},
-    {title:'Drill 3: Verbのが上手／苦手'},
-    {title:'Drill 4: Degree adverbs'},
+    {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
+    {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
+    {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
+    {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
     {title:'Drill 5: How Do These Expressions Differ?'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
@@ -672,7 +672,8 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else v.result.textContent='(Not recorded yet)';
+    }else if(v.r.comparison){v.result.append(node('span','not-recorded-yet','(Not recorded yet)'));}
+    else v.result.textContent='(Not recorded yet)';
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);
@@ -755,31 +756,30 @@ function render() {
         const group=node('section','p81-section');group.id='drill'+(si+1);
         addExample(group,si);
         const panel=node('div','info-panel info-panel-task1');
-        panel.append(node('span','info-panel-title',section.title));group.append(panel);
+        panel.append(node('span','info-panel-title',section.title));if(section.instruction)panel.append(node('span','info-panel-desc',section.instruction));group.append(panel);
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(si===4&&(index===0||comparisons[index].phase!==comparisons[index-1].phase))group.append(node('p','p81-phase',comparisons[index].phase==='Meaning'?'Meaning':'Speaker & listener'));
-            if(rows[0].scenario)card.append(node('p','p81-scenario',rows[0].scenario));
+            if(rows[0].scenario){const scenario=node('p','p81-scenario');if(si===4)scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].scenario));else scenario.textContent=rows[0].scenario;card.append(scenario);}
             if(rows[0].comparison)card.classList.add('p81-comparison-card');
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             rows.forEach((r,ri)=>{
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
-                if(!ri){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
+                if(!ri&&si!==4){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
                 const cue=node('td','prompt-label drill-cue-cell');
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
                 if(r.comparison){listen.classList.add('p81-cue-listen');cueBody.append(listen);}
-                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);listen.classList.add('p81-cue-listen');cueBody.append(listen);}
+                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                if(r.comparison||r.selectKind==='adverb')actions.append(rec,stop);else actions.append(listen,rec,stop);
+                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
@@ -830,7 +830,7 @@ function measureCues() {
             const actionsWidth=Math.max(...[...group.querySelectorAll('.recording-actions')].map(actions=>{
                 const buttons=[...actions.querySelectorAll('button')];return buttons.reduce((sum,b)=>sum+b.getBoundingClientRect().width,0)+(buttons.length-1)*(parseFloat(getComputedStyle(actions).columnGap)||0);
             }));
-            let track=Math.min(width,...[...cards].map(card=>{const table=card.querySelector('table'),gap=parseFloat(getComputedStyle(table).columnGap)||0;return Math.min(card.querySelector('.prompt-label').getBoundingClientRect().width,table.clientWidth-card.querySelector('.drill-number-cell').getBoundingClientRect().width-gap*2-actionsWidth);}));
+            let track=Math.min(width,...[...cards].map(card=>{const table=card.querySelector('table'),gap=parseFloat(getComputedStyle(table).columnGap)||0,number=card.querySelector('.drill-number-cell'),used=table.clientWidth-(number?number.getBoundingClientRect().width:0)-gap*(number?2:1)-actionsWidth;return Math.min(card.querySelector('.prompt-label').getBoundingClientRect().width,used);}));
             const apply=()=>cards.forEach(card=>card.style.setProperty('--p81-cue-width',Math.max(0,track)+'px'));
             const contentWidth=cell=>{
                 const left=cell.getBoundingClientRect().left;let right=left;

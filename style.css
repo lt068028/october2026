@@ -3365,13 +3365,23 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .practice81-page #drill5 .p81-cue-listen { margin-left: 4px; }
 
-/* Keep the D4 cue and its listen action together; let the result row wrap below. */
-.site-scale.practice81-page #drill4 .p81-card .p81-table { grid-template-columns: 34px minmax(0,1fr); }
-.site-scale.practice81-page #drill4 .p81-card .p81-table .p81-controls { grid-column: 2; }
-.site-scale.practice81-page #drill4 .p81-card .p81-table .prompt-label { grid-column: 2; white-space: nowrap; overflow-wrap: normal; }
-.practice81-page #drill4 .p81-cue-listen { margin-left: 4px; white-space: nowrap; }
 .practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-cue-body { white-space: nowrap; }
 .practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-select { max-width: none; white-space: nowrap; }
+
+/* D5 uses its scenario line for numbering, leaving the cue/control width available. */
+.site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,min(var(--p81-cue-width),var(--drill-cue-limit))) minmax(0,1fr); }
+.site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label { grid-column: 1; }
+.site-scale.practice81-page #drill5 .p81-card .p81-table .p81-controls { grid-column: 2; }
+.practice81-page #drill5 .p81-scenario-number { font-weight: 700; margin-right: 4px; }
+.practice81-page #drill5 .not-recorded-yet { color: var(--text-secondary); }
+.practice81-page #drill5 .p81-comparison-card[data-item="1"] .not-recorded-yet { font-size: .95em; }
+.practice81-page #drill5 .p81-comparison-card[data-item="2"] .not-recorded-yet { font-size: .9em; }
+.practice81-page #drill5 .p81-comparison-card[data-item="3"] .not-recorded-yet { font-size: .85em; }
+.practice81-page #drill5 .p81-comparison-card[data-item="4"] .not-recorded-yet { font-size: .8em; }
+.practice81-page #drill5 .p81-comparison-card[data-item="5"] .not-recorded-yet { font-size: .75em; }
+.practice81-page #drill5 .p81-comparison-card:is([data-item="6"],[data-item="7"]) .not-recorded-yet { font-size: .85em; }
 @media(max-width:600px) {
- .site-scale.practice81-page #drill4 .p81-card .p81-table { grid-template-columns: 28px minmax(0,1fr); }
+ .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
+ .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
+ .site-scale.practice81-page #drill5 .p81-card .p81-table .p81-controls { grid-column: 1; }
 }
