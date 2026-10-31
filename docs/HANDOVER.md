@@ -1,5 +1,14 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.2：疑問文・語彙分散（2026-10-31 / Europe/Vienna / Codex）
+
+- 開始main `7f03560`、workクリーンでGitHub main一致。導入の何も＋Negative, Nothingを１行表示。D1からTense指示を外し、指定のデパート/明日/飲む/先生の４疑問文へ。D2はL8の持っていく/捨てる/洗う/切る、D3は作る/歌う/かぶる、E3は靴をはくへ変更。D3返答キューは何でも／動詞。
+- 別問題枠の動詞・具体的目的語の重複を避ける基本ルールをAGENTS/PROJECT_SPECへ記載。ページ内一覧はPRACTICE82_SPEC。目標語/Q&A/比較/指定語彙は反復の例外。E1とD1の飲むは指定による重複、D1〜D3の11動詞枠は重複なし。既存ページは改作していない。
+- 導入区分は900px以下で独立行。375px等のひらがな区分だけ実幅に合わせ文字を縮小し、本文・ボタンは標準サイズを維持。親子container条件不一致によるDisplay狭幅のはみ出しをmedia条件統一で解消。必要な語の活用形読みと課題限定の漢字異表記を登録、STT原文保持、短答・時間/場所の部分補完を許容。
+- 自動検証：practice82 480、shared-conversation-display 444、example-vertical-spacing 176項目合格。通常/ダーク、375〜1440px、全表記/文体/ヒント、Y/Nロック・独立録音保持・０秒リレー・中断を確認。JS構文・差分チェック済み。
+- mainへ保存。Vercel反映・TTSの実音・ユーザー実機確認は未了。次は公開8.2の表示/音声確認。最終SHAはGit履歴・終了報告を参照。
+
+
 ## 8.1 D5：一語指定・文重複撤去・実内容幅（2026-10-31 / Europe/Vienna / Codex）
 
 - 開始main `a4c37b8`、workクリーン・GitHub main一致。Skill assessment/Personal perceptionをSkill/Perceptionへ短縮。Ex5は母の花育てを維持し、D5第１組は母の料理へ変更。同じ完成文を例とDrillで反復しない。Adj選択・意味/対人的印象の構成は維持。

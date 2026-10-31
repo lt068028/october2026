@@ -3340,3 +3340,15 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale.practice81-page #drill5 .p81-table td.prompt-label { padding-right: 0; }
 .site-scale.practice81-page #drill5 .p81-table td.p81-controls { padding-left: 0; }
 .site-scale.practice81-page #drill5 .p81-select { margin-right: 0; }
+
+/* Keep each introductory concept name on one line; move it above the cue on narrow cards. */
+.practice82-page #drill1 .p81-example { grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); }
+.practice82-page #drill1 .p81-kind { white-space: nowrap; font-size: min(1em,calc((100cqw - 1px) * var(--p82-concept-factor,1))); }
+@media(max-width:900px) {
+ .practice82-page #drill1 .p81-example { grid-template-columns: minmax(0,1fr) max-content max-content; }
+ .practice82-page #drill1 .p81-example-row > .p81-kind { grid-column: 1 / -1; }
+ .practice82-page #drill1 .p81-example-cue { grid-column: 1; }
+ .practice82-page #drill1 .p81-arrow { grid-column: 2; }
+ .practice82-page #drill1 .p81-example-row > button { grid-column: 3; }
+ .practice82-page #drill1 .p81-model { grid-column: 1 / -1; }
+}
