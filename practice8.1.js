@@ -28,6 +28,10 @@ W("guitar","ギター","ギター","gitā","guitar");
 W("play","弾く","ひく","hiku","to play an instrument");
 W("teach","教える","おしえる","oshieru","to teach");
 W("letter","手紙","てがみ","tegami","letter");
+W("grammar","文法","ぶんぽう","bunpō","grammar");
+W("question","質問","しつもん","shitsumon","question");
+W("answer","答える","こたえる","kotaeru","to answer");
+W("motorcycle","バイク","バイク","baiku","motorcycle");
 W("father","父","ちち","chichi","my father");
 W("olderSister","姉","あね","ane","my older sister");
 W("computer","パソコン","ぱそこん","pasokon","computer");
@@ -105,10 +109,10 @@ const action=(object,verb,particle='を')=>({object,verb,particle});
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
 const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'teacher',...action('japanese','teach'),adjective:'good'},
+    {subject:'teacher',...action('grammar','teach'),adjective:'good'},
     {subject:'student',...action('letter','write'),adjective:'good'},
     {subject:'child',...action('kanji','remember'),adjective:'difficult'},
-    {subject:'siblings',...action('car','drive'),adjective:'difficult'}
+    {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
 ];
 const degrees=[
     {...action('car','wash'),adjective:'like',initial:'totemo'},
@@ -126,7 +130,7 @@ const comparisons=[
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
  {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have heard your friend speak Japanese and infer that they see it as a strength.'},
  {phase:'Impression',subject:'friend',...action('song','sing'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your friend sing, choose a direct judgment or a more considerate way to describe difficulty.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s Japanese.'}
+ {phase:'Impression',subject:'japaneseTeacher',...action('question','answer','に'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s answers to questions.'}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
