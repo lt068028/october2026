@@ -65,6 +65,9 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-card').evaluateAll(es=>es.every(e=>e.querySelectorAll('tr').length===2)),true,'two fixed rows per situation');
  check(await page.locator('#drill5 [data-set],#drill5 .p81-tabs,#drill5 .p81-target').count(),0,'no set buttons or target tasks');
  check(await page.locator('#drill5 .p81-card select').count(),14,'one adjective quiz per row');
+ check(await page.locator('#drill5 .example-box .p81-kind').allTextContents(),['Skill','Perception'],'one-word meaning labels');
+ check(await page.evaluate(()=>{const ex=[...document.querySelectorAll('#drill5 .example-box .p81-model')].map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return audit81.normalize(c.textContent);});return audit81.rowsFor(4).flat().every(r=>!ex.includes(audit81.normalize(r.text)));}),true,'D5 never repeats an Example5 model');
+
  check(await page.locator('#drill5 .p81-impression-choice').count(),0,'impression selection replaced by fixed row labels');
  check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>e.disabled)),true,'model and recording wait for matching adjective');
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
@@ -195,6 +198,18 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   check(degree.ditto.every(x=>x<1),true,'ditto shares が center');
   const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));
   check(layout.overflow,false,'no page overflow '+width+' '+scheme);
+  if(width>600){
+   const fit=await page.locator('#drill5').evaluate(group=>{
+    const cells=[...group.querySelectorAll('.p81-card .prompt-label')];let right=0;
+    for(const cell of cells){const walk=document.createTreeWalker(cell,NodeFilter.SHOW_TEXT);while(walk.nextNode()){const t=walk.currentNode;if(!t.textContent.trim()||t.parentElement.closest('.tooltip-tip,.custom-tip-box,select,button'))continue;const range=document.createRange();range.selectNodeContents(t);for(const r of range.getClientRects())right=Math.max(right,r.right);}for(const e of cell.querySelectorAll('select,button'))right=Math.max(right,e.getBoundingClientRect().right);}
+    const xs=[...group.querySelectorAll('.recording-actions')].map(e=>e.getBoundingClientRect().left);
+    return {gap:Math.min(...xs)-right,spread:Math.max(...xs)-Math.min(...xs),single:cells.every(c=>c.querySelector('select').getBoundingClientRect().top-c.querySelector('.p81-kind').getBoundingClientRect().top<20)};
+   });
+   check(fit.gap>=3.5&&fit.gap<6,true,'D5 listen follows actual wrapped cue with only column gap '+width+'/'+fit.gap);
+   check(fit.spread<1,true,'D5 shared listen column after wrapping');
+   if(width>=1440)check(fit.single,true,'short labels keep default cues on one line');
+  }
+
   const styles=await page.evaluate(()=>({labels:[...document.querySelectorAll('.p81-kind:not(.conversation-role),.p81-target')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight),c.backgroundColor];}),adverbs:[...document.querySelectorAll('#drill4 .example-box .p81-model .degree-adverb')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight)];}),negative:getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,positive:getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color}));
   check(styles.labels.every(([c,w,b])=>c===(scheme==='dark'?'rgb(253, 224, 71)':'rgb(245, 127, 23)')&&w>=700&&b==='rgba(0, 0, 0, 0)'),true,'ordinary heading defaults, no badge');
   check(styles.adverbs.length,6,'six emphasized model adverbs');

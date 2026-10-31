@@ -3334,3 +3334,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Practice 8.2 uses the established Practice 8 layout, with wrapping concept names. */
 .practice82-page .p81-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
 @media(max-width:760px) { .practice82-page .p81-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; } }
+/* D5 keeps its three-column layout through 601px; do not inherit the generic 850px control-row move. */
+.site-scale.practice81-page #drill5 .p81-table td.p81-controls { grid-column: 3; }
+@media(max-width:600px) { .site-scale.practice81-page #drill5 .p81-table td.p81-controls { grid-column: 2; } }
+.site-scale.practice81-page #drill5 .p81-table td.prompt-label { padding-right: 0; }
+.site-scale.practice81-page #drill5 .p81-table td.p81-controls { padding-left: 0; }
+.site-scale.practice81-page #drill5 .p81-select { margin-right: 0; }

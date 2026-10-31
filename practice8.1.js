@@ -102,11 +102,11 @@ const degrees=[
 ];
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'mother',...action('flower','grow'),options:['good','strong'],labels:['Skill assessment','Personal perception'],scenario:'You have seen the flowers; your mother calls gardening her strength.'},
- {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Skill assessment','Personal perception'],scenario:'Separate your speaking skill from how difficult speaking feels.'},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Personal perception','Unnatural'],scenario:'Talk about getting up early: personal difficulty versus an unusual skill judgment.'},
+ {phase:'Meaning',subject:'mother',...action('cook','do'),options:['good','strong'],labels:['Skill','Perception'],scenario:'You have tried your mother’s cooking; she calls it her strength.'},
+ {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Skill','Perception'],scenario:'Separate your speaking skill from how difficult speaking feels.'},
+ {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Perception','Unnatural'],scenario:'Talk about getting up early: personal difficulty versus an unusual skill judgment.'},
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Confident'],scenario:'Introduce your cooking ability to a new acquaintance.'},
- {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Personal perception'],scenario:'You heard them speak; they also call Japanese their strength.'},
+ {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Perception'],scenario:'You heard them speak; they also call Japanese their strength.'},
  {phase:'Impression',subject:'friend',...action('song','sing'),options:['good','bad'],labels:['Praise','Direct'],scenario:'Describe your friend’s singing after hearing it.'},
  {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Patronizing','Rude'],scenario:'As a beginner, say this directly to an experienced Japanese teacher about their Japanese.'}
 ];
@@ -694,7 +694,7 @@ function addExample(root,si) {
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
-        [makeRow('ex5-skill',{...comparisons[0],adjective:'good',highlightTopic:true},{kind:'Skill assessment'}),makeRow('ex5-perception',{...comparisons[0],adjective:'strong',highlightTopic:true},{kind:'Personal perception'})]
+        [makeRow('ex5-skill',{subject:'mother',...action('flower','grow'),adjective:'good',highlightTopic:true},{kind:'Skill'}),makeRow('ex5-perception',{subject:'mother',...action('flower','grow'),adjective:'strong',highlightTopic:true},{kind:'Perception'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
@@ -791,6 +791,31 @@ function measureCues() {
             group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();
         }
         for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
+        if(group.id==='drill5'&&innerWidth>600){
+            // Reserve the actual three-button width, then measure wrapped content,
+            // not the original nowrap line or the empty cue cell rectangle.
+            const actionsWidth=Math.max(...[...group.querySelectorAll('.recording-actions')].map(actions=>{
+                const buttons=[...actions.querySelectorAll('button')];return buttons.reduce((sum,b)=>sum+b.getBoundingClientRect().width,0)+(buttons.length-1)*(parseFloat(getComputedStyle(actions).columnGap)||0);
+            }));
+            let track=Math.min(width,...[...cards].map(card=>{const table=card.querySelector('table'),gap=parseFloat(getComputedStyle(table).columnGap)||0;return Math.min(card.querySelector('.prompt-label').getBoundingClientRect().width,table.clientWidth-card.querySelector('.drill-number-cell').getBoundingClientRect().width-gap*2-actionsWidth);}));
+            const apply=()=>cards.forEach(card=>card.style.setProperty('--p81-cue-width',Math.max(0,track)+'px'));
+            const contentWidth=cell=>{
+                const left=cell.getBoundingClientRect().left;let right=left;
+                const walker=document.createTreeWalker(cell,NodeFilter.SHOW_TEXT);
+                while(walker.nextNode()){
+                    const t=walker.currentNode;if(!t.textContent.trim()||t.parentElement.closest('.tooltip-tip,.custom-tip-box,select,button'))continue;
+                    const range=document.createRange();range.selectNodeContents(t);for(const box of range.getClientRects())right=Math.max(right,box.right);
+                }
+                cell.querySelectorAll('select,button').forEach(e=>right=Math.max(right,e.getBoundingClientRect().right));
+                return right-left;
+            };
+            apply();
+            for(let pass=0;pass<32;pass++){
+                const used=Math.ceil(Math.max(...[...cells].map(contentWidth)));
+                if(track-used<1)break;track=used;apply();
+            }
+        }
+
     });
 }
 function sync() {
@@ -1322,4 +1347,5 @@ function init() {
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
 window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();});
+document.fonts.ready.then(measureCues);
 })();

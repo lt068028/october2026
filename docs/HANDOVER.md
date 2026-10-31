@@ -1,5 +1,13 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D5：一語指定・文重複撤去・実内容幅（2026-10-31 / Europe/Vienna / Codex）
+
+- 開始main `a4c37b8`、workクリーン・GitHub main一致。Skill assessment/Personal perceptionをSkill/Perceptionへ短縮。Ex5は母の花育てを維持し、D5第１組は母の料理へ変更。同じ完成文を例とDrillで反復しない。Adj選択・意味/対人的印象の構成は維持。
+- 原因：旧measureCuesは折返し前のnowrap最大幅＋8pxを保持し、CSSの列間隔とセルpadding/select末尾marginも加算。折返した実内容に合わせた再計測がなかった。さらに900px付近では、850px共通container規則と600pxの練習８規則が競合し、３列表のまま操作セルだけ次行へ移っていた。
+- D5限定で操作３ボタンの実寸と利用可能幅を確保し、折返したテキストRange/選択欄の最長端を計測して共有キュー列を詰める。余剰幅は操作列の後ろへ。末尾paddingとselect右marginを除き、最長端→きくは共通grid gap4px（小数丸め１px未満）だけ。600pxまでは次行、601px以降は３列に統一する詳細度のCSSを指定。他Drill/8.2へ幅計算法を広げない。フォント準備・設定・リサイズで再計測。固定位置補正・フォント縮小はしない。
+- 検証：practice81 991、practice81-cue-fit60項目合格。例文/Drill非重複、一語指定、標準1440/1920pxの１行表示、700/900/1100/1440/1920px×両表記×全ヒントで、最長端から約4〜5px・全行のきく同列を実測。クイズ/録音・２行保持・基線・通常/ダークも確認。描画目視・構文/差分チェック済み。
+- PRACTICE8_SPEC/UI_LAYOUT_SPEC/PROJECT_SPEC更新、幅計算の単独回帰テストを追加。mainへ保存。Vercelデプロイ完了とユーザー実機確認は未了。最終SHAはGit履歴・終了報告を参照。
+
 ## 8.2新設：何か・何も・何でも（2026-10-31 / Europe/Vienna / Codex）
 
 - 開始main `5cd9d74`、workクリーン・GitHub main一致確認。ユーザー承認の青写真を実装。新規practice8.2.html/JS、Indexへ追加。
