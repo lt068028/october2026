@@ -113,18 +113,18 @@ const comparisons=[
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
  const explanations={
-  Skillful:'This is an outside judgment of how well someone performs an activity. You can praise someone’s skill even if you do not share that skill.',
-  Observed:'From what the speaker observes, they infer that the person sees this activity as one of their strengths or difficulties. This is a guess about the person’s own view.',
-  Poor:'This describes someone who does not perform an activity well. It judges ability, not how the person feels about doing it.',
-  Uncomfortable:'This describes an activity the person feels uneasy or uncomfortable doing. It does not necessarily mean they lack skill.',
-  Unnatural:'下手 usually describes skill. Getting up early is not normally treated as a skill, so 早く起きるのが下手 sounds unnatural; 苦手 is the natural choice.',
-  Boastful:'Using 上手 for your own ability can sound like you are praising yourself too strongly.',
-  Natural:'得意 is a natural way to describe something as your own strength. It presents a personal forte rather than an outside judgment.',
-  Praise:'The speaker praises the friend’s demonstrated Japanese ability. The speaker does not need to share that skill.',
-  Blunt:'Calling a friend 下手 directly judges their ability and can sound blunt or hurtful.',
-  Tactful:'苦手 describes the activity as something the person finds difficult, rather than bluntly judging their ability. This softer phrasing can help avoid hurting the listener.',
-  Presumptuous:'A beginner judging a Japanese teacher’s professional Japanese may seem to claim authority without enough knowledge to support that judgment.',
-  Harsh:'Calling the teacher 下手 is a severe negative judgment about their core expertise and may sound hurtful.'
+  Skillful:'An outside judgment of someone’s ability. You can praise a skill even if you do not share it.',
+  Observed:'A guess, based on observation, about someone’s own strengths or difficulties.',
+  Poor:'Judges ability: the person does not perform the activity well.',
+  Uncomfortable:'The activity feels uncomfortable; this does not necessarily mean the person lacks skill.',
+  Unnatural:'下手 describes skill. Since 早く起きる is not a skill, 苦手 is more natural.',
+  Boastful:'上手 for your own ability can sound like self-praise.',
+  Natural:'得意 naturally describes your own strength without sounding boastful.',
+  Praise:'Praises a friend’s demonstrated ability; you do not need to share that skill.',
+  Blunt:'下手 directly judges a friend’s ability and can sound hurtful.',
+  Tactful:'苦手 describes difficulty more gently than judging someone’s ability.',
+  Presumptuous:'A beginner judging a teacher’s Japanese may sound overconfident.',
+  Harsh:'下手 is a strong negative judgment, especially about a teacher’s expertise.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
@@ -654,7 +654,7 @@ function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
     if(v.notYet)v.notYet.hidden=Boolean(value?.raw||value?.url||session?.key===key);
-    if(v.quizNote)v.quizNote.hidden=!v.r.quizChoice||Boolean(value?.url)||session?.key===key;
+    if(v.nuance)v.nuance.hidden=!Boolean(value?.url);
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
@@ -678,10 +678,6 @@ function showResult(key,notice='') {
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);
-        if(v.r.comparison) {
-            const explanation=node('span','p81-nuance-explanation',v.r.impressions[v.r.adjective]);
-            explanation.setAttribute('role','note');v.result.append(explanation);
-        }
     }
     if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
 }
@@ -786,10 +782,10 @@ function render() {
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
-                let quizNote=null;
-                if(r.comparison){const quiz=node('p','p81-choice-feedback');quiz.setAttribute('role','status');quiz.hidden=!r.quizChoice;quiz.textContent=r.quizChoice?(r.pending?'Try the other adjective for this label.':'Correct choice. Record the sentence to see the explanation.'):'';quizNote=quiz;}
-                cell.append(line,correction,feeling);if(quizNote)cell.append(quizNote);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,quizNote,notYet});showResult(key);
+                let nuance=null;
+                if(r.comparison){nuance=node('div','p81-nuance-note');nuance.hidden=true;nuance.setAttribute('role','note');nuance.append(node('div','p81-nuance-note-title','✨Notice the difference:'),node('div','p81-nuance-note-text',r.impressions[r.adjective]));}
+                cell.append(line,correction,feeling);if(nuance)cell.append(nuance);tr.append(cue,cell);body.append(tr);
+                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance});showResult(key);
             });
             card.append(table);group.append(card);
         });
