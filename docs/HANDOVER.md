@@ -4,7 +4,7 @@
 
 - 原因：D5の7問目はキュー／Adjをnowrapにする一方、600px超では録音操作を隣列に固定。幅計算が制約幅より長いnowrap内容のオーバーフローを隣列へ許していた。
 - 修正：D5は全幅1列のカードにし、「きく・とる・停止」をAdj後8pxの専用行へまとめ、ボタン間2px・nowrapとする。キューとAdjは折り返し可能。
-- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。`git diff --check` 合格。自動テスト未実施。
+- PRACTICE8_SPEC、practice8.1.html、practice8.1.js、style.cssを更新。HTMLのCSS/JS版クエリも更新して古いブラウザキャッシュを回避。`git diff --check` 合格。自動テスト未実施。
 
 ## 8.1 D1〜D5のタスク説明とD5間隔（2026-10-31 / Europe/Vienna / Codex）
 
