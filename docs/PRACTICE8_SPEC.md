@@ -97,8 +97,8 @@ Adj選択時は正誤メッセージを出さない。同じペアのどちら�
 |  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
 | 6 Speaker & listener | 兄はカラオケで歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
 |  |  | Tactful → 苦手 | The speaker describes the subject’s difficulty more gently than judging their ability. |
-| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が能力の直接評価と自己認識の推測を比較 | Direct evaluation → 上手 | 上手 directly describes the teacher’s speaking ability. From a beginner, this may sound presumptuous. |
-|  |  | Assumed self-view → 得意 | 得意 suggests the teacher sees Japanese as a personal strength. A beginner may sound presumptuous by assuming how the teacher views their own ability. |
+| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が相手の能力を評価することと立場を越えて自己認識を推測することを比較 | Presumptuous → 上手 | 上手 directly judges the teacher’s speaking ability. From a beginner, this may sound presumptuous. |
+|  |  | Overstepping → 得意 | 得意 assumes the teacher sees Japanese as a personal strength. From a beginner, this may overstep by presuming how the teacher views their own ability. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
 

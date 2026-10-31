@@ -145,7 +145,7 @@ const comparisons=[
  {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
  {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have seen your friend write kanji and infer that they see it as a strength.'},
  {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your older brother sing karaoke, choose a direct judgment or a more considerate way to describe difficulty.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Direct evaluation','Assumed self-view'],scenario:'As a beginner, compare directly judging a Japanese teacher’s ability with guessing how they view it.'}
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'As a beginner, compare calling a Japanese teacher 上手 with saying 得意, which assumes how they view their own ability.'}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
@@ -160,8 +160,8 @@ comparisons.forEach(spec=>{
   Praise:'The speaker praises an ability they have observed; they do not need to share that skill.',
   Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
   Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
-  'Direct evaluation':'上手 directly describes the teacher’s speaking ability. From a beginner, this may sound presumptuous.',
-  'Assumed self-view':'得意 suggests the teacher sees Japanese as a personal strength. A beginner may sound presumptuous by assuming how the teacher views their own ability.'
+  'Presumptuous':'上手 directly judges the teacher’s speaking ability. From a beginner, this may sound presumptuous.',
+  'Overstepping':'得意 assumes the teacher sees Japanese as a personal strength. From a beginner, this may overstep by presuming how the teacher views their own ability.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
  if(spec.object==='early')spec.impressions.difficult='The speaker thinks getting up early is difficult for them.';
