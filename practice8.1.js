@@ -102,24 +102,38 @@ const degrees=[
 ];
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'mother',...action('cook','do'),options:['good','strong'],labels:['Skill','Perception'],scenario:'You have tried your mother’s cooking; she calls it her strength.'},
- {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Skill','Perception'],scenario:'Separate your speaking skill from how difficult speaking feels.'},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Perception','Unnatural'],scenario:'Talk about getting up early: personal difficulty versus an unusual skill judgment.'},
- {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Confident'],scenario:'Introduce your cooking ability to a new acquaintance.'},
- {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Perception'],scenario:'You heard them speak; they also call Japanese their strength.'},
- {phase:'Impression',subject:'friend',...action('song','sing'),options:['good','bad'],labels:['Praise','Direct'],scenario:'Describe your friend’s singing after hearing it.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Patronizing','Rude'],scenario:'As a beginner, say this directly to an experienced Japanese teacher about their Japanese.'}
+ {phase:'Meaning',subject:'mother',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'You have tried your mother’s cooking. From what you have seen, you think she sees cooking as one of her strengths.'},
+ {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Distinguish low speaking ability from feeling uncomfortable speaking English.'},
+ {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Observed','Unnatural'],scenario:'Describe difficulty getting up early, then compare it with an unusual skill judgment.'},
+ {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
+ {phase:'Impression',subject:'studentFriend',...action('japanese','speak'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have heard your friend speak Japanese and infer that they see it as a strength.'},
+ {phase:'Impression',subject:'friend',...action('song','sing'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your friend sing, choose a direct judgment or a more considerate way to describe difficulty.'},
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','bad'],labels:['Presumptuous','Harsh'],scenario:'As a beginner, consider how it may sound to judge a Japanese teacher’s Japanese.'}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
- spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,{label:({Boastful:'May sound boastful in this situation.',Confident:'States your own strength.',Praise:'Praises the other person’s skill.',Direct:'May sound too direct.',Patronizing:'May sound patronizing: you are judging the teacher’s expertise.',Rude:'May sound rude: a direct negative judgment of the teacher.',Unnatural:'Unusual: getting up early is not normally described with 下手.'})[spec.labels[i]]||({good:'This assesses skill.',bad:'This directly assesses limited skill.',strong:'This describes a personal strength.',difficult:'This describes personal difficulty.'})[id],tone:['Unnatural','Boastful','Direct','Patronizing','Rude'].includes(spec.labels[i])?'caution':'fit'}]));
+ const explanations={
+  Skillful:'This is an outside judgment of how well someone performs an activity. You can praise someone’s skill even if you do not share that skill.',
+  Observed:'From what the speaker observes, they infer that the person sees this activity as one of their strengths or difficulties. This is a guess about the person’s own view.',
+  Poor:'This describes someone who does not perform an activity well. It judges ability, not how the person feels about doing it.',
+  Uncomfortable:'This describes an activity the person feels uneasy or uncomfortable doing. It does not necessarily mean they lack skill.',
+  Unnatural:'下手 usually describes skill. Getting up early is not normally treated as a skill, so 早く起きるのが下手 sounds unnatural; 苦手 is the natural choice.',
+  Boastful:'Using 上手 for your own ability can sound like you are praising yourself too strongly.',
+  Natural:'得意 is a natural way to describe something as your own strength. It presents a personal forte rather than an outside judgment.',
+  Praise:'The speaker praises the friend’s demonstrated Japanese ability. The speaker does not need to share that skill.',
+  Blunt:'Calling a friend 下手 directly judges their ability and can sound blunt or hurtful.',
+  Tactful:'苦手 describes the activity as something the person finds difficult, rather than bluntly judging their ability. This softer phrasing can help avoid hurting the listener.',
+  Presumptuous:'A beginner judging a Japanese teacher’s professional Japanese may seem to claim authority without enough knowledge to support that judgment.',
+  Harsh:'Calling the teacher 下手 is a severe negative judgment about their core expertise and may sound hurtful.'
+ };
+ spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
 });
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Compare liking a thing with liking an activity.'},
     {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask a Yes/No question. Choose 🙆 or 🙅 and answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手 to describe each person.'},
     {title:'Drill 4: Degree adverbs',instruction:'💡Choose an adverb. Use a negative ending with あまり or ぜんぜん.'},
-    {title:'Drill 5: Compare expressions',instruction:'💡Choose an adjective for each label: meaning first, then impression.'}
+    {title:'Drill 5: Choose, Record & Learn',instruction:'💡Choose the adjective that fits each label. Record the sentence, then read the explanation.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
@@ -662,6 +676,10 @@ function showResult(key,notice='') {
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);
+        if(v.r.comparison) {
+            const explanation=node('span','p81-nuance-explanation',v.r.impressions[v.r.adjective]);
+            explanation.setAttribute('role','note');v.result.append(explanation);
+        }
     }
     if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
 }
@@ -694,7 +712,7 @@ function addExample(root,si) {
         [makeRow('ex2-q',{...selfActions[0],adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...selfActions[0],adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{...people[0],adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{...people[0],adjective:'difficult',highlightTopic:true})],
         adverbs.map(adverb=>makeRow('ex4-'+adverb,{...degrees[0],adverb})),
-        [makeRow('ex5-skill',{subject:'mother',...action('flower','grow'),adjective:'good',highlightTopic:true},{kind:'Skill'}),makeRow('ex5-perception',{subject:'mother',...action('flower','grow'),adjective:'strong',highlightTopic:true},{kind:'Perception'})]
+        [makeRow('ex5-skill',{subject:'mother',...action('flower','grow'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'mother',...action('flower','grow'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
@@ -751,22 +769,23 @@ function render() {
                 const cue=node('td','prompt-label drill-cue-cell');
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
+                const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
+                if(r.comparison)cueBody.append(listen);
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
-                const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                actions.append(listen,rec,stop);
+                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
                 const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
                 let quizNote=null;
-                if(r.comparison){const quiz=node('p','p81-choice-feedback');quiz.setAttribute('role','status');quiz.hidden=!r.quizChoice;quiz.textContent=r.quizChoice?(r.pending?'Try the other adjective for this label.':'✓ '+r.impressions[r.adjective].label):'';quizNote=quiz;}
+                if(r.comparison){const quiz=node('p','p81-choice-feedback');quiz.setAttribute('role','status');quiz.hidden=!r.quizChoice;quiz.textContent=r.quizChoice?(r.pending?'Try the other adjective for this label.':'Correct choice. Record the sentence to see the explanation.'):'';quizNote=quiz;}
                 cell.append(line,correction,feeling);if(quizNote)cell.append(quizNote);tr.append(cue,cell);body.append(tr);
                 views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
             });
@@ -803,7 +822,8 @@ function measureCues() {
         }
         for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
         if(group.id==='drill5'&&innerWidth>600){
-            // Reserve the actual three-button width, then measure wrapped content,
+            // Reserve the recording/stop control width; the listen button is part of the cue,
+            // so it is measured together with the wrapped cue and selected adjective.
             // not the original nowrap line or the empty cue cell rectangle.
             const actionsWidth=Math.max(...[...group.querySelectorAll('.recording-actions')].map(actions=>{
                 const buttons=[...actions.querySelectorAll('button')];return buttons.reduce((sum,b)=>sum+b.getBoundingClientRect().width,0)+(buttons.length-1)*(parseFloat(getComputedStyle(actions).columnGap)||0);

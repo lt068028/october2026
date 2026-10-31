@@ -1,5 +1,12 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D5：録音後の解説フロー（2026-10-31 / Europe/Vienna / Codex）
+
+- 開始main `941c2ed`、mainがorigin/mainと一致し作業ツリーはクリーン。D5の語彙・対人印象ラベルと英語解説文をユーザー承認に基づき改訂。
+- D5,6は上手を重複させず、Blunt→下手／Tactful→苦手。D5タイトルは「Choose, Record & Learn」、説明はラベルに合うAdjを選び録音後に解説を読む流れ。選択後は正誤と録音案内のみ、詳細解説は各行の録音URL保存後に録音再生ボタン直下へ表示。
+- D5限定で「きく」を日本語キュー・Adj選択の直後へ移動。ラベル、クイズ選択、文型判定、録音保持、音声ライフサイクルは従来仕様を維持。
+- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。自動確認：`git diff --check` 合格。既存テストは依頼外のため未実行。JavaScript構文確認はNode.jsが環境になく未実施。公開反映・ユーザー実機確認は未了。
+
 ## 8.1：英語指定後のキュー頭整列（2026-10-31 / Europe/Vienna / Codex）
 
 - 開始main `f600815`、workクリーン・GitHub main一致。ユーザーがD5のAdvancedタイトル、Ex5のAssessment等の語、動詞の分散案を依頼。これら名称/内容変更は選定用の提案に留め、承認前に差し替えていない。

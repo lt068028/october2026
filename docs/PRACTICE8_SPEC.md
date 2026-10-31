@@ -68,42 +68,53 @@ Example4は同じ料理を作る動作・好きの評価について6副詞を6�
 
 数直線に近いガイドは `ぜんぜん〜ない／あまり〜ない／ちょっと／まあまあ／とても・すごく` の5位置。−−−／−／＋／＋＋／＋＋＋を添える。否定形は赤、肯定形は青。程度の目安であり数値・厳密な等間隔ではない。好評価・悪評価の色分けでもない（すごくきらいも青）。好きじゃない＝嫌いと定義しない。狭幅では折り返し、色だけに依存しない。
 
-### D5：Meaning → Speaker & listener（Adj選択クイズ）
+### D5：Choose, Record & Learn（Adjクイズ）
 
-左端のオレンジ系太字は指定する意味・印象。学習者は日本語Adjを２択プルダウンで選ぶ。前半Meaning、後半Speaker & listenerの順で７問×２行。通常Drill内の区分非表示に対する承認例外として共通example-label-titleを使い、独自バッジは作らない。Target/Skillのセット切替と右側の英語印象２択は設けない。
+学習者は各行に固定表示された英語ラベルを読み、2択の日本語Adjから合うものを考えて選ぶ。正解なら「Correct choice. Record the sentence to see the explanation.」と次の操作だけを案内し、誤答なら別のAdjを試す案内を出す。選択だけで音声を再生・録音しない。各行の「🔊きく」は日本語キューとAdj選択の直後に置く（D5限定の配置例外）。「🎙️とる」「⏹️」は共通の録音操作列に置く。
 
-説明：💡Choose an adjective for each label: meaning first, then impression.
+録音が完了し録音URLが保存された後、その行の録音再生ボタンの真下に選択Adjの詳しい英語解説を表示する。解説は行ごとに独立し、文字起こしの正誤とは独立して録音完了を条件とする。選択時に詳しい解説を先出ししない。D5タイトルと説明はこの学習順序を示す。
 
-| 順 | 場面・文の共通部分 | 左の指定 → 選ぶAdj（上段／下段） |
-| --- | --- | --- |
-| 1 Meaning | 母は料理をするのが…：実際の料理を食べており、母が得意分野だと言うことも知っている | Skill → 上手／Perception → 得意 |
-| 2 Meaning | 私は英語を話すのが…：技能の低さと、自分が感じる難しさを区別 | Skill → 下手／Perception → 苦手 |
-| 3 Meaning | 私は早く起きるのが… | Perception → 苦手／Unnatural → 下手 |
-| 4 Speaker & listener | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手／Confident → 得意 |
-| 5 Speaker & listener | 留学生の友達は日本語を話すのが…：実際の会話と本人の強みについての発言を知っている | Praise → 上手／Perception → 得意 |
-| 6 Speaker & listener | 友達は歌を歌うのが…：実際に歌を聞いた後の紹介 | Praise → 上手／Direct → 下手 |
-| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が教師本人の専門能力を直接評価 | Patronizing → 上手／Rude → 下手 |
+タイトル：`Drill 5: Choose, Record & Learn`
 
-Skillは技能への評価、Perceptionはその人の強み・困難についての捉え方を指す。上手が完全に客観的な事実という意味ではない。第三者への得意は禁止せず、本人の発言等を知って紹介する例を含める。早起きの下手は通常の用法として不自然という例で、思考活動すべてに上手を禁止する一般則にはしない。計算の比較と、原理が重複する踊るの比較は今回は追加しない。
+説明：`💡Choose the adjective that fits each label. Record the sentence, then read the explanation.`
 
-各行のAdjは未選択から開始。指定と合わない語を選ぶと再選択の案内、合う語を選ぶと短い意味/場面の説明を表示。合う語の選択後にきく・とるを解除し、解除前は両方へChoose an adjective that matches the label.を表示。英語指定は変わらず、選択だけで音声や録音を開始しない。モデル全文を日本語キューに先に出さず、対象Adjは選択後の再生で確認する。
+前半はMeaning、後半はSpeaker & listenerの順。７問×２行。D5,6は上手／下手の対を避け、下手／苦手の言い方の差を扱う。
 
-録音の正誤はその行のモデル文の文法・内容を判定し、声色や人格は判定しない。文体・表記・語彙ヒントを変更しても選択と両行の録音・抽出文・再生ボタンを保持。行IDと選択語の組で結果を保存し、別の行や選択へ流用しない。録音中は他操作をロックし、既存の0秒リレーと中断動作を維持。
+| 順 | 場面 | ラベル → 選ぶAdj | 録音後に表示する英語解説 |
+| --- | --- | --- | --- |
+| 1 Meaning | 母は料理をするのが…：料理を実際に食べ、母が料理を強みと考えていると推測できる | Skillful → 上手 | This is an outside judgment of how well someone performs an activity. You can praise someone’s skill even if you do not share that skill. |
+|  |  | Observed → 得意 | From what the speaker observes, they infer that the person sees this activity as one of their strengths or difficulties. This is a guess about the person’s own view. |
+| 2 Meaning | 私は英語を話すのが…：技能の低さと、話す際の居心地の悪さを区別 | Poor → 下手 | This describes someone who does not perform an activity well. It judges ability, not how the person feels about doing it. |
+|  |  | Uncomfortable → 苦手 | This describes an activity the person feels uneasy or uncomfortable doing. It does not necessarily mean they lack skill. |
+| 3 Meaning | 私は早く起きるのが… | Observed → 苦手 | From what the speaker observes, they infer that the person finds the activity difficult. This is a guess about the person’s own view. |
+|  |  | Unnatural → 下手 | 下手 usually describes skill. Getting up early is not normally treated as a skill, so 早く起きるのが下手 sounds unnatural; 苦手 is the natural choice. |
+| 4 Speaker & listener | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | Using 上手 for your own ability can sound like you are praising yourself too strongly. |
+|  |  | Natural → 得意 | 得意 is a natural way to describe something as your own strength. It presents a personal forte rather than an outside judgment. |
+| 5 Speaker & listener | 留学生の友達は日本語を話すのが…：実際の会話を聞いている | Praise → 上手 | The speaker praises the friend’s demonstrated Japanese ability. The speaker does not need to share that skill. |
+|  |  | Observed → 得意 | From what the speaker knows, they infer that the friend sees Japanese as one of their strengths. This is a guess about the friend’s own view. |
+| 6 Speaker & listener | 友達は歌を歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | Calling a friend 下手 directly judges their ability and can sound blunt or hurtful. |
+|  |  | Tactful → 苦手 | 苦手 describes the activity as something the person finds difficult, rather than bluntly judging their ability. This softer phrasing can help avoid hurting the listener. |
+| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が教師の専門能力を評価 | Presumptuous → 上手 | A beginner judging a Japanese teacher’s professional Japanese may seem to claim authority without enough knowledge to support that judgment. |
+|  |  | Harsh → 下手 | Calling the teacher 下手 is a severe negative judgment about their core expertise and may sound hurtful. |
 
-Exampleと対応Drillで同一の完成文を反復しない。D5第１組は母の料理とし、Example5は母の花を育てる技能についてSkill（上手）／Perception（得意）の２文を常時表示・独立再生する。はとのがを共通ゴールドで強調。花・育てる、早く起きるはユーザー提示の比較例に基づく本課題の補足語として登録する。
+上手は技能への外部評価、得意は本人が強みと捉えているという観察者の推測として扱う。どちらも絶対的な客観事実を意味しない。得意を本人専用に限定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
+
+録音の正誤はその行の文法・内容を判定し、声色や人格、英語ラベルの対人評価は採点しない。録音・抽出文・再生ボタンは行IDと選択Adjの組ごとに保存し、別行や別Adjへ流用しない。表記・文体・ヒント変更でも選択と保存済み録音を保持し、録音時の正誤は再判定しない。録音中は他操作をロックし、既存の0秒リレーと中断動作を維持する。
+
+Exampleと対応Drillで同じ完成文を反復しない。D5第1問は母の料理、Example5は母の花を育てる文とし、Skillful（上手）／Observed（得意）の意味比較を常時表示・独立再生する。は／のがを共通ゴールドで強調する。花・育てる、早く起きるは本課題の補足語彙として登録する。
 
 ## 表記・音声・判定・保持
 
 - L8相当のWith漢字を初期値とする。Hiragana Only、Formal／Informal／Casual、Hover／Display／OFFは既存UIを踏襲。全モードでのの前は辞書形を維持する。Casualでも今回の目標であるのがを省略しない。
 - 覚える（標準語彙表ではL9）、まあまあ（L11）はユーザー指定の重要な補足語として今回含める。
 - キュー・Exampleの語彙は共通ヒント。Displayは語句ごとに改行。文法のが／名詞行のがを太字＋ゴールドで表示する。Example3・Example5は主題のはも強調。8.1固有の旧色#906500/#ffd54fを撤去し、共通の通常#ca8a04・ダーク#fbbf24へ統一。共通grammar-highlightを直接使用しページ独自の色指定は廃止。比較用の色3案は採用せず、ユーザー指示により現行色を維持。
-- Y/N・副詞・D3評価語の選択ごと、およびD5の各指定行・選択語ごとに録音URL・STT原文・録音時モデル・許容文・判定を保存。D5の指定語は固定表示する。選択を戻すと復元。表記・文体・ヒント変更で録音を消さず、保存した正誤を再判定しない。
+- Y/N・副詞・D3評価語の選択ごと、およびD5の各指定行・選択語ごとに録音URL・STT原文・録音時モデル・許容文・判定を保存。D5の英語ラベルは固定表示し、選択Adjと録音結果は行ごとに保持する。表記・文体・ヒント変更で録音を消さず、保存した正誤を再判定しない。
 - 料理する／料理をする、洗濯する／洗濯をするは両方許容。文末のよ・ね・よねと句読点・空白は既存の判定方針に従う。Formal否定はじゃないです／じゃありません／ではありません／ではないですを許容する。
 - 自分を主語として省略しているD1・D4の行では私はの追加を許容。D2のQuestionはあなたはの追加、Responseは私はを含む完全回答を許容。D3およびD4の友達の行、D5の明示主語は保持する。D1動作行・D3・D4・D5の動作課題で名詞だけの好き表現へ短縮することは不可。D2の会話返答は上記の短答仕様を優先する。
 - STT原文・表示変換・判定・TTSを分離し、STT_DISPLAY_RULESを適用。カタカナは保持。未確定の認識をモデル文へ置き換えない。
 - 標準TTSとVoice選択は7.3のページ内処理を基に踏襲し、8.1の速度は共通既定0.9。音声エンジンを追加しない。
 - DrillAudioの既存ライフサイクルを使用。録音中・マイク準備中は設定・選択・他の音声操作をロック。手動停止は当該行のみ。発話前無音15秒・発話後無音2秒・上限20秒。録音開始時にモデル・録音再生の双方を中断し、古い終了通知で再開させない。モデル→録音のリレーは待機0秒。
-- Textボタン・通常のListen/Record/Stop説明・拡大率ボタン・English cuesは追加しない。D2のY/N返答だけに上記の未選択ロックを適用。D4は初期副詞、D5は各行で指定に合うAdjの選択後に再生・録音が可能。
+- Textボタン・通常のListen/Record/Stop説明・拡大率ボタン・English cuesは追加しない。D2のY/N返答だけに上記の未選択ロックを適用。D4は初期副詞、D5はラベルに合うAdjを選択後にきく・とるを使用可能。解説はその行の録音保存後に表示する。
 
 ## 検証
 
@@ -121,9 +132,9 @@ Exampleと対応Drillで同一の完成文を反復しない。D5第１組は母
 
 ## D5の幅計算（2026-10-31修正）
 
-Skill/Perceptionは一語の指定。意味は従来と同じで、完全に客観的な事実と主観の二分ではない。
+D5の英語ラベルは各行に固定表示する。文言と録音後の解説は上記D5表を参照する。
 
-D5は３操作ボタンの実寸とカードの利用可能幅からキューの上限を決め、その幅で実際に折り返した文字列・選択欄の最長端を計測して共有列を詰める。キューに残り幅を配らず、音声列の後ろへ割り当てる。最長端と操作列の間は共通gridの列間隔4pxのみ（小数丸め１px未満を許容）。以前の折返し前最大幅＋8pxの保持はD5では廃止する。600px以下の操作列を次行に置く共通仕様は維持。フォント準備完了、設定変更、リサイズ時に再計測し、固定top/transformや文字サイズ縮小で補正しない。8.1 D1〜D4と8.2の幅計算へ無断展開しない。
+D5は「とる／停止」操作ボタンの実寸とカードの利用可能幅からキュー上限を決め、「きく」ボタンを含むキューと選択欄の折返し後の最長端を計測して共有列を詰める。キューに残り幅を配らず、音声列の後ろへ割り当てる。最長端と操作列の間は共通gridの列間隔4pxのみ（小数丸め１px未満を許容）。以前の折返し前最大幅＋8pxの保持はD5では廃止する。600px以下の操作列を次行に置く共通仕様は維持。フォント準備完了、設定変更、リサイズ時に再計測し、固定top/transformや文字サイズ縮小で補正しない。8.1 D1〜D4と8.2の幅計算へ無断展開しない。
 
 幅計算の回帰検証は`node tests/practice81-cue-fit.cjs`（700〜1920px・両表記・全ヒント）、既存の`practice81.cjs`では完成文非重複、一語見出し、900px以降の実間隔と通常幅１行表示も確認する。850pxの共通container規則と600pxの練習８規則の競合をD5で解消し、末尾セルpaddingとselect右marginの余分な加算も撤去する。
 
