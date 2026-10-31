@@ -69,6 +69,7 @@ W("wash","洗う","あらう","arau","to wash");
 W("cut","切る","きる","kiru","to cut");
 W("tomato","トマト","トマト","tomato","tomato");
 W("breakfast","朝ご飯","あさごはん","asagohan","breakfast");
+W("eat","食べる","たべる","taberu","to eat");
 W("oldmag","古い雑誌","ふるいざっし","furui zasshi","old magazine");
 W("discard","捨てる","すてる","suteru","to throw away");
 W("study","勉強","べんきょう","benkyō","studying");
