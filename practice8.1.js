@@ -161,7 +161,7 @@ comparisons.forEach(spec=>{
   Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
   Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
   'Presumptuous':'The speaker judges the subject’s ability without enough experience to make that judgment.',
-  'Overstepping':'Depending on the relationship, saying someone is 得意 can presume too much familiarity with how they see their own strengths.'
+  'Overstepping':'The speaker assumes the subject sees the activity as a personal strength, which may be overstepping given the difference in their positions.'
  };
  spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
  if(spec.object==='early')spec.impressions.difficult='The speaker thinks getting up early is difficult for them.';
