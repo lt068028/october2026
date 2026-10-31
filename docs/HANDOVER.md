@@ -3,8 +3,8 @@
 ## 8.1 D5の7問目で録音ボタンが重なる修正（2026-10-31 / Europe/Vienna / Codex）
 
 - 原因：D5の7問目はキュー／Adjをnowrapにする一方、600px超では録音操作を隣列に固定。幅計算が制約幅より長いnowrap内容のオーバーフローを隣列へ許していた。
-- 修正：D5は全幅1列のカードにし、「きく・とる・停止」をAdj後8pxの専用行へまとめ、ボタン間2px・nowrapとする。キューとAdjは折り返し可能。
-- PRACTICE8_SPEC、practice8.1.html、practice8.1.js、style.cssを更新。HTMLのCSS/JS版クエリも更新して古いブラウザキャッシュを回避。`git diff --check` 合格。自動テスト未実施。
+- 修正：D5はhint右端からキューを揃え、Adjの右に8px空けて3ボタンを置く。ボタン間2px、3ボタン間で改行しない。キューとAdjは折り返し可能。録音前表示「… Not yet」は8.1全問に適用。
+- PRACTICE8_SPEC、practice8.1.html、practice8.1.js、style.cssを更新。HTMLのCSS/JS版クエリも更新。`git diff --check` 合格。自動テスト未実施。
 
 ## 8.1 D1〜D5のタスク説明とD5間隔（2026-10-31 / Europe/Vienna / Codex）
 

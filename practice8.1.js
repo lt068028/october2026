@@ -672,8 +672,7 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else if(v.r.comparison){v.result.append(node('span','not-recorded-yet','… Not yet'));}
-    else v.result.textContent='(Not recorded yet)';
+    }else{v.result.append(node('span','not-recorded-yet','… Not yet'));}
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);
@@ -780,7 +779,7 @@ function render() {
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');
                 actions.append(listen,rec,stop);
-                if(r.comparison){actions.classList.add('p81-cue-actions');cue.append(actions);}
+                if(r.comparison){actions.classList.add('p81-cue-actions');cueBody.append(actions);}
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;

@@ -3365,11 +3365,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
 .practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) { column-gap: 8px; row-gap: 8px; }
-.practice81-page #drill5 .p81-card .prompt-label > .p81-cue-actions { grid-column: 2; display: flex; flex-wrap: nowrap; gap: 2px; margin: 0; white-space: nowrap; }
-@media(max-width:400px) { .practice81-page #drill5 .p81-card .prompt-label > .p81-cue-actions { grid-column: 1 / -1; } }
+.practice81-page #drill5 .p81-cue-actions { display: inline-flex; flex-wrap: nowrap; gap: 2px; margin-left: 8px; white-space: nowrap; vertical-align: baseline; }
 .practice81-page #drill5 .p81-scenario-number { font-weight: 700; margin-right: 4px; }
-.practice81-page #drill5 .not-recorded-yet { color: var(--text-secondary); }
-.practice81-page #drill5 .not-recorded-yet { font-size: .75em; }
+.practice81-page .not-recorded-yet { color: var(--text-secondary); font-size: .75em; }
 @media(max-width:600px) {
  .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
  .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
