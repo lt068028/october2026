@@ -1,5 +1,11 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 8.1 D4/D5の折返し調整（2026-10-31 / Europe/Vienna / Codex）
+
+- D4は「きく」をキュー直後へ配置し、幅のあるキュー行を確保。結果欄はその下で折り返し可能。D5,7のキューとAdj選択欄は非折返し。
+- PRACTICE8_SPEC、practice8.1.js、style.cssを更新。賛否検討事項（説明文・Meaning/Speaker & listener表示・番号・未録音表示サイズ）はユーザーへ提案として回答し、今回未変更。
+- `git diff --check` 合格。既存テストは未実行。Node.js不在のためJS構文チェックも未実施。コミット／Pushはこれから。
+
 ## 8.1 Drill説明とD5ペア整列（2026-10-31 / Europe/Vienna / Codex）
 
 - ユーザー指示で各Drillの💡操作説明を撤去し、タイトル・設問・操作UIから課題を理解する構成へ。D5のタイトルは「How Do These Expressions Differ?」。各設問の状況文は判断材料なので維持。

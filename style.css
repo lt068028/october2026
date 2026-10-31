@@ -3364,3 +3364,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
 .practice81-page #drill5 .p81-cue-listen { margin-left: 4px; }
+
+/* Keep the D4 cue and its listen action together; let the result row wrap below. */
+.site-scale.practice81-page #drill4 .p81-card .p81-table { grid-template-columns: 34px minmax(0,1fr); }
+.site-scale.practice81-page #drill4 .p81-card .p81-table .p81-controls { grid-column: 2; }
+.site-scale.practice81-page #drill4 .p81-card .p81-table .prompt-label { grid-column: 2; white-space: nowrap; overflow-wrap: normal; }
+.practice81-page #drill4 .p81-cue-listen { margin-left: 4px; white-space: nowrap; }
+.practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-cue-body { white-space: nowrap; }
+.practice81-page #drill5 .p81-comparison-card[data-item="7"] .p81-select { max-width: none; white-space: nowrap; }
+@media(max-width:600px) {
+ .site-scale.practice81-page #drill4 .p81-card .p81-table { grid-template-columns: 28px minmax(0,1fr); }
+}

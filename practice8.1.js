@@ -772,14 +772,14 @@ function render() {
                 const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
                 const content=node('span','p81-cue-words');content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);
                 if(r.comparison){listen.classList.add('p81-cue-listen');cueBody.append(listen);}
-                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
+                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);listen.classList.add('p81-cue-listen');cueBody.append(listen);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
                     const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node('div','recording-actions');
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
-                if(r.comparison)actions.append(rec,stop);else actions.append(listen,rec,stop);
+                if(r.comparison||r.selectKind==='adverb')actions.append(rec,stop);else actions.append(listen,rec,stop);
                 const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);line.append(actions);
                 line.append(wrap);
                 const correction=node('div','correction-box');correction.hidden=true;
