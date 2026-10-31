@@ -846,6 +846,7 @@ function compositionShow(view, message = "") {
     const saved = savedResults[rowIndex];
 
     resultSpan.replaceChildren();
+    resultSpan.classList.remove("not-recorded-yet");
     resultSpan.style.color = "var(--text-primary)";
     correctionBox.style.display = "none";
     corrText.textContent = "";
@@ -924,6 +925,7 @@ function compositionShow(view, message = "") {
             ) + " "
         );
     } else {
+        resultSpan.classList.toggle("not-recorded-yet", !savedAudioUrls[rowIndex]);
         append(
             savedAudioUrls[rowIndex]
                 ? (
@@ -931,7 +933,7 @@ function compositionShow(view, message = "") {
                         ? "🎙️Audio only "
                         : "(Recorded) "
                 )
-                : "(Not recorded yet) ",
+                : "… Not yet ",
             "var(--text-secondary)"
         );
     }

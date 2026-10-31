@@ -655,11 +655,12 @@ function pronunciation1Show(view, message = "") {
 
     resultSpan.textContent = recorded
         ? "Recorded "
-        : "(Not recorded yet) ";
+        : "… Not yet ";
 
     resultSpan.style.color = recorded
         ? "var(--text-primary)"
         : "var(--text-secondary)";
+    resultSpan.classList.toggle("not-recorded-yet", !recorded);
 
     if (recorded) {
         const play = document.createElement("button");

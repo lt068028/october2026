@@ -1104,6 +1104,7 @@ function showResult(key, notice = '') {
     for(const section of sections)for(const rows of [section.example,...section.items])for(const r of rows)STTDisplay.register(r.text,r.hira);
     const v = views.get(key);
     if (!v) return;
+    v.result.classList.remove('not-recorded-yet');
 
     const value = saved.get(key);
 
@@ -1161,7 +1162,8 @@ function showResult(key, notice = '') {
             v.correction.hidden = false;
         }
     } else {
-        v.result.textContent = '(Not recorded yet)';
+        v.result.textContent = '… Not yet';
+        v.result.classList.add('not-recorded-yet');
     }
 
     if (value?.url) {

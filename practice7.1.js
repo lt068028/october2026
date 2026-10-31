@@ -526,8 +526,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const result = node(
             'span',
-            'result-text',
-            '(Not recorded yet)'
+            'result-text not-recorded-yet',
+            '… Not yet'
         );
 
         const wrap = node('span', 'recording-result');
@@ -1275,7 +1275,8 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
 
     const resultSpan1 = document.createElement("span");
     resultSpan1.className = "result-text";
-    resultSpan1.textContent = "(Not recorded yet)";
+    resultSpan1.textContent = "… Not yet";
+    resultSpan1.classList.add("not-recorded-yet");
     resultSpan1.style.color = "var(--text-secondary)";
     resultSpan1.style.marginLeft = "8px";
 
@@ -1356,7 +1357,8 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
 
     const resultSpan2 = document.createElement("span");
     resultSpan2.className = "result-text";
-    resultSpan2.textContent = "(Not recorded yet)";
+    resultSpan2.textContent = "… Not yet";
+    resultSpan2.classList.add("not-recorded-yet");
     resultSpan2.style.color = "var(--text-secondary)";
     resultSpan2.style.marginLeft = "8px";
 
@@ -1839,14 +1841,15 @@ function bindRecorderEvents(
     const restoreResult = message => {
         const v = currentView();
         const saved = practice71State.savedResults[rowKey];
+        v.resultSpan.classList.remove("not-recorded-yet");
 
         if (saved?.rawTranscript !== undefined) {
             practice71ShowResult(
                 v, saved, rowKey, playRate
             );
         } else {
-            v.resultSpan.textContent =
-                saved?.text || "(Not recorded yet)";
+            v.resultSpan.textContent = saved?.text || "… Not yet";
+            v.resultSpan.classList.toggle("not-recorded-yet", !saved?.text);
             v.resultSpan.style.color =
                 "var(--text-secondary)";
             v.correctionBox.style.display = "none";

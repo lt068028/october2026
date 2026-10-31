@@ -509,8 +509,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const result = node(
             'span',
-            'result-text',
-            '(Not recorded yet)'
+            'result-text not-recorded-yet',
+            '… Not yet'
         );
 
         const wrap = node('span', 'recording-result');
@@ -1566,7 +1566,8 @@ function createPractice7TableCard(
 
         const result = document.createElement('span');
         result.className = 'result-text';
-        result.textContent = '(Not recorded yet)';
+        result.textContent = '… Not yet';
+        result.classList.add('not-recorded-yet');
 
         resultWrap.append(result);
         actions.append(listen, badge, record, stop);
@@ -2133,14 +2134,15 @@ function bindRecorderEvents(
     const restoreResult = message => {
         const v = currentView();
         const saved = practice7State.savedResults[rowKey];
+        v.resultSpan.classList.remove("not-recorded-yet");
 
         if (saved?.rawTranscript !== undefined) {
             practice7ShowResult(
                 v, saved, rowKey, playRate
             );
         } else {
-            v.resultSpan.textContent =
-                saved?.text || "(Not recorded yet)";
+            v.resultSpan.textContent = saved?.text || "… Not yet";
+            v.resultSpan.classList.toggle("not-recorded-yet", !saved?.text);
             v.resultSpan.style.color =
                 "var(--text-secondary)";
             v.correctionBox.style.display = "none";

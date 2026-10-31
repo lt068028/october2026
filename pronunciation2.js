@@ -895,6 +895,7 @@ function p2Show(view, notice = "") {
     const saved = savedResults[view.key];
 
     view.result.replaceChildren();
+    view.result.classList.remove("not-recorded-yet");
     view.result.style.color = "var(--text-primary)";
     view.correction.style.display = "none";
     view.correctionText.textContent = "";
@@ -952,10 +953,11 @@ function p2Show(view, notice = "") {
             view.correction.style.display = "block";
         }
     } else {
+        view.result.classList.toggle("not-recorded-yet", !savedAudioUrls[view.key]);
         append(
             savedAudioUrls[view.key]
                 ? "Recorded "
-                : "(Not recorded yet) "
+                : "… Not yet "
         );
     }
 

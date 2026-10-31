@@ -1,5 +1,11 @@
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
+## 未録音表示の全ページ統一（2026-10-31 / Europe/Vienna / Codex）
+
+- 仕様確定：録音結果欄の未録音表示は「… Not yet」、0.75em、secondary色。文字列は一塊で改行せず、狭い幅では全体を次行へ送る。録音準備状態の「Not recorded yet」は対象外。
+- Practice 1/2/7/8、Composition、Pronunciationの録音結果欄へ展開。D5は「きく／とる／停止」のボタン列と同じ行に表示し、右端揃えを維持。幅不足時はNot yet全体を折り返す。
+- UI_LAYOUT_SPECとPRACTICE8_SPECを改訂。CSS/JSの参照クエリを更新。`git diff --check`確認予定。自動テスト未実施。
+
 ## 8.1 D5の7問目で録音ボタンが重なる修正（2026-10-31 / Europe/Vienna / Codex）
 
 - 原因：D5の7問目はキュー／Adjをnowrapにする一方、600px超では録音操作を隣列に固定。幅計算が制約幅より長いnowrap内容のオーバーフローを隣列へ許していた。

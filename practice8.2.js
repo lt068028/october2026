@@ -543,6 +543,7 @@ function findDiff(actual, reference) {
 function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
+    v.result.classList.remove('not-recorded-yet');
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){v.result.textContent='Recording...';return;}
@@ -562,7 +563,7 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else v.result.textContent='(Not recorded yet)';
+    }else {v.result.textContent='… Not yet';v.result.classList.add('not-recorded-yet');}
     if(value?.url) {
         const play=button('▶️',()=>playRecording(key,play),'Play your recorded voice');
         play.classList.add('play-recording-btn');v.result.append(play);

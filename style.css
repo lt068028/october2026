@@ -3171,6 +3171,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-impression-choice[aria-pressed="true"] { outline: 2px solid var(--accent-color); outline-offset: 1px; }
 .practice81-page .p81-impression-result { margin-top: 6px; font-size: .85em; }
 .practice81-page .p81-comparison-card .recording-result { flex-basis: 100%; }
+.practice81-page #drill5 .p81-comparison-card .recording-result { flex: 0 0 auto; width: max-content; max-width: 100%; margin-left: auto; text-align: right; }
 .site-scale.practice81-page .p81-comparison-card .p81-table { align-items: baseline; }
 .practice81-page .p81-comparison-card .drill-number-cell { align-self: center; }
 .practice81-page .p81-comparison-card .p81-impression-result { text-align: right; }
@@ -3192,6 +3193,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .site-scale.practice81-page .p81-card .p81-table .p81-controls { grid-column: 2; }
     .site-scale.practice81-page .p81-card .p81-table .prompt-label { grid-column: 2; }
     .practice81-page .recording-controls > .recording-result { flex-basis: 100%; text-align: left; }
+    .practice81-page #drill5 .recording-controls > .recording-result { flex-basis: 0; text-align: right; }
     .practice81-page .p81-degree-scale { grid-template-columns: repeat(3,minmax(0,1fr)); row-gap: 12px; }
 }
 /* Unopened hints must not widen the page; the shared tooltip placer takes over on hover/focus. */
@@ -3365,11 +3367,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
 .practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) { column-gap: 8px; row-gap: 8px; }
-.practice81-page #drill5 .p81-cue-actions { display: inline-flex; flex-wrap: wrap; gap: 4px 8px; margin-left: 8px; white-space: normal; vertical-align: baseline; }
+.practice81-page #drill5 .p81-cue-actions { display: flex; flex-wrap: wrap; gap: 4px 8px; width: calc(100% - 8px); margin-left: 8px; box-sizing: border-box; white-space: normal; vertical-align: baseline; }
+.practice81-page #drill5 .p81-cue-actions > .not-recorded-yet { margin-left: auto; }
 .practice81-page #drill5 .p81-cue-button-group { display: inline-flex; flex-wrap: nowrap; gap: 2px; white-space: nowrap; }
 .practice81-page #drill5 .p81-cue-button-group > button { flex-shrink: 0; }
 .practice81-page #drill5 .p81-scenario-number { font-weight: 700; margin-right: 4px; }
-.practice81-page .not-recorded-yet { color: var(--text-secondary); white-space: nowrap; }
+.not-recorded-yet { color: var(--text-secondary); display: inline-block; font-size: .75em; white-space: nowrap; }
 @media(max-width:600px) {
  .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
  .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,

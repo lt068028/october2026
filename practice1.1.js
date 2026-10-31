@@ -1326,6 +1326,7 @@ function practice1ResultDiff(displayed, saved, view) {
 }
 
 function displayResult(view, message = "") {
+    view.result.classList.remove("not-recorded-yet");
     const saved =
         practice1State.savedResults[view.rowKey];
 
@@ -1413,10 +1414,12 @@ function displayResult(view, message = "") {
         view.result.textContent = "(Recorded)";
 
     } else {
-        view.result.textContent =
-            view.freeInput && scriptMode === "hiragana"
-                ? AUDIO_ONLY_MESSAGE
-                : "(Not recorded yet)";
+        if (view.freeInput && scriptMode === "hiragana") {
+            view.result.textContent = AUDIO_ONLY_MESSAGE;
+        } else {
+            view.result.textContent = "… Not yet";
+            view.result.classList.add("not-recorded-yet");
+        }
     }
 
     if (message) {

@@ -1155,8 +1155,8 @@ function practice2ShowNotice(resultSpan, message) {
 
         const resultSpan = node(
             "span",
-            "result-text",
-            "(Not recorded yet)"
+            "result-text not-recorded-yet",
+            "… Not yet"
         );
 
         const result = node("span", "recording-result");
@@ -2548,6 +2548,7 @@ function bindRecorderEvents(
         practice2State.views[rowKey] || view;
 
     const saved = practice2State.savedResults[rowKey];
+    resultSpan.classList.remove("not-recorded-yet");
 
     if (saved?.rawTranscript !== undefined) {
         practice2ShowResult(
@@ -2560,7 +2561,8 @@ function bindRecorderEvents(
         resultSpan.style.color =
             saved.color || "var(--text-primary)";
     } else {
-        resultSpan.textContent = "(Not recorded yet)";
+        resultSpan.textContent = "… Not yet";
+        resultSpan.classList.add("not-recorded-yet");
         resultSpan.style.color = "var(--text-secondary)";
     }
 
