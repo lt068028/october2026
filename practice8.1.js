@@ -27,6 +27,7 @@ W("buy","買う","かう","kau","to buy");
 W("guitar","ギター","ギター","gitā","guitar");
 W("play","弾く","ひく","hiku","to play an instrument");
 W("teach","教える","おしえる","oshieru","to teach");
+W("dance","踊る","おどる","odoru","to dance");
 W("letter","手紙","てがみ","tegami","letter");
 W("grammar","文法","ぶんぽう","bunpō","grammar");
 W("question","質問","しつもん","shitsumon","question");
@@ -130,7 +131,7 @@ const action=(object,verb,particle=verb==='do'?'':'を')=>({object,verb,particle
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
 const selfActions=[action('coffee','drink'),action('laundry','do'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'classmate',...action('grammar','teach'),adjective:'good'},
+    {subject:'classmate',verb:'dance',particle:'',adjective:'good'},
     {subject:'grandmother',...action('sea','swim','で'),adjective:'good'},
     {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
@@ -178,7 +179,7 @@ const comparisons=[
   bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.',
   difficult:'Describing the activity as difficult for the subject sounds gentler.'
  }},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
+ {phase:'Impression',subject:'japaneseTeacher',verb:'teach',particle:'',options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
   good:'Evaluating a superior’s skill from below sounds presumptuous.',
   strong:'Assuming what a superior considers their personal strength also sounds overstepping.'
  }}
@@ -197,7 +198,7 @@ function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
     const get=id=>words[id][kanji?'kanji':'hira'];
     let prefix=spec.subject?get(spec.subject)+'は、':'';
-    prefix+=get(spec.object)+(spec.noun?'が':spec.particle+get(spec.verb)+'のが');
+    prefix+=(spec.object?get(spec.object):'')+(spec.noun?'が':(spec.object?spec.particle:'')+get(spec.verb)+'のが');
     const negative=['amari','zenzen'].includes(spec.adverb)||spec.answer==='no';
     const ending=style==='formal'?(negative?'じゃないです。':'です。'):(negative?'じゃない。':style==='casual'?'だよ。':'だ。');
     if(spec.qa==='question')return prefix+get(adjective)+(style==='formal'?'ですか。':'？');

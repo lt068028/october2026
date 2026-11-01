@@ -86,7 +86,7 @@ Adj選択時は正誤メッセージを出さない。各行の2択プルダウ�
 |  |  | Observed → 得意 | The speaker infers that the subject feels confident in the activity. |
 | 6 Impression | 兄はカラオケで歌うのが…：Talking about your older brother after hearing him sing karaoke. | Blunt → 下手 | Directly judging the subject’s lack of skill can sound blunt or hurtful. |
 |  |  | Tactful → 苦手 | Describing the activity as difficult for the subject sounds gentler. |
-| 7 Impression | 日本語の先生は日本語を話すのが…：A beginning student talking about their Japanese teacher. | Presumptuous → 上手 | Evaluating a superior’s skill from below sounds presumptuous. |
+| 7 Impression | 日本語の先生は教えるのが…：A beginning student talking about their Japanese teacher. | Presumptuous → 上手 | Evaluating a superior’s skill from below sounds presumptuous. |
 |  |  | Overstepping → 得意 | Assuming what a superior considers their personal strength also sounds overstepping. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
@@ -104,11 +104,11 @@ Exampleと対応Drillで同じ完成文を反復しない。Example3／Example5�
 | Example2 | テレビ | 見る | D2と語彙を分ける |
 | D2 | コーヒー／洗濯／朝ご飯／服 | 飲む／する／食べる／買う | Q/A内の反復 |
 | Example3 | 写真 | 撮る | D3の4問と語彙を分ける。主語は妹 |
-| D3 | 文法／海／カタカナ／バイク | 教える／泳ぐ／覚える／運転する | 4問。人物はクラスメート／祖母／子ども／兄弟。D3-2は祖母が海で泳ぐ |
+| D3 | （なし）／海／カタカナ／バイク | 踊る／泳ぐ／覚える／運転する | 4問。人物はクラスメート／祖母／子ども／兄弟。D3-1はクラスメートが踊る、D3-2は祖母が海で泳ぐ |
 | Example4 | 料理 | 作る | ぜんぜん／あまり／ちょっと／まぁまぁ／とても／すごくの6段階の比較内で反復 |
 | D4 | お皿／もの／スマホ／髪／カバン／勉強 | 洗う／捨てる／使う／切る／持つ／始める | 6段階の表現は固定。アクションはプルダウンで1回ずつ選び、選択済みは他行から隠す |
 | Example5 | ギター | 弾く | 上手／得意の意味比較内で反復 |
-| D5 | 料理／英語／早起き／掃除／漢字／カラオケ／日本語 | する／話す／起きる／書く／歌う | ペア内比較に必要な動詞反復を含む。D5-1の話者は父（料理する）、D5-4は私（掃除する）。D5-5はD3-3と漢字が重なるユーザー指定の例外。D5-6の主語は兄 |
+| D5 | 料理／英語／早起き／掃除／漢字／カラオケ／（なし） | する／話す／起きる／書く／歌う／教える | ペア内比較に必要な動詞反復を含む。D5-1の話者は父（料理する）、D5-4は私（掃除する）、D5-6は兄、D5-7は日本語の先生（教える） |
 
 同一会話のQ/A、同じ課題内で対照する2行・D4の程度6行・D5の意味／対人印象比較は、学習目標に必要な反復として扱う。それ以外はExampleとDrill間を含め、同じ動詞・具体的目的語を別枠へ重ねない。今回の指定による例外として、D5-5「漢字を書く」はD3-2「手紙を書く」と動詞が重なり、D3-3「漢字を覚える」と目的語が重なる。D5-7は日本語を話すキューで上手（能力の直接評価）と得意（本人の自己認識の推測）を比べる。
 
