@@ -62,28 +62,52 @@ function displayKana(text){let value=String(text);for(const [k,h]of dictionary)v
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[{title:'Drill 1: Subject Questions (Verb)',instruction:'💡Make a subject question. Compare a question word alone with a specific noun.'}];
-const subjectSets=[
- {q1:'だれがてつだいますか。',q2:'どの学生がてつだいますか。',a:'学生Xがてつだいます。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['学生']},
- {q1:'だれがりょうりしますか。',q2:'どの学生がりょうりしますか。',a:'学生Xがりょうりします。',c1:['だれ','りょうりする'],c2:['どの','学生','りょうりする'],ca:['学生']},
- {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'いぬがこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['いぬ','こうえん','いる']},
- {q1:'何がキッチンにありますか。',q2:'どのやさいがキッチンにありますか。',a:'トマトがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','やさい','キッチン','ある'],ca:['トマト','キッチン','ある']}
+let currentD1Set=0;
+const d1Sets=[
+ {
+  name:'だれ',
+  label:'Set 1: だれ (Who)',
+  items:[
+   {q1:'だれがてつだいますか。',q2:'どの学生がてつだいますか。',a:'学生Xがてつだいます。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['学生']},
+   {q1:'だれがりょうりしますか。',q2:'どの学生がりょうりしますか。',a:'学生Xがりょうりします。',c1:['だれ','りょうりする'],c2:['どの','学生','りょうりする'],ca:['学生']}
+  ]
+ },
+ {
+  name:'何',
+  label:'Set 2: 何 (What)',
+  items:[
+   {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'いぬがこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['いぬ','こうえん','いる']},
+   {q1:'何がキッチンにありますか。',q2:'どのやさいがキッチンにありますか。',a:'トマトがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','やさい','キッチン','ある'],ca:['トマト','キッチン','ある']}
+  ]
+ }
 ];
 const exSets=[
  {q1:'だれがおしえますか。',q2:'どの先生がおしえますか。',a:'田中先生がおしえます。',c1:['だれ','おしえる'],c2:['どの','先生','おしえる'],ca:['先生']},
- {q1:'だれが来ますか。',q2:'どの学生が来ますか。',a:'学生Xが来ます。',c1:['だれ','来る'],c2:['どの','学生','来る'],ca:['学生']},
- {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'いぬがこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['いぬ','こうえん','いる']},
- {q1:'何がキッチンにありますか。',q2:'どのくだものがキッチンにありますか。',a:'トマトがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','キッチン','ある'],ca:['トマト','キッチン','ある']}
+ {q1:'何がキッチンにありますか。',q2:'どのくだものがキッチンにありますか。',a:'りんごがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','キッチン','ある'],ca:['りんご','キッチン','ある']}
 ];
 [['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
 function sentenceFor(s){return s.text||'';}
 function makeRow(id,spec,extra={}){const r={id,...spec,...extra};r.text=sentenceFor(r);r.hira=displayKana(r.text);r.refs=[r.text,r.hira,...(r.accept||[])];STTDisplay.register(r.text,r.hira);return r;}
-function rowsFor(){return subjectSets.map((s,i)=>[
- makeRow('d1-'+i+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q1'}),
- makeRow('d1-'+i+'-q2',{text:s.q2,cueIds:s.c2},{kind:'Q2'}),
- makeRow('d1-'+i+'-a',{text:s.a,cueIds:s.ca},{kind:'A'})
-]);}
+function makeKindBadge(kind){
+ const span=node('span','example-label-title p81-kind');
+ if(kind==='Q'||kind==='A'){span.textContent=kind;}
+ else{span.classList.add('conversation-role','conversation-role-blank');const circle=node('span','conversation-role-circle');circle.textContent='Q';circle.style.visibility='hidden';circle.setAttribute('aria-hidden','true');span.append(circle);}
+ return span;
+}
+function rowsFor(si,setIdx=currentD1Set){
+ if(si!==0)return [];
+ const setDef=d1Sets[setIdx],offset=setIdx===0?0:d1Sets[0].items.length;
+ return setDef.items.map((s,i)=>{
+  const globalIndex=offset+i;
+  return [
+   makeRow('d1-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+   makeRow('d1-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
+   makeRow('d1-'+globalIndex+'-a',{text:s.a,cueIds:s.ca},{kind:'A'})
+  ];
+ });
+}
 function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
@@ -547,25 +571,52 @@ function addExample(root,si){
  if(si!==0)return;
  const ex=node('div','example-box example-text-layout p81-example');
  exSets.forEach((s,index)=>{
-  const set=node('div','p83-example-set');
+  if(index>0)ex.append(node('div','p83-example-divider'));
   const rows=[
-   makeRow('ex-'+index+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q1'}),
-   makeRow('ex-'+index+'-q2',{text:s.q2,cueIds:s.c2},{kind:'Q2'}),
+   makeRow('ex-'+index+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+   makeRow('ex-'+index+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
    makeRow('ex-'+index+'-a',{text:s.a,cueIds:s.ca},{kind:'A'})
   ];
-  rows.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind',r.kind),cue=node('span','p81-example-cue');cue.innerHTML=cues(r);const arrow=node('span','p81-arrow',r.kind==='A'?'':'👉️'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);set.append(row);});
-  ex.append(set);
+  rows.forEach(r=>{
+   const row=node('div','p81-example-row'),kind=makeKindBadge(r.kind),cue=node('span','p81-example-cue');
+   cue.innerHTML=cues(r);
+   const arrow=node('span','p81-arrow',r.kind==='A'?'':'👉️'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');
+   text.innerHTML=modelHTML(r);
+   row.append(kind,cue,arrow,listen,text);
+   ex.append(row);
+  });
  });
  root.append(ex);
 }
 function render(){
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)),node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));group.append(panel);
- rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
- rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);
- if(r.yn)for(const [value,label]of [['yes','🙆'],['no','🙅']]){const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
- const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
- });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();sync();
+ sections.forEach((section,si)=>{
+  const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);
+  const panel=node('div','info-panel info-panel-task1');
+  panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)),node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));
+  group.append(panel);
+  if(si===0){
+   const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Drill 1 Practice Set');
+   d1Sets.forEach((setDef,setIdx)=>{
+    const b=node('button','example-button',setDef.label);b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentD1Set));
+    b.onclick=()=>{if(session||preparing||setIdx===currentD1Set)return;stopPlayback();currentD1Set=setIdx;render();};
+    switcher.append(b);
+   });
+   group.append(switcher);
+  }
+  rowsFor(si).forEach((rows,index)=>{
+   const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
+   rows.forEach((r,ri)=>{
+    const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
+    if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}
+    const cue=node('td','prompt-label drill-cue-cell');
+    cue.append(makeKindBadge(r.kind));
+    const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);
+    if(r.yn)for(const [value,label]of [['yes','🙆'],['no','🙅']]){const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
+    const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
+   });card.append(table);group.append(card);
+  });root.append(group);
+ });ConversationDisplay.format();measureCues();sync();
 }
 function measureCues(){const intro=document.querySelector('#drill1 .example-box');if(intro){intro.style.removeProperty('--p82-concept-factor');const labels=[...intro.querySelectorAll('.p81-kind')],natural=Math.max(...labels.map(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().width;}));if(natural)intro.style.setProperty('--p82-concept-factor',parseFloat(getComputedStyle(labels[0]).fontSize)/natural);}document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
 function sync() {
@@ -1090,6 +1141,7 @@ function init() {
 
     setupPreferredVoice82();
 
+    d1Sets.forEach((_,setIdx)=>rowsFor(0,setIdx));
     render();
 }
 

@@ -1,5 +1,23 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Exampleの丸Q・空欄プレースホルダー・縦並びレイアウト崩れ解消、およびDrill 1のSet 1 (だれ) / Set 2 (何) 分割の反映完了。開始時HEAD `6bcd492`。
+- 変更：
+  1. **Example の丸Q・空欄プレースホルダーによる縦位置整列（`practice8.3.js`・`style.css`）**：
+     - 行1: `Q`（丸囲みQ）、行2: `Q` と同幅の不可視空欄プレースホルダー（`visibility: hidden;`）、行3: `A`（丸囲みA）を生成する `makeKindBadge()` を導入。
+     - 2行目（どのNounが）のキュー開始位置が1行目・3行目と同一のX座標で一直線に揃うよう修正。
+  2. **Example の横並びレイアウト崩れの解消（`practice8.3.js`・`style.css`）**：
+     - `.p81-example` 直下へのラッパー要素配置による横方向グリッド流し込みを解消し、`p81-example-row` を直接展開。
+     - セット間に横断セパレータ（`.p83-example-divider`、`grid-column: 1 / -1;`）を配置し、「だれ」セット3行＋「何」セット3行の計6行が縦方向に美しく整列するよう修正。
+  3. **Drill 1 の Set 分割（`practice8.3.js`・`style.css`）**：
+     - Drill 1 を `Set 1: だれ (Who)`（問1: てつだう、問2: りょうりする）と `Set 2: 何 (What)`（問1: こうえん・いる、問2: キッチン・ある）に分割。
+     - 切り替えUI（`.p21-set-switcher`）を導入し、学習負荷の軽減と今後のDrill拡張に対応。各カード内でも丸Q・空欄・丸Aでキュー位置を統一。
+- 変更ファイル：practice8.3.js、style.css、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：今回のPractice 8.3 Exampleレイアウト・丸Q空欄整列およびDrill 1のSet切り替えは実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `a9ebd3b`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 2.3 Ex1モデル行音声ボタンと本文のベースライン共有化、および都市領域（Ex1・D1・D2）の上下左右4pxインセット・角丸6px統一フレームの反映完了。開始時HEAD `d6bc375`。未了の残作業なし。
 - 変更：
   1. **Ex1音声ボタンと本文のベースライン共有化（`style.css`）**：
