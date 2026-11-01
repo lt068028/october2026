@@ -1529,4 +1529,5 @@ Supertonic 3 の不採用確定に伴い、当時試験を行っていた以下�
 - Dr4の「きく」「とる」は各行のアクション選択状態から毎回disabledを明示計算し、Autostop ON/OFFに依存せず未選択行をロックする。選択が空へ戻った場合も再ロックする。録音処理側のpending guardに加え、再生クリック側にもpending guardを追加。
 - 設定変更時にsyncを再実行し、停止ボタンは手動停止モードかつ該当行の録音中のみ有効にする。
 - `tests/practice81.cjs`に両Autostop状態・6行の初期ロック・個別解除・解除後の再ロック・アクション重複防止を確認する回帰テストを追加。Practice 8.1のCSS／JSキャッシュキーを更新。
-- この時点では変更を専用作業ブランチに保存。自動テスト／実機確認／Vercel反映は後続の確認結果を追記する。
+- 専用作業ブランチ `practice81-lock-guard-20261101` に保存し、Draft PR #1を作成。GitHubのVercel Preview statusはsuccess。mainへのマージ／Production反映は行っていない。
+- `node --check`による変更部分の構文確認と、syncのロック状態を模した単体チェックは合格。Playwright全体の `node tests/practice81.cjs` はこの環境から実行できていない（GitHub Actionsの該当workflowなし、リポジトリのローカルcloneもDNS解決不可）。Chrome実機確認は未了。
