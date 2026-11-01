@@ -57,8 +57,9 @@ for(const [id,v]of Object.entries(verbs)){
  }
 }
 formReadings.forEach(e=>STTDisplay.register(...e));
-const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
-[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['冷蔵庫','れいぞうこ']].forEach(e=>STTDisplay.register(...e));
+words['teach'].kanji = 'おしえる';
+const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
+[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);for(const w of Object.values(words).sort((a,b)=>b.kanji.length-a.kanji.length)){if(w.kanji!==w.hira)value=value.split(w.kanji).join(w.hira);}return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
@@ -575,8 +576,15 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  if(si!==0)return;
  const ex=node('div','example-box example-text-layout p81-example');
+ const catLabels=[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}];
  exSets.forEach((s,index)=>{
   if(index>0)ex.append(node('div','p83-example-divider'));
+  const cat=node('div','p83-example-category');
+  const catDef=catLabels[index]||{main:'',sub:''};
+  const catMain=node('span','p83-cat-main',scriptMode==='kanji'?catDef.main:displayKana(catDef.main));
+  const catSub=node('span','p83-cat-sub',catDef.sub);
+  cat.append(catMain,catSub);
+  ex.append(cat);
   const rows=[
    makeRow('ex-'+index+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
    makeRow('ex-'+index+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
