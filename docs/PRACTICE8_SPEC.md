@@ -1,6 +1,6 @@
 # 練習8.1：VerbのがAdj
 
-更新：2026-10-30。ユーザー承認の青写真に基づく初回実装。ページタイトル・h1・Indexは `Practice 8.1: VerbのがAdj`。
+更新：2026-11-01。現行の `practice8.1.html`／`practice8.1.js` と `tests/practice81.cjs` を基準に内容を同期。仕様記述と現行実装が異なる場合は、ユーザーの指示により現行ファイルを正とし、本書を追随更新する。ページタイトル・h1・Indexは `Practice 8.1: VerbのがAdj`。
 
 ## 構成
 
@@ -16,7 +16,7 @@ Example1→D1→Example2→D2→Example3→D3→Example4→D4→Example5→D5。
 | --- | --- | --- |
 | 本／好き ⇔ 本／読む／好き | 本が好きです。 | 本を読むのが好きです。 |
 | 音楽／好き ⇔ 音楽／聞く／好き | 音楽が好きです。 | 音楽を聞くのが好きです。 |
-| 自転車／好き ⇔ 自転車／乗る／好き | 自転車が好きです。 | 自転車に乗るのが好きです。 |
+| 写真／好き ⇔ 写真／撮る／好き | 写真が好きです。 | 写真を撮るのが好きです。 |
 
 名詞の行には動詞を出さない。Noun／Verb＋のの項目名はExample1内だけに表示し、Drill内には出さない。Exampleの項目名は背景バッジを使わず、練習1のexample-label-titleを使う。動作の行では動詞＋のがを必須とする。
 
@@ -50,11 +50,11 @@ CasualのNoは表示ううん、TTS専用ううんん。うんん/ううんん�
 
 ### D4：好きの程度
 
-評価表現は「好き」から「すごくきらい」までの6段階で固定し、副詞選択はさせない。順は「好き」「ぜんぜんきらいじゃない」「あまりきらいじゃない」「ちょっときらい」「まあまあきらい」「すごくきらい」。D4のキューは1行目が「好き」、以降は副詞／きらいを示し、学習者が否定文を作る。モデル文ではすごくを使い、とてもは程度ガイドにだけ併記する。形容詞は通常色、ぜんぜん／あまりと否定形の「ない」は赤で表示する。
+評価表現は6段階で固定し、副詞選択はさせない。現行順は「好き」「ぜんぜんきらいじゃない」「あまりきらいじゃない」「ちょっときらい」「まあまあきらい」「すごくきらい」。D4のキューは各行の動作に加えて程度語を示し、学習者が程度に合う文を作る。ぜんぜん／あまりは否定形、ちょっと／まあまあ／すごくは肯定形として扱う。形容詞は通常色、ぜんぜん／あまりと否定形の「ない」は赤で表示する。
 
 各行でアクションをプルダウンから選び、選んだ行で録音する。タスク文は “Select a different action for each line, then record.”。未選択時は “Select” を中央表示し、選択後の動詞表記は左揃えにする。未選択の行は「きく」「とる」をロックし、“Select first.” を案内する。選択肢は「お皿を洗う」「ものを捨てる」「スマホを使う」「髪を切る」「カバンを持っていく」「勉強を始める」。1アクションはD4内で一度だけ選べる。選択済みアクションは他行のプルダウンに表示しない。未選択へ戻した場合は他行で再選択可能。D4キューの「好き」「きらい」は太字にしない。弟を主語にする課題は撤去する。
 
-Example4はシャワーを浴びる動作を「好き」とともに示し、程度の副詞に焦点を当てる。キューは「ぜんぜん／好き」「あまり／好き」など、副詞と好きだけを示す。ぜんぜん／あまり／ちょっと／まあまあ／すごくの5行とする。モデル文のぜんぜん／あまりと否定形の「ない」を赤字・太字にし、形容詞は通常色とする。とてもはモデル文に使わない。本文は同じ動作を〃で省略し、独立した再生ボタンは常に全文を再生する。程度ガイドは `ぜんぜん〜ない／あまり〜ない／ちょっと／まあまあ／とても・すごく` の5位置に戻し、ぜんぜん／あまりに続く「〜ない」も赤字・太字にする。−−−／−／＋／＋＋／＋＋＋を添え、負側のぜんぜん／あまりは赤、肯定形は青とする。程度の目安であり厳密な数値ではない。
+Example4は「料理を作る」を共通動作として、ぜんぜん／あまり／ちょっと／まあまあ／とても／すごくの6段階を常時表示する。2行目以降は動作部分を「〃」で省略するが、各再生ボタンは全文を再生する。ぜんぜん／あまりは否定形、ちょっと／まあまあ／とても／すごくは肯定形のモデル文とする。程度ガイドは `ぜんぜん〜ない／あまり〜ない／ちょっと／まあまあ／とても・すごく` の5位置とし、ぜんぜん／あまりに続く「〜ない」も赤字・太字にする。−−−／−／＋／＋＋／＋＋＋を添え、負側のぜんぜん／あまりは赤、肯定形は青とする。程度の目安であり厳密な数値ではない。
 
 副詞は共通degree-adverbで太字、色は既存の通常/ダーク用変数を共有する。狭幅では折り返し、色だけに依存しない。
 
@@ -80,14 +80,14 @@ Adj選択時は正誤メッセージを出さない。同じペアのどちら�
 |  |  | Uncomfortable → 苦手 | The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill. |
 | 3 Meaning | 私は早く起きるのが… | Observed → 苦手 | The speaker thinks getting up early is difficult for the subject. |
 |  |  | Unnatural → 下手 | 下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural. |
-| 4 Speaker & listener | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | When describing their own ability, the speaker may sound as if they are praising themselves. |
+| 4 Impression | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | When describing their own ability, the speaker may sound as if they are praising themselves. |
 |  |  | Natural → 得意 | When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability. |
-| 5 Speaker & listener | 留学生の友達は漢字を書くのが…：実際に書く様子を見ている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
+| 5 Impression | 留学生の友達は漢字を書くのが…：実際に書く様子を見ている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
 |  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
-| 6 Speaker & listener | 兄はカラオケで歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
+| 6 Impression | 兄はカラオケで歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
 |  |  | Tactful → 苦手 | The speaker describes the subject’s difficulty more gently than judging their ability. |
-| 7 Speaker & listener | 日本語の先生は日本語を話すのが…：初級学習者が相手の能力を評価することと立場を越えて自己認識を推測することを比較 | Presumptuous → 上手 | The speaker judges the subject’s ability without enough experience to make that judgment. |
-|  |  | Overstepping → 得意 | Depending on the relationship, saying someone is 得意 can presume too much familiarity with how they see their own strengths. |
+| 7 Impression | 日本語の先生は日本語を話すのが…：初級学習者が相手の能力を評価することと立場を越えて自己認識を推測することを比較 | Presumptuous → 上手 | The speaker judges the subject’s ability without enough experience to make that judgment. |
+|  |  | Overstepping → 得意 | The speaker assumes the subject sees the activity as a personal strength, which may be overstepping given the difference in their positions. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
 
@@ -100,11 +100,11 @@ Exampleと対応Drillで同じ完成文を反復しない。Example3／Example5�
 | 枠 | 目的語 | 動詞 | 備考 |
 | --- | --- | --- | --- |
 | Example1 | 映画 | 作る | D1と語彙を分ける |
-| D1 | 本／音楽／自転車 | 読む／聞く／乗る | 各問で名詞好きと動作好きを比較 |
+| D1 | 本／音楽／写真 | 読む／聞く／撮る | 各問で名詞好きと動作好きを比較 |
 | Example2 | テレビ | 見る | D2と語彙を分ける |
 | D2 | コーヒー／部屋／朝ご飯／服 | 飲む／掃除する／食べる／買う | Q/A内の反復 |
 | Example3 | 写真 | 撮る | D3の4問と語彙を分ける。主語は妹 |
-| D3 | 文法／山／カタカナ／バイク | 教える／登る／覚える／運転する | 4問。D3-1の人物はクラスメート、D3-2は先輩 |
+| D3 | 文法／海／カタカナ／バイク | 教える／泳ぐ／覚える／運転する | 4問。人物はクラスメート／祖母／子ども／兄弟。D3-2は祖母が海で泳ぐ |
 | Example4 | シャワー | 浴びる | 程度副詞5段階の比較内で反復 |
 | D4 | お皿／もの／スマホ／髪／カバン／勉強 | 洗う／捨てる／使う／切る／持っていく／始める | 6段階の表現は固定。アクションはプルダウンで1回ずつ選び、選択済みは他行から隠す |
 | Example5 | ギター | 弾く | 上手／得意の意味比較内で反復 |
