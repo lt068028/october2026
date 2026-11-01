@@ -1718,7 +1718,7 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(container,String(i+1)),prefix=`p22_price_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${demonstrative('A',o)}／${vocabulary(o)}／${formatWord('いくら','いくら','ikura','how much')}`,prefix+'_q',()=>question(adnominal('A',o),'いくら'));
-            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${practice2State.englishCues?'pronoun/'+o.meaning:'…れ／'+vocabulary(o)}`,prefix+'_r',()=>statement(adnominal('B',o),price(o)));
+            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${practice2State.englishCues?'adjective/'+o.meaning:'…の／'+vocabulary(o)}`,prefix+'_r',()=>statement(adnominal('B',o),price(o)));
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
