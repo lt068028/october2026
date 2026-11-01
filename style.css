@@ -3160,12 +3160,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .recording-controls > .recording-result { flex: 1 1 180px; width: auto; }
 .practice81-page .recording-controls .result-text { white-space: pre-wrap; }
 .practice81-page .p81-degree-scale {
-    display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px;
+    display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 8px;
     padding: 12px; margin-bottom: 16px; border-radius: 6px; background: var(--bg-panel);
 }
 .practice81-page .p81-degree-point { text-align: center; min-width: 0; }
 .practice81-page .p81-degree-marks { display: block; border-bottom: 3px solid currentColor; font-weight: 700; margin-bottom: 6px; }
 .practice81-page .p81-degree-label { display: block; overflow-wrap: anywhere; font-size: .85em; }
+.practice81-page .p81-degree-target { margin-left: 6px; font-weight: 700; }
 .practice81-page .p81-scenario { margin: 0 0 12px; font-size: .9em; }
 .practice81-page .p81-impression-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 .practice81-page .p81-impression-choice[aria-pressed="true"] { outline: 2px solid var(--accent-color); outline-offset: 1px; }
