@@ -789,8 +789,15 @@ function addExample(root,si) {
         if(si===3){
             if(!repeatPrefix){const prefix=node('span','p81-degree-cue-prefix');prefix.innerHTML=cues(r,[r.object,r.verb])+(hintMode==='paren'?'':'／');cue.append(prefix);}
             const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
-        }else if(si===4&&index===1){cue.innerHTML=cues(r,[r.subject])+'／〃／'+word('strong');}
-        else cue.innerHTML=cues(r);
+        }else if((si===2||si===4)&&index===1){
+            cue.dataset.repeatCue=String(si);
+            const spacer=node('span','p81-repeat-spacer');
+            cue.append(spacer,node('span','p81-repeat-mark','〃'),document.createTextNode('／'));
+            const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
+        }else {
+            cue.innerHTML=cues(r);
+            if(si===2||si===4){cue.dataset.repeatAnchor=String(si);cue.dataset.repeatVerb=r.verb;}
+        }
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
@@ -844,9 +851,13 @@ function render() {
                 if(r.selectKind==='activity'){
                     addSelect(cueBody,r,key);
                     cueBody.append(document.createTextNode('／'));
-                    const target=node('span','p81-degree-target degree-'+r.degreeLevel.tone);target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
-                    if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target degree-positive');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
-                }else{content.innerHTML=cues(r,r.comparison&&ri>0?[r.subject]:undefined)+(r.comparison&&ri>0?'／〃':'');cueBody.append(content);addSelect(cueBody,r,key);}
+                    const target=node('span','p81-degree-target');target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
+                    if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
+                }else{
+                    if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'));}
+                    else{content.innerHTML=cues(r);if(r.comparison)content.dataset.repeatAnchor=r.verb;}
+                    cueBody.append(content);addSelect(cueBody,r,key);
+                }
                 if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
@@ -869,6 +880,24 @@ function render() {
     ConversationDisplay.format();measureCues();sync();
 }
 function measureCues() {
+    const alignDitto=(anchor,mark,verbId,spacer)=>{
+        const verb=words[verbId]?.[scriptMode==='kanji'?'kanji':'hira'];if(!anchor||!mark||!spacer||!verb)return;
+        const walker=document.createTreeWalker(anchor,NodeFilter.SHOW_TEXT);let current,flat='',parts=[];
+        while((current=walker.nextNode())){parts.push({node:current,start:flat.length});flat+=current.textContent;}
+        const start=flat.indexOf(verb);if(start<0)return;
+        const last=start+verb.length-1,part=parts.find(item=>last>=item.start&&last<item.start+item.node.textContent.length);if(!part)return;
+        const range=document.createRange();range.setStart(part.node,last-part.start);range.setEnd(part.node,last-part.start+1);
+        const char=range.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+        spacer.style.width=Math.max(0,char.left-cueRect.left+(char.width-markWidth)/2)+'px';
+    };
+    document.querySelectorAll('.p81-example-cue[data-repeat-cue]').forEach(cue=>{
+        const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor]');
+        alignDitto(anchor,cue.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatVerb,cue.querySelector('.p81-repeat-spacer'));
+    });
+    document.querySelectorAll('.p81-comparison-card').forEach(card=>{
+        const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
+        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatAnchor,target?.querySelector('.p81-drill-repeat-spacer'));
+    });
     document.querySelectorAll('.p81-degree-example').forEach(ex=>{
         const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
         const tailWidth=Math.max(...[...ex.querySelectorAll('.p81-degree-cue-tail')].map(measure));

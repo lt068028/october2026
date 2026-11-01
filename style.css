@@ -3146,6 +3146,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 .practice81-page .p81-example-row + .p81-example-row { margin-top: 12px; }
 .practice81-page .p81-example-row > * { min-width: 0; }
+.practice81-page .p81-repeat-spacer, .practice81-page .p81-drill-repeat-spacer { display: inline-block; }
+.practice81-page .p81-repeat-mark { display: inline-block; }
 .practice81-page .p81-model { overflow-wrap: anywhere; }
 .practice81-page .prompt-label > .p81-kind { margin-right: 8px; }
 .practice81-page .p81-select { font: inherit; max-width: 100%; min-height: 34px; margin-left: 6px; text-align: center; text-align-last: center; }
