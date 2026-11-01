@@ -856,7 +856,7 @@ function render() {
                 const cue=node('td','prompt-label drill-cue-cell');
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
-                const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
+                const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending)speak(r.text,listen);});
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
                 const content=node('span','p81-cue-words');
@@ -966,8 +966,17 @@ function measureCues() {
 function sync() {
     const busy=Boolean(session||preparing);
     document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
-        views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';}}
-        const canStop=session?.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
+    views.forEach(v=>{
+        const pending=Boolean(v.r.pending)||(v.r.selectKind==='activity'&&!choices.get(v.r.id));
+        for(const b of [v.listen,v.rec]){
+            b.disabled=busy||pending;
+            if(pending)b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';
+            else delete b.dataset.selectionHelp;
+        }
+        const canStop=Boolean(session&&session.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping);
+        v.stop.disabled=!canStop;
+        v.stop.classList.toggle('stop-btn-active',canStop);
+    });
 }
 async function record(key, r) {
     if (session || preparing || r.pending) return;
@@ -1471,6 +1480,7 @@ function init() {
 
         input.addEventListener('change', () => {
             change(input.checked);
+            sync();
 
             $(label)?.classList.toggle(
                 'active-mode',
