@@ -793,7 +793,7 @@ function addExample(root,si) {
             cue.dataset.repeatCue=String(si);
             const spacer=node('span','p81-repeat-spacer');
             cue.append(spacer,node('span','p81-repeat-mark','〃'));
-            if(si===2)cue.append(document.createTextNode('／'));
+            if(si===2){cue.append(node('span','p81-repeat-separator-spacer'));cue.append(document.createTextNode('／'));}
             const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
         }else {
             cue.innerHTML=cues(r);
@@ -895,7 +895,23 @@ function measureCues() {
     };
     document.querySelectorAll('.p81-example-cue[data-repeat-cue]').forEach(cue=>{
         const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor]');
-        alignDitto(anchor,cue.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,cue.querySelector('.p81-repeat-spacer'));
+        const mark=cue.querySelector('.p81-repeat-mark'),spacer=cue.querySelector('.p81-repeat-spacer');
+        if(cue.dataset.repeatCue==='2'){
+            const photo=anchor&&[...anchor.querySelectorAll('.target-word')].find(e=>e.textContent.includes('真'));
+            const photoText=photo&&[...photo.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.includes('真'));
+            const adjective=anchor&&[...anchor.querySelectorAll('.target-word')].find(e=>e.textContent.includes('上手'));
+            let adjectiveUnit=adjective;
+            while(adjectiveUnit&&adjectiveUnit.parentElement!==anchor)adjectiveUnit=adjectiveUnit.parentElement;
+            const slash=adjectiveUnit?.previousSibling;
+            if(photoText&&slash?.nodeType===Node.TEXT_NODE){
+                const charIndex=photoText.textContent.indexOf('真'),charRange=document.createRange();
+                charRange.setStart(photoText,charIndex);charRange.setEnd(photoText,charIndex+1);
+                const charRect=charRange.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+                spacer.style.width=Math.max(0,charRect.left-cueRect.left+(charRect.width-markWidth)/2)+'px';
+                const slashRange=document.createRange(),slashIndex=slash.textContent.indexOf('／');
+                if(slashIndex>=0){slashRange.setStart(slash,slashIndex);slashRange.setEnd(slash,slashIndex+1);const slashX=slashRange.getBoundingClientRect().left,markRect=mark.getBoundingClientRect();cue.querySelector('.p81-repeat-separator-spacer').style.width=Math.max(0,slashX-markRect.right)+'px';}
+            }
+        }else alignDitto(anchor,mark,anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,spacer);
     });
     document.querySelectorAll('.p81-comparison-card').forEach(card=>{
         const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
