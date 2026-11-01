@@ -1,22 +1,18 @@
 ## 最新リレー状態（2026-11-01 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Example 1 Q1キューの平仮名表示（`おしえる`）修正、およびExample左端への区分列（`だれ (Who)`／`何 (What)`）追加完了。開始時HEAD `47c0400`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Example「きく」音声ボタンの横幅伸長を修正（元通りのコンパクトな幅へ復元）。開始時HEAD `ea12314`。
 - 変更：
-  1. **Example 1 Q1キューの平仮名固定修正（`practice8.3.js`）**：
-     - `words['teach'].kanji` が初期化時に辞書形漢字（`教える`）となっていたため `With漢字` モードでキューに漢字が出ていた現象を是正。未習動詞 `教える` のキュー登録漢字を平仮名（`おしえる`）に統一し、モードによらずキューは平仮名 `おしえる`、右側モデル文は `教えます`（With漢字）／`おしえます`（Hiragana Only）の連動を確実に実現。
-  2. **Example左端への区分列追加（`practice8.3.js`、`style.css`）**：
-     - Exampleの各3行セットの左側に、3行分をスパンした区分ブロック（`だれ\n(Who)`、`何\n(What)`）を配置。
-     - 6列グリッド（区分、Role、キュー、矢印、音声ボタン、モデル文）を構成し、見やすく区分を明示。
-     - モバイル幅（<=760px）では各セット上部の全幅ヘッダーとして自然に表示されるレスポンシブスタイルを定義。
-  3. **仕様書の同期（`docs/PRACTICE8_SPEC.md`）**：
-     - Practice 8.3節に上記区分列の仕様を追記。
-  4. **キャッシュキー更新（`practice8.3.html`）**。
-- 変更ファイル：practice8.3.js、style.css、practice8.3.html、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+  1. **きくボタンの横幅復元とグリッド優先度修正（`style.css`、`practice8.3.html`）**：
+     - `practice8.3.html` の `<body>` クラスから不要な `practice82-page` を除外（8.2の5列グリッド・列幅定義の干渉を完全排除）。
+     - `style.css` 内で Practice 8.3 の Example 6列グリッド定義をCSS最下部へ移動し確実に適用。
+     - `.practice83-page .p81-example-row > button` に `width: max-content !important; justify-self: start;` を付与し、ボタンが横に伸びず本来の寸法に維持されるよう修正。
+  2. **キャッシュキー更新（`practice8.3.html`）**。
+- 変更ファイル：style.css、practice8.3.html、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格。
-- 実機確認状況：今回のExample 1 Q1キュー平仮名（おしえる）およびExample左端区分列（だれ Who／何 What）の表示確認は実機確認待ち。
+- 実機確認状況：今回のExample「きく」ボタンの幅復元確認は実機確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `47c0400`）
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `ea12314`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 括弧漢字ルールに基づく「教える」「果物」のWith漢字実装、および「だれ」の平仮名維持完了。開始時HEAD `5dbca5f`。
 - 変更：
