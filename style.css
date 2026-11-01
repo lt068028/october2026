@@ -3146,7 +3146,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 .practice81-page .p81-example-row + .p81-example-row { margin-top: 12px; }
 .practice81-page .p81-example-row > * { min-width: 0; }
-.practice81-page .p81-repeat-spacer, .practice81-page .p81-drill-repeat-spacer, .practice81-page .p81-repeat-separator-spacer { display: inline-block; }
+.practice81-page .p81-repeat-spacer, .practice81-page .p81-drill-repeat-spacer, .practice81-page .p81-drill-repeat-after-spacer, .practice81-page .p81-repeat-separator-spacer, .practice81-page .p81-model-repeat-spacer, .practice81-page .p81-model-repeat-after-spacer { display: inline-block; }
 .practice81-page .p81-repeat-mark { display: inline-block; }
 .practice81-page .p81-model { overflow-wrap: anywhere; }
 .practice81-page .prompt-label > .p81-kind { margin-right: 8px; }
@@ -3388,4 +3388,27 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
  .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
  .site-scale.practice81-page #drill5 .p81-card .p81-table .p81-controls { grid-column: 1; }
+}
+
+/* Practice 8.1: make each disabled row control visibly and consistently locked, even inside selection-help-wrap. */
+.practice81-page .recording-actions button:disabled,
+.practice81-page .p81-cue-button-group button:disabled,
+.practice81-page .recording-actions button.is-selection-locked,
+.practice81-page .p81-cue-button-group button.is-selection-locked {
+    opacity: .42 !important;
+    filter: grayscale(1);
+    background: var(--button-disabled-bg) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+.selection-help-wrap:has(> button:disabled) {
+    cursor: not-allowed !important;
+}
+.practice81-page .p81-degree-cue-prefix[data-repeat-anchor],
+.practice81-page .p81-degree-cue-prefix[data-repeat-cue],
+.practice81-page .p81-cue-words[data-repeat-cue] {
+    min-width: 0;
+    white-space: nowrap;
 }

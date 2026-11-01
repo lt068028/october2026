@@ -43,14 +43,14 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill3 .p81-card select').count(),6,'six ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
- check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃あまり好きじゃないです。','〃ちょっと好きです。','〃まぁまぁ好きです。','〃とても好きです。','〃すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃のがあまり好きじゃないです。','〃のがちょっと好きです。','〃のがまぁまぁ好きです。','〃のがとても好きです。','〃のがすごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
  check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','〃あまり／好き','〃ちょっと／好き','〃まぁまぁ／好き','〃とても／好き','〃すごく／好き'],'only the first degree cue repeats the common action');
- check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作るのが'),'ditto marks retain the omitted meaning for accessibility');
+ check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作る'),'ditto marks retain the omitted meaning for accessibility');
  for(const style of ['formal','informal','casual'])for(const script of ['kanji','hiragana']){
   await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
   const prefixes=await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label')));
-  check(prefixes,Array(5).fill(script==='kanji'?'料理を作るのが':'りょうりをつくるのが'),'ditto follows the selected script');
+  check(prefixes,Array(5).fill(script==='kanji'?'料理を作る':'りょうりをつくる'),'ditto follows the selected script');
   for(let i=0;i<6;i++){
    await page.locator('#drill4 .example-box button').nth(i).click();
    const ending=i<2?(style==='formal'?'じゃないです。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
@@ -69,13 +69,20 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.evaluate(()=>{const ex=[...document.querySelectorAll('#drill5 .example-box .p81-model')].map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return audit81.normalize(c.textContent);});return audit81.rowsFor(4).flat().every(r=>!ex.includes(audit81.normalize(r.text)));}),true,'D5 never repeats an Example5 model');
   check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹／写真／撮る／上手','〃／苦手'],'Example3 second cue abbreviates the complete repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉／ギター／弾く／上手','〃／得意'],'Example5 second cue abbreviates the repeated subject and action');
-  check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉はギターを弾くのが上手です。','〃のが得意です。'],'Example5 second model retains のが after ditto');
-  check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は写真を撮るのが上手です。','〃苦手です。'],'Example3 second model abbreviates the repeated phrase');
+  check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉は、ギターを弾くのが上手です。','〃のが得意です。'],'Example5 second model retains のが after ditto');
+  check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は、写真を撮るのが上手です。','〃のが苦手です。'],'Example3 second model retains のが after ditto');
+
+ check(await page.locator('#drill4 .recording-actions button').evaluateAll(es=>es.every(e=>e.disabled&&e.getAttribute('aria-disabled')==='true'&&e.classList.contains('is-selection-locked'))),true,'Dr4 listen, record, and stop buttons start locked before activity selection');
+ await page.locator('[data-choice="degree-0"]').selectOption('dishes');
+ check(await page.locator('[data-row="degree-0"] .recording-actions button').evaluateAll(es=>es.map(e=>e.disabled)),[false,false,true],'Dr4 selected row unlocks listen and record while stop stays locked');
+ check(await page.locator('[data-row="degree-1"] .recording-actions button').evaluateAll(es=>es.map(e=>e.disabled)),[true,true,true],'Dr4 unselected rows remain locked');
+ await page.locator('[data-choice="degree-0"]').selectOption('');
+ check(await page.locator('[data-row="degree-0"] .recording-actions button').evaluateAll(es=>es.map(e=>e.disabled)),[true,true,true],'Dr4 clearing activity re-locks listen and record');
 
  check(await page.locator('#drill5 .p81-impression-choice').count(),0,'impression selection replaced by fixed row labels');
  check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>e.disabled)),true,'model and recording wait for matching adjective');
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
- check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example5 topic and nominalizer highlighted');
+ check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example5 topic and nominalizer highlighted');
  check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
  check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['本を読むのが好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
  for(const label of ['🔊🙆','🔊🙅']){
@@ -116,8 +123,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
     check(await page.locator('.p81-card').count(),26,`${style}/${script}/${hint} content retained`);
-    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?17:16,'gold structure excludes the five omitted nominalizers');
-    check(await page.locator('#drill4 .example-box .p81-gold').count(),1,'only the full first model shows the nominalizer');
+    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?20:19,'gold structure highlights all visible nominalizers');
+    check(await page.locator('#drill4 .example-box .p81-gold').count(),6,'all six degree models show the nominalizer');
    }
   }
  }
@@ -194,12 +201,16 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   await page.setViewportSize({width,height:1000});await page.emulateMedia({colorScheme:scheme});
   const degree=await page.locator('#drill4 .example-box').evaluate(ex=>{
     const xs=[...ex.querySelectorAll('.p81-degree-cue-tail')].map(e=>e.getBoundingClientRect().left);
-    const ga=ex.querySelector('.p81-degree-model-prefix .p81-gold').firstChild,range=document.createRange();range.setStart(ga,1);range.setEnd(ga,2);const r=range.getBoundingClientRect();
-    const ditto=[...ex.querySelectorAll('.p81-ditto')].map(e=>{const b=e.getBoundingClientRect();return Math.abs((b.left+b.right-r.left-r.right)/2);});
-    return {spread:Math.max(...xs)-Math.min(...xs),ditto};
+    const models=[...ex.querySelectorAll('.p81-model')];
+    const firstRect=models[0].getBoundingClientRect(),firstNoga=[...models[0].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect();
+    const emptyCenter=(firstRect.left+firstNoga.left)/2;
+    const ditto=models.slice(1).map(m=>{const b=m.querySelector('.p81-ditto').getBoundingClientRect();return Math.abs((b.left+b.right)/2-emptyCenter);});
+    const nogaSpread=models.slice(1).map(m=>{const n=[...m.querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect();return Math.abs(n.left-firstNoga.left);});
+    return {spread:Math.max(...xs)-Math.min(...xs),ditto,nogaSpread};
   });
   check(degree.spread<1,true,'degree cue suffixes share the same start');
-  check(degree.ditto.every(x=>x<1),true,'ditto shares が center');
+  check(degree.ditto.every(x=>x<1),true,'Example4 ditto centered in empty space before のが');
+  check(degree.nogaSpread.every(x=>x<1),true,'Example4 のが aligns vertically across all rows');
   const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));
   check(layout.overflow,false,'no page overflow '+width+' '+scheme);
   if(width>600){
@@ -213,10 +224,13 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    check(fit.spread<1,true,'D5 shared listen column after wrapping');
     const dittoCenters=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const first=card.querySelector('.p81-cue-words[data-repeat-anchor]'),mark=card.querySelector('.p81-cue-words[data-repeat-cue] .p81-repeat-mark');const words=[...first.querySelectorAll('.target-word')],a=words[0].getBoundingClientRect(),b=words.at(-1).getBoundingClientRect(),m=mark.getBoundingClientRect();return Math.abs((m.left+m.right-a.left-b.right)/2);}));
     check(dittoCenters.every(x=>x<1),true,'D5 ditto centered over repeated subject and action '+width);
-    const ex4ModelCenters=await page.locator('#drill4 .example-box').evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],word=[...rows[0].querySelectorAll('.target-word')].find(e=>e.textContent.includes('作る')).getBoundingClientRect();return rows.slice(1).map(row=>{const mark=row.querySelector('.p81-ditto').getBoundingClientRect();return Math.abs((mark.left+mark.right-word.left-word.right)/2);});});
-    check(ex4ModelCenters.every(x=>x<1),true,'Example4 model ditto centered over 作る');
-    const ex5ModelCenter=await page.locator('#drill5 .example-box').evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],word=[...rows[0].querySelectorAll('.target-word')].find(e=>e.textContent.includes('弾く')).getBoundingClientRect(),mark=rows[1].querySelector('.p81-ditto').getBoundingClientRect();return Math.abs((mark.left+mark.right-word.left-word.right)/2);});
-    check(ex5ModelCenter<1,true,'Example5 model ditto centered over 弾く');
+    const d5SelectDeltas=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const selects=[...card.querySelectorAll('select.p81-select')].map(s=>s.getBoundingClientRect().left);return Math.abs(selects[0]-selects[1]);}));
+    check(d5SelectDeltas.every(x=>x<1),true,'D5 paired Adj selects align at exact same horizontal position '+width);
+    for(const sel of ['#drill3 .example-box','#drill5 .example-box']){
+     const modelAlign=await page.locator(sel).evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],firstRect=rows[0].getBoundingClientRect(),firstNoga=[...rows[0].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect(),secondNoga=[...rows[1].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect(),mark=rows[1].querySelector('.p81-ditto').getBoundingClientRect();return {centerDelta:Math.abs((mark.left+mark.right)/2-(firstRect.left+firstNoga.left)/2),nogaDelta:Math.abs(secondNoga.left-firstNoga.left)};});
+     check(modelAlign.centerDelta<1,true,sel+' model ditto centered in empty space before のが');
+     check(modelAlign.nogaDelta<1,true,sel+' model のが aligns horizontally across rows');
+    }
 
    if(width>=1440)check(fit.single,true,'short labels keep default cues on one line');
   }

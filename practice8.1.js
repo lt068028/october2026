@@ -279,12 +279,11 @@ function cues(r,visibleIds) {
 
 function modelHTML(r,repeatPrefix=false) {
     const fullText=scriptMode==='kanji'?r.text:r.hira;
-    const shortText=repeatPrefix?sentenceFor({...r,short:true},speechStyle,scriptMode==='kanji'):'';
-    const text=repeatPrefix&&r.id==='ex5-perception'?shortText.replace(words[r.adjective][scriptMode==='kanji'?'kanji':'hira'],'のが'+words[r.adjective][scriptMode==='kanji'?'kanji':'hira']):repeatPrefix?shortText:fullText;
-    const omittedText=repeatPrefix?(r.id==='ex5-perception'?fullText.slice(0,fullText.indexOf('のが')):fullText.slice(0,fullText.length-text.length)):'';
-    const needsModelSpacer=repeatPrefix&&(r.id.startsWith('ex4-')||r.id==='ex5-perception');
+    const nogaIndex=repeatPrefix?fullText.indexOf('のが'):-1;
+    const text=nogaIndex>=0?fullText.slice(nogaIndex):fullText;
+    const omittedText=nogaIndex>=0?fullText.slice(0,nogaIndex):'';
     const tokens=[...Object.values(words)].map(w=>w[scriptMode==='kanji'?'kanji':'hira']).sort((a,b)=>b.length-a.length);
-    let out=repeatPrefix?(needsModelSpacer?'<span class="p81-model-repeat-spacer"></span>':'')+`<span class="p81-ditto" role="img" aria-label="${escape(omittedText)}">〃</span>`:'',i=0;
+    let out=repeatPrefix?`<span class="p81-model-repeat-spacer"></span><span class="p81-ditto" role="img" aria-label="${escape(omittedText)}">〃</span><span class="p81-model-repeat-after-spacer"></span>`:'',i=0;
     while(i<text.length) {
         const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
         const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
@@ -792,11 +791,11 @@ function addExample(root,si) {
         if(si===3){
             const prefix=node('span','p81-degree-cue-prefix'+(repeatPrefix?' p81-degree-cue-repeat':''));
             if(repeatPrefix){
-                cue.dataset.repeatCue='3';
+                prefix.dataset.repeatCue='3';
                 const spacer=node('span','p81-repeat-spacer');
                 const mark=node('span','p81-repeat-mark','〃');mark.setAttribute('role','img');mark.setAttribute('aria-label',actionText(r));prefix.append(spacer,mark);
             }else {
-                cue.dataset.repeatAnchor='3';cue.dataset.repeatStart=r.object;cue.dataset.repeatEnd=r.verb;
+                prefix.dataset.repeatAnchor='3';prefix.dataset.repeatStart=r.object;prefix.dataset.repeatEnd=r.verb;
                 prefix.innerHTML=cues(r,[r.object,r.verb]);
             }
             if(hintMode!=='paren'&&!repeatPrefix)prefix.append(document.createTextNode('／'));
@@ -806,7 +805,7 @@ function addExample(root,si) {
             cue.dataset.repeatCue=String(si);
             const spacer=node('span','p81-repeat-spacer');
             cue.append(spacer,node('span','p81-repeat-mark','〃'));
-            cue.append(node('span','p81-repeat-separator-spacer'));cue.append(document.createTextNode('／'));
+            cue.append(node('span','p81-repeat-separator-spacer'));if(hintMode!=='paren')cue.append(document.createTextNode('／'));
             const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
         }else {
             cue.innerHTML=cues(r);
@@ -815,9 +814,9 @@ function addExample(root,si) {
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
-        if(si===3||si===4){
-            if(index===0)text.dataset.repeatModelAnchor=r.verb;
-            else text.dataset.repeatModelCue=r.verb;
+        if(si===2||si===3||si===4){
+            if(index===0)text.dataset.repeatModelAnchor=String(si);
+            else text.dataset.repeatModelCue=String(si);
         }
         if(hasKinds)row.append(kind);else row.classList.add('p81-no-kind');
         row.append(cue,arrow,listen,text);ex.append(row);
@@ -856,7 +855,7 @@ function render() {
                 const cue=node('td','prompt-label drill-cue-cell');
                 if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
-                const listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
+                const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;
                 const content=node('span','p81-cue-words');
@@ -866,7 +865,7 @@ function render() {
                     const target=node('span','p81-degree-target');target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
                     if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
                 }else{
-                    if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'));}
+                    if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'),node('span','p81-drill-repeat-after-spacer'));}
                     else{content.innerHTML=cues(r);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
                     cueBody.append(content);addSelect(cueBody,r,key);
                 }
@@ -892,6 +891,7 @@ function render() {
     ConversationDisplay.format();measureCues();sync();
 }
 function measureCues() {
+    document.querySelectorAll('.p81-repeat-spacer,.p81-repeat-separator-spacer,.p81-drill-repeat-spacer,.p81-drill-repeat-after-spacer,.p81-model-repeat-spacer,.p81-model-repeat-after-spacer').forEach(e=>{e.style.width='0px';});
     const alignDitto=(anchor,mark,startId,endId,spacer)=>{
         const display=id=>words[id]?.[scriptMode==='kanji'?'kanji':'hira'];
         const firstText=display(startId),lastText=display(endId);if(!anchor||!mark||!spacer||!firstText||!lastText)return;
@@ -902,8 +902,13 @@ function measureCues() {
         const left=firstRect.left,right=lastRect.right;
         spacer.style.width=Math.max(0,left-cueRect.left+(right-left-markWidth)/2)+'px';
     };
-    document.querySelectorAll('.p81-example-cue[data-repeat-cue]').forEach(cue=>{
-        const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor]');
+    document.querySelectorAll('.p81-degree-example').forEach(ex=>{
+        const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
+        const tailWidth=Math.max(...[...ex.querySelectorAll('.p81-degree-cue-tail')].map(measure));
+        ex.style.setProperty('--degree-tail-width',tailWidth+'px');
+    });
+    document.querySelectorAll('.p81-example-cue[data-repeat-cue], .p81-degree-cue-prefix[data-repeat-cue]').forEach(cue=>{
+        const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor], .p81-degree-cue-prefix[data-repeat-anchor]');
         const mark=cue.querySelector('.p81-repeat-mark'),spacer=cue.querySelector('.p81-repeat-spacer');
         alignDitto(anchor,mark,anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,spacer);
         const separator=cue.querySelector('.p81-repeat-separator-spacer');
@@ -918,40 +923,28 @@ function measureCues() {
         const slashX=slashRange.getBoundingClientRect().left,markRect=mark.getBoundingClientRect();
         separator.style.width=Math.max(0,slashX-markRect.right)+'px';
     });
-    document.querySelectorAll('.p81-comparison-card').forEach(card=>{
-        const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
-        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,target?.querySelector('.p81-drill-repeat-spacer'));
-    });
-    document.querySelectorAll('.p81-degree-example').forEach(ex=>{
-        const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
-        const tailWidth=Math.max(...[...ex.querySelectorAll('.p81-degree-cue-tail')].map(measure));
-        ex.style.setProperty('--degree-tail-width',tailWidth+'px');
-    });
     document.querySelectorAll('.p81-model[data-repeat-model-cue]').forEach(target=>{
         const ex=target.closest('.p81-example');
         const anchor=ex?.querySelector('.p81-model[data-repeat-model-anchor]');
-        const wordId=target.dataset.repeatModelCue;
-        const display=words[wordId]?.[scriptMode==='kanji'?'kanji':'hira'];
-        const anchorWord=[...(anchor?.querySelectorAll('.target-word')||[])].find(e=>e.textContent.includes(display||'\u0000'));
+        const anchorNoga=[...(anchor?.querySelectorAll('.p81-gold')||[])].find(e=>e.textContent==='のが');
+        const targetNoga=[...(target.querySelectorAll('.p81-gold')||[])].find(e=>e.textContent==='のが');
         const spacer=target.querySelector('.p81-model-repeat-spacer');
+        const afterSpacer=target.querySelector('.p81-model-repeat-after-spacer');
         const mark=target.querySelector('.p81-ditto');
-        if(!anchor||!anchorWord||!spacer||!mark)return;
-        const anchorRect=anchor.getBoundingClientRect(),wordRect=anchorWord.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-        spacer.style.width=Math.max(0,wordRect.left+wordRect.width/2-anchorRect.left-markWidth/2)+'px';
+        if(!anchor||!anchorNoga||!targetNoga||!spacer||!afterSpacer||!mark)return;
+        const firstWord=anchor.querySelector('.target-word');
+        const startX=(firstWord||anchor).getBoundingClientRect().left;
+        const nogaX=anchorNoga.getBoundingClientRect().left;
+        const targetX=target.getBoundingClientRect().left;
+        const markWidth=mark.getBoundingClientRect().width;
+        const emptyWidth=Math.max(0,nogaX-startX);
+        const leftWidth=Math.max(0,startX-targetX+(emptyWidth-markWidth)/2);
+        spacer.style.width=leftWidth+'px';
+        const currentTargetNogaX=targetNoga.getBoundingClientRect().left;
+        afterSpacer.style.width=Math.max(0,nogaX-currentTargetNogaX)+'px';
     });
     document.querySelectorAll('.p81-section').forEach(group=>{
-        // Align the Japanese cue starts within each comparison pair, not across the Drill.
         group.style.removeProperty('--p81-kind-width');
-        group.querySelectorAll('.p81-comparison-card').forEach(card=>{
-            card.style.removeProperty('--p81-kind-width');
-            const labels=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body) > .p81-kind')];
-            if(!labels.length)return;
-            const width=Math.max(...labels.map(label=>{
-                const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
-                card.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;
-            }));
-            card.style.setProperty('--p81-kind-width',width+'px');
-        });
         const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
         for(const cell of cells) {
             const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(e=>e.remove());
@@ -959,18 +952,67 @@ function measureCues() {
             group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();
         }
         for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
-
-
+        group.querySelectorAll('.p81-comparison-card').forEach(card=>{
+            card.style.removeProperty('--p81-kind-width');
+            const promptCells=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body)')];
+            promptCells.forEach(c=>c.style.removeProperty('--p81-kind-width'));
+            const labels=promptCells.map(c=>c.querySelector(':scope > .p81-kind'));
+            if(labels.length!==2||!labels[0]||!labels[1])return;
+            const labelWidths=labels.map(label=>{
+                const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
+                card.append(copy);const w=copy.getBoundingClientRect().width;copy.remove();return w;
+            });
+            const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
+            const spacer=target?.querySelector('.p81-drill-repeat-spacer'),mark=target?.querySelector('.p81-repeat-mark'),afterSpacer=target?.querySelector('.p81-drill-repeat-after-spacer');
+            const display=id=>words[id]?.[scriptMode==='kanji'?'kanji':'hira'];
+            const firstText=display(anchor?.dataset.repeatStart),lastText=display(anchor?.dataset.repeatEnd);
+            const targets=[...(anchor?.querySelectorAll('.target-word')||[])];
+            const first=targets.find(e=>e.textContent.includes(firstText||'\u0000')),last=[...targets].reverse().find(e=>e.textContent.includes(lastText||'\u0000'));
+            if(!anchor||!target||!spacer||!mark||!first||!last)return;
+            const anchorRect0=anchor.getBoundingClientRect(),firstRect0=first.getBoundingClientRect(),lastRect0=last.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+            const relCenter=(firstRect0.left+lastRect0.right)/2-anchorRect0.left;
+            const row1KindWidth=Math.max(labelWidths[0],labelWidths[1]-Math.max(0,relCenter-markWidth/2));
+            promptCells[0].style.setProperty('--p81-kind-width',row1KindWidth+'px');
+            promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
+            const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect();
+            const centerX=(firstRect.left+lastRect.right)/2;
+            spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
+            if(afterSpacer){
+                const anchorRight=Math.max(anchor.getBoundingClientRect().right,lastRect.right);
+                const markRight=mark.getBoundingClientRect().right;
+                afterSpacer.style.width=Math.max(0,anchorRight-markRight)+'px';
+                const selects=[...card.querySelectorAll('select.p81-select')];
+                if(selects.length===2&&Math.abs(selects[0].getBoundingClientRect().top-firstRect.top)<8){
+                    const delta=selects[0].getBoundingClientRect().left-selects[1].getBoundingClientRect().left;
+                    if(Math.abs(delta)>0.1)afterSpacer.style.width=Math.max(0,parseFloat(afterSpacer.style.width)+delta)+'px';
+                }
+            }
+        });
     });
 }
 function sync() {
     const busy=Boolean(session||preparing);
     document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
-        views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';}}
-        const canStop=session?.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
+    views.forEach(v=>{
+        const activitySelect=v.r.selectKind==='activity'?document.querySelector('[data-choice="'+v.r.id+'"]'):null;
+        const activitySelected=Boolean(activitySelect?.value||choices.get(v.r.id));
+        const pending=v.r.selectKind==='activity'?!activitySelected:Boolean(v.r.pending);
+        const locked=busy||pending;
+        for(const b of [v.listen,v.rec]){
+            b.disabled=locked;
+            b.setAttribute('aria-disabled',String(locked));
+            b.classList.toggle('is-selection-locked',pending);
+            if(pending)b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';
+            else delete b.dataset.selectionHelp;
+        }
+        const canStop=Boolean(session&&session.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping);
+        v.stop.disabled=!canStop;
+        v.stop.setAttribute('aria-disabled',String(!canStop));
+        v.stop.classList.toggle('stop-btn-active',canStop);
+    });
 }
 async function record(key, r) {
-    if (session || preparing || r.pending) return;
+    if (session || preparing || r.pending || (r.selectKind==='activity'&&!choices.get(r.id))) return;
 
     const Recognition =
         window.SpeechRecognition ||
@@ -1471,6 +1513,7 @@ function init() {
 
         input.addEventListener('change', () => {
             change(input.checked);
+            sync();
 
             $(label)?.classList.toggle(
                 'active-mode',

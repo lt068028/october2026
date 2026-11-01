@@ -1,4 +1,21 @@
-## 現在のリレー状態（2026-11-01 / Europe/Vienna / Codex）
+## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
+
+- 状態：Practice 8.1のEx3・Ex4・Ex5省略表示（「のが…」位置一致と空き領域中央の「〃」配置）、Dr5ペアごとの1行目キュー開始位置と上下Adj選択欄（`／`・`Adj ▼`）の横位置一致、Dr4（およびDr2／Dr5）ボタンロック表示・抑止の修正完了。開始時HEAD `11853fa`（`806b627` から `origin/main` へ fast-forward 同期済み）。
+- 変更：
+  1. Ex3・Ex4・Ex5のモデル2行目以降をすべて「のが…」を残す形式に統一し、`.p81-model-repeat-spacer` と `.p81-model-repeat-after-spacer` により各Example内で「のが…」の開始横位置を完全に一致させ、「〃」は「のが」の左側の空き領域（省略された1行目の主語〜動詞／動作部分）の中央に配置。
+  2. Ex3・Ex4・Ex5のキュー側も同様に、省略された動作／主語〜動詞の中央に「〃」を置き、後続の「／」と評価語・程度表現の開始位置を上下で一致。
+  3. Dr5（`#drill5 .p81-comparison-card`）はペアごとに1行目の英語ラベル幅から1行目の日本語キュー開始位置を算出し（2行目の英語ラベルが「〃」の中央配置に干渉しない範囲で最小化）、2行目の「〃」を1行目の繰り返し部分の中央に配置したうえで、`.p81-drill-repeat-after-spacer` により2行目の「／」と `select.p81-select`（`Adj ▼`）を1行目の「／」と `Adj ▼` と完全に同じ横位置へ整列。
+  4. Dr4（およびDr2／Dr5）で `tooltip-layout.js` が生成する `.selection-help-wrap` により直下セレクタ `.recording-actions > button:disabled` が外れていた問題を、子孫セレクタ `.recording-actions button:disabled`・`.p81-cue-button-group button:disabled`・`.is-selection-locked`・`.selection-help-wrap:has(> button:disabled)` および `sync()` / `record()` / `render()` のクリック・状態ガードで解消。
+- 変更ファイル：practice8.1.js、style.css、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによるJS/CSS構文・DOM生成・整合性チェック合格（コンテナ内にNode.js/Chromium不在のためPlaywright実ブラウザテストは未実行）。ユーザーの実機確認・デプロイ確認は未了。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 8.1 Ex3・Ex4・Ex5の「のが」整列・空き領域中央「〃」配置、Dr5ペア別開始位置とAdj整列、Dr4ボタンロック修正（2026-11-01 / Europe/Vienna / LT）
+
+- 前環境（Codex）での会話内容が `origin/main`（`11853fa`）に未反映だった原因（Ex3/Ex4モデルの「のが」欠落と右スペーサー不在、Dr5の `.p81-drill-repeat-after-spacer` 不在と計測順序、Dr4の `.selection-help-wrap` ラッパーによる `:disabled` 直下セレクタ不一致および別ブランチ `origin/practice81-lock-guard-20261101` への退避）を特定・報告。
+- `practice8.1.js`、`style.css`、`practice8.1.html`、`docs/PRACTICE8_SPEC.md`、`tests/practice81.cjs` を更新し、Ex3/4/5・Dr5・Dr4の全項目を反映。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / Codex）
 
 - 状態：Practice 8.1修正完了、ローカル保存済み。開始時HEAD `af99480`、mainは取得済みorigin/mainと一致。
 - 変更：Ex3/Eの〃を省略した目的語〜動詞範囲の中央へ整列し、Example5の／を削除。D4の好き／きらいは非太字、未選択Selectは中央・選択動詞は左揃え。Auto時に停止をロックする現在モード判定を追加。D4未選択時のきく／とるロックとSelect first案内は既存動作を確認。
