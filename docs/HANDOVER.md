@@ -1,5 +1,21 @@
 ## 最新リレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 括弧漢字ルールに基づく「教える」「果物」のWith漢字実装、および「だれ」の平仮名維持完了。開始時HEAD `5dbca5f`。
+- 変更：
+  1. **未習参考漢字のWith漢字実装（`practice8.3.js`）**：
+     - Genki語彙欄の参考漢字（括弧漢字）に基づき、可読性と実用性の高い「教える」（動詞活用形含む）および「果物」を `With漢字` モードで漢字表記として登録・適用。
+     - `Hiragana Only` モードでは自動的に「おしえる」「くだもの」へ展開されるよう辞書・変換ルールを完全連動。
+     - 疑問詞「だれ」は初級教科書・公文書の標準規則に従い平仮名表記を維持。
+  2. **仕様書の同期（`docs/PRACTICE8_SPEC.md`）**：
+     - Practice 8.3節に上記漢字仕様を追記。
+  3. **キャッシュキー更新（`practice8.3.html`）**。
+- 変更ファイル：practice8.3.js、practice8.3.html、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：今回のPractice 8.3「教える」「果物」漢字表示（With漢字／Hiragana Only両モード）は実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `5dbca5f`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Drill 1 何Set 1問目のQ2（どの／ペット／いる）およびA（いぬ／いる）のキュー・モデル簡潔化完了。開始時HEAD `c726abf`。
 - 変更：
   1. **Drill 1 何Set 1問目のQ2・A簡潔化（`practice8.3.js`）**：

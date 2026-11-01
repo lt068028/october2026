@@ -42,6 +42,7 @@ V('make','作る','つくる','tsukuru','to make',{masu:'作ります',past:'作
 V('sing','歌う','うたう','utau','to sing',{masu:'歌います',past:'歌いました',neg:'歌いません',pastNeg:'歌いませんでした',plainPast:'歌った',plainNeg:'歌わない',plainPastNeg:'歌わなかった'});
 V('cap','かぶる','かぶる','kaburu','to wear a hat',{masu:'かぶります',past:'かぶりました',neg:'かぶりません',pastNeg:'かぶりませんでした',plainPast:'かぶった',plainNeg:'かぶらない',plainPastNeg:'かぶらなかった'});
 V('wearshoes','はく','はく','haku','to wear footwear',{masu:'はきます',past:'はきました',neg:'はきません',pastNeg:'はきませんでした',plainPast:'はいた',plainNeg:'はかない',plainPastNeg:'はかなかった'});
+V('teach','教える','おしえる','oshieru','to teach',{masu:'教えます',past:'教えました',neg:'教えません',pastNeg:'教えませんでした',plainPast:'教えた',plainNeg:'教えない',plainPastNeg:'教えなかった'});
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
 const formReadings=[];
 for(const [id,v]of Object.entries(verbs)){
@@ -56,8 +57,8 @@ for(const [id,v]of Object.entries(verbs)){
  }
 }
 formReadings.forEach(e=>STTDisplay.register(...e));
-const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
-[['聴く','きく'],['訊く','きく'],['冷蔵庫','れいぞうこ']].forEach(e=>STTDisplay.register(...e));
+const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
+[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['冷蔵庫','れいぞうこ']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);for(const w of Object.values(words).sort((a,b)=>b.kanji.length-a.kanji.length)){if(w.kanji!==w.hira)value=value.split(w.kanji).join(w.hira);}return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
@@ -82,10 +83,10 @@ const d1Sets=[
  }
 ];
 const exSets=[
- {q1:'だれが、おしえますか。',q2:'どの先生が、おしえますか。',a:'田中先生が、おしえます。',c1:['だれ','おしえる'],c2:['どの','先生','おしえる'],ca:['先生']},
- {q1:'何が、キッチンにありますか。',q2:'どのくだものが、ありますか。',a:'りんごが、あります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','ある'],ca:['りんご','ある']}
+ {q1:'だれが、教えますか。',q2:'どの先生が、教えますか。',a:'田中先生が、教えます。',c1:['だれ','教える'],c2:['どの','先生','教える'],ca:['先生']},
+ {q1:'何が、キッチンにありますか。',q2:'どの果物が、ありますか。',a:'りんごが、あります。',c1:['何','キッチン','ある'],c2:['どの','果物','ある'],ca:['りんご','ある']}
 ];
-[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','キッチン'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ'})[kanji],'',meaning));
+[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['教える','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','キッチン'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['果物','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','教える':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','果物':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
 function sentenceFor(s){return s.text||'';}
