@@ -3160,7 +3160,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .recording-controls > .recording-result { flex: 1 1 180px; width: auto; }
 .practice81-page .recording-controls .result-text { white-space: pre-wrap; }
 .practice81-page .p81-degree-scale {
-    display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 8px;
+    display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 8px;
     padding: 12px; margin-bottom: 16px; border-radius: 6px; background: var(--bg-panel);
 }
 .practice81-page .p81-degree-point { text-align: center; min-width: 0; }
