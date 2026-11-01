@@ -117,7 +117,7 @@ W('flower','花','はな','hana','flower');
 W('grow','育てる','そだてる','sodateru','to grow');
 W('early','早く','はやく','hayaku','early');
 W('wake','起きる','おきる','okiru','to get up');
-const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['掃除する','そうじする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
+const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['掃除する','そうじする'],['洗濯する','せんたくする'],['全然','ぜんぜん'],['凄く','すごく'],['余り','あまり'],['音楽を聴く','おんがくをきく'],['聴く','きく'],['鞄','かばん'],['物を','ものを'],['物','もの'],['朝ごはん','あさごはん'],['朝御飯','あさごはん'],['クラスメイト','くらすめーと'],['片仮名','かたかな'],['速く','はやく']].sort((a,b)=>b[0].length-a[0].length);
 dictionary.forEach(([k,h])=>STTDisplay.register(k,h));
 function hira(text) {
     let value=String(text).normalize('NFKC');
