@@ -1,5 +1,20 @@
 ## 最新リレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Drill 1 何Set 1問目のQ2（どの／ペット／いる）およびA（いぬ／いる）のキュー・モデル簡潔化完了。開始時HEAD `c726abf`。
+- 変更：
+  1. **Drill 1 何Set 1問目のQ2・A簡潔化（`practice8.3.js`）**：
+     - Q2を「どのペットが、いますか。」（キュー：`どの`／`ペット`／`いる`）に変更し、1行目の「こうえん」との重複を排除。
+     - Aを「いぬが、います。」（キュー：`いぬ`／`いる`）に変更。許容回答（`accept`）として従来の「いぬが、こうえんにいます。」も保持。
+  2. **仕様書の同期（`docs/PRACTICE8_SPEC.md`）**：
+     - Practice 8.3節のWhat set 1問目の仕様記述を最新実装に同期。
+  3. **キャッシュキー更新（`practice8.3.html`）**。
+- 変更ファイル：practice8.3.js、practice8.3.html、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：今回のDrill 1 What 1問目のキュー・モデル変更（どの／ペット／いる、いぬ／いる）は実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `c726abf`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Set切替ラベルからのSet表記撤去、Ex Q2のキッチン除外、Drill 1 何Set 2の「れいぞうこ」導入、および全モデル・表示における「が、」徹底完了。開始時HEAD `99e7a15`。
 - 変更：
   1. **Set切替ボタンのラベル修正（`practice8.3.js`）**：
