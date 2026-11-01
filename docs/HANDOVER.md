@@ -1531,3 +1531,10 @@ Supertonic 3 の不採用確定に伴い、当時試験を行っていた以下�
 - `tests/practice81.cjs`に両Autostop状態・6行の初期ロック・個別解除・解除後の再ロック・アクション重複防止を確認する回帰テストを追加。Practice 8.1のCSS／JSキャッシュキーを更新。
 - 専用作業ブランチ `practice81-lock-guard-20261101` に保存し、Draft PR #1を作成。GitHubのVercel Preview statusはsuccess。mainへのマージ／Production反映は行っていない。
 - `node --check`による変更部分の構文確認と、syncのロック状態を模した単体チェックは合格。Playwright全体の `node tests/practice81.cjs` はこの環境から実行できていない（GitHub Actionsの該当workflowなし、リポジトリのローカルcloneもDNS解決不可）。Chrome実機確認は未了。
+
+## 2026-11-01：Ex4/Ex5反復記号・Dr4ロック修正の再実施
+
+- Dr4の各行のListen/Recordロックは、該当行の現在の選択欄と保存選択を照合し、行ごとにdisabled・aria-disabled・視覚ロック状態を同期する。Stopは該当行の手動録音中のみ有効。
+- Ex4の〃位置計算で、程度ガイドを含む親cue全体を基準にしていたため、反復部分の実幅ではなく右側のtail領域まで位置計算に含まれていた。反復部分（お皿…ではなく料理／作るの表示範囲）を含むprefix自身をアンカーにして再計測する。
+- Ex5/D5の反復記号は、繰り返し対象の主語から動詞までの実測範囲の中央へ配置する。固定スペースや固定座標による補正はしない。
+- 変更後のブラウザ全テストと実機確認は未実行。別環境で回帰テストを実施し、結果を確認してからPRを完了する。
