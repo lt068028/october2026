@@ -12,17 +12,21 @@ window.SpeakerGuide = Object.freeze({
     reset(guide) {
         if(!guide)return;
         guide.getAnimations().forEach(animation=>animation.cancel());
-        const prompt=guide.querySelector('span'),label=guide.querySelector('.p21-current-speaker');
-        if(prompt){prompt.textContent=guide.dataset.prompt||'Who is speaking?';prompt.hidden=false;}
-        if(label){label.textContent='';label.hidden=true;}
+        if(!guide.classList.contains('p23-call-note')){
+            const prompt=guide.querySelector('span'),label=guide.querySelector('.p21-current-speaker');
+            if(prompt){prompt.textContent=guide.dataset.prompt||'Who is speaking?';prompt.hidden=false;}
+            if(label){label.textContent='';label.hidden=true;}
+        }
         delete guide.dataset.speaker;guide.classList.remove('is-emphasized');
         guide.closest('.p21-distance-board,.p2x-picture,.p21-drill-picture')?.querySelectorAll('[data-person]').forEach(e=>e.classList.remove('is-speaker'));
     },
     play(guide,who) {
         if(!guide?.isConnected||!['A','B'].includes(who))return;
         guide.dataset.speaker=who;
-        guide.querySelector('span').textContent='';guide.querySelector('span').hidden=true;
-        const label=guide.querySelector('.p21-current-speaker');label.hidden=false;label.textContent=guide.dataset.playingLabel||`${this.name(who)} is speaking`;
+        if(!guide.classList.contains('p23-call-note')){
+            guide.querySelector('span').textContent='';guide.querySelector('span').hidden=true;
+            const label=guide.querySelector('.p21-current-speaker');label.hidden=false;label.textContent=guide.dataset.playingLabel||`${this.name(who)} is speaking`;
+        }
         guide.classList.add('is-emphasized');guide.getAnimations().forEach(animation=>animation.cancel());
         const call=guide.classList.contains('p23-call-note');
         const normal={backgroundColor:call?'transparent':'#fff5f5'},active={backgroundColor:call?'rgba(128,128,128,.16)':'#fecaca'};

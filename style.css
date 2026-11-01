@@ -3427,4 +3427,4 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice-next-page .p23-dialogue-play-button { white-space: nowrap; }
 .practice-next-page .p23-call-example .p23-city-person.is-speaking { outline: 3px solid #2563eb; outline-offset: 2px; color: #111827; animation: none; }
 .practice-next-page .p23-conversation-models .p23-example-audio { display: inline-flex; align-items: baseline; gap: 4px; }
-.practice-next-page .p23-cue-hear { font-weight: 600; }
+.practice-next-page .p23-call-arrow { margin: 0 4px; font-weight: 700; color: var(--text-secondary); }

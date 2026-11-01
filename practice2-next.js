@@ -1434,9 +1434,15 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        if(call){context.dataset.prompt='X ↔ Y';context.dataset.playingLabel='X and Y are talking about Z.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
-        SpeakerGuide.init(context);
-        if(call)context.prepend(phoneIcon());
+        if(call){
+            context.classList.add('p23-call-note');
+            picture.classList.add('p23-call-example');
+            const xPerson=node('span','conversation-person','X');xPerson.dataset.person='A';
+            const yPerson=node('span','conversation-person','Y');yPerson.dataset.person='B';
+            context.append(phoneIcon(),xPerson,node('span','p23-call-arrow',' ↔ '),yPerson);
+        } else {
+            SpeakerGuide.init(context);
+        }
         if(example&&!call){const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','X ↔ Y'));picture.append(link);}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
@@ -1494,9 +1500,8 @@ function practice2ShowNotice(resultSpan, message) {
             {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
-            const audio=node('span','p23-example-audio');
-            audio.append(node('span','','👉️'),node('span','p23-cue-hear','きく'));
-            return audio;
+            const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
+            b.dataset.speaker=who;b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);return audio;
         }
         const displayModel=({text,object:o})=>modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true);
         sentences.forEach(sentence=>{
@@ -1508,18 +1513,27 @@ function practice2ShowNotice(resultSpan, message) {
         });
         const dialogueAudio=node('span','p23-dialogue-audio');
         const dialogueButton=button('🔊きく','Play the full X and Y dialogue in sequence.',()=>{
-            const playback=sentences.filter(sentence=>sentence.text);
+            const playback=[
+                {who:'A',object:countries[0],getText:sentences[0].intro},
+                {who:'A',object:countries[0],getText:sentences[0].text},
+                {who:'A',object:countries[1],getText:sentences[1].text},
+                {who:'B',object:countries[1],getText:sentences[2].intro},
+                {who:'B',object:countries[1],getText:sentences[3].text},
+                {who:'A',object:countries[2],getText:sentences[4].text},
+                {who:'B',object:countries[2],getText:sentences[5].intro},
+                {who:'B',object:countries[2],getText:sentences[6].text}
+            ].filter(item=>typeof item.getText==='function'&&item.getText());
             if(!playback.length)return;
             let index=0;
             setPlayingStateMultiple([dialogueButton],'再生中…');
             const playNext=()=>{
                 if(index>=playback.length){stopAllPlayback();return;}
-                const sentence=playback[index++];
-                dialogueButton.dataset.speaker=sentence.who;
-                dialogueButton.dataset.zone=sentence.object.zone;
-                selectEx(sentence.who,sentence.object.zone);
+                const item=playback[index++];
+                dialogueButton.dataset.speaker=item.who;
+                dialogueButton.dataset.zone=item.object.zone;
+                selectEx(item.who,item.object.zone);
                 practice2SyncCitySpeaker();
-                const text=speechStyle==='formal'?sentence.text().replace(/？/g,'。'):sentence.text();
+                const text=speechStyle==='formal'?item.getText().replace(/？/g,'。'):item.getText();
                 speakText(practice2SpeechText(text),0.75,playNext);
             };
             playNext();
@@ -1537,8 +1551,8 @@ function practice2ShowNotice(resultSpan, message) {
             });
             const gap=parseFloat(getComputedStyle(list).columnGap)||0;
             const role=Math.max(...[...list.querySelectorAll('.p23-model-speaker')].map(e=>e.getBoundingClientRect().width));
-            const audio=0;
-            const available=list.clientWidth-role-audio-gap*2;
+            const audio=list.querySelector('.p23-example-audio')?.getBoundingClientRect().width||0;
+            const available=list.clientWidth-role-audio-gap*3;
             const value=Math.max(0,Math.min(width,available))+'px';
             if(list.style.getPropertyValue('--p23-example-cue-width')!==value)list.style.setProperty('--p23-example-cue-width',value);
             // The SVG cloud extends beyond its label: align its visible contour.
