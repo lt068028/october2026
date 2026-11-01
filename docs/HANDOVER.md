@@ -1,5 +1,20 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。IndexにおけるPractice 8.3リンク位置・HTMLタグ構文エラーの修正、およびタイトル「Practice 8.3: だれが？何が？」への統一更新完了。開始時HEAD `aa80b32`。
+- 変更：
+  1. **Indexのリンク位置とHTML構文の修正（`index.html`）**：
+     - Pronunciation 1と2の間に挟まっていたリンクを `practice8.2.html` の直下へ移動。
+     - 破損していたタグ（`</li`、`</li>>`）を正しいリスト構造（`<li><a ...></a></li>`）へ修正。
+  2. **タイトルの更新（`index.html`・`practice8.3.html`）**：
+     - 文法用語「疑問詞が主語の文」から、学習者にとって直感的かつGenki語彙表記（Lesson 1語彙「だれ」、Lesson 2漢字「何」）に準拠した `Practice 8.3: だれが？何が？` へ変更。
+     - `practice8.3.html` の `<title>` および `<h1>` も同一タイトルへ統一。
+- 変更ファイル：index.html、practice8.3.html、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：Indexの配置・表示およびPractice 8.3タイトル表示は実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `aa80b32`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Exampleの丸Q・空欄プレースホルダー・縦並びレイアウト崩れ解消、およびDrill 1のSet 1 (だれ) / Set 2 (何) 分割の反映完了。開始時HEAD `6bcd492`。
 - 変更：
   1. **Example の丸Q・空欄プレースホルダーによる縦位置整列（`practice8.3.js`・`style.css`）**：
