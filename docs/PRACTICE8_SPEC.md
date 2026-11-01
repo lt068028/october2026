@@ -74,20 +74,20 @@ Adj選択時は正誤メッセージを出さない。同じペアのどちら�
 
 | 順 | 場面 | ラベル → 選ぶAdj | ペアの録音後に同一ブロック内で表示する英語解説 |
 | --- | --- | --- | --- |
-| 1 Meaning | 父は料理をするのが…：料理を実際に食べ、父が料理を強みと考えていると推測できる | Skillful → 上手 | The speaker thinks the subject is good at the activity. |
-|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
-| 2 Meaning | 私は英語を話すのが…：技能の低さと、話す際の居心地の悪さを区別 | Poor → 下手 | The speaker thinks the subject does not do the activity well. |
-|  |  | Uncomfortable → 苦手 | The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill. |
-| 3 Meaning | 私は早く起きるのが… | Observed → 苦手 | The speaker thinks getting up early is difficult for the subject. |
-|  |  | Unnatural → 下手 | 下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural. |
-| 4 Impression | 私は料理をするのが…：初対面の人への自己紹介 | Boastful → 上手 | When describing their own ability, the speaker may sound as if they are praising themselves. |
-|  |  | Natural → 得意 | When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability. |
-| 5 Impression | 留学生の友達は漢字を書くのが…：実際に書く様子を見ている | Praise → 上手 | The speaker praises an ability they have observed; they do not need to share that skill. |
-|  |  | Observed → 得意 | The speaker guesses that the subject sees the activity as a personal strength. |
-| 6 Impression | 兄はカラオケで歌うのが…：実際に歌を聞いた後 | Blunt → 下手 | The speaker directly judges the subject’s ability, which can sound hurtful. |
-|  |  | Tactful → 苦手 | The speaker describes the subject’s difficulty more gently than judging their ability. |
-| 7 Impression | 日本語の先生は日本語を話すのが…：初級学習者が相手の能力を評価することと立場を越えて自己認識を推測することを比較 | Presumptuous → 上手 | The speaker judges the subject’s ability without enough experience to make that judgment. |
-|  |  | Overstepping → 得意 | The speaker assumes the subject sees the activity as a personal strength, which may be overstepping given the difference in their positions. |
+| 1 Meaning | 父は料理するのが…：Talking about your father’s cooking after eating it. | Skillful → 上手 | The speaker judges that the subject has high skill. |
+|  |  | Observed → 得意 | The speaker infers that the subject sees the activity as their own strength. |
+| 2 Meaning | 私は英語を話すのが…：Talking about speaking English. | Poor → 下手 | The speaker judges that the subject’s skill is low. |
+|  |  | Uncomfortable → 苦手 | The speaker feels uncomfortable or not fond of the activity, regardless of actual skill. |
+| 3 Meaning | 私は早く起きるのが…：Talking about waking up early. | Unnatural → 下手 | Sounds unnatural because 下手 judges learned skills, not daily habits. |
+|  |  | Natural → 苦手 | Sounds natural because 苦手 expresses that waking up early is hard for the speaker. |
+| 4 Impression | 私は料理するのが…：Introducing yourself to someone you have just met. | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
+|  |  | Natural → 得意 | Describing the activity as something the speaker feels confident in sounds natural. |
+| 5 Impression | 留学生の友達は漢字を書くのが…：Talking about an international-student friend after watching them write kanji. | Praise → 上手 | The speaker directly praises a skill they have observed. |
+|  |  | Observed → 得意 | The speaker infers that the subject feels confident in the activity. |
+| 6 Impression | 兄はカラオケで歌うのが…：Talking about your older brother after hearing him sing karaoke. | Blunt → 下手 | Directly judging the subject’s lack of skill can sound blunt or hurtful. |
+|  |  | Tactful → 苦手 | Describing the activity as difficult for the subject sounds gentler. |
+| 7 Impression | 日本語の先生は日本語を話すのが…：A beginning student talking about their Japanese teacher. | Presumptuous → 上手 | Evaluating a superior’s skill from below sounds presumptuous. |
+|  |  | Overstepping → 得意 | Assuming what a superior considers their personal strength also sounds overstepping. |
 
 Notice文は、場面に依存しない意味（上手＝話者が対象をその活動に長けていると考える、得意＝話者が対象自身もそれを強み／苦手と捉えていると推測する）と、場面依存の対人印象を区別して記述する。上手・得意の説明では「話者の考え／推測」として表し、絶対的な客観事実や本人専用の語義として断定しない。早起きの下手は通常の用法では不自然な例として示し、あらゆる思考活動に上手を禁止する一般則にはしない。計算と踊るの比較は追加しない。
 

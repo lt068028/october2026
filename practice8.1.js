@@ -153,32 +153,37 @@ const degreeLevels=[
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'You have tried your father’s cooking. From what you have seen, you think he sees cooking as one of his strengths.'},
- {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Distinguish low speaking ability from feeling uncomfortable speaking English.'},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Observed','Unnatural'],scenario:'Describe difficulty getting up early, then compare it with an unusual skill judgment.'},
- {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introduce your cooking ability to someone you have just met.'},
- {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'You have seen your friend write kanji and infer that they see it as a strength.'},
- {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'After hearing your older brother sing karaoke, choose a direct judgment or a more considerate way to describe difficulty.'},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'As a beginner, compare calling a Japanese teacher 上手 with saying 得意, which assumes how they view their own ability.'}
+ {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'Talking about your father’s cooking after eating it.',impressions:{
+  good:'The speaker judges that the subject has high skill.',
+  strong:'The speaker infers that the subject sees the activity as their own strength.'
+ }},
+ {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Talking about speaking English.',impressions:{
+  bad:'The speaker judges that the subject’s skill is low.',
+  difficult:'The speaker feels uncomfortable or not fond of the activity, regardless of actual skill.'
+ }},
+ {phase:'Meaning',subject:'i',...action('early','wake',''),options:['bad','difficult'],labels:['Unnatural','Natural'],scenario:'Talking about waking up early.',impressions:{
+  bad:'Sounds unnatural because 下手 judges learned skills, not daily habits.',
+  difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.'
+ }},
+ {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introducing yourself to someone you have just met.',impressions:{
+  good:'Praising the speaker’s own skill directly can sound boastful.',
+  strong:'Describing the activity as something the speaker feels confident in sounds natural.'
+ }},
+ {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'Talking about an international-student friend after watching them write kanji.',impressions:{
+  good:'The speaker directly praises a skill they have observed.',
+  strong:'The speaker infers that the subject feels confident in the activity.'
+ }},
+ {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'Talking about your older brother after hearing him sing karaoke.',impressions:{
+  bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.',
+  difficult:'Describing the activity as difficult for the subject sounds gentler.'
+ }},
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
+  good:'Evaluating a superior’s skill from below sounds presumptuous.',
+  strong:'Assuming what a superior considers their personal strength also sounds overstepping.'
+ }}
 ];
 comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
- const explanations={
-  Skillful:'The speaker thinks the subject is good at the activity.',
-  Observed:'The speaker guesses that the subject sees the activity as a personal strength.',
-  Poor:'The speaker thinks the subject does not do the activity well.',
-  Uncomfortable:'The speaker thinks the subject feels uncomfortable doing the activity; this does not necessarily mean they lack skill.',
-  Unnatural:'下手 is usually used for skills. It sounds unusual for waking up early; 苦手 is more natural.',
-  Boastful:'When describing their own ability, the speaker may sound as if they are praising themselves.',
-  Natural:'When talking about your own actions, 得意 often means you feel comfortable doing them. This sounds more natural than judging your own ability.',
-  Praise:'The speaker praises an ability they have observed; they do not need to share that skill.',
-  Blunt:'The speaker directly judges the subject’s ability, which can sound hurtful.',
-  Tactful:'The speaker describes the subject’s difficulty more gently than judging their ability.',
-  'Presumptuous':'The speaker judges the subject’s ability without enough experience to make that judgment.',
-  'Overstepping':'The speaker assumes the subject sees the activity as a personal strength, which may be overstepping given the difference in their positions.'
- };
- spec.impressions=Object.fromEntries(spec.options.map((id,i)=>[id,explanations[spec.labels[i]]]));
- if(spec.object==='early')spec.impressions.difficult='The speaker thinks getting up early is difficult for them.';
 });
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Say if you like the thing or activity.'},

@@ -3328,8 +3328,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .p21-color-cue::before { content: none; }
 
 /* Degree examples share intrinsic suffix/prefix tracks, without positional offsets. */
-.practice81-page .p81-degree-example .p81-example-cue { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,min(var(--degree-tail-width),100%)); align-items: baseline; }
-.p81-degree-cue-tail { grid-column: 2; }
+.practice81-page .p81-degree-example .p81-example-cue { display: grid; width: 100%; justify-self: stretch; grid-template-columns: minmax(0,1fr) minmax(0,min(var(--degree-tail-width),100%)); align-items: baseline; }
+.p81-degree-cue-tail { grid-column: 2; justify-self: end; text-align: right; }
 .practice81-page .p81-degree-cue-repeat { text-align: left; }
 .practice81-page .p81-model-repeat-spacer { display: inline-block; }
 .practice81-page .p81-degree-example .p81-model { display: block; }
@@ -3338,9 +3338,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-meaning-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
 .practice81-page .p81-phase { font-weight: 700; margin: 16px 0 8px; }
 .practice81-page .p81-nuance-note { display: block; box-sizing: border-box; width: 50%; margin: 10px 0 4px auto; font-size: calc(14px * var(--practice12-scale)); line-height: 1.6; white-space: normal; text-align: right; }
-.practice81-page .p81-nuance-note-title { margin-bottom: 2px; color: var(--text-primary); font-size: calc(12px * var(--practice12-scale)); font-weight: normal; text-align: right; }
+.practice81-page .p81-nuance-note-title { margin-bottom: 2px; color: #7c3aed; font-size: calc(12px * var(--practice12-scale)); font-weight: 700; text-align: right; }
 .practice81-page .p81-nuance-note-text { color: #7c3aed; font-weight: 700; text-align: right; overflow-wrap: anywhere; }
-.practice81-page .p81-nuance-adjective { color: var(--text-primary); }
+.practice81-page .p81-nuance-adjective { color: #7c3aed; }
+@media (prefers-color-scheme: dark) {
+    .practice81-page .p81-nuance-note-title,
+    .practice81-page .p81-nuance-note-text,
+    .practice81-page .p81-nuance-adjective { color: #c084fc; }
+}
 @media(max-width:760px) { .practice81-page .p81-meaning-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; } }
 
 /* Practice 8.2 uses the established Practice 8 layout, with wrapping concept names. */

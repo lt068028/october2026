@@ -147,9 +147,9 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  }
  await page.locator('[data-response="self-3-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
- const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['good','strong'],['good','strong'],['good','bad'],['good','bad']];
+ const expectedPairs=[['good','strong'],['bad','difficult'],['bad','difficult'],['good','strong'],['good','strong'],['good','bad'],['good','bad']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
- check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('料理するのが得意です。',d5[3][1])];}),['父は、料理するのが上手です。','私は、料理するのが上手です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
+ check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][1]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('料理するのが得意です。',d5[3][1])];}),['父は、料理するのが上手です。','私は、料理するのが上手です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
   const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
@@ -201,7 +201,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  for(const width of [375,600,900,1440,1920])for(const scheme of ['light','dark']){
   await page.setViewportSize({width,height:1000});await page.emulateMedia({colorScheme:scheme});
   const degree=await page.locator('#drill4 .example-box').evaluate(ex=>{
-    const xs=[...ex.querySelectorAll('.p81-degree-cue-tail')].map(e=>e.getBoundingClientRect().left);
+    const xs=[...ex.querySelectorAll('.p81-degree-cue-tail')].map(e=>e.getBoundingClientRect().right);
     const models=[...ex.querySelectorAll('.p81-model')];
     const firstRect=models[0].getBoundingClientRect(),firstNoga=[...models[0].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect();
     const emptyCenter=(firstRect.left+firstNoga.left)/2;
@@ -209,7 +209,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
     const nogaSpread=models.slice(1).map(m=>{const n=[...m.querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect();return Math.abs(n.left-firstNoga.left);});
     return {spread:Math.max(...xs)-Math.min(...xs),ditto,nogaSpread};
   });
-  check(degree.spread<1,true,'degree cue suffixes share the same start');
+  check(degree.spread<1,true,'degree cue suffixes share the same right edge next to arrow');
   check(degree.ditto.every(x=>x<1),true,'Example4 ditto centered in empty space before のが');
   check(degree.nogaSpread.every(x=>x<1),true,'Example4 のが aligns vertically across all rows');
   const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));

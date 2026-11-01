@@ -1,5 +1,16 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のEx4「／好き👉️」（「／すき👉️」）全6行の右詰め完全一致、D5-3の順序変更（1行目：Unnatural→下手、2行目：Natural→苦手）、D5全7問の状況説明（Scenario）とNotice文の重複排除・Speaker視点統一、およびNotice全体の色付き表示（`#7c3aed`／ダーク `#c084fc`）を完了。開始時HEAD `e0dfd1e`。
+- 変更：
+  1. **Ex4キュー「／好き👉️」全6行の右詰め整列**：`.p81-degree-example .p81-example-cue` に `width: 100%; justify-self: stretch;`、`.p81-degree-cue-tail` に `justify-self: end; text-align: right;` を指定し、全6行の「／好き👉️」（ひらがなモード時「／すき👉️」）の横位置が完全に一致するよう修正。
+  2. **D5全7問のSituation（状況説明）とNotice（解説文）の整理・D5-3順序入れ替え**：D5-3を1行目「Unnatural → 下手」・2行目「Natural → 苦手」へ変更し、全7問の番号横状況説明を場面提示のみに簡潔化、NoticeをSpeaker視点で統一。
+  3. **D5 Notice全体の色付き化**：`.p81-nuance-note-title`、`.p81-nuance-note-text`、`.p81-nuance-adjective` をすべて通常時 `#7c3aed`・ダーク時 `#c084fc` の色付き太字に統一。
+- 変更ファイル：practice8.1.js、style.css、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・ロジック検証合格。ユーザーの実機確認待ち（Dr4ボタンの正常動作は実機確認完了）。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `e0dfd1e`）
+
 - 状態：Practice 8.1のDr4全6行ロック不具合（`degreeActions` の `id` による `r.id` 上書きと `views` キー衝突）およびページ全体の停止ボタン非アクティブ保証、D5-2/3/4の「私は」省略許容、D5-1/4「料理する」モデル文（助詞「を」なしモデル・「を」あり許容）、Noticeブロック幅50%への変更を完了。開始時HEAD `869ffbc`。
 - 変更：
   1. **Dr4の1〜5番で「きく・とる・停止」がアクティブになっていた根本原因の解消**：`degreeActions` の各要素が `{id: 'washDish', ...}` を持っていたため、`makeRow(id, spec, extra)` 内の `{id, ...spec, ...extra}` で行ID（`degree-0`〜`degree-5`）が `'washDish'` に上書きされ、Dr4の全6行が同一キー `'washDish:unselected'` となって `views` Map上で1〜5行目が6行目に上書き消失していた問題を修正（`degreeActions` のキーを `actionId` に分離し、`makeRow` を `{...spec, ...extra, id}` に変更）。あわせて全停止ボタンに `.stop-record-btn` を付与し、`sync()` で停止ボタンの一括有効化を防止。
