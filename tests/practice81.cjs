@@ -145,11 +145,11 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const out=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(3)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)};});
   check(await page.locator('[data-choice="degree-0"]').evaluate((e,negative)=>getComputedStyle(e).color===getComputedStyle(document.querySelector(negative?'.p81-degree-point.degree-negative':'.p81-degree-point.degree-positive')).color,['zenzen','amari'].includes(adv)),true,'selected adverb shares guide color');check(out.valid,true,'selected degree accepted '+adv);check(out.opposite,false,'wrong polarity rejected '+adv);check(out.text.includes('じゃない'),['zenzen','amari'].includes(adv),'degree polarity '+adv);
  }
- await page.locator('[data-response="self-3-response"][data-answer="yes"]').click();
- const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
+ await page.locator('[data-response="self-1-response"][data-answer="yes"]').click();
+ const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[1][1];return a.matchesAnswer('はい、洗濯をするのがきらいです',r);});check(variants,true,'する noun full reply variant');
  const expectedPairs=[['good','strong'],['bad','difficult'],['bad','difficult'],['good','strong'],['good','strong'],['good','bad'],['good','bad']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
- check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][1]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('料理するのが得意です。',d5[3][1])];}),['父は、料理するのが上手です。','私は、料理するのが上手です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
+ check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][1]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('掃除するのが得意です。',d5[3][1])];}),['父は、料理するのが上手です。','私は、掃除するのが上手です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
   const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
@@ -178,22 +178,22 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const first=page.locator('[data-row="comparison-3-good"]'),second=page.locator('[data-row="comparison-3-strong"]');
  await first.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===2);
- await page.evaluate(()=>{const result=[{transcript:'私は料理をするのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await page.evaluate(()=>{const result=[{transcript:'私は掃除をするのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-good:good'));
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first expression recording correct');
  check(await second.locator('.result-text').textContent(),'(Not recorded yet)','second recording remains independent');
  await second.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===3);
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first result stays on screen while recording the second');
- await page.evaluate(()=>{const result=[{transcript:'私は料理をするのが得意です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await page.evaluate(()=>{const result=[{transcript:'私は掃除をするのが得意です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-strong:strong'));
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'second expression recording correct');
  check(await first.locator('.result-text').textContent().then(s=>s.includes('上手')&&s.includes('✅')),true,'first recording still visible after second completes');
  check(await page.evaluate(()=>audit81.saved.get('comparison-3-good:good').url!==audit81.saved.get('comparison-3-strong:strong').url),true,'separate audio for both rows');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'changing impression never regrades the recording');
  await page.locator('#scriptModeControl [data-value="hiragana"]').click();
- check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはりょうりをするのがじょうずです')),true,'first Hiragana recording survives redraw');
- check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはりょうりをするのがとくいです')),true,'second Hiragana recording survives redraw');
+ check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはそうじをするのがじょうずです')),true,'first Hiragana recording survives redraw');
+ check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはそうじをするのがとくいです')),true,'second Hiragana recording survives redraw');
  for(const style of ['casual','formal'])await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve first recorded judgment');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve second recorded judgment');

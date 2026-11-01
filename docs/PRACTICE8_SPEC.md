@@ -70,7 +70,7 @@ Drill見出しの直下に、英語ラベルに合うAdjを選び録音する旨
 
 前半は意味、後半は対人印象の順に７問×２行とする。Meaning／Speaker & listenerの区分見出しは表示しない。D5各問の番号は状況文の先頭に置き、表の独立番号列は設けない。D5,6は上手／下手の対を避け、下手／苦手の言い方の差を扱う。
 
-Adj選択時は正誤メッセージを出さない。同じペアのどちらか一方で録音URLが保存された時点で、そのペアの2項目を「上手：説明」「得意：説明」のように語ごとに明示した一つの解説ブロックで同時に表示する。録音前はブロック全体を隠す。ブロックには見出し「✨Notice the difference:」を置き、ページ幅の50％とする。ブロックは右側に配置し、内部の見出しと説明文も右揃えにする。幅に応じて本文を自然に折り返す。
+Adj選択時は正誤メッセージを出さない。同じペアのどちらか一方で録音URLが保存された時点で、そのペアの2項目を「上手：説明」「得意：説明」のように語ごとに明示した一つの解説ブロックで同時に表示する。録音前はブロック全体を隠す。ブロックには見出し「✨Notice the difference:」を黄色系（通常`#ca8a04`／ダーク`#fbbf24`）で置き、ページ幅の50％とする。ブロックは左側に配置し、内部の見出しと説明文も左揃えにする。幅に応じて本文を自然に折り返す。
 
 | 順 | 場面 | ラベル → 選ぶAdj | ペアの録音後に同一ブロック内で表示する英語解説 |
 | --- | --- | --- | --- |
@@ -80,7 +80,7 @@ Adj選択時は正誤メッセージを出さない。同じペアのどちら�
 |  |  | Uncomfortable → 苦手 | The speaker feels uncomfortable or not fond of the activity, regardless of actual skill. |
 | 3 Meaning | 私は早く起きるのが…：Talking about waking up early. | Unnatural → 下手 | Sounds unnatural because 下手 judges learned skills, not daily habits. |
 |  |  | Natural → 苦手 | Sounds natural because 苦手 expresses that waking up early is hard for the speaker. |
-| 4 Impression | 私は料理するのが…：Introducing yourself to someone you have just met. | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
+| 4 Impression | 私は掃除するのが…：Introducing yourself to someone you have just met. | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
 |  |  | Natural → 得意 | Describing the activity as something the speaker feels confident in sounds natural. |
 | 5 Impression | 留学生の友達は漢字を書くのが…：Talking about an international-student friend after watching them write kanji. | Praise → 上手 | The speaker directly praises a skill they have observed. |
 |  |  | Observed → 得意 | The speaker infers that the subject feels confident in the activity. |
@@ -102,13 +102,13 @@ Exampleと対応Drillで同じ完成文を反復しない。Example3／Example5�
 | Example1 | 映画 | 作る | D1と語彙を分ける |
 | D1 | 本／音楽／写真 | 読む／聞く／撮る | 各問で名詞好きと動作好きを比較 |
 | Example2 | テレビ | 見る | D2と語彙を分ける |
-| D2 | コーヒー／部屋／朝ご飯／服 | 飲む／掃除する／食べる／買う | Q/A内の反復 |
+| D2 | コーヒー／洗濯／朝ご飯／服 | 飲む／する／食べる／買う | Q/A内の反復 |
 | Example3 | 写真 | 撮る | D3の4問と語彙を分ける。主語は妹 |
 | D3 | 文法／海／カタカナ／バイク | 教える／泳ぐ／覚える／運転する | 4問。人物はクラスメート／祖母／子ども／兄弟。D3-2は祖母が海で泳ぐ |
 | Example4 | 料理 | 作る | ぜんぜん／あまり／ちょっと／まぁまぁ／とても／すごくの6段階の比較内で反復 |
 | D4 | お皿／もの／スマホ／髪／カバン／勉強 | 洗う／捨てる／使う／切る／持っていく／始める | 6段階の表現は固定。アクションはプルダウンで1回ずつ選び、選択済みは他行から隠す |
 | Example5 | ギター | 弾く | 上手／得意の意味比較内で反復 |
-| D5 | 料理／英語／早起き／日本語／漢字／カラオケ | する／話す／起きる／書く／歌う | ペア内比較に必要な動詞反復を含む。D5-1の話者は父。D5-5はD3-3と漢字が重なるユーザー指定の例外。D5-6の主語は兄 |
+| D5 | 料理／英語／早起き／掃除／漢字／カラオケ／日本語 | する／話す／起きる／書く／歌う | ペア内比較に必要な動詞反復を含む。D5-1の話者は父（料理する）、D5-4は私（掃除する）。D5-5はD3-3と漢字が重なるユーザー指定の例外。D5-6の主語は兄 |
 
 同一会話のQ/A、同じ課題内で対照する2行・D4の程度6行・D5の意味／対人印象比較は、学習目標に必要な反復として扱う。それ以外はExampleとDrill間を含め、同じ動詞・具体的目的語を別枠へ重ねない。今回の指定による例外として、D5-5「漢字を書く」はD3-2「手紙を書く」と動詞が重なり、D3-3「漢字を覚える」と目的語が重なる。D5-7は日本語を話すキューで上手（能力の直接評価）と得意（本人の自己認識の推測）を比べる。
 

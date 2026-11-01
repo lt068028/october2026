@@ -1,5 +1,15 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のD2-2を「洗濯／する／きらい」、D5-4を「私／掃除／する」へ変更、D5 Noticeの見出し「✨Notice the difference:」を黄色系（通常`#ca8a04`／ダーク`#fbbf24`）とし、Noticeボックスを左寄せ（幅50%・左揃え）へ変更完了。開始時HEAD `f03abb1`。
+- 変更：
+  1. **D2-2とD5-4の語彙変更（重複解消）**：D2-2を `部屋／掃除する` から `洗濯／する`（モデル：`洗濯するのがきらいですか。`、許容：`洗濯をするのが…`）に変更し、D5-4を `私／料理／する` から `私／掃除／する`（モデル：`私は、掃除するのが上手です／得意です。`、許容：`掃除をするのが…` および `私は` 省略）へ変更。
+  2. **Notice見出しの黄色系カラー化と左寄せ表示**：`.p81-nuance-note-title`（`✨Notice the difference:`）を黄色系（通常`#ca8a04`／ダーク`#fbbf24`）に設定し、`.p81-nuance-note` ボックスおよび内部テキストを左寄せ（`margin: 10px auto 4px 0; text-align: left;`）に変更。
+- 変更ファイル：practice8.1.js、style.css、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・データ検証合格。ユーザーの実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `f03abb1`）
+
 - 状態：Practice 8.1のEx4「／好き👉️」（「／すき👉️」）全6行の右詰め完全一致、D5-3の順序変更（1行目：Unnatural→下手、2行目：Natural→苦手）、D5全7問の状況説明（Scenario）とNotice文の重複排除・Speaker視点統一、およびNotice全体の色付き表示（`#7c3aed`／ダーク `#c084fc`）を完了。開始時HEAD `e0dfd1e`。
 - 変更：
   1. **Ex4キュー「／好き👉️」全6行の右詰め整列**：`.p81-degree-example .p81-example-cue` に `width: 100%; justify-self: stretch;`、`.p81-degree-cue-tail` に `justify-self: end; text-align: right;` を指定し、全6行の「／好き👉️」（ひらがなモード時「／すき👉️」）の横位置が完全に一致するよう修正。

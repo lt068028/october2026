@@ -55,6 +55,7 @@ W("listen","聞く","きく","kiku","to listen");
 W("take","撮る","とる","toru","to take photographs");
 W("room","部屋","へや","heya","room");
 W("clean","掃除する","そうじする","sōji suru","to clean");
+W("cleaning","掃除","そうじ","sōji","cleaning");
 W("laundry","洗濯","せんたく","sentaku","laundry");
 W("do","する","する","suru","to do");
 W("friend","友達","ともだち","tomodachi","friend");
@@ -115,7 +116,7 @@ W('flower','花','はな','hana','flower');
 W('grow','育てる','そだてる','sodateru','to grow');
 W('early','早く','はやく','hayaku','early');
 W('wake','起きる','おきる','okiru','to get up');
-const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
+const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['掃除する','そうじする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
 dictionary.forEach(([k,h])=>STTDisplay.register(k,h));
 function hira(text) {
     let value=String(text).normalize('NFKC');
@@ -127,7 +128,7 @@ function normalize(text) {
 }
 const action=(object,verb,particle=verb==='do'?'':'を')=>({object,verb,particle});
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
-const selfActions=[action('coffee','drink'),action('room','clean'),action('breakfast','eat'),action('clothes','buy')];
+const selfActions=[action('coffee','drink'),action('laundry','do'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
     {subject:'classmate',...action('grammar','teach'),adjective:'good'},
     {subject:'grandmother',...action('sea','swim','で'),adjective:'good'},
@@ -165,7 +166,7 @@ const comparisons=[
   bad:'Sounds unnatural because 下手 judges learned skills, not daily habits.',
   difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.'
  }},
- {phase:'Impression',subject:'i',...action('cook','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introducing yourself to someone you have just met.',impressions:{
+ {phase:'Impression',subject:'i',...action('cleaning','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introducing yourself to someone you have just met.',impressions:{
   good:'Praising the speaker’s own skill directly can sound boastful.',
   strong:'Describing the activity as something the speaker feels confident in sounds natural.'
  }},
