@@ -101,7 +101,7 @@ W("strong","得意","とくい","tokui","a personal strength");
 W("difficult","苦手","にがて","nigate","difficult or uncomfortable for someone");
 W("totemo","とても","とても","totemo","very");
 W("sugoku","すごく","すごく","sugoku","very; really");
-W("maamaa","まあまあ","まあまあ","māmā","fairly; reasonably");
+W("maamaa","まぁまぁ","まぁまぁ","māmā","fairly; reasonably");
 W("chotto","ちょっと","ちょっと","chotto","a little");
 W("amari","あまり","あまり","amari","not very (with a negative ending)");
 W("zenzen","ぜんぜん","ぜんぜん","zenzen","not at all (with a negative ending)");
@@ -115,7 +115,7 @@ W('flower','花','はな','hana','flower');
 W('grow','育てる','そだてる','sodateru','to grow');
 W('early','早く','はやく','hayaku','early');
 W('wake','起きる','おきる','okiru','to get up');
-const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
+const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
 dictionary.forEach(([k,h])=>STTDisplay.register(k,h));
 function hira(text) {
     let value=String(text).normalize('NFKC');
@@ -281,8 +281,10 @@ function modelHTML(r,repeatPrefix=false) {
     const fullText=scriptMode==='kanji'?r.text:r.hira;
     const shortText=repeatPrefix?sentenceFor({...r,short:true},speechStyle,scriptMode==='kanji'):'';
     const text=repeatPrefix&&r.id==='ex5-perception'?shortText.replace(words[r.adjective][scriptMode==='kanji'?'kanji':'hira'],'のが'+words[r.adjective][scriptMode==='kanji'?'kanji':'hira']):repeatPrefix?shortText:fullText;
+    const omittedText=repeatPrefix?(r.id==='ex5-perception'?fullText.slice(0,fullText.indexOf('のが')):fullText.slice(0,fullText.length-text.length)):'';
+    const needsModelSpacer=repeatPrefix&&(r.id.startsWith('ex4-')||r.id==='ex5-perception');
     const tokens=[...Object.values(words)].map(w=>w[scriptMode==='kanji'?'kanji':'hira']).sort((a,b)=>b.length-a.length);
-    let out=repeatPrefix?`<span class="p81-ditto" role="img" aria-label="${escape(fullText.slice(0,fullText.length-text.length))}">〃</span>${r.id==='ex5-perception'?'':' '}`:'',i=0;
+    let out=repeatPrefix?(needsModelSpacer?'<span class="p81-model-repeat-spacer"></span>':'')+`<span class="p81-ditto" role="img" aria-label="${escape(omittedText)}">〃</span>`:'',i=0;
     while(i<text.length) {
         const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
         const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
@@ -783,16 +785,21 @@ function addExample(root,si) {
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
-        const repeatPrefix=(si===3||si===4)&&index>0;
+        const repeatPrefix=(si===2||si===3||si===4)&&index>0;
         const row=node('div','p81-example-row');
         const kind=node('span',r.qa?'example-label-title':'example-label-title p81-kind',r.kind?r.kind+(r.qa?':':''):'');
         const cue=node('span','p81-example-cue');
         if(si===3){
             const prefix=node('span','p81-degree-cue-prefix'+(repeatPrefix?' p81-degree-cue-repeat':''));
             if(repeatPrefix){
-                const mark=node('span','p81-repeat-mark','〃');mark.setAttribute('role','img');mark.setAttribute('aria-label',actionText(r));prefix.append(mark);
-            }else prefix.innerHTML=cues(r,[r.object,r.verb]);
-            if(hintMode!=='paren')prefix.append(document.createTextNode('／'));
+                cue.dataset.repeatCue='3';
+                const spacer=node('span','p81-repeat-spacer');
+                const mark=node('span','p81-repeat-mark','〃');mark.setAttribute('role','img');mark.setAttribute('aria-label',actionText(r));prefix.append(spacer,mark);
+            }else {
+                cue.dataset.repeatAnchor='3';cue.dataset.repeatStart=r.object;cue.dataset.repeatEnd=r.verb;
+                prefix.innerHTML=cues(r,[r.object,r.verb]);
+            }
+            if(hintMode!=='paren'&&!repeatPrefix)prefix.append(document.createTextNode('／'));
             cue.append(prefix);
             const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
         }else if((si===2||si===4)&&index===1){
@@ -808,11 +815,9 @@ function addExample(root,si) {
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
-        if(si===3){
-            const prefix=node('span','p81-degree-model-prefix'),tail=node('span','p81-degree-model-tail');
-            if(repeatPrefix){prefix.append(text.querySelector('.p81-ditto'));tail.append(...text.childNodes);}
-            else {const html=text.innerHTML,mark='<strong class="p81-gold grammar-highlight">のが</strong>',end=html.indexOf(mark)+mark.length;prefix.innerHTML=html.slice(0,end);tail.innerHTML=html.slice(end);}
-            text.replaceChildren(prefix,tail);
+        if(si===3||si===4){
+            if(index===0)text.dataset.repeatModelAnchor=r.verb;
+            else text.dataset.repeatModelCue=r.verb;
         }
         if(hasKinds)row.append(kind);else row.classList.add('p81-no-kind');
         row.append(cue,arrow,listen,text);ex.append(row);
@@ -920,9 +925,19 @@ function measureCues() {
     document.querySelectorAll('.p81-degree-example').forEach(ex=>{
         const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
         const tailWidth=Math.max(...[...ex.querySelectorAll('.p81-degree-cue-tail')].map(measure));
-        const prefix=ex.querySelector('.p81-degree-model-prefix');
         ex.style.setProperty('--degree-tail-width',tailWidth+'px');
-        ex.style.setProperty('--degree-prefix-width',measure(prefix)+'px');
+    });
+    document.querySelectorAll('.p81-model[data-repeat-model-cue]').forEach(target=>{
+        const ex=target.closest('.p81-example');
+        const anchor=ex?.querySelector('.p81-model[data-repeat-model-anchor]');
+        const wordId=target.dataset.repeatModelCue;
+        const display=words[wordId]?.[scriptMode==='kanji'?'kanji':'hira'];
+        const anchorWord=[...(anchor?.querySelectorAll('.target-word')||[])].find(e=>e.textContent.includes(display||'\u0000'));
+        const spacer=target.querySelector('.p81-model-repeat-spacer');
+        const mark=target.querySelector('.p81-ditto');
+        if(!anchor||!anchorWord||!spacer||!mark)return;
+        const anchorRect=anchor.getBoundingClientRect(),wordRect=anchorWord.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+        spacer.style.width=Math.max(0,wordRect.left+wordRect.width/2-anchorRect.left-markWidth/2)+'px';
     });
     document.querySelectorAll('.p81-section').forEach(group=>{
         // Align the Japanese cue starts within each comparison pair, not across the Drill.
