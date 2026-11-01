@@ -143,12 +143,12 @@ const degreeActions=[
     {id:'beginStudy',...action('study','begin')}
 ];
 const degreeLevels=[
-    {adjective:'dislike',degree:'dislike',tone:'positive'},
-    {adjective:'like',adverb:'zenzen',degree:'zenzen',tone:'negative'},
-    {adjective:'like',adverb:'amari',degree:'amari',tone:'negative'},
-    {adjective:'like',adverb:'chotto',degree:'chotto',tone:'positive'},
-    {adjective:'like',adverb:'maamaa',degree:'maamaa',tone:'positive'},
-    {adjective:'like',adverb:'sugoku',degree:'sugoku',tone:'positive'}
+    {adjective:'like',degree:'like',tone:'positive'},
+    {adjective:'dislike',adverb:'zenzen',degree:'zenzen',tone:'negative'},
+    {adjective:'dislike',adverb:'amari',degree:'amari',tone:'negative'},
+    {adjective:'dislike',adverb:'chotto',degree:'chotto',tone:'positive'},
+    {adjective:'dislike',adverb:'maamaa',degree:'maamaa',tone:'positive'},
+    {adjective:'dislike',adverb:'sugoku',degree:'sugoku',tone:'positive'}
 ];
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
@@ -268,10 +268,7 @@ function actionText(a,mode=scriptMode) {
     return get(a.object)+(a.particle||'を')+get(a.verb);
 }
 function degreePhraseHTML(level) {
-    let phrase;
-    if(level.degree==='dislike')phrase=word('dislike');
-    else phrase=word(level.adverb)+word('like')+(['zenzen','amari'].includes(level.adverb)?'じゃない':'');
-    return `<span class="degree-${level.tone}">${phrase}</span>`;
+    return level.adverb?word(level.adverb):word(level.adjective);
 }
 function cues(r,visibleIds) {
     if(r.qa==='response')return '';
@@ -289,6 +286,7 @@ function modelHTML(r,repeatPrefix=false) {
         const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
         const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
         if(gold){out+=`<strong class="p81-gold grammar-highlight">${gold}</strong>`;i+=gold.length;continue;}
+        if(r.degreeLevel&&['zenzen','amari'].includes(r.adverb)&&text.startsWith('ない',i)){out+='<span class="degree-negative">ない</span>';i+=2;continue;}
         const token=tokens.find(t=>text.startsWith(t,i));
         const id=token&&Object.keys(words).find(k=>words[k][scriptMode==='kanji'?'kanji':'hira']===token);
         if(id){out+=word(id);i+=token.length;}else{out+=escape(text[i]);i++;}
@@ -755,16 +753,16 @@ function addSelect(cue,r,key) {
     const usedActivities=new Set(degreeLevels.map((_,i)=>choices.get(`degree-${i}`)).filter(Boolean));
     const activityOptions=degreeActions.filter(a=>!usedActivities.has(a.id)||a.id===activity);
     const ids=isActivity?activityOptions.map(a=>a.id):r.selectKind==='comparison'?r.options:r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
-    select.setAttribute('aria-label',isActivity?'Select an action':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
+    select.setAttribute('aria-label',isActivity?'Select':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
-    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select an action —':'— Adj —');empty.value='';select.append(empty);}
+    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'— Adj —');empty.value='';select.append(empty);}
     for(const id of ids){const opt=node('option','',isActivity?actionText(degreeActions.find(a=>a.id===id)):words[id][scriptMode==='kanji'?'kanji':'hira']);opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
     select.value=isActivity?activity:r.selectKind==='comparison'?(r.quizChoice||''):r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
     if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
     if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     const selectedActivity=isActivity?degreeActions.find(a=>a.id===activity):null;
-    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+words[selectedActivity.verb].meaning:select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'Select an action.':'Choose an expression first.';
+    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+words[selectedActivity.verb].meaning:select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'Select.':'Choose an expression first.';
     if(hintMode==='hover'){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
     else {cue.append(select);if(hintMode==='paren')cue.append(node('span','vocab-inline','('+hint.textContent+')'));}
     select.onchange=()=>{
@@ -790,7 +788,7 @@ function addExample(root,si) {
         const cue=node('span','p81-example-cue');
         if(si===3){
             if(!repeatPrefix){const prefix=node('span','p81-degree-cue-prefix');prefix.innerHTML=cues(r,[r.object,r.verb])+(hintMode==='paren'?'':'／');cue.append(prefix);}
-            const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel);cue.append(tail);
+            const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
         }else cue.innerHTML=cues(r);
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
@@ -903,7 +901,7 @@ function measureCues() {
 function sync() {
     const busy=Boolean(session||preparing);
     document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
-    views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select an action first.':'Choose an expression first.';}}
+        views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';}}
         const canStop=session?.key===keyFor(v.r)&&session.manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
 }
 async function record(key, r) {
