@@ -1515,7 +1515,10 @@ function practice2ShowNotice(resultSpan, message) {
             const playNext=()=>{
                 if(index>=playback.length){stopAllPlayback();return;}
                 const sentence=playback[index++];
+                dialogueButton.dataset.speaker=sentence.who;
+                dialogueButton.dataset.zone=sentence.object.zone;
                 selectEx(sentence.who,sentence.object.zone);
+                practice2SyncCitySpeaker();
                 const text=speechStyle==='formal'?sentence.text().replace(/？/g,'。'):sentence.text();
                 speakText(practice2SpeechText(text),0.75,playNext);
             };
