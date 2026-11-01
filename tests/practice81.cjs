@@ -143,6 +143,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    return {selected:row.querySelector('select').value,disabled:buttons.map(button=>button.disabled)};
   }));
   check(initial,Array(6).fill({selected:'',disabled:[true,true,true]}),'all Dr4 controls locked before selection; Autostop '+(autostop?'ON':'OFF'));
+  const visualLocks=await page.locator('#drill4 .p81-card').evaluateAll(cards=>cards.map(card=>[...card.querySelectorAll('.recording-actions button')].slice(0,2).map(button=>button.classList.contains('is-selection-locked')&&button.getAttribute('aria-disabled')==='true')));
+  check(visualLocks,Array(6).fill([true,true]),'all six Dr4 rows visibly marked locked; Autostop '+(autostop?'ON':'OFF'));
  }
  await page.locator('#toggleRecordMode').check();
  for(let i=0;i<6;i++)await page.locator(`[data-choice="degree-${i}"]`).selectOption(actionIds[i]);
