@@ -163,13 +163,13 @@ const comparisons=[
   bad:'The speaker judges that the subject’s skill is low.',
   difficult:'The speaker feels uncomfortable or not fond of the activity, regardless of actual skill.'
  }},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['bad','difficult'],labels:['Unnatural','Natural'],scenario:'Talking about waking up early.',impressions:{
-  bad:'Sounds unnatural because 下手 judges learned skills, not daily habits.',
-  difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.'
+ {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],scenario:'Talking about waking up early.',impressions:{
+  difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.',
+  bad:'Sounds unnatural because 下手 judges learned skills, not daily habits.'
  }},
- {phase:'Impression',subject:'i',...action('cleaning','do'),options:['good','strong'],labels:['Boastful','Natural'],scenario:'Introducing yourself to someone you have just met.',impressions:{
-  good:'Praising the speaker’s own skill directly can sound boastful.',
-  strong:'Describing the activity as something the speaker feels confident in sounds natural.'
+ {phase:'Impression',subject:'i',...action('cleaning','do'),options:['strong','good'],labels:['Natural','Boastful'],scenario:'Introducing yourself to someone you have just met.',impressions:{
+  strong:'Describing the activity as something the speaker feels confident in sounds natural.',
+  good:'Praising the speaker’s own skill directly can sound boastful.'
  }},
  {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'Talking about an international-student friend after watching them write kanji.',impressions:{
   good:'The speaker directly praises a skill they have observed.',

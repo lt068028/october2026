@@ -78,10 +78,10 @@ Adj選択時は正誤メッセージを出さない。各行の2択プルダウ�
 |  |  | Observed → 得意 | The speaker infers that the subject sees the activity as their own strength. |
 | 2 Meaning | 私は英語を話すのが…：Talking about speaking English. | Poor → 下手 | The speaker judges that the subject’s skill is low. |
 |  |  | Uncomfortable → 苦手 | The speaker feels uncomfortable or not fond of the activity, regardless of actual skill. |
-| 3 Meaning | 私は早く起きるのが…：Talking about waking up early. | Unnatural → 下手 | Sounds unnatural because 下手 judges learned skills, not daily habits. |
-|  |  | Natural → 苦手 | Sounds natural because 苦手 expresses that waking up early is hard for the speaker. |
-| 4 Impression | 私は掃除するのが…：Introducing yourself to someone you have just met. | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
-|  |  | Natural → 得意 | Describing the activity as something the speaker feels confident in sounds natural. |
+| 3 Meaning | 私は早く起きるのが…：Talking about waking up early. | Natural → 苦手 | Sounds natural because 苦手 expresses that waking up early is hard for the speaker. |
+|  |  | Unnatural → 下手 | Sounds unnatural because 下手 judges learned skills, not daily habits. |
+| 4 Impression | 私は掃除するのが…：Introducing yourself to someone you have just met. | Natural → 得意 | Describing the activity as something the speaker feels confident in sounds natural. |
+|  |  | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
 | 5 Impression | 留学生の友達は漢字を書くのが…：Talking about an international-student friend after watching them write kanji. | Praise → 上手 | The speaker directly praises a skill they have observed. |
 |  |  | Observed → 得意 | The speaker infers that the subject feels confident in the activity. |
 | 6 Impression | 兄はカラオケで歌うのが…：Talking about your older brother after hearing him sing karaoke. | Blunt → 下手 | Directly judging the subject’s lack of skill can sound blunt or hurtful. |

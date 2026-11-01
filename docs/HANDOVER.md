@@ -1,5 +1,16 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のD5-3を「1行目：Natural → 苦手、2行目：Unnatural → 下手」、D5-4を「1行目：Natural → 得意、2行目：Boastful → 上手」へ並び替え完了。開始時HEAD `beaaba0`。
+- 変更：
+  1. **D5-3の順序変更**：1行目を `Natural`（`私は、早く起きるのが苦手です。`）、2行目を `Unnatural`（`私は、早く起きるのが下手です。`）へ変更（Notice内の並びも `苦手` → `下手` に連動）。
+  2. **D5-4の順序変更**：1行目を `Natural`（`私は、掃除するのが得意です。`）、2行目を `Boastful`（`私は、掃除するのが上手です。`）へ変更（Notice内の並びも `得意` → `上手` に連動）。
+- 変更ファイル：practice8.1.js、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・データ検証合格。
+- 実機確認状況：D3-1「クラスメート／休む」を含む前回までの修正事項は全て実機確認完了。今回変更したD5-3・D5-4の行順序のみ実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `beaaba0`）
+
 - 状態：Practice 8.1のD3-1をGenki L4既出・L6漢字配当の「休む」（`クラスメート／休む`、モデル：`クラスメートは、休むのが上手です。`）へ変更し、仕様書（AGENTS.md・PROJECT_SPEC.md・PRACTICE8_SPEC.md）に漢字表記のGenki仕様準拠徹底を明記完了。開始時HEAD `43c9a61`（仕様更新コミット `a7bf0c9`）。
 - 変更：
   1. **漢字表記のGenki準拠徹底を仕様明記**：`AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/PRACTICE8_SPEC.md` に、語彙の初出Lessonだけでなく `With漢字` モードでの漢字表記もGenkiの語彙欄・漢字配当仕様に厳密に合わせることを明記。
