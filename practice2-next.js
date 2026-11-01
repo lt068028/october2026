@@ -249,6 +249,7 @@ function practice2SyncCitySpeaker() {
     const who=row?.dataset.drillSpeaker||control?.dataset.speaker;
     const picture=row?row.closest('[id$="Container"]')?.querySelector(':scope > .p23-city-picture'):control?.closest('.example-box')?.querySelector('.p23-city-picture');
     document.querySelectorAll('.p23-city-person').forEach(e=>e.classList.toggle('is-speaking',['A','B'].includes(who)&&e.closest('.p23-city-picture')===picture&&e.closest('.p23-city-region').dataset.zone===who));
+    document.querySelectorAll('.p23-call-note .conversation-person').forEach(e=>e.classList.toggle('is-speaking',['A','B'].includes(who)&&e.closest('.example-box')?.querySelector('.p23-city-picture')===picture&&e.dataset.person===who));
 }
 
 function practice2SyncPhotoSpeaker() {
@@ -303,6 +304,13 @@ function restorePlayButtons() {
 
 function stopAllPlayback() {
     document.querySelectorAll(".p2x-speaker-guide").forEach(e=>SpeakerGuide.reset(e));
+    document.querySelectorAll('.p23-call-note .conversation-person').forEach(e=>e.classList.remove('is-speaking'));
+    document.querySelectorAll('.p23-city-region').forEach(e=>e.classList.remove('is-speaking'));
+    document.querySelectorAll('.p23-city-person').forEach(e=>e.classList.remove('is-speaking'));
+    document.querySelectorAll('.p21-model-line').forEach(e=>{
+        e.classList.remove('is-current-model');
+        e.querySelectorAll('.conversation-person').forEach(p=>p.classList.remove('is-speaking'));
+    });
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (currentUtteranceRef) {
@@ -1461,7 +1469,7 @@ function practice2ShowNotice(resultSpan, message) {
         container.append(picture);
         function select(speaker,zone){
             picture.dataset.speaker=speaker;picture.dataset.target=zone||'';context.dataset.nextSpeaker=speaker;
-            picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-target',e.dataset.zone===zone);const caption=e.querySelector('.p2x-distance-label');if(caption){caption.querySelector('.p21-area-sound').textContent=value;caption.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';}});
+            picture.querySelectorAll('.p23-city-region').forEach(e=>{const value=sound(speaker,e.dataset.zone);e.dataset.sound=value;e.classList.toggle('is-speaking',Boolean(activePlayButtons.length)&&e.dataset.zone===speaker);e.classList.toggle('is-target',e.dataset.zone===zone);const caption=e.querySelector('.p2x-distance-label');if(caption){caption.querySelector('.p21-area-sound').textContent=value;caption.querySelector('.p21-area-description').textContent=value==='こ'?'Near the speaker':value==='そ'?'Near the listener':'Far from both';}});
             if(example)container.querySelectorAll('.p21-model-line').forEach(e=>e.classList.toggle('is-current-model',e.dataset.modelSpeaker===speaker&&e.dataset.zone===zone));
         }
         select.placeButton=(button,o)=>{const holder=node('div','p23-in-scene-audio');holder.dataset.zone=o.zone;holder.append(button);stage.querySelector(`.p23-city-region[data-zone="${o.zone}"]`).append(holder);};
@@ -1514,25 +1522,35 @@ function practice2ShowNotice(resultSpan, message) {
         const dialogueAudio=node('span','p23-dialogue-audio');
         const dialogueButton=button('🔊きく','Play the full X and Y dialogue in sequence.',()=>{
             const playback=[
-                {who:'A',object:countries[0],getText:sentences[0].intro},
-                {who:'A',object:countries[0],getText:sentences[0].text},
-                {who:'A',object:countries[1],getText:sentences[1].text},
-                {who:'B',object:countries[1],getText:sentences[2].intro},
-                {who:'B',object:countries[1],getText:sentences[3].text},
-                {who:'A',object:countries[2],getText:sentences[4].text},
-                {who:'B',object:countries[2],getText:sentences[5].intro},
-                {who:'B',object:countries[2],getText:sentences[6].text}
+                {who:'A',object:countries[0],lineIndex:0,getText:sentences[0].intro},
+                {who:'A',object:countries[0],lineIndex:0,getText:sentences[0].text},
+                {who:'A',object:countries[1],lineIndex:1,getText:sentences[1].text},
+                {who:'B',object:countries[1],lineIndex:2,getText:sentences[2].intro},
+                {who:'B',object:countries[1],lineIndex:3,getText:sentences[3].text},
+                {who:'A',object:countries[2],lineIndex:4,getText:sentences[4].text},
+                {who:'B',object:countries[2],lineIndex:5,getText:sentences[5].intro},
+                {who:'B',object:countries[2],lineIndex:6,getText:sentences[6].text}
             ].filter(item=>typeof item.getText==='function'&&item.getText());
             if(!playback.length)return;
             let index=0;
-            setPlayingStateMultiple([dialogueButton],'再生中…');
+            setPlayingStateMultiple([dialogueButton],'Playing...');
+            const modelLines=list.querySelectorAll('.p21-model-line');
             const playNext=()=>{
-                if(index>=playback.length){stopAllPlayback();return;}
+                if(index>=playback.length){
+                    stopAllPlayback();
+                    selectEx('A');
+                    return;
+                }
                 const item=playback[index++];
                 dialogueButton.dataset.speaker=item.who;
                 dialogueButton.dataset.zone=item.object.zone;
                 selectEx(item.who,item.object.zone);
                 practice2SyncCitySpeaker();
+                header.querySelectorAll('.conversation-person').forEach(e=>e.classList.toggle('is-speaking',e.dataset.person===item.who));
+                modelLines.forEach((l,i)=>{
+                    l.classList.toggle('is-current-model',i===item.lineIndex);
+                    l.querySelectorAll('.conversation-person').forEach(p=>p.classList.toggle('is-speaking',i===item.lineIndex&&p.dataset.person===item.who));
+                });
                 const text=speechStyle==='formal'?item.getText().replace(/？/g,'。'):item.getText();
                 speakText(practice2SpeechText(text),0.75,playNext);
             };

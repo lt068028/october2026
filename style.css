@@ -3423,8 +3423,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 /* Practice 2.3 Ex1: one control plays the complete dialogue; speaker focus is blue. */
-.practice-next-page .p23-dialogue-audio { margin-left: auto; display: inline-flex; align-items: center; }
+.practice-next-page .p23-dialogue-audio { margin-left: 0; display: inline-flex; align-items: center; }
 .practice-next-page .p23-dialogue-play-button { white-space: nowrap; }
-.practice-next-page .p23-call-example .p23-city-person.is-speaking { outline: 3px solid #2563eb; outline-offset: 2px; color: #111827; animation: none; }
+.practice-next-page .p23-call-example .p23-city-person.is-speaking { outline: 2px solid #2563eb; outline-offset: 2px; animation: p23-speaking .8s ease-in-out infinite; }
+.practice-next-page .p23-city-region.is-speaking { outline: 3px solid #2563eb; outline-offset: -3px; border-radius: 8px; z-index: 3; }
 .practice-next-page .p23-conversation-models .p23-example-audio { display: inline-flex; align-items: baseline; gap: 4px; }
 .practice-next-page .p23-call-arrow { margin: 0 4px; font-weight: 700; color: var(--text-secondary); }
