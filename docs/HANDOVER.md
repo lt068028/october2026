@@ -1,5 +1,17 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のDr4全6行ロック不具合（`degreeActions` の `id` による `r.id` 上書きと `views` キー衝突）およびページ全体の停止ボタン非アクティブ保証、D5-2/3/4の「私は」省略許容、D5-1/4「料理する」モデル文（助詞「を」なしモデル・「を」あり許容）、Noticeブロック幅50%への変更を完了。開始時HEAD `869ffbc`。
+- 変更：
+  1. **Dr4の1〜5番で「きく・とる・停止」がアクティブになっていた根本原因の解消**：`degreeActions` の各要素が `{id: 'washDish', ...}` を持っていたため、`makeRow(id, spec, extra)` 内の `{id, ...spec, ...extra}` で行ID（`degree-0`〜`degree-5`）が `'washDish'` に上書きされ、Dr4の全6行が同一キー `'washDish:unselected'` となって `views` Map上で1〜5行目が6行目に上書き消失していた問題を修正（`degreeActions` のキーを `actionId` に分離し、`makeRow` を `{...spec, ...extra, id}` に変更）。あわせて全停止ボタンに `.stop-record-btn` を付与し、`sync()` で停止ボタンの一括有効化を防止。
+  2. **「私」が主語の文（D5-2・D5-3・D5-4）での「私は」省略許容**：`makeRow` の `subjectVariants` で `!r.subject || r.subject === 'i'` の場合に `subject: null` と `subject: 'i'` の双方を許容リスト（`r.refs`）へ登録。
+  3. **する動詞（D5-1・D5-4「料理する」）のモデル文変更**：「を」を使わない形（`父は、料理するのが上手です。`／`私は、料理するのが得意です。` 等）をモデル文とし、「を」を使った形（`料理をするのが…`）を許容文に設定。
+  4. **D5 Notice幅の変更**：`.p81-nuance-note` の `width` を `60%` から `50%` に変更。
+- 変更ファイル：practice8.1.js、style.css、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・ロジック検証合格。ユーザーの実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT）
+
 - 状態：Practice 8.1のEx3・Ex4・Ex5省略表示（「のが…」位置一致と空き領域中央の「〃」配置）、Dr5ペアごとの1行目キュー開始位置と上下Adj選択欄（`／`・`Adj ▼`）の横位置一致、Dr4（およびDr2／Dr5）ボタンロック表示・抑止の修正完了。開始時HEAD `11853fa`（`806b627` から `origin/main` へ fast-forward 同期済み）。
 - 変更：
   1. Ex3・Ex4・Ex5のモデル2行目以降をすべて「のが…」を残す形式に統一し、`.p81-model-repeat-spacer` と `.p81-model-repeat-after-spacer` により各Example内で「のが…」の開始横位置を完全に一致させ、「〃」は「のが」の左側の空き領域（省略された1行目の主語〜動詞／動作部分）の中央に配置。

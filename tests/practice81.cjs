@@ -72,8 +72,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉は、ギターを弾くのが上手です。','〃のが得意です。'],'Example5 second model retains のが after ditto');
   check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は、写真を撮るのが上手です。','〃のが苦手です。'],'Example3 second model retains のが after ditto');
 
- check(await page.locator('#drill4 .recording-actions button').evaluateAll(es=>es.every(e=>e.disabled&&e.getAttribute('aria-disabled')==='true'&&e.classList.contains('is-selection-locked'))),true,'Dr4 listen, record, and stop buttons start locked before activity selection');
- await page.locator('[data-choice="degree-0"]').selectOption('dishes');
+ check(await page.locator('#drill4 .recording-actions button').evaluateAll(es=>es.every(e=>e.disabled&&e.getAttribute('aria-disabled')==='true')),true,'Dr4 listen, record, and stop buttons start locked before activity selection across all 6 rows');
+ await page.locator('[data-choice="degree-0"]').selectOption('washDish');
  check(await page.locator('[data-row="degree-0"] .recording-actions button').evaluateAll(es=>es.map(e=>e.disabled)),[false,false,true],'Dr4 selected row unlocks listen and record while stop stays locked');
  check(await page.locator('[data-row="degree-1"] .recording-actions button').evaluateAll(es=>es.map(e=>e.disabled)),[true,true,true],'Dr4 unselected rows remain locked');
  await page.locator('[data-choice="degree-0"]').selectOption('');
@@ -149,6 +149,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
  const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['good','strong'],['good','strong'],['good','bad'],['good','bad']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
+ check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('料理するのが得意です。',d5[3][1])];}),['父は、料理するのが上手です。','私は、料理するのが上手です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
   const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
