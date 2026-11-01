@@ -1,5 +1,20 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 2.3 Ex1モデル行音声ボタンと本文のベースライン共有化、および都市領域（Ex1・D1・D2）の上下左右4pxインセット・角丸6px統一フレームの反映完了。開始時HEAD `d6bc375`。
+- 変更：
+  1. **Ex1音声ボタンと本文のベースライン共有化（`style.css`）**：
+     - `.p23-conversation-models .p23-example-audio` に残っていたセル上端揃え（`align-self: start;`）を撤去し、共通レイアウト契約通り親グリッドの `align-items: baseline` に従わせるよう修正（`align-self: auto;`）。「👉️」「🔊きく」と右側モデル文の第1行文字ベースラインを完全に一致。
+  2. **都市領域の上下左右4pxインセット・角丸6px統一フレーム化（`practice2-next.js`・`style.css`）**：
+     - `practice2-next.js` にて各都市領域要素へ `data-region-index`（0, 1, 2）を付与。
+     - `style.css` にて、Ex1・D1・D2のすべての都市領域（`.p23-city-region`）を写真外枠から上下左右各4px内側に収まり、隣接領域間も4px間隔を保つ統一インセットフレーム（`top: 4px; bottom: 4px; border-radius: 6px;`）に再構成。
+     - 発話中の青枠強調（`outline: 3px solid #2563eb; outline-offset: -3px; border-radius: 6px;`）が写真の外周やコンテナ境界線と干渉・同化せず、写真の中でカード状に独立して視認できるように改善。
+- 変更ファイル：practice2-next.js、style.css、practice2.3.html、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：今回のPractice 2.3 Ex1音声ボタン基線一致および都市領域4pxインセット統一フレームは実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `d6bc375`）
+
 - 状態：Practice 2.3 Ex1の「🔊きく」ボタン配置（`X ↔ Y`の直右）・再生中テキスト（`Playing...`）・発話連動XY点滅（ヘッダーバッジおよび画像内話者）・発話都市青枠ハイライト（X発話時日本／Y発話時イギリス）・発話に応じた「こ／そ」視点リアルタイム切り替え、および再生終了時のクリーンアップ完了。開始時HEAD `e5f32da`。
 - 変更：
   1. **Ex1連続再生ボタンの配置と再生中テキスト修正（`style.css`・`practice2-next.js`）**：

@@ -1456,7 +1456,7 @@ function practice2ShowNotice(resultSpan, message) {
         photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
         photo.alt=indoor?'X at the bank and Y at the cafe are on a phone call. Z reads quietly at the library.':'X and Y are on a phone call in different cities. Z is seated having a drink in a third city, not in their conversation.';stage.append(photo);
         for(const [i,o]of objects.entries()) {
-            const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.style.left=(i*100/3)+'%';
+            const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.dataset.regionIndex=String(i);region.style.left=(i*100/3)+'%';
             if(example){const caption=node('div','p2x-distance-label');caption.dataset.zone=o.zone;caption.append(node('strong','p21-area-sound'),node('span','p21-area-description'));region.append(caption);}
             if(placeHints){const hint=node('span','p23-city-hint');imageHint(hint,o);region.append(hint);}
             region.append(node('strong','p23-city-person',speakerName(['A','B','C'][i])));
