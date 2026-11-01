@@ -3389,3 +3389,22 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
  .site-scale.practice81-page #drill5 .p81-card .p81-table .p81-controls { grid-column: 1; }
 }
+
+/* Practice 8.1: make each disabled row control visibly and consistently locked. */
+.practice81-page .recording-actions > button:disabled,
+.practice81-page .p81-cue-button-group > button:disabled {
+    opacity: .42 !important;
+    filter: grayscale(1);
+    background: var(--button-disabled-bg) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
+    cursor: not-allowed !important;
+}
+.practice81-page .recording-actions > button.is-selection-locked {
+    box-shadow: none !important;
+}
+.practice81-page .p81-degree-cue-prefix[data-repeat-anchor],
+.practice81-page .p81-degree-cue-prefix[data-repeat-cue] {
+    min-width: 0;
+    white-space: nowrap;
+}
