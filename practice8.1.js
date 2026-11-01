@@ -789,7 +789,8 @@ function addExample(root,si) {
         if(si===3){
             if(!repeatPrefix){const prefix=node('span','p81-degree-cue-prefix');prefix.innerHTML=cues(r,[r.object,r.verb])+(hintMode==='paren'?'':'／');cue.append(prefix);}
             const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
-        }else cue.innerHTML=cues(r);
+        }else if(si===4&&index===1){cue.innerHTML=cues(r,[r.subject])+'／〃／'+word('strong');}
+        else cue.innerHTML=cues(r);
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
@@ -811,7 +812,7 @@ function addScale(root) {
         const point=node('div','p81-degree-point degree-'+sign);
         const mark=node('span','p81-degree-marks',marks);mark.setAttribute('aria-hidden','true');
         const label=node('span','p81-degree-label');
-        label.innerHTML=id==='totemo'?word('totemo')+'／'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<span>〜ない</span>':'');
+        label.innerHTML=id==='totemo'?word('totemo')+'／'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<strong class="degree-negative">〜ない</strong>':'');
         point.append(mark,label);scale.append(point);
     });
     root.append(scale);
@@ -844,7 +845,8 @@ function render() {
                     addSelect(cueBody,r,key);
                     cueBody.append(document.createTextNode('／'));
                     const target=node('span','p81-degree-target degree-'+r.degreeLevel.tone);target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
-                }else{content.innerHTML=cues(r);cueBody.append(content);addSelect(cueBody,r,key);}
+                    if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target degree-positive');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
+                }else{content.innerHTML=cues(r,r.comparison&&ri>0?[r.subject]:undefined)+(r.comparison&&ri>0?'／〃':'');cueBody.append(content);addSelect(cueBody,r,key);}
                 if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
                 if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
