@@ -1,5 +1,19 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 2.1のD1・D2・Ex2・D3における発話・再生・録音中のターゲット品物青枠（`.is-target`）表示修正、およびD3 Set 2（さいふ）の1・2問目質問キュー・モデルを「あなた」から「Yさん／Xさん」へ修正完了（D2のY返答キュー表示案をユーザーへ提案中）。開始時HEAD `0db7a4d`。
+- 変更：
+  1. **Practice 2.1 D1・D2・Ex2・D3のターゲット青枠表示修正**：
+     - `practice2.1.js`：D1（Set 1・Set 2全行）およびD2（Set 1・Set 2全行）の `.p21-drill-picture` に `dataset.whTargets = 'true'`、各行に `dataset.zone` と `dataset.targetPolicy = 'answer'` を設定。
+     - `style.css`：`.p21-drill-item` の `clip-path: inset(2% 2% 5%)`（緑財布は `inset(2% 2% 5% 9%)`）により `.p21-drill-item.is-target` の外側 `outline` がクリップされてEx2・D3等で青枠が見えなくなっていた問題を解消するため、`.site-scale .p21-drill-item.is-target::after` でクリップ領域内側に `2px solid var(--accent-color)` の青枠を表示するよう修正（Ex2・D3の「どれ」質問行では共通ルール通り青枠を出さず、導入・返答行で表示）。
+  2. **Practice 2.1 D3 Set 2（さいふ）の質問キュー・モデル修正**：
+     - D3 Set 2（さいふ）の1問目（X質問）・2問目（Y質問）のキューが `あなた／さいふ／どれ` になっていた箇所を、1問目は `Yさん／さいふ／どれ`（モデル：`Yさんのさいふは、どれですか。`、英語キュー：`Y/wallet/which one`）、2問目は `Xさん／さいふ／どれ`（モデル：`Xさんのさいふは、どれですか。`、英語キュー：`X/wallet/which one`）に修正。
+- 変更ファイル：practice2.1.js、style.css、practice2.1.html、docs/PRACTICE2_SPEC.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：今回のPractice 2.1修正（D1・D2・Ex2・D3の青枠表示、D3 Set 2のYさん／Xさんキュー）は実機確認待ち。D2のY返答キュー表示方法はユーザー選択待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `0db7a4d`）
+
 - 状態：内部ロジックテストの実行タイミングに関する継続ルール（ユーザーから「このページは完了だ」の一言があった後に各ページ1度だけ実行し、途中の小作業での反復テストによる浪費を回避する規則）を `AGENTS.md` および `docs/RELAY_WORKFLOW.md` に登録完了。開始時HEAD `5053d36`。
 - 変更：
   1. **内部ロジックテスト実行条件のルール化**：`AGENTS.md`（第3節）および `docs/RELAY_WORKFLOW.md`（第2節）に、通常の小作業では最小限の差分・構文チェックのみを行い、包括的な内部ロジックテストはユーザーの「このページは完了だ」という宣言後に各ページ1度だけ行うことを明記。

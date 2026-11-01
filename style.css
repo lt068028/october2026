@@ -3306,6 +3306,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale .conversation-person .p21-person-caption { color: inherit; background: transparent; animation: none; }
 .site-scale .conversation-person.is-speaking { background: var(--person-bg); color: var(--person-fg); outline: 2px solid #fff; outline-offset: 1px; animation: p22-speaker-focus 1.2s ease-in-out infinite; }
 .site-scale .p21-drill-item.is-target { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.site-scale .p21-drill-item.is-target::after { content: ""; position: absolute; inset: calc(2% + 1px) calc(2% + 1px) calc(5% + 1px); border: 2px solid var(--accent-color); border-radius: 4px; box-sizing: border-box; pointer-events: none; }
+.site-scale .p21-shelf-scene .p21-drill-item[data-kind="wallet"][data-color="green"].is-target::after { inset: calc(2% + 1px) calc(2% + 1px) calc(5% + 1px) calc(9% + 1px); }
 @media(prefers-color-scheme:dark) {
  .site-scale .conversation-person[data-person="A"] { --person-bg: #c4b5fd; --person-fg: #2e1065; }
  .site-scale .conversation-person[data-person="B"] { --person-bg: #67e8f9; --person-fg: #083344; }
