@@ -88,7 +88,7 @@ function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'kanji':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
-function cues(r){const ids=r.cueIds||[];return ids.map(id=>{const found=Object.keys(words).find(k=>words[k].kanji===id||words[k].hira===id);if(!found)return escape(scriptMode==='kanji'?id:displayKana(id));return word(found);}).join(hintMode==='paren'?'':'／');}
+function cues(r){const ids=r.cueIds||[];return ids.map(id=>{const found=Object.keys(words).find(k=>words[k].kanji===id||words[k].hira===id);if(!found)return escape(scriptMode==='kanji'?id:displayKana(id));const value=word(found);return hintMode==='paren'?'<span class="display-cue-unit">'+value+'</span>':value;}).join(hintMode==='paren'?'':'／');}
 function modelHTML(r){return escape(scriptMode==='kanji'?r.text:r.hira);}
 function button(text, fn, tip = '') {
     const b = document.createElement('button');
