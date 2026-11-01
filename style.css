@@ -3330,10 +3330,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Degree examples share intrinsic suffix/prefix tracks, without positional offsets. */
 .practice81-page .p81-degree-example .p81-example-cue { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,min(var(--degree-tail-width),100%)); align-items: baseline; }
 .p81-degree-cue-tail { grid-column: 2; }
-.practice81-page .p81-degree-cue-repeat { text-align: center; }
-.practice81-page .p81-degree-example .p81-model { display: grid; grid-template-columns: minmax(0,min(var(--degree-prefix-width),60%)) minmax(0,1fr); align-items: baseline; }
-.p81-degree-model-prefix { text-align: right; }
-.p81-degree-example :is(.p81-degree-cue-prefix,.p81-degree-cue-tail,.p81-degree-model-prefix,.p81-degree-model-tail) { min-width: 0; }
+.practice81-page .p81-degree-cue-repeat { text-align: left; }
+.practice81-page .p81-model-repeat-spacer { display: inline-block; }
+.practice81-page .p81-degree-example .p81-model { display: block; }
+.practice81-page .p81-degree-example :is(.p81-degree-cue-prefix,.p81-degree-cue-tail) { min-width: 0; }
 
 .practice81-page .p81-meaning-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
 .practice81-page .p81-phase { font-weight: 700; margin: 16px 0 8px; }
