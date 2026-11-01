@@ -150,7 +150,7 @@ const degreeLevels=[
     {adjective:'dislike',adverb:'maamaa',degree:'maamaa',tone:'positive'},
     {adjective:'dislike',adverb:'sugoku',degree:'sugoku',tone:'positive'}
 ];
-const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
+const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
  {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'You have tried your father’s cooking. From what you have seen, you think he sees cooking as one of his strengths.'},
@@ -279,9 +279,10 @@ function cues(r,visibleIds) {
 
 function modelHTML(r,repeatPrefix=false) {
     const fullText=scriptMode==='kanji'?r.text:r.hira;
-    const text=repeatPrefix?sentenceFor({...r,short:true},speechStyle,scriptMode==='kanji'):fullText;
+    const shortText=repeatPrefix?sentenceFor({...r,short:true},speechStyle,scriptMode==='kanji'):'';
+    const text=repeatPrefix&&r.id==='ex5-perception'?shortText.replace(words[r.adjective][scriptMode==='kanji'?'kanji':'hira'],'のが'+words[r.adjective][scriptMode==='kanji'?'kanji':'hira']):repeatPrefix?shortText:fullText;
     const tokens=[...Object.values(words)].map(w=>w[scriptMode==='kanji'?'kanji':'hira']).sort((a,b)=>b.length-a.length);
-    let out=repeatPrefix?`<span class="p81-ditto" role="img" aria-label="${escape(fullText.slice(0,fullText.length-text.length))}">〃</span> `:'',i=0;
+    let out=repeatPrefix?`<span class="p81-ditto" role="img" aria-label="${escape(fullText.slice(0,fullText.length-text.length))}">〃</span>${r.id==='ex5-perception'?'':' '}`:'',i=0;
     while(i<text.length) {
         const responseMark=r.qa==='response'?(i===0?text.match(/^(はい|いいえ|うん|ううん)/)?.[0]:text.slice(i).match(/^(じゃないです|じゃない|です|だよ|だ)/)?.[0]):null;
         const gold=responseMark||(r.qa==='question'&&text.startsWith('ですか',i)?'ですか':text.startsWith('のが',i)?'のが':r.noun&&text[i]==='が'?'が':r.highlightTopic&&r.subject&&i===words[r.subject][scriptMode==='kanji'?'kanji':'hira'].length&&text[i]==='は'?'は':null);
@@ -777,27 +778,32 @@ function addExample(root,si) {
         [makeRow('ex1-noun',{...action('movie','make'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('movie','make'),adjective:'like'},{kind:'Verb＋の'})],
         [makeRow('ex2-q',{...action('television','watch'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
-        exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('shower','bathe'),...level,degreeLevel:level})),
+        exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('cook','make'),...level,degreeLevel:level})),
         [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
     for(const [index,r] of samples.entries()) {
-        const repeatPrefix=si===3&&index>0;
+        const repeatPrefix=(si===3||si===4)&&index>0;
         const row=node('div','p81-example-row');
         const kind=node('span',r.qa?'example-label-title':'example-label-title p81-kind',r.kind?r.kind+(r.qa?':':''):'');
         const cue=node('span','p81-example-cue');
         if(si===3){
-            if(!repeatPrefix){const prefix=node('span','p81-degree-cue-prefix');prefix.innerHTML=cues(r,[r.object,r.verb])+(hintMode==='paren'?'':'／');cue.append(prefix);}
+            const prefix=node('span','p81-degree-cue-prefix'+(repeatPrefix?' p81-degree-cue-repeat':''));
+            if(repeatPrefix){
+                const mark=node('span','p81-repeat-mark','〃');mark.setAttribute('role','img');mark.setAttribute('aria-label',actionText(r));prefix.append(mark);
+            }else prefix.innerHTML=cues(r,[r.object,r.verb]);
+            if(hintMode!=='paren')prefix.append(document.createTextNode('／'));
+            cue.append(prefix);
             const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
         }else if((si===2||si===4)&&index===1){
             cue.dataset.repeatCue=String(si);
             const spacer=node('span','p81-repeat-spacer');
             cue.append(spacer,node('span','p81-repeat-mark','〃'));
-            if(si===2){cue.append(node('span','p81-repeat-separator-spacer'));cue.append(document.createTextNode('／'));}
+            cue.append(node('span','p81-repeat-separator-spacer'));cue.append(document.createTextNode('／'));
             const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
         }else {
             cue.innerHTML=cues(r);
-            if(si===2||si===4){cue.dataset.repeatAnchor=String(si);cue.dataset.repeatStart=r.object;cue.dataset.repeatEnd=r.verb;cue.dataset.repeatVerb=r.verb;}
+            if(si===2||si===4){cue.dataset.repeatAnchor=String(si);cue.dataset.repeatStart=r.subject||r.object;cue.dataset.repeatEnd=r.verb;cue.dataset.repeatVerb=r.verb;}
         }
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
@@ -856,7 +862,7 @@ function render() {
                     if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
                 }else{
                     if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'));}
-                    else{content.innerHTML=cues(r);if(r.comparison)content.dataset.repeatAnchor=r.verb;}
+                    else{content.innerHTML=cues(r);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
                     cueBody.append(content);addSelect(cueBody,r,key);
                 }
                 if(r.comparison)listen.classList.add('p81-cue-listen');
@@ -883,39 +889,33 @@ function render() {
 function measureCues() {
     const alignDitto=(anchor,mark,startId,endId,spacer)=>{
         const display=id=>words[id]?.[scriptMode==='kanji'?'kanji':'hira'];
-        const first=display(startId),last=display(endId);if(!anchor||!mark||!spacer||!first||!last)return;
-        const walker=document.createTreeWalker(anchor,NodeFilter.SHOW_TEXT);let current,flat='',parts=[];
-        while((current=walker.nextNode())){parts.push({node:current,start:flat.length});flat+=current.textContent;}
-        const start=flat.indexOf(first),end=start<0?-1:flat.indexOf(last,start+first.length);if(start<0||end<0)return;
-        const locate=offset=>parts.find(item=>offset>=item.start&&offset<item.start+item.node.textContent.length);
-        const startPart=locate(start),endPart=locate(end+last.length-1);if(!startPart||!endPart)return;
-        const range=document.createRange();range.setStart(startPart.node,start-startPart.start);range.setEnd(endPart.node,end+last.length-endPart.start);
-        const target=range.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-        spacer.style.width=Math.max(0,target.left-cueRect.left+(target.width-markWidth)/2)+'px';
+        const firstText=display(startId),lastText=display(endId);if(!anchor||!mark||!spacer||!firstText||!lastText)return;
+        const targets=[...anchor.querySelectorAll('.target-word')];
+        const first=targets.find(e=>e.textContent.includes(firstText)),last=[...targets].reverse().find(e=>e.textContent.includes(lastText));
+        if(!first||!last)return;
+        const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+        const left=firstRect.left,right=lastRect.right;
+        spacer.style.width=Math.max(0,left-cueRect.left+(right-left-markWidth)/2)+'px';
     };
     document.querySelectorAll('.p81-example-cue[data-repeat-cue]').forEach(cue=>{
         const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor]');
         const mark=cue.querySelector('.p81-repeat-mark'),spacer=cue.querySelector('.p81-repeat-spacer');
-        if(cue.dataset.repeatCue==='2'){
-            const photo=anchor&&[...anchor.querySelectorAll('.target-word')].find(e=>e.textContent.includes('真'));
-            const photoText=photo&&[...photo.childNodes].find(n=>n.nodeType===Node.TEXT_NODE&&n.textContent.includes('真'));
-            const adjective=anchor&&[...anchor.querySelectorAll('.target-word')].find(e=>e.textContent.includes('上手'));
-            let adjectiveUnit=adjective;
-            while(adjectiveUnit&&adjectiveUnit.parentElement!==anchor)adjectiveUnit=adjectiveUnit.parentElement;
-            const slash=adjectiveUnit?.previousSibling;
-            if(photoText&&slash?.nodeType===Node.TEXT_NODE){
-                const charIndex=photoText.textContent.indexOf('真'),charRange=document.createRange();
-                charRange.setStart(photoText,charIndex);charRange.setEnd(photoText,charIndex+1);
-                const charRect=charRange.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-                spacer.style.width=Math.max(0,charRect.left-cueRect.left+(charRect.width-markWidth)/2)+'px';
-                const slashRange=document.createRange(),slashIndex=slash.textContent.indexOf('／');
-                if(slashIndex>=0){slashRange.setStart(slash,slashIndex);slashRange.setEnd(slash,slashIndex+1);const slashX=slashRange.getBoundingClientRect().left,markRect=mark.getBoundingClientRect();cue.querySelector('.p81-repeat-separator-spacer').style.width=Math.max(0,slashX-markRect.right)+'px';}
-            }
-        }else alignDitto(anchor,mark,anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,spacer);
+        alignDitto(anchor,mark,anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,spacer);
+        const separator=cue.querySelector('.p81-repeat-separator-spacer');
+        if(!separator||!anchor)return;
+        const adjective=[...anchor.querySelectorAll('.target-word')].at(-1);
+        let adjectiveUnit=adjective;
+        while(adjectiveUnit&&adjectiveUnit.parentElement!==anchor)adjectiveUnit=adjectiveUnit.parentElement;
+        const slash=adjectiveUnit?.previousSibling;
+        if(slash?.nodeType!==Node.TEXT_NODE)return;
+        const slashIndex=slash.textContent.indexOf('／');if(slashIndex<0)return;
+        const slashRange=document.createRange();slashRange.setStart(slash,slashIndex);slashRange.setEnd(slash,slashIndex+1);
+        const slashX=slashRange.getBoundingClientRect().left,markRect=mark.getBoundingClientRect();
+        separator.style.width=Math.max(0,slashX-markRect.right)+'px';
     });
     document.querySelectorAll('.p81-comparison-card').forEach(card=>{
         const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
-        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatAnchor,anchor?.dataset.repeatVerb,target?.querySelector('.p81-drill-repeat-spacer'));
+        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,target?.querySelector('.p81-drill-repeat-spacer'));
     });
     document.querySelectorAll('.p81-degree-example').forEach(ex=>{
         const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
