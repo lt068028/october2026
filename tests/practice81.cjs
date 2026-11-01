@@ -133,10 +133,42 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const row=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(2)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),other:a.matchesAnswer(r.text.replace(r.adjective==='good'?'上手':'苦手',r.adjective==='good'?'苦手':'上手'),r)};});
   check(row.valid,true,'ability selection accepted');check(row.other,false,'ability selection is required');check(row.text.includes(value==='good'?'上手':'苦手'),true,'ability model follows choice');
  }
- for(const adv of ['zenzen','amari','chotto','maamaa','totemo','sugoku']){
-  await page.locator('[data-choice="degree-0"]').selectOption(adv);
-  const out=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(3)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)};});
-  check(await page.locator('[data-choice="degree-0"]').evaluate((e,negative)=>getComputedStyle(e).color===getComputedStyle(document.querySelector(negative?'.p81-degree-point.degree-negative':'.p81-degree-point.degree-positive')).color,['zenzen','amari'].includes(adv)),true,'selected adverb shares guide color');check(out.valid,true,'selected degree accepted '+adv);check(out.opposite,false,'wrong polarity rejected '+adv);check(out.text.includes('じゃない'),['zenzen','amari'].includes(adv),'degree polarity '+adv);
+ // Dr4 activity selection locks Listen/Record until a choice exists, in both Autostop modes.
+ const actionIds=['washDish','discardThing','useSmartphone','cutHair','carryBag','beginStudy'];
+ for(const autostop of [true,false]){
+  const toggle=page.locator('#toggleRecordMode');
+  if(autostop)await toggle.check();else await toggle.uncheck();
+  const initial=await page.locator('#drill4 .p81-card').evaluateAll(cards=>cards.map(card=>{
+   const row=card.querySelector('tr[data-row]'),buttons=[...row.querySelectorAll('.recording-actions button')];
+   return {selected:row.querySelector('select').value,disabled:buttons.map(button=>button.disabled)};
+  }));
+  check(initial,Array(6).fill({selected:'',disabled:[true,true,true]}),'all Dr4 controls locked before selection; Autostop '+(autostop?'ON':'OFF'));
+ }
+ await page.locator('#toggleRecordMode').check();
+ for(let i=0;i<6;i++)await page.locator(`[data-choice="degree-${i}"]`).selectOption(actionIds[i]);
+ const selectedStates=await page.locator('#drill4 .p81-card').evaluateAll(cards=>cards.map(card=>{
+  const row=card.querySelector('tr[data-row]'),buttons=[...row.querySelectorAll('.recording-actions button')];
+  return {selected:row.querySelector('select').value,disabled:buttons.map(button=>button.disabled)};
+ }));
+ check(selectedStates,actionIds.map(id=>({selected:id,disabled:[false,false,true]})),'each selected Dr4 row unlocks only Listen/Record; Stop stays locked');
+ const uniqueOptions=await page.locator('#drill4 select').evaluateAll((selects,ids)=>selects.map((select,i)=>[...select.options].map(option=>option.value).filter(value=>ids.includes(value)&&value!==ids[i])),actionIds);
+ check(uniqueOptions,Array(6).fill([]),'an action selected in one row is excluded from every other row');
+ const polarity=await page.evaluate(()=>audit81.rowsFor(3).map(([r])=>({adverb:r.adverb,valid:audit81.matchesAnswer(r.text,r),opposite:audit81.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)})));
+ check(polarity.map(x=>x.adverb),['zenzen','amari','chotto','maamaa','totemo','sugoku'],'six fixed Dr4 degree cues');
+ check(polarity.map(x=>[x.valid,x.opposite]),Array(6).fill([true,false]),'Dr4 model polarity matches each degree cue');
+ await page.locator('[data-choice="degree-2"]').selectOption('');
+ const cleared=await page.locator('#drill4 .p81-card').evaluateAll(cards=>cards.map(card=>{
+  const row=card.querySelector('tr[data-row]'),buttons=[...row.querySelectorAll('.recording-actions button')];
+  return {selected:row.querySelector('select').value,disabled:buttons.map(button=>button.disabled)};
+ }));
+ check(cleared,[{selected:'washDish',disabled:[false,false,true]},{selected:'discardThing',disabled:[false,false,true]},{selected:'',disabled:[true,true,true]},{selected:'cutHair',disabled:[false,false,true]},{selected:'carryBag',disabled:[false,false,true]},{selected:'beginStudy',disabled:[false,false,true]}],'clearing one Dr4 selection relocks only that row');
+ check(await page.locator('[data-choice="degree-2"] option[value="useSmartphone"]').count(),1,'cleared action becomes available again');
+ await page.locator('[data-choice="degree-2"]').selectOption('useSmartphone');
+ const reselected=await page.locator('#drill4 .p81-card').evaluateAll(cards=>cards.every(card=>[...card.querySelectorAll('.recording-actions button')].slice(0,2).every(button=>!button.disabled)));
+ check(reselected,true,'all six Dr4 rows unlock after unique activity selection');
+ for(let i=0;i<6;i++){
+  const row=await page.evaluate(i=>{const a=audit81,r=a.rowsFor(3)[i][0];return {text:r.text,valid:a.matchesAnswer(r.text,r)};},i);
+  check(row.valid,true,'selected Dr4 action generates a valid model '+i);
  }
  await page.locator('[data-response="self-3-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[3][1];return a.matchesAnswer('はい、洗濯するのがきらいです',r);});check(variants,true,'する noun full reply variant');
