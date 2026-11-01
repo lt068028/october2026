@@ -1434,7 +1434,7 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=node('div','p21-drill-picture p2x-picture p23-city-picture'+(example?' p2x-example-picture':''));
         picture.classList.toggle('p23-indoor-picture',indoor);picture.classList.toggle('p23-practice-picture',!example);
         const context=node('p','p21-photo-context p2x-speaker-guide');
-        if(call){context.dataset.prompt='X is calling Y and talking about Z.';context.dataset.playingLabel='X is calling Y and talking about Z.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
+        if(call){context.dataset.prompt='X ↔ Y';context.dataset.playingLabel='X and Y are talking about Z.';context.classList.add('p23-call-note');picture.classList.add('p23-call-example');}
         SpeakerGuide.init(context);
         if(call)context.prepend(phoneIcon());
         if(example&&!call){const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','X ↔ Y'));picture.append(link);}
@@ -1494,8 +1494,9 @@ function practice2ShowNotice(resultSpan, message) {
             {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
-            const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
-            b.dataset.speaker=who;b.dataset.zone=o.zone;audio.append(node('span','','👉️'),b);return audio;
+            const audio=node('span','p23-example-audio');
+            audio.append(node('span','','👉️'),node('span','p23-cue-hear','きく'));
+            return audio;
         }
         const displayModel=({text,object:o})=>modelText(()=>speechStyle==='formal'?text().replace(/？/g,'。'):text(),o,true);
         sentences.forEach(sentence=>{
@@ -1504,7 +1505,26 @@ function practice2ShowNotice(resultSpan, message) {
             line.append(node('strong','p23-model-speaker',label??speakerName(who)+':'),introduction);
             if(cue){const prompt=node('span','p23-example-cue');prompt.innerHTML=cue();const answer=node('span','p23-model-answer');answer.append(displayModel(sentence));line.append(prompt,exampleCueAudio(sentence),answer);}
             list.append(line);
-        });e1.append(list);describeContainer.append(e1);ConversationDisplay.format();
+        });
+        const dialogueAudio=node('span','p23-dialogue-audio');
+        const dialogueButton=button('🔊きく','Play the full X and Y dialogue in sequence.',()=>{
+            const playback=sentences.filter(sentence=>sentence.text);
+            if(!playback.length)return;
+            let index=0;
+            setPlayingStateMultiple([dialogueButton],'再生中…');
+            const playNext=()=>{
+                if(index>=playback.length){stopAllPlayback();return;}
+                const sentence=playback[index++];
+                selectEx(sentence.who,sentence.object.zone);
+                const text=speechStyle==='formal'?sentence.text().replace(/？/g,'。'):sentence.text();
+                speakText(practice2SpeechText(text),0.75,playNext);
+            };
+            playNext();
+        });
+        dialogueButton.classList.add('p23-dialogue-play-button');
+        dialogueAudio.append(dialogueButton);
+        header.append(dialogueAudio);
+        e1.append(list);describeContainer.append(e1);ConversationDisplay.format();
         const unknownOffset={x:0,y:0};
         function alignExampleCues() {
             if(!list.isConnected)return;
@@ -1514,8 +1534,8 @@ function practice2ShowNotice(resultSpan, message) {
             });
             const gap=parseFloat(getComputedStyle(list).columnGap)||0;
             const role=Math.max(...[...list.querySelectorAll('.p23-model-speaker')].map(e=>e.getBoundingClientRect().width));
-            const audio=list.querySelector('.p23-example-audio').getBoundingClientRect().width;
-            const available=list.clientWidth-role-audio-gap*3;
+            const audio=0;
+            const available=list.clientWidth-role-audio-gap*2;
             const value=Math.max(0,Math.min(width,available))+'px';
             if(list.style.getPropertyValue('--p23-example-cue-width')!==value)list.style.setProperty('--p23-example-cue-width',value);
             // The SVG cloud extends beyond its label: align its visible contour.
