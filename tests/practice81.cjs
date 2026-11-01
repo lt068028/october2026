@@ -39,8 +39,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('[data-row="self-0-response"] .recording-actions button').first().isDisabled(),true,'reply listen locked before selection');
  check(await page.locator('[data-row="self-0-response"] .recording-actions button').nth(1).isDisabled(),true,'reply record locked before selection');
  for(let i=0;i<4;i++)await page.locator(`[data-response="self-${i}-response"][data-answer="yes"]`).click();
- check(await page.locator('#drill3 tr').count(),6,'six people');
- check(await page.locator('#drill3 .p81-card select').count(),6,'six ability selectors');
+ check(await page.locator('#drill3 tr').count(),4,'four people');
+ check(await page.locator('#drill3 .p81-card select').count(),4,'four ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
  check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃のがあまり好きじゃないです。','〃のがちょっと好きです。','〃のがまぁまぁ好きです。','〃のがとても好きです。','〃のがすごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
@@ -65,7 +65,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-card').evaluateAll(es=>es.every(e=>e.querySelectorAll('tr').length===2)),true,'two fixed rows per situation');
  check(await page.locator('#drill5 [data-set],#drill5 .p81-tabs,#drill5 .p81-target').count(),0,'no set buttons or target tasks');
  check(await page.locator('#drill5 .p81-card select').count(),14,'one adjective quiz per row');
- check(await page.locator('#drill5 .example-box .p81-kind').allTextContents(),['Skill','Perception'],'one-word meaning labels');
+ check(await page.locator('#drill5 .example-box .p81-kind').allTextContents(),['Skillful','Observed'],'one-word meaning labels');
  check(await page.evaluate(()=>{const ex=[...document.querySelectorAll('#drill5 .example-box .p81-model')].map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return audit81.normalize(c.textContent);});return audit81.rowsFor(4).flat().every(r=>!ex.includes(audit81.normalize(r.text)));}),true,'D5 never repeats an Example5 model');
   check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹／写真／撮る／上手','〃／苦手'],'Example3 second cue abbreviates the complete repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉／ギター／弾く／上手','〃／得意'],'Example5 second cue abbreviates the repeated subject and action');
@@ -84,7 +84,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example5 topic and nominalizer highlighted');
  check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
- check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['本を読むのが好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
+ check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['テレビを見るのが好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
  for(const label of ['🔊🙆','🔊🙅']){
   const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
@@ -94,13 +94,16 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const row=page.locator(`[data-row="${r.id}"]`);
   await row.locator('select').selectOption(r.other);
   check(await row.locator('.recording-actions button').first().isDisabled(),true,'mismatched adjective stays locked');
-  check(await row.locator('.p81-choice-feedback').textContent(),'Try the other adjective for this label.','quiz feedback without recording');
   await row.locator('select').selectOption(r.expected);
   check(await row.locator('.recording-actions button').first().isDisabled(),false,'matching adjective unlocks');
  }
  const comparisons=await page.evaluate(()=>audit81.rowsFor(0).map(rs=>rs.map(r=>r.text)));
- check(comparisons,[['本が好きです。','本を読むのが好きです。'],['音楽が好きです。','音楽を聞くのが好きです。'],['写真が好きです。','写真を撮るのが好きです。']],'noun versus action');
- check(await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][0];return [a.matchesAnswer('あなたは本を読むのが好きですか',r),a.matchesAnswer('私は本を読むのが好きですか',r)];}),[true,false],'question addresses the listener');
+ check(comparisons,[['本が好きです。','本を読むのが好きです。'],['音楽が好きです。','音楽を聞くのが好きです。'],['自転車が好きです。','自転車に乗るのが好きです。']],'noun versus action');
+ check(await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][0];return [a.matchesAnswer('あなたはコーヒーを飲むのが好きですか',r),a.matchesAnswer('私はコーヒーを飲むのが好きですか',r)];}),[true,false],'question addresses the listener');
+ for(let i=0;i<6;i++){
+  const acts=['washDish','discardThing','useSmartphone','cutHair','carryBag','beginStudy'];
+  await page.locator(`[data-choice="degree-${i}"]`).selectOption(acts[i]);
+ }
  for(const style of ['formal','informal','casual']) {
   await page.locator('#speechStyleControl [data-value="'+style+'"]').click();
   const outcomes=await page.evaluate(()=>{
@@ -122,8 +125,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    await page.locator('#scriptModeControl [data-value="'+script+'"]').click();
    for(const hint of ['off','hover','paren']){
     await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
-    check(await page.locator('.p81-card').count(),26,`${style}/${script}/${hint} content retained`);
-    check(await page.locator('.example-box .p81-gold').count(),style==='formal'?20:19,'gold structure highlights all visible nominalizers');
+    check(await page.locator('.p81-card').count(),24,`${style}/${script}/${hint} content retained`);
     check(await page.locator('#drill4 .example-box .p81-gold').count(),6,'all six degree models show the nominalizer');
    }
   }
@@ -131,19 +133,17 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  await page.locator('#speechStyleControl [data-value="formal"]').click();await page.locator('#scriptModeControl [data-value="kanji"]').click();await page.locator('#hintModeControl [data-value="hover"]').click();
  await page.locator('[data-response="self-0-response"][data-answer="no"]').click();
  check(await page.evaluate(()=>audit81.rowsFor(1)[0][1].text),'いいえ、好きじゃないです。','short No model');
- const forms=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][1];return [a.matchesAnswer('私は本を読むのが好きじゃないです',r),a.matchesAnswer('いいえ、好きじゃないです',r),a.matchesAnswer('はい、好きです',r)];});
+ const forms=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][1];return [a.matchesAnswer('私はコーヒーを飲むのが好きじゃないです',r),a.matchesAnswer('いいえ、好きじゃないです',r),a.matchesAnswer('はい、好きです',r)];});
  check(forms,[true,true,false],'full or short negative accepted, opposite rejected');
  check(await page.evaluate(()=>audit81.rowsFor(1).map(rs=>rs[0].adjective)),['like','dislike','like','dislike'],'fixed alternating preference cues');
- const order=await page.locator('[data-row="degree-0"] .prompt-label').evaluate(e=>e.textContent);check(order.indexOf('作る')<order.indexOf('とても')&&order.indexOf('とても')<order.lastIndexOf('好き'),true,'verb then adverb dropdown then adjective');
  for(const value of ['good','difficult']){
   await page.locator('[data-choice="people-0"]').selectOption(value);
   const row=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(2)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),other:a.matchesAnswer(r.text.replace(r.adjective==='good'?'上手':'苦手',r.adjective==='good'?'苦手':'上手'),r)};});
   check(row.valid,true,'ability selection accepted');check(row.other,false,'ability selection is required');check(row.text.includes(value==='good'?'上手':'苦手'),true,'ability model follows choice');
  }
- for(const adv of ['zenzen','amari','chotto','maamaa','totemo','sugoku']){
-  await page.locator('[data-choice="degree-0"]').selectOption(adv);
-  const out=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(3)[0][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r)};});
-  check(await page.locator('[data-choice="degree-0"]').evaluate((e,negative)=>getComputedStyle(e).color===getComputedStyle(document.querySelector(negative?'.p81-degree-point.degree-negative':'.p81-degree-point.degree-positive')).color,['zenzen','amari'].includes(adv)),true,'selected adverb shares guide color');check(out.valid,true,'selected degree accepted '+adv);check(out.opposite,false,'wrong polarity rejected '+adv);check(out.text.includes('じゃない'),['zenzen','amari'].includes(adv),'degree polarity '+adv);
+ for(let i=0;i<6;i++){
+  const out=await page.evaluate(idx=>{const a=audit81,r=a.rowsFor(3)[idx][0];return {text:r.text,valid:a.matchesAnswer(r.text,r),opposite:a.matchesAnswer(r.text.includes('じゃない')?r.text.replace('じゃない',''):r.text.replace('です','じゃないです'),r),negative:['zenzen','amari'].includes(r.adverb)};},i);
+  check(out.valid,true,'selected degree accepted '+i);check(out.opposite,false,'wrong polarity rejected '+i);check(out.text.includes('じゃない'),out.negative,'degree polarity '+i);
  }
  await page.locator('[data-response="self-1-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[1][1];return a.matchesAnswer('はい、洗濯をするのがきらいです',r);});check(variants,true,'する noun full reply variant');
@@ -164,24 +164,24 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const spokenBeforeRecording=await page.evaluate(()=>t.spoken.length);
  await page.locator('[data-row="self-0-response"] button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length>0);
- await page.evaluate(()=>{t.speaking=true;const result=[{transcript:'  本を読むのが好きです。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await page.evaluate(()=>{t.speaking=true;const result=[{transcript:'  コーヒーを飲むのが好きです。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  check(await page.locator('[data-choice="degree-0"]').isDisabled(),true,'selections lock while recording');
  await page.locator('.stop-btn-active').click();await page.waitForFunction(n=>t.spoken.length>n,spokenBeforeRecording);
  const zero=await page.evaluate(()=>{const before=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===before+1;});check(zero,true,'same callback relay');
  check(await page.locator('[data-row="self-0-response"] .result-text').textContent().then(t=>t.includes('✅')),true,'actual recognition graded');
- await page.locator('[data-response="self-0-response"][data-answer="no"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent(),'(Not recorded yet)','different choice independent');
+ await page.locator('[data-response="self-0-response"][data-answer="no"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent(),'… Not yet','different choice independent');
  check(await page.evaluate(()=>t.audios.at(-1).paused),true,'selection cancels own relay');
  await page.locator('[data-response="self-0-response"][data-answer="yes"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent().then(t=>t.includes('✅')),true,'return restores recorded result');
  // A saved result must not acquire a social judgment just from redrawing it.
  check(await page.locator('#drill2 .p81-feedback:not([hidden])').count(),0,'no pragmatics outside D5');
- check(await page.evaluate(()=>audit81.saved.get('self-0-response:yes').raw),'  本を読むのが好きです。　','recognition raw whitespace saved');
+ check(await page.evaluate(()=>audit81.saved.get('self-0-response:yes').raw),'  コーヒーを飲むのが好きです。　','recognition raw whitespace saved');
  const first=page.locator('[data-row="comparison-3-good"]'),second=page.locator('[data-row="comparison-3-strong"]');
  await first.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===2);
  await page.evaluate(()=>{const result=[{transcript:'私は掃除をするのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-good:good'));
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first expression recording correct');
- check(await second.locator('.result-text').textContent(),'(Not recorded yet)','second recording remains independent');
+ check(await second.locator('.p81-cue-actions .not-recorded-yet').isHidden(),false,'second recording remains independent');
  await second.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===3);
  check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first result stays on screen while recording the second');

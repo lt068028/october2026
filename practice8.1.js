@@ -189,7 +189,7 @@ comparisons.forEach(spec=>{
 });
 const sections=[
     {title:'Drill 1: Nounが好き／Verbのが好き',instruction:'💡Say if you like the thing or activity.'},
-    {title:'Drill 2: Verbのが好き／きらい',instruction:'💡Ask, choose Yes/No, then answer.'},
+    {title:'Drill 2: Verbのが好き／きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
     {title:'Drill 3: Verbのが上手／苦手',instruction:'💡Choose 上手 or 苦手, then record.'},
     {title:'Drill 4: Degrees of liking',instruction:'💡Select a different action for each line, then record.'},
     {title:'Drill 5: How Do These Expressions Differ?',instruction:'💡Choose the best adjective for each label, then record.'}

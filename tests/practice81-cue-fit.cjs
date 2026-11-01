@@ -25,8 +25,8 @@ for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']
  await page.locator('#scriptModeControl [data-value="'+mode+'"]').click();await page.locator('#hintModeControl [data-value="'+hint+'"]').click();
  for(const width of [700,900,1100,1440,1920]){await page.setViewportSize({width,height:1000});await page.evaluate(()=>new Promise(requestAnimationFrame));
  const fit=await page.locator('#drill5').evaluate(group=>{let right=0;for(const c of group.querySelectorAll('.p81-card .prompt-label')){const w=document.createTreeWalker(c,NodeFilter.SHOW_TEXT);while(w.nextNode()){const t=w.currentNode;if(!t.textContent.trim()||t.parentElement.closest('.tooltip-tip,.custom-tip-box,select,button'))continue;const r=document.createRange();r.selectNodeContents(t);for(const b of r.getClientRects())right=Math.max(right,b.right);}for(const e of c.querySelectorAll('select,button'))right=Math.max(right,e.getBoundingClientRect().right);}const xs=[...group.querySelectorAll('.recording-actions')].map(e=>e.getBoundingClientRect().left);return {gap:Math.min(...xs)-right,spread:Math.max(...xs)-Math.min(...xs)};});
- const starts=await page.locator('#drill5 .p81-card .p81-cue-words').evaluateAll(es=>es.map(e=>e.getBoundingClientRect().left));
- check(Math.max(...starts)-Math.min(...starts)<1,true,'Japanese cue starts after shared English label column');
+ const d5SelectDeltas=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const selects=[...card.querySelectorAll('select.p81-select')].map(s=>s.getBoundingClientRect().left);return Math.abs(selects[0]-selects[1]);}));
+ check(d5SelectDeltas.every(x=>x<1),true,'D5 paired Adj selects align at exact same horizontal position');
  if(width===1440){
   const deltas=await page.locator('#drill5 tr').evaluateAll(rows=>rows.map(row=>{
    const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};
