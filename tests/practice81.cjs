@@ -147,7 +147,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  }
  await page.locator('[data-response="self-1-response"][data-answer="yes"]').click();
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[1][1];return a.matchesAnswer('はい、洗濯をするのがきらいです',r);});check(variants,true,'する noun full reply variant');
- const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['strong','good'],['good','strong'],['bad','difficult'],['good','strong']];
+ const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['strong','good'],['good','strong'],['difficult','bad'],['good','strong']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
  check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('掃除するのが得意です。',d5[3][0])];}),['父は、料理するのが上手です。','私は、掃除するのが得意です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){

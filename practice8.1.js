@@ -175,9 +175,9 @@ const comparisons=[
   good:'The speaker directly praises a skill they have observed.',
   strong:'The speaker infers that the subject feels confident in the activity.'
  }},
- {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['bad','difficult'],labels:['Blunt','Tactful'],scenario:'Talking about your older brother after hearing him sing karaoke.',impressions:{
-  bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.',
-  difficult:'Describing the activity as difficult for the subject sounds gentler.'
+ {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['difficult','bad'],labels:['Tactful','Blunt'],scenario:'Talking about your older brother after hearing him sing karaoke.',impressions:{
+  difficult:'Describing the activity as difficult for the subject sounds gentler.',
+  bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.'
  }},
  {phase:'Impression',subject:'japaneseTeacher',verb:'teach',particle:'',options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
   good:'Evaluating a superior’s skill from below sounds presumptuous.',

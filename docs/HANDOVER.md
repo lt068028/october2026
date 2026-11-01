@@ -1,5 +1,15 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のD5-6を「1行目：Tactful → 苦手、2行目：Blunt → 下手」へ並び替え完了（7問全体の並び順は現状維持）。開始時HEAD `ecec828`。
+- 変更：
+  1. **D5-6の順序変更**：1行目を `Tactful`（`兄は、カラオケで歌うのが苦手です。`）、2行目を `Blunt`（`兄は、カラオケで歌うのが下手です。`）へ変更（Notice内の並びも `苦手` → `下手` に連動）。
+- 変更ファイル：practice8.1.js、practice8.1.html、docs/PRACTICE8_SPEC.md、tests/practice81.cjs、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・データ検証合格。
+- 実機確認状況：D5-3・D5-4のNatural順序変更を含む前回までの修正事項は全て実機確認完了。今回変更したD5-6の行順序のみ実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `ecec828`）
+
 - 状態：Practice 8.1のD5-3を「1行目：Natural → 苦手、2行目：Unnatural → 下手」、D5-4を「1行目：Natural → 得意、2行目：Boastful → 上手」へ並び替え完了。開始時HEAD `beaaba0`。
 - 変更：
   1. **D5-3の順序変更**：1行目を `Natural`（`私は、早く起きるのが苦手です。`）、2行目を `Unnatural`（`私は、早く起きるのが下手です。`）へ変更（Notice内の並びも `苦手` → `下手` に連動）。

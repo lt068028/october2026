@@ -84,8 +84,8 @@ Adj選択時は正誤メッセージを出さない。各行の2択プルダウ�
 |  |  | Boastful → 上手 | Praising the speaker’s own skill directly can sound boastful. |
 | 5 Impression | 留学生の友達は漢字を書くのが…：Talking about an international-student friend after watching them write kanji. | Praise → 上手 | The speaker directly praises a skill they have observed. |
 |  |  | Observed → 得意 | The speaker infers that the subject feels confident in the activity. |
-| 6 Impression | 兄はカラオケで歌うのが…：Talking about your older brother after hearing him sing karaoke. | Blunt → 下手 | Directly judging the subject’s lack of skill can sound blunt or hurtful. |
-|  |  | Tactful → 苦手 | Describing the activity as difficult for the subject sounds gentler. |
+| 6 Impression | 兄はカラオケで歌うのが…：Talking about your older brother after hearing him sing karaoke. | Tactful → 苦手 | Describing the activity as difficult for the subject sounds gentler. |
+|  |  | Blunt → 下手 | Directly judging the subject’s lack of skill can sound blunt or hurtful. |
 | 7 Impression | 日本語の先生は教えるのが…：A beginning student talking about their Japanese teacher. | Presumptuous → 上手 | Evaluating a superior’s skill from below sounds presumptuous. |
 |  |  | Overstepping → 得意 | Assuming what a superior considers their personal strength also sounds overstepping. |
 
