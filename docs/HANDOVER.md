@@ -1,5 +1,16 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
+- 状態：Practice 8.1のD3-1をGenki L4既出・L6漢字配当の「休む」（`クラスメート／休む`、モデル：`クラスメートは、休むのが上手です。`）へ変更し、仕様書（AGENTS.md・PROJECT_SPEC.md・PRACTICE8_SPEC.md）に漢字表記のGenki仕様準拠徹底を明記完了。開始時HEAD `43c9a61`（仕様更新コミット `a7bf0c9`）。
+- 変更：
+  1. **漢字表記のGenki準拠徹底を仕様明記**：`AGENTS.md`、`docs/PROJECT_SPEC.md`、`docs/PRACTICE8_SPEC.md` に、語彙の初出Lessonだけでなく `With漢字` モードでの漢字表記もGenkiの語彙欄・漢字配当仕様に厳密に合わせることを明記。
+  2. **D3-1を「クラスメート／休む」へ変更**：L9初出の「おどる」から、L4初出・L6漢字配当・ページ内重複なしの `W("rest","休む","やすむ","yasumu","to rest")` に変更（キュー：`クラスメート／休む`、モデル：`クラスメートは、休むのが上手です。`／`苦手です。`）。
+- 変更ファイル：AGENTS.md、docs/PROJECT_SPEC.md、practice8.1.js、practice8.1.html、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` およびPythonによる構文・データ検証合格。
+- 実機確認状況：D4「カバンを持つ」、D5-7「日本語の先生／教える」、D5 Notice（右側ボックス＋内部テキスト左詰め・黄色系見出し）、D5二択プルダウンのランダム順など従来分は全て実機確認完了。今回変更したD3-1「クラスメート／休む」のみ実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `43c9a61`）
+
 - 状態：Practice 8.1のD3-1「おどる」をひらがな表記（`W("dance","おどる","おどる","odoru","to dance")`、STT変換対応）へ変更完了。開始時HEAD `6635c97`。
 - 変更：Genki漢字配当外のため、D3-1の「踊る」を漢字・ひらがな両モードで「おどる」表示（`クラスメート／おどる`、モデル：`クラスメートは、おどるのが上手です。`）に統一し、音声認識で「踊る」が返った場合も「おどる」として判定・表示するよう対応。
 - 変更ファイル：practice8.1.js、practice8.1.html、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。

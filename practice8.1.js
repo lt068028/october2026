@@ -27,7 +27,7 @@ W("buy","買う","かう","kau","to buy");
 W("guitar","ギター","ギター","gitā","guitar");
 W("play","弾く","ひく","hiku","to play an instrument");
 W("teach","教える","おしえる","oshieru","to teach");
-W("dance","おどる","おどる","odoru","to dance");
+W("rest","休む","やすむ","yasumu","to rest");
 W("letter","手紙","てがみ","tegami","letter");
 W("grammar","文法","ぶんぽう","bunpō","grammar");
 W("question","質問","しつもん","shitsumon","question");
@@ -117,7 +117,7 @@ W('flower','花','はな','hana','flower');
 W('grow','育てる','そだてる','sodateru','to grow');
 W('early','早く','はやく','hayaku','early');
 W('wake','起きる','おきる','okiru','to get up');
-const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['掃除する','そうじする'],['洗濯する','せんたくする'],['踊る','おどる']].sort((a,b)=>b[0].length-a[0].length);
+const dictionary=[...Object.values(words).map(w=>[w.kanji,w.hira]),['まあまあ','まぁまぁ'],['子供','こども'],['嫌い','きらい'],['友だち','ともだち'],['私','わたし'],['料理する','りょうりする'],['掃除する','そうじする'],['洗濯する','せんたくする']].sort((a,b)=>b[0].length-a[0].length);
 dictionary.forEach(([k,h])=>STTDisplay.register(k,h));
 function hira(text) {
     let value=String(text).normalize('NFKC');
@@ -131,7 +131,7 @@ const action=(object,verb,particle=verb==='do'?'':'を')=>({object,verb,particle
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
 const selfActions=[action('coffee','drink'),action('laundry','do'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'classmate',verb:'dance',particle:'',adjective:'good'},
+    {subject:'classmate',verb:'rest',particle:'',adjective:'good'},
     {subject:'grandmother',...action('sea','swim','で'),adjective:'good'},
     {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
@@ -740,8 +740,7 @@ function showResult(key,notice='') {
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
     if(value?.raw) {
-        let displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.1'});
-        if(v.r.verb==='dance')displayed=displayed.replace(/踊る/g,'おどる');
+        const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.1'});
         if(value.correct)v.result.append(document.createTextNode(displayed+' ✅ '));
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
