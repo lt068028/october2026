@@ -58,23 +58,23 @@ for(const [id,v]of Object.entries(verbs)){
 formReadings.forEach(e=>STTDisplay.register(...e));
 const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
 [['聴く','きく'],['訊く','きく']].forEach(e=>STTDisplay.register(...e));
-function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);return value;}
+function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);for(const w of Object.values(words).sort((a,b)=>b.kanji.length-a.kanji.length)){if(w.kanji!==w.hira)value=value.split(w.kanji).join(w.hira);}return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[{title:'Drill 1: Subject Questions (Verb)',instruction:'💡Make a subject question. Compare a question word alone with a specific noun.'}];
 const subjectSets=[
  {q1:'だれがてつだいますか。',q2:'どの学生がてつだいますか。',a:'学生Xがてつだいます。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['学生']},
  {q1:'だれがりょうりしますか。',q2:'どのクラスメートがりょうりしますか。',a:'クラスメートXがりょうりします。',c1:['だれ','りょうりする'],c2:['どの','クラスメート','りょうりする'],ca:['クラスメート']},
- {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'犬がこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['犬','こうえん','いる']},
+ {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'いぬがこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['いぬ','こうえん','いる']},
  {q1:'何がキッチンにありますか。',q2:'どのやさいがキッチンにありますか。',a:'トマトがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','やさい','キッチン','ある'],ca:['トマト','キッチン','ある']}
 ];
 const exSets=[
  {q1:'だれがおしえますか。',q2:'どの先生がおしえますか。',a:'田中先生がおしえます。',c1:['だれ','おしえる'],c2:['どの','先生','おしえる'],ca:['先生']},
  {q1:'だれがてつだいますか。',q2:'どの学生がてつだいますか。',a:'学生Xがてつだいます。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['学生']},
- {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'犬がこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['犬','こうえん','いる']},
+ {q1:'何がこうえんにいますか。',q2:'どのペットがこうえんにいますか。',a:'いぬがこうえんにいます。',c1:['何','こうえん','いる'],c2:['どの','ペット','こうえん','いる'],ca:['いぬ','こうえん','いる']},
  {q1:'何がキッチンにありますか。',q2:'どのくだものがキッチンにありますか。',a:'トマトがキッチンにあります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','キッチン','ある'],ca:['トマト','キッチン','ある']}
 ];
-[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['犬','dog'],['キッチン','kitchen'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','犬':'いぬ','キッチン':'キッチン','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか'})[kanji],'',meaning));
+[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
 function sentenceFor(s){return s.text||'';}
