@@ -3337,7 +3337,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .practice81-page .p81-meaning-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
 .practice81-page .p81-phase { font-weight: 700; margin: 16px 0 8px; }
-.practice81-page .p81-nuance-note { display: block; box-sizing: border-box; width: 50%; margin: 10px auto 4px 0; font-size: calc(14px * var(--practice12-scale)); line-height: 1.6; white-space: normal; text-align: left; }
+.practice81-page .p81-nuance-note { display: block; box-sizing: border-box; width: 50%; margin: 10px 0 4px auto; font-size: calc(14px * var(--practice12-scale)); line-height: 1.6; white-space: normal; text-align: left; }
 .practice81-page .p81-nuance-note-title { margin-bottom: 2px; color: #ca8a04; font-size: calc(12px * var(--practice12-scale)); font-weight: 700; text-align: left; }
 .practice81-page .p81-nuance-note-text { color: #7c3aed; font-weight: 700; text-align: left; overflow-wrap: anywhere; }
 .practice81-page .p81-nuance-adjective { color: var(--text-primary); }

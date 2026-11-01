@@ -6,7 +6,7 @@ const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
-const views=new Map(),saved=new Map(),choices=new Map();
+const views=new Map(),saved=new Map(),choices=new Map(),comparisonOptionOrder=new Map();
 const words={};
 function W(id,kanji,hira,romaji,meaning) {
     words[id]={kanji,hira,romaji,meaning};
@@ -46,7 +46,7 @@ W("smartphone","スマホ","スマホ","sumaho","smartphone");
 W("hair","髪","かみ","kami","hair");
 W("bag","カバン","かばん","kaban","bag");
 W("luggage","荷物","にもつ","nimotsu","luggage");
-W("carry","持っていく","もっていく","motteiku","to take along");
+W("carry","持つ","もつ","motsu","to hold; to carry");
 W("homework","宿題","しゅくだい","shukudai","homework");
 W("music","音楽","おんがく","ongaku","music");
 W("photo","写真","しゃしん","shashin","photograph");
@@ -768,7 +768,12 @@ function addSelect(cue,r,key) {
     const isActivity=r.selectKind==='activity',activity=choices.get(r.id)||'';
     const usedActivities=new Set(degreeLevels.map((_,i)=>choices.get(`degree-${i}`)).filter(Boolean));
     const activityOptions=degreeActions.filter(a=>!usedActivities.has(a.actionId)||a.actionId===activity);
-    const ids=isActivity?activityOptions.map(a=>a.actionId):r.selectKind==='comparison'?r.options:r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
+    if(r.selectKind==='comparison'&&!comparisonOptionOrder.has(r.id)){
+        const opts=[...r.options];
+        if(Math.random()<0.5)opts.reverse();
+        comparisonOptionOrder.set(r.id,opts);
+    }
+    const ids=isActivity?activityOptions.map(a=>a.actionId):r.selectKind==='comparison'?comparisonOptionOrder.get(r.id):r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
     select.setAttribute('aria-label',isActivity?'Select':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
     if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'— Adj —');empty.value='';select.append(empty);}
