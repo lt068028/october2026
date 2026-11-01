@@ -1,6 +1,14 @@
 ## 現在のリレー状態（2026-11-01 / Europe/Vienna / LT）
 
-- 状態：Practice 8.1のDrill 2タイトルを `Drill 2: Verbのが好き／きらい？` へ変更し、全Drill×3文体×2表記モード（計918項目）の内部正誤判定ロジック検証および回帰テスト（`tests/practice81.cjs`・`tests/practice81-cue-fit.cjs`）・仕様書（`docs/PRACTICE8_SPEC.md`）の最新同期を完了。開始時HEAD `899f50a`。
+- 状態：内部ロジックテストの実行タイミングに関する継続ルール（ユーザーから「このページは完了だ」の一言があった後に各ページ1度だけ実行し、途中の小作業での反復テストによる浪費を回避する規則）を `AGENTS.md` および `docs/RELAY_WORKFLOW.md` に登録完了。開始時HEAD `5053d36`。
+- 変更：
+  1. **内部ロジックテスト実行条件のルール化**：`AGENTS.md`（第3節）および `docs/RELAY_WORKFLOW.md`（第2節）に、通常の小作業では最小限の差分・構文チェックのみを行い、包括的な内部ロジックテストはユーザーの「このページは完了だ」という宣言後に各ページ1度だけ行うことを明記。
+- 変更ファイル：AGENTS.md、docs/RELAY_WORKFLOW.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：Practice 8.1の実装・内部ロジックテスト完了（Drill 2タイトル `Drill 2: Verbのが好き／きらい？` を反映済み）。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `5053d36`）
 - 変更：
   1. **Drill 2タイトルの変更**：`sections[1].title` を `Drill 2: Verbのが好き／きらい？` に変更し、疑問文の練習であることを明示。
   2. **内部ロジック全件検証と回帰テスト・仕様書の同期**：D1〜D5全行・3文体・2表記モード・許容文・不正解文の計918項目をPythonで機械検証して全項目合格を確認し、`tests/practice81.cjs`、`tests/practice81-cue-fit.cjs`、`docs/PRACTICE8_SPEC.md` の古い期待値を現行仕様へ同期。
