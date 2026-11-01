@@ -98,7 +98,7 @@ function makeKindBadge(kind){
 function rowsFor(si){
  if(si!==0)return [];
  return d1Sets.flatMap((setDef,setIdx)=>setDef.items.map((s,i)=>{
-  const globalIndex=offset+i;
+  const globalIndex=d1Sets.slice(0,setIdx).reduce((count,prior)=>count+prior.items.length,0)+i;
   return [
    makeRow('d1-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
    makeRow('d1-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
