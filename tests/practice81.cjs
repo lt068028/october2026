@@ -43,8 +43,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill3 .p81-card select').count(),6,'six ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
- check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃 あまり好きじゃないです。','〃 ちょっと好きです。','〃 まあまあ好きです。','〃 とても好きです。','〃 すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks');
- check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','〃／あまり／好き','〃／ちょっと／好き','〃／まあまあ／好き','〃／とても／好き','〃／すごく／好き'],'only the first degree cue repeats the common action');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃あまり好きじゃないです。','〃ちょっと好きです。','〃まぁまぁ好きです。','〃とても好きです。','〃すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks');
+ check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','〃あまり／好き','〃ちょっと／好き','〃まぁまぁ／好き','〃とても／好き','〃すごく／好き'],'only the first degree cue repeats the common action');
  check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作るのが'),'ditto marks retain the omitted meaning for accessibility');
  for(const style of ['formal','informal','casual'])for(const script of ['kanji','hiragana']){
   await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
@@ -54,7 +54,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   for(let i=0;i<6;i++){
    await page.locator('#drill4 .example-box button').nth(i).click();
    const ending=i<2?(style==='formal'?'じゃないです。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
-   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが'+['ぜんぜん','あまり','ちょっと','まあまあ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
+   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが'+['ぜんぜん','あまり','ちょっと','まぁまぁ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
    await page.evaluate(()=>t.spoken.at(-1).onend());
   }
  }
@@ -70,6 +70,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹／写真／撮る／上手','〃／苦手'],'Example3 second cue abbreviates the complete repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉／ギター／弾く／上手','〃／得意'],'Example5 second cue abbreviates the repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉はギターを弾くのが上手です。','〃のが得意です。'],'Example5 second model retains のが after ditto');
+  check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は写真を撮るのが上手です。','〃苦手です。'],'Example3 second model abbreviates the repeated phrase');
 
  check(await page.locator('#drill5 .p81-impression-choice').count(),0,'impression selection replaced by fixed row labels');
  check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>e.disabled)),true,'model and recording wait for matching adjective');
@@ -212,6 +213,11 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
    check(fit.spread<1,true,'D5 shared listen column after wrapping');
     const dittoCenters=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const first=card.querySelector('.p81-cue-words[data-repeat-anchor]'),mark=card.querySelector('.p81-cue-words[data-repeat-cue] .p81-repeat-mark');const words=[...first.querySelectorAll('.target-word')],a=words[0].getBoundingClientRect(),b=words.at(-1).getBoundingClientRect(),m=mark.getBoundingClientRect();return Math.abs((m.left+m.right-a.left-b.right)/2);}));
     check(dittoCenters.every(x=>x<1),true,'D5 ditto centered over repeated subject and action '+width);
+    const ex4ModelCenters=await page.locator('#drill4 .example-box').evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],word=[...rows[0].querySelectorAll('.target-word')].find(e=>e.textContent.includes('作る')).getBoundingClientRect();return rows.slice(1).map(row=>{const mark=row.querySelector('.p81-ditto').getBoundingClientRect();return Math.abs((mark.left+mark.right-word.left-word.right)/2);});});
+    check(ex4ModelCenters.every(x=>x<1),true,'Example4 model ditto centered over 作る');
+    const ex5ModelCenter=await page.locator('#drill5 .example-box').evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],word=[...rows[0].querySelectorAll('.target-word')].find(e=>e.textContent.includes('弾く')).getBoundingClientRect(),mark=rows[1].querySelector('.p81-ditto').getBoundingClientRect();return Math.abs((mark.left+mark.right-word.left-word.right)/2);});
+    check(ex5ModelCenter<1,true,'Example5 model ditto centered over 弾く');
+
    if(width>=1440)check(fit.single,true,'short labels keep default cues on one line');
   }
 
