@@ -3425,7 +3425,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Practice 2.3 Ex1: one control plays the complete dialogue; speaker focus is blue. */
 .practice-next-page .p23-dialogue-audio { margin-left: 0; display: inline-flex; align-items: center; }
 .practice-next-page .p23-dialogue-play-button { white-space: nowrap; }
-.practice-next-page .p23-call-example .p23-city-person.is-speaking { outline: 2px solid #2563eb; outline-offset: 2px; animation: p23-speaking .8s ease-in-out infinite; }
+.practice-next-page .p23-call-example .p23-city-person.is-speaking { color: inherit; outline: 2px solid #2563eb; outline-offset: 2px; animation: p22-speaker-focus 1.2s ease-in-out infinite; }
 .practice-next-page .p23-city-region { top: 4px; bottom: 4px; border-radius: 6px; }
 .practice-next-page .p23-city-region[data-region-index="0"] { left: 4px !important; width: calc(33.333333% - 6px) !important; }
 .practice-next-page .p23-city-region[data-region-index="1"] { left: calc(33.333333% + 2px) !important; width: calc(33.333333% - 4px) !important; }
