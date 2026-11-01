@@ -1,3 +1,11 @@
+## 現在のリレー状態（2026-11-01 / Europe/Vienna / Codex）
+
+- 状態：Practice 8.1修正完了、ローカル保存済み。開始時HEAD `af99480`、mainは取得済みorigin/mainと一致。
+- 変更：Ex3/Eの〃を省略した目的語〜動詞範囲の中央へ整列し、Example5の／を削除。D4の好き／きらいは非太字、未選択Selectは中央・選択動詞は左揃え。Auto時に停止をロックする現在モード判定を追加。D4未選択時のきく／とるロックとSelect first案内は既存動作を確認。
+- 変更ファイル：practice8.1.js、style.css、docs/PRACTICE8_SPEC.md。
+- 自動検証：`git diff --check` 合格。自動テスト未実施。実機確認・デプロイ確認は未了。
+- 保存先：作業差分はローカルmain。コミット／Pushはこの記録更新後に行う。
+
 ## Lesson番号と語彙範囲（2026-10-31）
 
 - 共通ルールをAGENTS.mdとPROJECT_SPEC.mdに、8.1への適用をPRACTICE8_SPEC.mdに記載。ページ番号NではGenki Lesson Nまでの語彙を基本とする。

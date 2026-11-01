@@ -748,7 +748,7 @@ function showResult(key,notice='') {
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
-    const select=node('select','custom-select p81-select');
+    const select=node('select','custom-select p81-select'+(r.selectKind==='activity'?' p81-activity-select':''));
     const isActivity=r.selectKind==='activity',activity=choices.get(r.id)||'';
     const usedActivities=new Set(degreeLevels.map((_,i)=>choices.get(`degree-${i}`)).filter(Boolean));
     const activityOptions=degreeActions.filter(a=>!usedActivities.has(a.id)||a.id===activity);
@@ -792,11 +792,12 @@ function addExample(root,si) {
         }else if((si===2||si===4)&&index===1){
             cue.dataset.repeatCue=String(si);
             const spacer=node('span','p81-repeat-spacer');
-            cue.append(spacer,node('span','p81-repeat-mark','〃'),document.createTextNode('／'));
+            cue.append(spacer,node('span','p81-repeat-mark','〃'));
+            if(si===2)cue.append(document.createTextNode('／'));
             const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
         }else {
             cue.innerHTML=cues(r);
-            if(si===2||si===4){cue.dataset.repeatAnchor=String(si);cue.dataset.repeatVerb=r.verb;}
+            if(si===2||si===4){cue.dataset.repeatAnchor=String(si);cue.dataset.repeatStart=r.object;cue.dataset.repeatEnd=r.verb;cue.dataset.repeatVerb=r.verb;}
         }
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
@@ -880,23 +881,25 @@ function render() {
     ConversationDisplay.format();measureCues();sync();
 }
 function measureCues() {
-    const alignDitto=(anchor,mark,verbId,spacer)=>{
-        const verb=words[verbId]?.[scriptMode==='kanji'?'kanji':'hira'];if(!anchor||!mark||!spacer||!verb)return;
+    const alignDitto=(anchor,mark,startId,endId,spacer)=>{
+        const display=id=>words[id]?.[scriptMode==='kanji'?'kanji':'hira'];
+        const first=display(startId),last=display(endId);if(!anchor||!mark||!spacer||!first||!last)return;
         const walker=document.createTreeWalker(anchor,NodeFilter.SHOW_TEXT);let current,flat='',parts=[];
         while((current=walker.nextNode())){parts.push({node:current,start:flat.length});flat+=current.textContent;}
-        const start=flat.indexOf(verb);if(start<0)return;
-        const last=start+verb.length-1,part=parts.find(item=>last>=item.start&&last<item.start+item.node.textContent.length);if(!part)return;
-        const range=document.createRange();range.setStart(part.node,last-part.start);range.setEnd(part.node,last-part.start+1);
-        const char=range.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-        spacer.style.width=Math.max(0,char.left-cueRect.left+(char.width-markWidth)/2)+'px';
+        const start=flat.indexOf(first),end=start<0?-1:flat.indexOf(last,start+first.length);if(start<0||end<0)return;
+        const locate=offset=>parts.find(item=>offset>=item.start&&offset<item.start+item.node.textContent.length);
+        const startPart=locate(start),endPart=locate(end+last.length-1);if(!startPart||!endPart)return;
+        const range=document.createRange();range.setStart(startPart.node,start-startPart.start);range.setEnd(endPart.node,end+last.length-endPart.start);
+        const target=range.getBoundingClientRect(),cueRect=anchor.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+        spacer.style.width=Math.max(0,target.left-cueRect.left+(target.width-markWidth)/2)+'px';
     };
     document.querySelectorAll('.p81-example-cue[data-repeat-cue]').forEach(cue=>{
         const anchor=cue.closest('.p81-example')?.querySelector('.p81-example-cue[data-repeat-anchor]');
-        alignDitto(anchor,cue.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatVerb,cue.querySelector('.p81-repeat-spacer'));
+        alignDitto(anchor,cue.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatStart,anchor?.dataset.repeatEnd,cue.querySelector('.p81-repeat-spacer'));
     });
     document.querySelectorAll('.p81-comparison-card').forEach(card=>{
         const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
-        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatAnchor,target?.querySelector('.p81-drill-repeat-spacer'));
+        alignDitto(anchor,target?.querySelector('.p81-repeat-mark'),anchor?.dataset.repeatAnchor,anchor?.dataset.repeatVerb,target?.querySelector('.p81-drill-repeat-spacer'));
     });
     document.querySelectorAll('.p81-degree-example').forEach(ex=>{
         const measure=e=>{const copy=e.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none'});ex.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;};
@@ -933,7 +936,7 @@ function sync() {
     const busy=Boolean(session||preparing);
     document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
         views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';}}
-        const canStop=session?.key===keyFor(v.r)&&session.manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
+        const canStop=session?.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
 }
 async function record(key, r) {
     if (session || preparing || r.pending) return;
