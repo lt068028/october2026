@@ -1,5 +1,21 @@
 ## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Example 1/2 のヘッダー区分（Verb / Adjective）について、下線・全幅配置を撤去し、「だれ／何」と同様の角丸囲みバッジ（`.p83-header-badge`）として1行目キューの述語（Example 1: おしえる、Example 2: やさしい）の真上に配置完了。開始時HEAD `cd06387`。
+- 変更：
+  1. **ヘッダーバッジのキュー直上配置（`practice8.3.js`、`style.css`）**：
+     - 下線（`border-bottom`）および全幅スパン（`grid-column: 1 / -1`）を撤去。
+     - 「だれ (Who)」と同様の角丸囲みスタイル（背景色、ボーダー、角丸8px、ダークモード対応）を適用。
+     - ヘッダー行（`.p83-example-header-row`）をグリッド直下に配置し、列1・列2のスペーサーでグリッド位置を固定。
+     - 列3（キュー列）内に不可視スペーサー（`だれ／`、`aria-hidden="true"`）を配置することで、1行目キューの述語部分（Ex1:「おしえる」、Ex2:「やさしい」）の開始位置・幅と完全同期し、その真上にバッジがぴったり乗るよう配置。
+     - モバイル表示（`max-width: 760px`）でもキュー列（列2）への配置を連動。
+  2. **仕様書・キャッシュ更新（`docs/PRACTICE8_SPEC.md`、`practice8.3.html`）**。
+- 変更ファイル：practice8.3.js、practice8.3.html、style.css、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：Practice 8.3 の Verb / Adjective 囲みバッジのキュー真上配置の見た目・レイアウトは実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `cd06387`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 における Example 2 および Drill 2（形容詞の主語質問文: Adjective）の新設、Exampleヘッダー区分（Verb / Adjective）の追加完了。開始時HEAD `c862c3a`。
 - 変更：
   1. **Practice 8.3 Example 2 および Drill 2 の新設（`practice8.3.js`、`style.css`）**：

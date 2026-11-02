@@ -616,9 +616,17 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  if(si!==0&&si!==1)return;
  const ex=node('div','example-box example-text-layout p81-example');
+ const headerRow=node('div','p83-example-header-row');
+ const spacer1=node('span','p83-header-spacer-col1');
+ const spacer2=node('span','p83-header-spacer-col2');
+ const headerCue=node('div','p83-example-header-cue');
+ const prefixSpacer=node('span','p83-header-prefix','だれ／');
+ prefixSpacer.setAttribute('aria-hidden','true');
  const headerTitle=si===0?'Verb':'Adjective';
- const header=node('div','p83-example-header',headerTitle);
- ex.append(header);
+ const badge=node('span','p83-header-badge',headerTitle);
+ headerCue.append(prefixSpacer,badge);
+ headerRow.append(spacer1,spacer2,headerCue);
+ ex.append(headerRow);
  const currentExSets=si===0?exSets1:exSets2;
  const catLabels=[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}];
  currentExSets.forEach((s,index)=>{
