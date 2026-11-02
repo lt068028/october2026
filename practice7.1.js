@@ -1624,6 +1624,7 @@ function practice71FindDiff(actual, reference) {
 }
 
 function practice71ShowResult(view, saved, rowKey, playRate) {
+    view.resultSpan.classList.remove("not-recorded-yet");
     // モード変更による再描画では、録音時の判定を保持する。
     // 新しい録音の判定はprocessResult側で保存される。
     if (typeof saved.isCorrect !== 'boolean') {
@@ -1867,10 +1868,12 @@ function bindRecorderEvents(
     restoreResult("");
 
     if (activeRecognitionSession?.rowKey === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
     } else if (practice71State.startingRow === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
     }
 
@@ -2206,6 +2209,7 @@ function bindRecorderEvents(
             };
 
             const v = currentView();
+            v.resultSpan.classList.remove("not-recorded-yet");
             v.resultSpan.textContent = "Recording...";
             v.resultSpan.style.color =
                 "var(--accent-color)";

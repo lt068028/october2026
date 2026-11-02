@@ -1933,6 +1933,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
             normalized === practice7Normalize(text)
         );
     }
+    view.resultSpan.classList.remove("not-recorded-yet");
     const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
@@ -2160,10 +2161,12 @@ function bindRecorderEvents(
     restoreResult("");
 
     if (activeRecognitionSession?.rowKey === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
     } else if (practice7State.startingRow === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
     }
 
@@ -2499,6 +2502,7 @@ function bindRecorderEvents(
             };
 
             const v = currentView();
+            v.resultSpan.classList.remove("not-recorded-yet");
             v.resultSpan.textContent = "Recording...";
             v.resultSpan.style.color =
                 "var(--accent-color)";

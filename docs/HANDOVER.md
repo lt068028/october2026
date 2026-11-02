@@ -1,18 +1,17 @@
 ## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。練習2（Practice 2.1 / 2.2 / 2.3）の右側抽出テキストのフォントサイズ縮小問題を修正（通常フォントサイズ1emへ復元完了）。開始時HEAD `6a8b39f`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。未確認ページ（練習1.2、練習7.1、練習7.2）における抽出データ表示フォントの縮小問題を点検・修正完了（全ページのフォントサイズ正常化完了）。開始時HEAD `588f7da`。
 - 変更：
-  1. **右側抽出テキストのフォントサイズ復元（`practice2.1.js`、`practice2-next.js`、`style.css`）**：
-     - 未録音表示の共通化（`.not-recorded-yet` が `font-size: .75em` を持つ）に伴い、Practice 2系で結果表示時・録音開始時に `resultSpan` から `.not-recorded-yet` クラスが除去されておらず、抽出テキストが `0.75em` のまま小さく表示されていた不具合を解消。
-     - `practice2ShowResult`、`Recording...`、`Preparing microphone...` の各処理で `resultSpan.classList.remove("not-recorded-yet")` を確実に呼び出すよう修正。
-     - `style.css` の `.result-text` に `font-size: 1em;` を明示し、通常時のフォントサイズを安定保持。
-  2. **キャッシュキー更新（`practice2.1.html`、`practice2.2.html`、`practice2.3.html`）**。
-- 変更ファイル：practice2.1.js、practice2-next.js、style.css、practice2.1.html、practice2.2.html、practice2.3.html、docs/HANDOVER.md。
+  1. **抽出テキストのフォントサイズ正常化（`practice1.2.js`、`practice7.1.js`、`practice7.2.js`）**：
+     - `practice1.2.js` の `practice2ShowResult`、`practice7.1.js` の `practice71ShowResult`、`practice7.2.js` の `ShowResult`（結果表示処理）において、`view.resultSpan.classList.remove("not-recorded-yet")` を追加。
+     - 各ページの録音開始（`Recording...`）および準備開始（`Preparing microphone...`）時にも `classList.remove("not-recorded-yet")` を確実に呼び出し、結果表示時に `.not-recorded-yet`（`font-size: .75em`）が残留して縮小表示される不具合を完全解消。
+  2. **キャッシュキー更新（`practice1.2.html`、`practice7.1.html`、`practice7.2.html`）**。
+- 変更ファイル：practice1.2.js、practice1.2.html、practice7.1.js、practice7.1.html、practice7.2.js、practice7.2.html、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格。
-- 実機確認状況：練習2の録音後抽出テキストのフォントサイズ正常化は実機確認待ち。
+- 実機確認状況：練習1.2、練習7.1、練習7.2の録音後抽出テキストフォントサイズ正常化は実機確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `6a8b39f`）
+## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `588f7da`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 括弧漢字ルールに基づく「教える」「果物」のWith漢字実装、および「だれ」の平仮名維持完了。開始時HEAD `5dbca5f`。
 - 変更：
