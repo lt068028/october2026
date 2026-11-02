@@ -58,13 +58,16 @@ for(const [id,v]of Object.entries(verbs)){
 }
 formReadings.forEach(e=>STTDisplay.register(...e));
 words['teach'].kanji = 'おしえる';
-const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく']].sort((a,b)=>b[0].length-a[0].length);
-[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ']].forEach(e=>STTDisplay.register(...e));
+const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご']].sort((a,b)=>b[0].length-a[0].length);
+[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);for(const w of Object.values(words).sort((a,b)=>b.kanji.length-a.kanji.length)){if(w.kanji!==w.hira)value=value.split(w.kanji).join(w.hira);}return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
-const sections=[{title:'Drill 1: Subject Questions (Verb)',instruction:'💡Make a subject question. Compare a question word alone with a specific noun.'}];
-let currentD1Set=0;
+const sections=[
+ {title:'Drill 1: Subject Questions (Verb)',instruction:'💡Make a subject question. Compare a question word alone with a specific noun.'},
+ {title:'Drill 2: Subject Questions (Adjective)',instruction:'💡Make a subject question with an adjective. Compare a question word alone with a specific noun.'}
+];
+let currentD1Set=0,currentD2Set=0;
 const d1Sets=[
  {
   name:'だれ',
@@ -83,11 +86,35 @@ const d1Sets=[
   ]
  }
 ];
-const exSets=[
+const d2Sets=[
+ {
+  name:'だれ',
+  label:'だれ (Who)',
+  items:[
+   {q1:'だれが、やさしいですか。',q2:'どの学生が、やさしいですか。',a:'スミスさんが、やさしいです。',c1:['だれ','やさしい'],c2:['どの','学生','やさしい'],ca:['スミスさん']},
+   {q1:'だれが、かっこいいですか。',q2:'どの学生が、かっこいいですか。',a:'ロバートさんが、かっこいいです。',c1:['だれ','かっこいい'],c2:['どの','学生','かっこいい'],ca:['ロバートさん']},
+   {q1:'だれが、歌が上手ですか。',q2:'どの友達が、歌が上手ですか。',a:'メアリーさんが、歌が上手です。',c1:['だれ','うた','じょうず'],c2:['どの','友達','うた','じょうず'],ca:['メアリーさん']}
+  ]
+ },
+ {
+  name:'何',
+  label:'何 (What)',
+  items:[
+   {q1:'何が、楽しいですか。',q2:'どのスポーツが、楽しいですか。',a:'テニスが、楽しいです。',c1:['何','たのしい'],c2:['どの','スポーツ','たのしい'],ca:['テニス']},
+   {q1:'何が、好きですか。',q2:'どの音楽が、好きですか。',a:'ロックが、好きです。',c1:['何','すき'],c2:['どの','音楽','すき'],ca:['ロック']},
+   {q1:'何が、難しいですか。',q2:'どのクラスが、難しいですか。',a:'日本語のクラスが、難しいです。',c1:['何','むずかしい'],c2:['どの','クラス','むずかしい'],ca:['日本語','クラス']}
+  ]
+ }
+];
+const exSets1=[
  {q1:'だれが、教えますか。',q2:'どの先生が、教えますか。',a:'田中先生が、教えます。',c1:['だれ','おしえる'],c2:['どの','先生','おしえる'],ca:['先生']},
  {q1:'何が、キッチンにありますか。',q2:'どの果物が、ありますか。',a:'りんごが、あります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','ある'],ca:['りんご','ある']}
 ];
-[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','キッチン'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ'})[kanji],'',meaning));
+const exSets2=[
+ {q1:'だれが、やさしいですか。',q2:'どの先生が、やさしいですか。',a:'山下先生が、やさしいです。',c1:['だれ','やさしい'],c2:['どの','先生','やさしい'],ca:['山下先生']},
+ {q1:'何が、おもしろいですか。',q2:'どの映画が、おもしろいですか。',a:'日本の映画が、おもしろいです。',c1:['何','おもしろい'],c2:['どの','えいが','おもしろい'],ca:['日本','えいが']}
+];
+[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada'],['やさしい','kind'],['山下先生','Prof. Yamashita'],['おもしろい','interesting'],['えいが','movie'],['日本','Japan'],['スミスさん','Smith'],['かっこいい','cool; good-looking'],['ロバートさん','Robert'],['うた','song'],['じょうず','good at'],['友達','friend'],['メアリーさん','Mary'],['たのしい','fun'],['スポーツ','sports'],['テニス','tennis'],['すき','favorite; liked'],['音楽','music'],['ロック','rock music'],['むずかしい','difficult'],['クラス','class'],['日本語','Japanese language']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ','やさしい':'やさしい','山下先生':'やましたせんせい','おもしろい':'おもしろい','えいが':'えいが','日本':'にほん','スミスさん':'スミスさん','かっこいい':'かっこいい','ロバートさん':'ロバートさん','うた':'うた','じょうず':'じょうず','友達':'ともだち','メアリーさん':'メアリーさん','たのしい':'たのしい','スポーツ':'スポーツ','テニス':'テニス','すき':'すき','音楽':'おんがく','ロック':'ロック','むずかしい':'むずかしい','クラス':'クラス','日本語':'にほんご'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
 function sentenceFor(s){return s.text||'';}
@@ -98,17 +125,30 @@ function makeKindBadge(kind){
  else{span.classList.add('conversation-role','conversation-role-blank');const circle=node('span','conversation-role-circle');circle.textContent='Q';circle.style.visibility='hidden';circle.setAttribute('aria-hidden','true');span.append(circle);}
  return span;
 }
-function rowsFor(si,setIdx=currentD1Set){
- if(si!==0)return [];
- const setDef=d1Sets[setIdx],offset=setIdx===0?0:d1Sets[0].items.length;
- return setDef.items.map((s,i)=>{
-  const globalIndex=offset+i;
-  return [
-   makeRow('d1-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
-   makeRow('d1-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
-   makeRow('d1-'+globalIndex+'-a',{text:s.a,accept:s.accept||[],cueIds:s.ca},{kind:'A'})
-  ];
- });
+function rowsFor(si){
+ if(si===0){
+  const setDef=d1Sets[currentD1Set],offset=currentD1Set===0?0:d1Sets[0].items.length;
+  return setDef.items.map((s,i)=>{
+   const globalIndex=offset+i;
+   return [
+    makeRow('d1-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+    makeRow('d1-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
+    makeRow('d1-'+globalIndex+'-a',{text:s.a,accept:s.accept||[],cueIds:s.ca},{kind:'A'})
+   ];
+  });
+ }
+ if(si===1){
+  const setDef=d2Sets[currentD2Set],offset=currentD2Set===0?0:d2Sets[0].items.length;
+  return setDef.items.map((s,i)=>{
+   const globalIndex=offset+i;
+   return [
+    makeRow('d2-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+    makeRow('d2-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
+    makeRow('d2-'+globalIndex+'-a',{text:s.a,accept:s.accept||[],cueIds:s.ca},{kind:'A'})
+   ];
+  });
+ }
+ return [];
 }
 function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
@@ -574,10 +614,14 @@ function showResult(key,notice='') {
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 
 function addExample(root,si){
- if(si!==0)return;
+ if(si!==0&&si!==1)return;
  const ex=node('div','example-box example-text-layout p81-example');
+ const headerTitle=si===0?'Verb':'Adjective';
+ const header=node('div','p83-example-header',headerTitle);
+ ex.append(header);
+ const currentExSets=si===0?exSets1:exSets2;
  const catLabels=[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}];
- exSets.forEach((s,index)=>{
+ currentExSets.forEach((s,index)=>{
   if(index>0)ex.append(node('div','p83-example-divider'));
   const cat=node('div','p83-example-category');
   const catDef=catLabels[index]||{main:'',sub:''};
@@ -586,9 +630,9 @@ function addExample(root,si){
   cat.append(catMain,catSub);
   ex.append(cat);
   const rows=[
-   makeRow('ex-'+index+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
-   makeRow('ex-'+index+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
-   makeRow('ex-'+index+'-a',{text:s.a,cueIds:s.ca},{kind:'A'})
+   makeRow('ex'+(si+1)+'-'+index+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+   makeRow('ex'+(si+1)+'-'+index+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
+   makeRow('ex'+(si+1)+'-'+index+'-a',{text:s.a,cueIds:s.ca},{kind:'A'})
   ];
   rows.forEach(r=>{
    const row=node('div','p81-example-row'),kind=makeKindBadge(r.kind),cue=node('span','p81-example-cue');
@@ -609,15 +653,16 @@ function render(){
   panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)));
   panel.append(node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));
   group.append(panel);
-  if(si===0){
-   const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Drill 1 Practice Set');
-   d1Sets.forEach((setDef,setIdx)=>{
-    const b=node('button','example-button',setDef.label);b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentD1Set));
-    b.onclick=()=>{if(session||preparing||setIdx===currentD1Set)return;stopPlayback();currentD1Set=setIdx;render();};
-    switcher.append(b);
-   });
-   group.append(switcher);
-  }
+  const isD1=si===0;
+  const sets=isD1?d1Sets:d2Sets;
+  const currentSet=isD1?currentD1Set:currentD2Set;
+  const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label',`Drill ${si+1} Practice Set`);
+  sets.forEach((setDef,setIdx)=>{
+   const b=node('button','example-button',setDef.label);b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentSet));
+   b.onclick=()=>{if(session||preparing||setIdx===currentSet)return;stopPlayback();if(isD1)currentD1Set=setIdx;else currentD2Set=setIdx;render();};
+   switcher.append(b);
+  });
+  group.append(switcher);
   rowsFor(si).forEach((rows,index)=>{
    const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
    rows.forEach((r,ri)=>{

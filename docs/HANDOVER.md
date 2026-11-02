@@ -1,15 +1,31 @@
 ## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。未確認ページ（練習1.2、練習7.1、練習7.2）における抽出データ表示フォントの縮小問題を点検・修正完了（全ページのフォントサイズ正常化完了）。開始時HEAD `588f7da`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 における Example 2 および Drill 2（形容詞の主語質問文: Adjective）の新設、Exampleヘッダー区分（Verb / Adjective）の追加完了。開始時HEAD `c862c3a`。
 - 変更：
-  1. **抽出テキストのフォントサイズ正常化（`practice1.2.js`、`practice7.1.js`、`practice7.2.js`）**：
-     - `practice1.2.js` の `practice2ShowResult`、`practice7.1.js` の `practice71ShowResult`、`practice7.2.js` の `ShowResult`（結果表示処理）において、`view.resultSpan.classList.remove("not-recorded-yet")` を追加。
-     - 各ページの録音開始（`Recording...`）および準備開始（`Preparing microphone...`）時にも `classList.remove("not-recorded-yet")` を確実に呼び出し、結果表示時に `.not-recorded-yet`（`font-size: .75em`）が残留して縮小表示される不具合を完全解消。
-  2. **キャッシュキー更新（`practice1.2.html`、`practice7.1.html`、`practice7.2.html`）**。
-- 変更ファイル：practice1.2.js、practice1.2.html、practice7.1.js、practice7.1.html、practice7.2.js、practice7.2.html、docs/HANDOVER.md。
+  1. **Practice 8.3 Example 2 および Drill 2 の新設（`practice8.3.js`、`style.css`）**：
+     - Example 1（Verb）および Example 2（Adjective）の最上段に英語ヘッダー（`.p83-example-header`）を設置（学習者負担を考慮し日本語表記「動詞」「形容詞」は無し）。
+     - Example 2 に「だれ (Who)」「何 (What)」の2セットを配置：
+       - だれ: 「だれが、やさしいですか。／どの先生が、やさしいですか。／山下先生が、やさしいです。」
+       - 何: 「何が、おもしろいですか。／どの映画が、おもしろいですか。／日本の映画が、おもしろいです。」
+     - Drill 2 に「だれ (Who)」3問・「何 (What)」3問を設置（Genki既習語準拠、キューの未習漢字は平仮名化）：
+       - だれ 1: だれ ／ やさしい（Q1: だれが、やさしいですか。／Q2: どの学生が、やさしいですか。／A: スミスさんが、やさしいです。）
+       - だれ 2: だれ ／ かっこいい（Q1: だれが、かっこいいですか。／Q2: どの学生が、かっこいいですか。／A: ロバートさんが、かっこいいです。）
+       - だれ 3: だれ ／ 歌が上手（Q1: だれが、歌が上手ですか。／Q2: どの友達が、歌が上手ですか。／A: メアリーさんが、歌が上手です。）
+       - 何 1: 何 ／ 楽しい（Q1: 何が、楽しいですか。／Q2: どのスポーツが、楽しいですか。／A: テニスが、楽しいです。）
+       - 何 2: 何 ／ 好き（Q1: 何が、好きですか。／Q2: どの音楽が、好きですか。／A: ロックが、好きです。）
+       - 何 3: 何 ／ 難しい（Q1: 何が、難しいですか。／Q2: どのクラスが、難しいですか。／A: 日本語のクラスが、難しいです。）
+     - Drill 2 の Set切替ボタン（「だれ (Who)」「何 (What)」）の連動およびレンダリングを実装。
+     - 語彙・辞書（映画、日本の映画、日本、山下先生、山下、歌が上手、歌、上手、友達、楽しい、好き、音楽、難しい、日本語等）の登録。
+  2. **スタイル更新（`style.css`）**：
+     - `#drill2 .p81-example` にも Example 6列グリッド定義を適用。
+     - `.p83-example-header` のスタイル定義（上部ヘッダーとして全幅スパン、ダークモード対応）。
+  3. **仕様書・キャッシュ更新（`docs/PRACTICE8_SPEC.md`、`practice8.3.html`）**。
+- 変更ファイル：practice8.3.js、practice8.3.html、style.css、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格。
-- 実機確認状況：練習1.2、練習7.1、練習7.2の録音後抽出テキストフォントサイズ正常化は実機確認待ち。
+- 実機確認状況：Practice 8.3 Example 2・Drill 2の表示、きくボタン、録音・正誤判定、ヘッダー表示は実機確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `c862c3a`）
 
 ## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `588f7da`）
 
