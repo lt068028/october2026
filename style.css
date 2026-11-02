@@ -3443,7 +3443,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Practice 8.3 Example 6-column layout with category column */
 .practice83-page .p81-example,
 .practice83-page #drill1 .p81-example,
-.practice83-page #drill2 .p81-example {
+.practice83-page #drill2 .p81-example,
+.practice83-page #drill3 .p81-example {
     display: grid !important;
     grid-template-columns: max-content max-content fit-content(var(--example-cue-limit, 300px)) max-content max-content minmax(0, 1fr) !important;
     gap: 12px 6px;
@@ -3558,7 +3559,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 @media(max-width: 760px) {
     .practice83-page .p81-example,
     .practice83-page #drill1 .p81-example,
-    .practice83-page #drill2 .p81-example {
+    .practice83-page #drill2 .p81-example,
+    .practice83-page #drill3 .p81-example {
         grid-template-columns: max-content minmax(0, 1fr) max-content max-content !important;
     }
     .practice83-page .p83-example-category {
@@ -3595,7 +3597,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     }
     .practice83-page .p81-model,
     .practice83-page #drill1 .p81-model,
-    .practice83-page #drill2 .p81-model {
+    .practice83-page #drill2 .p81-model,
+    .practice83-page #drill3 .p81-model {
         grid-column: 2 / -1 !important;
     }
 }

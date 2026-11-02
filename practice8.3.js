@@ -58,16 +58,17 @@ for(const [id,v]of Object.entries(verbs)){
 }
 formReadings.forEach(e=>STTDisplay.register(...e));
 words['teach'].kanji = 'おしえる';
-const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご']].sort((a,b)=>b[0].length-a[0].length);
-[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご']].forEach(e=>STTDisplay.register(...e));
+const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['聴く','きく'],['訊く','きく'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご'],['来る','くる'],['来ます','きます'],['始まる','はじまる'],['始まります','はじまります'],['終わる','おわる'],['終わります','おわります'],['作る','つくる'],['作ります','つくります'],['休む','やすむ'],['休みます','やすみます'],['会社','かいしゃ'],['店','みせ'],['２番','２ばん'],['２番のバス','にばんのバス'],['４ページ','よんページ'],['イタリアの映画','イタリアのえいが'],['どの映画','どのえいが'],['フランスの会社','フランスのかいしゃ'],['どの会社','どのかいしゃ'],['あの店','あのみせ'],['どの店','どのみせ'],['ダンスのイベント','ダンスのイベント'],['どのイベント','どのイベント']].sort((a,b)=>b[0].length-a[0].length);
+[['聴く','きく'],['訊く','きく'],['果物','くだもの'],['教える','おしえる'],['教えます','おしえます'],['冷蔵庫','れいぞうこ'],['映画','えいが'],['日本の映画','にほんのえいが'],['日本','にほん'],['山下先生','やましたせんせい'],['山下','やました'],['歌が上手','うたがじょうず'],['歌','うた'],['上手','じょうず'],['友達','ともだち'],['楽しい','たのしい'],['好き','すき'],['音楽','おんがく'],['難しい','むずかしい'],['日本語','にほんご'],['来る','くる'],['来ます','きます'],['始まる','はじまる'],['始まります','はじまります'],['終わる','おわる'],['終わります','おわります'],['作る','つくる'],['作ります','つくります'],['休む','やすむ'],['休みます','やすみます'],['会社','かいしゃ'],['店','みせ'],['２番','２ばん'],['２番のバス','にばんのバス'],['４ページ','よんページ'],['イタリアの映画','イタリアのえいが'],['どの映画','どのえいが'],['フランスの会社','フランスのかいしゃ'],['どの会社','どのかいしゃ'],['あの店','あのみせ'],['どの店','どのみせ'],['ダンスのイベント','ダンスのイベント'],['どのイベント','どのイベント']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);for(const w of Object.values(words).sort((a,b)=>b.kanji.length-a.kanji.length)){if(w.kanji!==w.hira)value=value.split(w.kanji).join(w.hira);}return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
  {title:'Drill 1: Subject Questions (Verb)',instruction:'💡Make a subject question. Compare a question word alone with a specific noun.'},
- {title:'Drill 2: Subject Questions (Adjective)',instruction:'💡Make a subject question with an adjective. Compare a question word alone with a specific noun.'}
+ {title:'Drill 2: Subject Questions (Adjective)',instruction:'💡Make a subject question with an adjective. Compare a question word alone with a specific noun.'},
+ {title:'Drill 3: Subject Questions (Which / Where)',instruction:'💡Make a subject question using どれ (Which one) and どこ (Where / Which organization).'}
 ];
-let currentD1Set=0,currentD2Set=0;
+let currentD1Set=0,currentD2Set=0,currentD3Set=0;
 const d1Sets=[
  {
   name:'だれ',
@@ -106,6 +107,24 @@ const d2Sets=[
   ]
  }
 ];
+const d3Sets=[
+ {
+  name:'どれ',
+  label:'どれ (Which one)',
+  items:[
+   {q1:'どれが、始まりますか。',q2:'どの映画が、始まりますか。',a:'イタリアの映画が、始まります。',accept:['イタリアのえいがが、はじまります。'],c1:['どれ','はじまる'],c2:['どの映画','はじまる'],ca:['イタリアの映画']},
+   {q1:'どれが、終わりますか。',q2:'どのイベントが、終わりますか。',a:'ダンスのイベントが、終わります。',accept:['ダンスのイベントが、おわります。'],c1:['どれ','おわる'],c2:['どのイベント','おわる'],ca:['ダンスのイベント']}
+  ]
+ },
+ {
+  name:'どこ',
+  label:'どこ (Where)',
+  items:[
+   {q1:'どこが、作りますか。',q2:'どの会社が、作りますか。',a:'フランスの会社が、作ります。',accept:['フランスのかいしゃが、つくります。'],c1:['どこ','つくる'],c2:['どの会社','つくる'],ca:['フランスの会社']},
+   {q1:'どこが、休みますか。',q2:'どの店が、休みますか。',a:'あの店が、休みます。',accept:['あのみせが、やすみます。'],c1:['どこ','やすむ'],c2:['どの店','やすむ'],ca:['あの店']}
+  ]
+ }
+];
 const exSets1=[
  {q1:'だれが、教えますか。',q2:'どの先生が、教えますか。',a:'田中先生が、教えます。',c1:['だれ','おしえる'],c2:['どの','先生','おしえる'],ca:['先生']},
  {q1:'何が、キッチンにありますか。',q2:'どの果物が、ありますか。',a:'りんごが、あります。',c1:['何','キッチン','ある'],c2:['どの','くだもの','ある'],ca:['りんご','ある']}
@@ -114,7 +133,11 @@ const exSets2=[
  {q1:'だれが、やさしいですか。',q2:'どの先生が、やさしいですか。',a:'山下先生が、やさしいです。',c1:['だれ','やさしい'],c2:['どの','先生','やさしい'],ca:['山下先生']},
  {q1:'何が、おもしろいですか。',q2:'どの映画が、おもしろいですか。',a:'日本の映画が、おもしろいです。',c1:['何','おもしろい'],c2:['どの','えいが','おもしろい'],ca:['日本','えいが']}
 ];
-[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada'],['やさしい','kind'],['山下先生','Prof. Yamashita'],['おもしろい','interesting'],['えいが','movie'],['日本','Japan'],['スミスさん','Smith'],['かっこいい','cool; good-looking'],['ロバートさん','Robert'],['うた','song'],['じょうず','good at'],['友達','friend'],['メアリーさん','Mary'],['たのしい','fun'],['スポーツ','sports'],['テニス','tennis'],['すき','favorite; liked'],['音楽','music'],['ロック','rock music'],['むずかしい','difficult'],['クラス','class'],['日本語','Japanese language']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ','やさしい':'やさしい','山下先生':'やましたせんせい','おもしろい':'おもしろい','えいが':'えいが','日本':'にほん','スミスさん':'スミスさん','かっこいい':'かっこいい','ロバートさん':'ロバートさん','うた':'うた','じょうず':'じょうず','友達':'ともだち','メアリーさん':'メアリーさん','たのしい':'たのしい','スポーツ':'スポーツ','テニス':'テニス','すき':'すき','音楽':'おんがく','ロック':'ロック','むずかしい':'むずかしい','クラス':'クラス','日本語':'にほんご'})[kanji],'',meaning));
+const exSets3=[
+ {q1:'どれが、来ますか。',q2:'どのバスが、来ますか。',a:'２番が、来ます。',accept:['２番のバスが、来ます。','にばんが、きます。','２ばんが、きます。'],c1:['どれ','くる'],c2:['どのバス','くる'],ca:['２番']},
+ {q1:'どこが、わかりませんか。',q2:'どのページが、わかりませんか。',a:'４ページが、わかりません。',accept:['よんページが、わかりません。'],c1:['どこ','わかる'],c2:['どのページ','わかる'],ca:['４ページ']}
+];
+[['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada'],['やさしい','kind'],['山下先生','Prof. Yamashita'],['おもしろい','interesting'],['えいが','movie'],['日本','Japan'],['スミスさん','Smith'],['かっこいい','cool; good-looking'],['ロバートさん','Robert'],['うた','song'],['じょうず','good at'],['友達','friend'],['メアリーさん','Mary'],['たのしい','fun'],['スポーツ','sports'],['テニス','tennis'],['すき','favorite; liked'],['音楽','music'],['ロック','rock music'],['むずかしい','difficult'],['クラス','class'],['日本語','Japanese language'],['どれ','which one'],['どこ','where'],['くる','to come'],['わかる','to understand'],['はじまる','to begin'],['おわる','to end'],['つくる','to make'],['やすむ','to rest / be absent'],['どのバス','which bus'],['２番','No. 2'],['どのページ','which page'],['４ページ','page 4'],['どの映画','which movie'],['イタリアの映画','Italian movie'],['どのイベント','which event'],['ダンスのイベント','dance event'],['どの会社','which company'],['フランスの会社','French company'],['どの店','which shop'],['あの店','that shop']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ','やさしい':'やさしい','山下先生':'やましたせんせい','おもしろい':'おもしろい','えいが':'えいが','日本':'にほん','スミスさん':'スミスさん','かっこいい':'かっこいい','ロバートさん':'ロバートさん','うた':'うた','じょうず':'じょうず','友達':'ともだち','メアリーさん':'メアリーさん','たのしい':'たのしい','スポーツ':'スポーツ','テニス':'テニス','すき':'すき','音楽':'おんがく','ロック':'ロック','むずかしい':'むずかしい','クラス':'クラス','日本語':'にほんご','どれ':'どれ','どこ':'どこ','くる':'くる','わかる':'わかる','はじまる':'はじまる','おわる':'おわる','つくる':'つくる','やすむ':'やすむ','どのバス':'どのバス','２番':'２ばん','どのページ':'どのページ','４ページ':'よんページ','どの映画':'どのえいが','イタリアの映画':'イタリアのえいが','どのイベント':'どのイベント','ダンスのイベント':'ダンスのイベント','どの会社':'どのかいしゃ','フランスの会社':'フランスのかいしゃ','どの店':'どのみせ','あの店':'あのみせ'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
 function sentenceFor(s){return s.text||'';}
@@ -145,6 +168,17 @@ function rowsFor(si){
     makeRow('d2-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
     makeRow('d2-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
     makeRow('d2-'+globalIndex+'-a',{text:s.a,accept:s.accept||[],cueIds:s.ca},{kind:'A'})
+   ];
+  });
+ }
+ if(si===2){
+  const setDef=d3Sets[currentD3Set],offset=currentD3Set===0?0:d3Sets[0].items.length;
+  return setDef.items.map((s,i)=>{
+   const globalIndex=offset+i;
+   return [
+    makeRow('d3-'+globalIndex+'-q1',{text:s.q1,cueIds:s.c1},{kind:'Q'}),
+    makeRow('d3-'+globalIndex+'-q2',{text:s.q2,cueIds:s.c2},{kind:''}),
+    makeRow('d3-'+globalIndex+'-a',{text:s.a,accept:s.accept||[],cueIds:s.ca},{kind:'A'})
    ];
   });
  }
@@ -614,21 +648,21 @@ function showResult(key,notice='') {
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 
 function addExample(root,si){
- if(si!==0&&si!==1)return;
+ if(si!==0&&si!==1&&si!==2)return;
  const ex=node('div','example-box example-text-layout p81-example');
  const headerRow=node('div','p83-example-header-row');
  const spacer1=node('span','p83-header-spacer-col1');
  const spacer2=node('span','p83-header-spacer-col2');
  const headerCue=node('div','p83-example-header-cue');
- const prefixSpacer=node('span','p83-header-prefix','だれ／');
+ const prefixSpacer=node('span','p83-header-prefix',si===2?'どれ／':'だれ／');
  prefixSpacer.setAttribute('aria-hidden','true');
- const headerTitle=si===0?'Verb':'Adjective';
+ const headerTitle=si===1?'Adjective':'Verb';
  const badge=node('span','p83-header-badge',headerTitle);
  headerCue.append(prefixSpacer,badge);
  headerRow.append(spacer1,spacer2,headerCue);
  ex.append(headerRow);
- const currentExSets=si===0?exSets1:exSets2;
- const catLabels=[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}];
+ const currentExSets=si===0?exSets1:(si===1?exSets2:exSets3);
+ const catLabels=si===2?[{main:'どれ',sub:'(Which)'},{main:'どこ',sub:'(Where)'}]:[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}];
  currentExSets.forEach((s,index)=>{
   if(index>0)ex.append(node('div','p83-example-divider'));
   const cat=node('div','p83-example-category');
@@ -661,13 +695,13 @@ function render(){
   panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)));
   panel.append(node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));
   group.append(panel);
-  const isD1=si===0;
-  const sets=isD1?d1Sets:d2Sets;
-  const currentSet=isD1?currentD1Set:currentD2Set;
+  const isD1=si===0,isD2=si===1;
+  const sets=isD1?d1Sets:(isD2?d2Sets:d3Sets);
+  const currentSet=isD1?currentD1Set:(isD2?currentD2Set:currentD3Set);
   const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label',`Drill ${si+1} Practice Set`);
   sets.forEach((setDef,setIdx)=>{
    const b=node('button','example-button',setDef.label);b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentSet));
-   b.onclick=()=>{if(session||preparing||setIdx===currentSet)return;stopPlayback();if(isD1)currentD1Set=setIdx;else currentD2Set=setIdx;render();};
+   b.onclick=()=>{if(session||preparing||setIdx===currentSet)return;stopPlayback();if(isD1)currentD1Set=setIdx;else if(isD2)currentD2Set=setIdx;else currentD3Set=setIdx;render();};
    switcher.append(b);
   });
   group.append(switcher);
