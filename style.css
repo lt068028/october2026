@@ -3605,3 +3605,207 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         grid-column: 2 / -1 !important;
     }
 }
+
+/* Behind the Cues: Info-panel action & Slide-in Drawer */
+.info-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.behind-the-cues-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #0369a1;
+    background: #e0f2fe;
+    border: 1px solid #7dd3fc;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, color 0.15s ease;
+}
+
+.behind-the-cues-btn:hover {
+    background: #bae6fd;
+    border-color: #38bdf8;
+    color: #0284c7;
+    transform: translateY(-1px);
+}
+
+.behind-the-cues-btn:focus-visible {
+    outline: 2px solid #0284c7;
+    outline-offset: 2px;
+}
+
+.cues-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: flex-end;
+    pointer-events: none;
+    visibility: hidden;
+    transition: visibility 0.25s ease;
+}
+
+.cues-drawer.is-open {
+    pointer-events: auto;
+    visibility: visible;
+}
+
+.cues-drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.cues-drawer.is-open .cues-drawer-backdrop {
+    opacity: 1;
+}
+
+.cues-drawer-content {
+    position: relative;
+    width: min(480px, 92vw);
+    max-width: 100%;
+    height: 100%;
+    background: var(--bg-panel, #ffffff);
+    color: var(--text-primary, #1e293b);
+    display: flex;
+    flex-direction: column;
+    box-shadow: -6px 0 24px rgba(0, 0, 0, 0.2);
+    transform: translateX(100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1;
+}
+
+.cues-drawer.is-open .cues-drawer-content {
+    transform: translateX(0);
+}
+
+.cues-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color, #cbd5e1);
+    background: var(--bg-row, #f8fafc);
+}
+
+.cues-drawer-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+}
+
+.cues-drawer-close {
+    background: transparent;
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text-secondary, #64748b);
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.cues-drawer-close:hover {
+    color: var(--text-primary, #0f172a);
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.cues-drawer-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text-primary, #1e293b);
+}
+
+.cues-drawer-lead {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0284c7;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.cues-drawer-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border-color, #cbd5e1);
+}
+
+.cues-drawer-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--text-primary, #0f172a);
+}
+
+.cues-drawer-section p {
+    margin: 0 0 10px 0;
+}
+
+.cues-drawer-section ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.cues-drawer-section li {
+    margin-bottom: 8px;
+}
+
+.cues-drawer-section code {
+    background: rgba(2, 132, 199, 0.1);
+    color: #0369a1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.92em;
+}
+
+@media (prefers-color-scheme: dark) {
+    .behind-the-cues-btn {
+        background: #0c4a6e;
+        color: #7dd3fc;
+        border-color: #0284c7;
+    }
+    .behind-the-cues-btn:hover {
+        background: #075985;
+        border-color: #38bdf8;
+        color: #bae6fd;
+    }
+    .behind-the-cues-btn:focus-visible {
+        outline-color: #38bdf8;
+    }
+    .cues-drawer-content {
+        box-shadow: -6px 0 24px rgba(0, 0, 0, 0.5);
+    }
+    .cues-drawer-header {
+        border-bottom-color: #334155;
+    }
+    .cues-drawer-close:hover {
+        background: rgba(255, 255, 255, 0.12);
+        color: #f8fafc;
+    }
+    .cues-drawer-lead {
+        color: #38bdf8;
+    }
+    .cues-drawer-section {
+        border-top-color: #334155;
+    }
+    .cues-drawer-section code {
+        background: rgba(56, 189, 248, 0.16);
+        color: #7dd3fc;
+    }
+}

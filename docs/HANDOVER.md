@@ -1,5 +1,21 @@
 ## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Drill 3 に「🧩 Behind the Cues」スライドイン・ドロワー実装完了。開始時HEAD `d7736b3`。
+- 変更：
+  1. **Drill 3 「🧩 Behind the Cues」スライドイン・ドロワー新設（`practice8.3.html`、`practice8.3.js`、`style.css`）**：
+     - Drill 3 の `info-panel` 右下に「`🧩 Behind the Cues`」ボタン（`.behind-the-cues-btn`）を設置。
+     - クリック時に画面右端からスムーズにスライドインする解説ドロワー（`.cues-drawer`）を実装（Escキー・背景クリック・✕ボタンでクローズ、ARIA属性対応）。
+     - ドロワー内に「どれ」の状況的文脈（`はじまっている`・`おわっている`）、「どこ」の組織・主体への拡張（`どの会社`・`どのチーム`）、一語化キュー設計の意図を収載。
+     - ダークモード対応（`@media (prefers-color-scheme: dark)`）。
+  2. **キャッシュ更新（`practice8.3.html`）**：
+     - キャッシュキーを `v=20261102-p83-behind-cues` に更新。
+- 変更ファイル：practice8.3.js、practice8.3.html、style.css、docs/HANDOVER.md。
+- 自動検証：JS構文解析テスト合格、`git diff --check` 合格。
+- 実機確認状況：Drill 3 の「🧩 Behind the Cues」ボタンの表示、ドロワーの開閉動作・アニメーション・レスポンシブ表示は実機確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `d7736b3`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 における「ひま」モデル文平仮名固定化、人名変更（スミス→山口、ロバート→中山、メアリー→川村）。開始時HEAD `08216c9`。
 - 変更：
   1. **Practice 8.3 モデル文・人名変更（`practice8.3.js`）**：

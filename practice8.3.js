@@ -731,6 +731,46 @@ function addExample(root,si){
  });
  root.append(ex);
 }
+function openCuesDrawer(){
+ const drawer=$('behindTheCuesDrawer');
+ if(!drawer)return;
+ drawer.hidden=false;
+ requestAnimationFrame(()=>{
+  drawer.classList.add('is-open');
+  drawer.querySelector('.cues-drawer-close')?.focus();
+ });
+ const btn=$('behindTheCuesBtn');
+ if(btn)btn.setAttribute('aria-expanded','true');
+ document.addEventListener('keydown',handleDrawerKeydown);
+}
+function closeCuesDrawer(){
+ const drawer=$('behindTheCuesDrawer');
+ if(!drawer)return;
+ drawer.classList.remove('is-open');
+ const btn=$('behindTheCuesBtn');
+ if(btn)btn.setAttribute('aria-expanded','false');
+ document.removeEventListener('keydown',handleDrawerKeydown);
+ setTimeout(()=>{
+  if(!drawer.classList.contains('is-open')){
+   drawer.hidden=true;
+   btn?.focus();
+  }
+ },250);
+}
+function handleDrawerKeydown(e){
+ if(e.key==='Escape'){
+  e.preventDefault();
+  closeCuesDrawer();
+ }
+}
+function initDrawerEvents(){
+ const drawer=$('behindTheCuesDrawer');
+ if(!drawer||drawer.dataset.bound)return;
+ drawer.dataset.bound='true';
+ drawer.querySelectorAll('[data-action="close"]').forEach(el=>{
+  el.addEventListener('click',closeCuesDrawer);
+ });
+}
 function render(){
  const root=$('drill1Container');root.replaceChildren();views.clear();
  sections.forEach((section,si)=>{
@@ -738,6 +778,18 @@ function render(){
   const panel=node('div','info-panel info-panel-task1');
   panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)));
   panel.append(node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));
+  if(si===2){
+   const actions=node('div','info-panel-actions');
+   const noteBtn=button('🧩 Behind the Cues',openCuesDrawer);
+   noteBtn.className='behind-the-cues-btn';
+   noteBtn.id='behindTheCuesBtn';
+   noteBtn.setAttribute('aria-haspopup','dialog');
+   const drawer=$('behindTheCuesDrawer');
+   const isOpen=Boolean(drawer&&drawer.classList.contains('is-open'));
+   noteBtn.setAttribute('aria-expanded',String(isOpen));
+   actions.append(noteBtn);
+   panel.append(actions);
+  }
   group.append(panel);
   const isD1=si===0,isD2=si===1,isD3=si===2;
   const sets=isD1?d1Sets:(isD2?d2Sets:(isD3?d3Sets:d4Sets));
@@ -1285,6 +1337,7 @@ function init() {
     });
 
     setupPreferredVoice82();
+    initDrawerEvents();
 
     rowsFor(0, currentD1Set);
     render();
