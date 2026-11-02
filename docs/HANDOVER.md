@@ -1,18 +1,18 @@
 ## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Example 1/2 のヘッダー区分（Verb / Adjective）について、下線・全幅配置を撤去し、「だれ／何」と同様の角丸囲みバッジ（`.p83-header-badge`）として1行目キューの述語（Example 1: おしえる、Example 2: やさしい）の真上に配置完了。開始時HEAD `cd06387`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Example 1/2 のヘッダーバッジ（Verb / Adjective）について、フォントサイズを拡大（0.9em → 1.05em、濃い文字色）し、Example枠線およびキュー1行目との上下間隔を狭めてスマートな見栄えに微調整完了。開始時HEAD `35faf4d`。
 - 変更：
-  1. **ヘッダーバッジのキュー直上配置（`practice8.3.js`、`style.css`）**：
-     - 下線（`border-bottom`）および全幅スパン（`grid-column: 1 / -1`）を撤去。
-     - 「だれ (Who)」と同様の角丸囲みスタイル（背景色、ボーダー、角丸8px、ダークモード対応）を適用。
-     - ヘッダー行（`.p83-example-header-row`）をグリッド直下に配置し、列1・列2のスペーサーでグリッド位置を固定。
-     - 列3（キュー列）内に不可視スペーサー（`だれ／`、`aria-hidden="true"`）を配置することで、1行目キューの述語部分（Ex1:「おしえる」、Ex2:「やさしい」）の開始位置・幅と完全同期し、その真上にバッジがぴったり乗るよう配置。
-     - モバイル表示（`max-width: 760px`）でもキュー列（列2）への配置を連動。
-  2. **仕様書・キャッシュ更新（`docs/PRACTICE8_SPEC.md`、`practice8.3.html`）**。
-- 変更ファイル：practice8.3.js、practice8.3.html、style.css、docs/PRACTICE8_SPEC.md、docs/HANDOVER.md。
+  1. **ヘッダーバッジのサイズ拡大と上下余白の引き締め（`style.css`）**：
+     - `padding-top: 14px !important;` を `.practice83-page .p81-example` に適用し、Exampleボックス上枠線とヘッダーバッジ間の間隔を短縮。
+     - `.p83-example-header-cue` に `margin-top: -2px; margin-bottom: -4px;` を設定し、キュー1行目との間隔を適度に引き締め。
+     - `.p83-header-badge` のフォントサイズを `1.05em` に拡大し、「だれ (Who)」のメイン文字（`1.1em`）とバランスよく調和。文字色も `var(--text-primary)` に揃えて視認性を向上。
+  2. **キャッシュキー更新（`practice8.3.html`）**。
+- 変更ファイル：practice8.3.html、style.css、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格。
-- 実機確認状況：Practice 8.3 の Verb / Adjective 囲みバッジのキュー真上配置の見た目・レイアウトは実機確認待ち。
+- 実機確認状況：Practice 8.3 の Verb / Adjective バッジのフォントサイズおよび上下間隔のバランスは実機確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `35faf4d`）
 
 ## 以前の記録（2026-11-02 / Europe/Vienna / LT・コミット `cd06387`）
 

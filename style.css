@@ -3448,6 +3448,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     grid-template-columns: max-content max-content fit-content(var(--example-cue-limit, 300px)) max-content max-content minmax(0, 1fr) !important;
     gap: 12px 6px;
     align-items: baseline;
+    padding-top: 14px !important;
 }
 /* Practice 8.3 Example Header Badge (aligned above predicate cue: おしえる / やさしい) */
 .practice83-page .p83-example-header-row {
@@ -3464,6 +3465,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     display: inline-flex;
     align-items: baseline;
     white-space: nowrap;
+    margin-top: -2px;
+    margin-bottom: -4px;
 }
 .practice83-page .p83-header-prefix {
     visibility: hidden;
@@ -3474,21 +3477,21 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9em;
+    font-size: 1.05em;
     font-weight: 700;
-    color: var(--secondary-text, #475569);
-    padding: 4px 10px;
+    color: var(--text-primary, #1e293b);
+    padding: 3px 10px;
     background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
-    border: 1px solid var(--border-color, #e2e8f0);
+    border: 1px solid var(--border-color, #cbd5e1);
     border-radius: 8px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     line-height: 1.2;
 }
 @media (prefers-color-scheme: dark) {
     .practice83-page .p83-header-badge {
-        color: var(--secondary-text, #94a3b8);
-        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.05));
-        border-color: rgba(255, 255, 255, 0.1);
+        color: #f1f5f9;
+        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.06));
+        border-color: rgba(255, 255, 255, 0.15);
     }
 }
 .practice83-page .p83-example-category {
