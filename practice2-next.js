@@ -844,6 +844,7 @@ function practice2ShowNotice(resultSpan, message) {
     };
 
     practice2ShowResult = function(view, saved, key, rate) {
+        view.resultSpan.classList.remove("not-recorded-yet");
         const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
 
         view.resultSpan.replaceChildren();
@@ -2415,6 +2416,7 @@ function practice2FindDiff(actual, reference) {
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
+    view.resultSpan.classList.remove("not-recorded-yet");
     const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
 
     view.resultSpan.textContent = "";
@@ -2628,10 +2630,12 @@ function bindRecorderEvents(
     }
 
     if (activeRecognitionSession?.rowKey === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
     } else if (practice2State.startingRow === rowKey) {
+        resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
     }
 
@@ -3014,6 +3018,7 @@ function bindRecorderEvents(
 
             const v = currentView();
 
+            v.resultSpan.classList.remove("not-recorded-yet");
             v.resultSpan.textContent = "Recording...";
             v.resultSpan.style.color = "var(--accent-color)";
             v.correctionBox.style.display = "none";

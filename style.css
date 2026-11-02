@@ -872,6 +872,7 @@ body {
 /* 結果テキスト */
 .result-text {
     margin-left: auto;
+    font-size: 1em;
 }
 
 /* 共通：録音テーブル */

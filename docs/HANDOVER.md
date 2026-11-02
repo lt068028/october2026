@@ -1,26 +1,18 @@
-## 最新リレー状態（2026-11-01 / Europe/Vienna / LT - サービス終了引き継ぎ）
+## 最新リレー状態（2026-11-02 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。セッション終了作業完了。開始時HEAD `1f57bb7`。
-- 課題／作業ブランチ：サービス終了フロー、新表記分離ルールおよび今後の既習語・既習漢字方針の仕様化、未了要件の伝達記録 / `main`
-- 完了内容：
-  1. **キュー／モデル文（Ex）の表記分離新ルールの仕様化（`AGENTS.md`、`docs/PROJECT_SPEC.md`）**：
-     - キュー（語彙プロンプト）は初出Lessonの既習漢字範囲を厳密に遵守し未習漢字は平仮名とするが、Example等のテキスト文（モデル文）においては日本語として一般的に漢字表記される語（例：`教えます`、`果物` 等）は `With漢字` モードで最初から整った自然な漢字で提示する仕様を規定。
-     - **実装状況明記**：本新ルールは現在 **Practice 8.3 のみに実装済み** であり、**他ページはすべて実装未了**（今後の改修対象）であることを明記。
-  2. **今後のページ作成方針の明記**：
-     - 今後の新規ページ作成において、各Lessonごとの既習語・既習漢字を基本とすることを仕様に明記（作成済み既存ページにおける既習語・既習漢字の徹底は今後段階的に実施予定であり、喫緊の課題ではない）。
-  3. **未了要件の記録・伝達**：
-     - **練習2（Practice 2）の右側抽出テキスト（STT認識結果表示など）が小さいフォントになっている件の修正** を未了の修正要件として伝達記録。
-- 変更ファイル：AGENTS.md、docs/PROJECT_SPEC.md、docs/HANDOVER.md。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。練習2（Practice 2.1 / 2.2 / 2.3）の右側抽出テキストのフォントサイズ縮小問題を修正（通常フォントサイズ1emへ復元完了）。開始時HEAD `6a8b39f`。
+- 変更：
+  1. **右側抽出テキストのフォントサイズ復元（`practice2.1.js`、`practice2-next.js`、`style.css`）**：
+     - 未録音表示の共通化（`.not-recorded-yet` が `font-size: .75em` を持つ）に伴い、Practice 2系で結果表示時・録音開始時に `resultSpan` から `.not-recorded-yet` クラスが除去されておらず、抽出テキストが `0.75em` のまま小さく表示されていた不具合を解消。
+     - `practice2ShowResult`、`Recording...`、`Preparing microphone...` の各処理で `resultSpan.classList.remove("not-recorded-yet")` を確実に呼び出すよう修正。
+     - `style.css` の `.result-text` に `font-size: 1em;` を明示し、通常時のフォントサイズを安定保持。
+  2. **キャッシュキー更新（`practice2.1.html`、`practice2.2.html`、`practice2.3.html`）**。
+- 変更ファイル：practice2.1.js、practice2-next.js、style.css、practice2.1.html、practice2.2.html、practice2.3.html、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格。
-- ユーザー実機確認／CI／デプロイ：
-  - Practice 8.3 の最新版（Example 1 Q1キュー平仮名 `おしえる`、左端区分列 `だれ (Who)` / `何 (What)`、きくボタン幅復元）の公開URL（https://october2026.vercel.app/practice8.3.html）での確認。
-- 次の具体的操作／未了要件：
-  1. **練習2の右側抽出テキストが小さいフォントになっている件の調査と修正**。
-  2. **他ページに対する「キュー平仮名・モデル文自然な漢字」分離ルールの展開（他ページは現在実装未了）**。
-  3. **作成済み既存ページのLesson別既習語・既習漢字の点検・徹底（喫緊ではない、順次対応）**。
+- 実機確認状況：練習2の録音後抽出テキストのフォントサイズ正常化は実機確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `1f57bb7`）
+## 以前の記録（2026-11-01 / Europe/Vienna / LT・コミット `6a8b39f`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 括弧漢字ルールに基づく「教える」「果物」のWith漢字実装、および「だれ」の平仮名維持完了。開始時HEAD `5dbca5f`。
 - 変更：
