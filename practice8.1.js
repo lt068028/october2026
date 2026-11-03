@@ -198,7 +198,7 @@ function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
     const get=id=>words[id][kanji?'kanji':'hira'];
     let prefix=spec.subject?get(spec.subject)+'は、':'';
-    prefix+=(spec.object?get(spec.object):'')+(spec.noun?'が':(spec.object?spec.particle:'')+get(spec.verb)+'のが');
+    prefix+=(spec.object?get(spec.object):'')+(spec.noun?'が、':(spec.object?spec.particle:'')+get(spec.verb)+'のが、');
     const negative=['amari','zenzen'].includes(spec.adverb)||spec.answer==='no';
     const ending=style==='formal'?(negative?'じゃないです。':'です。'):(negative?'じゃない。':style==='casual'?'だよ。':'だ。');
     if(spec.qa==='question')return prefix+get(adjective)+(style==='formal'?'ですか。':'？');

@@ -43,7 +43,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill3 .p81-card select').count(),4,'four ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
- check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのがぜんぜん好きじゃないです。','〃のがあまり好きじゃないです。','〃のがちょっと好きです。','〃のがまぁまぁ好きです。','〃のがとても好きです。','〃のがすごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのが、ぜんぜん好きじゃないです。','〃のが、あまり好きじゃないです。','〃のが、ちょっと好きです。','〃のが、まぁまぁ好きです。','〃のが、とても好きです。','〃のが、すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
  check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','〃あまり／好き','〃ちょっと／好き','〃まぁまぁ／好き','〃とても／好き','〃すごく／好き'],'only the first degree cue repeats the common action');
  check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作る'),'ditto marks retain the omitted meaning for accessibility');
  for(const style of ['formal','informal','casual'])for(const script of ['kanji','hiragana']){
@@ -54,7 +54,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   for(let i=0;i<6;i++){
    await page.locator('#drill4 .example-box button').nth(i).click();
    const ending=i<2?(style==='formal'?'じゃないです。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
-   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが'+['ぜんぜん','あまり','ちょっと','まぁまぁ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
+   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが、'+['ぜんぜん','あまり','ちょっと','まぁまぁ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
    await page.evaluate(()=>t.spoken.at(-1).onend());
   }
  }
@@ -69,8 +69,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.evaluate(()=>{const ex=[...document.querySelectorAll('#drill5 .example-box .p81-model')].map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return audit81.normalize(c.textContent);});return audit81.rowsFor(4).flat().every(r=>!ex.includes(audit81.normalize(r.text)));}),true,'D5 never repeats an Example5 model');
   check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹／写真／撮る／上手','〃／苦手'],'Example3 second cue abbreviates the complete repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉／ギター／弾く／上手','〃／得意'],'Example5 second cue abbreviates the repeated subject and action');
-  check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉は、ギターを弾くのが上手です。','〃のが得意です。'],'Example5 second model retains のが after ditto');
-  check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は、写真を撮るのが上手です。','〃のが苦手です。'],'Example3 second model retains のが after ditto');
+  check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉は、ギターを弾くのが、上手です。','〃のが、得意です。'],'Example5 second model retains のが after ditto');
+  check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は、写真を撮るのが、上手です。','〃のが、苦手です。'],'Example3 second model retains のが after ditto');
 
  check(await page.locator('#drill4 .recording-actions button').evaluateAll(es=>es.every(e=>e.disabled&&e.getAttribute('aria-disabled')==='true')),true,'Dr4 listen, record, and stop buttons start locked before activity selection across all 6 rows');
  await page.locator('[data-choice="degree-0"]').selectOption('washDish');
@@ -84,7 +84,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example5 topic and nominalizer highlighted');
  check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
- check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['テレビを見るのが好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
+ check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['テレビを見るのが、好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
  for(const label of ['🔊🙆','🔊🙅']){
   const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
@@ -98,7 +98,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   check(await row.locator('.recording-actions button').first().isDisabled(),false,'matching adjective unlocks');
  }
  const comparisons=await page.evaluate(()=>audit81.rowsFor(0).map(rs=>rs.map(r=>r.text)));
- check(comparisons,[['本が好きです。','本を読むのが好きです。'],['音楽が好きです。','音楽を聞くのが好きです。'],['自転車が好きです。','自転車に乗るのが好きです。']],'noun versus action');
+ check(comparisons,[['本が、好きです。','本を読むのが、好きです。'],['音楽が、好きです。','音楽を聞くのが、好きです。'],['自転車が、好きです。','自転車に乗るのが、好きです。']],'noun versus action');
  check(await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[0][0];return [a.matchesAnswer('あなたはコーヒーを飲むのが好きですか',r),a.matchesAnswer('私はコーヒーを飲むのが好きですか',r)];}),[true,false],'question addresses the listener');
  for(let i=0;i<6;i++){
   const acts=['washDish','discardThing','useSmartphone','cutHair','carryBag','beginStudy'];
@@ -149,7 +149,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[1][1];return a.matchesAnswer('はい、洗濯をするのがきらいです',r);});check(variants,true,'する noun full reply variant');
  const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['strong','good'],['good','strong'],['difficult','bad'],['good','strong']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
- check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('掃除するのが得意です。',d5[3][0])];}),['父は、料理するのが上手です。','私は、掃除するのが得意です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
+ check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('掃除するのが得意です。',d5[3][0])];}),['父は、料理するのが、上手です。','私は、掃除するのが、得意です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
   const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
