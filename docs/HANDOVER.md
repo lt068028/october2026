@@ -1,5 +1,18 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 2（練習行）における「何を」「何か」のオレンジ文法強調（grammar-highlight）撤去完了。開始時HEAD `30f9a55`。
+- 変更：
+  1. **Drill 2 練習行での文法ハイライト撤去（`practice8.2.js`）**：
+     - Drill 2（`contrast-`）のモデル表示において、「何を」「何か」のオレンジ色強調表示を撤去し、通常のテキスト表示へ変更（Example 2でのみ強調を維持）。
+  2. **キャッシュキー更新（`practice8.2.html`）**：
+     - スクリプトタグを `v=20261103-p82-d2-no-highlight` に更新。
+- 変更ファイル：practice8.2.js、practice8.2.html、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、D2ハイライト撤去・構文整合性確認合格。
+- 実機確認状況：Drill 2 の各問モデル文で「何を」「何か」がオレンジ強調されず通常文字で表示されることの確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `30f9a55`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 4 のタイトル・説明文の先取り（Advanced / Sneak Peek L15）更新完了。開始時HEAD `e9c34d5`。
 - 変更：
   1. **Drill 4 のタイトルおよび説明文の更新（`practice8.2.js`）**：

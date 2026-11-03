@@ -148,7 +148,8 @@ function cues(r){
 }
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;
- const marks=['何でも','何か','何も','何を','なんでも','なにか','なにも','なにを',...(r.text.includes('何も')?['ませんでした','ません','なかった','ない']:[])].sort((a,b)=>b.length-a.length);
+ const skipContrastHighlight=r.id.startsWith('contrast-');
+ const marks=['何でも',skipContrastHighlight?null:'何か','何も',skipContrastHighlight?null:'何を','なんでも',skipContrastHighlight?null:'なにか','なにも',skipContrastHighlight?null:'なにを',...(r.text.includes('何も')?['ませんでした','ません','なかった','ない']:[])].filter(Boolean).sort((a,b)=>b.length-a.length);
  const tokens=Object.entries(words).map(([id,w])=>({id,text:w[scriptMode==='kanji'?'kanji':'hira']}));
  for(const [id,v]of Object.entries(verbs))for(const t of Object.values(v))tokens.push({id,text:scriptMode==='kanji'?t:displayKana(t)});
  tokens.sort((a,b)=>b.text.length-a.text.length);
