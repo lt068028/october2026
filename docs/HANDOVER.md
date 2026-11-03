@@ -1,5 +1,20 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。本番アセット全24枚のWebP化（42MB→3.7MB・約91%削減）およびVercel不要デプロイ自動スキップ（vercel.json ignoreCommand）実装完了。開始時HEAD `6437a93`。
+- 変更：
+  1. **全本番アセット（assets/ 直下24枚）のWebP化**：
+     - `libMagickWand` を用いて全24枚のPNGを高品位WebP（品質85、アルファ透過維持、縦横比完全維持）へ変換し、PNGファイルを削除。
+     - アセット容量を **42MB ➔ 3.7MB（約91%削減）** へ劇的に軽量化。
+     - 参照コード（`practice2.1.js`、`practice2-next.js`、`style.css`、テスト群）の参照パスを `.webp` へ更新。
+  2. **Vercel不要デプロイ自動スキップ（`vercel.json`）**：
+     - `ignoreCommand` を設定し、`docs/`、`tests/`、`scripts/`、`*.md` のみ変更のコミットではVercelビルド・デプロイを自動スキップ（Exit 0）させ、デプロイ容量消費を抑制。
+- 変更ファイル：assets/*.webp, assets/*.png (del), practice2.1.js, practice2-next.js, style.css, tests/*.cjs, vercel.json, docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、WebP寸法・透過チャネル検証合格。
+- 実機確認状況：P2.1, P2.2, P2.3 での WebP 画像表示確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `6437a93`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。未採用Review画像（assets/review/ 全73ファイル・約62MB）一括削除、画像整理・削除ルールのAGENTS.md制定完了。開始時HEAD `1f6bc08`。
 - 変更：
   1. **未採用Review画像の一括削除（`assets/review/`）**：

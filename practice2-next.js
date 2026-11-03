@@ -1312,7 +1312,7 @@ function practice2ShowNotice(resultSpan, message) {
         picture.classList.toggle('p2x-people-picture',people);
         const stage=node('div','p2x-stage');
         const image=node('img','p2x-photo');
-        image.src=!is22?'assets/practice23-floors.png':people?'assets/practice22-people.png':hats?(photoKind?`assets/practice22-${photoKind}.png`:'assets/practice22-hats.png'):'assets/practice22-shelves.png';
+        image.src=!is22?'assets/practice23-floors.webp':people?'assets/practice22-people.webp':hats?(photoKind?`assets/practice22-${photoKind}.webp`:'assets/practice22-hats.webp'):'assets/practice22-shelves.webp';
         image.alt=!is22?'Three comic panels: X is on the first floor at the bank, Y on the second floor at the cafe, and neither is on the third floor at the library.':people?'X and Mary stand together in the left foreground, seen from behind and facing the pair on the right. Takeshi, with long dreadlocks, black-framed glasses and a mustard yellow shirt, and Y, in his original navy shirt without glasses, stand farther back on the right and face X and Mary across a clear gap. Robert sits at the back reading a book, far from both pairs.':hats?'Rear view of X on the left and Y on the right, with a baseball cap near X, a sun hat near Y, and a fedora on the upper central shelf.':'X stands on the left beside a nearby shelf, Y stands on the right beside another nearby shelf, and a third shelf is far from both at the back of the shop.';
         if(photoKind)image.alt=`X stands on the left and Y on the right, seen from behind. ${photoKind==='fruit'?'Apples, bananas, and mandarins':photoKind==='onigiri'?'Three groups of two rice balls':photoKind==='bento'?'Three groups of two boxed lunches':photoKind==='bag'?'Three differently shaped bags':'Three differently shaped clocks and watches'}: one near X, one near Y, and one on the upper shelf far from both.`;
         image.width=shop?1774:is22?1536:2172;image.height=shop?887:is22?1024:724;stage.append(image);
@@ -1346,7 +1346,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const sprite=node('span','p2x-sprite');
                 if(o.kind==='hat'||o.photoKind) {sprite.style.background='none';}
                 else if(o.kind==='place') {sprite.classList.add('p2x-place-target');}
-                else if(o.kind==='notebook') {sprite.style.backgroundImage="url('assets/practice21-items.png')";sprite.style.backgroundSize='300% 200%';sprite.style.backgroundPosition='0% 100%';}
+                else if(o.kind==='notebook') {sprite.style.backgroundImage="url('assets/practice21-items.webp')";sprite.style.backgroundSize='300% 200%';sprite.style.backgroundPosition='0% 100%';}
                 else {sprite.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;}
                 target.append(sprite);
                 if(is22&&(!which||photoKind)) {
@@ -1454,7 +1454,7 @@ function practice2ShowNotice(resultSpan, message) {
         }
         if(example&&!call){const link=node('p','p23-call-link');link.append(phoneIcon(),node('span','','X ↔ Y'));picture.append(link);}
         const stage=node('div','p23-city-stage'),photo=node('img','p23-city-photo');
-        photo.src=indoor?'assets/practice23-places.png':drill?'assets/practice23-drill-cities.png':'assets/practice23-cities.png';photo.width=2172;photo.height=724;
+        photo.src=indoor?'assets/practice23-places.webp':drill?'assets/practice23-drill-cities.webp':'assets/practice23-cities.webp';photo.width=2172;photo.height=724;
         photo.alt=indoor?'X at the bank and Y at the cafe are on a phone call. Z reads quietly at the library.':'X and Y are on a phone call in different cities. Z is seated having a drink in a third city, not in their conversation.';stage.append(photo);
         for(const [i,o]of objects.entries()) {
             const region=node('div','p23-city-region');region.dataset.zone=o.zone;region.dataset.regionIndex=String(i);region.style.left=(i*100/3)+'%';
@@ -1850,7 +1850,7 @@ function practice2ShowNotice(resultSpan, message) {
         panel(container,'Drill 5: どのかさ・どれ','💡Compare the same umbrella: どのかさ → このかさ; どれ → これ.');
         const mode=setButtons(container,['Adjectives','Pronouns'],'umbrellaModeSet')===1?'pronoun':'adjective';
         const picture=node('div','p2x-picture p2x-umbrella-picture'),stage=node('div','p2x-stage');
-        const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.png';photo.width=2135;photo.height=736;
+        const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.webp';photo.width=2135;photo.height=736;
         photo.alt='X stands at the left and B at the right of a long umbrella rack. The teacher’s red umbrella is near X, Y’s blue umbrella is near Y, and X’s yellow umbrella is far from both.';stage.append(photo);
         for(const who of ['A','B']){const label=node('strong','p2x-person',speakerName(who));label.dataset.person=who;stage.append(label);}
         const umbrellas=[{owner:'A',zone:'far',x:46.6,label:'Xさんの'},{owner:'B',zone:'B',x:80.7,label:'Yさんの'},{owner:'teacher',zone:'A',x:17.7,label:word('せんせいの','先生の')}];

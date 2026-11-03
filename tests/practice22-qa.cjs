@@ -6,7 +6,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const p=await browser.newPage();await p.addInitScript(mock);
- await p.route('http://qa.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({status:fs.existsSync(file)?200:404,body:fs.existsSync(file)?fs.readFileSync(file):'',contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
+ await p.route('http://qa.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({status:fs.existsSync(file)?200:404,body:fs.existsSync(file)?fs.readFileSync(file):'',contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.webp')?'image/webp':file.endsWith('.png')?'image/png':'text/html'});});
  await p.goto('http://qa.test/practice2.2.html');
  assert.equal(await p.locator('.p2x-speaker-guide').count(),0);
  let count=0;const check=(a,b)=>{assert.deepEqual(a,b);count++};

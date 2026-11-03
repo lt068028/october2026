@@ -1238,7 +1238,7 @@ function practice2ShowNotice(resultSpan, message) {
         box.append(node('h2','p21-distance-heading','こ・そ・あ: three sounds that signal distance'));
         const board=node('div','p21-distance-board');
         const stage=node('div','p21-photo-stage');
-        const photo=node('img','p21-photo');photo.src='assets/practice21-table.png';
+        const photo=node('img','p21-photo');photo.src='assets/practice21-table.webp';
         photo.alt='X sits at the left end of a table with a book. Y sits at the right end with a bag. A clock hangs on the wall, far from both.';
         photo.width=1536;photo.height=1024;stage.append(photo);
         const context=node('p','p21-photo-context');
@@ -1341,7 +1341,7 @@ function practice2ShowNotice(resultSpan, message) {
         const picture=node('div','p21-drill-picture');
         picture.dataset.whTargets='true';
         const stage=node('div','p21-photo-stage');
-        const background=node('img','p21-photo');background.src='assets/practice21-empty-table.png';
+        const background=node('img','p21-photo');background.src='assets/practice21-empty-table.webp';
         background.width=1536;background.height=1024;
         background.alt='X sits at the left end of a table; Y sits at the right. One object is near each person and another hangs on the distant wall.';
         stage.append(background);
@@ -1354,7 +1354,7 @@ function practice2ShowNotice(resultSpan, message) {
             const item=node('div','p21-drill-item');item.dataset.zone=o.zone;item.dataset.kind=o.kind;
             item.dataset.set=String(setIndex);
             item.setAttribute('role','img');item.setAttribute('aria-label',o.meaning);
-            if(foodSprites[o.kind]) {item.style.backgroundImage="url('assets/practice21-food-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
+            if(foodSprites[o.kind]) {item.style.backgroundImage="url('assets/practice21-food-items.webp')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
             else if(o.kind==='newspaper'||o.kind==='tshirt') {
                 item.classList.add('p21-replacement-item');
                 item.style.backgroundPosition=o.kind==='newspaper'?'0% 0%':'100% 0%';
@@ -1427,7 +1427,7 @@ function practice2ShowNotice(resultSpan, message) {
             picture._whichGuide=guide;
         }
         const stage=node('div','p21-photo-stage');
-        const photo=node('img','p21-photo');photo.src='assets/practice21-shelf-table.png';photo.width=1536;photo.height=1024;
+        const photo=node('img','p21-photo');photo.src='assets/practice21-shelf-table.webp';photo.width=1536;photo.height=1024;
         photo.alt='X sits on the left, Y on the right. Objects are near X, near Y, and on a shelf far from both.';
         stage.append(photo);
         if(picture._whichGuide){
@@ -1440,12 +1440,12 @@ function practice2ShowNotice(resultSpan, message) {
             item.setAttribute('role','img');item.setAttribute('aria-label',`${o.colorName||''} ${o.meaning}`.trim());
             const foodSprites={onigiri:[50,0],bento:[100,0],sandwich:[0,50]};
             const clothingSprites={shoes:[0,12.5],jeans:[50,12.5],sweatshirt:[100,12.5]};
-            if(clothingSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-clothing-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=clothingSprites[o.kind].map(v=>v+'%').join(' ');}
-            else if(foodSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-food-items.png')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
+            if(clothingSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-clothing-items.webp')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=clothingSprites[o.kind].map(v=>v+'%').join(' ');}
+            else if(foodSprites[o.kind]) {item.classList.remove('p21-choice-item');item.style.backgroundImage="url('assets/practice21-food-items.webp')";item.style.backgroundSize='300% 300%';item.style.backgroundPosition=foodSprites[o.kind].map(v=>v+'%').join(' ');}
             else if(o.kind==='notebook') {item.classList.remove('p21-choice-item');item.style.backgroundPosition='0% 100%';}
             else item.style.backgroundPosition=`${{red:0,blue:50,green:100}[o.colorName||'blue']}% ${{phone:0,dictionary:50,wallet:100}[o.kind]}%`;
-            if(o.kind==='wallet')item.style.backgroundImage="url('assets/practice21-wallet-variants.png')";
-            if(o.kind==='dictionary')item.style.backgroundImage="url('assets/practice21-dictionary-labels.png')";
+            if(o.kind==='wallet')item.style.backgroundImage="url('assets/practice21-wallet-variants.webp')";
+            if(o.kind==='dictionary')item.style.backgroundImage="url('assets/practice21-dictionary-labels.webp')";
             imageHint(item,o);stage.append(item);
         }
         if(context){const canvas=node('div','p21-example-scene-canvas');while(stage.firstChild)canvas.append(stage.firstChild);stage.append(canvas);}

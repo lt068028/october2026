@@ -23,7 +23,7 @@ function mock(){
  // Practice 2.3 city tasks are covered by practice23-cities.cjs.
  for(const number of ['2.2']){
   const p=await browser.newPage();const errors=[];p.on('pageerror',e=>errors.push(e.message));await p.addInitScript(mock);
-  await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});});
+  await p.route('http://next.test/**',r=>{const file=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(file))return r.fulfill({status:404,body:''});return r.fulfill({body:fs.readFileSync(file),contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.webp')?'image/webp':file.endsWith('.png')?'image/png':'text/html'});});
   await p.goto(`http://next.test/practice${number}.html`);
   const personSection=number==='2.2'?'#drill4Container':'#drill2Container';
   check(await p.locator('.p2x-people-picture .p2x-person-name').count(),0,'no visible person names');
@@ -37,7 +37,7 @@ function mock(){
   check(await p.locator('#scriptModeControl [aria-pressed="true"]').getAttribute('data-value'),'hiragana',number+' hiragana default');
   check(await p.locator('.p21-model-line').count(),6,number+' six example models');
   if(number==='2.2'){
-   check(await p.locator('.p2x-example .p2x-photo').first().getAttribute('src'),'assets/practice22-hats.png','hat photo');
+   check(await p.locator('.p2x-example .p2x-photo').first().getAttribute('src'),'assets/practice22-hats.webp','hat photo');
    check(await p.locator('.p2x-example .p2x-reach').count(),3,'three proximity regions');
    const colorsA=await p.locator('.p2x-example .p2x-reach').evaluateAll(es=>es.map(e=>getComputedStyle(e).backgroundColor));
    await p.locator('.p2x-example [data-speaker="B"][data-zone="A"]').click();
