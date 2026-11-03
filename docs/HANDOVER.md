@@ -1,5 +1,20 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 4 のタイトル・説明文の先取り（Advanced / Sneak Peek L15）更新完了。開始時HEAD `e9c34d5`。
+- 変更：
+  1. **Drill 4 のタイトルおよび説明文の更新（`practice8.2.js`）**：
+     - タイトル: `Drill 4: [Advanced] 何でも — Unlimited Choice ( Sneak Peek L15 )`
+     - 説明文: `💡[Advanced] Unlike 何か (some) or 何も (none), 何でも can describe "whatever". Ask with どんな and answer with 何でも.`
+     - 何か・何もとの対比を明確化し、Genki II L15で本格導入される「QW＋でも」の普遍ルールへの布石（Sneak Peek）を明記。
+  2. **キャッシュキー更新（`practice8.2.html`）**：
+     - スクリプトタグを `v=20261103-p82-d4-advanced-sneak-peek` に更新。
+- 変更ファイル：practice8.2.js、practice8.2.html、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、語彙・構文整合性確認合格。
+- 実機確認状況：Drill 4 のパネルタイトル・説明文の表示（With漢字／Hiragana Only両モード）確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `e9c34d5`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。全14ページの「↩️もどる」ボタンへのホバーツールチップ（Return to Practice Menu.）実装完了。開始時HEAD `5c1c4c2`。
 - 変更：
   1. **全14ページの「↩️もどる」ボタンへのホバーツールチップ実装（全HTML）**：

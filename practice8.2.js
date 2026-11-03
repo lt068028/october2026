@@ -73,7 +73,7 @@ const sections=[
  {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か.'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Ask with 何を for specific items, or 何か for yes/no.'},
  {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か. Choose 🙆 or 🙅. For 🙅, use 何も＋negative.'},
- {title:'Drill 4: 何でも — Questions & Answers',instruction:'💡Ask with どんな. Answer with 何でも＋verb.'}
+ {title:'Drill 4: [Advanced] 何でも — Unlimited Choice ( Sneak Peek L15 )',instruction:'💡[Advanced] Unlike 何か (some) or 何も (none), 何でも can describe "whatever". Ask with どんな and answer with 何でも.'}
 ];
 const statements=[{place:'store',verb:'buy'},{time:'tomorrow',verb:'do'},{verb:'drink'},{person:'teacher',verb:'listen'}];
 const contrastPairs=[
