@@ -21,7 +21,7 @@ W('what','何','なに','nani','what','何');
 W('whatkind','どんな','どんな','donna','what kind of');
 W('tomorrow','明日','あした','ashita','tomorrow','あした');
 W('morning','今朝','けさ','kesa','this morning','けさ');
-W('weekend','次の週末','つぎのしゅうまつ','tsugi no shūmatsu','next weekend','次のしゅうまつ');
+W('weekend','週末','しゅうまつ','shūmatsu','weekend','しゅうまつ');
 W('store','デパート','デパート','depāto','department store');
 W('teacher','先生','せんせい','sensei','teacher');
 W('friend','友達','ともだち','tomodachi','friend','ともだち');
@@ -34,6 +34,10 @@ W('party','パーティー','パーティー','pātī','party');
 W('home','家','いえ','ie','home; house','家');
 W('class','授業','じゅぎょう','jugyō','class; lesson','じゅぎょう');
 W('school','学校','がっこう','gakkō','school','学校');
+W('convenience','コンビニ','コンビニ','kombini','convenience store');
+W('snack','おやつ','おやつ','oyatsu','snack');
+W('yesterday','昨日','きのう','kinō','yesterday','きのう');
+W('college','大学','だいがく','daigaku','college; university','大学');
 const verbs={};
 function V(id,dict,hira,romaji,meaning,forms,cue){W(id,dict,hira,romaji,meaning,cue);verbs[id]={dict,...forms};}
 V('drink','飲む','のむ','nomu','to drink',{masu:'飲みます',past:'飲みました',neg:'飲みません',pastNeg:'飲みませんでした',plainPast:'飲んだ',plainNeg:'飲まない',plainPastNeg:'飲まなかった'});
@@ -57,6 +61,7 @@ V('borrow','借りる','かりる','kariru','to borrow',{masu:'借ります',pas
 V('help','手伝う','てつだう','tetsudau','to help',{masu:'手伝います',past:'手伝いました',neg:'手伝いません',pastNeg:'手伝いませんでした',plainPast:'手伝った',plainNeg:'手伝わない',plainPastNeg:'手伝わなかった'},'てつだう');
 V('speak','話す','はなす','hanasu','to speak; to talk',{masu:'話します',past:'話しました',neg:'話しません',pastNeg:'話しませんでした',plainPast:'話した',plainNeg:'話さない',plainPastNeg:'話さなかった'},'はなす');
 V('learn','習う','ならう','narau','to learn',{masu:'習います',past:'習いました',neg:'習いません',pastNeg:'習いませんでした',plainPast:'習った',plainNeg:'習わない',plainPastNeg:'習わなかった'},'ならう');
+V('teach','教える','おしえる','oshieru','to teach',{masu:'教えます',past:'教えました',neg:'教えません',pastNeg:'教えませんでした',plainPast:'教えた',plainNeg:'教えない',plainPastNeg:'教えなかった'},'おしえる');
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
 const formReadings=[];
 for(const [id,v]of Object.entries(verbs)){
@@ -82,18 +87,24 @@ const sections=[
  {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か. Choose 🙆 or 🙅. For 🙅, use 何も＋negative.'},
  {title:'Drill 4: [Advanced] 何でも — Unlimited Choice ( Sneak Peek L15 )',instruction:'💡[Advanced] Unlike 何か (some) or 何も (none), 何でも can describe "whatever". Ask with どんな and answer with 何でも.'}
 ];
-const statements=[{place:'store',verb:'buy'},{time:'tomorrow',verb:'do'},{verb:'drink'},{person:'teacher',verb:'listen'}];
+const statements=[
+ {place:'class',verb:'speak'},
+ {place:'school',verb:'learn'},
+ {place:'college',verb:'teach'},
+ {person:'teacher',personParticle:'に',verb:'listen'}
+];
 const contrastPairs=[
  {verb:'read'},
  {verb:'write'},
  {verb:'takephoto'},
- {person:'friend',personParticle:'から',verb:'borrow'}
+ {verb:'wash'}
 ];
 const conversations=[
+ {place:'convenience',placeParticle:'で',verb:'buy'},
  {place:'party',placeParticle:'に',verb:'takealong'},
- {place:'home',placeParticle:'で',verb:'help'},
- {place:'class',placeParticle:'で',verb:'speak'},
- {place:'school',placeParticle:'で',verb:'learn'}
+ {time:'weekend',verb:'do'},
+ {place:'snack',placeParticle:'に',verb:'eat'},
+ {person:'friend',personParticle:'から',verb:'borrow'}
 ];
 const habits=[{object:'cook',verb:'make'},{object:'song',verb:'sing'},{object:'hat',verb:'cap'}];
 const habitExample={object:'shoes',verb:'wearshoes'};
@@ -635,7 +646,7 @@ function addExample(root,si){
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What',translation:'(What do you see?)'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か · Anything',translation:'(Do you see anything?)'})
  ];
- else if(si===2)samples=[makeRow('ex3-q',{time:'morning',verb:'eat',past:true,mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'eat',past:true,mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'eat',past:true,mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
+ else if(si===2)samples=[makeRow('ex3-q',{time:'yesterday',verb:'help',past:true,mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'help',past:true,mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'help',past:true,mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
  samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind',r.kind?(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':''):'');const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
