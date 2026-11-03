@@ -68,7 +68,7 @@ const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira
 [['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
-function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
+function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
  {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か.'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Ask with 何を for specific items, or 何か for yes/no.'},
@@ -92,11 +92,12 @@ function sentenceFor(s){
  if(s.mode==='wh')return 'どんな'+words[s.object].kanji+'を'+inflect(s)+ending;
  if(s.mode==='any')return '何でも'+inflect(s)+'。';
  if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も':'')+inflect(s,no)+'。';}
- const target=s.pronoun==='what'?'何を':(s.pronoun?words[s.pronoun].kanji:'何か');
+ const target=s.pronoun==='what'?'何を':(s.withWo?'何か(を)':(s.pronoun?words[s.pronoun].kanji:'何か'));
  return context(s)+target+inflect(s,s.pronoun==='nothing')+(s.mode==='question'||s.mode==='contrast'?ending:'。');
 }
 function makeRow(id,spec,extra={}){
  const r={id,...spec,...extra};r.text=sentenceFor(r);r.hira=displayKana(r.text);r.refs=[r.text,r.hira];
+ if(r.withWo){r.refs.push(r.text.replace(/[\(（]を[\)）]/g,''),r.text.replace(/[\(（]を[\)）]/g,'を'));}
  if(r.mode==='reply'){
   const no=r.answer==='no',verb=inflect(r,no)+'。';
   const starts=speechStyle==='casual'?[no?'ううん、':'うん、','']:[no?'いいえ、':'はい、',''];
@@ -128,8 +129,8 @@ function makeRow(id,spec,extra={}){
 function rowsFor(si){
  if(si===0)return statements.map((s,i)=>[makeRow('something-'+i,{...s,mode:'question'})]);
  if(si===1)return contrastPairs.map((s,i)=>[
-  makeRow('contrast-'+i+'-what',{...s,pronoun:'what',mode:'contrast'},{kind:'何を'}),
-  makeRow('contrast-'+i+'-something',{...s,pronoun:'something',mode:'contrast'},{kind:'何か'})
+  makeRow('contrast-'+i+'-what',{...s,pronoun:'what',mode:'contrast'}),
+  makeRow('contrast-'+i+'-something',{...s,pronoun:'something',mode:'contrast'})
  ]);
  if(si===2)return conversations.map((s,i)=>{const id='yn-'+i+'-a',answer=choices.get(id);return [makeRow('yn-'+i+'-q',{...s,mode:'question'},{kind:'Q',qa:'question'}),makeRow(id,{...s,mode:'reply',answer:answer||'yes'},{kind:'A',qa:'response',yn:true,pending:!answer})];});
  return habits.map((s,i)=>[makeRow('any-'+i+'-q',{...s,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('any-'+i+'-a',{...s,mode:'any'},{kind:'A',qa:'response'})]);
@@ -216,7 +217,7 @@ function markPlaying(b) {
     b.textContent = 'Playing...';
 }
 
-function speechText(text) { return text.replace(/^ううん、/,'ううんん、'); }
+function speechText(text) { return text.replace(/^ううん、/,'ううんん、').replace(/[\(（]を[\)）]/g,''); }
 
 const VOICE_STORAGE_KEY82 = 'october2026.selectedVoiceName';
 let preferredVoice81 = null;
@@ -617,14 +618,14 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
- if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も＋Negative, Nothing','何でも · Anything'][i],intro:true}));
+ if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も＋Negative · Nothing','何でも · Everything'][i],intro:true}));
  else if(si===1)samples=[
-  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What'}),
-  makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast'},{kind:'何か · Something'})
+  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What',translation:'(What do you see?)'}),
+  makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か · Anything',translation:'(Do you see anything?)'})
  ];
  else if(si===2)samples=[makeRow('ex3-q',{time:'morning',verb:'eat',past:true,mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'eat',past:true,mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'eat',past:true,mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind',r.kind?(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':''):'');const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind',r.kind?(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':''):'');const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function render(){
  const root=$('drill1Container');root.replaceChildren();views.clear();

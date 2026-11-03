@@ -1,17 +1,25 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 2（練習行）における「何を」「何か」のオレンジ文法強調（grammar-highlight）撤去完了。開始時HEAD `30f9a55`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Ex1／Ex2ラベル更新、Ex2英語翻訳インライン併記（案A）、Ex2モデル文「何か(を)見ますか。」対応（TTS・STT考慮）、Drill 2練習行での「何を／何か」オレンジラベル撤去完了。開始時HEAD `1086eba`。
 - 変更：
-  1. **Drill 2 練習行での文法ハイライト撤去（`practice8.2.js`）**：
-     - Drill 2（`contrast-`）のモデル表示において、「何を」「何か」のオレンジ色強調表示を撤去し、通常のテキスト表示へ変更（Example 2でのみ強調を維持）。
-  2. **キャッシュキー更新（`practice8.2.html`）**：
-     - スクリプトタグを `v=20261103-p82-d2-no-highlight` に更新。
+  1. **Ex1／Ex2のラベル表記更新（`practice8.2.js`）**：
+     - Ex1: `何か · Something`, `何も＋Negative · Nothing`, `何でも · Everything` に更新（`Anything` ➔ `Everything`、カンマ ➔ 中黒へ統一）。
+     - Ex2: `何を · What`, `何か · Anything` に更新。
+  2. **Ex2モデル文の「何か(を)見ますか。」および案A（英語併記）の実装（`practice8.2.js`）**：
+     - Ex2 行1: `何を見ますか。` の直後に `<span class="vocab-inline">(What do you see?)</span>` をインライン併記。
+     - Ex2 行2: モデル文を `何か(を)見ますか。` に変更し、直後に `<span class="vocab-inline">(Do you see anything?)</span>` をインライン併記。
+     - TTS読み上げ（`speechText`）で `[\(（]を[\)）]` を空文字に置換し、「何か見ますか。」として自然に発話。
+     - 音声認識判定（`r.refs` および `normalize`）で助詞「を」の有無（「何か見ますか」「何かを見ますか」）双方を完全受理。
+  3. **Drill 2練習行での「何を／何か」オレンジラベル撤去（`practice8.2.js`）**：
+     - Drill 2（`contrast-`）の各練習行の cue から `kind: '何を'`, `kind: '何か'` を撤去し、練習行内での不要なオレンジ表示を完全解消（キューは `何／読む`、`何か／読む` 等を提示）。
+  4. **キャッシュキー更新（`practice8.2.html`）**：
+     - スクリプトタグを `v=20261103-p82-ex1-ex2-translations` に更新。
 - 変更ファイル：practice8.2.js、practice8.2.html、docs/HANDOVER.md。
-- 自動検証：`git diff --check` 合格、D2ハイライト撤去・構文整合性確認合格。
-- 実機確認状況：Drill 2 の各問モデル文で「何を」「何か」がオレンジ強調されず通常文字で表示されることの確認待ち。
+- 自動検証：`git diff --check` 合格、構文整合性確認合格。
+- 実機確認状況：Ex1（Something/Nothing/Everything）、Ex2（What/Anything、インライン英語訳表示、何か(を)見ますか。の表示・音声）、Drill 2の練習行キュー表示の確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `30f9a55`）
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `1086eba`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 4 のタイトル・説明文の先取り（Advanced / Sneak Peek L15）更新完了。開始時HEAD `e9c34d5`。
 - 変更：
