@@ -16,7 +16,7 @@ function W(id,kanji,hira,romaji,meaning,cue) {
 
 W('something','何か','なにか','nanika','something');
 W('nothing','何も','なにも','nanimo','nothing (with a negative ending)');
-W('anything','何でも','なんでも','nandemo','anything; no restriction');
+W('anything','何でも','なんでも','nandemo','everything');
 W('what','何','なに','nani','what','何');
 W('whatkind','どんな','どんな','donna','what kind of');
 W('tomorrow','明日','あした','ashita','tomorrow','あした');
@@ -30,6 +30,10 @@ W('cook','料理','りょうり','ryōri','cooking; cuisine','りょうり');
 W('song','歌','うた','uta','song','うた');
 W('hat','帽子','ぼうし','bōshi','hat','ぼうし');
 W('shoes','靴','くつ','kutsu','shoes','くつ');
+W('party','パーティー','パーティー','pātī','party');
+W('home','家','いえ','ie','home; house','家');
+W('class','授業','じゅぎょう','jugyō','class; lesson','じゅぎょう');
+W('school','学校','がっこう','gakkō','school','学校');
 const verbs={};
 function V(id,dict,hira,romaji,meaning,forms,cue){W(id,dict,hira,romaji,meaning,cue);verbs[id]={dict,...forms};}
 V('drink','飲む','のむ','nomu','to drink',{masu:'飲みます',past:'飲みました',neg:'飲みません',pastNeg:'飲みませんでした',plainPast:'飲んだ',plainNeg:'飲まない',plainPastNeg:'飲まなかった'});
@@ -50,6 +54,9 @@ V('read','読む','よむ','yomu','to read',{masu:'読みます',past:'読みま
 V('write','書く','かく','kaku','to write',{masu:'書きます',past:'書きました',neg:'書きません',pastNeg:'書きませんでした',plainPast:'書いた',plainNeg:'書かない',plainPastNeg:'書かなかった'},'かく');
 V('takephoto','撮る','とる','toru','to take a photo',{masu:'撮ります',past:'撮りました',neg:'撮りません',pastNeg:'撮りませんでした',plainPast:'撮った',plainNeg:'撮らない',plainPastNeg:'撮らなかった'},'とる');
 V('borrow','借りる','かりる','kariru','to borrow',{masu:'借ります',past:'借りました',neg:'借りません',pastNeg:'借りませんでした',plainPast:'借りた',plainNeg:'借りない',plainPastNeg:'借りなかった'},'かりる');
+V('help','手伝う','てつだう','tetsudau','to help',{masu:'手伝います',past:'手伝いました',neg:'手伝いません',pastNeg:'手伝いませんでした',plainPast:'手伝った',plainNeg:'手伝わない',plainPastNeg:'手伝わなかった'},'てつだう');
+V('speak','話す','はなす','hanasu','to speak; to talk',{masu:'話します',past:'話しました',neg:'話しません',pastNeg:'話しませんでした',plainPast:'話した',plainNeg:'話さない',plainPastNeg:'話さなかった'},'はなす');
+V('learn','習う','ならう','narau','to learn',{masu:'習います',past:'習いました',neg:'習いません',pastNeg:'習いませんでした',plainPast:'習った',plainNeg:'習わない',plainPastNeg:'習わなかった'},'ならう');
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
 const formReadings=[];
 for(const [id,v]of Object.entries(verbs)){
@@ -82,7 +89,12 @@ const contrastPairs=[
  {verb:'takephoto'},
  {person:'friend',personParticle:'から',verb:'borrow'}
 ];
-const conversations=[{time:'weekend',place:'barbecue',placeParticle:'に',verb:'takealong'},{verb:'discard'},{verb:'wash'},{verb:'cut'}];
+const conversations=[
+ {place:'party',placeParticle:'に',verb:'takealong'},
+ {place:'home',placeParticle:'で',verb:'help'},
+ {place:'class',placeParticle:'で',verb:'speak'},
+ {place:'school',placeParticle:'で',verb:'learn'}
+];
 const habits=[{object:'cook',verb:'make'},{object:'song',verb:'sing'},{object:'hat',verb:'cap'}];
 const habitExample={object:'shoes',verb:'wearshoes'};
 function inflect(s,negative=false){const v=verbs[s.verb];return speechStyle==='formal'?v[negative?(s.past?'pastNeg':'neg'):(s.past?'past':'masu')]:negative?v[s.past?'plainPastNeg':'plainNeg']:s.past?v.plainPast:v.dict;}

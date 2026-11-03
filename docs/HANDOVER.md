@@ -1,25 +1,26 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Ex1／Ex2ラベル更新、Ex2英語翻訳インライン併記（案A）、Ex2モデル文「何か(を)見ますか。」対応（TTS・STT考慮）、Drill 2練習行での「何を／何か」オレンジラベル撤去完了。開始時HEAD `1086eba`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Ex1 何でもの辞書ツールチップ英語訳「everything」修正、Drill 3 会話問題の既習範囲（Genki L1〜L8）準拠・重複ゼロ再構成完了。開始時HEAD `91b153e`。
 - 変更：
-  1. **Ex1／Ex2のラベル表記更新（`practice8.2.js`）**：
-     - Ex1: `何か · Something`, `何も＋Negative · Nothing`, `何でも · Everything` に更新（`Anything` ➔ `Everything`、カンマ ➔ 中黒へ統一）。
-     - Ex2: `何を · What`, `何か · Anything` に更新。
-  2. **Ex2モデル文の「何か(を)見ますか。」および案A（英語併記）の実装（`practice8.2.js`）**：
-     - Ex2 行1: `何を見ますか。` の直後に `<span class="vocab-inline">(What do you see?)</span>` をインライン併記。
-     - Ex2 行2: モデル文を `何か(を)見ますか。` に変更し、直後に `<span class="vocab-inline">(Do you see anything?)</span>` をインライン併記。
-     - TTS読み上げ（`speechText`）で `[\(（]を[\)）]` を空文字に置換し、「何か見ますか。」として自然に発話。
-     - 音声認識判定（`r.refs` および `normalize`）で助詞「を」の有無（「何か見ますか」「何かを見ますか」）双方を完全受理。
-  3. **Drill 2練習行での「何を／何か」オレンジラベル撤去（`practice8.2.js`）**：
-     - Drill 2（`contrast-`）の各練習行の cue から `kind: '何を'`, `kind: '何か'` を撤去し、練習行内での不要なオレンジ表示を完全解消（キューは `何／読む`、`何か／読む` 等を提示）。
-  4. **キャッシュキー更新（`practice8.2.html`）**：
-     - スクリプトタグを `v=20261103-p82-ex1-ex2-translations` に更新。
-- 変更ファイル：practice8.2.js、practice8.2.html、docs/HANDOVER.md。
+  1. **Ex1 何でもの辞書ツールチップ更新（`practice8.2.js`）**：
+     - `words['anything']` の英語語義を `'anything; no restriction'` から `'everything'` に修正。ホバー表示時にも一貫して `everything` と表示されるよう是正。
+  2. **Drill 3 会話問題の再設定（Genki L1〜L8厳格準拠・8.2内ゼロ重複）（`practice8.2.js`）**：
+     - ユーザー提案の「パーティー／持っていく」を採用し、他セクション（D1, D2, D4, Ex1〜4）と動詞・名詞が一切重複しない自然な場面で4問を構成：
+       - 問1: `パーティー／もっていく` ➔ `パーティーに何か持っていきますか。`（L3 パーティー、L8 持っていく）
+       - 問2: `家／てつだう` ➔ `家で何か手伝いますか。`（L3 家、L6 手伝う）
+       - 問3: `じゅぎょう／はなす` ➔ `授業で何か話しますか。`（L3 授業、L3 話す）
+       - 問4: `学校／ならう` ➔ `学校で何か習いますか。`（L4 学校、L8 習う）
+     - 全動詞・名詞が Genki I Lesson 8 までの語彙のみで構成され、既習漢字ルール（キューは平仮名／モデルは自然な漢字）を遵守。
+  3. **キャッシュキー更新（`practice8.2.html`）**：
+     - スクリプトタグを `v=20261103-p82-everything-d3-conversations` に更新。
+  4. **回帰テスト同期（`tests/practice82.cjs`）**：
+     - D3問1の期待応答を `パーティーに` に同期。
+- 変更ファイル：practice8.2.js、practice8.2.html、tests/practice82.cjs、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格、構文整合性確認合格。
-- 実機確認状況：Ex1（Something/Nothing/Everything）、Ex2（What/Anything、インライン英語訳表示、何か(を)見ますか。の表示・音声）、Drill 2の練習行キュー表示の確認待ち。
+- 実機確認状況：Ex1「何でも」ホバー時の `everything` 表示、Drill 3（パーティー／持っていく、家／手伝う、授業／話す、学校／習う）の表示・動作確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `1086eba`）
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `91b153e`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 4 のタイトル・説明文の先取り（Advanced / Sneak Peek L15）更新完了。開始時HEAD `e9c34d5`。
 - 変更：
