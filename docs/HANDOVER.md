@@ -1,5 +1,24 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習リストの英語メニュー名変更（Beyond L8 Words）・右寄せコンパクト化・件数内包化完了。開始時HEAD `bbd62b0`。
+- 変更：
+  1. **メニュー名の英語化と右寄せコンパクト化（`practice8.3.html`、`style.css`）**：
+     - メニュー名を学習者向けに `📘 Beyond L8 Words` に変更。
+     - 閉じた状態では右端に小さく角丸ボタン（pill style）で配置（`unlearned-lexicon-container` に `display: flex; justify-content: flex-end;`）。ドリル主動線を邪魔しない控えめなデザインへ刷新。
+     - 開いた状態（`[open]`）ではカード幅が100%に広がり、一覧性を維持。
+  2. **件数表示の内部移動と注記削除（`practice8.3.html`、`practice8.3.js`）**：
+     - 閉じたボタンの常時カウント表示を撤去し、クリックして展開した後の内部見出しに `【Words】（8）`、`【Kanji】（14）` として配置。
+     - `※With漢字モードで使用` の注記テキストを削除。
+     - `practice8.3.js` の `updateUnlearnedLexicon` を簡素化（Kanjiグループの表示切替のみ）。
+  3. **キャッシュキー更新（`practice8.3.html`）**：
+     - `style.css` および `practice8.3.js` のクエリを `v=20261103-p83-beyond-l8-compact` に更新。
+- 変更ファイル：practice8.3.html、practice8.3.js、style.css、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、右寄せレイアウト・構文整合性確認合格。
+- 実機確認状況：閉じた時の右寄せコンパクトボタン表示、クリック展開時のレイアウト、見出し件数表示確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `bbd62b0`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習リストのレベル表記括弧統一（【...】）および未出語への英語意味付与完了。開始時HEAD `56ad343`。
 - 変更：
   1. **未習リスト表記の統一と英語意味の追加（`practice8.3.html`、`practice8.3.js`）**：

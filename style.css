@@ -3846,30 +3846,46 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Unlearned lexicon accordion (Practice 8.3+) */
 .unlearned-lexicon-container {
     max-width: var(--content-max-width, 1080px);
-    margin: 8px auto 16px;
+    margin: 4px auto 14px;
     padding: 0 16px;
     box-sizing: border-box;
+    display: flex;
+    justify-content: flex-end;
 }
 
 .unlearned-accordion {
     border: 1px solid var(--border-color, #cbd5e1);
-    border-radius: 8px;
+    border-radius: 20px;
     background: var(--bg-panel, #f8fafc);
     overflow: hidden;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    width: auto;
+}
+
+.unlearned-accordion[open] {
+    width: 100%;
+    border-radius: 8px;
 }
 
 .unlearned-summary {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    font-size: 0.95rem;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-primary, #1e293b);
     cursor: pointer;
     user-select: none;
     list-style: none;
+}
+
+.unlearned-accordion[open] .unlearned-summary {
+    display: flex;
+    width: 100%;
+    padding: 8px 14px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.02);
 }
 
 .unlearned-summary::-webkit-details-marker {
@@ -3880,21 +3896,16 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     color: #0284c7;
 }
 
-.unlearned-counts {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-secondary, #64748b);
-    margin-right: auto;
-}
-
 .unlearned-arrow {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary, #64748b);
     transition: transform 0.2s ease;
+    margin-left: 2px;
 }
 
 .unlearned-accordion[open] .unlearned-arrow {
     transform: rotate(180deg);
+    margin-left: auto;
 }
 
 .unlearned-body {
@@ -3903,7 +3914,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     line-height: 1.6;
 }
 
@@ -3970,6 +3981,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     }
     .unlearned-summary-title {
         color: #38bdf8;
+    }
+    .unlearned-accordion[open] .unlearned-summary {
+        background: rgba(255, 255, 255, 0.04);
     }
     .unlearned-body {
         border-top-color: #334155;

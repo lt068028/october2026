@@ -772,11 +772,10 @@ function initDrawerEvents(){
  });
 }
 function updateUnlearnedLexicon(){
- const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
- if(!kanjiGroup||!counts)return;
+ const kanjiGroup=$('unlearnedKanjiGroup');
+ if(!kanjiGroup)return;
  const isKanji=scriptMode==='kanji';
  kanjiGroup.style.display=isKanji?'block':'none';
- counts.textContent=isKanji?'（語彙: 8語 / 漢字: 14字）':'（語彙: 8語）';
 }
 function setupUnlearnedAccordion(){
  const acc=$('unlearnedAccordion');
