@@ -776,7 +776,7 @@ function updateUnlearnedLexicon(){
  if(!kanjiGroup||!counts)return;
  const isKanji=scriptMode==='kanji';
  kanjiGroup.style.display=isKanji?'block':'none';
- counts.textContent=isKanji?'（語彙: 7語 / 漢字: 14字）':'（語彙: 7語）';
+ counts.textContent=isKanji?'（語彙: 8語 / 漢字: 14字）':'（語彙: 8語）';
 }
 function setupUnlearnedAccordion(){
  const acc=$('unlearnedAccordion');

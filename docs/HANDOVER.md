@@ -1,5 +1,28 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習リストのレベル表記括弧統一（【...】）および未出語への英語意味付与完了。開始時HEAD `56ad343`。
+- 変更：
+  1. **未習リスト表記の統一と英語意味の追加（`practice8.3.html`、`practice8.3.js`）**：
+     - 未出の言葉（8語）と未出の漢字（14字）のレベル表記括弧をすべて `【L...】`・`【Genki外】` の墨付き括弧で統一。
+     - 未出の言葉すべてに英語の意味を追加：
+       - `はじまる`【L9】to begin
+       - `おわる`【L9】to end
+       - `ちかい`【L11】near / close
+       - `チーム`【L21】team
+       - `得意`【Genki外】good at / one's forte
+       - `コイ`【Genki外】carp
+       - `RPG`【Genki外】role-playing game
+       - `ローソン`【Genki外】Lawson (convenience store)
+     - 語彙数を `8語`（はじまる・おわるを分離）に更新（HTML初期表示およびJSの `updateUnlearnedLexicon` 内カウント表示）。
+  2. **キャッシュキー更新（`practice8.3.html`）**：
+     - `v=20261103-p83-unlearned-english-meanings` に更新。
+- 変更ファイル：practice8.3.html、practice8.3.js、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、語彙・括弧統一確認合格。
+- 実機確認状況：未習リスト内の英語意味表示およびレベル表記括弧の統一確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `56ad343`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 ページ上部への「Genki L8 未習リスト」アコーディオン追加、D3/D4およびBehind the Cuesの「はじまる・おわる・ちかい」ひらがな統一完了。開始時HEAD `7b0da14`。
 - 変更：
   1. **Genki L8 未習リスト（アコーディオン）の実装（`practice8.3.html`、`practice8.3.js`、`style.css`）**：
