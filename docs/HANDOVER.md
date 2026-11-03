@@ -1,5 +1,17 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Vercelデプロイ容量削減用 `.vercelignore` 追加完了。開始時HEAD `729ada4`。
+- 変更：
+  1. **`.vercelignore` の新設**：
+     - Vercelデプロイ対象から `assets/review/`（約62MBの検討用高解像度画像群）、`tests/`、`docs/`、`*.md` を除外。
+     - 1デプロイあたりの転送・保存容量を約107MBから約35MB以下（約67%以上の削減）へ圧縮。
+- 変更ファイル：.vercelignore、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格。
+- 実機確認状況：Vercel自動デプロイでの容量削減効果・ビルド確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `729ada4`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 Ex2 語彙精緻化（どの店の店員、このRPG）完了、Vercel容量急増（6GB→15GB）原因調査完了。開始時HEAD `0b05ca6`。
 - 変更：
   1. **Ex2 語彙精緻化（`practice8.3.js`）**：
