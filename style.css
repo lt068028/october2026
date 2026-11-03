@@ -672,6 +672,13 @@ a:visited {
     color: var(--accent-color);
 }
 
+.back-link > .custom-tip-box {
+    left: auto;
+    right: 0;
+    transform: none;
+    white-space: nowrap;
+}
+
 .control-item {
     display: flex;
     justify-content: flex-end;

@@ -1,5 +1,19 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。全14ページの「↩️もどる」ボタンへのホバーツールチップ（Return to Practice Menu.）実装完了。開始時HEAD `5c1c4c2`。
+- 変更：
+  1. **全14ページの「↩️もどる」ボタンへのホバーツールチップ実装（全HTML）**：
+     - `composition1.html`, `practice1.1.html`, `practice1.2.html`, `practice2.1.html`, `practice2.2.html`, `practice2.3.html`, `practice7.1.html`, `practice7.2.html`, `practice7.3.html`, `practice8.1.html`, `practice8.2.html`, `practice8.3.html`, `pronunciation1.html`, `pronunciation2.html`
+     - 全ファイルの `.back-link` に `custom-tip-wrap` を付与し、内部に `<span class="custom-tip-box">Return to Practice Menu.</span>` を追加。
+  2. **スタイル追加（`style.css`）**：
+     - `.back-link > .custom-tip-box` に `left: auto; right: 0; transform: none; white-space: nowrap;` を設定し、右端からのはみ出しを防止。
+- 変更ファイル：全HTML（14ファイル）、style.css、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、全14ファイルのリンク構造・ツールチップ整合性確認合格。
+- 実機確認状況：各ページの「↩️もどる」ボタンにホバーした際のツールチップ表示（Return to Practice Menu.）確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `5c1c4c2`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 新Ex2・新Drill 2（何を vs 何か対比・重複ゼロ4問）新設および全4ドリル構成への拡張完了。開始時HEAD `4238d33`。
 - 変更：
   1. **新Ex2（何を vs 何か対比ペア）新設（`practice8.2.js`）**：
