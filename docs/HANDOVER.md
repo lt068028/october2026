@@ -1,5 +1,21 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習語アコーディオン開時全体幅100%維持および全文字・要素の右詰め（右寄せ）配置完了。開始時HEAD `e7ef460`。
+- 変更：
+  1. **開時全体幅100%の維持と右詰め配置（`practice8.3.html`、`style.css`）**：
+     - 開いたパネル（`[open]`）の幅を画面全体幅（`width: 100%`）に戻し、一覧性を確保。
+     - ヘッダー内の要素順・配置を調整し、開いた時も右端に `🧭 Beyond L8 Words ▴` を維持（サマリー全体に `justify-content: flex-end;`）。
+     - 件数表示（`ことば(8語) 漢字(14字)`）をタイトルのすぐ左側に右詰めで配置。
+     - アコーディオン内部（`.unlearned-body`）の全要素（見出し `【Words】`、`【Kanji】` および語彙チップ群 `ul.unlearned-list`）をすべて右詰め（`text-align: right; justify-content: flex-end;`）に統一。
+  2. **キャッシュキー更新（`practice8.3.html`）**：
+     - `style.css` および `practice8.3.js` のクエリを `v=20261103-p83-beyond-l8-fullwidth-rightaligned` に更新。
+- 変更ファイル：practice8.3.html、style.css、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、全幅100%・右詰め整合性確認合格。
+- 実機確認状況：開いた時の全体幅100%表示、右端の `🧭 Beyond L8 Words` 表示維持、内部の全テキスト右詰め表示確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `e7ef460`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習語ボタンの絵文字変更（🧭）、開いた時限定の件数表示（ことば(8語) 漢字(14字)）、右寄せカード展開完了。開始時HEAD `f07a44d`。
 - 変更：
   1. **絵文字の変更（🧭）と右寄せカード展開（`practice8.3.html`、`style.css`）**：

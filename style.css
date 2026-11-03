@@ -3864,9 +3864,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 .unlearned-accordion[open] {
-    width: min(100%, 540px);
-    border-radius: 10px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: none;
 }
 
 .unlearned-summary {
@@ -3884,8 +3884,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .unlearned-accordion[open] .unlearned-summary {
     display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
     width: 100%;
-    padding: 8px 14px;
+    padding: 8px 16px;
     box-sizing: border-box;
     background: rgba(0, 0, 0, 0.02);
 }
@@ -3908,7 +3911,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     font-size: 0.8rem;
     font-weight: 500;
     color: var(--text-secondary, #64748b);
-    margin-left: 6px;
+    margin-right: 2px;
     white-space: nowrap;
 }
 
@@ -3921,17 +3924,18 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .unlearned-accordion[open] .unlearned-arrow {
     transform: rotate(180deg);
-    margin-left: auto;
+    margin-left: 0;
 }
 
 .unlearned-body {
-    padding: 10px 16px 14px;
+    padding: 12px 16px 16px;
     border-top: 1px solid var(--border-color, #e2e8f0);
     display: flex;
     flex-direction: column;
     gap: 12px;
     font-size: 0.88rem;
     line-height: 1.6;
+    text-align: right;
 }
 
 .unlearned-group-label {
@@ -3940,6 +3944,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     font-size: 0.88rem;
     color: var(--text-primary, #334155);
     margin-bottom: 6px;
+    text-align: right;
 }
 
 .unlearned-hint {
@@ -3952,6 +3957,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .unlearned-list {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     gap: 6px 12px;
     list-style: none;
     margin: 0;
@@ -3994,9 +4000,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .unlearned-accordion {
         border-color: #334155;
         background: #1e293b;
-    }
-    .unlearned-accordion[open] {
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
     .unlearned-summary-title {
         color: #38bdf8;
