@@ -3860,11 +3860,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     overflow: hidden;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     width: auto;
+    max-width: 100%;
 }
 
 .unlearned-accordion[open] {
-    width: 100%;
-    border-radius: 8px;
+    width: min(100%, 540px);
+    border-radius: 10px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .unlearned-summary {
@@ -3894,6 +3896,20 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .unlearned-summary-title {
     color: #0284c7;
+    white-space: nowrap;
+}
+
+.unlearned-counts {
+    display: none;
+}
+
+.unlearned-accordion[open] .unlearned-counts {
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-secondary, #64748b);
+    margin-left: 6px;
+    white-space: nowrap;
 }
 
 .unlearned-arrow {
@@ -3978,6 +3994,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .unlearned-accordion {
         border-color: #334155;
         background: #1e293b;
+    }
+    .unlearned-accordion[open] {
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     }
     .unlearned-summary-title {
         color: #38bdf8;

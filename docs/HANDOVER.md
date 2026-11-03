@@ -1,5 +1,23 @@
 ## 最新リレー状態（2026-11-03 / Europe/Vienna / LT）
 
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習語ボタンの絵文字変更（🧭）、開いた時限定の件数表示（ことば(8語) 漢字(14字)）、右寄せカード展開完了。開始時HEAD `f07a44d`。
+- 変更：
+  1. **絵文字の変更（🧭）と右寄せカード展開（`practice8.3.html`、`style.css`）**：
+     - 未習語メニューボタンの絵文字を新規の `🧭`（コンパス）に変更：`🧭 Beyond L8 Words`。
+     - アコーディオン開時（`[open]`）の幅を `width: min(100%, 540px)` に設定。右寄せ（`display: flex; justify-content: flex-end;`）のまま右側にコンパクトなサブコンテンツパネルとして展開させ、ドリル主動線を邪魔しないレイアウトを実現。
+  2. **展開時限定の件数表示（ことば(8語) 漢字(14字)）（`practice8.3.html`、`practice8.3.js`、`style.css`）**：
+     - 閉じた時は件数を非表示（`display: none;`）、開いた時にのみサマリーバー内に `ことば(8語) 漢字(14字)`（またはHiragana Only時は `ことば(8語)`）を表示。
+     - ScriptMode（With漢字／Hiragana Only）の切り替えと動的に連動。
+     - 内部見出しは `【Words】`、`【Kanji】` にスッキリ整理。
+  3. **キャッシュキー更新（`practice8.3.html`）**：
+     - `style.css` および `practice8.3.js` のクエリを `v=20261103-p83-beyond-l8-compass-counts` に更新。
+- 変更ファイル：practice8.3.html、practice8.3.js、style.css、docs/HANDOVER.md。
+- 自動検証：`git diff --check` 合格、展開時件数表示・右寄せカード幅整合性確認合格。
+- 実機確認状況：閉じた時の `🧭 Beyond L8 Words ▾`、開いた時の `ことば(8語) 漢字(14字)` 表示および右寄せ540pxカード展開の確認待ち。
+- 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
+
+## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `f07a44d`）
+
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.3 未習リストの英語メニュー名変更（Beyond L8 Words）・右寄せコンパクト化・件数内包化完了。開始時HEAD `bbd62b0`。
 - 変更：
   1. **メニュー名の英語化と右寄せコンパクト化（`practice8.3.html`、`style.css`）**：
