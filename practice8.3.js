@@ -113,8 +113,8 @@ const d3Sets=[
   name:'どれ',
   label:'どれ (Which one)',
   items:[
-   {q1:'どれが、始まっていますか。',q2:'どの映画が、始まっていますか。',a:'イタリアの映画が、始まっています。',accept:['イタリアの映画が、始まります。','イタリアのえいがが、はじまっています。','イタリアのえいがが、はじまります。','始まっています','始まります'],c1:['どれ','はじまっている'],c2:['どの映画','はじまっている'],ca:['イタリアの映画']},
-   {q1:'どれが、終わっていますか。',q2:'どのイベントが、終わっていますか。',a:'ダンスのイベントが、終わっています。',accept:['ダンスのイベントが、終わります。','ダンスのイベントが、おわっています。','ダンスのイベントが、おわります。','終わっています','終わります'],c1:['どれ','おわっている'],c2:['どのイベント','おわっている'],ca:['ダンスのイベント']}
+   {q1:'どれが、はじまっていますか。',q2:'どの映画が、はじまっていますか。',a:'イタリアの映画が、はじまっています。',accept:['イタリアの映画が、始まります。','イタリアの映画が、始まっています。','イタリアの映画が、はじまります。','イタリアの映画が、はじまっています。','イタリアのえいがが、はじまっています。','イタリアのえいがが、はじまります。','始まっています','始まります','はじまっています','はじまります'],c1:['どれ','はじまっている'],c2:['どの映画','はじまっている'],ca:['イタリアの映画']},
+   {q1:'どれが、おわっていますか。',q2:'どのイベントが、おわっていますか。',a:'ダンスのイベントが、おわっています。',accept:['ダンスのイベントが、終わります。','ダンスのイベントが、終わっています。','ダンスのイベントが、おわります。','ダンスのイベントが、おわっています。','終わっています','終わります','おわっています','おわります'],c1:['どれ','おわっている'],c2:['どのイベント','おわっている'],ca:['ダンスのイベント']}
   ]
  },
  {
@@ -139,7 +139,7 @@ const d4Sets=[
   name:'どこ',
   label:'どこ (Where)',
   items:[
-   {q1:'どこが、近いですか。',q2:'どのコンビニが、近いですか。',a:'ローソンが、近いです。',c1:['どこ','ちかい'],c2:['どのコンビニ','ちかい'],ca:['ローソン']},
+   {q1:'どこが、ちかいですか。',q2:'どのコンビニが、ちかいですか。',a:'ローソンが、ちかいです。',accept:['ローソンが、近いです。','ローソンが、ちかいです。'],c1:['どこ','ちかい'],c2:['どのコンビニ','ちかい'],ca:['ローソン']},
    {q1:'どこが、きれいですか。',q2:'どのトイレが、きれいですか。',a:'駅のトイレが、きれいです。',accept:['えきのトイレが、きれいです。'],c1:['どこ','きれい'],c2:['どのトイレ','きれい'],ca:['駅のトイレ']}
   ]
  },
@@ -771,7 +771,23 @@ function initDrawerEvents(){
   el.addEventListener('click',closeCuesDrawer);
  });
 }
+function updateUnlearnedLexicon(){
+ const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
+ if(!kanjiGroup||!counts)return;
+ const isKanji=scriptMode==='kanji';
+ kanjiGroup.style.display=isKanji?'block':'none';
+ counts.textContent=isKanji?'（語彙: 7語 / 漢字: 14字）':'（語彙: 7語）';
+}
+function setupUnlearnedAccordion(){
+ const acc=$('unlearnedAccordion');
+ if(!acc)return;
+ if(sessionStorage.getItem('p83-unlearned-open')==='true')acc.open=true;
+ acc.addEventListener('toggle',()=>{
+  sessionStorage.setItem('p83-unlearned-open',String(acc.open));
+ });
+}
 function render(){
+ updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
  sections.forEach((section,si)=>{
   const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);
@@ -1338,6 +1354,7 @@ function init() {
 
     setupPreferredVoice82();
     initDrawerEvents();
+    setupUnlearnedAccordion();
 
     rowsFor(0, currentD1Set);
     render();
