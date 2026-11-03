@@ -8,38 +8,39 @@ let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map();
 const words={};
-function W(id,kanji,hira,romaji,meaning) {
-    words[id]={kanji,hira,romaji,meaning};
+function W(id,kanji,hira,romaji,meaning,cue) {
+    words[id]={kanji,hira,romaji,meaning,cue:cue||kanji};
     STTDisplay.register(kanji,hira,meaning);
+    if(cue&&cue!==kanji)STTDisplay.register(cue,hira,meaning);
 }
 
 W('something','何か','なにか','nanika','something');
 W('nothing','何も','なにも','nanimo','nothing (with a negative ending)');
 W('anything','何でも','なんでも','nandemo','anything; no restriction');
 W('whatkind','どんな','どんな','donna','what kind of');
-W('tomorrow','明日','あした','ashita','tomorrow');
-W('morning','今朝','けさ','kesa','this morning');
-W('weekend','次の週末','つぎのしゅうまつ','tsugi no shūmatsu','next weekend');
+W('tomorrow','明日','あした','ashita','tomorrow','あした');
+W('morning','今朝','けさ','kesa','this morning','けさ');
+W('weekend','次の週末','つぎのしゅうまつ','tsugi no shūmatsu','next weekend','次のしゅうまつ');
 W('store','デパート','デパート','depāto','department store');
 W('teacher','先生','せんせい','sensei','teacher');
 W('barbecue','バーベキュー','バーベキュー','bābekyū','barbecue');
-W('cook','料理','りょうり','ryōri','cooking; cuisine');
-W('song','歌','うた','uta','song');
-W('hat','帽子','ぼうし','bōshi','hat');
-W('shoes','靴','くつ','kutsu','shoes');
+W('cook','料理','りょうり','ryōri','cooking; cuisine','りょうり');
+W('song','歌','うた','uta','song','うた');
+W('hat','帽子','ぼうし','bōshi','hat','ぼうし');
+W('shoes','靴','くつ','kutsu','shoes','くつ');
 const verbs={};
-function V(id,dict,hira,romaji,meaning,forms){W(id,dict,hira,romaji,meaning);verbs[id]={dict,...forms};}
+function V(id,dict,hira,romaji,meaning,forms,cue){W(id,dict,hira,romaji,meaning,cue);verbs[id]={dict,...forms};}
 V('drink','飲む','のむ','nomu','to drink',{masu:'飲みます',past:'飲みました',neg:'飲みません',pastNeg:'飲みませんでした',plainPast:'飲んだ',plainNeg:'飲まない',plainPastNeg:'飲まなかった'});
 V('eat','食べる','たべる','taberu','to eat',{masu:'食べます',past:'食べました',neg:'食べません',pastNeg:'食べませんでした',plainPast:'食べた',plainNeg:'食べない',plainPastNeg:'食べなかった'});
-V('buy','買う','かう','kau','to buy',{masu:'買います',past:'買いました',neg:'買いません',pastNeg:'買いませんでした',plainPast:'買った',plainNeg:'買わない',plainPastNeg:'買わなかった'});
+V('buy','買う','かう','kau','to buy',{masu:'買います',past:'買いました',neg:'買いません',pastNeg:'買いませんでした',plainPast:'買った',plainNeg:'買わない',plainPastNeg:'買わなかった'},'かう');
 V('do','する','する','suru','to do',{masu:'します',past:'しました',neg:'しません',pastNeg:'しませんでした',plainPast:'した',plainNeg:'しない',plainPastNeg:'しなかった'});
 V('listen','聞く','きく','kiku','to listen; to ask',{masu:'聞きます',past:'聞きました',neg:'聞きません',pastNeg:'聞きませんでした',plainPast:'聞いた',plainNeg:'聞かない',plainPastNeg:'聞かなかった'});
-V('takealong','持っていく','もっていく','motte iku','to take something along',{masu:'持っていきます',past:'持っていきました',neg:'持っていきません',pastNeg:'持っていきませんでした',plainPast:'持っていった',plainNeg:'持っていかない',plainPastNeg:'持っていかなかった'});
-V('discard','捨てる','すてる','suteru','to throw away',{masu:'捨てます',past:'捨てました',neg:'捨てません',pastNeg:'捨てませんでした',plainPast:'捨てた',plainNeg:'捨てない',plainPastNeg:'捨てなかった'});
-V('wash','洗う','あらう','arau','to wash',{masu:'洗います',past:'洗いました',neg:'洗いません',pastNeg:'洗いませんでした',plainPast:'洗った',plainNeg:'洗わない',plainPastNeg:'洗わなかった'});
-V('cut','切る','きる','kiru','to cut',{masu:'切ります',past:'切りました',neg:'切りません',pastNeg:'切りませんでした',plainPast:'切った',plainNeg:'切らない',plainPastNeg:'切らなかった'});
+V('takealong','持っていく','もっていく','motte iku','to take something along',{masu:'持っていきます',past:'持っていきました',neg:'持っていきません',pastNeg:'持っていきませんでした',plainPast:'持っていった',plainNeg:'持っていかない',plainPastNeg:'持っていかなかった'},'もっていく');
+V('discard','捨てる','すてる','suteru','to throw away',{masu:'捨てます',past:'捨てました',neg:'捨てません',pastNeg:'捨てませんでした',plainPast:'捨てた',plainNeg:'捨てない',plainPastNeg:'捨てなかった'},'すてる');
+V('wash','洗う','あらう','arau','to wash',{masu:'洗います',past:'洗いました',neg:'洗いません',pastNeg:'洗いませんでした',plainPast:'洗った',plainNeg:'洗わない',plainPastNeg:'洗わなかった'},'あらう');
+V('cut','切る','きる','kiru','to cut',{masu:'切ります',past:'切りました',neg:'切りません',pastNeg:'切りませんでした',plainPast:'切った',plainNeg:'切らない',plainPastNeg:'切らなかった'},'きる');
 V('make','作る','つくる','tsukuru','to make',{masu:'作ります',past:'作りました',neg:'作りません',pastNeg:'作りませんでした',plainPast:'作った',plainNeg:'作らない',plainPastNeg:'作らなかった'});
-V('sing','歌う','うたう','utau','to sing',{masu:'歌います',past:'歌いました',neg:'歌いません',pastNeg:'歌いませんでした',plainPast:'歌った',plainNeg:'歌わない',plainPastNeg:'歌わなかった'});
+V('sing','歌う','うたう','utau','to sing',{masu:'歌います',past:'歌いました',neg:'歌いません',pastNeg:'歌いませんでした',plainPast:'歌った',plainNeg:'歌わない',plainPastNeg:'歌わなかった'},'うたう');
 V('cap','かぶる','かぶる','kaburu','to wear a hat',{masu:'かぶります',past:'かぶりました',neg:'かぶりません',pastNeg:'かぶりませんでした',plainPast:'かぶった',plainNeg:'かぶらない',plainPastNeg:'かぶらなかった'});
 V('wearshoes','はく','はく','haku','to wear footwear',{masu:'はきます',past:'はきました',neg:'はきません',pastNeg:'はきませんでした',plainPast:'はいた',plainNeg:'はかない',plainPastNeg:'はかなかった'});
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
@@ -103,7 +104,7 @@ function rowsFor(si){
 function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
-function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'kanji':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
+function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
 function cues(r){const ids=r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.verb].filter(Boolean);return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');}
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;

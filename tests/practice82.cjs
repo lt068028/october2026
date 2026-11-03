@@ -35,7 +35,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.evaluate(()=>audit82.rowsFor(0).flat().map(r=>r.text)),['デパートで何か買いますか。','明日、何かしますか。','何か飲みますか。','先生に何か聞きますか。'],'specified D1 questions');
  eq((await p.locator('#drill1 .info-panel-desc').textContent()).includes('tense'),false,'D1 has no tense task');
  eq(await p.evaluate(()=>{const a=audit82,ids=[...a.rowsFor(0).flat(),...a.rowsFor(1).map(rs=>rs[0]),...a.rowsFor(2).map(rs=>rs[0])].map(r=>r.verb);return ids.length===new Set(ids).size;}),true,'no verb assigned to multiple Drill items');
- for(const [i,verb]of ['作る','歌う','かぶる'].entries())eq(await p.locator(`[data-row="any-${i}-a"] .p81-cue-words .target-word`).allTextContents(),['何でも',verb],'answer cue contains its verb');
+ for(const [i,verb]of ['作る','うたう','かぶる'].entries())eq(await p.locator(`[data-row="any-${i}-a"] .p81-cue-words .target-word`).allTextContents(),['何でも',verb],'answer cue contains its verb');
  eq(await p.evaluate(()=>{const r=audit82.rowsFor(1)[0][1];return ['バーベキューに何も持っていきません','次の週末何も持っていきません','次の週末バーベキューに何も持っていきません'].map(t=>audit82.matchesAnswer(t,r));}),[true,true,true],'conversation permits partial context');
  const examples=await p.locator('.example-box button').all();
  for(const [i,b]of examples.entries()){await b.click();eq(await p.evaluate(()=>Boolean(t.spoken.at(-1).text)),true,'Example '+i+' playable');await p.evaluate(()=>t.spoken.at(-1).onend());}
