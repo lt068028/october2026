@@ -169,7 +169,7 @@ const comparisons=[
  }},
  {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],scenario:'Talking about waking up early.',impressions:{
   difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.',
-  bad:'Sounds unnatural because 下手 judges learned skills, not daily habits.'
+  bad:'Sounds unnatural because 下手 evaluates skill, rather than difficulty with a daily habit.'
  }},
  {phase:'Impression',subject:'i',...action('cleaning','do'),options:['strong','good'],labels:['Natural','Boastful'],scenario:'Introducing yourself to someone you have just met.',impressions:{
   strong:'Describing the activity as something the speaker feels confident in sounds natural.',
@@ -184,8 +184,8 @@ const comparisons=[
   bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.'
  }},
  {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
-  good:'Evaluating a superior’s skill from below sounds presumptuous.',
-  strong:'Assuming what a superior considers their personal strength also sounds overstepping.'
+  good:'Calling someone 上手 can be a compliment, but a beginner judging their own teacher’s skill can sound presumptuous.',
+  strong:'Inferring a teacher’s personal strengths can overstep the boundaries of the student–teacher relationship.'
  }}
 ];
 comparisons.forEach(spec=>{
