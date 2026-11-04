@@ -159,7 +159,7 @@ const degreeLevels=[
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Observed'],scenario:'Talking about your father’s cooking after eating it.',impressions:{
+ {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Inferred'],scenario:'Talking about your father’s cooking after eating it.',impressions:{
   good:'The speaker judges that the subject has high skill.',
   strong:'The speaker infers that the subject sees the activity as their own strength.'
  }},
@@ -175,7 +175,7 @@ const comparisons=[
   strong:'Describing the activity as something the speaker feels confident in sounds natural.',
   good:'Praising the speaker’s own skill directly can sound boastful.'
  }},
- {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Observed'],scenario:'Talking about an international-student friend after watching them write kanji.',impressions:{
+ {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Inferred'],scenario:'Talking about an international-student friend after watching them write kanji.',impressions:{
   good:'The speaker directly praises a skill they have observed.',
   strong:'The speaker infers that the subject feels confident in the activity.'
  }},
