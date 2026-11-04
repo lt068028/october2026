@@ -183,7 +183,7 @@ const comparisons=[
   difficult:'Describing the activity as difficult for the subject sounds gentler.',
   bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.'
  }},
- {phase:'Impression',subject:'japaneseTeacher',verb:'teach',particle:'',options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
   good:'Evaluating a superior’s skill from below sounds presumptuous.',
   strong:'Assuming what a superior considers their personal strength also sounds overstepping.'
  }}
@@ -277,7 +277,7 @@ function keyFor(r){if(r.comparison)return r.id+':'+(r.quizChoice||'unselected');
 function cueText(id,mode=scriptMode) {
     const w=words[id];if(!w)return '';
     if(mode!=='kanji')return w.hira;
-    return /[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji;
+    return /[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何話\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji;
 }
 function word(id,model=false) {
     const w=words[id],text=escape(model?w[scriptMode==='kanji'?'kanji':'hira']:cueText(id));
@@ -296,6 +296,10 @@ function degreePhraseHTML(level) {
 }
 function cues(r,visibleIds) {
     if(r.qa==='response')return '';
+    if(r.joinedActionCue&&!visibleIds){
+        const phrase=word(r.object)+escape(r.particle)+word(r.verb);
+        return word(r.subject)+(hintMode==='paren'?'':'／')+phrase;
+    }
     const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
