@@ -113,13 +113,13 @@ const conversations=[
 const habits=[{object:'cook',verb:'make'},{object:'song',verb:'sing'},{object:'hat',verb:'cap'}];
 const habitExample={object:'shoes',verb:'wearshoes'};
 function inflect(s,negative=false){const v=verbs[s.verb];return speechStyle==='formal'?v[negative?(s.past?'pastNeg':'neg'):(s.past?'past':'masu')]:negative?v[s.past?'plainPastNeg':'plainNeg']:s.past?v.plainPast:v.dict;}
-function context(s){return (s.time?words[s.time].kanji+(s.timeParticle||'、'):'')+(s.place?words[s.place].kanji+(s.placeParticle||'で'):'')+(s.person?words[s.person].kanji+(s.personParticle||'に')+'、':'');}
+function context(s){const pP=s.placeParticle?(s.placeParticle.endsWith('、')?s.placeParticle:s.placeParticle+'、'):'で、';const perP=s.personParticle?(s.personParticle.endsWith('、')?s.personParticle:s.personParticle+'、'):'に、';const tP=s.timeParticle?(s.timeParticle.endsWith('、')?s.timeParticle:s.timeParticle+'、'):'、';return (s.time?words[s.time].kanji+tP:'')+(s.place?words[s.place].kanji+pP:'')+(s.person?words[s.person].kanji+perP:'');}
 function sentenceFor(s){
  const ending=speechStyle==='formal'?'か。':'？';
- if(s.mode==='wh')return 'どんな'+words[s.object].kanji+'を'+inflect(s)+ending;
- if(s.mode==='any')return '何でも'+inflect(s)+'。';
- if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も':'')+inflect(s,no)+'。';}
- const target=s.pronoun==='what'?'何を':(s.withWo?'何か(を)':(s.pronoun?words[s.pronoun].kanji:(s.mode==='question'&&s.id?.startsWith('yn-')?'何か、':'何か')));
+ if(s.mode==='wh')return 'どんな'+words[s.object].kanji+'を、'+inflect(s)+ending;
+ if(s.mode==='any')return '何でも、'+inflect(s)+'。';
+ if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も、':'')+inflect(s,no)+'。';}
+ const target=s.pronoun==='what'?'何を、':(s.withWo?'何か(を)、':(s.pronoun?words[s.pronoun].kanji+'、':'何か、'));
  return context(s)+target+inflect(s,s.pronoun==='nothing')+(s.mode==='question'||s.mode==='contrast'?ending:'。');
 }
 function makeRow(id,spec,extra={}){
@@ -173,7 +173,7 @@ function makeRow(id,spec,extra={}){
   if(r.person==='friend')addQ(['友達に、','友達に','友達から、','友達から']);
   if(r.place==='smartphone')addQ(['スマホに、','スマホに','スマホへ、','スマホへ']);
  }
- if(r.mode==='any')r.refs.push('何でも','私は、'+r.text);
+ if(r.mode==='any')r.refs.push('何でも','何でも、','私は、'+r.text);
  if(r.mode==='statement')r.refs.push('私は、'+r.text);
  r.refs=[...new Set(r.refs.flatMap(t=>[t,hira(t)]))];
  if(speechStyle==='casual')r.refs.push(...r.refs.map(t=>t.replace('を','')));
