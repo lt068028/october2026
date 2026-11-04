@@ -1,5 +1,15 @@
 ## 現在のリレー状態（2026-11-04 UTC / Codex Cloud）
 
+- 開始main：d447081。今回の継続作業を完了しmainへ通常Pushする。
+- Ex3を現在形へ変更：おみやげ／かう → お土産に、何か、買いますか。／はい、買います。／いいえ、何も、買いません。内部モデルは文字列を保ち、ホバーHTMLは表示時だけ生成。
+- Ex2の(を)に個別の点線ホバー説明を追加：The particle を is optional and usually omitted after 何か.
+- Beyond欄の旧「昨・手・伝」を撤去し「産・買」を追加。お土産L5、買うL4の語彙情報と、土L4・買L10・産Genki外の漢字情報はユーザー提供。表示欄はお土産L5と何でもL15の2語、産・買・靴の3字。
+- 375px失敗原因：Ex2見出しをmax-content／nowrapにしたためキュー列が0pxとなりカード277pxから41px超過。見出し列をfit-content(25%)へ戻して折返しを許可。狭幅では例文だけ次行に置き、キュー・矢印・聞くの列を維持。
+- 自動検証：node tests/practice82.cjs 179項目合格（375/600/900/1440px、表記・ヒント、録音状態を含む8.2限定回帰）。node --check practice8.2.js、node --check tests/practice82.cjs、git diff --check合格。他ページは実行していない。
+- 実機確認：ChromeOS表示・録音品質・TTS発音、Vercel公開反映は未確認。
+
+## 現在のリレー状態（2026-11-04 UTC / Codex Cloud）
+
 - 対象：lt068028/october2026。開始main `8f74eae`、Cloudブランチworkは一致・クリーン。ルール版2026-11-01.1。利用枠は取得不可。
 - 完了：Practice 8.2へ8.3準拠のBeyond L8 Wordsを追加。Wordsは何でも（L15）の1語、Kanjiは昨・手・伝・靴の4字。モード連動とsessionStorage開閉保持を実装。
 - AGENTS.md／PROJECT_SPEC.mdにEx・Drillのキュー、Ex右側例文、TTS内部文、STT原文の用途別規則を明記。Beyond L{N} WordsのNは対象Lesson番号。8.2仕様にも適用例を記録。

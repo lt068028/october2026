@@ -3364,7 +3364,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 /* Practice 8.2 uses the established Practice 8 layout, with wrapping concept names. */
 .practice82-page .p81-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
-@media(max-width:760px) { .practice82-page .p81-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; } }
+@media(max-width:760px) {
+ .practice82-page .p81-example { grid-template-columns: fit-content(25%) minmax(0,1fr) max-content max-content; }
+ .practice82-page .p81-example .p81-model { grid-column: 2 / -1; }
+
+}
+.practice82-page .optional-particle { border-bottom: 2px dotted var(--accent-color); border-radius: 1px; cursor: help; }
+.practice82-page .optional-particle-label { text-decoration: underline dotted; text-underline-offset: 3px; }
 /* D5 action buttons follow the cue in their own row, independent of cue width. */
 .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
 .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,

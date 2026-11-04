@@ -11,6 +11,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  await p.goto('http://p82.test/practice8.2.html');
  eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
  eq(await p.locator('.example-box').count(),4,'four Example groups');
+ eq(await p.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent})),['お土産に、何か、買いますか。','はい、買います。','いいえ、何も、買いません。'],'Example 3 current-tense souvenir models');
+ eq(await p.locator('#unlearnedCounts').textContent(),'ことば(2語) 漢字(3字)','Beyond L8 updated counts');
+ eq(await p.locator('.optional-particle-label').textContent(),'を','optional particle is individually marked');
+ eq(await p.locator('.optional-particle .tooltip-tip').textContent(),'The particle を is optional and usually omitted after 何か.','optional particle explanation');
  for(const [n,rows]of [[1,4],[2,8],[3,10],[4,6]])eq(await p.locator(`#drill${n} tr`).count(),rows,`Drill ${n} rows`);
  eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
  eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');

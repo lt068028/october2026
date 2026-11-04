@@ -36,7 +36,7 @@ W('class','授業','じゅぎょう','jugyō','class; lesson','じゅぎょう')
 W('school','学校','がっこう','gakkō','school','学校');
 W('convenience','コンビニ','コンビニ','kombini','convenience store');
 W('snack','おやつ','おやつ','oyatsu','snack');
-W('yesterday','昨日','きのう','kinō','yesterday','きのう');
+W('souvenir','お土産','おみやげ','omiyage','souvenir','おみやげ');
 W('college','大学','だいがく','daigaku','college; university','大学');
 W('birthday','誕生日','たんじょうび','tanjōbi','birthday','たんじょうび');
 W('smartphone','スマホ','スマホ','sumaho','smartphone');
@@ -116,10 +116,10 @@ function inflect(s,negative=false){const v=verbs[s.verb];return speechStyle==='f
 function context(s){const pP=s.placeParticle?(s.placeParticle.endsWith('、')?s.placeParticle:s.placeParticle+'、'):'で、';const perP=s.personParticle?(s.personParticle.endsWith('、')?s.personParticle:s.personParticle+'、'):'に、';const tP=s.timeParticle?(s.timeParticle.endsWith('、')?s.timeParticle:s.timeParticle+'、'):'、';return (s.time?words[s.time].kanji+tP:'')+(s.place?words[s.place].kanji+pP:'')+(s.person?words[s.person].kanji+perP:'');}
 function sentenceFor(s){
  const ending=speechStyle==='formal'?'か。':'？';
- if(s.mode==='wh')return 'どんな'+words[s.object].kanji+'を、'+inflect(s)+ending;
+ if(s.mode==='wh')return 'どんな'+words[s.object].kanji+(s.objectParticle||'を、')+inflect(s)+ending;
  if(s.mode==='any')return '何でも、'+inflect(s)+'。';
  if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も、':'')+inflect(s,no)+'。';}
- const target=s.pronoun==='what'?'何を、':(s.withWo?'何か(を)、':(s.pronoun?words[s.pronoun].kanji+'、':'何か、'));
+ const target=s.object?words[s.object].kanji+(s.objectParticle||'、')+'何か、':(s.pronoun==='what'?'何を、':(s.withWo?'何か(を)、':(s.pronoun?words[s.pronoun].kanji+'、':'何か、')));
  return context(s)+target+inflect(s,s.pronoun==='nothing')+(s.mode==='question'||s.mode==='contrast'?ending:'。');
 }
 function makeRow(id,spec,extra={}){
@@ -197,7 +197,7 @@ function cues(r){
   const ids=[r.person,r.pronoun,r.verb].filter(Boolean);
   return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');
  }
- const ids=r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.verb].filter(Boolean);
+ const ids=r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.object,r.verb].filter(Boolean);
  return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');
 }
 function modelHTML(r){
@@ -208,6 +208,7 @@ function modelHTML(r){
  for(const [id,v]of Object.entries(verbs))for(const t of Object.values(v))tokens.push({id,text:scriptMode==='kanji'?t:displayKana(t)});
  tokens.sort((a,b)=>b.text.length-a.text.length);
  let out='',i=0;while(i<text.length){
+  if(text.startsWith('何か(を)',i)){out+='<strong class="grammar-highlight">何か(<span class="optional-particle tooltip-wrap"><span class="optional-particle-label">を</span><span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>)</strong>';i+='何か(を)'.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
   if(mark){const id=Object.keys(words).find(id=>[words[id].kanji,words[id].hira].includes(mark));out+='<strong class="grammar-highlight">'+(id?word(id,mark):escape(mark))+'</strong>';i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
@@ -676,7 +677,7 @@ function addExample(root,si){
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What',translation:'(What do you see?)'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か · Anything',translation:'(Do you see anything?)'})
  ];
- else if(si===2)samples=[makeRow('ex3-q',{time:'yesterday',verb:'help',past:true,mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'help',past:true,mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'help',past:true,mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
+ else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
  samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=escape(rawKind).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
@@ -686,7 +687,7 @@ function updateUnlearnedLexicon(){
  const isKanji=scriptMode==='kanji';
  kanjiGroup.style.display=isKanji?'block':'none';
  if(counts){
-  counts.textContent=isKanji?'ことば(1語) 漢字(4字)':'ことば(1語)';
+  counts.textContent=isKanji?'ことば(2語) 漢字(3字)':'ことば(2語)';
  }
 }
 function setupUnlearnedAccordion(){
