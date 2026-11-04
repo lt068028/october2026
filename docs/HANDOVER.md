@@ -1,7 +1,7 @@
 ## Practice 8.1ドリル見出し確定（2026-11-04 / Europe/Vienna）
 
 - Drill 1〜5のタイトルを確定文言へ統一。Drill 1説明だけを “Say what you like or like doing.” に変更し、Drill 2〜5説明は維持。
-- `practice8.1.js`、`docs/PRACTICE8_SPEC.md`を更新。テストに該当する旧期待値はなし。JS構文確認・ブラウザのタイトル表示と横幅確認後に保存。
+- `practice8.1.js`、`docs/PRACTICE8_SPEC.md`を更新。テストに該当する旧期待値はなし。JS構文確認合格。Playwrightで指定タイトル5件、D1説明更新、D2〜5説明維持を確認。375pxではタイトル表示に問題なし。ページ全体の横幅検証ではDr5録音ボタン列に横はみ出しを検出（今回変更外）。ChromeOS実機確認待ち。
 
 ## Practice 8.1 D3-1差替え（2026-11-04 / Europe/Vienna）
 
