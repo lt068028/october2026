@@ -56,6 +56,8 @@ W("photo","写真","しゃしん","shashin","photograph");
 W("read","読む","よむ","yomu","to read");
 W("listen","聞く","きく","kiku","to listen");
 W("take","撮る","とる","toru","to take photographs");
+W("notebook","ノート","ノート","nōto","notebook; notes");
+W("takeNotes","取る","とる","toru","to take notes");
 W("room","部屋","へや","heya","room");
 W("clean","掃除する","そうじする","sōji suru","to clean");
 W("cleaning","掃除","そうじ","sōji","cleaning");
@@ -133,7 +135,7 @@ const action=(object,verb,particle=verb==='do'?'':'を')=>({object,verb,particle
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
 const selfActions=[action('coffee','drink'),action('laundry','do'),action('breakfast','eat'),action('clothes','buy')];
 const people=[
-    {subject:'classmate',verb:'rest',particle:'',adjective:'good'},
+    {subject:'classmate',...action('notebook','takeNotes'),adjective:'good'},
     {subject:'grandmother',...action('sea','swim','で'),adjective:'good'},
     {subject:'child',...action('katakana','remember'),adjective:'difficult'},
     {subject:'siblings',...action('motorcycle','drive'),adjective:'difficult'}
@@ -192,7 +194,7 @@ comparisons.forEach(spec=>{
 const sections=[
     {title:'Drill 1: Nounがすき／Verbのがすき',instruction:'💡Say if you like the thing or activity.'},
     {title:'Drill 2: Verbのがすき／きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
-    {title:'Drill 3: Verbのがじょうず／にがて',instruction:'💡Choose じょうず or にがて, then record.'},
+    {title:'Drill 3: Verbのが、じょうず／にがて',instruction:'💡Choose じょうず or にがて, then record.'},
     {title:'Drill 4: Degrees of liking',instruction:'💡Select a different action for each line, then record.'},
     {title:'Drill 5: How Do These Expressions Differ?',instruction:'💡Choose the best adjective for each label, then record.'}
 ];
