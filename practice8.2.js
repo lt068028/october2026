@@ -173,7 +173,7 @@ function cues(r){
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;
  const skipContrastHighlight=r.id.startsWith('contrast-');
- const marks=['何でも',skipContrastHighlight?null:'何か','何も',skipContrastHighlight?null:'何を','なんでも',skipContrastHighlight?null:'なにか','なにも',skipContrastHighlight?null:'なにを',...(r.text.includes('何も')?['ませんでした','ません','なかった','ない']:[])].filter(Boolean).sort((a,b)=>b.length-a.length);
+ const marks=['何でも',skipContrastHighlight?null:'何か','何も',skipContrastHighlight?null:'何を','なんでも',skipContrastHighlight?null:'なにか','なにも',skipContrastHighlight?null:'なにを'].filter(Boolean).sort((a,b)=>b.length-a.length);
  const tokens=Object.entries(words).map(([id,w])=>({id,text:w[scriptMode==='kanji'?'kanji':'hira']}));
  for(const [id,v]of Object.entries(verbs))for(const t of Object.values(v))tokens.push({id,text:scriptMode==='kanji'?t:displayKana(t)});
  tokens.sort((a,b)=>b.text.length-a.text.length);
@@ -182,7 +182,7 @@ function modelHTML(r){
   if(mark){const id=Object.keys(words).find(id=>[words[id].kanji,words[id].hira].includes(mark));out+='<strong class="grammar-highlight">'+(id?word(id,mark):escape(mark))+'</strong>';i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
   const token=tokens.find(t=>text.startsWith(t.text,i));
-  if(token){const neg=r.text.includes('何も')&&['ませんでした','ません','なかった','ない'].find(e=>token.text.endsWith(e));out+=neg?word(token.id,token.text.slice(0,-neg.length))+'<strong class="grammar-highlight">'+escape(neg)+'</strong>':word(token.id,token.text);i+=token.text.length;}else out+=escape(text[i++]);
+  if(token){const neg=r.text.includes('何も')&&['ませんでした','ません','なかった','ない'].find(e=>token.text.endsWith(e));out+=neg?word(token.id,token.text.slice(0,-neg.length))+'<strong class="degree-negative">'+escape(neg)+'</strong>':word(token.id,token.text);i+=token.text.length;}else out+=escape(text[i++]);
  }return out;
 }
 function button(text, fn, tip = '') {
@@ -641,14 +641,14 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
- if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も＋Negative · Nothing','何でも · Everything'][i],intro:true}));
+ if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も〜ません · Nothing','何でも · Everything'][i],intro:true}));
  else if(si===1)samples=[
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What',translation:'(What do you see?)'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か · Anything',translation:'(Do you see anything?)'})
  ];
  else if(si===2)samples=[makeRow('ex3-q',{time:'yesterday',verb:'help',past:true,mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'help',past:true,mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'help',past:true,mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind',r.kind?(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':''):'');const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=escape(rawKind).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function render(){
  const root=$('drill1Container');root.replaceChildren();views.clear();
