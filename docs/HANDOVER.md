@@ -1,3 +1,9 @@
+## Practice 8.1 Dr5のInferred表記（2026-11-04 / Europe/Vienna）
+
+- Dr5第1問・第5問のObservedをInferredへ変更。Ex5のObservedは今回対象外。
+- 第1問Noticeはinfers that the subject sees the activity as their own strength、第5問はinfers that the subject feels confident in the activityであり、推測を示すInferredと整合。Notice本文の変更なし。
+- node --check合格。差分はラベル2箇所のみと確認。ブラウザ表示・ChromeOS実機は未確認。ページ全体テストなし。
+
 ## Practice 8.1 Notice3文限定修正（2026-11-04 / Europe/Vienna）
 
 - practice8.1.jsのDr5第3問へた、第7問じょうず／とくいの英語Notice3文のみ指示文へ差替え。Presumptuous／Overstepping、Observed、表示処理・条件・かな変換を維持。
