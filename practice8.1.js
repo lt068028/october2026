@@ -103,7 +103,7 @@ W("like","好き","すき","suki","like");
 W("dislike","きらい","きらい","kirai","dislike");
 W("good","上手","じょうず","jōzu","skillful");
 W("bad","下手","へた","heta","unskillful");
-W("strong","得意","とくい","tokui","a personal strength");
+W("strong","得意","とくい","tokui","Comfortable and confident");
 W("difficult","苦手","にがて","nigate","difficult or uncomfortable for someone");
 W("totemo","とても","とても","totemo","very");
 W("sugoku","すごく","すごく","sugoku","very; really");
@@ -193,7 +193,7 @@ comparisons.forEach(spec=>{
 });
 const sections=[
     {title:'Drill 1: Nounがすき／Verbのがすき',instruction:'💡Say if you like the thing or activity.'},
-    {title:'Drill 2: Verbのがすき／きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
+    {title:'Drill 2: Verbのが、すき／きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
     {title:'Drill 3: Verbのが、じょうず／にがて',instruction:'💡Choose じょうず or にがて, then record.'},
     {title:'Drill 4: Degrees of liking',instruction:'💡Select a different action for each line, then record.'},
     {title:'Drill 5: How Do These Expressions Differ?',instruction:'💡Choose the best adjective for each label, then record.'}
