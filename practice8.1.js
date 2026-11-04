@@ -790,8 +790,10 @@ function addSelect(cue,r,key) {
     const ids=isActivity?activityOptions.map(a=>a.actionId):r.selectKind==='comparison'?comparisonOptionOrder.get(r.id):r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
     select.setAttribute('aria-label',isActivity?'Select':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
-    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'— Adj —');empty.value='';select.append(empty);}
+    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'Adj');empty.value='';select.append(empty);}
     for(const id of ids){const opt=node('option','',isActivity?actionText(degreeActions.find(a=>a.actionId===id)):cueText(id));opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
+    // Native auto sizing includes both candidate labels, so each pair fits its longest word.
+    if(r.selectKind==='comparison'){select.style.width='auto';select.style.minWidth='0';}
     select.value=isActivity?activity:r.selectKind==='comparison'?(r.quizChoice||''):r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
     if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
     if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
