@@ -1,3 +1,10 @@
+## 語彙ホバーのタッチ開閉（2026-11-04 / Europe/Vienna / GitHub連携）
+
+- 共通tooltip-layout.js／style.cssに通常語彙のタッチ開閉を追加。同語再タップ・外側タップで閉じ、別語へ切替。タッチ時の残留hover表示を抑制。マウスpointerdownで通常hoverへ戻る。
+- select/input/textarea/button/aを含むホストは語彙タップ対象外。イベントのpreventDefault／stopPropagationなし。スクロール時の誤開閉防止として移動10px超・pointercancelは無視。
+- 自動確認：node --check合格。Chromium hasTouchの限定fixtureで開く／再タップ／外側／語彙切替、selectへのpointerイベントがキャンセルされないことに合格。ネイティブ選択UI・実ページ全体・ChromeOS／スマートフォン実機は未検証。包括テストなし。
+- GitHub mainへ保存。共通スクリプト使用ページへ適用される。
+
 ## Practice 8.1ホバー訳（2026-11-04 / Europe/Vienna）
 
 - 苦手: not comfortable、下手: not skilled、まぁまぁ: So-so、取る: to take に変更。practice8.1.jsのみ更新。構文確認は未実施。公開表示・実機確認待ち。
