@@ -272,8 +272,8 @@ function feedback(r,raw) {
 }
 function keyFor(r){if(r.comparison)return r.id+':'+(r.quizChoice||'unselected');return r.id+':' +(r.qa==='response'?(r.pending?'unselected':r.answer):r.selectKind==='activity'?(choices.get(r.id)||'unselected'):r.selectKind==='adverb'?r.adverb:r.selectKind?(r.pending?'unselected':r.adjective):'fixed');}
 
-function word(id) {
-    const w=words[id],text=escape(w[scriptMode==='kanji'?'kanji':'hira']);
+function word(id,model=false) {
+    const w=words[id],cue=/[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji,text=escape(scriptMode==='kanji'?(model?w.kanji:cue):w.hira);
     const tip=escape(w.romaji+', '+w.meaning);
     const display=adverbs.includes(id)?`<strong class="degree-adverb degree-${['amari','zenzen'].includes(id)?'negative':'positive'}">${text}</strong>`:text;
     if(hintMode==='off')return `<span class="target-word">${display}</span>`;
@@ -308,7 +308,7 @@ function modelHTML(r,repeatPrefix=false) {
         if(r.degreeLevel&&['zenzen','amari'].includes(r.adverb)&&text.startsWith('ない',i)){out+='<span class="degree-negative">ない</span>';i+=2;continue;}
         const token=tokens.find(t=>text.startsWith(t,i));
         const id=token&&Object.keys(words).find(k=>words[k][scriptMode==='kanji'?'kanji':'hira']===token);
-        if(id){out+=word(id);i+=token.length;}else{out+=escape(text[i]);i++;}
+        if(id){out+=word(id,true);i+=token.length;}else{out+=escape(text[i]);i++;}
     }
     return out;
 }
@@ -857,7 +857,18 @@ function addScale(root) {
     });
     root.append(scale);
 }
+function updateUnlearnedLexicon(){
+ const group=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
+ if(group)group.hidden=scriptMode!=='kanji';
+ if(counts)counts.textContent=scriptMode==='kanji'?'ことば(6語) 漢字(14字)':'ことば(6語)';
+}
+function setupUnlearnedAccordion(){
+ const acc=$('unlearnedAccordion');if(!acc)return;
+ acc.open=sessionStorage.getItem('p81-unlearned-open')==='true';
+ acc.addEventListener('toggle',()=>sessionStorage.setItem('p81-unlearned-open',String(acc.open)));
+}
 function render() {
+    updateUnlearnedLexicon();
     const root=$('drill1Container');root.replaceChildren();views.clear();
     sections.forEach((section,si)=>{
         const group=node('section','p81-section');group.id='drill'+(si+1);
@@ -1550,6 +1561,7 @@ function init() {
     });
 
     setupPreferredVoice81();
+    setupUnlearnedAccordion();
 
     render();
 }
