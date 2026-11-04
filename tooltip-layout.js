@@ -61,9 +61,49 @@
             if (anchor) position(anchor);
         });
     }
+
+    // Touch vocabulary hints are independent of native form controls.
+    let openVocabulary=null, touchStart=null;
+    function closeVocabulary() {
+        openVocabulary?.classList.remove('tap-tip-open');
+        openVocabulary=null;
+    }
+    function vocabularyAt(target) {
+        const host=target.closest?.('.tooltip-wrap');
+        if(!host || host.querySelector('select,input,textarea,button,a') ||
+            !host.querySelector('.target-word,.optional-particle-label') ||
+            !host.querySelector('.tooltip-tip'))return null;
+        return host;
+    }
+    document.addEventListener('pointerdown', e=>{
+        if(e.pointerType==='mouse'){
+            document.documentElement.removeAttribute('data-tooltip-input');
+            closeVocabulary();touchStart=null;return;
+        }
+        if(e.pointerType!=='touch' && e.pointerType!=='pen')return;
+        document.documentElement.dataset.tooltipInput='touch';
+        touchStart={id:e.pointerId,x:e.clientX,y:e.clientY,host:vocabularyAt(e.target)};
+    },{passive:true});
+    document.addEventListener('pointerup', e=>{
+        if(!touchStart || e.pointerId!==touchStart.id)return;
+        const start=touchStart;touchStart=null;
+        if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>10)return;
+        const host=vocabularyAt(e.target);
+        if(host!==start.host)return;
+        const wasOpen=host && host===openVocabulary;
+        closeVocabulary();
+        if(host && !wasOpen){
+            openVocabulary=host;
+            host.classList.add('tap-tip-open');
+            position(host);
+        }
+    },{passive:true});
+    document.addEventListener('pointercancel',()=>{touchStart=null;});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVocabulary();});
+
     function reposition() {
         document.querySelectorAll(selector).forEach(anchor => {
-            if (anchor.matches(':hover, :focus-visible')) position(anchor);
+            if (anchor.matches(':hover, :focus-visible, .tap-tip-open')) position(anchor);
         });
     }
     window.addEventListener('resize', reposition);
