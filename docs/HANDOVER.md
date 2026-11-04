@@ -1,3 +1,8 @@
+## Practice 8.1ドリル見出し確定（2026-11-04 / Europe/Vienna）
+
+- Drill 1〜5のタイトルを確定文言へ統一。Drill 1説明だけを “Say what you like or like doing.” に変更し、Drill 2〜5説明は維持。
+- `practice8.1.js`、`docs/PRACTICE8_SPEC.md`を更新。テストに該当する旧期待値はなし。JS構文確認・ブラウザのタイトル表示と横幅確認後に保存。
+
 ## Practice 8.1 D3-1差替え（2026-11-04 / Europe/Vienna）
 
 - Dr3タイトルをVerbのが、じょうず／にがてへ変更。
