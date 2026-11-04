@@ -15,7 +15,9 @@ function W(id,kanji,hira,romaji,meaning) {
 W("you","あなた","あなた","anata","you");
 W("i","私","わたし","watashi","I");
 W("book","本","ほん","hon","book");
-W("movie","映画","えいが","eiga","movie");
+W("travel","旅行","りょこう","ryokō","travel");
+W("walk","散歩","さんぽ","sanpo","taking a walk");
+W("anime","アニメ","あにめ","anime","anime");
 W("television","テレビ","てれび","terebi","television");
 W("watch","見る","みる","miru","to watch");
 W("cycling","自転車","じてんしゃ","jitensha","bicycle");
@@ -796,10 +798,10 @@ function addSelect(cue,r,key) {
 function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');if(si===4)ex.classList.add('p81-meaning-example');
     const samples=[
-        [makeRow('ex1-noun',{...action('movie','make'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('movie','make'),adjective:'like'},{kind:'Verb＋の'})],
-        [makeRow('ex2-q',{...action('television','watch'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('television','watch'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
+        [makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の'})],
+        [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
-        exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('cook','make'),...level,degreeLevel:level})),
+        exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('anime','watch'),...level,degreeLevel:level})),
         [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
     ][si];
     const hasKinds=samples.some(r=>r.kind);
