@@ -4040,3 +4040,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         color: #fbbf24;
     }
 }
+
+/* Avoid sticky emulated :hover after touch; selects retain native first-tap behavior. */
+html[data-tooltip-input="touch"] .tooltip-wrap .tooltip-tip {
+    visibility: hidden;
+    opacity: 0;
+}
+html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
+    visibility: visible;
+    opacity: 1;
+}
