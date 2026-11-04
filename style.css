@@ -4050,3 +4050,13 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     visibility: visible;
     opacity: 1;
 }
+
+/* Let each comparison row wrap only when its actual contents no longer fit. */
+.practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 0;
+}
+.practice81-page #drill5 .p81-cue-body { display: contents; }
+.practice81-page #drill5 .p81-cue-words { max-width: 100%; overflow-wrap: anywhere; }
