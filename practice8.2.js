@@ -38,6 +38,8 @@ W('convenience','コンビニ','コンビニ','kombini','convenience store');
 W('snack','おやつ','おやつ','oyatsu','snack');
 W('yesterday','昨日','きのう','kinō','yesterday','きのう');
 W('college','大学','だいがく','daigaku','college; university','大学');
+W('birthday','誕生日','たんじょうび','tanjōbi','birthday','たんじょうび');
+W('smartphone','スマホ','スマホ','sumaho','smartphone');
 const verbs={};
 function V(id,dict,hira,romaji,meaning,forms,cue){W(id,dict,hira,romaji,meaning,cue);verbs[id]={dict,...forms};}
 V('drink','飲む','のむ','nomu','to drink',{masu:'飲みます',past:'飲みました',neg:'飲みません',pastNeg:'飲みませんでした',plainPast:'飲んだ',plainNeg:'飲まない',plainPastNeg:'飲まなかった'});
@@ -62,6 +64,7 @@ V('help','手伝う','てつだう','tetsudau','to help',{masu:'手伝います'
 V('speak','話す','はなす','hanasu','to speak; to talk',{masu:'話します',past:'話しました',neg:'話しません',pastNeg:'話しませんでした',plainPast:'話した',plainNeg:'話さない',plainPastNeg:'話さなかった'},'はなす');
 V('learn','習う','ならう','narau','to learn',{masu:'習います',past:'習いました',neg:'習いません',pastNeg:'習いませんでした',plainPast:'習った',plainNeg:'習わない',plainPastNeg:'習わなかった'},'ならう');
 V('teach','教える','おしえる','oshieru','to teach',{masu:'教えます',past:'教えました',neg:'教えません',pastNeg:'教えませんでした',plainPast:'教えた',plainNeg:'教えない',plainPastNeg:'教えなかった'},'おしえる');
+V('attach','つける','つける','tsukeru','to put on; to attach',{masu:'つけます',past:'つけました',neg:'つけません',pastNeg:'つけませんでした',plainPast:'つけた',plainNeg:'つけない',plainPastNeg:'つけなかった'},'つける');
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
 const formReadings=[];
 for(const [id,v]of Object.entries(verbs)){
@@ -73,11 +76,12 @@ for(const [id,v]of Object.entries(verbs)){
   if(id==='takealong')formReadings.push([text.replace('持ってい','持って行'),kana]);
   if(id==='wearshoes')for(const mark of ['履','穿'])formReadings.push([text.replace(/^は/,mark),kana]);
   if(id==='cap')formReadings.push([text.replace(/^かぶ/,'被'),kana]);
+  if(id==='attach')for(const mark of ['付','点'])formReadings.push([text.replace(/^つけ/,mark+'け'),kana]);
  }
 }
 formReadings.forEach(e=>STTDisplay.register(...e));
-const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち']].sort((a,b)=>b[0].length-a[0].length);
-[['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち']].forEach(e=>STTDisplay.register(...e));
+const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira]),['私','わたし'],['何','なに'],['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち'],['付ける','つける'],['点ける','つける']].sort((a,b)=>b[0].length-a[0].length);
+[['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち'],['付ける','つける'],['点ける','つける']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
@@ -100,11 +104,11 @@ const contrastPairs=[
  {verb:'wash'}
 ];
 const conversations=[
- {place:'convenience',placeParticle:'で',verb:'buy'},
+ {time:'birthday',verb:'do'},
  {place:'party',placeParticle:'に',verb:'takealong'},
- {time:'weekend',verb:'do'},
  {place:'snack',placeParticle:'に',verb:'eat'},
- {person:'friend',personParticle:'から',verb:'borrow'}
+ {person:'friend',personParticle:'から',verb:'borrow'},
+ {place:'smartphone',placeParticle:'に',verb:'attach'}
 ];
 const habits=[{object:'cook',verb:'make'},{object:'song',verb:'sing'},{object:'hat',verb:'cap'}];
 const habitExample={object:'shoes',verb:'wearshoes'};
@@ -127,6 +131,20 @@ function makeRow(id,spec,extra={}){
   const parts=[r.time?words[r.time].kanji+'、':'',r.place?words[r.place].kanji+(r.placeParticle||'で'):'',r.person?words[r.person].kanji+(r.personParticle||'に')+'、':''].filter(Boolean);
   const prefixes=parts.reduce((all,part)=>[...all,...all.map(prefix=>prefix+part)],['']);
   for(const prefix of prefixes)for(const object of no?['何も']:['','何か'])for(const start of starts){const part=prefix+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);}
+  if(r.time==='birthday'){
+   for(const t of ['誕生日に、','誕生日に','誕生日']){
+    for(const object of no?['何も']:['','何か'])for(const start of starts){
+     const part=t+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);
+    }
+   }
+  }
+  if(r.place==='smartphone'){
+   for(const t of ['スマホに、','スマホに']){
+    for(const object of no?['何も']:['','何か'])for(const start of starts){
+     const part=t+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);
+    }
+   }
+  }
  }
  if(r.mode==='contrast'){
   const ending=speechStyle==='formal'?'か。':'？';
@@ -142,7 +160,21 @@ function makeRow(id,spec,extra={}){
    if(r.pronoun==='what')r.refs.push('何'+vText,'あなたは、何'+vText,'あなたは何'+vText);
   }
  }
- if(r.mode==='question')r.refs.push('あなたは、'+r.text);
+ if(r.mode==='question'){
+  r.refs.push('あなたは、'+r.text,'あなたは'+r.text);
+  if(r.time==='birthday'){
+   for(const t of ['誕生日に、','誕生日に','誕生日、','誕生日']){
+    const q=t+'何か'+inflect(r)+(speechStyle==='formal'?'か。':'？');
+    r.refs.push(q,'あなたは、'+q,'あなたは'+q);
+   }
+  }
+  if(r.place==='smartphone'){
+   for(const t of ['スマホに、','スマホに']){
+    const q=t+'何か'+inflect(r)+(speechStyle==='formal'?'か。':'？');
+    r.refs.push(q,'あなたは、'+q,'あなたは'+q);
+   }
+  }
+ }
  if(r.mode==='any')r.refs.push('何でも','私は、'+r.text);
  if(r.mode==='statement')r.refs.push('私は、'+r.text);
  r.refs=[...new Set(r.refs.flatMap(t=>[t,hira(t)]))];
@@ -158,7 +190,7 @@ function rowsFor(si){
  if(si===2)return conversations.map((s,i)=>{const id='yn-'+i+'-a',answer=choices.get(id);return [makeRow('yn-'+i+'-q',{...s,mode:'question'},{kind:'Q',qa:'question'}),makeRow(id,{...s,mode:'reply',answer:answer||'yes'},{kind:'A',qa:'response',yn:true,pending:!answer})];});
  return habits.map((s,i)=>[makeRow('any-'+i+'-q',{...s,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('any-'+i+'-a',{...s,mode:'any'},{kind:'A',qa:'response'})]);
 }
-function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
+function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):r.verb==='attach'?String(raw).replace(/^[付点]け/,'つけ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
