@@ -104,22 +104,22 @@ const contrastPairs=[
  {verb:'wash'}
 ];
 const conversations=[
- {time:'birthday',verb:'do'},
- {place:'party',placeParticle:'に',verb:'takealong'},
- {place:'snack',placeParticle:'に',verb:'eat'},
- {person:'friend',personParticle:'から',verb:'borrow'},
- {place:'smartphone',placeParticle:'に',verb:'attach'}
+ {time:'birthday',timeParticle:'に、',verb:'do'},
+ {place:'party',placeParticle:'に、',verb:'takealong'},
+ {place:'snack',placeParticle:'に、',verb:'eat'},
+ {person:'friend',personParticle:'に',verb:'borrow'},
+ {place:'smartphone',placeParticle:'に、',verb:'attach'}
 ];
 const habits=[{object:'cook',verb:'make'},{object:'song',verb:'sing'},{object:'hat',verb:'cap'}];
 const habitExample={object:'shoes',verb:'wearshoes'};
 function inflect(s,negative=false){const v=verbs[s.verb];return speechStyle==='formal'?v[negative?(s.past?'pastNeg':'neg'):(s.past?'past':'masu')]:negative?v[s.past?'plainPastNeg':'plainNeg']:s.past?v.plainPast:v.dict;}
-function context(s){return (s.time?words[s.time].kanji+'、':'')+(s.place?words[s.place].kanji+(s.placeParticle||'で'):'')+(s.person?words[s.person].kanji+(s.personParticle||'に')+'、':'');}
+function context(s){return (s.time?words[s.time].kanji+(s.timeParticle||'、'):'')+(s.place?words[s.place].kanji+(s.placeParticle||'で'):'')+(s.person?words[s.person].kanji+(s.personParticle||'に')+'、':'');}
 function sentenceFor(s){
  const ending=speechStyle==='formal'?'か。':'？';
  if(s.mode==='wh')return 'どんな'+words[s.object].kanji+'を'+inflect(s)+ending;
  if(s.mode==='any')return '何でも'+inflect(s)+'。';
  if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も':'')+inflect(s,no)+'。';}
- const target=s.pronoun==='what'?'何を':(s.withWo?'何か(を)':(s.pronoun?words[s.pronoun].kanji:'何か'));
+ const target=s.pronoun==='what'?'何を':(s.withWo?'何か(を)':(s.pronoun?words[s.pronoun].kanji:(s.mode==='question'&&s.id?.startsWith('yn-')?'何か、':'何か')));
  return context(s)+target+inflect(s,s.pronoun==='nothing')+(s.mode==='question'||s.mode==='contrast'?ending:'。');
 }
 function makeRow(id,spec,extra={}){
@@ -128,21 +128,17 @@ function makeRow(id,spec,extra={}){
  if(r.mode==='reply'){
   const no=r.answer==='no',verb=inflect(r,no)+'。';
   const starts=speechStyle==='casual'?[no?'ううん、':'うん、','']:[no?'いいえ、':'はい、',''];
-  const parts=[r.time?words[r.time].kanji+'、':'',r.place?words[r.place].kanji+(r.placeParticle||'で'):'',r.person?words[r.person].kanji+(r.personParticle||'に')+'、':''].filter(Boolean);
+  const parts=[r.time?words[r.time].kanji+(r.timeParticle||'、'):'',r.place?words[r.place].kanji+(r.placeParticle||'で'):'',r.person?words[r.person].kanji+(r.personParticle||'に')+'、':''].filter(Boolean);
   const prefixes=parts.reduce((all,part)=>[...all,...all.map(prefix=>prefix+part)],['']);
   for(const prefix of prefixes)for(const object of no?['何も']:['','何か'])for(const start of starts){const part=prefix+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);}
-  if(r.time==='birthday'){
-   for(const t of ['誕生日に、','誕生日に','誕生日']){
-    for(const object of no?['何も']:['','何か'])for(const start of starts){
-     const part=t+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);
-    }
-   }
-  }
-  if(r.place==='smartphone'){
-   for(const t of ['スマホに、','スマホに']){
-    for(const object of no?['何も']:['','何か'])for(const start of starts){
-     const part=t+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);
-    }
+  const extraContexts=[];
+  if(r.time==='birthday')extraContexts.push('誕生日に、','誕生日に','誕生日、','誕生日');
+  if(r.place==='party')extraContexts.push('パーティーに、','パーティーに','パーティーへ、','パーティーへ');
+  if(r.person==='friend')extraContexts.push('友達に、','友達に','友達から、','友達から');
+  if(r.place==='smartphone')extraContexts.push('スマホに、','スマホに','スマホへ、','スマホへ');
+  for(const t of extraContexts){
+   for(const object of no?['何も']:['','何か'])for(const start of starts){
+    const part=t+object+verb;r.refs.push(start+part,start+'私は、'+part,'私は、'+start+part);
    }
   }
  }
@@ -162,18 +158,20 @@ function makeRow(id,spec,extra={}){
  }
  if(r.mode==='question'){
   r.refs.push('あなたは、'+r.text,'あなたは'+r.text);
-  if(r.time==='birthday'){
-   for(const t of ['誕生日に、','誕生日に','誕生日、','誕生日']){
-    const q=t+'何か'+inflect(r)+(speechStyle==='formal'?'か。':'？');
-    r.refs.push(q,'あなたは、'+q,'あなたは'+q);
+  const ending=speechStyle==='formal'?'か。':'？';
+  const vText=inflect(r)+ending;
+  const addQ=(prefixes)=>{
+   for(const t of prefixes){
+    for(const target of ['何か、','何か']){
+     const q=t+target+vText;
+     r.refs.push(q,'あなたは、'+q,'あなたは'+q);
+    }
    }
-  }
-  if(r.place==='smartphone'){
-   for(const t of ['スマホに、','スマホに']){
-    const q=t+'何か'+inflect(r)+(speechStyle==='formal'?'か。':'？');
-    r.refs.push(q,'あなたは、'+q,'あなたは'+q);
-   }
-  }
+  };
+  if(r.time==='birthday')addQ(['誕生日に、','誕生日に','誕生日、','誕生日']);
+  if(r.place==='party')addQ(['パーティーに、','パーティーに','パーティーへ、','パーティーへ']);
+  if(r.person==='friend')addQ(['友達に、','友達に','友達から、','友達から']);
+  if(r.place==='smartphone')addQ(['スマホに、','スマホに','スマホへ、','スマホへ']);
  }
  if(r.mode==='any')r.refs.push('何でも','私は、'+r.text);
  if(r.mode==='statement')r.refs.push('私は、'+r.text);
