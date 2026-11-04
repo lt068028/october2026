@@ -1,3 +1,9 @@
+## Practice 8.1 Beyond追加（2026-11-04 / Europe/Vienna / GitHub連携）
+
+- Ex1は直前確定の旅行Noun／Verb2行、Ex2散歩、Ex4アニメを維持。キュー表示の未習漢字をかなへ変換し、Ex本文の自然な漢字表記と内部TTS文を分離。
+- Beyond L8 Wordsを8.3と同じ位置・スタイルで追加。Words6語（バイク・アニメ・服・ギター・弾く・料理）、Kanji14字（旅・手・弾・意・歩・写・真・姉・妹・得・好・散・撮・苦）。配当課はユーザー提供一覧に従う。映画は旅行へ変更済みのため映・画は除外。
+- 表記モード連動、開閉状態をsessionStorage p81-unlearned-openで保持。GitHub APIで保存。ブラウザ動作・構文の自動検証は未実行。公開表示・ChromeOSの実機確認待ち。
+
 ## 現在のリレー状態（2026-11-04 UTC / Codex Cloud）
 
 - 開始main：d447081。今回の継続作業を完了しmainへ通常Pushする。
