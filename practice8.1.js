@@ -798,7 +798,7 @@ function addSelect(cue,r,key) {
 function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');if(si===4)ex.classList.add('p81-meaning-example');
     const samples=[
-        [makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の'})],
+        [makeRow('ex1-noun',{...action('travel','do'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の'})],
         [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
         exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('anime','watch'),...level,degreeLevel:level})),
