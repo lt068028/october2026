@@ -1,3 +1,9 @@
+## Practice 8.1制作途中：Drillタイトル・説明文限定調整（2026-11-04 / Europe/Vienna）
+
+- 開始main 75f68f0。practice8.1.jsの指定5文字列のみ変更。D1説明：Say what you like and what you like doing.／D3説明：Describe what other people are good at or struggle with.／D4タイトル：Degrees of Intensity、説明：Choose a different action for each line.／D5説明：Choose the adjective that matches each label. Consider its meaning and how it sounds. D2文言は維持。
+- 限定検証：node --check合格、Chromiumで5タイトル・5説明文の完全一致、初期実行時エラーなしを確認。文字列変更を逆置換すると変更前と完全一致し、既存の設問・機能・レイアウトコードに差分なし。
+- 今回は制作途中の限定修正。「ページ作業完了」「検証完了」の宣言ではなく、ページ全体テストは実施していない。ChromeOS実機未確認。
+
 ## Practice 8.1 Dr5 Adj最小幅（2026-11-04 / Europe/Vienna）
 
 - 未選択表示を— Adj —からAdjへ変更。comparison選択欄はwidth:auto/min-width:0で、各ペア内の最長候補にネイティブの矢印・余白を加えた幅を使う。候補間・未選択／選択後で幅は安定。
