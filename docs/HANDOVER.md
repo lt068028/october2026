@@ -1,3 +1,11 @@
+## Practice 8.1 Dr5横はみ出し修正（2026-11-04 / Europe/Vienna）
+
+- 「Adjとボタン群を分離しない」指定を撤回。style.cssのDr5行を折返し可能なflexへ変更し、内側cue-bodyをdisplay:contentsにしてボタン群が英語ラベル分の固定列に閉じ込められないようにした。3ボタンは一組を維持。固定画面幅のしきい値は追加していない。
+- PRACTICE8_SPECの旧禁止文を更新。製品JS・教材・Notice・録音ロジックは変更なし。
+- 64cc369を基準に最新依存ファイルを固定取得し、修正CSSを当てたChromiumで375px、全7問、With漢字／Hiragana Only、未選択・両候補選択／切替・録音保存状態によるNotice表示を限定測定。全状態scrollWidth=clientWidth=375。主要要素の重なり・祖先クリップなし。録音保存後の再生ボタン14個も最大右端355.8pxで収まる。実行時エラーなし。
+- 1440pxでは両表記・全7問で選択欄とボタンが同じ行を維持し、横スクロール・重なり・クリップなし。
+- Noticeは保存済みURLをテスト内で再現し、実際のshowResult条件を通して表示。実録音検証ではない。ChromeOS実機未確認。制作途中の限定検証でありページ全体テストは未実施。
+
 ## Practice 8.1 Dr5のInferred表記（2026-11-04 / Europe/Vienna）
 
 - Dr5第1問・第5問のObservedをInferredへ変更。Ex5のObservedは今回対象外。
