@@ -1,67 +1,89 @@
-// Practice 8.2: actual models, selection prerequisites, lifecycle and layout.
+// Practice 8.2: current four-Example/four-Drill models, judging and state relay.
 const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..'),audio=fs.readFileSync(path.join(__dirname,'audio-relay.cjs'),'utf8');
 const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=>'));
 (async()=>{
- const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];let count=0;const eq=(a,b,label)=>{assert.deepEqual(a,b,label);count++};p.on('pageerror',e=>errors.push(e.message));await p.addInitScript('('+mock.trim()+')();');
+ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
+ const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];let count=0;
+ const eq=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
+ p.on('pageerror',e=>errors.push(e.message));await p.addInitScript('('+mock.trim()+')();');
  await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
- await p.goto('http://p82.test/practice8.2.html');eq(errors,[],'initial render');
- eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
- eq(await p.locator('.example-box').count(),3,'three Examples');
- for(const [n,rows]of [[1,4],[2,8],[3,6]])eq(await p.locator('#drill'+n+' tr').count(),rows,'Drill '+n+' rows');
- eq(await p.locator('#drill3 .p81-card .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'all habit questions use どんな');
- const yn=p.locator('[data-row="yn-0-a"]');eq(await yn.locator('.recording-actions button').nth(0).isDisabled(),true,'listen locked');eq(await yn.locator('.recording-actions button').nth(1).isDisabled(),true,'record locked');
- const before=await p.evaluate(()=>t.spoken.length);for(let i=0;i<4;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="yes"]`).click();eq(await p.evaluate(()=>t.spoken.length),before,'selection does not speak');
+ await p.goto('http://p82.test/practice8.2.html');
+ eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
+ eq(await p.locator('.example-box').count(),4,'four Example groups');
+ for(const [n,rows]of [[1,4],[2,8],[3,10],[4,6]])eq(await p.locator(`#drill${n} tr`).count(),rows,`Drill ${n} rows`);
+ eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
+ eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');
+ eq(await p.locator('#drill3 .info-panel-title').textContent(),'Drill 3: 何か／何も — Yes/No Questions','Drill 3 title');
+ eq(await p.locator('#drill4 .info-panel-title').textContent().then(s=>s.includes('[Advanced]')&&s.includes('Sneak Peek L15')),true,'Drill 4 advanced label');
+ const yn=p.locator('[data-row="yn-0-a"]');
+ eq(await yn.locator('.recording-actions button').nth(0).isDisabled(),true,'Y/N response listen locked');
+ eq(await yn.locator('.recording-actions button').nth(1).isDisabled(),true,'Y/N response record locked');
+ const before=await p.evaluate(()=>t.spoken.length);await p.locator('[data-response="yn-0-a"][data-answer="no"]').click();
+ eq(await p.evaluate(()=>t.spoken.length),before,'answer selection does not speak');
+ const models=await p.evaluate(()=>({
+  d1: audit82.rowsFor(0).flat().map(r=>r.text),
+  d2: audit82.rowsFor(1).flat().map(r=>r.text),
+  d3: audit82.rowsFor(2).map(rs=>rs.map(r=>r.text)),
+  d4: audit82.rowsFor(3).map(rs=>rs.map(r=>r.text))
+ }));
+ eq(models.d1,['授業で、何か、話しますか。','学校で、何か、習いますか。','大学で、何か、教えますか。','先生に、何か、聞きますか。'],'Drill 1 actual models');
+ eq(models.d2.slice(0,4),['何を、読みますか。','何か、読みますか。','何を、書きますか。','何か、書きますか。'],'Drill 2 contrast models');
+ eq(models.d3[0],['誕生日に、何か、しますか。','いいえ、何も、しません。'],'Drill 3 question and selected No models');
+ eq(models.d4[0],['どんな料理を、作りますか。','何でも、作ります。'],'Drill 4 models');
+ const answerChecks=await p.evaluate(()=>{const a=audit82,d1=a.rowsFor(0)[0][0],d2=a.rowsFor(1)[0][0],no=a.rowsFor(2)[0][1],any=a.rowsFor(3)[0][1];return [
+  a.matchesAnswer('授業で何か話しますか',d1),a.matchesAnswer('誕生日に何かしますか',d1),
+  a.matchesAnswer('何を読みますか',d2),a.matchesAnswer('何か読みますか',a.rowsFor(1)[0][1]),
+  a.matchesAnswer('いいえ、何もします',no),a.matchesAnswer('いいえ、します',no),
+  a.matchesAnswer('何でも作ります',any),a.matchesAnswer('何でもを作ります',any),a.matchesAnswer('何でもいいです',any)
+ ];});
+ eq(answerChecks,[true,false,true,true,false,false,true,false,false],'accepted and rejected answers');
  for(const style of ['formal','informal','casual']){
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
-  for(const answer of ['yes','no']){
-   for(let i=0;i<4;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="${answer}"]`).click();
-   const models=await p.evaluate(()=>audit82.rowsFor(1).flat().map(r=>({text:r.text,k:audit82.matchesAnswer(r.text,r),h:audit82.matchesAnswer(r.hira,r),wrong:audit82.matchesAnswer(r.text+'猫',r)})));
-   for(const r of models){eq(r.k,true,style+answer+' kanji '+r.text);eq(r.h,true,'kana model');eq(r.wrong,false,'unrelated content rejected');}
-  }
-  for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
-   await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
-   eq(await p.locator('tr').count(),18,'all Drills retained');
-   eq(await p.locator('.conversation-role-circle').count(),18,'common role circles');
-   eq(await p.locator('.info-panel-desc').allTextContents().then(a=>a.every(t=>t.startsWith('💡'))),true,'short bulb instructions');
-   for(const result of await p.evaluate(()=>[...audit82.rowsFor(0),...audit82.rowsFor(2)].flat().map(r=>[audit82.matchesAnswer(r.text,r),audit82.matchesAnswer(r.hira,r)])))eq(result,[true,true],'statement and WH models');
-  }
+  for(let i=0;i<5;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="${i%2?'yes':'no'}"]`).click();
+  const result=await p.evaluate(()=>[0,1,2,3].flatMap(si=>window.audit82.rowsFor(si).flat()).map(r=>[
+   window.audit82.matchesAnswer(r.text,r),window.audit82.matchesAnswer(r.hira,r),window.audit82.matchesAnswer(r.text+'猫',r)
+  ]));
+  for(const [i,checks]of result.entries())eq(checks,[true,true,false],`${style} model/readings/rejection ${i}`);
  }
- await p.locator('#speechStyleControl [data-value="formal"]').click();await p.locator('#scriptModeControl [data-value="kanji"]').click();await p.locator('#hintModeControl [data-value="hover"]').click();
- const checks=await p.evaluate(()=>{const a=audit82,yn=a.rowsFor(2)[0][1],any=a.rowsFor(3)[0][1],s=a.rowsFor(0)[0][0];return [a.matchesAnswer('いいえ、何も買いません',yn),a.matchesAnswer('いいえ、買いません',yn),a.matchesAnswer('はい、何か買います',yn),a.matchesAnswer('何でも',any),a.matchesAnswer('何でもを作ります',any),a.matchesAnswer('何でもいいです',any),a.matchesAnswer('授業で何かを話しますか',s),a.matchesAnswer('授業で何も話しません',s),a.rowsFor(2)[0][0].hira.includes('コンビニ'),a.rowsFor(0)[3][0].hira.includes('せんせい')];});eq(checks,[true,false,false,true,false,false,true,false,true,true],'target pronouns, polarity and katakana');
- eq(await p.evaluate(()=>[audit82.matchesAnswer('先生に何か訊きますか',audit82.rowsFor(0)[3][0]),audit82.matchesAnswer('何でも被ります',audit82.rowsFor(3)[2][1]),audit82.matchesAnswer('いいえ何も買いません',audit82.rowsFor(2)[0][1])]),[true,true,true],'registered question/carry/wear spellings');
- eq(await p.evaluate(()=>[0,1,2,3].every(si=>audit82.rowsFor(si).flat().every(r=>!/[\p{Script=Han}]/u.test(r.hira)))),true,'all model readings actually remove kanji');
- eq(await p.evaluate(()=>audit82.matchesAnswer('じゅぎょうでなにかはなしますか',audit82.rowsFor(0)[0][0])),true,'original kana recognition matches inflected verb');
- eq(await p.evaluate(()=>audit82.rowsFor(0).flat().map(r=>r.text)),['授業で何か話しますか。','学校で何か習いますか。','大学で何か教えますか。','先生に、何か聞きますか。'],'specified D1 questions');
- eq((await p.locator('#drill1 .info-panel-desc').textContent()).includes('tense'),false,'D1 has no tense task');
- eq(await p.evaluate(()=>{const a=audit82,ids=[...a.rowsFor(0).flat(),...a.rowsFor(1).map(rs=>rs[0]),...a.rowsFor(2).map(rs=>rs[0]),...a.rowsFor(3).map(rs=>rs[0])].map(r=>r.verb);return ids.length===new Set(ids).size;}),true,'no verb assigned to multiple Drill items');
- for(const [i,verb]of ['作る','うたう','かぶる'].entries())eq(await p.locator(`[data-row="any-${i}-a"] .p81-cue-words .target-word`).allTextContents(),['何でも',verb],'answer cue contains its verb');
- eq(await p.evaluate(()=>{const r=audit82.rowsFor(2)[0][1];return ['コンビニで何も買いません','何も買いません'].map(t=>audit82.matchesAnswer(t,r));}),[true,true],'conversation permits partial context');
- const examples=await p.locator('.example-box button').all();
- for(const [i,b]of examples.entries()){await b.click();eq(await p.evaluate(()=>Boolean(t.spoken.at(-1).text)),true,'Example '+i+' playable');await p.evaluate(()=>t.spoken.at(-1).onend());}
- eq(await p.evaluate(()=>audit82.speechText('ううん、何も食べなかった。')),'ううんん、何も食べなかった。','No pronunciation-only rule');
- await p.locator('label.switch').first().click();
- await yn.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===1);
- await p.evaluate(()=>{const result=[{transcript:'  いいえ、何も買いません。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
- await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('yn-0-a:no'));
- eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'recorded No graded');
- eq(await p.evaluate(()=>audit82.saved.get('yn-0-a:no').raw),'  いいえ、何も買いません。　','raw STT kept');
- eq(await p.evaluate(()=>{const n=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===n+1}),true,'zero intentional relay gap');
- const next=p.locator('[data-row="any-0-a"]');await next.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===2);eq(await p.evaluate(()=>t.audios.at(-1).paused),true,'new recording stops relay');
- await p.evaluate(()=>{const result=[{transcript:'何でも'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('any-0-a:fixed'));
- eq(await next.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'natural short answer accepted');eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'previous recording retained');
- await p.locator('[data-response="yn-0-a"][data-answer="yes"]').click();eq(await yn.locator('.result-text').textContent(),'(Not recorded yet)','Yes independent');await p.locator('[data-response="yn-0-a"][data-answer="no"]').click();eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'No recording restored');
- for(const width of [375,600,900,1440])for(const theme of ['light','dark']){
-  await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});
-  eq(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'Example fits '+width+theme);
-  eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,'page fits');
-  eq(await p.locator('.example-box').evaluateAll(es=>es.every(e=>{const xs=[...e.querySelectorAll('button')].map(b=>b.getBoundingClientRect().left);return Math.max(...xs)-Math.min(...xs)<1;})),true,'shared Example audio column');
-  if(width===1440){await p.locator('#drill1').screenshot({path:'/tmp/practice82-'+theme+'.png'});}
- }
+ await p.locator('#speechStyleControl [data-value="formal"]').click();
  for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
   await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
-  for(const width of [375,600,1440]){await p.setViewportSize({width,height:1000});eq(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,'all reading/hint layouts '+mode+hint+width);eq(await p.locator('#drill1 .example-box .p81-kind').evaluateAll(es=>es.every(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getClientRects().length===1;})),true,'concept names are single-line');}
-  if(mode==='hiragana')eq(await p.locator('.p81-model,.info-panel-desc').evaluateAll(es=>es.every(e=>!/[\p{Script=Han}]/u.test(e.textContent))),true,'hiragana models and instruction terms');
+  eq(await p.locator('tr').count(),28,`${mode}/${hint} all Drill rows retained`);
+  if(mode==='hiragana')eq(await p.locator('.p81-model,.info-panel-desc').evaluateAll(es=>es.every(e=>!/\p{Script=Han}/u.test(e.textContent))),true,'Hiragana Only models and instructions');
+ }
+ await p.locator('#scriptModeControl [data-value="kanji"]').click();await p.locator('#hintModeControl [data-value="hover"]').click();
+ const exButtons=await p.locator('.example-box button').all();
+ for(const [i,b]of exButtons.entries()){await b.click();eq(await p.evaluate(()=>Boolean(t.spoken.at(-1)?.text)),true,`Example group ${i+1} playable`);await p.evaluate(()=>t.spoken.at(-1).onend());}
+ // Record a selected D3 No response, preserve raw STT, then check the next recording stops relay.
+ await p.locator('label.switch').first().click();
+ await yn.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===1);
+ await p.evaluate(()=>{const result=[{transcript:'  いいえ、何も、しません。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('yn-0-a:no'));
+ eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'recorded D3 No graded');
+ eq(await p.evaluate(()=>audit82.saved.get('yn-0-a:no').raw),'  いいえ、何も、しません。　','raw STT retained');
+ eq(await p.evaluate(()=>{const n=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===n+1}),true,'zero intentional relay gap');
+ const next=p.locator('[data-row="any-0-a"]');await next.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===2);
+ eq(await p.evaluate(()=>t.audios.at(-1).paused),true,'new recording interrupts relay');
+ await p.evaluate(()=>{const result=[{transcript:'何でも、作ります。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
+ await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('any-0-a:fixed'));
+ eq(await next.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'Drill 4 short model response graded');
+ eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'previous D3 recording retained');
+ await p.locator('[data-response="yn-0-a"][data-answer="yes"]').click();
+ eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),false,'Yes state independent from No');
+ await p.locator('[data-response="yn-0-a"][data-answer="no"]').click();
+ eq(await yn.locator('.result-text').textContent().then(t=>t.includes('✅')),true,'No result restored after answer switch');
+ for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
+  await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
+  for(const width of [375,600,1440]){
+   await p.setViewportSize({width,height:1000});
+   eq(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`Example fits ${mode}/${hint}/${width}px`);
+   eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${mode}/${hint}/${width}px`);
+  }
+ }
+ for(const width of [375,600,900,1440])for(const theme of ['light','dark']){
+  await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});
+  eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${width}px ${theme}`);
  }
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

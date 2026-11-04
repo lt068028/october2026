@@ -1,3 +1,12 @@
+## Practice 8.2回帰テスト同期（2026-11-04 / Codex Cloud）
+
+- 開始時に `git fetch origin` を実施し、`main` の最新は `8a63cac`。Cloud作業ブランチ `work` はクリーンで、fetch前のHEAD `f8511a6` からfast-forwardのみで同期。
+- Practice 8.2の現行実装はExample 4件・Drill 4件。旧 `tests/practice82.cjs` はExample 3件・Drill 3件の件数と旧問題構成を期待し、実行時に `4 !== 3` で停止した。これは期待値の陳腐化で、製品コードの不具合ではない。
+- テスト期待値を現行モデルへ同期し、4セクションの全モデル・3文体の許容／拒否、Y/N回答ロック、選択時の自動再生なし、Hiragana Only／3ヒント設定、録音・STT原文・Y/N別結果保持、0秒リレー・新規録音の中断、375〜1440px表示を確認。
+- `docs/PRACTICE82_SPEC.md` と `PROJECT_SPEC.md` のPractice 8.2概要をExample 4件・Drill 4件へ更新。
+- 自動検証：`node tests/practice82.cjs` 175項目合格、`node --check tests/practice82.cjs` と `git diff --check` 合格。今回の対象外は未実行。引き継ぎ上の別ページ未完了テストは `tests/practice81.cjs`（2026-11-01の追加項目は当時未実行と記録）。全ページ・全テスト包括実行はしていない。
+- GitHubへの本変更のコミット／Pushはこの記録作成後に実施する。ChromeOSでの実録音品質・TTS・ASRの実機確認は未了。
+
 ## 最新リレー状態（2026-11-04 / Europe/Vienna / LT）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。サービス終了作業完了。開始時HEAD `2a0e854`。

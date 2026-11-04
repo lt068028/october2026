@@ -5,7 +5,7 @@
 
 > **8.1 D5表示の短縮と整列（2026-10-31）**：Skill assessment/Personal perceptionをSkill/Perceptionへ短縮。Ex5の母・花育てをD5で反復せず、D5は母・料理へ変更。キューが折返しても旧nowrap幅を保持せず、実内容の最長端から共通列間隔だけ空けて共有きく列を配置する。前半意味/後半対人的印象、Adjクイズ、録音仕様は維持。
 
-> **練習8.2新設（2026-10-31）**：Practice 8.2: 何か・何も・何でも。E1→D1何かの４疑問文、E2→D2持っていく/捨てる/洗う/切るの４Y/N会話、E3靴→D3料理/歌/帽子→何でもの３会話。D1は時制課題を除外、D2以降はL7/L8語彙を優先して別問題枠の動詞重複を避ける。D3返答キューは何でも／動詞。導入の何も＋Negative, Nothingは１行表示。「次の週末」を使用。何でもは普段の習慣・種類を限定しない返答として導入し、たい/可能形は使わない。共通設定・丸囲みQ/A・Y/N選択・録音/０秒リレー/STT原文保持を8.1から踏襲。Indexへ追加。詳細は[PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)。
+> **Practice 8.2現行構成（2026-11-04）**：Example 4件・Drill 4件。E1/D1は何か質問、E2/D2は何を vs 何かの4組、E3/D3は何か／何もを使う5組のYes/No会話、E4/D4は何でもを使う習慣・種類の3組。D4はAdvanced / Sneak Peek L15。モデル文とTTSに文節単位の読点を適用。共通設定・丸囲みQ/A・Y/N選択・録音／0秒リレー／STT原文保持を継承。詳細・許容回答は[PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)。
 
 > **8.1 D5刷新（2026-10-31）**：前半Meaning（Skill assessment／Personal perception等）、後半Speaker & listener（Boastful／Confident、Praise／Direct、Patronizing／Rude等）の７組14行。左のオレンジ指定に合わせて日本語Adjを２択で選ぶ。未選択・不一致時はきく/とるをロックし、合致で解除、選択だけで再生しない。Ex5も母の上手／得意を上記意味指定で紹介。第三者への得意を禁止しない。行・選択ごとの録音保持、文法判定と意味/印象クイズの分離、共通レイアウトを維持。詳細はPRACTICE8_SPEC。
 
