@@ -1,3 +1,7 @@
+## Practice 8.1ホバー訳（2026-11-04 / Europe/Vienna）
+
+- 苦手: not comfortable、下手: not skilled、まぁまぁ: So-so、取る: to take に変更。practice8.1.jsのみ更新。構文確認は未実施。公開表示・実機確認待ち。
+
 ## Practice 8.1ドリル見出し確定（2026-11-04 / Europe/Vienna）
 
 - Drill 1〜5のタイトルを確定文言へ統一。Drill 1説明だけを “Say what you like or like doing.” に変更し、Drill 2〜5説明は維持。
