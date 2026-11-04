@@ -1,21 +1,20 @@
 ## 最新リレー状態（2026-11-04 / Europe/Vienna / LT）
 
-- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Ex1 ラベル「何も〜ません · Nothing」更新（赤色強調）、Ex1・Ex3モデル文の否定述語（ません／ませんでした／ない／なかった）の赤色強調表示（`.degree-negative`）実装完了。開始時HEAD `0d96f74`。
+- 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 1〜Drill 4 のインフォパネル指示文（英語グロス付き）更新完了。開始時HEAD `01d9bc8`。
 - 変更：
-  1. **Ex1 ラベルの更新と「〜ません」の赤色強調（`practice8.2.js`）**：
-     - `何も＋Negative · Nothing` から `何も〜ません · Nothing` へ変更（「＋」を除去し、具体的な述語要求形「〜ません」を提示）。
-     - ラベル内の `〜ません` 部分に `.degree-negative` スタイルを適用し、赤色（`#b42335` / `#ff94a0`）で強調。
-  2. **Ex1・Ex3 モデル文における否定述語の赤色強調表示（`practice8.2.js`）**：
-     - `modelHTML` において、`何も` を含むモデル文の否定述語末尾（`ません`、`ませんでした`、Informal の `ない`、`なかった`）を `<strong class="degree-negative">` でハイライト。
-     - `何も`（ゴールド）と呼応先である否定語尾（赤色）が視覚的に明確に対比され、学習者が否定呼応の規則を直感的に把握可能に。
-  3. **キャッシュキー更新（`practice8.2.html`）**：
-     - スクリプトタグを `v=20261104-negative-red` に更新。
+  1. **Drill 1〜4 インフォパネル指示文の更新（`practice8.2.js`）**：
+     - D1: `💡Ask a question with 何か (something).`
+     - D2: `💡Ask with 何を (what) for specific items, or 何か (anything) for yes/no.`
+     - D3: `💡Ask with 何か (anything). For 🙅, use 何も〜ません (nothing).`
+     - D4: `💡[Advanced] Unlike 何か (some) or 何も (none), 何でも can describe "whatever". Ask with どんな (what kind of) and answer with 何でも (everything / whatever).`
+  2. **キャッシュキー更新（`practice8.2.html`）**：
+     - スクリプトタグを `v=20261104-d1-d4-instructions` に更新。
 - 変更ファイル：practice8.2.js、practice8.2.html、docs/HANDOVER.md。
 - 自動検証：`git diff --check` 合格、構文整合性確認合格。
-- 実機確認状況：Ex1 ラベル（何も〜ません · Nothing）の「〜ません」赤色表示、Ex1 モデル文（何も…ません／ない）、Ex3 モデル文（何も…ませんでした／なかった）の赤色強調の表示確認待ち。
+- 実機確認状況：Drill 1〜4 の各インフォパネルにおける指示文（英語グロス・括弧表記を含む）の表示確認待ち。
 - 保存先：`main` ブランチへコミットし、`origin/main` へ Push。
 
-## 以前の記録（2026-11-03 / Europe/Vienna / LT・コミット `0d96f74`）
+## 以前の記録（2026-11-04 / Europe/Vienna / LT・コミット `01d9bc8`）
 
 - 状態：引き継ぎ可能（GitHub保存確認済み）。Practice 8.2 Drill 4 のタイトル・説明文の先取り（Advanced / Sneak Peek L15）更新完了。開始時HEAD `e9c34d5`。
 - 変更：
