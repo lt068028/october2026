@@ -4060,3 +4060,8 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 }
 .practice81-page #drill5 .p81-cue-body { display: contents; }
 .practice81-page #drill5 .p81-cue-words { max-width: 100%; overflow-wrap: anywhere; }
+
+/* display:contents removes the cue-body track; keep the label gutter explicitly. */
+.practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind {
+    margin-right: 8px;
+}
