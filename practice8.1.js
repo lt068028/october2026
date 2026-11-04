@@ -192,11 +192,11 @@ comparisons.forEach(spec=>{
  spec.impressionWords=Object.fromEntries(spec.options.map((id,i)=>[id,spec.labels[i]]));
 });
 const sections=[
-    {title:'Drill 1: Nounが、すき↔️Verbのが、すき',instruction:'💡Say what you like or like doing.'},
+    {title:'Drill 1: Nounが、すき↔️Verbのが、すき',instruction:'💡Say what you like and what you like doing.'},
     {title:'Drill 2: Verbのが、すき↔️きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
-    {title:'Drill 3: Verbのが、じょうず↔️にがて',instruction:'💡Choose じょうず or にがて, then record.'},
-    {title:'Drill 4: Degrees of Preference',instruction:'💡Select a different action for each line, then record.'},
-    {title:'Drill 5: Compare じょうず・とくい・へた・にがて',instruction:'💡Choose the best adjective for each label, then record.'}
+    {title:'Drill 3: Verbのが、じょうず↔️にがて',instruction:'💡Describe what other people are good at or struggle with.'},
+    {title:'Drill 4: Degrees of Intensity',instruction:'💡Choose a different action for each line.'},
+    {title:'Drill 5: Compare じょうず・とくい・へた・にがて',instruction:'💡Choose the adjective that matches each label. Consider its meaning and how it sounds.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
 function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective) {
