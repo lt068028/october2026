@@ -73,3 +73,9 @@ Drill 4のタイトルと案内はAdvanced / Sneak Peek L15を示す。何でも
 ## 検証
 
 `node tests/practice82.cjs` は現行の4 Example／4 Drillを対象に、モデル、質問・回答のロック、選択時に自動再生しないこと、文体別の判定、カタカナとモデル再生、録音・STT原文・状態保持、0秒リレーと新規録音による中断、375〜1440pxの通常／ダーク表示を確認する。Practice 8.2の自動テストは、全ページの包括検証とは別にこのテストだけを実行する。
+
+## 表記とBeyond L8 Words（2026-11-04）
+
+共通原則はPROJECT_SPECの「表示箇所・用途別の表記とBeyondリスト」に従う。Ex・DrillのキューはL8漢字範囲。Ex3のキューは「きのう／てつだう」、Ex4は「くつ／はく」だが、右側の例文では「昨日」「手伝いました」「靴」を使用する。音声生成用内部文およびSTT原文は別用途として扱う。
+
+8.3と同じ位置・共通スタイルのBeyond L8 Wordsを設置する。Wordsは何でも（L15 / Genki II）の1語、Kanjiは昨（L10）・手（L11）・伝／靴（Genki外）の4字。漢字欄はWith漢字だけ表示し、件数も連動する。開閉はsessionStorageのp82-unlearned-openで保持する。L8はPractice 8に対応する値であり、他課の名称はBeyond L{対象課番号} Wordsとする。

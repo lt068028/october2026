@@ -1,3 +1,12 @@
+## 現在のリレー状態（2026-11-04 UTC / Codex Cloud）
+
+- 対象：lt068028/october2026。開始main `8f74eae`、Cloudブランチworkは一致・クリーン。ルール版2026-11-01.1。利用枠は取得不可。
+- 完了：Practice 8.2へ8.3準拠のBeyond L8 Wordsを追加。Wordsは何でも（L15）の1語、Kanjiは昨・手・伝・靴の4字。モード連動とsessionStorage開閉保持を実装。
+- AGENTS.md／PROJECT_SPEC.mdにEx・Drillのキュー、Ex右側例文、TTS内部文、STT原文の用途別規則を明記。Beyond L{N} WordsのNは対象Lesson番号。8.2仕様にも適用例を記録。
+- 自動検証：node --check practice8.2.js、git diff --check合格。Playwright限定検証で件数、漢字欄のモード連動、再読込時の開閉保持、375px／1440pxで横はみ出しなし、ページ例外なしを確認。初回は依存解決・Chromium起動制限で実行不能だったが、共有依存と正規の追加権限で再実行し合格。包括テストは未実行。
+- 実機・公開反映：ChromeOSでの表示確認、Vercelデプロイ確認はユーザー待ち。音声・STTロジックの変更なし。
+- 保存先：GitHub mainへ通常Pushする。最終コミットID・保存結果は終了報告で確認。
+
 ## Practice 8.2回帰テスト同期（2026-11-04 / Codex Cloud）
 
 - 開始時に `git fetch origin` を実施し、`main` の最新は `8a63cac`。Cloud作業ブランチ `work` はクリーンで、fetch前のHEAD `f8511a6` からfast-forwardのみで同期。

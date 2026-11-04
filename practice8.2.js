@@ -680,7 +680,25 @@ function addExample(root,si){
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
  samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=escape(rawKind).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
+function updateUnlearnedLexicon(){
+ const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
+ if(!kanjiGroup)return;
+ const isKanji=scriptMode==='kanji';
+ kanjiGroup.style.display=isKanji?'block':'none';
+ if(counts){
+  counts.textContent=isKanji?'ことば(1語) 漢字(4字)':'ことば(1語)';
+ }
+}
+function setupUnlearnedAccordion(){
+ const acc=$('unlearnedAccordion');
+ if(!acc)return;
+ if(sessionStorage.getItem('p82-unlearned-open')==='true')acc.open=true;
+ acc.addEventListener('toggle',()=>{
+  sessionStorage.setItem('p82-unlearned-open',String(acc.open));
+ });
+}
 function render(){
+ updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
  sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');panel.append(node('span','info-panel-title',scriptMode==='kanji'?section.title:displayKana(section.title)),node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
@@ -1211,6 +1229,7 @@ function init() {
     });
 
     setupPreferredVoice82();
+    setupUnlearnedAccordion();
 
     render();
 }
