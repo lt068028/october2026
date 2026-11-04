@@ -1,3 +1,9 @@
+## Practice 8.1 Dr5-7の動作変更（2026-11-04 / Europe/Vienna）
+
+- Dr5-7を日本語の先生／日本語を話す／Adjへ変更。内部モデルも日本語の先生は、日本語を話すのが…へ連動。じょうず／とくいの比較、ラベル・説明は維持。
+- 話を既習キュー漢字へ登録し、当該行の目的語・助詞・動詞を一つの提示句に連結。Hiragana Onlyではかなへ連動。Ex対象のBeyond欄に変更なし。
+- node --check合格。ブラウザ・ChromeOS実機確認は未実施。
+
 ## ページ作業完了とページ全体テストの運用登録（2026-11-04 / Europe/Vienna）
 
 - 開始main：75867d8。文書のみ更新：AGENTS.md、docs/PROJECT_SPEC.md、docs/RELAY_WORKFLOW.md、本HANDOVER。
