@@ -278,7 +278,7 @@ function keyFor(r){if(r.comparison)return r.id+':'+(r.quizChoice||'unselected');
 function cueText(id,mode=scriptMode) {
     const w=words[id];if(!w)return '';
     if(mode!=='kanji')return w.hira;
-    return /[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何話\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji;
+    return /[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji;
 }
 function word(id,model=false) {
     const w=words[id],text=escape(model?w[scriptMode==='kanji'?'kanji':'hira']:cueText(id));
