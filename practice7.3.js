@@ -2631,10 +2631,11 @@ for (const [index, section] of sections.entries()) {
             r.hira = r.hira.replace(time.hira, '').replace(/^、/, '');
         }
         if (index === 2) {
-            const phrases = [['車を','くるまを'],['東京に','とうきょうに'],['自転車を','じてんしゃを'],['宿題のことを','しゅくだいのことを']];
-            for (const [kanji, kana] of phrases) {
-                r.text = r.text.replace(kanji, '');
-                r.hira = r.hira.replace(kana, '');
+            const phrases = [['car','車を','くるまを'],['tokyo','東京に','とうきょうに'],['bicycle','自転車を','じてんしゃを'],['homework','宿題のことを','しゅくだいのことを']];
+            for (const [cue, kanji, kana] of phrases) {
+                if (!r.cues.includes(cue)) continue; // Omit this row's whole phrase, never a substring of another cue.
+                r.text = r.text.replace(new RegExp('、?' + kanji), '、');
+                r.hira = r.hira.replace(new RegExp('、?' + kana), '、');
             }
         }
         r.replyHiras = [full, r.hira];
