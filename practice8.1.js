@@ -63,6 +63,8 @@ W("clean","掃除する","そうじする","sōji suru","to clean");
 W("cleaning","掃除","そうじ","sōji","cleaning");
 W("laundry","洗濯","せんたく","sentaku","laundry");
 W("do","する","する","suru","to do");
+// Cue-only compounds: keep the model/STT vocabulary and object/verb data unchanged.
+const compoundCueMeanings={travel:'to travel',walk:'to take a walk',laundry:'to do laundry',cleaning:'to clean',cook:'to cook'};
 W("friend","友達","ともだち","tomodachi","friend");
 W("classmate","クラスメート","クラスメート","kurasumēto","classmate");
 W("senior","先輩","せんぱい","senpai","senior student or colleague");
@@ -159,7 +161,7 @@ const degreeLevels=[
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Inferred'],impressions:{
+ {phase:'Meaning',subject:'father',...action('cook','do'),compoundCue:true,options:['good','strong'],labels:['Skillful','Inferred'],impressions:{
   good:'The speaker judges that the subject has high skill.',
   strong:'The speaker infers that the subject sees the activity as their own strength.'
  }},
@@ -171,7 +173,7 @@ const comparisons=[
   difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.',
   bad:'Sounds unnatural because 下手 evaluates skill, rather than difficulty with a daily habit.'
  }},
- {phase:'Impression',subject:'i',...action('cleaning','do'),options:['strong','good'],labels:['Natural','Boastful'],impressions:{
+ {phase:'Impression',subject:'i',...action('cleaning','do'),compoundCue:true,options:['strong','good'],labels:['Natural','Boastful'],impressions:{
   strong:'Describing the activity as something the speaker feels confident in sounds natural.',
   good:'Praising the speaker’s own skill directly can sound boastful.'
  }},
@@ -249,7 +251,7 @@ function rowsFor(si) {
         makeRow(`compare-${i}-action`,{...a,adjective:'like'})]);
     if(si===1)return selfActions.map((a,i)=>{
         const adjective=i%2?'dislike':'like',id=`self-${i}`,answer=choices.get(id+'-response');
-        return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Q'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'A',pending:!answer})];
+        return [makeRow(id+'-question',{...a,adjective,qa:'question'},{kind:'Q',compoundCue:a.object==='laundry'}),makeRow(id+'-response',{...a,adjective,qa:'response',short:true,answer:answer||'yes'},{kind:'A',pending:!answer})];
     });
     if(si===2)return people.map((s,i)=>{const id=`people-${i}`;return [makeRow(id,{...s,adjective:selected(id,s.adjective)},{selectKind:'ability'})];});
     if(si===3)return degreeLevels.map((level,i)=>{
@@ -280,13 +282,15 @@ function cueText(id,mode=scriptMode) {
     if(mode!=='kanji')return w.hira;
     return /[^本読聞見飲食休子父私日語先生行上下中大小人母学校車大学何\P{Script=Han}]/u.test(w.kanji)?w.hira:w.kanji;
 }
-function word(id,model=false) {
-    const w=words[id],text=escape(model?w[scriptMode==='kanji'?'kanji':'hira']:cueText(id));
-    const tip=escape(w.romaji+', '+w.meaning);
+function word(id,model=false,compound=false) {
+    const w=words[id],compoundMeaning=compound&&!model?compoundCueMeanings[id]:null;
+    const text=escape(compoundMeaning?cueText(id)+cueText('do'):model?w[scriptMode==='kanji'?'kanji':'hira']:cueText(id));
+    const tip=escape(w.romaji+(compoundMeaning?' '+words.do.romaji:'')+', '+(compoundMeaning||w.meaning));
+    const wordClass='target-word'+(compoundMeaning?' p81-compound-word':'');
     const display=adverbs.includes(id)?`<strong class="degree-adverb degree-${['amari','zenzen'].includes(id)?'negative':'positive'}">${text}</strong>`:text;
-    if(hintMode==='off')return `<span class="target-word">${display}</span>`;
-    if(hintMode==='paren')return `<span class="target-word">${display}</span><span class="vocab-inline">(${tip})</span>`;
-    return `<span class="tooltip-wrap"><span class="target-word">${display}</span><span class="tooltip-tip">${tip}</span></span>`;
+    if(hintMode==='off')return `<span class="${wordClass}">${display}</span>`;
+    if(hintMode==='paren')return `<span class="${wordClass}">${display}</span><span class="vocab-inline">(${tip})</span>`;
+    return `<span class="tooltip-wrap"><span class="${wordClass}">${display}</span><span class="tooltip-tip">${tip}</span></span>`;
 }
 function actionText(a,mode=scriptMode) {
     const get=id=>cueText(id,mode);
@@ -303,7 +307,8 @@ function cues(r,visibleIds) {
     }
     const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
-    return ids.map(id=>wrap(word(id))).join(hintMode==='paren'?'':'／');
+    const compound=!visibleIds&&r.compoundCue&&r.verb==='do'&&!r.noun&&compoundCueMeanings[r.object];
+    return ids.filter(id=>!compound||id!==r.verb).map(id=>wrap(word(id,false,Boolean(compound&&id===r.object)))).join(hintMode==='paren'?'':'／');
 }
 
 function modelHTML(r,repeatPrefix=false) {
@@ -812,8 +817,8 @@ function addSelect(cue,r,key) {
 function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');if(si===4)ex.classList.add('p81-meaning-example');
     const samples=[
-        [makeRow('ex1-noun',{...action('travel','do'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の'})],
-        [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q'}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
+        [makeRow('ex1-noun',{...action('travel','do'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の',compoundCue:true})],
+        [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q',compoundCue:true}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
         [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
         exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('anime','watch'),...level,degreeLevel:level})),
         [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]

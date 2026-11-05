@@ -3398,6 +3398,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .practice81-page .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind { margin-right: 0; }
 .practice81-page .p81-cue-body { min-width: 0; }
 .practice81-page .p81-cue-body .display-cue-unit > .target-word { white-space: normal; overflow-wrap: anywhere; }
+/* Compound cues remain one vocabulary item while wrapping inside narrow Display columns. */
+.practice81-page[data-practice="8.1"] .display-cue-unit > .target-word.p81-compound-word { white-space: normal; overflow-wrap: anywhere; }
 .practice81-page .p81-cue-body .p81-select { max-width: calc(100% - 6px); }
 
 .practice81-page #drill5 .p81-card .prompt-label:has(> .p81-cue-body) { column-gap: 8px; row-gap: 8px; }
