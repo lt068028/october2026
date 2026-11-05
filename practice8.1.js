@@ -872,9 +872,14 @@ function addScale(root) {
     root.append(scale);
 }
 function updateUnlearnedLexicon(){
- const group=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
- if(group)group.hidden=scriptMode!=='kanji';
- if(counts)counts.textContent=scriptMode==='kanji'?'ことば(6語) 漢字(14字)':'ことば(6語)';
+ const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';
+ document.querySelectorAll('.unlearned-vocab-group code[data-beyond-kanji]').forEach(el=>{
+  el.textContent=isKanji?el.dataset.beyondKanji:el.dataset.beyondHiragana;
+ });
+ if(kanjiGroup)kanjiGroup.style.display=isKanji?'block':'none';
+ const wordCount=document.querySelectorAll('.unlearned-vocab-group li').length;
+ const kanjiCount=kanjiGroup?kanjiGroup.querySelectorAll('li').length:0;
+ if(counts)counts.textContent='ことば('+wordCount+'語)'+(isKanji?' 漢字('+kanjiCount+'字)':'');
 }
 function setupUnlearnedAccordion(){
  const acc=$('unlearnedAccordion');if(!acc)return;

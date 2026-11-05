@@ -682,13 +682,14 @@ function addExample(root,si){
  samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=escape(rawKind).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function updateUnlearnedLexicon(){
- const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts');
- if(!kanjiGroup)return;
- const isKanji=scriptMode==='kanji';
- kanjiGroup.style.display=isKanji?'block':'none';
- if(counts){
-  counts.textContent=isKanji?'ことば(2語) 漢字(3字)':'ことば(2語)';
- }
+ const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';
+ document.querySelectorAll('.unlearned-vocab-group code[data-beyond-kanji]').forEach(el=>{
+  el.textContent=isKanji?el.dataset.beyondKanji:el.dataset.beyondHiragana;
+ });
+ if(kanjiGroup)kanjiGroup.style.display=isKanji?'block':'none';
+ const wordCount=document.querySelectorAll('.unlearned-vocab-group li').length;
+ const kanjiCount=kanjiGroup?kanjiGroup.querySelectorAll('li').length:0;
+ if(counts)counts.textContent='ことば('+wordCount+'語)'+(isKanji?' 漢字('+kanjiCount+'字)':'');
 }
 function setupUnlearnedAccordion(){
  const acc=$('unlearnedAccordion');
