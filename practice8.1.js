@@ -257,7 +257,8 @@ function rowsFor(si) {
         const row=makeRow(id,{...selectedAction,...level},{selectKind:'activity',activity,pending:!activity,degreeLevel:level});
         return [row];
     });
-    return comparisons.map((spec,i)=>spec.options.map(adjective=>{const id=`comparison-${i}-${adjective}`,choice=choices.get(id);return makeRow(id,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`,kind:spec.impressionWords[adjective],selectKind:'comparison',pending:choice!==adjective,quizChoice:choice});}));
+    const comparisonOrder=[1,2,3,0,4,5,6];
+    return comparisonOrder.map(i=>{const spec=comparisons[i],abilityGroup=i>=1&&i<=3?'Own ability':"Others' ability";return spec.options.map(adjective=>{const id=`comparison-${i}-${adjective}`,choice=choices.get(id);return makeRow(id,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`,kind:spec.impressionWords[adjective],abilityGroup,selectKind:'comparison',pending:choice!==adjective,quizChoice:choice});});});
 }
 function matchesAnswer(raw,r) {
     if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return false;
@@ -891,7 +892,7 @@ function render() {
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(rows[0].scenario){const scenario=node('p','p81-scenario');if(si===4)scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].scenario));else scenario.textContent=rows[0].scenario;card.append(scenario);}
+            if(rows[0].scenario){const scenario=node('p','p81-scenario');if(si===4)scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].abilityGroup));else scenario.textContent=rows[0].scenario;card.append(scenario);}
             if(rows[0].comparison)card.classList.add('p81-comparison-card');
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             let pairNotice=null;if(rows[0].comparison){pairNotice=node('div','p81-nuance-note');pairNotice.hidden=true;pairNotice.setAttribute('role','note');pairNotice.append(node('div','p81-nuance-note-title','✨Notice the difference:'));rows.forEach(item=>{const noteLine=node('div','p81-nuance-note-text');noteLine.append(node('strong','p81-nuance-adjective',cueText(item.adjective)+'：'),document.createTextNode(item.impressions[item.adjective].replace(/上手|下手|得意|苦手/g,t=>({'上手':'じょうず','下手':'へた','得意':'とくい','苦手':'にがて'}[t]))));pairNotice.append(noteLine);});}
