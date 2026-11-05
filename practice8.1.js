@@ -159,32 +159,32 @@ const degreeLevels=[
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Inferred'],scenario:'Talking about your father’s cooking after eating it.',impressions:{
+ {phase:'Meaning',subject:'father',...action('cook','do'),options:['good','strong'],labels:['Skillful','Inferred'],impressions:{
   good:'The speaker judges that the subject has high skill.',
   strong:'The speaker infers that the subject sees the activity as their own strength.'
  }},
- {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],scenario:'Talking about speaking English.',impressions:{
+ {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],impressions:{
   bad:'The speaker judges that the subject’s skill is low.',
   difficult:'The speaker feels uncomfortable or not fond of the activity, regardless of actual skill.'
  }},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],scenario:'Talking about waking up early.',impressions:{
+ {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],impressions:{
   difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.',
   bad:'Sounds unnatural because 下手 evaluates skill, rather than difficulty with a daily habit.'
  }},
- {phase:'Impression',subject:'i',...action('cleaning','do'),options:['strong','good'],labels:['Natural','Boastful'],scenario:'Introducing yourself to someone you have just met.',impressions:{
+ {phase:'Impression',subject:'i',...action('cleaning','do'),options:['strong','good'],labels:['Natural','Boastful'],impressions:{
   strong:'Describing the activity as something the speaker feels confident in sounds natural.',
   good:'Praising the speaker’s own skill directly can sound boastful.'
  }},
- {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Inferred'],scenario:'Talking about an international-student friend after watching them write kanji.',impressions:{
+ {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Inferred'],impressions:{
   good:'The speaker directly praises a skill they have observed.',
   strong:'The speaker infers that the subject feels confident in the activity.'
  }},
- {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['difficult','bad'],labels:['Tactful','Blunt'],scenario:'Talking about your older brother after hearing him sing karaoke.',impressions:{
+ {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['difficult','bad'],labels:['Tactful','Blunt'],impressions:{
   difficult:'Describing the activity as difficult for the subject sounds gentler.',
   bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.'
  }},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],scenario:'A beginning student talking about their Japanese teacher.',impressions:{
-  good:'Calling someone 上手 can be a compliment, but a beginner judging their own teacher’s skill can sound presumptuous.',
+ {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],impressions:{
+  good:'Calling your own teacher 上手 can sound presumptuous because it places the student in the position of evaluating the teacher’s skill.',
   strong:'Inferring a teacher’s personal strengths can overstep the boundaries of the student–teacher relationship.'
  }}
 ];
@@ -193,9 +193,9 @@ comparisons.forEach(spec=>{
 });
 const sections=[
     {title:'Drill 1: Nounが、すき↔️Verbのが、すき',instruction:'💡Say what you like and what you like doing.'},
-    {title:'Drill 2: Verbのが、すき↔️きらい？',instruction:'💡Ask, choose Yes/No, then answer.'},
+    {title:'Drill 2: Verbのが、すき↔️きらい？',instruction:'💡Ask and answer about likes and dislikes.'},
     {title:'Drill 3: Verbのが、じょうず↔️にがて',instruction:'💡Describe what other people are good at or struggle with.'},
-    {title:'Drill 4: Degrees of Intensity',instruction:'💡Choose a different action for each line.'},
+    {title:'Drill 4: Degrees of Intensity',instruction:'💡Express different degrees of intensity using different actions.'},
     {title:'Drill 5: Compare じょうず・とくい・へた・にがて',instruction:'💡Choose the adjective that matches each label. Consider its meaning and how it sounds.'}
 ];
 function selected(id,initial){return choices.get(id)||initial;}
@@ -892,7 +892,7 @@ function render() {
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(rows[0].scenario){const scenario=node('p','p81-scenario');if(si===4)scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].abilityGroup));else scenario.textContent=rows[0].scenario;card.append(scenario);}
+            if(rows[0].abilityGroup){const scenario=node('p','p81-scenario');scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].abilityGroup));card.append(scenario);}
             if(rows[0].comparison)card.classList.add('p81-comparison-card');
             const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
             let pairNotice=null;if(rows[0].comparison){pairNotice=node('div','p81-nuance-note');pairNotice.hidden=true;pairNotice.setAttribute('role','note');pairNotice.append(node('div','p81-nuance-note-title','✨Notice the difference:'));rows.forEach(item=>{const noteLine=node('div','p81-nuance-note-text');noteLine.append(node('strong','p81-nuance-adjective',cueText(item.adjective)+'：'),document.createTextNode(item.impressions[item.adjective].replace(/上手|下手|得意|苦手/g,t=>({'上手':'じょうず','下手':'へた','得意':'とくい','苦手':'にがて'}[t]))));pairNotice.append(noteLine);});}
