@@ -172,8 +172,47 @@ const exSets3=[
 [['だれ','who'],['どの','which'],['学生','student'],['クラスメート','classmate'],['先生','teacher'],['おしえる','to teach'],['てつだう','to help'],['りょうりする','to cook'],['何','what'],['こうえん','park'],['ペット','pet'],['いぬ','dog'],['キッチン','kitchen'],['れいぞうこ','refrigerator'],['ある','there is'],['いる','there is (living things)'],['やさい','vegetable'],['くだもの','fruit'],['トマト','tomato'],['田中','Tanaka'],['来る','to come'],['りんご','apple'],['山田','Yamada'],['やさしい','kind'],['山下先生','Prof. Yamashita'],['おもしろい','interesting'],['えいが','movie'],['日本','Japan'],['山口さん','Yamaguchi'],['かっこいい','cool; good-looking'],['中山さん','Nakayama'],['うた','song'],['じょうず','good at'],['友達','friend'],['川村さん','Kawamura'],['たのしい','fun'],['スポーツ','sports'],['テニス','tennis'],['すき','favorite; liked'],['音楽','music'],['ロック','rock music'],['むずかしい','difficult'],['クラス','class'],['日本語','Japanese language'],['どれ','which one'],['どこ','where'],['くる','to come'],['わかる','to understand'],['はじまる','to begin'],['おわる','to end'],['はじまっている','to have started'],['おわっている','to have ended'],['つくる','to make'],['やすむ','to rest / be absent'],['どのバス','which bus'],['２番','No. 2'],['どのページ','which page'],['４ページ','page 4'],['どの映画','which movie'],['イタリアの映画','Italian movie'],['どのイベント','which event'],['ダンスのイベント','dance event'],['どの会社','which company'],['フランスの会社','French company'],['どの店','which shop'],['あの店','that shop'],['どのチーム','which team'],['木村さんのチーム','Kimura\'s team'],['英語','English language'],['わからない','to not understand'],['ない','there is not'],['どの本','which book'],['スペイン語の本','Spanish book'],['しずか','quiet'],['どの部屋','which room'],['その部屋','that room'],['いつ','when'],['ひま','free (time)'],['何曜日','what day of the week'],['水曜日','Wednesday'],['たかい','expensive / high'],['どの時計','which watch'],['あの時計','that watch over there'],['あたらしい','new'],['どのペン','which pen'],['妹のペン','younger sister\'s pen'],['ちかい','near / close'],['どのコンビニ','which convenience store'],['ローソン','Lawson'],['きれい','clean / beautiful'],['どのトイレ','which restroom / toilet'],['駅のトイレ','station restroom'],['どのクラスメート','which classmate'],['どの学生','which student'],['どの友達','which friend'],['この池','this pond'],['どの魚','which fish'],['コイ','carp'],['およいでいる','swimming / to be swimming'],['しんせつ','kind / helpful'],['どの店員','which store clerk'],['どの店の店員','clerk of which store'],['本屋の店員','bookstore clerk'],['どのゲーム','which game'],['このRPG','this RPG'],['RPG','role-playing game'],['どの人','which person'],['いい','good'],['どの日','which day'],['クリスマス','Christmas'],['いそがしい','busy'],['どの時間','which time / hour'],['午後','afternoon'],['勉強','study'],['とくい','good at / one\'s forte'],['ピアノをひく','to play the piano'],['うたう','to sing'],['きらい','disliked / hate']].forEach(([kanji,meaning],i)=>W('s83w'+i,kanji,({'だれ':'だれ','どの':'どの','学生':'がくせい','クラスメート':'クラスメート','先生':'せんせい','おしえる':'おしえる','てつだう':'てつだう','りょうりする':'りょうりする','何':'なに','こうえん':'こうえん','ペット':'ペット','いぬ':'いぬ','キッチン':'キッチン','れいぞうこ':'れいぞうこ','ある':'ある','いる':'いる','やさい':'やさい','くだもの':'くだもの','トマト':'トマト','田中':'たなか','来る':'くる','りんご':'りんご','山田':'やまだ','やさしい':'やさしい','山下先生':'やましたせんせい','おもしろい':'おもしろい','えいが':'えいが','日本':'にほん','山口さん':'やまぐちさん','かっこいい':'かっこいい','中山さん':'なかやまさん','うた':'うた','じょうず':'じょうず','友達':'ともだち','川村さん':'かわむらさん','たのしい':'たのしい','スポーツ':'スポーツ','テニス':'テニス','すき':'すき','音楽':'おんがく','ロック':'ロック','むずかしい':'むずかしい','クラス':'クラス','日本語':'にほんご','どれ':'どれ','どこ':'どこ','くる':'くる','わかる':'わかる','はじまる':'はじまる','おわる':'おわる','はじまっている':'はじまっている','おわっている':'おわっている','つくる':'つくる','やすむ':'やすむ','どのバス':'どのバス','２番':'２ばん','どのページ':'どのページ','４ページ':'よんページ','どの映画':'どのえいが','イタリアの映画':'イタリアのえいが','どのイベント':'どのイベント','ダンスのイベント':'ダンスのイベント','どの会社':'どのかいしゃ','フランスの会社':'フランスのかいしゃ','どの店':'どのみせ','あの店':'あのみせ','どのチーム':'どのチーム','木村さんのチーム':'きむらさんのチーム','英語':'えいご','わからない':'わからない','ない':'ない','どの本':'どのほん','スペイン語の本':'スペインごのほん','しずか':'しずか','どの部屋':'どのへや','その部屋':'そのへや','いつ':'いつ','ひま':'ひま','何曜日':'なんようび','水曜日':'すいようび','たかい':'たかい','どの時計':'どのとけい','あの時計':'あのとけい','あたらしい':'あたらしい','どのペン':'どのペン','妹のペン':'いもうとのペン','ちかい':'ちかい','どのコンビニ':'どのコンビニ','ローソン':'ローソン','きれい':'きれい','どのトイレ':'どのトイレ','駅のトイレ':'えきのトイレ','どのクラスメート':'どのクラスメート','どの学生':'どのがくせい','どの友達':'どのともだち','この池':'このいけ','どの魚':'どのさかな','コイ':'コイ','およいでいる':'およいでいる','しんせつ':'しんせつ','どの店員':'どのてんいん','どの店の店員':'どのみせのてんいん','本屋の店員':'ほんやのてんいん','どのゲーム':'どのゲーム','このRPG':'このRPG','RPG':'RPG','どの人':'どのひと','いい':'いい','どの日':'どのひ','クリスマス':'クリスマス','いそがしい':'いそがしい','どの時間':'どのじかん','午後':'ごご','勉強':'べんきょう','とくい':'とくい','ピアノをひく':'ピアノをひく','うたう':'うたう','きらい':'きらい'})[kanji],'',meaning));
 function inflect(s){return s.text;}
 function context(s){return '';}
-function sentenceFor(s){return s.text||'';}
-function makeRow(id,spec,extra={}){const r={id,...spec,...extra};r.text=sentenceFor(r);r.hira=displayKana(r.text);r.refs=[r.text,r.hira,...(r.accept||[])];STTDisplay.register(r.text,r.hira);return r;}
+// Source sentences stay in Formal; convert only the final predicate for this page.
+const plainPredicateEndings=[
+ ['わかりません','わからない'],['ありません','ない'],
+ ['てつだいます','てつだう'],['教えます','教える'],['おしえます','おしえる'],
+ ['始まります','始まる'],['はじまります','はじまる'],
+ ['終わります','終わる'],['おわります','おわる'],
+ ['作ります','作る'],['つくります','つくる'],['休みます','休む'],['やすみます','やすむ'],
+ ['来ます','来る'],['きます','くる'],['します','する'],['あります','ある'],['います','いる']
+].sort((a,b)=>b[0].length-a[0].length);
+const naPredicateEnding=/(?:得意|とくい|上手|じょうず|嫌い|きらい|好き|すき|親切|しんせつ|静か|しずか|暇|ひま|きれい)$/u;
+function styledSentence(text,style=speechStyle){
+ if(style==='formal'||!text)return text;
+ let body=text.replace(/[。？?！!]+$/u,'');
+ const question=body.endsWith('か');
+ if(question)body=body.slice(0,-1);
+ if(body.endsWith('です')){
+  body=body.slice(0,-2);
+  if(!question&&naPredicateEnding.test(body))body+='だ';
+ }else{
+  const ending=plainPredicateEndings.find(([polite])=>body.endsWith(polite));
+  if(ending)body=body.slice(0,-ending[0].length)+ending[1];
+ }
+ return body+(question?'？':style==='casual'?'よ。':'。');
+}
+function sentenceFor(s){return styledSentence(s.text||'');}
+function makeRow(id,spec,extra={}){
+ const r={id,...spec,...extra};
+ r.text=sentenceFor(r);r.hira=displayKana(r.text);
+ const refs=[r.text,r.hira,...(r.accept||[]).flatMap(text=>{
+  const styled=styledSentence(text);return [styled,displayKana(styled)];
+ })];
+ if(speechStyle!=='formal'){
+  for(const text of [...refs]){
+   // Both the plain written question with か and the conversational question are valid.
+   if(text.endsWith('？'))refs.push(text.slice(0,-1)+'か。');
+   if(speechStyle==='casual')refs.push(text.replace(/([てで])いる(?=よ?[。？?]?$)/u,'$1る'));
+  }
+ }
+ r.refs=[...new Set(refs)];
+ STTDisplay.register(r.text,r.hira);return r;
+}
 function makeKindBadge(kind){
  const span=node('span','example-label-title p81-kind');
  if(kind==='Q'||kind==='A'){span.textContent=kind;}
