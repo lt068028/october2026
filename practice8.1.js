@@ -72,7 +72,7 @@ W("teacher","先生","せんせい","sensei","teacher");
 W("student","留学生","りゅうがくせい","ryūgakusei","international student");
 W("child","子ども","こども","kodomo","child");
 W("person","この人","このひと","kono hito","this person");
-W("siblings","兄弟","きょうだい","kyōdai","siblings");
+W("siblings","兄弟","きょうだい","kyōdai","sibling");
 W("write","書く","かく","kaku","to write");
 W("kanji","漢字","かんじ","kanji","kanji");
 W("katakana","カタカナ","カタカナ","katakana","katakana");
