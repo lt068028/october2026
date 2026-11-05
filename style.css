@@ -4066,6 +4066,6 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     margin-right: 8px;
 }
 
-/* Practice 8.1 trial: keep each kanji phrase and its reading together. */
-.practice81-page .unlearned-kanji-list li { flex-wrap: wrap; }
-.practice81-page .p81-kanji-phrase { white-space: nowrap; }
+/* Opt-in Beyond kanji entries: keep each phrase and its reading together. */
+.unlearned-kanji-compact li { flex-wrap: wrap; }
+.unlearned-kanji-compact .unlearned-kanji-phrase { white-space: nowrap; }
