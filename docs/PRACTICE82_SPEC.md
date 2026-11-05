@@ -76,6 +76,6 @@ Drill 4のタイトルと案内はAdvanced / Sneak Peek L15を示す。何でも
 
 ## 表記とBeyond L8 Words（2026-11-04）
 
-共通原則はPROJECT_SPECの「表示箇所・用途別の表記とBeyondリスト」に従う。Ex・DrillのキューはL8漢字範囲。Ex3のキューは「おみやげ／かう」、右側の例文では「お土産」「買います」を使う。Ex4は「くつ／はく」だが、右側の例文では「昨日」「手伝いました」「靴」を使用する。音声生成用内部文およびSTT原文は別用途として扱う。
+共通原則はPROJECT_SPECの「表示箇所・用途別の表記とBeyondリスト」に従う。Ex・DrillのキューはL8漢字範囲。Ex3のキューは「おみやげ／かう」、右側の例文では「お土産」「買います」を使う。Ex4のキューは「どんな／くつ／はく」、右側の例文では「靴」を使用する。音声生成用内部文およびSTT原文は別用途として扱う。
 
-8.3と同じ位置・共通スタイルのBeyond L8 Wordsを設置する。Wordsはお土産（L5）・何でも（L15 / Genki II）の2語、Kanjiは産／靴（Genki外）・買（L10）の3字。漢字欄はWith漢字だけ表示し、件数も連動する。「何か(を)」の「を」は個別ホバー説明 “The particle を is optional and usually omitted after 何か.” を持ち、点線下線でホバー可能と示す。開閉はsessionStorageのp82-unlearned-openで保持する。L8はPractice 8に対応する値であり、他課の名称はBeyond L{対象課番号} Wordsとする。
+8.3と同じ位置・共通スタイルのBeyond L8 Wordsを設置する。Wordsは何でも（L15 / Genki II）の1語。お土産はL5の既習語のためWordsには掲載せず、Kanjiの「産：お土産（おみやげ）」は維持する。Kanjiは産／靴（Genki外）・買（L10）の3項目。漢字欄はWith漢字だけ表示し、件数も連動する。「何か(を)」の「を」は個別ホバー説明 “The particle を is optional and usually omitted after 何か.” を持ち、点線下線でホバー可能と示す。開閉はsessionStorageのp82-unlearned-openで保持する。L8はPractice 8に対応する値であり、他課の名称はBeyond L{対象課番号} Wordsとする。
