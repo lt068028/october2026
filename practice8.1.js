@@ -871,7 +871,7 @@ function addScale(root) {
         const point=node('div','p81-degree-point degree-'+sign);
         const mark=node('span','p81-degree-marks',marks);mark.setAttribute('aria-hidden','true');
         const label=node('span','p81-degree-label');
-        label.innerHTML=id==='totemo'?word('totemo')+'／'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<strong class="degree-negative">〜ない</strong>':'');
+        label.innerHTML=id==='totemo'?word('totemo')+'<span class="semantic-punctuation">／</span>'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<strong class="degree-negative">〜ない</strong>':'');
         point.append(mark,label);scale.append(point);
     });
     root.append(scale);

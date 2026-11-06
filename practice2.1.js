@@ -961,7 +961,7 @@ function practice2ShowNotice(resultSpan, message) {
                 )
             );
 
-            span.append(node("strong", "grammar-highlight", match[0]));
+            span.insertAdjacentHTML("beforeend", SemanticDisplay.highlightHTML(match[0]));
             position = match.index + match[0].length;
         }
 

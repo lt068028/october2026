@@ -30,7 +30,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill1 .p81-card .p81-kind').count(),0,'Noun and Verb labels are Example-only');
  check(await page.locator('.p81-example-row > button').evaluateAll(es=>es.every(e=>getComputedStyle(e).alignSelf==='auto')),true,'no page-specific vertical alignment override');
  check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example3 topic and nominalizer highlighted');
- check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(202, 138, 4)','common light gold');
+ check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(245, 127, 23)','common light gold');
  check(await page.evaluate(()=>audit81.speechText('ううん、好きじゃない。')),'ううんん、好きじゃない。','No TTS only pronunciation exception');
  check(await page.locator('.info-panel-desc').allTextContents().then(a=>a.every(s=>s.startsWith('💡'))),true,'instructions start with bulb');
  check(await page.locator('#drill1 tr').count(),6,'three paired comparisons');
@@ -219,7 +219,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   const styles=await page.evaluate(()=>({labels:[...document.querySelectorAll('.p81-kind:not(.conversation-role),.p81-target')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight),c.backgroundColor];}),adverbs:[...document.querySelectorAll('#drill4 .example-box .p81-model .degree-adverb')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight)];}),negative:getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,positive:getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color}));
   check(styles.labels.every(([c,w,b])=>c===(scheme==='dark'?'rgb(253, 224, 71)':'rgb(245, 127, 23)')&&w>=700&&b==='rgba(0, 0, 0, 0)'),true,'ordinary heading defaults, no badge');
   check(styles.adverbs.length,6,'six emphasized model adverbs');
-  check(styles.adverbs.every(([c,w],i)=>c===(i<2?styles.negative:styles.positive)&&w>=700),true,'model adverbs share red/blue guide colors and bold weight');check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),scheme==='dark'?'rgb(251, 191, 36)':'rgb(202, 138, 4)','gold follows common theme specification');check(layout.panels.every(g=>Math.abs(g-24)<.5),true,'shared Example spacing');check(layout.colors[0]===layout.colors[1],false,'polarity colors differ');
+  check(styles.adverbs.every(([c,w],i)=>c===(i<2?styles.negative:styles.positive)&&w>=700),true,'model adverbs share red/blue guide colors and bold weight');check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),scheme==='dark'?'rgb(255, 209, 102)':'rgb(245, 127, 23)','gold follows common theme specification');check(layout.panels.every(g=>Math.abs(g-24)<.5),true,'shared Example spacing');check(layout.colors[0]===layout.colors[1],false,'polarity colors differ');
   if(width===1440){
    const tracks=await page.evaluate(()=>[...document.querySelectorAll('.p81-section')].slice(0,4).map(s=>[...s.querySelectorAll('.p81-card .recording-actions')].map(e=>e.getBoundingClientRect().left)));
    for(const xs of tracks)check(Math.max(...xs)-Math.min(...xs)<1,true,'listen column shared by longest cue');

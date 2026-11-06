@@ -93,7 +93,7 @@ Who is speaking?/X is speaking/Y is speakingの案内は2.1/2.2でDOMへ配置�
 - 練習7の比較型Example：区分→キュー→矢印→きく→本文。比較する異なる区分は各行に残す。
 - Question／Response型Example：Questionの1行上に共通区分見出し1個。各行に区分を重複させない。Question／Responseの役割表示は維持。
 - 時制・アスペクトの比較Drill：きく→区分→とる→停止の順。区分はきくの右隣。単一区分に絞った練習では、既定の問題行に区分を追加しない。
-- 文法強調：既定の文法部分を太字＋ゴールド。通常色#ca8a04、ダーク#fbbf24。すべての太字をゴールドにする仕様ではない。
+- 文法強調：既定の文法部分を共通文法強調色＋太字700とする。色値と句読点の扱いの正本は[PROJECT_SPEC「共通意味色と句読点」](PROJECT_SPEC.md#共通意味色と句読点2026-11-06確定)。すべての太字を意味色にする規則ではない。
 
 ## 区分幅・適用範囲と未決事項
 
@@ -490,7 +490,7 @@ L1・L2ページはHiragana初期表示。練習2のWith漢字は参考漢字表
 
 PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承。Ex1のNoun/Verb＋の、Ex5のSkill assessment/Personal perceptionを通常項目名として表示し、Drill内には原則区分を出さない（D5の行頭指定は承認例外）。D4程度ガイドは否定赤・肯定青＋符号を併記。D5は2つの固定表現を縦2行で常時表示し、各行の頭に英語の印象指定を最初から表示。右側の印象2択は撤去し、両行の録音結果を同時保持する。未表示ヒントは固定配置で横幅に影響させず、Hover時は共通tooltip-layoutで画面内へ補正。
 
-- 8.1改訂（2026-10-30）：文法ゴールドを共通#ca8a04/#fbbf24へ修正。Ex3の主題はも強調。ExampleのQ/R等は内容に基づく共通列で音声を整列。D4は目的語/動詞/副詞選択/ADJ。D2返答の選択前理由はListenとRecordの両方に表示し、選択後は撤去。旧D5の日本語表現選択と操作ロックは2行常時表示への再構築で廃止。色候補3案は比較用で、規定色変更の採用は保留。
+- 8.1改訂（2026-10-30）：文法強調を当時の共通色へ修正（現行色はPROJECT_SPECの共通意味色を参照）。Ex3の主題はも強調。ExampleのQ/R等は内容に基づく共通列で音声を整列。D4は目的語/動詞/副詞選択/ADJ。D2返答の選択前理由はListenとRecordの両方に表示し、選択後は撤去。旧D5の日本語表現選択と操作ロックは2行常時表示への再構築で廃止。当時の色候補3案は比較記録であり、現行色の正本はPROJECT_SPECの共通意味色。
 
 ## Yes/No Exampleの共通仕様（2026-10-30明文化）
 
@@ -513,11 +513,11 @@ PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承�
 
 | 対象 | 共通実装・基本値 | 適用・検証 |
 | --- | --- | --- |
-| 通常の項目名・役割名・比較項目名 | 練習1方式 `example-label-title`。太字、通常#f57f17／ダーク#fde047、背景バッジなし | Noun/Verb＋の、Self-praise/Strength等の区分はExample内のみ。Question/Responseは会話の役割表示。共通クラス使用・計算色・太さ・透明背景を検証 |
+| 通常の項目名・役割名・比較項目名 | 練習1方式 `example-label-title`。太字、`--example-label-color`の既存表示を維持、背景バッジなし。文法意味色とは別管理 | Noun/Verb＋の、Self-praise/Strength等の区分はExample内のみ。Question/Responseは会話の役割表示。共通クラス使用・計算色・太さ・透明背景を検証 |
 | 時制・アスペクト区分 | 練習7方式の区分表示。既定の配色、共通背景幅・字間上限3.5px・余白を維持 | Ongoing/Habit/Present State/Past等。通常項目名には使わない。個別の語彙や評価語を新しい時制区分として扱わない |
-| 文法強調 | `grammar-highlight`。通常#ca8a04／ダーク#fbbf24 | 指定された文法要素のみ。独自のゴールドをページ内で再定義しない |
+| 文法強調 | `grammar-highlight`／`--grammar-highlight-color`。色値はPROJECT_SPECの共通意味色を参照 | 指定された文法要素のみ。独自のゴールドをページ内で再定義しない |
 | Example内の本文・音声文字 | `example-text-layout`のalign-items:baseline、子はalign-self:autoで親に従う | 固定のtop値・上下移動pxを基本値にしない。広幅の同一行の最初の文字基線差0.5px未満を検証。折り返した別行は別配置として検証 |
-| 程度副詞の肯定・否定 | `--degree-positive-color`／`--degree-negative-color`、`degree-positive`／`degree-negative` | 8.1の既存ガイド配色を共有。通常は青#145bb6／赤#b42335、ダークは青#8fc4ff／赤#ff94a0。ガイド・例文・キュー・選択中の副詞で参照先を一本化 |
+| 程度副詞の肯定・否定 | `--degree-positive-color`／`--degree-negative-color`、`degree-positive`／`degree-negative` | PROJECT_SPECの共通肯定／否定色への互換エイリアス。ガイド・例文・キュー・選択中の副詞で参照先を一本化 |
 
 8.1の副詞は `degree-adverb` で太字。あまり・ぜんぜんを赤、それ以外を青にする。これは肯定形・否定形の区別であり、好ましい/好ましくないの評価ではない。のが等の文法ゴールドは維持。日本語本文や語彙ヒント全体を副詞色へ変えない。ネイティブ選択メニューの描画はOSに依存するが、選択中の語と例文の副詞では規定色と太字を保証する。
 

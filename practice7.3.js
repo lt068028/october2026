@@ -627,9 +627,7 @@ function sentence(r) {
     for (const match of text.matchAll(pattern)) {
         out +=
             escape(text.slice(offset, match.index)) +
-            `<strong class="p73-gold">` +
-            escape(match[0]) +
-            `</strong>`;
+            SemanticDisplay.highlightHTML(match[0], 'p73-gold');
 
         offset = match.index + match[0].length;
     }

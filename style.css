@@ -419,8 +419,8 @@
 }
 
 #drill1Container .p73-example .p73-gold {
-    color: #CA8A04;
-    font-weight: bold;
+    color: var(--grammar-highlight-color);
+    font-weight: 700;
 }
 
 #drill1Container .p73-example-model {
@@ -469,10 +469,6 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    #drill1Container .p73-example .p73-gold {
-        color: #FBBF24;
-    }
-
     #drill1Container .p73-past {
         background: #164e63;
         color: #bae6fd;
@@ -822,7 +818,7 @@ body {
 }
 .example-label-title {
     font-weight: bold;
-    color: #f57f17;
+    color: var(--example-label-color);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -835,9 +831,6 @@ body {
     }
     .dashed-border {
         border-top-color: #713f12;
-    }
-    .example-label-title {
-        color: #fde047;
     }
 }
 
@@ -1709,8 +1702,8 @@ input:checked + .slider:before {
 
 /* 例文内の指定語句だけをゴールドにする */
 #practice71Example .p71-grammar-highlight {
-    color: #ca8a04;
-    font-weight: bold;
+    color: var(--grammar-highlight-color);
+    font-weight: 700;
 }
 
 /* 停止ボタンの右に表示する「いつも…／今…」 */
@@ -1733,24 +1726,16 @@ input:checked + .slider:before {
         color: #fce7f3;
     }
 
-    #practice71Example .p71-grammar-highlight {
-        color: #fbbf24;
-    }
 }
 /* Example文中の対象語 */
 #practice71Example .p71-underlined {
     text-decoration: underline;
-    text-decoration-color: #CA8A04;
+    text-decoration-color: var(--grammar-highlight-color);
     text-decoration-thickness: 2px;
     text-underline-offset: 4px;
     font-weight: bold;
 }
 
-@media (prefers-color-scheme: dark) {
-    #practice71Example .p71-underlined {
-        text-decoration-color: #FBBF24;
-    }
-}
 
 /* 共通：各問題を個別のスクロール領域にしない */
 .drill-row {
@@ -1768,9 +1753,31 @@ input:checked + .slider:before {
    ========================================================= */
 
 /* 文法上の注目箇所 */
+/* Meaning colors are shared; labels and feedback UI use separate tokens. */
+:root {
+    --grammar-highlight-color: #F57F17;
+    --semantic-positive-color: #0057E7;
+    --semantic-negative-color: #E11D48;
+    --degree-positive-color: var(--semantic-positive-color);
+    --degree-negative-color: var(--semantic-negative-color);
+    --example-label-color: #f57f17;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --grammar-highlight-color: #FFD166;
+        --semantic-positive-color: #63D6F5;
+        --semantic-negative-color: #FF8AA5;
+        --example-label-color: #fde047;
+    }
+}
 .grammar-highlight {
-    color: #ca8a04;
-    font-weight: bold;
+    color: var(--grammar-highlight-color);
+    font-weight: 700;
+}
+.semantic-punctuation {
+    color: var(--text-primary);
+    font-weight: 400;
+    text-decoration: none;
 }
 
 /* 共通の時制ラベル */
@@ -1857,10 +1864,6 @@ input:checked + .slider:before {
 
 /* ダークモード */
 @media (prefers-color-scheme: dark) {
-    .grammar-highlight {
-        color: #fbbf24;
-    }
-
     .tense-badge--past {
         background: #164e63;
         color: #bae6fd;
@@ -2354,6 +2357,14 @@ body.site-scale {
     white-space: normal;
     overflow-wrap: anywhere;
     line-height: 1.4;
+}
+/* Unpositioned hidden tips must not enlarge the page scroll area. */
+.site-scale :is(.tooltip-tip, .custom-tip-box):not([data-viewport-tip]) {
+    position: fixed;
+    left: 12px;
+    top: 12px;
+    bottom: auto;
+    transform: none;
 }
 .site-scale [data-viewport-tip] {
     position: fixed;
@@ -3210,8 +3221,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     .practice81-page #drill5 .recording-controls > .recording-result { flex-basis: 0; text-align: right; }
     .practice81-page .p81-degree-scale { grid-template-columns: repeat(3,minmax(0,1fr)); row-gap: 12px; }
 }
-/* Unopened hints must not widen the page; the shared tooltip placer takes over on hover/focus. */
-.practice81-page :is(.tooltip-tip,.custom-tip-box):not([data-viewport-tip]) { position: fixed; left: 12px; top: 12px; bottom: auto; transform: none; }
 .practice81-page .correction-box:not([hidden]) { display: block; }
 
 .practice81-page .p81-example-row.p81-no-kind { grid-template-columns: fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }
@@ -3243,12 +3252,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 /* Shared defaults: page-specific Example layouts inherit text alignment and label colors. */
 .example-text-layout { align-items: baseline; }
-:root { --degree-positive-color: #145bb6; --degree-negative-color: #b42335; }
-@media (prefers-color-scheme: dark) {
-    :root { --degree-positive-color: #8fc4ff; --degree-negative-color: #ff94a0; }
-}
-.degree-positive { color: var(--degree-positive-color); }
-.degree-negative { color: var(--degree-negative-color); }
+.semantic-positive, .degree-positive { color: var(--semantic-positive-color); font-weight: 700; }
+.semantic-negative, .degree-negative { color: var(--semantic-negative-color); font-weight: 700; }
 .degree-adverb, .custom-select.degree-adverb { font-weight: 700; }
 
 /* Practice 2.2 approved Q/A pilot: circles are roles; rounded rectangles are people. */
@@ -4073,19 +4078,15 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 .unlearned-kanji-compact .unlearned-kanji-phrase { white-space: nowrap; }
 
 /* Practice 8.2: only the indefinite suffix carries the teaching color. */
-[data-practice="8.2"] { --p82-indefinite-amber: #996300; }
 [data-practice="8.2"] .p82-indefinite { color: var(--text-primary); font-weight: 400; }
 [data-practice="8.2"] .p82-indefinite-suffix { font-weight: 700; }
-[data-practice="8.2"] .p82-indefinite-something { color: var(--p82-indefinite-amber); }
+[data-practice="8.2"] .p82-indefinite-something { color: var(--grammar-highlight-color); }
 [data-practice="8.2"] .p82-indefinite-nothing { color: var(--degree-negative-color); }
 [data-practice="8.2"] .p82-indefinite-anything { color: var(--degree-positive-color); }
 [data-practice="8.2"] .p82-indefinite-what,
 [data-practice="8.2"] .optional-particle { color: var(--text-primary); }
 [data-practice="8.2"] .optional-particle-label { font-weight: 700; }
 [data-practice="8.2"] .p82-concept-label .p82-indefinite-suffix { text-decoration: underline; text-underline-offset: 3px; }
-@media (prefers-color-scheme: dark) {
-    [data-practice="8.2"] { --p82-indefinite-amber: #fbbf24; }
-}
 
 /* Keep the Practice 8.2 concept separator outside the teaching emphasis. */
 [data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }

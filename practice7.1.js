@@ -3301,7 +3301,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             }[speechStyle];
 
         const gold = text =>
-            `<span class="p71-grammar-highlight">${text}</span>`;
+            SemanticDisplay.highlightHTML(text, 'p71-grammar-highlight');
 
         const start = ongoing
             ? (scriptMode === 'hiragana' ? 'いま' : '今')

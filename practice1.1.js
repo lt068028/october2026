@@ -709,7 +709,7 @@ function renderExampleSection() {
                     id="ex1Listen"
                     class="example-button"
                 >🔊きく</button>
-                <span>${subject}<strong class="grammar-highlight">は、</strong>${noun1}<strong class="grammar-highlight">です。</strong></span>
+                <span>${subject}${SemanticDisplay.highlightHTML('は、')}${noun1}${SemanticDisplay.highlightHTML('です。')}</span>
             </div>
 
             <div
@@ -726,7 +726,7 @@ function renderExampleSection() {
                     id="ex2Listen"
                     class="example-button"
                 >🔊きく</button>
-                <span>${subject}<strong class="grammar-highlight">は、</strong>${noun2}<strong class="grammar-highlight">じゃないです。</strong></span>
+                <span>${subject}${SemanticDisplay.highlightHTML('は、')}${noun2}${SemanticDisplay.highlightHTML('じゃないです。')}</span>
             </div>
         </div>
     `;
@@ -2852,13 +2852,9 @@ window.addEventListener("pagehide", () => {
 
             sentence.innerHTML =
                 escapeHtml(subject) +
-                '<strong class="grammar-highlight">' +
-                (speechStyle === 'casual' ? '、' : 'は、') +
-                '</strong>' +
+                SemanticDisplay.highlightHTML(speechStyle === 'casual' ? '、' : 'は、') +
                 escapeHtml(nouns[index]) +
-                '<strong class="grammar-highlight">' +
-                escapeHtml(end) +
-                '</strong>';
+                SemanticDisplay.highlightHTML(end);
 
             const cueNodes = [];
 
