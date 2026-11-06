@@ -4086,3 +4086,6 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 @media (prefers-color-scheme: dark) {
     [data-practice="8.2"] { --p82-indefinite-amber: #fbbf24; }
 }
+
+/* Keep the Practice 8.2 concept separator outside the teaching emphasis. */
+[data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }
