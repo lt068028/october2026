@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=process.env.DRILL_ROOT || path.resolve(__dirname,'..');
-const names=['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','composition1','pronunciation1','pronunciation2'];
+const names=['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','composition1','pronunciation1','pronunciation2'].filter(name=>!process.env.PRACTICE_PAGES||process.env.PRACTICE_PAGES.split(',').includes(name));
 function mock(){
  window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
@@ -128,7 +128,7 @@ function mock(){
   }
   assert.deepEqual(p.errors,[],name+' runtime errors');await p.close();
  }
- for(const manual of [true,false]) for(const part of ['q','a']) for(const phase of ['model','own']) {
+ for(const manual of names.includes('practice1.2')?[true,false]:[]) for(const part of ['q','a']) for(const phase of ['model','own']) {
   const p=await open('practice1.2');
   await p.evaluate(manual=>{document.querySelector('#speechStyleControl [data-value="formal"]').click();const toggle=document.querySelector('#toggleRecordMode');if(toggle.checked===manual)toggle.click();},manual);
   let card=p.locator('#drill1Container .drill-row').nth(4);

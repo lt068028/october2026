@@ -161,31 +161,31 @@ const degreeLevels=[
 const exampleDegreeLevels=['zenzen','amari','chotto','maamaa','totemo','sugoku'].map(adverb=>({adjective:'like',adverb,degree:adverb,tone:['zenzen','amari'].includes(adverb)?'negative':'positive'}));
 // Meaning first, then context-dependent interpersonal impressions.
 const comparisons=[
- {phase:'Meaning',subject:'father',...action('cook','do'),compoundCue:true,options:['good','strong'],labels:['Skillful','Inferred'],impressions:{
+ {subject:'father',...action('cook','do'),compoundCue:true,options:['good','strong'],labels:['Skillful','Inferred'],impressions:{
   good:'The speaker judges that the subject has high skill.',
   strong:'The speaker infers that the subject sees the activity as their own strength.'
  }},
- {phase:'Meaning',subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],impressions:{
+ {subject:'i',...action('english','speak'),options:['bad','difficult'],labels:['Poor','Uncomfortable'],impressions:{
   bad:'The speaker judges that the subject’s skill is low.',
   difficult:'The speaker feels uncomfortable or not fond of the activity, regardless of actual skill.'
  }},
- {phase:'Meaning',subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],impressions:{
+ {subject:'i',...action('early','wake',''),options:['difficult','bad'],labels:['Natural','Unnatural'],impressions:{
   difficult:'Sounds natural because 苦手 expresses that waking up early is hard for the speaker.',
   bad:'Sounds unnatural because 下手 evaluates skill, rather than difficulty with a daily habit.'
  }},
- {phase:'Impression',subject:'i',...action('cleaning','do'),compoundCue:true,options:['strong','good'],labels:['Natural','Boastful'],impressions:{
+ {subject:'i',...action('cleaning','do'),compoundCue:true,options:['strong','good'],labels:['Natural','Boastful'],impressions:{
   strong:'Describing the activity as something the speaker feels confident in sounds natural.',
   good:'Praising the speaker’s own skill directly can sound boastful.'
  }},
- {phase:'Impression',subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Inferred'],impressions:{
+ {subject:'studentFriend',...action('kanji','write'),options:['good','strong'],labels:['Praise','Inferred'],impressions:{
   good:'The speaker directly praises a skill they have observed.',
   strong:'The speaker infers that the subject feels confident in the activity.'
  }},
- {phase:'Impression',subject:'olderBrother',...action('karaoke','sing','で'),options:['difficult','bad'],labels:['Tactful','Blunt'],impressions:{
+ {subject:'olderBrother',...action('karaoke','sing','で'),options:['difficult','bad'],labels:['Tactful','Blunt'],impressions:{
   difficult:'Describing the activity as difficult for the subject sounds gentler.',
   bad:'Directly judging the subject’s lack of skill can sound blunt or hurtful.'
  }},
- {phase:'Impression',subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],impressions:{
+ {subject:'japaneseTeacher',...action('japanese','speak'),joinedActionCue:true,options:['good','strong'],labels:['Presumptuous','Overstepping'],impressions:{
   good:'Calling your own teacher 上手 can sound presumptuous because it places the student in the position of evaluating the teacher’s skill.',
   strong:'Inferring a teacher’s personal strengths can overstep the boundaries of the student–teacher relationship.'
  }}
@@ -206,7 +206,7 @@ function sentenceFor(spec,style=speechStyle,kanji=true,adjective=spec.adjective)
     let prefix=spec.subject?get(spec.subject)+'は、':'';
     prefix+=(spec.object?get(spec.object):'')+(spec.noun?'が、':(spec.object?spec.particle:'')+get(spec.verb)+'のが、');
     const negative=['amari','zenzen'].includes(spec.adverb)||spec.answer==='no';
-    const ending=style==='formal'?(negative?'じゃないです。':'です。'):(negative?'じゃない。':style==='casual'?'だよ。':'だ。');
+    const ending=style==='formal'?(negative?'じゃないです。':'です。'):(negative?(style==='casual'?'じゃないよ。':'じゃない。'):style==='casual'?'だよ。':'だ。');
     if(spec.qa==='question')return prefix+get(adjective)+(style==='formal'?'ですか。':'？');
     const body=(spec.short?'':prefix)+(spec.adverb?get(spec.adverb):'')+get(adjective)+ending;
     if(spec.qa==='response')return (spec.answer==='no'?(style==='casual'?'ううん、':'いいえ、'):(style==='casual'?'うん、':'はい、'))+body;

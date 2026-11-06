@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('fs'); const assert=require('assert');
 const root=(process.env.DRILL_ROOT || require('path').resolve(__dirname,'..'))+'/';
-const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','composition1','pronunciation1','pronunciation2'];
+const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','composition1','pronunciation1','pronunciation2'].filter(name=>!process.env.PRACTICE_PAGES||process.env.PRACTICE_PAGES.split(',').includes(name));
 function instrument(path,source){
  if(path==='drill-audio-session.js')return source+`;const originalRegister=DrillAudio.registerPitch;DrillAudio.registerPitch=(state,redraw)=>{(window.__states ||= []).push(state);originalRegister(state,redraw)};`;
  if(pages.some(p=>path===p+'.js')){
@@ -90,7 +90,7 @@ for(const name of pages){
   assert.deepEqual(p.__errors,[],name+' leave errors');await p.close();
  }
 }
-for(const name of ['pronunciation1','pronunciation2']){
+for(const name of ['pronunciation1','pronunciation2'].filter(name=>pages.includes(name))){
  const p=await open(name);
  await p.evaluate(()=>{drawPitchCurve=(s,u,m)=>{s.__drawn={u,m}};drawPitchPlaceholder=(s)=>{s.__drawn={u:null,m:null}};estimateF0Frames=()=>[{time:0,f0:180},{time:.02,f0:190}];});
  const start=async(defer=false)=>{await p.evaluate(defer=>{testAudio.defer=defer;__states[0].listenBtn.click()},defer);await p.waitForTimeout(30)};

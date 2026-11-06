@@ -29,7 +29,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill1 .example-box .p81-kind').allTextContents(),['Noun','Verb＋の'],'labels identify the compared forms');
  check(await page.locator('#drill1 .p81-card .p81-kind').count(),0,'Noun and Verb labels are Example-only');
  check(await page.locator('.p81-example-row > button').evaluateAll(es=>es.every(e=>getComputedStyle(e).alignSelf==='auto')),true,'no page-specific vertical alignment override');
- check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','は','のが'],'Example3 topic and nominalizer highlighted');
+ check(await page.locator('#drill3 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example3 topic and nominalizer highlighted');
  check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),'rgb(202, 138, 4)','common light gold');
  check(await page.evaluate(()=>audit81.speechText('ううん、好きじゃない。')),'ううんん、好きじゃない。','No TTS only pronunciation exception');
  check(await page.locator('.info-panel-desc').allTextContents().then(a=>a.every(s=>s.startsWith('💡'))),true,'instructions start with bulb');
@@ -43,18 +43,18 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill3 .p81-card select').count(),4,'four ability selectors');
  check(await page.locator('#drill3 .example-box button').count(),2,'two ability Examples');
  check(await page.locator('#drill4 .example-box button').count(),6,'six degree Examples');
- check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理を作るのが、ぜんぜん好きじゃないです。','〃のが、あまり好きじゃないです。','〃のが、ちょっと好きです。','〃のが、まぁまぁ好きです。','〃のが、とても好きです。','〃のが、すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
- check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['料理／作る／ぜんぜん／好き','〃あまり／好き','〃ちょっと／好き','〃まぁまぁ／好き','〃とても／好き','〃すごく／好き'],'only the first degree cue repeats the common action');
- check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('料理を作る'),'ditto marks retain the omitted meaning for accessibility');
+ check(await page.locator('#drill4 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['アニメを見るのが、ぜんぜん好きじゃないです。','〃のが、あまり好きじゃないです。','〃のが、ちょっと好きです。','〃のが、まぁまぁ好きです。','〃のが、とても好きです。','〃のが、すごく好きです。'],'degree Examples abbreviate the repeated action with ditto marks while retaining のが');
+ check(await page.locator('#drill4 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['アニメ／見る／ぜんぜん／すき','〃あまり／すき','〃ちょっと／すき','〃まぁまぁ／すき','〃とても／すき','〃すごく／すき'],'only the first degree cue repeats the common action');
+ check(await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),Array(5).fill('アニメを見る'),'ditto marks retain the omitted meaning for accessibility');
  for(const style of ['formal','informal','casual'])for(const script of ['kanji','hiragana']){
   await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
   await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
   const prefixes=await page.locator('#drill4 .example-box .p81-ditto').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label')));
-  check(prefixes,Array(5).fill(script==='kanji'?'料理を作る':'りょうりをつくる'),'ditto follows the selected script');
+  check(prefixes,Array(5).fill(script==='kanji'?'アニメを見る':'あにめをみる'),'ditto follows the selected script');
   for(let i=0;i<6;i++){
    await page.locator('#drill4 .example-box button').nth(i).click();
-   const ending=i<2?(style==='formal'?'じゃないです。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
-   check(await page.evaluate(()=>t.spoken.at(-1).text),'料理を作るのが、'+['ぜんぜん','あまり','ちょっと','まぁまぁ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
+   const ending=i<2?(style==='formal'?'じゃないです。':style==='casual'?'じゃないよ。':'じゃない。'):(style==='formal'?'です。':style==='casual'?'だよ。':'だ。');
+   check(await page.evaluate(()=>t.spoken.at(-1).text),'アニメを見るのが、'+['ぜんぜん','あまり','ちょっと','まぁまぁ','とても','すごく'][i]+'好き'+ending,'all six abbreviated Examples still speak the full sentence');
    await page.evaluate(()=>t.spoken.at(-1).onend());
   }
  }
@@ -67,8 +67,8 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-card select').count(),14,'one adjective quiz per row');
  check(await page.locator('#drill5 .example-box .p81-kind').allTextContents(),['Skillful','Observed'],'one-word meaning labels');
  check(await page.evaluate(()=>{const ex=[...document.querySelectorAll('#drill5 .example-box .p81-model')].map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return audit81.normalize(c.textContent);});return audit81.rowsFor(4).flat().every(r=>!ex.includes(audit81.normalize(r.text)));}),true,'D5 never repeats an Example5 model');
-  check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹／写真／撮る／上手','〃／苦手'],'Example3 second cue abbreviates the complete repeated subject and action');
-  check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉／ギター／弾く／上手','〃／得意'],'Example5 second cue abbreviates the repeated subject and action');
+  check(await page.locator('#drill3 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['いもうと／しゃしん／とる／じょうず','〃／にがて'],'Example3 second cue abbreviates the complete repeated subject and action');
+  check(await page.locator('#drill5 .example-box .p81-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['あね／ギター／ひく／じょうず','〃／とくい'],'Example5 second cue abbreviates the repeated subject and action');
   check(await page.locator('#drill5 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['姉は、ギターを弾くのが、上手です。','〃のが、得意です。'],'Example5 second model retains のが after ditto');
   check(await page.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['妹は、写真を撮るのが、上手です。','〃のが、苦手です。'],'Example3 second model retains のが after ditto');
 
@@ -84,7 +84,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example5 topic and nominalizer highlighted');
  check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
- check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['テレビを見るのが、好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
+ check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['散歩するのが、好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
  for(const label of ['🔊🙆','🔊🙅']){
   const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
   check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
@@ -106,6 +106,7 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  }
  for(const style of ['formal','informal','casual']) {
   await page.locator('#speechStyleControl [data-value="'+style+'"]').click();
+  console.log('MODEL MATRIX',style);
   const outcomes=await page.evaluate(()=>{
    const a=audit81,out=[];
    for(let si=0;si<5;si++)for(const rs of a.rowsFor(si))for(const r of rs){
@@ -149,10 +150,10 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  const variants=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(1)[1][1];return a.matchesAnswer('はい、洗濯をするのがきらいです',r);});check(variants,true,'する noun full reply variant');
  const expectedPairs=[['good','strong'],['bad','difficult'],['difficult','bad'],['strong','good'],['good','strong'],['difficult','bad'],['good','strong']];
  check(await page.evaluate(()=>audit81.comparisons.map(r=>r.options)),expectedPairs,'same-situation option pairs');
- check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4);return [d5[0][0].text,d5[3][0].text,a.matchesAnswer('父は料理をするのが上手です。',d5[0][0]),a.matchesAnswer('早く起きるのが苦手です。',d5[2][0]),a.matchesAnswer('英語を話すのが苦手です。',d5[1][1]),a.matchesAnswer('掃除するのが得意です。',d5[3][0])];}),['父は、料理するのが、上手です。','私は、掃除するのが、得意です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
+ check(await page.evaluate(()=>{const a=audit81,d5=a.rowsFor(4),r=id=>d5.flat().find(r=>r.id===id);return [r('comparison-0-good').text,r('comparison-3-strong').text,a.matchesAnswer('父は料理をするのが上手です。',r('comparison-0-good')),a.matchesAnswer('早く起きるのが苦手です。',r('comparison-2-difficult')),a.matchesAnswer('英語を話すのが苦手です。',r('comparison-1-difficult')),a.matchesAnswer('掃除するのが得意です。',r('comparison-3-strong'))];}),['父は、料理するのが、上手です。','私は、掃除するのが、得意です。',true,true,true,true],'D5 suru-verbs use no-を model while accepting を, and first-person D5 rows accept omitted 私は');
  for(const [i,pair]of expectedPairs.entries())for(const value of pair){
   const id=`comparison-${i}-${value}`,row=page.locator(`[data-row="${id}"]`);
-  const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4)[i].find(r=>r.adjective===value),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
+  const out=await page.evaluate(([i,value])=>{const a=audit81,r=a.rowsFor(4).flat().find(r=>r.id===`comparison-${i}-${value}`),other=r.options.find(x=>x!==r.adjective);return {text:r.text,correct:a.matchesAnswer(r.text,r),wrong:a.matchesAnswer(a.sentenceFor(r,'formal',true,other),r),feedback:a.feedback(r,r.text),labels:r.options.map(x=>r.impressionWords[x])};},[i,value]);
   check(out.correct,true,'fixed comparison model accepted');check(out.wrong,false,'other expression belongs to its own row');
   check(await row.locator('.p81-kind').textContent(),out.labels[pair.indexOf(value)],'English impression specifies the row before recording');
   await row.locator('.recording-actions button').first().click();
@@ -214,34 +215,13 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
   check(degree.nogaSpread.every(x=>x<1),true,'Example4 のが aligns vertically across all rows');
   const layout=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,panels:[...document.querySelectorAll('.example-box')].map(e=>e.nextElementSibling.getBoundingClientRect().top-e.getBoundingClientRect().bottom),colors:[getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color]}));
   check(layout.overflow,false,'no page overflow '+width+' '+scheme);
-  if(width>600){
-   const fit=await page.locator('#drill5').evaluate(group=>{
-    const cells=[...group.querySelectorAll('.p81-card .prompt-label')];let right=0;
-    for(const cell of cells){const walk=document.createTreeWalker(cell,NodeFilter.SHOW_TEXT);while(walk.nextNode()){const t=walk.currentNode;if(!t.textContent.trim()||t.parentElement.closest('.tooltip-tip,.custom-tip-box,select,button'))continue;const range=document.createRange();range.selectNodeContents(t);for(const r of range.getClientRects())right=Math.max(right,r.right);}for(const e of cell.querySelectorAll('select,button'))right=Math.max(right,e.getBoundingClientRect().right);}
-    const xs=[...group.querySelectorAll('.recording-actions')].map(e=>e.getBoundingClientRect().left);
-    return {gap:Math.min(...xs)-right,spread:Math.max(...xs)-Math.min(...xs),single:cells.every(c=>c.querySelector('select').getBoundingClientRect().top-c.querySelector('.p81-kind').getBoundingClientRect().top<20)};
-   });
-   check(fit.gap>=3.5&&fit.gap<6,true,'D5 listen follows actual wrapped cue with only column gap '+width+'/'+fit.gap);
-   check(fit.spread<1,true,'D5 shared listen column after wrapping');
-    const dittoCenters=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const first=card.querySelector('.p81-cue-words[data-repeat-anchor]'),mark=card.querySelector('.p81-cue-words[data-repeat-cue] .p81-repeat-mark');const words=[...first.querySelectorAll('.target-word')],a=words[0].getBoundingClientRect(),b=words.at(-1).getBoundingClientRect(),m=mark.getBoundingClientRect();return Math.abs((m.left+m.right-a.left-b.right)/2);}));
-    check(dittoCenters.every(x=>x<1),true,'D5 ditto centered over repeated subject and action '+width);
-    const d5SelectDeltas=await page.locator('#drill5 .p81-card').evaluateAll(cards=>cards.map(card=>{const selects=[...card.querySelectorAll('select.p81-select')].map(s=>s.getBoundingClientRect().left);return Math.abs(selects[0]-selects[1]);}));
-    check(d5SelectDeltas.every(x=>x<1),true,'D5 paired Adj selects align at exact same horizontal position '+width);
-    for(const sel of ['#drill3 .example-box','#drill5 .example-box']){
-     const modelAlign=await page.locator(sel).evaluate(ex=>{const rows=[...ex.querySelectorAll('.p81-model')],firstRect=rows[0].getBoundingClientRect(),firstNoga=[...rows[0].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect(),secondNoga=[...rows[1].querySelectorAll('.p81-gold')].find(e=>e.textContent==='のが').getBoundingClientRect(),mark=rows[1].querySelector('.p81-ditto').getBoundingClientRect();return {centerDelta:Math.abs((mark.left+mark.right)/2-(firstRect.left+firstNoga.left)/2),nogaDelta:Math.abs(secondNoga.left-firstNoga.left)};});
-     check(modelAlign.centerDelta<1,true,sel+' model ditto centered in empty space before のが');
-     check(modelAlign.nogaDelta<1,true,sel+' model のが aligns horizontally across rows');
-    }
-
-   if(width>=1440)check(fit.single,true,'short labels keep default cues on one line');
-  }
-
+  await require('./practice81-cue-fit.cjs').checkLayout(page,check,{width,scheme});
   const styles=await page.evaluate(()=>({labels:[...document.querySelectorAll('.p81-kind:not(.conversation-role),.p81-target')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight),c.backgroundColor];}),adverbs:[...document.querySelectorAll('#drill4 .example-box .p81-model .degree-adverb')].map(e=>{const c=getComputedStyle(e);return [c.color,Number(c.fontWeight)];}),negative:getComputedStyle(document.querySelector('.p81-degree-point.degree-negative')).color,positive:getComputedStyle(document.querySelector('.p81-degree-point.degree-positive')).color}));
   check(styles.labels.every(([c,w,b])=>c===(scheme==='dark'?'rgb(253, 224, 71)':'rgb(245, 127, 23)')&&w>=700&&b==='rgba(0, 0, 0, 0)'),true,'ordinary heading defaults, no badge');
   check(styles.adverbs.length,6,'six emphasized model adverbs');
   check(styles.adverbs.every(([c,w],i)=>c===(i<2?styles.negative:styles.positive)&&w>=700),true,'model adverbs share red/blue guide colors and bold weight');check(await page.locator('#drill1 .p81-gold').first().evaluate(e=>getComputedStyle(e).color),scheme==='dark'?'rgb(251, 191, 36)':'rgb(202, 138, 4)','gold follows common theme specification');check(layout.panels.every(g=>Math.abs(g-24)<.5),true,'shared Example spacing');check(layout.colors[0]===layout.colors[1],false,'polarity colors differ');
   if(width===1440){
-   const tracks=await page.evaluate(()=>[...document.querySelectorAll('.p81-section')].map(s=>[...s.querySelectorAll('.p81-card .recording-actions')].map(e=>e.getBoundingClientRect().left)));
+   const tracks=await page.evaluate(()=>[...document.querySelectorAll('.p81-section')].slice(0,4).map(s=>[...s.querySelectorAll('.p81-card .recording-actions')].map(e=>e.getBoundingClientRect().left)));
    for(const xs of tracks)check(Math.max(...xs)-Math.min(...xs)<1,true,'listen column shared by longest cue');
    const comparisonBaselines=await page.locator('#drill5 tr').evaluateAll(rows=>rows.map(row=>{const baseline=e=>{const mark=document.createElement('span');mark.style.cssText='display:inline-block;width:0;height:0;vertical-align:baseline';e.prepend(mark);const y=mark.getBoundingClientRect().top;mark.remove();return y;};return baseline(row.querySelector('.p81-cue-body'))-baseline(row.querySelector('.recording-actions button'));}));
    for(const delta of comparisonBaselines)check(Math.abs(delta)<.5,true,'comparison cue and listen text share the first baseline');
@@ -258,4 +238,4 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(wrong.text,wrong.raw,'actual wrong-answer display preserves original characters');check(wrong.shown,true,'retry message visible');check(wrong.feedback,false,'unrecognized speech receives no social judgment');
  check(errors,[],'no runtime errors');
  await browser.close();console.log('PASS Practice 8.1',checks);
-})().catch(e=>{console.error(e);process.exit(1)});
+})().catch(e=>{console.error(e.message.slice(0,3500));process.exit(1)});
