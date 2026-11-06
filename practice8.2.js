@@ -191,7 +191,7 @@ function rowsFor(si){
 function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):r.verb==='attach'?String(raw).replace(/^[付点]け/,'つけ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
-function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
+function word(id,shown,markup){const w=words[id],text=markup??escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
 function cues(r){
  if(r.mode==='contrast'){
   const ids=[r.person,r.pronoun,r.verb].filter(Boolean);
@@ -200,17 +200,34 @@ function cues(r){
  const ids=r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.object,r.verb].filter(Boolean);
  return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');
 }
+// Display-only segmentation: keep cue data, readings, and model/TTS strings intact.
+const indefiniteParts={
+ '何か':['何','か','something','something'], 'なにか':['なに','か','something','something'],
+ '何も':['何','も','nothing','nothing'], 'なにも':['なに','も','nothing','nothing'],
+ '何でも':['何','でも','anything','anything'], 'なんでも':['なん','でも','anything','anything'],
+ '何を':['何','を','what',null], 'なにを':['なに','を','what',null]
+};
+function indefiniteHTML(text,withHint=false,withWhatHint=false){
+ const [base,suffix,tone,id]=indefiniteParts[text];
+ const markup='<span class="p82-indefinite"><span class="p82-indefinite-base">'+(withWhatHint&&tone==='what'?word('what',base):escape(base))+'</span><strong class="p82-indefinite-suffix p82-indefinite-'+tone+'">'+escape(suffix)+'</strong></span>';
+ return withHint&&id?word(id,text,markup):markup;
+}
+function conceptHTML(text){
+ const mark=Object.keys(indefiniteParts).find(t=>text.startsWith(t));
+ const rest=mark?text.slice(mark.length):text;
+ return (mark?indefiniteHTML(mark):'')+escape(rest).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');
+}
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;
- const skipContrastHighlight=r.id.startsWith('contrast-');
- const marks=['何でも',skipContrastHighlight?null:'何か','何も',skipContrastHighlight?null:'何を','なんでも',skipContrastHighlight?null:'なにか','なにも',skipContrastHighlight?null:'なにを'].filter(Boolean).sort((a,b)=>b.length-a.length);
+ const marks=Object.keys(indefiniteParts).sort((a,b)=>b.length-a.length);
  const tokens=Object.entries(words).map(([id,w])=>({id,text:w[scriptMode==='kanji'?'kanji':'hira']}));
  for(const [id,v]of Object.entries(verbs))for(const t of Object.values(v))tokens.push({id,text:scriptMode==='kanji'?t:displayKana(t)});
  tokens.sort((a,b)=>b.text.length-a.text.length);
  let out='',i=0;while(i<text.length){
-  if(text.startsWith('何か(を)',i)){out+='<strong class="grammar-highlight">何か(<span class="optional-particle tooltip-wrap"><span class="optional-particle-label">を</span><span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>)</strong>';i+='何か(を)'.length;continue;}
+  const optional=['何か(を)','なにか(を)'].find(t=>text.startsWith(t,i));
+  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'(<span class="optional-particle tooltip-wrap"><strong class="optional-particle-label">を</strong><span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>)';i+=optional.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
-  if(mark){const id=Object.keys(words).find(id=>[words[id].kanji,words[id].hira].includes(mark));out+='<strong class="grammar-highlight">'+(id?word(id,mark):escape(mark))+'</strong>';i+=mark.length;continue;}
+  if(mark){out+=indefiniteHTML(mark,true,r.id.startsWith('contrast-'));i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
   const token=tokens.find(t=>text.startsWith(t.text,i));
   if(token){const neg=r.text.includes('何も')&&['ませんでした','ません','なかった','ない'].find(e=>token.text.endsWith(e));out+=neg?word(token.id,token.text.slice(0,-neg.length))+'<strong class="degree-negative">'+escape(neg)+'</strong>':word(token.id,token.text);i+=token.text.length;}else out+=escape(text[i++]);
@@ -672,14 +689,14 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
- if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も〜ません · Nothing','何でも · Everything'][i],intro:true}));
+ if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か · Something','何も〜ません · Nothing','何でも · Anything / Whatever'][i],intro:true}));
  else if(si===1)samples=[
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を · What',translation:'(What do you see?)'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か · Anything',translation:'(Do you see anything?)'})
  ];
  else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=escape(rawKind).replace(/〜ません/,'<span class="degree-negative">〜ません</span>');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0)kind.classList.add('p82-concept-label');}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function updateUnlearnedLexicon(){
  const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';

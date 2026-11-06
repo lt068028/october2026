@@ -4071,3 +4071,18 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 /* Opt-in Beyond kanji entries: keep each phrase and its reading together. */
 .unlearned-kanji-compact li { flex-wrap: wrap; }
 .unlearned-kanji-compact .unlearned-kanji-phrase { white-space: nowrap; }
+
+/* Practice 8.2: only the indefinite suffix carries the teaching color. */
+[data-practice="8.2"] { --p82-indefinite-amber: #996300; }
+[data-practice="8.2"] .p82-indefinite { color: var(--text-primary); font-weight: 400; }
+[data-practice="8.2"] .p82-indefinite-suffix { font-weight: 700; }
+[data-practice="8.2"] .p82-indefinite-something { color: var(--p82-indefinite-amber); }
+[data-practice="8.2"] .p82-indefinite-nothing { color: var(--degree-negative-color); }
+[data-practice="8.2"] .p82-indefinite-anything { color: var(--degree-positive-color); }
+[data-practice="8.2"] .p82-indefinite-what,
+[data-practice="8.2"] .optional-particle { color: var(--text-primary); }
+[data-practice="8.2"] .optional-particle-label { font-weight: 700; }
+[data-practice="8.2"] .p82-concept-label .p82-indefinite-suffix { text-decoration: underline; text-underline-offset: 3px; }
+@media (prefers-color-scheme: dark) {
+    [data-practice="8.2"] { --p82-indefinite-amber: #fbbf24; }
+}
