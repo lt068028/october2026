@@ -89,7 +89,7 @@ const sections=[
  {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か (something).'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Ask with 何を (what) for specific items, or 何か (anything) for yes/no.'},
  {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (anything). For 🙅, use 何も〜ません (nothing).'},
- {title:'Drill 4: [Advanced] 何でも — Unlimited Choice ( Sneak Peek L15 )',instruction:'💡[Advanced] Unlike 何か (some) or 何も (none), 何でも can describe "whatever". Ask with どんな (what kind of) and answer with 何でも (everything / whatever).'}
+ {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡[Sneak Peek] Beyond this lesson’s textbook scope, 何でも expresses unrestricted choice (anything / whatever). Compare 何か (something) and 何も + negative (nothing). Ask with どんな (what kind of) and answer with 何でも (anything / whatever).'}
 ];
 const statements=[
  {place:'class',verb:'speak'},

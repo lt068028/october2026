@@ -1,3 +1,9 @@
+# 現在のリレー状態（2026-11-06 / Europe/Vienna / GitHub編集）
+
+- 今回：Practice 8.2 Drill 4タイトルを `[Sneak Peek] 何でも — Unlimited Choice` に変更し、説明文のAdvanced表示を撤去。何か／何も＋否定との対比、教科書の当該課の範囲外である点、どんな→何でもの用法を明示。PROJECT_SPECに今後の補足内容の[Sneak Peek]基本方針と、実在する後続課を確認できる場合だけ課番号を付ける方針を登録。PRACTICE82_SPECの旧Advanced / Sneak Peek L15を更新。8.2のタイトル関連3件は解消。今回の変更範囲の静的確認のみでページ全体テストは未実施。
+
+## 以前の引き継ぎ記録（参照用）
+
 # 現在のリレー状態（2026-11-06 / Europe/Vienna / Codex Cloud）
 
 - 状態：引き継ぎ可能。基準main `efb94e5e5c2f1bd34df172ab7be4092fb21e55b8`。8.3 Beyond Wordsのチーム【L21】を【Genki外】へ修正。根拠は作成者が確認・確定した『げんき［第3版］公式単語索引』（2024年3月更新）のVocabulary Index未登録。本作業で公式索引を独立再照合したとは扱わない。
