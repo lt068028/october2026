@@ -1408,7 +1408,7 @@ function practice2ShowNotice(resultSpan, message) {
             document.createTextNode(text.slice(position))
         );
 
-        return span;
+        return SemanticDisplay.exampleNegatives(span);
     }
 
     function example(container, lines, { responseCue = false } = {}) {

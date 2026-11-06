@@ -219,3 +219,9 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 変更前の同じファイル構成を用意し、`SEMANTIC_BASELINE_ROOT=/path/to/baseline node tests/semantic-colors.cjs` と指定すると、表示文字・入力／選択肢・英語ラベル・操作UI配色・モデルTTS入力の変更前後比較も行う。HTMLの構造上の空白だけは表示文言比較から除く。テスト内だけCSS transition／animationを無効化し、切替途中の補間色ではなく最終表示を比較する。`SEMANTIC_REPORT` で結果JSONの保存先を指定できる。画像はリポジトリの実ファイルを使用する。
 
 本テストは共通表示変更の限定回帰であり、各ページのページ全体テスト実施・合格やページ作業完了宣言を意味しない。正誤・時制・操作・警告・Beyond漢字の色を意味色へ一括置換しない。
+
+## Example否定要素の限定回帰（2026-11-06）
+
+`NEGATIVE_BASELINE_ROOT=/path/to/unchanged-checkout node tests/example-negative.cjs` は、11PracticeのExample表示を両テーマ・両表記・利用可能な3文体・375／1440pxで比較する。指定否定要素だけ共通否定色・太字700になり、残りの文字色／太さ、全文字、DrillのDOM・選択肢、モデルTTS入力が変更前と一致することを確認する。7.2の知る、8.3のわかる、8.2の既存否定色も非影響を確認。音声は既存モックであり、実音質・STT精度の試験ではない。
+
+ブラウザ切替中の補間色はテスト内だけtransition／animationを無効化して除く。表示用関数の全9境界例、対象外の否定形、二重適用で変化しないことも検証する。結果JSONは一時領域へ出力し、`NEGATIVE_REPORT`で保存先を指定できる。本テストはページ全体テストではない。

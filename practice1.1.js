@@ -726,7 +726,7 @@ function renderExampleSection() {
                     id="ex2Listen"
                     class="example-button"
                 >🔊きく</button>
-                <span>${subject}${SemanticDisplay.highlightHTML('は、')}${noun2}${SemanticDisplay.highlightHTML('じゃないです。')}</span>
+                <span>${subject}${SemanticDisplay.highlightHTML('は、')}${noun2}${SemanticDisplay.exampleNegativeHTML(SemanticDisplay.highlightHTML('じゃないです。'))}</span>
             </div>
         </div>
     `;
@@ -2854,7 +2854,7 @@ window.addEventListener("pagehide", () => {
                 escapeHtml(subject) +
                 SemanticDisplay.highlightHTML(speechStyle === 'casual' ? '、' : 'は、') +
                 escapeHtml(nouns[index]) +
-                SemanticDisplay.highlightHTML(end);
+                SemanticDisplay.exampleNegativeHTML(SemanticDisplay.highlightHTML(end));
 
             const cueNodes = [];
 

@@ -854,7 +854,7 @@ function addExample(root,si) {
         }
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
-        const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);
+        const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);SemanticDisplay.exampleNegatives(text);
         if(si===2||si===3||si===4){
             if(index===0)text.dataset.repeatModelAnchor=String(si);
             else text.dataset.repeatModelCue=String(si);

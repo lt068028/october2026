@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.createTextNode(text.slice(offset))
         );
 
-        return span;
+        return SemanticDisplay.exampleNegatives(span);
     }
 
     function makeExample(parent) {

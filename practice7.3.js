@@ -1238,7 +1238,7 @@ function render() {
 
             const text = document.createElement('td');
             text.className = 'p73-example-model';
-            text.innerHTML = sentence(r);
+            text.innerHTML = SemanticDisplay.exampleNegativeHTML(sentence(r));
 
             tr.append(kind, cue, arrow, lc, text);
             eb.append(tr);
@@ -2399,7 +2399,7 @@ render = function () {
                 td.append(listen);
             } else if (index === 4) {
                 td.className = 'p73-example-model';
-                td.innerHTML = sentence(q);
+                td.innerHTML = SemanticDisplay.exampleNegativeHTML(sentence(q));
             } else if (content && index !== 0) {
                 td.textContent = content;
             }
@@ -2420,7 +2420,7 @@ render = function () {
         const r = qa73Model(qa73.example, kind);
         const listen = button(kind === 'yes' ? '🔊🙆' : '🔊🙅', () => speak(r.text, listen));
         cells[3].append(listen);
-        cells[4].innerHTML = sentence(r);
+        cells[4].innerHTML = SemanticDisplay.exampleNegativeHTML(sentence(r));
         row.append(...cells);
         eb.append(row);
     });
