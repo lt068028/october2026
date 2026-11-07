@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.1 HTML破損修復
+
+- JavaScript構文は検査で問題なし。一方、直前のキャッシュ識別子置換がHTMLコメント `<!-- Speech Style is inserted by practice8.1.js...` に誤一致し、`class="control-item"` の親divを欠落させていた。実際のscript srcは旧 `practice8.1.js?v=20261107-content-layout3` のままだった。
+- HTMLコメントを正常化し、Vocabulary Displayの親 `div.control-item` を復元、実際のscript srcを `practice8.1.js?v=20261107-dr5-concept` に更新。GitHub mainにPush。
+- 原因防止：キャッシュ更新時は `src="..."` または `href="..."` 属性に限定して置換し、コメント中のファイル名を変更しない。実機/Vercel表示は未検証。
+
 # 2026-11-07 / Practice 8.1 Drill 5 英語区分バッジ適用
 
 - ユーザーがDrill 5への共通英語概念ラベル装飾を承認。比較行のr.kindへp81-concept-badgeを付与し、Ex1/Ex5/8.2と同じLato・太字・余白・角丸・枠を適用。ダークは文字#ffffff、背景#304663、枠#7998c3。ライトも共通装飾。
