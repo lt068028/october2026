@@ -86,10 +86,10 @@ function displayKana(text){let value=String(text);for(const [k,h]of dictionary)v
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
- {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か (something).'},
- {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Ask with 何を (what) for specific items, or 何か (anything) for yes/no.'},
- {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (anything). For 🙅, use 何も〜ません (nothing).'},
- {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡 何でも expresses unrestricted choice (anything / whatever). Ask with どんな (what kind of) and answer with 何でも.'}
+ {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か (unspecified item).'},
+ {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
+ {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (unspecified item). For 🙅, use 何も〜ません (none).'},
+ {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
 ];
 const statements=[
  {place:'class',verb:'speak'},
