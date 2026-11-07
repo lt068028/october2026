@@ -2,6 +2,8 @@
 (() => {
     let queued = false;
     let exampleChanged = false;
+    let fontRevision = 0;
+    const callouts = new WeakMap();
     const widths = new WeakMap();
     const fonts = new WeakMap();
     let minimums = new WeakMap();
@@ -278,6 +280,48 @@
             root.style.gridTemplateColumns=`repeat(${count},minmax(0,1fr))`;widths.set(root,root.clientWidth);
         });
     }
+    // Photograph controls keep each zone/speaker group intact; only the number
+    // of whole groups per row changes with the space actually available.
+    function photographControls(){
+        document.querySelectorAll('.p2x-audio-grid,.p2x-compact-audio,.p23-city-audio').forEach(root=>{
+            if(!observed.has(root)){resize.observe(root);observed.add(root);}
+            if(!root.getClientRects().length){widths.set(root,0);return;}
+            const units=[...root.children].filter(e=>e.getClientRects().length);
+            if(!units.length)return;
+            const style=getComputedStyle(root),gap=parseFloat(style.columnGap)||0;
+            const available=root.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+            // These controls retain their existing media-dependent button size.
+            // Re-measure it rather than caching an earlier media rule's font.
+            const natural=Math.max(...units.map(e=>{measures.delete(e);return intrinsic(e);}));
+            const count=Math.max(1,Math.min(units.length,Math.floor((available+gap)/(natural+gap))));
+            root.classList.add('content-photograph-controls');root.dataset.contentColumns=String(count);
+            root.style.gridTemplateColumns=`repeat(${count},minmax(0,1fr))`;
+            widths.set(root,root.clientWidth);
+        });
+    }
+    // Approved narrow-scene fallback: preserve the original callout node,
+    // photograph, type and wording; dock only when its text collides with prices.
+    function foodCallouts(){
+        document.querySelectorAll('.p2x-food-example .p21-which-guide').forEach(guide=>{
+            const picture=guide.closest('.p2x-picture'),stage=picture?.querySelector('.p2x-stage');
+            if(!stage)return;
+            let record=callouts.get(guide);
+            if(!record){record={parent:guide.parentElement,next:guide.nextSibling,key:null};callouts.set(guide,record);}
+            const frame=stage.getBoundingClientRect();
+            const key=[frame.width,frame.height,getComputedStyle(guide).font,fontRevision].join('|');
+            if(record.key===key)return;
+            if(guide.classList.contains('content-docked-guide')){
+                guide.classList.remove('content-docked-guide');
+                record.parent.insertBefore(guide,record.next?.parentElement===record.parent?record.next:null);
+            }
+            const labels=[...guide.querySelectorAll('.p21-question-sound,.p21-question-description')].map(e=>e.getBoundingClientRect());
+            const prices=[...picture.querySelectorAll('.p2x-price')].map(e=>e.getBoundingClientRect());
+            const collision=labels.some(a=>prices.some(b=>Math.min(a.right,b.right)>Math.max(a.left,b.left)+.25&&Math.min(a.bottom,b.bottom)>Math.max(a.top,b.top)+.25));
+            const outside=labels.some(r=>r.left<frame.left-.25||r.right>frame.right+.25||r.top<frame.top-.25||r.bottom>frame.bottom+.25);
+            if(collision||outside){picture.append(guide);guide.classList.add('content-docked-guide');}
+            record.key=key;
+        });
+    }
     function refresh() {
         queued = false;
         observer.disconnect();
@@ -288,6 +332,8 @@
         modernExamples();
         sceneExamples();
         degreeGuides();
+        photographControls();
+        foodCallouts();
         if(exampleChanged){exampleChanged=false;document.dispatchEvent(new Event('content-layout'));schedule();}
         observed.forEach(e=>fonts.set(e,getComputedStyle(e).font));
         observer.observe(document.body, {childList: true, subtree: true, characterData: true});
@@ -303,6 +349,6 @@
     window.addEventListener('resize', schedule);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
     else schedule();
-    document.fonts.ready.then(() => { measures = new WeakMap(); minimums = new WeakMap(); schedule(); });
-    document.fonts.addEventListener('loadingdone', () => { measures = new WeakMap(); minimums = new WeakMap(); schedule(); });
+    document.fonts.ready.then(() => { measures = new WeakMap(); minimums = new WeakMap(); fontRevision++; schedule(); });
+    document.fonts.addEventListener('loadingdone', () => { measures = new WeakMap(); minimums = new WeakMap(); fontRevision++; schedule(); });
 })();

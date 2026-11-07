@@ -241,3 +241,6 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `node tests/content-layout-states.cjs`：Set／英語キュー／長い選択肢／文体／表記／CSS倍率の切替とアイドル安定性。倍率はCSS変数による100・130・140%相当の検証であり、実機ブラウザのズーム確認とは区別する。
 - `node tests/content-layout-boundaries.cjs`：各ページの共通Drill行の実改行境界と前後1px、変更していない自然なインラインExample行。
 - `content-examples.cjs`は共有行とセル内文字を検査する。写真内の図解・注釈同士の関係は別の視覚検査として扱い、行内文字の矩形判定に混ぜない。2.2 Ex3の狭幅注釈はHANDOVERの未解決事項を参照。
+
+- `node tests/content-photograph-controls.cjs`：写真下の操作群、旧450px境界と実際の3列成立付近の検証。
+- `CONTENT_BASELINE=/path/to/baseline node tests/content-food-callout.cjs`：承認済み2.2 Ex3注釈の価格衝突・写真内外の往復・ノード／字形／色／写真座標の維持と実境界前後1px。
