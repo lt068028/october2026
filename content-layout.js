@@ -16,7 +16,7 @@
     function intrinsic(element, presentation) {
         if (!measureHost.isConnected) document.body.append(measureHost);
         const style = getComputedStyle(element);
-        const key = (presentation === 'category-inline' ? 'category-inline|' : '') + element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + (e.style.width || getComputedStyle(e).width)).join('|');
+        const key = (presentation === 'category-inline' ? 'category-inline|' : '') + element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + (e.style.width || '')).join('|');
         if (measures.get(element)?.key === key) return measures.get(element).width;
         const copy = element.cloneNode(true);
         const originals = [element, ...element.querySelectorAll('*')];
@@ -31,7 +31,7 @@
         });
         copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t => t.remove());
         Object.assign(copy.style, {position: 'static', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap', display: style.display.includes('flex') ? 'inline-flex' : style.display.includes('grid') ? 'inline-grid' : 'inline-block', flexWrap: 'nowrap'});
-        copy.querySelectorAll('.display-cue-unit, .target-word').forEach(el => {
+        copy.querySelectorAll('.display-cue-unit, .target-word, .tooltip-wrap').forEach(el => {
             el.style.maxWidth = 'none';
             el.style.whiteSpace = 'nowrap';
         });
@@ -369,7 +369,7 @@
         if (entries.some(e => Math.abs(e.target.clientWidth - (widths.get(e.target) ?? -1)) > .25 || fonts.get(e.target)!==getComputedStyle(e.target).font)) schedule();
     });
     document.addEventListener('change', schedule);
-    window.addEventListener('resize', schedule);
+    window.addEventListener('resize', () => { measures = new WeakMap(); minimums = new WeakMap(); schedule(); });
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
     else schedule();
     document.fonts.ready.then(() => { measures = new WeakMap(); minimums = new WeakMap(); fontRevision++; schedule(); });

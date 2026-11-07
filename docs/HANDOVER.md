@@ -1,3 +1,21 @@
+# 2026-11-07 / 全ページ横断：キュー単語文字縦折れ防止・スタック行フォールバック・非制約幅復元
+
+- **状態：引き継ぎ可能（main反映・Push完了）**
+- **課題**：Practice 1.1をはじめとする全ページのDrillテーブルにおいて、画面幅縮小時やリサイズ時にキューテキスト（「わたし」「がくせい」等）が文字ごとに分割されて1文字1行で縦折れ（縦書き化）する現象の根本解消、および全ページ横断点検。
+- **原因と修正内容**：
+  1. **単語内改行の物理的防止（全ページ共通）**：
+     `style.css` において `.site-scale .recording-table :is(.prompt-label, .drill-cue-cell) :is(.target-word, .display-cue-unit, .tooltip-wrap)` に `white-space: nowrap !important; display: inline-block;` を適用。単語自体が文字単位で縦折れすることを全ページで物理的に遮断（単語間のスラッシュや空白でのみ折り返しを許可）。
+  2. **スタック配置時のセル配置フォールバック（全ページ共通）**：
+     `style.css` の `content-record-grid` において、`data-content-cell` 属性の有無に依存せず、既存のクラス名（`.drill-number-cell`, `.drill-cue-cell`, `.prompt-label`, `td:has(> .recording-controls)`, `.p81-controls`, `.p73-controls`）でも確実に `grid-column: 1`, `2`, `3` および `stacked` 時の `controls` の `grid-column: 1 / -1` を保証。スタック時に操作列が1列目に押し込められてキューが押しつぶされる現象を防止。
+  3. **非制約自然幅の測定保証とキャッシュヒステリシス排除（全ページ共通）**：
+     `content-layout.js` の `intrinsic()` 内で、`.tooltip-wrap` も非制約化し、キー生成から外部制約幅を排除。さらにウィンドウリサイズ時にキャッシュ WeakMap をリフレッシュし、縮小時の狭い幅が再拡大時に使い回される不具合を解消。
+  4. **Practice 1.1 固有の幅同期強化**：
+     `practice1.1.js` の `alignCueColumns()` 内で `measure` を `getComputedStyle(cell).font` かつ完全に非制約な `position: fixed; width: max-content` で計測し、常に正確な自然幅を `--content-cue-width` と `--drill-cue-width` に同期。
+  5. **全ページのキャッシュ識別子更新**：全11 Practiceページのキャッシュクエリを `20261107-cue-fix` に更新。
+- **自動検証**：`git diff --check` 合格。
+- **仕様整合性：更新不要**（既存のUI_LAYOUT_SPEC「共通レスポンシブ・幅配分の設計契約」に準拠）。
+- **未確認**：ユーザーの公開Vercelおよび実機確認。
+
 # 2026-11-07 / Practice 1.1 Example英字区分のコロン撤去とB「標準」バッジ装飾実装
 
 - **状態：引き継ぎ可能（main反映・Push完了）**

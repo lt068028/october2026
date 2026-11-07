@@ -2926,19 +2926,24 @@ window.addEventListener("pagehide", () => {
 
                 measure.querySelectorAll('*').forEach(el => {
                     el.style.maxWidth = 'none';
+                    el.style.whiteSpace = 'nowrap';
                 });
 
                 Object.assign(measure.style, {
-                    position: 'absolute',
+                    position: 'fixed',
+                    left: '0',
+                    top: '0',
                     visibility: 'hidden',
+                    pointerEvents: 'none',
                     display: 'inline-block',
                     width: 'max-content',
+                    minWidth: 'max-content',
                     maxWidth: 'none',
                     whiteSpace: 'nowrap',
-                    font: 'inherit'
+                    font: getComputedStyle(cell).font
                 });
 
-                cell.append(measure);
+                document.body.append(measure);
 
                 width = Math.max(
                     width,
@@ -2952,9 +2957,7 @@ window.addEventListener("pagehide", () => {
 
             tables.forEach(table => {
                 table.style.setProperty('--drill-cue-width', `${width + 8}px`);
-                if (table.dataset.contentLayout !== 'stacked') {
-                    table.style.setProperty('--content-cue-width', `${width + 8}px`);
-                }
+                table.style.setProperty('--content-cue-width', `${width + 8}px`);
                 const col = table.querySelector('colgroup')?.children[1];
                 if (col) {
                     col.style.width = `${width + 8}px`;

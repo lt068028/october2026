@@ -2282,8 +2282,9 @@ body.site-scale {
     overflow-wrap: anywhere;
     word-break: keep-all;
 }
-.site-scale:not(.practice81-page) .recording-table :is(.prompt-label, .drill-cue-cell) .target-word {
-    white-space: nowrap;
+.site-scale .recording-table :is(.prompt-label, .drill-cue-cell) :is(.target-word, .display-cue-unit, .tooltip-wrap) {
+    white-space: nowrap !important;
+    display: inline-block;
 }
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table td[rowspan="2"] { grid-row: span 2; }
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table td:has(> .recording-controls) { grid-column: 3; }
@@ -4280,16 +4281,16 @@ body.site-scale table.recording-table.content-record-grid[data-content-layout] >
 body.site-scale table.recording-table.content-record-grid[data-content-layout] > tr,
 body.site-scale table.recording-table.content-record-grid[data-content-layout] > tbody > tr { display: contents; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] [data-content-cell] { min-width: 0; max-width: 100%; }
-body.site-scale table.recording-table.content-record-grid[data-content-layout] [data-content-cell="number"] { grid-column: 1; }
-body.site-scale table.recording-table.content-record-grid[data-content-layout] [data-content-cell="cue"] { grid-column: 2; }
-body.site-scale table.recording-table.content-record-grid[data-content-layout] [data-content-cell="controls"] { grid-column: 3; }
+body.site-scale table.recording-table.content-record-grid[data-content-layout] :is([data-content-cell="number"], .drill-number-cell, .p73-number) { grid-column: 1; }
+body.site-scale table.recording-table.content-record-grid[data-content-layout] :is([data-content-cell="cue"], .drill-cue-cell, .prompt-label) { grid-column: 2; }
+body.site-scale table.recording-table.content-record-grid[data-content-layout] :is([data-content-cell="controls"], td:has(> .recording-controls), .p81-controls, .p73-controls) { grid-column: 3; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] [data-content-cell="note"] { grid-column: 1 / -1; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] td[rowspan] { grid-row: span var(--content-row-span,1); }
 body.site-scale table.recording-table.content-record-grid[data-content-layout][data-content-layout="stacked"] {
     grid-template-columns: var(--content-number-width) minmax(0,1fr);
 }
 body.site-scale table.recording-table.content-record-grid[data-content-layout][data-content-layout="stacked"] td[rowspan] { grid-row: auto; }
-body.site-scale table.recording-table.content-record-grid[data-content-layout][data-content-layout="stacked"] [data-content-cell="controls"] { grid-column: 1 / -1; }
+body.site-scale table.recording-table.content-record-grid[data-content-layout][data-content-layout="stacked"] :is([data-content-cell="controls"], td:has(> .recording-controls), .p81-controls, .p73-controls) { grid-column: 1 / -1; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] .recording-controls { min-width: 0; max-width: 100%; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] .recording-actions { flex: 0 1 auto; width: max-content; max-width: 100%; flex-wrap: wrap; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout] .recording-result { flex: 1 1 auto; min-width: 0; max-width: 100%; }
