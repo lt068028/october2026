@@ -747,7 +747,7 @@ function measureExampleColumns(){
   const anchor=labels[1];if(!anchor)continue;
   let japaneseWidth=0;
   for(const label of labels){const width=intrinsic(label.querySelector('.p82-concept-japanese'));label.style.setProperty('--p82-japanese-width',width+'px');japaneseWidth=Math.max(japaneseWidth,width);}
-  const natural=japaneseWidth+Math.max(...labels.map(label=>intrinsic(label.querySelector('.p82-concept-english'))))+6;
+  const natural=Math.max(...labels.map(label=>intrinsic(label.querySelector('.p82-concept-japanese'))+intrinsic(label.querySelector('.p82-concept-english'))+6));
   intro.style.setProperty(widthVar,natural+'px');intro.style.setProperty('--p82-concept-natural',natural+'px');
   const style=getComputedStyle(intro),available=intro.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap);
   const max=selector=>Math.max(...[...intro.querySelectorAll(selector)].map(e=>intrinsic(e)));
