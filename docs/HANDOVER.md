@@ -1,3 +1,11 @@
+# 2026-11-07 / Practice 8.1・8.2 英語概念バッジのダーク配色統一
+
+- ユーザー承認：実際のダークExample背景 #422006 で比較した「B・標準」を採用。英語区分ラベルの文字 #ffffff、背景 #304663、枠線 #7998c3。
+- 対象：8.1 Ex1（Noun／Verb＋の）、Ex5（Skillful／Observed）、8.2 Ex1/Ex2（Unspecified／None／All-inclusive／Specific）。style.cssにダーク限定の上書き。ライト・日本語意味色・挙動・配置は変更しない。Dr5本体は対象外。
+- CSS更新後、practice8.1.htmlとpractice8.2.htmlのCSSキャッシュ識別子を更新。
+- 仕様書 docs/PRACTICE8_SPEC.md、docs/PRACTICE82_SPEC.md、docs/UI_LAYOUT_SPEC.md を改定。
+- GitHub mainにPush済み。Vercel配信と実機の表示検証は未実施。
+
 # 2026-11-07 / Practice 8.1 Example 5 ラベル実装
 
 - ユーザー承認により、Example 5（Skillful／Observed）へExample 1と同じPractice 8.2準拠の英語バッジ装飾・右詰めを追加。style.cssのセレクターを #drill1 と #drill5 の両Exampleに限定して拡張。コミット 5c2da65c4dd2414e7227ce626d187e8afe4de0fb。
