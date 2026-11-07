@@ -4209,12 +4209,12 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     font-size: .9em;
     font-weight: 700;
     line-height: 1.2;
-    padding: 0;
+    padding: 6px 10px;
     margin: 0;
     color: var(--text-primary, #1e293b);
-    background: transparent;
-    border: none;
-    border-radius: 0;
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
     box-shadow: none;
 }
 .practice82-page :is(#drill1,#drill2) .p82-concept-english:focus-visible {
@@ -4231,16 +4231,6 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 html[data-tooltip-input="touch"] .practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):not(.p82-translation-open):not(:focus-visible) > .custom-tip-box {
     visibility: hidden;
     opacity: 0;
-}
-
-/* Match the neutral 8.3 category badge in dark mode without overriding
-   the Japanese indefinite suffix's existing semantic colors. */
-@media (prefers-color-scheme: dark) {
-    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
-        color: #f1f5f9;
-        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.05));
-        border-color: rgba(255, 255, 255, 0.1);
-    }
 }
 
 /* Practice 8.2: optional を explanation uses the grammar emphasis color. */
@@ -4365,16 +4355,11 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
-    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind {
+    .practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind,
+    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
         color: #ffffff;
         background: #304663;
-        border-color: #7998c3;
-    }
-    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
-        color: #f1f5f9;
-        background: transparent;
-        border: none;
-        box-shadow: none;
+        border: 1px solid #7998c3;
     }
 }
 

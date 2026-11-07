@@ -1,3 +1,28 @@
+# 2026-11-07 / Practice 8.2 英語ラベルB「標準」装飾の復元（Previewブランチ作業中）
+
+- **状態：Previewブランチ（`preview/p82-concept-badge-b`）にて実装済み・チャット上プレビュー提示・ユーザー確認待ち（main未反映・未マージ）**
+- **課題**：Practice 8.2 Example 1・2の英語ラベル（5箇所）に対し、以前選択されていたB「標準」の装飾（ダーク：文字色 `#ffffff`、背景 `#304663`、枠線 `1px solid #7998c3`、角丸 `8px`、内側余白 `6px 10px`、Lato 700 0.9em；ライト：文字色 `var(--text-primary, #1e293b)`、背景 `var(--surface-bg-subtle, rgba(0, 0, 0, 0.04))`、枠線 `1px solid var(--border-color, #e2e8f0)`、角丸 `8px`、余白 `6px 10px`、Lato 700 0.9em）を復元する。
+- **対象要素**：
+  1. Example 1・1行目：「何か」に対する英語ラベル `Unspecified`
+  2. Example 1・2行目：「何も〜ません」に対する英語ラベル `None`（基準アンカー行）
+  3. Example 1・3行目：「何でも」に対する英語ラベル `All-inclusive`
+  4. Example 2・1行目：「何を」に対する英語ラベル `Specific`
+  5. Example 2・2行目：「何か」に対する英語ラベル `Unspecified`（基準アンカー行）
+- **維持事項**：
+  - 日本語（`p82-concept-japanese`）および親要素（`p82-concept-label`）には囲み・背景・枠線・余白を追加せず、文字表示を維持。
+  - 日本語の左端整列（開始位置統一）と、英語ラベルの右端整列を独立制御で維持。
+  - Ex 1の「何も〜ません」と「None」、Ex 2の「何か」と「Unspecified」を6px間隔の基準（日本語右端〜英語外枠左端間隔6px）として維持。
+  - 実寸計測 `measureExampleColumns()` において、英語ラベルの枠線・余白を含む `intrinsic()` 計測および `englishMinimum` 算出を維持。
+- **実装内容**：
+  - `style.css`：
+    - `.practice82-page :is(#drill1,#drill2) .p82-concept-english` にライトモード用B装飾（`padding: 6px 10px; background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04)); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px;`）を設定。
+    - `@media (prefers-color-scheme: dark)` 内で、以前の透明上書きルール（line 4373）および重複ルール（line 4238）を整理し、`.practice82-page :is(#drill1,#drill2) .p82-concept-english` に `color: #ffffff; background: #304663; border: 1px solid #7998c3;` を適用。
+  - `practice8.2.html`：キャッシュ識別子を `20261107-p82-badge-b` に更新。
+  - `docs/PRACTICE82_SPEC.md`：英語概念ラベル表示仕様を更新。
+- **自動検証**：`git diff --check` 合格。
+- **仕様整合性：更新済み**（`docs/PRACTICE82_SPEC.md` 更新）。
+- **未確認**：ユーザーのチャット上プレビュー確認、実機確認。
+
 # 2026-11-07 / Practice 1.1 キュー文字縦折れ・幅再計算バグ修正
 
 - **状態：引き継ぎ可能（main反映・Push完了）**
