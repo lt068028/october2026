@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.1 Drill 5 英語区分バッジ適用
+
+- ユーザーがDrill 5への共通英語概念ラベル装飾を承認。比較行のr.kindへp81-concept-badgeを付与し、Ex1/Ex5/8.2と同じLato・太字・余白・角丸・枠を適用。ダークは文字#ffffff、背景#304663、枠#7998c3。ライトも共通装飾。
+- ペア別のラベル幅計測・キュー整列・選択欄・録音・判定・Noticeは維持する設計。practice8.1.js、style.css、practice8.1.htmlのキャッシュ識別子を更新してmainへPush済み。
+- docs/PRACTICE8_SPEC.md、docs/UI_LAYOUT_SPEC.mdも更新。Vercelデプロイ／実機375px・ダーク表示検証は未実施。
+
 # 2026-11-07 / Practice 8.1・8.2 英語概念バッジのダーク配色統一
 
 - ユーザー承認：実際のダークExample背景 #422006 で比較した「B・標準」を採用。英語区分ラベルの文字 #ffffff、背景 #304663、枠線 #7998c3。
