@@ -4090,3 +4090,49 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 
 /* Keep the Practice 8.2 concept separator outside the teaching emphasis. */
 [data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }
+
+/* Practice 8.2 Ex1 Preview: align Japanese starts and English chip right edges.
+   Only 何も〜ません + 4px + Nothing determines the shared concept track.
+   Longer chips extend left on their own rows without widening this track. */
+.practice82-page #drill1 .p81-example {
+    grid-template-columns: var(--p82-ex1-concept-width, 220px) minmax(0,max-content) max-content max-content minmax(0,1fr);
+}
+.practice82-page #drill1 .p81-kind.p82-concept-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    font-size: inherit;
+    color: var(--text-primary);
+}
+.practice82-page #drill1 .p82-concept-japanese {
+    white-space: nowrap;
+    flex: none;
+}
+.practice82-page #drill1 .p82-concept-english {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    font-size: .9em;
+    font-weight: 500;
+    line-height: 1.25;
+    padding: 2px 4px;
+    color: #374151;
+    background: #e5e7eb;
+    border: 1px solid #cbd0d6;
+    border-radius: 3px;
+}
+@media(max-width:900px) {
+    .practice82-page #drill1 .p81-example {
+        grid-template-columns: minmax(0,1fr) max-content max-content;
+    }
+    .practice82-page #drill1 .p81-example-row > .p81-kind {
+        width: var(--p82-ex1-concept-width, 220px);
+        max-width: 100%;
+    }
+}
