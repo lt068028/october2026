@@ -3379,13 +3379,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 [data-practice="8.2"] .optional-particle {
     display: inline;
     padding: 0;
-    color: var(--grammar-highlight-color);
+    color: var(--text-primary);
     background: transparent;
     border: 0;
     border-radius: 0;
     text-decoration-line: underline;
     text-decoration-style: solid;
-    text-decoration-color: currentColor;
+    text-decoration-color: var(--grammar-highlight-color);
     text-underline-offset: 3px;
     cursor: help;
 }
