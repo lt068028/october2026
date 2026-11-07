@@ -3391,6 +3391,10 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     padding: 0;
     text-decoration: none;
 }
+/* Ex2 English translations use the same Lato family as the English labels. */
+.practice82-page #drill2 .p81-example-row .p81-model .vocab-inline {
+    font-family: 'Lato', sans-serif;
+}
 /* D5 action buttons follow the cue in their own row, independent of cue width. */
 .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
 .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,

@@ -225,7 +225,7 @@ function modelHTML(r){
  tokens.sort((a,b)=>b.text.length-a.text.length);
  let out='',i=0;while(i<text.length){
   const optional=['何か(を)','なにか(を)'].find(t=>text.startsWith(t,i));
-  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'(<span class="optional-particle tooltip-wrap"><strong class="optional-particle-label">を</strong><span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>)';i+=optional.length;continue;}
+  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>';i+=optional.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
   if(mark){out+=indefiniteHTML(mark,true,r.id.startsWith('contrast-'));i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
