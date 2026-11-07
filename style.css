@@ -4319,3 +4319,19 @@ body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
 
 /* Price is one teacher-supplied cue, including in Hiragana / Vocab OFF. */
 body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }
+
+/* Practice 8.1 Ex1: match the 8.2 English concept badges; align cue starts. */
+.practice81-page #drill1 .p81-example-row > .p81-kind {
+    justify-self: end;
+    box-sizing: border-box;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+}
