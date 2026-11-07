@@ -4359,11 +4359,28 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     border-radius: 8px;
 }
 
-/* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2).
+/* Practice 1.1: English concept badges in Example (Affirmative / Negative) */
+.practice1-page .example-box .example-label-title.p11-concept-badge {
+    display: inline-block;
+    box-sizing: border-box;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+}
+
+/* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2; 1.1 Ex).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
     .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind,
-    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
+    .practice82-page :is(#drill1,#drill2) .p82-concept-english,
+    .practice1-page .example-box .example-label-title.p11-concept-badge {
         color: #ffffff;
         background: #304663;
         border: 1px solid #7998c3;

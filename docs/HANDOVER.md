@@ -1,3 +1,22 @@
+# 2026-11-07 / Practice 1.1 Example英字区分のコロン撤去とB「標準」バッジ装飾実装
+
+- **状態：引き継ぎ可能（main反映・Push完了）**
+- **課題**：Practice 1.1 の Example にある英字区分（`🟢Affirmative:`、`🔴Negative:`）から末尾のコロン（`:`）を撤去し、丸記号を含めて全体を Practice 8.2／8.1 同様のB「標準」バッジ装飾（ライト／ダーク両対応）として実装。
+- **実装内容**：
+  - `practice1.1.js`：
+    - Example のラベル表記を `🟢 Affirmative` および `🔴 Negative` に変更（コロン撤去、丸記号と英字の間に半角スペースを挿入）。
+    - クラス `.p11-concept-badge` を付与。
+  - `style.css`：
+    - `.practice1-page .example-box .example-label-title.p11-concept-badge` を新設。
+    - ライトモード：`font-family: 'Lato', sans-serif; font-size: .9em; font-weight: 700; line-height: 1.2; padding: 6px 10px; color: var(--text-primary, #1e293b); background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04)); border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px;`
+    - ダークモード（`@media (prefers-color-scheme: dark)`）：`color: #ffffff; background: #304663; border: 1px solid #7998c3;` を適用。
+  - `practice1.1.html`：
+    - Google Fonts `Lato`（400/500/700）の preconnect および stylesheet link を追加。
+    - CSSおよびJSのキャッシュ識別子を `20261107-p11-badge-b` に更新。
+- **自動検証**：`git diff --check` 合格。
+- **仕様整合性：更新不要**（既存のUI_LAYOUT_SPEC「共通UIの既定契約」に準拠した英字区分バッジ適用）。
+- **未確認**：ユーザーの公開Vercelおよび実機確認。
+
 # 2026-11-07 / Practice 8.2 英語ラベルB「標準」装飾の復元と親要素の不要囲み完全遮断
 
 - **状態：引き継ぎ可能（main反映・Push完了）**

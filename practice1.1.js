@@ -699,8 +699,8 @@ function renderExampleSection() {
                 class="flex-row-center"
                 style="margin-top:3px;"
             >
-                <span class="example-label-title">
-                    🟢Affirmative:
+                <span class="example-label-title p11-concept-badge">
+                    🟢 Affirmative
                 </span>
                 ${x}${hintMode === "paren" ? "" : " ／ "}${student}
                 <span>👉</span>
@@ -716,8 +716,8 @@ function renderExampleSection() {
                 class="flex-row-center dashed-border"
                 style="margin-top:12px;padding-top:12px;"
             >
-                <span class="example-label-title">
-                    🔴Negative:
+                <span class="example-label-title p11-concept-badge">
+                    🔴 Negative
                 </span>
                 ${x}${hintMode === "paren" ? "" : " ／ "}${teacher}
                 <span>👉</span>
