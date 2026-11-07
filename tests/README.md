@@ -225,3 +225,9 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 `NEGATIVE_BASELINE_ROOT=/path/to/unchanged-checkout node tests/example-negative.cjs` は、11PracticeのExample表示を両テーマ・両表記・利用可能な3文体・375／1440pxで比較する。指定否定要素だけ共通否定色・太字700になり、残りの文字色／太さ、全文字、DrillのDOM・選択肢、モデルTTS入力が変更前と一致することを確認する。7.2の知る、8.3のわかる、8.2の既存否定色も非影響を確認。音声は既存モックであり、実音質・STT精度の試験ではない。
 
 ブラウザ切替中の補間色はテスト内だけtransition／animationを無効化して除く。表示用関数の全9境界例、対象外の否定形、二重適用で変化しないことも検証する。結果JSONは一時領域へ出力し、`NEGATIVE_REPORT`で保存先を指定できる。本テストはページ全体テストではない。
+
+## Practice 8.2 Preview Example配置の限定回帰
+
+`P82_LAYOUT_BASELINE=/path/to/unchanged-preview node tests/practice82-example-layout.cjs` は8.1〜8.3の全Exampleを375／600／760／900／1024／1280px・両表記・両テーマで実測し、8.2 Ex1／Ex2の暗黙列なし、6px基準・英語右端整列、ボタン／日本語の非クリップ、横スクロールなしを確認する。基準コピーを指定すると8.1／8.3・8.2 Ex3／Ex4の相対配置、Drill DOM、モデルTTS入力を比較する。ヒント／文体／表記切替、実際の段組み境界の前後1px、全文英訳へのホバー／キーボード／タッチ、既存録音結果の状態保持も限定確認する。音声はモックであり実音質の確認ではない。`P82_LAYOUT_REPORT`で測定JSON保存先を変更可能。
+
+既存practice82.cjsにはBeyond件数など今回のPreview実装に対応しない期待値が残っている。変更前からの失敗と今回の表示回帰を区別し、教材や古い期待値をこの限定修正のために書き換えない。ページ全体テストではない。

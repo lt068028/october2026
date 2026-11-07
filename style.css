@@ -3374,8 +3374,42 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .practice82-page .p81-example .p81-model { grid-column: 2 / -1; }
 
 }
-.practice82-page .optional-particle { border-bottom: 2px dotted var(--accent-color); border-radius: 1px; cursor: help; }
-.practice82-page .optional-particle-label { text-decoration: underline dotted; text-underline-offset: 3px; }
+/* Optional particle: use the same grammar emphasis color as か.
+   Underline the entire (を), including both parentheses, without a fill. */
+[data-practice="8.2"] .optional-particle {
+    position: relative;
+    display: inline-block;
+    padding: 0;
+    color: var(--text-primary);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    text-decoration: none;
+    cursor: help;
+}
+[data-practice="8.2"] .optional-particle::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 1px;
+    height: 3px;
+    background: var(--grammar-highlight-color);
+    pointer-events: none;
+}
+[data-practice="8.2"] .optional-particle-label {
+    font-weight: 700;
+    color: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    text-decoration: none;
+}
+/* Ex1 and Ex2 English translations use Lato and retain the existing secondary text color. */
+.practice82-page #drill1 .p81-example-row .p81-model .vocab-inline,
+.practice82-page #drill2 .p81-example-row .p81-model .vocab-inline {
+    font-family: 'Lato', sans-serif;
+}
 /* D5 action buttons follow the cue in their own row, independent of cue width. */
 .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
 .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
@@ -3383,18 +3417,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale.practice81-page #drill5 .p81-table td.prompt-label { padding-right: 0; }
 .site-scale.practice81-page #drill5 .p81-table td.p81-controls { padding-left: 0; }
 .site-scale.practice81-page #drill5 .p81-select { margin-right: 0; }
-
-/* Keep each introductory concept name on one line; move it above the cue on narrow cards. */
-.practice82-page #drill1 .p81-example { grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); }
-.practice82-page #drill1 .p81-kind { white-space: nowrap; font-size: min(1em,calc((100cqw - 1px) * var(--p82-concept-factor,1))); }
-@media(max-width:900px) {
- .practice82-page #drill1 .p81-example { grid-template-columns: minmax(0,1fr) max-content max-content; }
- .practice82-page #drill1 .p81-example-row > .p81-kind { grid-column: 1 / -1; }
- .practice82-page #drill1 .p81-example-cue { grid-column: 1; }
- .practice82-page #drill1 .p81-arrow { grid-column: 2; }
- .practice82-page #drill1 .p81-example-row > button { grid-column: 3; }
- .practice82-page #drill1 .p81-model { grid-column: 1 / -1; }
-}
 
 /* Keep Japanese cue starts aligned within each Practice 8.1 comparison pair. */
 .practice81-page .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind { display: inline-block; width: var(--p81-kind-width,max-content); white-space: nowrap; }
@@ -4090,3 +4112,120 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 
 /* Keep the Practice 8.2 concept separator outside the teaching emphasis. */
 [data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }
+
+/* Practice 8.2 Ex1/Ex2: intrinsic widths, selected from the card content box.
+   Keep explicit columns together; only English text may be ellipsized. */
+.practice82-page :is(#drill1,#drill2) .p81-example {
+    grid-template-columns: var(--p82-concept-track) var(--p82-example-cue-width) var(--p82-example-arrow-width) var(--p82-example-button-width) minmax(0,1fr);
+}
+.practice82-page :is(#drill1,#drill2) .p81-example-row > .p81-kind { grid-column: 1; }
+.practice82-page :is(#drill1,#drill2) .p81-example-cue { grid-column: 2; }
+.practice82-page :is(#drill1,#drill2) .p81-arrow { grid-column: 3; }
+.practice82-page :is(#drill1,#drill2) .p81-example-row > button { grid-column: 4; width: max-content; }
+.practice82-page :is(#drill1,#drill2) .p81-model {
+    grid-column: 5;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    min-width: 0;
+}
+.practice82-page :is(#drill1,#drill2) .p82-model-japanese { flex: 0 1 auto; min-width: 0; }
+.practice82-page :is(#drill1,#drill2) .p82-model-japanese :is(.tooltip-wrap,.p82-indefinite) { white-space: nowrap; }
+.practice82-page :is(#drill1,#drill2) .p82-model-translation { flex: 1 1 0; min-width: 1.5em; }
+.practice82-page :is(#drill1,#drill2) .p82-translation-text {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.practice82-page :is(#drill1,#drill2) .p81-example[data-layout="model-below"] {
+    grid-template-columns: var(--p82-concept-track) var(--p82-example-cue-width) var(--p82-example-arrow-width) var(--p82-example-button-width);
+}
+.practice82-page :is(#drill1,#drill2) [data-layout="model-below"] .p81-model { grid-column: 1 / -1; }
+.practice82-page :is(#drill1,#drill2) .p81-example[data-layout="compact"] {
+    grid-template-columns: minmax(0,1fr) var(--p82-example-arrow-width) var(--p82-example-button-width);
+}
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > .p81-kind { grid-column: 1 / -1; width: min(100%,var(--p82-concept-natural)); }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-cue { grid-column: 1; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-arrow { grid-column: 2; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > button { grid-column: 3; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-model { grid-column: 1 / -1; }
+.practice82-page :is(#drill1,#drill2) .p81-kind.p82-concept-label {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+    font-size: inherit;
+    color: var(--text-primary);
+}
+.practice82-page :is(#drill1,#drill2) .p82-concept-japanese { white-space: nowrap; flex: none; }
+.practice82-page :is(#drill1,#drill2) .p82-concept-english {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: calc(100% - var(--p82-japanese-width) - 6px);
+    box-sizing: border-box;
+    white-space: nowrap;
+    font-family: 'Lato', sans-serif;
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+}
+
+.practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):is(:focus-visible,.p82-translation-open) > .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Touch must not leave an emulated mouse hover open after the second tap. */
+html[data-tooltip-input="touch"] .practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):not(.p82-translation-open):not(:focus-visible) > .custom-tip-box {
+    visibility: hidden;
+    opacity: 0;
+}
+
+/* Match the neutral 8.3 category badge in dark mode without overriding
+   the Japanese indefinite suffix's existing semantic colors. */
+@media (prefers-color-scheme: dark) {
+    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
+        color: #f1f5f9;
+        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.05));
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Practice 8.2: optional を explanation uses the grammar emphasis color. */
+[data-practice="8.2"] .optional-particle .tooltip-tip {
+    background-color: var(--grammar-highlight-color);
+    color: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+    [data-practice="8.2"] .optional-particle .tooltip-tip {
+        color: #000000;
+    }
+}
+
+/* Practice 8.2 Drill 4: compact blue reversed Sneak Peek marker. */
+.practice82-page #drill4 .p82-sneak-peek {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0 4px;
+    border-radius: 3px;
+    background: #007bff;
+    color: #ffffff;
+    font-size: 0.7em;
+    font-weight: 700;
+    line-height: 1.35;
+    vertical-align: middle;
+    transform: translateY(-2px);
+    white-space: nowrap;
+}
