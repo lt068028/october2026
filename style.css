@@ -4136,3 +4136,7 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
         max-width: 100%;
     }
 }
+
+/* Preview font comparison: English labels only, Japanese unchanged. */
+.practice82-page #drill1 .p82-concept-english { font-family: Verdana, Geneva, sans-serif; }
+.practice82-page #drill2 .p82-ex2-english { font-family: 'Lato', sans-serif; }
