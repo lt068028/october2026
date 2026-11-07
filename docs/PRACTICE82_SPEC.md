@@ -10,7 +10,7 @@
 
 Example 1は飲むを使い、何か（something）・何も＋否定（nothing）・何でも（unlimited choice）の意味を対比する3行。
 
-Example 1の左側の英語ラベルは `Something`／`Nothing`／`Anything` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
+Example 1の左側の英語ラベルは `Unspecified`／`None`／`All-inclusive` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
 
 Drill 1は時制選択を課題にせず、Formalの疑問文4問を出す。
 
@@ -23,7 +23,7 @@ Drill 1は時制選択を課題にせず、Formalの疑問文4問を出す。
 
 ### Example 2／Drill 2 — 何を vs 何か
 
-Example 2は「何を · What」と「何か · Anything」の質問を、見るで対比する。
+Example 2は「何を · Identification」と「何か · Unspecified」の質問を、見るで対比する。
 
 Drill 2は4問それぞれを「何を」と「何か」の2行で練習する。キューの漢字は既習範囲に合わせる。
 
