@@ -235,3 +235,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 ## 共通内容幅レイアウトの適合検査
 
 `CONTENT_BASELINE=/path/to/unchanged-main node tests/content-layout.cjs` は全11PracticeのDrillを375／600／760／850／900／1024／1280px、両ScriptとVocab／文体／テーマ変更で実測する。キュー／操作の必要幅、実際の列・矩形、幅が足りる行の不必要な改行、ボタンの収容、表示文言・選択肢維持を検証する。`PRACTICE_PAGES`、`CONTENT_WIDTHS`で修正単位の再検証を絞り、`CONTENT_REPORT`で測定JSONの保存先を指定できる。基準コピーの比較では元の文言・フォーム状態を確認し、古い固定ブレークポイントを合格条件にしない。これはレイアウトの横断検査であり、教材・録音機能全体の包括テストではない。
+
+- `node tests/content-examples.cjs`：共有表形式Exampleの7画面幅・両表記・3ヒント。セルと実描画文字の矩形、再生操作、重なり・横はみ出しを確認する。既存CSSで非表示の空セルは表示要素の矩形として扱わない。

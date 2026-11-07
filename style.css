@@ -4270,3 +4270,11 @@ body.site-scale table.recording-table.content-record-grid[data-content-layout][d
 body.site-scale table.recording-table.content-record-grid[data-content-layout][data-content-number="false"] [data-content-cell="controls"] { grid-column: 2; }
 body.site-scale table.recording-table.content-record-grid[data-content-layout="stacked"][data-content-number="false"] { grid-template-columns: minmax(0,1fr); }
 body.site-scale table.recording-table.content-record-grid[data-content-layout="stacked"][data-content-number="false"] [data-content-cell="controls"] { grid-column: 1; }
+
+/* Measured Example tracks; semantic rows and original playback nodes stay intact. */
+body.site-scale .example-box table.content-example-grid { display:grid; width:100%; table-layout:auto; column-gap:4px; row-gap:var(--example-wrap-gap); align-items:baseline; }
+body.site-scale .example-box table.content-example-grid :is(tbody,tr,[data-content-flatten]) { display:contents; }
+body.site-scale .example-box table.content-example-grid [data-content-empty] { display:none; }
+body.site-scale .example-box table.content-example-grid [data-content-example-cell]:not(button) { min-width:0; max-width:100%; align-self:baseline; white-space:normal; overflow-wrap:break-word; }
+body.site-scale .example-box table.content-example-grid td[data-content-example-cell] { padding:0; margin:0; }
+body.site-scale .example-box table.content-example-grid button { white-space:nowrap; }
