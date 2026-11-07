@@ -1,3 +1,7 @@
+## 英語概念バッジの共通ダーク配色（2026-11-07）
+
+対象：Practice 8.1 Example 1のNoun／Verb＋の、Example 5のSkillful／Observed、Practice 8.2 Example 1・2のUnspecified／None／All-inclusive／Specific。ダーク時のバッジ文字 `#ffffff`、背景 `#304663`、枠線 `#7998c3`（1px）、角丸8px、padding 6px 10px、Lato 700・.9em。実際のExample背景 `#422006` 上で選定した標準案。既存のライト配色、ラベルの右詰め、キュー開始位置、8.2の省略・全文表示、日本語の意味色は維持。Q/A、8.3カテゴリ、Drill 5本体など別用途のラベルは対象外。
+
 > **8.1 D5のキュー幅修正（2026-10-31）**：意味指定は一語のSkill/Perception。Ex5は母の花を育てる例、D5第１組は母の料理で完成文を重複させない。D5の共有音声列は、操作ボタン幅を確保して折返した実内容の最長端＋共通列間隔4pxから開始する。折返し前最大幅＋8pxを保持しない。余剰幅は操作列の後ろへ配る。旧600px以下の次行指定は、本書の共通内容幅判断へ更新済み。詳細はPRACTICE8_SPEC。
 
 > **8.1 D5の現行指定（2026-10-31）**：左のオレンジ指定は維持し、前半Meaning／後半Speaker & listenerへ整理。指定に合う日本語Adjを未選択の２択プルダウンから選ぶ。意味クイズの結果は音声判定と区別し、合う語を選ぶときく/とる解除。説明は両方へChoose an adjective that matches the label.。Ex5はSkill assessment／Personal perceptionで母の上手/得意を紹介する。従来の「日本語プルダウンなし」「D5初期から録音可」「Ex5 Boastful/Confident」は置換。詳細はPRACTICE8_SPEC。
