@@ -910,7 +910,7 @@ function render() {
                 const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
                 if(!ri&&si!==4){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
                 const cue=node('td','prompt-label drill-cue-cell');
-                if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));
+                if(r.kind)cue.append(node('span','example-label-title p81-kind'+(r.comparison?' p81-concept-badge':''),r.kind));
                 const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
                 const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
                 const rec=button('🎙️とる',()=>record(key,r));
