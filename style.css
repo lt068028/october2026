@@ -4339,7 +4339,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
-    .practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind,
+    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind,
     .practice82-page :is(#drill1,#drill2) .p82-concept-english {
         color: #ffffff;
         background: #304663;
