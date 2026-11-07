@@ -1374,7 +1374,7 @@ function practice2ShowNotice(resultSpan, message) {
             const ordered=speaker==='A'?objects:[objects[1],objects[0],objects[2]];
             ordered.forEach((o,i)=>{
                 const pronoun=pro(speaker,o);
-                const cue=`<strong class="grammar-highlight">${pronoun}は</strong>…`;
+                const cue=`${pronoun}は…`;
                 const getText=()=>statement(pronoun,noun(o));
                 const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText);
                 englishCue(view,[englishObject(pronoun),'…']);
