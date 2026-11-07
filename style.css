@@ -4178,14 +4178,21 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     width: 100%;
     min-width: 0;
     margin: 0;
-    padding: 0;
+    padding: 0 !important;
     white-space: nowrap;
     font-size: inherit;
     color: var(--text-primary);
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page :is(#drill1,#drill2) .p81-kind.p82-concept-label {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
 }
 .practice82-page :is(#drill1,#drill2) .p82-concept-japanese {
     white-space: nowrap;
@@ -4337,7 +4344,7 @@ body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
 body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }
 
 /* Practice 8.1 Ex1 and Ex5: match the 8.2 English concept badges; align cue starts. */
-.practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind {
+.practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind {
     justify-self: end;
     box-sizing: border-box;
     white-space: nowrap;
@@ -4355,7 +4362,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
-    .practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind,
+    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind,
     .practice82-page :is(#drill1,#drill2) .p82-concept-english {
         color: #ffffff;
         background: #304663;
