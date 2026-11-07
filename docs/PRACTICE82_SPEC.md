@@ -1,3 +1,7 @@
+## 英語概念ラベルのダーク配色（2026-11-07承認）
+
+Practice 8.2 Example 1（Unspecified／None／All-inclusive）およびExample 2（Specific／Unspecified）の英語概念バッジ（`.p82-concept-english`）は、8.1 Example 1・5と同じダークモード標準配色：文字 `#ffffff`、背景 `#304663`、枠線 `#7998c3` を適用する。既存のLato 700、.9em、padding 6px 10px、border-radius 8px、右詰め・6px基準・狭幅省略と全文参照機能を維持する。Exampleカードのダーク背景は `#422006`。日本語ラベルと接尾辞の意味色、ライトモード、音声、判定は変更しない。
+
 # Practice 8.2: 何か・何も・何でも
 
 更新日：2026-11-06。Practice 8.2の現在の確定構成はExample 4件・Drill 4件。旧版の3 Example・3 Drill仕様から拡張されている。ページ実装と最新の `docs/HANDOVER.md` を基準とし、未記載の仕様変更は行わない。
