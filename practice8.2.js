@@ -755,7 +755,7 @@ function measureExampleColumns(){
   // Retain an ellipsis-sized, focusable English target before moving a model.
   const englishStyle=getComputedStyle(anchor.querySelector('.p82-concept-english'));
   const englishMinimum=parseFloat(englishStyle.fontSize)*1.5+['paddingLeft','paddingRight','borderLeftWidth','borderRightWidth'].reduce((sum,key)=>sum+parseFloat(englishStyle[key]),0);
-  const minimumLabel=japaneseWidth+6+englishMinimum;
+  const minimumLabel=natural; // Never ellipsize a concept badge merely to retain the inline layout.
   const translationMinimum=parseFloat(getComputedStyle(intro.querySelector('.p82-model-translation')).fontSize)*1.5+4;
   const fixed=cue+arrow+button;
   const inline=available>=minimumLabel+fixed+4*gap+model+translationMinimum;
