@@ -1,6 +1,7 @@
-# 2026-11-07 / Practice 8.2 英語ラベルB「標準」装飾の復元と親要素の不要囲み完全遮断（Previewブランチ作業中）
+# 2026-11-07 / Practice 8.2 英語ラベルB「標準」装飾の復元と親要素の不要囲み完全遮断
 
-- **状態：Previewブランチ（`preview/p82-concept-badge-b`）にて実装済み・チャット上プレビュー提示・ユーザー確認待ち（main未反映・未マージ）**
+- **状態：引き継ぎ可能（main反映・Push完了）**
+- **コミットID**：`85fa722`（`origin/main` 反映済み）
 - **課題**：
   1. Practice 8.2 Example 1・2の英語ラベル（5箇所）に対し、以前選択されていたB「標準」の装飾（ダーク：文字色 `#ffffff`、背景 `#304663`、枠線 `1px solid #7998c3`、角丸 `8px`、内側余白 `6px 10px`、Lato 700 0.9em；ライト：文字色 `var(--text-primary, #1e293b)`、背景 `var(--surface-bg-subtle, rgba(0, 0, 0, 0.04))`、枠線 `1px solid var(--border-color, #e2e8f0)`、角丸 `8px`、余白 `6px 10px`、Lato 700 0.9em）を復元する。
   2. **二重囲み不具合の根本解消**：Practice 8.2のbodyが `practice81-page` クラスを併せ持っているため、`style.css` 4347行目および4365行目の `.practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind` が Practice 8.2 Example 1 の親要素（`.p81-kind.p82-concept-label`）に意図せずヒットし、親要素全体（「何か」から「Unspecified」まで）に囲み・背景・枠線・余白が付加されて「Unspecifiedと何か＋Unspecifiedが二重で囲まれた状態」になっていた。
@@ -12,7 +13,7 @@
   - `practice8.2.html`：キャッシュ識別子を `20261107-p82-badge-b2` に更新。
 - **自動検証**：`git diff --check` 合格。
 - **仕様整合性：更新済み**。
-- **未確認**：ユーザーのチャット上プレビュー確認、実機確認。
+- **未確認**：ユーザーの公開Vercelおよび実機確認。
 
 # 2026-11-07 / Practice 1.1 キュー文字縦折れ・幅再計算バグ修正
 
