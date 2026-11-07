@@ -4092,7 +4092,7 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 [data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }
 
 /* Practice 8.2 Ex1 Preview: align Japanese starts and English chip right edges.
-   Only 何も〜ません + 4px + Nothing determines the shared concept track.
+   Only 何も〜ません + 6px + Nothing determines the shared concept track.
    Longer chips extend left on their own rows without widening this track. */
 .practice82-page #drill1 .p81-example {
     grid-template-columns: var(--p82-ex1-concept-width, 220px) minmax(0,max-content) max-content max-content minmax(0,1fr);
