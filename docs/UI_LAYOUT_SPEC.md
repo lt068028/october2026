@@ -1,3 +1,7 @@
+## 8.1 Drill 5への英語区分バッジ適用（2026-11-07）
+
+Practice 8.1 Drill 5の比較用英語ラベル（`p81-concept-badge`）も、Ex1・Ex5・8.2と共通の概念バッジ装飾に統一。ダーク背景 `#304663`、枠 `#7998c3`、文字 `#ffffff`。ライトの共通スタイルも適用。各比較ペアでラベル幅を計測する既存の仕組みを維持し、選択欄・音声・折り返しを変更しない。375pxとダーク／ライト実機確認待ち。
+
 ## 英語概念バッジの共通ダーク配色（2026-11-07）
 
 対象：Practice 8.1 Example 1のNoun／Verb＋の、Example 5のSkillful／Observed、Practice 8.2 Example 1・2のUnspecified／None／All-inclusive／Specific。ダーク時のバッジ文字 `#ffffff`、背景 `#304663`、枠線 `#7998c3`（1px）、角丸8px、padding 6px 10px、Lato 700・.9em。実際のExample背景 `#422006` 上で選定した標準案。既存のライト配色、ラベルの右詰め、キュー開始位置、8.2の省略・全文表示、日本語の意味色は維持。Q/A、8.3カテゴリ、Drill 5本体など別用途のラベルは対象外。
