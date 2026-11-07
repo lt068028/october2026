@@ -4169,7 +4169,8 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
+    gap: 6px;
     width: 100%;
     min-width: 0;
     white-space: nowrap;
@@ -4178,11 +4179,9 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 }
 .practice82-page :is(#drill1,#drill2) .p82-concept-japanese { white-space: nowrap; flex: none; }
 .practice82-page :is(#drill1,#drill2) .p82-concept-english {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    max-width: calc(100% - var(--p82-japanese-width) - 6px);
+    position: relative;
+    flex: none;
+    max-width: none;
     box-sizing: border-box;
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
