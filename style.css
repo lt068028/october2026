@@ -3405,7 +3405,8 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     padding: 0;
     text-decoration: none;
 }
-/* Ex2 English translations use the same Lato family as the English labels. */
+/* Ex1 and Ex2 English translations use Lato and retain the existing secondary text color. */
+.practice82-page #drill1 .p81-example-row .p81-model .vocab-inline,
 .practice82-page #drill2 .p81-example-row .p81-model .vocab-inline {
     font-family: 'Lato', sans-serif;
 }
