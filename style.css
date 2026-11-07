@@ -4346,3 +4346,28 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
         border-color: #7998c3;
     }
 }
+
+/* Practice 8.1 Drill 5: use the approved concept-badge treatment without changing
+   pair-specific label widths, cue alignment, or selection controls. */
+.practice81-page #drill5 .p81-card .prompt-label > .p81-kind.p81-concept-badge {
+    box-sizing: border-box;
+    justify-self: end;
+    text-align: center;
+    font-family: 'Lato', sans-serif;
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    white-space: nowrap;
+}
+@media (prefers-color-scheme: dark) {
+    .practice81-page #drill5 .p81-card .prompt-label > .p81-kind.p81-concept-badge {
+        color: #ffffff;
+        background: #304663;
+        border-color: #7998c3;
+    }
+}
