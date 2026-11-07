@@ -23,7 +23,7 @@ Drill 1は時制選択を課題にせず、Formalの疑問文4問を出す。
 
 ### Example 2／Drill 2 — 何を vs 何か
 
-Example 2は「何を · Identification」と「何か · Unspecified」の質問を、見るで対比する。
+Example 2は「何を · Specific」と「何か · Unspecified」の質問を、見るで対比する。
 
 Drill 2は4問それぞれを「何を」と「何か」の2行で練習する。キューの漢字は既習範囲に合わせる。
 

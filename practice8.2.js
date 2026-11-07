@@ -691,7 +691,7 @@ function addExample(root,si){
  let samples;
  if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か','何も〜ません','何でも'][i],englishLabel:['Unspecified','None','All-inclusive'][i],translation:['— I drink something.','— I drink nothing.','— I drink anything.'][i],intro:true}));
  else if(si===1)samples=[
-  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Identification',translation:'— What do you see?'}),
+  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Specific',translation:'— What do you see?'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Unspecified',translation:'— Do you see anything?'})
  ];
  else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
