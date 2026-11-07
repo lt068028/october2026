@@ -3,8 +3,10 @@
 - 基準main：`035e6055efd8a572732cccbefe7a5059cfb5512d`。承認済みBeyondデザインの参照元は `preview/beyond-blue-button-20261107` / `6de704e3605917eba345822af9f5176882a2cd09`。ブランチ全体はmergeせず、CSSと8.1〜8.3のSVG見出しだけを移植。既存のレイアウト是正・English labels・語彙／漢字データ・音声／録音・判定・保存キーは維持。
 - 通常の淡青背景／枠／文字と本のSVG、承認済みダーク配色を適用。375pxで見出しの件数がクリップされるため、見出し内部だけを内容幅で自然に折返す。固定ブレークポイントや件数変更は導入していない。表示仕様の正本はUI_LAYOUT_SPEC。PROJECT_SPECの掲載・件数規則は変更なし。
 - **限定検証合格**：Beyondは3ページ×375／600／900／1440px×light／dark×両表記の48条件・492確認、不合格0。開閉、表記往復、代表条件のリロード保持、配色・SVG・各要素矩形・横幅・実行時エラーを確認。既存content-examplesは8系72条件・102,858確認、content-layoutは48条件・2,741確認、practice82-example-layoutは924確認で不合格0。代表画像確認済み。HTMLはアイコン・CSSキャッシュURL以外が基準と完全一致、製品JS差分なし。旧practice82.cjsの件数期待値は今回実行・緩和していない。構文／git diff --check合格。
-- Preview削除・Productionの最終結果は終了処理で更新する。最終main SHAはGit履歴と完了報告を参照（自己SHAの循環追記はしない）。
-- Production公開URL： https://october2026.vercel.app/ 。当Cloudの接続先制限でCONNECT 403となり、公開HTML／実表示の直接確認は不可。開始mainのGitHub Vercel statusはsuccess。VercelのProduction指定・公開配信SHAを独立確認したことにはしない。
+- **main統合済み**：製品コード確定SHA `3d3f50001b03b0e5403398033baf2c8a30385ee3`、GitHub mainへのPush・SHA照合済み。本終了記録を保存する最終main SHAはGit履歴と完了報告を参照（自己SHAの循環追記はしない）。
+- **Preview整理完了**：shared-layout-conformance-20261107／p82-ex1-right-aligned-labelsはmainの祖先（未取り込みコミット0）を確認。beyond-blue-button-20261107は承認デザイン全差分の逆適用チェックと未完了情報の保全を確認し、3本ともリモート削除。削除後のGitHub APIでmainのみ、Preview残数0・オープンPR0を再取得。force push・main削除・ブランチ全体mergeは行っていない。
+- Production公開URL： https://october2026.vercel.app/ 。当Cloudの接続先制限でCONNECT 403となり、公開HTML／実表示の直接確認は不可。統合SHA `3d3f50001b03b0e5403398033baf2c8a30385ee3` のGitHub Vercel statusはsuccess（https://vercel.com/az-c884/october2026/12ZX6Z3iDBwH2tEVAaDChks6S8D4）。Vercel管理画面への直接権限はなく、Production指定・公開配信SHA・8.1〜8.3の実表示を独立確認したことにはしない。
+- **サービス切り替え可能**：承認変更はmainへ保存済み、不要Previewの整理済み。公開配信の独立確認は次担当へ継続する。
 - PCローカルの未コミット変更は未確認。作業はクラウド一時ツリーのみ。ユーザー申告の従来ChromeOS実音声・タッチ実機確認済みは維持し、今回のデザインを実機再確認したとは扱わない。
 - 次回切替：他環境を自動再開させず、最新GitHub mainと本欄・AGENTS／RELAY_WORKFLOWを取得して開始する。古いPreviewを復活させない。Production公開確認が可能な環境では最新mainとの配信照合を行う。
 
