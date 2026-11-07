@@ -3374,7 +3374,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .practice82-page .p81-example .p81-model { grid-column: 2 / -1; }
 
 }
-.practice82-page .optional-particle { border-bottom: 2px dotted var(--accent-color); border-radius: 1px; cursor: help; }
+.practice82-page .optional-particle { border-bottom: 0; border-radius: 1px; cursor: help; }
 .practice82-page .optional-particle-label { text-decoration: underline dotted; text-underline-offset: 3px; }
 /* D5 action buttons follow the cue in their own row, independent of cue width. */
 .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
@@ -4093,7 +4093,7 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 
 /* Practice 8.2 Preview: shared Ex1/Ex2 concept layout and Lato labels.
    Each exercise independently sizes its concept track from a 6px anchor:
-   Ex1 何も〜ません + Nothing; Ex2 何を + What. Longer labels extend
+   Ex1 何も〜ません + Nothing; Ex2 何か + Anything. Longer labels extend
    left on their own rows without widening the track. */
 .practice82-page #drill1 .p81-example {
     grid-template-columns: var(--p82-ex1-concept-width, 220px) minmax(0,max-content) max-content max-content minmax(0,1fr);
