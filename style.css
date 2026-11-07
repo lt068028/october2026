@@ -4124,13 +4124,13 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
     font-size: .9em;
-    font-weight: 500;
-    line-height: 1.25;
-    padding: 2px 4px;
-    color: #374151;
-    background: #e5e7eb;
-    border: 1px solid #cbd0d6;
-    border-radius: 3px;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
 }
 @media(max-width:900px) {
     .practice82-page :is(#drill1,#drill2) .p81-example {
@@ -4143,5 +4143,15 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     .practice82-page #drill2 .p81-example-row > .p81-kind {
         width: var(--p82-ex2-concept-width, 140px);
         max-width: 100%;
+    }
+}
+
+/* Match the neutral 8.3 category badge in dark mode without overriding
+   the Japanese indefinite suffix's existing semantic colors. */
+@media (prefers-color-scheme: dark) {
+    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
+        color: #f1f5f9;
+        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.05));
+        border-color: rgba(255, 255, 255, 0.1);
     }
 }
