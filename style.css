@@ -4320,8 +4320,8 @@ body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
 /* Price is one teacher-supplied cue, including in Hiragana / Vocab OFF. */
 body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }
 
-/* Practice 8.1 Ex1: match the 8.2 English concept badges; align cue starts. */
-.practice81-page #drill1 .p81-example-row > .p81-kind {
+/* Practice 8.1 Ex1 and Ex5: match the 8.2 English concept badges; align cue starts. */
+.practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind {
     justify-self: end;
     box-sizing: border-box;
     white-space: nowrap;
