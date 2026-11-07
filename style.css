@@ -3375,7 +3375,24 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 }
 .practice82-page .optional-particle { border-bottom: 0; border-radius: 1px; cursor: help; }
-.practice82-page .optional-particle-label { text-decoration: underline dotted; text-underline-offset: 3px; }
+.practice82-page .optional-particle-label {
+    display: inline-block;
+    padding: 2px 5px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    text-decoration: none;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .optional-particle-label {
+        color: #f1f5f9;
+        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.05));
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
 /* D5 action buttons follow the cue in their own row, independent of cue width. */
 .site-scale.practice81-page #drill5 .p81-card .p81-table { grid-template-columns: minmax(0,1fr); }
 .site-scale.practice81-page #drill5 .p81-card .p81-table .prompt-label,
