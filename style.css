@@ -4200,3 +4200,18 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
         color: #000000;
     }
 }
+
+/* Practice 8.2 Drill 4: compact blue reversed Sneak Peek marker. */
+.practice82-page #drill4 .p82-sneak-peek {
+    display: inline-block;
+    padding: 2px 8px;
+    margin: 0 4px;
+    border-radius: 3px;
+    background: #007bff;
+    color: #ffffff;
+    font-size: 0.7em;
+    font-weight: 700;
+    line-height: 1.35;
+    vertical-align: middle;
+    white-space: nowrap;
+}
