@@ -4272,9 +4272,29 @@ body.site-scale table.recording-table.content-record-grid[data-content-layout="s
 body.site-scale table.recording-table.content-record-grid[data-content-layout="stacked"][data-content-number="false"] [data-content-cell="controls"] { grid-column: 1; }
 
 /* Measured Example tracks; semantic rows and original playback nodes stay intact. */
-body.site-scale .example-box table.content-example-grid { display:grid; width:100%; table-layout:auto; column-gap:4px; row-gap:var(--example-wrap-gap); align-items:baseline; }
+body.site-scale .example-box table.content-example-grid { display:grid; width:100%; table-layout:auto; column-gap:4px; row-gap:var(--example-row-gap); align-items:baseline; }
 body.site-scale .example-box table.content-example-grid :is(tbody,tr,[data-content-flatten]) { display:contents; }
 body.site-scale .example-box table.content-example-grid [data-content-empty] { display:none; }
 body.site-scale .example-box table.content-example-grid [data-content-example-cell]:not(button) { min-width:0; max-width:100%; align-self:baseline; white-space:normal; overflow-wrap:break-word; }
 body.site-scale .example-box table.content-example-grid td[data-content-example-cell] { padding:0; margin:0; }
 body.site-scale .example-box table.content-example-grid button { white-space:nowrap; }
+
+/* Shared semantic-row adapter for image conversations and Practice 8 grids. */
+body.site-scale .content-adaptive-example { display:grid; align-items:baseline; row-gap:var(--example-row-gap)!important; }
+body.site-scale .content-adaptive-example [data-content-adaptive-flatten] { display:contents!important; }
+body.site-scale .content-adaptive-example [data-content-adaptive-empty] { display:none!important; }
+body.site-scale .content-adaptive-example [data-content-adaptive-cell]:not(button) { min-width:0; max-width:100%; }
+body.site-scale .content-adaptive-example [data-content-adaptive-cell="audio"] { white-space:nowrap; width:max-content; }
+body.site-scale .content-adaptive-example [data-content-adaptive-cell="cue"] { overflow-wrap:break-word; }
+body.site-scale .content-adaptive-example .p83-example-category[data-content-category="inline"] { flex-direction:column; justify-self:center; }
+body.site-scale .content-adaptive-example .p83-example-category[data-content-category="above"] { flex-direction:row; justify-self:start; }
+body.site-scale .content-adaptive-example .p83-header-prefix { display:inline-block; flex:none; }
+
+body.site-scale .content-adaptive-example[data-content-degree="inline"] .p81-example-cue { grid-template-columns:minmax(0,1fr) var(--content-degree-tail); }
+body.site-scale .content-adaptive-example[data-content-degree="stacked"] .p81-example-cue { grid-template-columns:minmax(0,1fr); }
+body.site-scale .content-adaptive-example[data-content-degree="stacked"] .p81-degree-cue-prefix { grid-column:1; grid-row:1; white-space:normal; }
+body.site-scale .content-adaptive-example[data-content-degree="stacked"] .p81-degree-cue-tail { grid-column:1; grid-row:2; max-width:100%; white-space:normal; }
+
+/* Existing semantic row wrappers share columns; 8px between rows, 4px within a wrap. */
+body.site-scale .example-box table.content-example-grid tr[data-content-example-owner],
+body.site-scale .content-adaptive-example [data-content-adaptive-owner] { display:grid!important; grid-column:1 / -1; grid-template-columns:subgrid!important; column-gap:inherit; row-gap:var(--example-wrap-gap); margin-block:0; padding-block:0; }

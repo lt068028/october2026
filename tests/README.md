@@ -236,4 +236,8 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 `CONTENT_BASELINE=/path/to/unchanged-main node tests/content-layout.cjs` は全11PracticeのDrillを375／600／760／850／900／1024／1280px、両ScriptとVocab／文体／テーマ変更で実測する。キュー／操作の必要幅、実際の列・矩形、幅が足りる行の不必要な改行、ボタンの収容、表示文言・選択肢維持を検証する。`PRACTICE_PAGES`、`CONTENT_WIDTHS`で修正単位の再検証を絞り、`CONTENT_REPORT`で測定JSONの保存先を指定できる。基準コピーの比較では元の文言・フォーム状態を確認し、古い固定ブレークポイントを合格条件にしない。これはレイアウトの横断検査であり、教材・録音機能全体の包括テストではない。
 
-- `node tests/content-examples.cjs`：共有表形式Exampleの7画面幅・両表記・3ヒント。セルと実描画文字の矩形、再生操作、重なり・横はみ出しを確認する。既存CSSで非表示の空セルは表示要素の矩形として扱わない。
+- `node tests/content-examples.cjs`：共有Example（表形式・画像付き会話・8系グリッド）の7画面幅・両表記・3ヒント。セルと実描画文字の矩形、再生操作、重なり・横はみ出しを確認する。既存CSSで非表示の空セルは表示要素の矩形として扱わない。
+
+- `node tests/content-layout-states.cjs`：Set／英語キュー／長い選択肢／文体／表記／CSS倍率の切替とアイドル安定性。倍率はCSS変数による100・130・140%相当の検証であり、実機ブラウザのズーム確認とは区別する。
+- `node tests/content-layout-boundaries.cjs`：各ページの共通Drill行の実改行境界と前後1px、変更していない自然なインラインExample行。
+- `content-examples.cjs`は共有行とセル内文字を検査する。写真内の図解・注釈同士の関係は別の視覚検査として扱い、行内文字の矩形判定に混ぜない。2.2 Ex3の狭幅注釈はHANDOVERの未解決事項を参照。

@@ -947,8 +947,8 @@ function render() {
     });
     ConversationDisplay.format();measureCues();sync();
 }
-function measureCues() {
-    document.querySelectorAll('.p81-repeat-spacer,.p81-repeat-separator-spacer,.p81-drill-repeat-spacer,.p81-drill-repeat-after-spacer,.p81-model-repeat-spacer,.p81-model-repeat-after-spacer').forEach(e=>{e.style.width='0px';});
+function measureExampleCues() {
+    document.querySelectorAll('.p81-example :is(.p81-repeat-spacer,.p81-repeat-separator-spacer,.p81-model-repeat-spacer,.p81-model-repeat-after-spacer)').forEach(e=>{e.style.width='0px';});
     const alignDitto=(anchor,mark,startId,endId,spacer)=>{
         const display=id=>cueText(id);
         const firstText=display(startId),lastText=display(endId);if(!anchor||!mark||!spacer||!firstText||!lastText)return;
@@ -1000,6 +1000,11 @@ function measureCues() {
         const currentTargetNogaX=targetNoga.getBoundingClientRect().left;
         afterSpacer.style.width=Math.max(0,nogaX-currentTargetNogaX)+'px';
     });
+}
+document.addEventListener('content-layout',measureExampleCues);
+function measureCues() {
+    document.querySelectorAll('.p81-drill-repeat-spacer,.p81-drill-repeat-after-spacer').forEach(e=>{e.style.width='0px';});
+    measureExampleCues();
     document.querySelectorAll('.p81-section').forEach(group=>{
         group.style.removeProperty('--p81-kind-width');
         const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
