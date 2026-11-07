@@ -3374,20 +3374,26 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
  .practice82-page .p81-example .p81-model { grid-column: 2 / -1; }
 
 }
-.practice82-page .optional-particle {
-    display: inline-block;
-    padding: 2px 5px;
-    background: rgba(59, 130, 246, 0.07);
-    border: none;
-    border-radius: 7px;
+/* Optional particle: use the same grammar emphasis color as か.
+   Underline the entire (を), including both parentheses, without a fill. */
+[data-practice="8.2"] .optional-particle {
+    display: inline;
+    padding: 0;
+    color: var(--grammar-highlight-color);
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    text-decoration-line: underline;
+    text-decoration-style: solid;
+    text-decoration-color: currentColor;
+    text-underline-offset: 3px;
     cursor: help;
-    text-decoration: none;
 }
-.practice82-page .optional-particle-label {
+[data-practice="8.2"] .optional-particle-label {
     font-weight: 700;
     color: inherit;
-    background: none;
-    border: none;
+    background: transparent;
+    border: 0;
     padding: 0;
     text-decoration: none;
 }
