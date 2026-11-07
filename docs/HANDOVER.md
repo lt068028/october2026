@@ -1,3 +1,20 @@
+# 2026-11-07 / Practice 8.2 比較ラベル囲み削除と日本語左端・英語右端整列
+
+- **状態：引き継ぎ可能（main反映・Push完了）**
+- **課題**：Practice 8.2 Example 1・2の比較ラベルにおける不要な囲み装飾（背景・枠線・角丸・影・padding）の削除と、日本語の左端整列・英語の右端整列の制御（ユーザー指示に基づく修正）。
+- **基準main**：`75650172f1443e2678a56eaf7b2a5934041889c4`。
+- **実装内容**：
+  - `style.css`：`.p82-concept-english`、`.p82-concept-japanese`、`.p81-kind.p82-concept-label` について、通常表示の背景・枠線・角丸・影・余計なpaddingを取り除き、純粋な文字表示化（ライト／ダーク両方対応、`:focus-visible` のフォーカス枠は維持）。
+  - 日本語列（`.p82-concept-japanese`）は左端揃え（`justify-self: start`、`text-align: left`）、英語列（`.p82-concept-english`）は右端整列（`position: absolute; right: 0;`）として独立制御。
+  - 前環境で導入された「日英一組での右詰め（`justify-content: flex-end; gap: 6px;`）」による日本語開始位置の行ごとのズレを解消。日本語の開始文字（「なにか」「なにも〜ません」「なんでも」）を左端でそろえた。
+  - 各比較の2行目（Ex1の「〜ません」と「None」、Ex2の「何か」と「Unspecified」）を日英6px間隔の基準（アンカー）とし、他の行で日本語の左端と英語の右端をそろえた結果、間隔が広くなる動作を正しく制御。
+  - `practice8.2.js`：`measureExampleColumns()` の `natural` および `minimumLabel` を、囲み装飾撤去後の実寸および2行目アンカー基準で算出。
+  - `practice8.2.html`：CSS/JSキャッシュ識別子を `20261107-p82-plain-label-aligned` に更新。
+  - `docs/PRACTICE82_SPEC.md`：囲み装飾削除と左端・右端整列の仕様に更新。
+- **自動検証**：`git diff --check` 合格、構文チェック合格。
+- **仕様整合性：更新済み**（`docs/PRACTICE82_SPEC.md` を改修内容に適合）。
+- **未確認**：ChromeOS実機および公開Vercelでの実機表示。従来のユーザー実機確認済み情報は維持。
+
 # 2026-11-07 / Practice 8.2 ラベル間隔を実際に6pxへ
 
 - 以前の右端絶対配置では`6px`は列幅計算上の値にすぎず、「何も〜ません」と`None`の間に大きな空白が生じた。

@@ -4160,7 +4160,7 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 .practice82-page :is(#drill1,#drill2) .p81-example[data-layout="compact"] {
     grid-template-columns: minmax(0,1fr) var(--p82-example-arrow-width) var(--p82-example-button-width);
 }
-.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > .p81-kind { grid-column: 1 / -1; width: min(100%,var(--p82-concept-natural)); }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > .p81-kind { grid-column: 1 / -1; width: min(100%,var(--p82-concept-natural)); justify-self: start; }
 .practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-cue { grid-column: 1; }
 .practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-arrow { grid-column: 2; }
 .practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > button { grid-column: 3; }
@@ -4169,30 +4169,53 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
+    justify-content: flex-start;
+    justify-self: start;
     width: 100%;
     min-width: 0;
+    margin: 0;
+    padding: 0;
     white-space: nowrap;
     font-size: inherit;
     color: var(--text-primary);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
-.practice82-page :is(#drill1,#drill2) .p82-concept-japanese { white-space: nowrap; flex: none; }
-.practice82-page :is(#drill1,#drill2) .p82-concept-english {
-    position: relative;
+.practice82-page :is(#drill1,#drill2) .p82-concept-japanese {
+    white-space: nowrap;
     flex: none;
-    max-width: none;
+    text-align: left;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+.practice82-page :is(#drill1,#drill2) .p82-concept-english {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: calc(100% - var(--p82-japanese-width) - 6px);
     box-sizing: border-box;
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
     font-size: .9em;
     font-weight: 700;
     line-height: 1.2;
-    padding: 6px 10px;
+    padding: 0;
+    margin: 0;
     color: var(--text-primary, #1e293b);
-    background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
-    border: 1px solid var(--border-color, #e2e8f0);
-    border-radius: 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+.practice82-page :is(#drill1,#drill2) .p82-concept-english:focus-visible {
+    outline: 2px solid var(--focus-color, #2563eb);
+    outline-offset: 2px;
 }
 
 .practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):is(:focus-visible,.p82-translation-open) > .custom-tip-box {
@@ -4338,11 +4361,16 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
-    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind,
-    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
+    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind {
         color: #ffffff;
         background: #304663;
         border-color: #7998c3;
+    }
+    .practice82-page :is(#drill1,#drill2) .p82-concept-english {
+        color: #f1f5f9;
+        background: transparent;
+        border: none;
+        box-shadow: none;
     }
 }
 
