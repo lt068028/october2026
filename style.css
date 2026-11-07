@@ -3377,16 +3377,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Optional particle: use the same grammar emphasis color as か.
    Underline the entire (を), including both parentheses, without a fill. */
 [data-practice="8.2"] .optional-particle {
-    display: inline;
-    padding: 0;
+    display: inline-block;
+    padding: 0 0 4px;
     color: var(--text-primary);
     background: transparent;
     border: 0;
+    border-bottom: 2px solid var(--grammar-highlight-color);
     border-radius: 0;
-    text-decoration-line: underline;
-    text-decoration-style: solid;
-    text-decoration-color: var(--grammar-highlight-color);
-    text-underline-offset: 3px;
+    text-decoration: none;
     cursor: help;
 }
 [data-practice="8.2"] .optional-particle-label {
