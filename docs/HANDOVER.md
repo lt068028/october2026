@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.2 概念ラベル幅の再修正
+
+- Dr1で「何も〜ません」とNone、「何でも」とAll-inclusiveが接近し、Noneが`No...`に省略される不具合を修正。
+- 原因：`measureExampleColumns()`が2行目（None）の英語幅だけで列全体の自然幅を算出していた。日本語の最大幅＋英語の最大幅＋6pxを使うよう変更。
+- 省略前にcompactレイアウトへ切り替えるため`minimumLabel=natural`に変更。右詰めとキューの配置を維持。`practice8.2.html`のJSキャッシュ識別子更新。実ブラウザ確認は未実施。
+
 # 2026-11-07 / Practice 8.2 日本語区分の誤装飾を修正
 
 - 8.2のページbodyは`practice81-page practice82-page`の両クラスを持つため、8.1用のダークモード規則 `.practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind` が8.2 Dr1の日本語ラベル全体にも適用されていた。
