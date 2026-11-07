@@ -4189,3 +4189,14 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
         border-color: rgba(255, 255, 255, 0.1);
     }
 }
+
+/* Practice 8.2: optional を explanation uses the grammar emphasis color. */
+[data-practice="8.2"] .optional-particle .tooltip-tip {
+    background-color: var(--grammar-highlight-color);
+    color: #FFFFFF;
+}
+@media (prefers-color-scheme: dark) {
+    [data-practice="8.2"] .optional-particle .tooltip-tip {
+        color: #000000;
+    }
+}
