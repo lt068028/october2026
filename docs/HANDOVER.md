@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.1 Example 5 ラベル実装
+
+- ユーザー承認により、Example 5（Skillful／Observed）へExample 1と同じPractice 8.2準拠の英語バッジ装飾・右詰めを追加。style.cssのセレクターを #drill1 と #drill5 の両Exampleに限定して拡張。コミット 5c2da65c4dd2414e7227ce626d187e8afe4de0fb。
+- practice8.1.htmlのCSSキャッシュ識別子を更新。コミット 2de46eef7cbb6c44c41e686e72f84dc63fe10fba。
+- Drill 5の本体は変更していない。ユーザーがExample 5の実機成果を見てから判断予定。Vercel反映／実機描画は未検証。
+
 # 現在のリレー状態（2026-11-07 / GitHub連携・Practice 8.1 Ex1英語ラベル）
 
 - 実装：Practice 8.1 Example 1の「Noun」「Verb＋の」を、Practice 8.2 Specific/Unspecifiedと同じLato・700・.9em・6px 10px余白・枠・背景・角丸の英語ラベルに変更。共有grid第1列の右端へ配置し、第2列のキュー開始位置を一致させる。日本語キュー／モデル／音声／録音／判定は変更しない。
