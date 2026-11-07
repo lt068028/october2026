@@ -2280,6 +2280,10 @@ body.site-scale {
     max-width: 100%;
     white-space: normal !important;
     overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+.site-scale:not(.practice81-page) .recording-table :is(.prompt-label, .drill-cue-cell) .target-word {
+    white-space: nowrap;
 }
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table td[rowspan="2"] { grid-row: span 2; }
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table td:has(> .recording-controls) { grid-column: 3; }

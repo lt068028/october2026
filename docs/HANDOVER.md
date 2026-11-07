@@ -1,3 +1,27 @@
+# 2026-11-07 / Practice 1.1 キュー文字縦折れ・幅再計算バグ修正
+
+- **状態：引き継ぎ可能（main反映・Push完了）**
+- **課題**：Practice 1.1において、画面幅を縮小（例：1440px→375px）した後に再拡大（→1440px）した際、キュー（Prompt）のテキストが1文字ずつ折り返されて縦書きのようになり、横幅が十分空いているにもかかわらず横並びレイアウトが復元されない不具合の解消。
+- **原因**：
+  1. `content-layout.js` の `group` セレクタが `:is([id^="drill"])` を前提としており、Practice 1.1固有の `task1Container` / `task2Container` / `task3Container` を検出できず、各行テーブルが単独グループとして扱われていた。
+  2. `content-layout.js` の `intrinsic()` 内で、`measureHost` のビューポート幅依存や、`<select>` / `<input>` 等の `target.style.width` が縮小時の `computed.width` に固定されて `measures` WeakMap にキャッシュされ、再拡大時にも縮小時の狭い幅が再利用されていた。
+  3. `practice1.1.js` の `alignCueColumns()` がリサイズ時に実行されず、初期ロード時の `--drill-cue-width` や `colgroup` 幅と、`content-layout.js` の `--content-cue-width` が競合・非同期化していた。
+  4. `style.css` において `.drill-cue-cell` / `.prompt-label` に `white-space: normal !important; overflow-wrap: anywhere;` が指定されている一方、`.target-word` に単語単位の `white-space: nowrap` が未設定だったため、狭幅時に日本語単語（「メアリー」「がくせい」等）が文字ごとに分割されて1文字1行の縦折れが発生していた。
+- **実装内容**：
+  - `style.css`：`.site-scale .recording-table :is(.prompt-label, .drill-cue-cell)` に `word-break: keep-all;` を追加し、`.site-scale:not(.practice81-page) .recording-table :is(.prompt-label, .drill-cue-cell) .target-word` に `white-space: nowrap;` を指定。一括 `white-space: nowrap` を避けつつ、日本語単語単位の保持と1文字縦折れを防止（スラッシュや空白での折り返し、スタック動作は維持）。
+  - `content-layout.js`：
+    - `group` の検出セレクタに `[id^="task"][id$="Container"]` を追加し、Practice 1.1の各タスク内のテーブルが共通のキュー列幅を正しく共有・同期するよう修正。
+    - `measureHost` のスタイルに `left: '0', top: '0', minWidth: 'max-content', maxWidth: 'none'` を付与し、狭いビューポート幅での計測値の不当な制約を排除。
+    - `intrinsic()` 内で `<select>` の幅を自然な `max-content`（`auto`）で測定し、`original.style.width` がある場合のみ著者の指定幅を採用。また測定クローン内で `.display-cue-unit, .target-word` の `whiteSpace = 'nowrap'` を確保して真の非制約自然幅を測定・キャッシュ。
+    - リサイズ時のレイアウト更新で `--content-cue-width` とともに `--drill-cue-width` も同値で更新。
+  - `practice1.1.js`：
+    - `alignCueColumns()` 内でクローンされた `<select>` の選択値を保持し、子要素の制約を解除して正確な幅を測定。
+    - `window.resize` および `document.content-layout` イベントリスナーを追加し、リサイズ時および共通レイアウト更新時にキュー列幅と `colgroup` 幅を最新のカード利用可能幅で再計算。
+  - `practice1.1.html`：キャッシュ識別子を `20261107-cue-resize-fix` に更新。
+- **自動検証**：`git diff --check` 合格、構文バランス検査合格、1440px→375px→1440px反復シミュレーションおよび中間幅（375/600/760/850/900/1024/1280/1440px）両方向遷移におけるヒステリシスなし（同幅での新規ロードと同一レイアウト）の成立を確認。
+- **仕様書整合性**：更新不要（既存のUI_LAYOUT_SPEC「共通レスポンシブ・幅配分の設計契約」およびPROJECT_SPECに準拠したバグ修正）。
+- **未確認**：公開Vercelおよびユーザー実機ブラウザでの実機確認。従来のユーザー実機確認済み情報は維持。
+
 # 2026-11-07 / Practice 8.2 比較ラベル囲み削除と日本語左端・英語右端整列
 
 - **状態：引き継ぎ可能（main反映・Push完了）**

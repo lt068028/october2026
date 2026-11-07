@@ -9,14 +9,14 @@
     let minimums = new WeakMap();
     const observed = new Set();
     const measureHost = document.createElement('div');
-    Object.assign(measureHost.style, {position: 'fixed', visibility: 'hidden', pointerEvents: 'none', width: 'max-content', contain: 'layout style'});
+    Object.assign(measureHost.style, {position: 'fixed', left: '0', top: '0', visibility: 'hidden', pointerEvents: 'none', width: 'max-content', minWidth: 'max-content', maxWidth: 'none', contain: 'layout style'});
     const measureRoot = measureHost.attachShadow({mode: 'closed'});
     let measures = new WeakMap();
     const properties = ['display','box-sizing','font-family','font-size','font-weight','font-style','font-variant','line-height','letter-spacing','word-spacing','text-transform','white-space','word-break','overflow-wrap','padding-top','padding-right','padding-bottom','padding-left','border-top-width','border-right-width','border-bottom-width','border-left-width','border-top-style','border-right-style','border-bottom-style','border-left-style','margin-top','margin-right','margin-bottom','margin-left','gap','column-gap','row-gap','align-items','justify-content','flex-direction','flex-wrap','flex-shrink','flex-grow','flex-basis','vertical-align','grid-auto-flow','grid-column','grid-row'];
     function intrinsic(element, presentation) {
         if (!measureHost.isConnected) document.body.append(measureHost);
         const style = getComputedStyle(element);
-        const key = (presentation === 'category-inline' ? 'category-inline|' : '') + element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + getComputedStyle(e).width).join('|');
+        const key = (presentation === 'category-inline' ? 'category-inline|' : '') + element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + (e.style.width || getComputedStyle(e).width)).join('|');
         if (measures.get(element)?.key === key) return measures.get(element).width;
         const copy = element.cloneNode(true);
         const originals = [element, ...element.querySelectorAll('*')];
@@ -25,12 +25,16 @@
             const target = copies[index], computed = getComputedStyle(original);
             properties.forEach(property => target.style.setProperty(property, computed.getPropertyValue(property)));
             target.style.minWidth = original.matches('button,select,input') ? computed.minWidth : '0'; target.style.maxWidth = 'none';
-            target.style.width = (original.style.width || original.matches('select,input,.p81-kind,.p81-repeat-spacer,.p81-drill-repeat-spacer,.p81-repeat-separator-spacer,.practice7-category,.conversation-role-circle')) ? computed.width : 'auto';
+            target.style.width = original.style.width ? original.style.width : (original.matches('.p81-kind,.p81-repeat-spacer,.p81-drill-repeat-spacer,.p81-repeat-separator-spacer,.practice7-category,.conversation-role-circle')) ? computed.width : 'auto';
             if (computed.display.includes('grid')) target.style.gridTemplateColumns = computed.gridTemplateColumns.split(/\s+/).map(() => 'max-content').join(' ');
             if (original.matches('select,input')) target.value = original.value;
         });
         copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t => t.remove());
         Object.assign(copy.style, {position: 'static', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap', display: style.display.includes('flex') ? 'inline-flex' : style.display.includes('grid') ? 'inline-grid' : 'inline-block', flexWrap: 'nowrap'});
+        copy.querySelectorAll('.display-cue-unit, .target-word').forEach(el => {
+            el.style.maxWidth = 'none';
+            el.style.whiteSpace = 'nowrap';
+        });
         if (presentation === 'category-inline') copy.style.flexDirection = 'column';
         measureRoot.append(copy);
         const width = copy.getBoundingClientRect().width;
@@ -54,7 +58,7 @@
                 const s = getComputedStyle(cell);
                 return intrinsic(cell.querySelector('.recording-actions')) + parseFloat(s.paddingLeft) + parseFloat(s.paddingRight);
             }));
-            const group = table.closest('.practice-qa-section,.p81-section,[id^="drill"][id$="Container"],.practice-section') || table.parentElement;
+            const group = table.closest('.practice-qa-section,.p81-section,[id^="drill"][id$="Container"],[id^="task"][id$="Container"],.practice-section') || table.parentElement;
             const info = {table, cues, controls, numbers, number, cue, actions};
             infos.push(info);
             if (!groups.has(group)) groups.set(group, []);
@@ -75,6 +79,7 @@
             table.dataset.contentNumber = number > 0 ? 'true' : 'false';
             table.style.setProperty('--content-number-width', number + 'px');
             table.style.setProperty('--content-cue-width', track + 'px');
+            table.style.setProperty('--drill-cue-width', track + 'px');
             table.querySelectorAll('td[rowspan]').forEach(e => e.style.setProperty('--content-row-span', String(e.rowSpan)));
             numbers.forEach(e => e.dataset.contentCell = 'number');
             cues.forEach(e => e.dataset.contentCell = 'cue');

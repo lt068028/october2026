@@ -2904,6 +2904,7 @@ window.addEventListener("pagehide", () => {
                 const cell = table.querySelector(
                     '.drill-cue-cell'
                 );
+                if (!cell) return;
 
                 const measure = makeElement('span');
 
@@ -2918,11 +2919,21 @@ window.addEventListener("pagehide", () => {
                     '.tooltip-tip,.custom-tip-box'
                 ).forEach(tip => tip.remove());
 
+                measure.querySelectorAll('select').forEach((sel, i) => {
+                    const originalSel = cell.querySelectorAll('select')[i];
+                    if (originalSel) sel.value = originalSel.value;
+                });
+
+                measure.querySelectorAll('*').forEach(el => {
+                    el.style.maxWidth = 'none';
+                });
+
                 Object.assign(measure.style, {
                     position: 'absolute',
                     visibility: 'hidden',
                     display: 'inline-block',
                     width: 'max-content',
+                    maxWidth: 'none',
                     whiteSpace: 'nowrap',
                     font: 'inherit'
                 });
@@ -2941,12 +2952,19 @@ window.addEventListener("pagehide", () => {
 
             tables.forEach(table => {
                 table.style.setProperty('--drill-cue-width', `${width + 8}px`);
-                table.querySelector('colgroup')
-                    .children[1].style.width =
-                        `${width + 8}px`;
+                if (table.dataset.contentLayout !== 'stacked') {
+                    table.style.setProperty('--content-cue-width', `${width + 8}px`);
+                }
+                const col = table.querySelector('colgroup')?.children[1];
+                if (col) {
+                    col.style.width = `${width + 8}px`;
+                }
             });
         });
     }
+
+    window.addEventListener('resize', alignCueColumns);
+    document.addEventListener('content-layout', alignCueColumns);
 
     document.addEventListener('change', event => {
         if (
