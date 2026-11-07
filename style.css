@@ -4213,5 +4213,6 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     font-weight: 700;
     line-height: 1.35;
     vertical-align: middle;
+    transform: translateY(-2px);
     white-space: nowrap;
 }
