@@ -3898,9 +3898,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 .unlearned-accordion {
-    border: 1px solid var(--border-color, #cbd5e1);
-    border-radius: 20px;
-    background: var(--bg-panel, #f8fafc);
+    border: 1px solid #b8d4f5;
+    border-radius: 10px;
+    background: #e6f0ff;
     overflow: hidden;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     width: auto;
@@ -3915,6 +3915,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .unlearned-summary {
     display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
+    box-sizing: border-box;
     align-items: center;
     gap: 6px;
     padding: 6px 14px;
@@ -3934,7 +3937,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     width: 100%;
     padding: 8px 16px;
     box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.02);
+    background: rgba(39, 93, 168, 0.06);
 }
 
 .unlearned-summary::-webkit-details-marker {
@@ -3942,8 +3945,17 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 }
 
 .unlearned-summary-title {
-    color: #0284c7;
+    color: #275da8;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unlearned-book-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
 }
 
 .unlearned-counts {
@@ -4042,14 +4054,14 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 @media (prefers-color-scheme: dark) {
     .unlearned-accordion {
-        border-color: #334155;
-        background: #1e293b;
+        border-color: #426b9b;
+        background: #183451;
     }
     .unlearned-summary-title {
-        color: #38bdf8;
+        color: #b9d9ff;
     }
     .unlearned-accordion[open] .unlearned-summary {
-        background: rgba(255, 255, 255, 0.04);
+        background: rgba(185, 217, 255, 0.08);
     }
     .unlearned-body {
         border-top-color: #334155;
