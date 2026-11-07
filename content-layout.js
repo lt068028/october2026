@@ -106,6 +106,18 @@
         width=Math.min(intrinsic(element),width);
         minimums.set(element,{key,width});return width;
     }
+    function balanceCueTrack(cueWidth,cueMin,modelWidth,modelMin,room){
+        if(room<=0)return 0;
+        if(cueWidth+modelWidth<=room+.25)return cueWidth;
+        if(cueMin+modelMin<=room+.25){
+            const total=cueWidth+modelWidth;
+            const target=total>0?room*(cueWidth/total):room*0.5;
+            const minTrack=Math.min(cueWidth,cueMin);
+            const maxTrack=Math.max(minTrack,Math.min(cueWidth,room-modelMin));
+            return Math.min(maxTrack,Math.max(minTrack,target));
+        }
+        return Math.min(cueWidth,room);
+    }
     // Five-cell Examples and their shared Yes/No presentation. Original nodes
     // remain in place so playback closures and accessibility order are retained.
     function examples() {
@@ -138,10 +150,12 @@
             const arrow=Math.max(0,...valid.map(r=>r.arrow?intrinsic(r.arrow):0));
             const audio=Math.max(...valid.map(r=>intrinsic(r.audio)));
             const cueMinimum=Math.max(0,...valid.map(r=>r.cue?modelMinimum(r.cue):0));
+            const modelMax=Math.max(...valid.map(r=>intrinsic(r.model)));
+            const modelMin=Math.max(...valid.map(r=>modelMinimum(r.model)));
             const essential=label+cueMinimum+arrow+audio+gap*4;
             const compact=essential>width+.25;
             const cueRoom=Math.max(0,width-audio-arrow-gap*4-(compact?0:label));
-            const cueTrack=Math.min(cue,cueRoom);
+            const cueTrack=balanceCueTrack(cue,cueMinimum,modelMax,modelMin,cueRoom);
             const tracks=[compact?'0px':label+'px',cueTrack+'px',arrow+'px',audio+'px','minmax(0,1fr)'];
             table.classList.add('content-example-grid');
             table.style.setProperty('grid-template-columns',tracks.join(' '),'important');
@@ -172,6 +186,7 @@
         const style=getComputedStyle(root),width=root.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap)||4;
         const maximum=(key,fn=intrinsic)=>Math.max(0,...rows.map(r=>r[key]?fn(r[key]):0));
         const labelWidth=maximum('label'),cueWidth=maximum('cue'),cueMin=maximum('cue',modelMinimum),arrowWidth=maximum('arrow'),audioWidth=maximum('audio');
+        const modelWidth=maximum('model'),modelMin=maximum('model',modelMinimum);
         const categories=entries.filter(e=>e.category).map(e=>e.category),categoryWidth=Math.max(0,...categories.map(e=>intrinsic(e,'category-inline')));
         let hasLabel=labelWidth>0,hasArrow=arrowWidth>0,hasCategory=categoryWidth>0;
         const required=()=> (hasCategory?categoryWidth+gap:0)+(hasLabel?labelWidth+gap:0)+cueMin+(hasArrow?arrowWidth+gap:0)+audioWidth+gap;
@@ -179,7 +194,7 @@
         if(required()>width+.25)hasLabel=false;
         const cueAbove=required()>width+.25;
         const fixed=(hasCategory?categoryWidth+gap:0)+(hasLabel?labelWidth+gap:0)+(hasArrow?arrowWidth+gap:0)+audioWidth+gap;
-        const cueTrack=cueAbove?0:Math.min(cueWidth,Math.max(0,width-fixed));
+        const cueTrack=cueAbove?0:balanceCueTrack(cueWidth,cueMin,modelWidth,modelMin,Math.max(0,width-fixed));
         const modelRoom=width-fixed-cueTrack-gap;
         const hasModelTrack=!cueAbove&&rows.some(r=>modelMinimum(r.model)<=modelRoom+.25);
         const tracks=[];let catCol,labelCol,arrowCol;
