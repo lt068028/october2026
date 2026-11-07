@@ -686,6 +686,17 @@ function showResult(key,notice='') {
 }
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 
+// Reuse shared tooltip positioning; keep English-label interactions scoped here.
+function exampleTranslation(text,className){
+ const wrap=node('span',className+' custom-tip-wrap');wrap.tabIndex=0;wrap.setAttribute('aria-label',text);
+ wrap.append(node('span','p82-translation-text'+(className==='p82-model-translation'?' vocab-inline':''),text),node('span','custom-tip-box',text));return wrap;
+}
+document.addEventListener('click',event=>{
+ const host=event.target.closest('.p82-concept-english,.p82-model-translation'),wasOpen=host?.classList.contains('p82-translation-open');
+ document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));
+ if(host&&!wasOpen){host.classList.add('p82-translation-open');window.DrillTooltips?.position(host);}
+});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));if(document.activeElement?.matches('.p82-concept-english,.p82-model-translation'))document.activeElement.blur();}});
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
@@ -696,7 +707,7 @@ function addExample(root,si){
  ];
  else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0||si===1){kind.classList.add('p82-concept-label');const ja=node('span','p82-concept-japanese');ja.innerHTML=kind.innerHTML;kind.replaceChildren(ja,node('span','p82-concept-english',r.englishLabel));}}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');text.innerHTML=modelHTML(r)+(r.translation?' <span class="vocab-inline">'+escape(r.translation)+'</span>':'');row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0||si===1){kind.classList.add('p82-concept-label');const ja=node('span','p82-concept-japanese');ja.innerHTML=kind.innerHTML;kind.replaceChildren(ja,exampleTranslation(r.englishLabel,'p82-concept-english'));}}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');if(si<2){const japanese=node('span','p82-model-japanese');japanese.innerHTML=modelHTML(r);text.append(japanese);if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));}else text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function updateUnlearnedLexicon(){
  const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';
@@ -726,7 +737,39 @@ function render(){
  const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();sync();
 }
-function measureCues(){for(const [drillId,widthVar,anchorEnglish] of [['drill1','--p82-ex1-concept-width','Nothing'],['drill2','--p82-ex2-concept-width','Unspecified']]){const intro=document.querySelector('#'+drillId+' .example-box');if(!intro)continue;const labels=[...intro.querySelectorAll('.p82-concept-label')],anchor=labels.find(e=>e.querySelector('.p82-concept-english')?.textContent===anchorEnglish);if(!anchor)continue;const ja=anchor.querySelector('.p82-concept-japanese'),en=anchor.querySelector('.p82-concept-english');const width=Math.ceil(ja.getBoundingClientRect().width+en.getBoundingClientRect().width+6);intro.style.setProperty(widthVar,width+'px');}document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
+function measureExampleColumns(){
+ // Measure uncropped content, not the result of the previous layout pass.
+ function intrinsic(element){const copy=element.cloneNode(true);copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'inline-block',width:'max-content',minWidth:'0',maxWidth:'none',whiteSpace:'nowrap',transform:'none'});element.parentElement.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;}
+ for(const [drillId,widthVar] of [['drill1','--p82-ex1-concept-width'],['drill2','--p82-ex2-concept-width']]){
+  const intro=document.querySelector('#'+drillId+' .example-box');if(!intro)continue;
+  const labels=[...intro.querySelectorAll('.p82-concept-label')];
+  // The second comparison row is the Japanese/English 6px anchor in each Ex.
+  const anchor=labels[1];if(!anchor)continue;
+  let japaneseWidth=0;
+  for(const label of labels){const width=intrinsic(label.querySelector('.p82-concept-japanese'));label.style.setProperty('--p82-japanese-width',width+'px');japaneseWidth=Math.max(japaneseWidth,width);}
+  const natural=intrinsic(anchor.querySelector('.p82-concept-japanese'))+intrinsic(anchor.querySelector('.p82-concept-english'))+6;
+  intro.style.setProperty(widthVar,natural+'px');intro.style.setProperty('--p82-concept-natural',natural+'px');
+  const style=getComputedStyle(intro),available=intro.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap);
+  const max=selector=>Math.max(...[...intro.querySelectorAll(selector)].map(e=>intrinsic(e)));
+  const cue=max('.p81-example-cue'),arrow=max('.p81-arrow'),button=max('.p81-example-row > button'),model=max('.p82-model-japanese');
+  // Retain an ellipsis-sized, focusable English target before moving a model.
+  const englishStyle=getComputedStyle(anchor.querySelector('.p82-concept-english'));
+  const englishMinimum=parseFloat(englishStyle.fontSize)*1.5+['paddingLeft','paddingRight','borderLeftWidth','borderRightWidth'].reduce((sum,key)=>sum+parseFloat(englishStyle[key]),0);
+  const minimumLabel=japaneseWidth+6+englishMinimum;
+  const translationMinimum=parseFloat(getComputedStyle(intro.querySelector('.p82-model-translation')).fontSize)*1.5+4;
+  const fixed=cue+arrow+button;
+  const inline=available>=minimumLabel+fixed+4*gap+model+translationMinimum;
+  const grouped=available>=minimumLabel+fixed+3*gap;
+  intro.dataset.layout=inline?'inline':grouped?'model-below':'compact';
+  const room=available-fixed-(inline?4*gap+model+translationMinimum:3*gap);
+  intro.style.setProperty('--p82-concept-track',Math.min(natural,Math.max(minimumLabel,room))+'px');
+  intro.style.setProperty('--p82-example-cue-width',cue+'px');
+  intro.style.setProperty('--p82-example-arrow-width',arrow+'px');intro.style.setProperty('--p82-example-button-width',button+'px');
+ }
+}
+function measureCues(){
+ measureExampleColumns();
+ document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
 function sync() {
     const busy=Boolean(session||preparing);
     document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
@@ -1256,6 +1299,6 @@ function init() {
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
-window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();});
+window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();else measureExampleColumns();});
 document.fonts.ready.then(measureCues);
 })();

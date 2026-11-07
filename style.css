@@ -3418,18 +3418,6 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale.practice81-page #drill5 .p81-table td.p81-controls { padding-left: 0; }
 .site-scale.practice81-page #drill5 .p81-select { margin-right: 0; }
 
-/* Keep each introductory concept name on one line; move it above the cue on narrow cards. */
-.practice82-page #drill1 .p81-example { grid-template-columns: max-content minmax(0,max-content) max-content max-content minmax(0,1fr); }
-.practice82-page #drill1 .p81-kind { white-space: nowrap; font-size: min(1em,calc((100cqw - 1px) * var(--p82-concept-factor,1))); }
-@media(max-width:900px) {
- .practice82-page #drill1 .p81-example { grid-template-columns: minmax(0,1fr) max-content max-content; }
- .practice82-page #drill1 .p81-example-row > .p81-kind { grid-column: 1 / -1; }
- .practice82-page #drill1 .p81-example-cue { grid-column: 1; }
- .practice82-page #drill1 .p81-arrow { grid-column: 2; }
- .practice82-page #drill1 .p81-example-row > button { grid-column: 3; }
- .practice82-page #drill1 .p81-model { grid-column: 1 / -1; }
-}
-
 /* Keep Japanese cue starts aligned within each Practice 8.1 comparison pair. */
 .practice81-page .p81-card .prompt-label:has(> .p81-cue-body) > .p81-kind { display: inline-block; width: var(--p81-kind-width,max-content); white-space: nowrap; }
 
@@ -4125,16 +4113,44 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
 /* Keep the Practice 8.2 concept separator outside the teaching emphasis. */
 [data-practice="8.2"] .p82-concept-separator { color: var(--text-primary); font-weight: 400; text-decoration: none; }
 
-/* Practice 8.2 Preview: shared Ex1/Ex2 concept layout and Lato labels.
-   Each exercise independently sizes its concept track from a 6px anchor:
-   Ex1 何も〜ません + Nothing; Ex2 何か + Anything. Longer labels extend
-   left on their own rows without widening the track. */
-.practice82-page #drill1 .p81-example {
-    grid-template-columns: var(--p82-ex1-concept-width, 220px) minmax(0,max-content) max-content max-content minmax(0,1fr);
+/* Practice 8.2 Ex1/Ex2: intrinsic widths, selected from the card content box.
+   Keep explicit columns together; only English text may be ellipsized. */
+.practice82-page :is(#drill1,#drill2) .p81-example {
+    grid-template-columns: var(--p82-concept-track) var(--p82-example-cue-width) var(--p82-example-arrow-width) var(--p82-example-button-width) minmax(0,1fr);
 }
-.practice82-page #drill2 .p81-example {
-    grid-template-columns: var(--p82-ex2-concept-width, 140px) minmax(0,max-content) max-content max-content minmax(0,1fr);
+.practice82-page :is(#drill1,#drill2) .p81-example-row > .p81-kind { grid-column: 1; }
+.practice82-page :is(#drill1,#drill2) .p81-example-cue { grid-column: 2; }
+.practice82-page :is(#drill1,#drill2) .p81-arrow { grid-column: 3; }
+.practice82-page :is(#drill1,#drill2) .p81-example-row > button { grid-column: 4; width: max-content; }
+.practice82-page :is(#drill1,#drill2) .p81-model {
+    grid-column: 5;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    min-width: 0;
 }
+.practice82-page :is(#drill1,#drill2) .p82-model-japanese { flex: 0 1 auto; min-width: 0; }
+.practice82-page :is(#drill1,#drill2) .p82-model-japanese :is(.tooltip-wrap,.p82-indefinite) { white-space: nowrap; }
+.practice82-page :is(#drill1,#drill2) .p82-model-translation { flex: 1 1 0; min-width: 1.5em; }
+.practice82-page :is(#drill1,#drill2) .p82-translation-text {
+    display: block;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.practice82-page :is(#drill1,#drill2) .p81-example[data-layout="model-below"] {
+    grid-template-columns: var(--p82-concept-track) var(--p82-example-cue-width) var(--p82-example-arrow-width) var(--p82-example-button-width);
+}
+.practice82-page :is(#drill1,#drill2) [data-layout="model-below"] .p81-model { grid-column: 1 / -1; }
+.practice82-page :is(#drill1,#drill2) .p81-example[data-layout="compact"] {
+    grid-template-columns: minmax(0,1fr) var(--p82-example-arrow-width) var(--p82-example-button-width);
+}
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > .p81-kind { grid-column: 1 / -1; width: min(100%,var(--p82-concept-natural)); }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-cue { grid-column: 1; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-arrow { grid-column: 2; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-example-row > button { grid-column: 3; }
+.practice82-page :is(#drill1,#drill2) [data-layout="compact"] .p81-model { grid-column: 1 / -1; }
 .practice82-page :is(#drill1,#drill2) .p81-kind.p82-concept-label {
     position: relative;
     display: flex;
@@ -4146,15 +4162,14 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     font-size: inherit;
     color: var(--text-primary);
 }
-.practice82-page :is(#drill1,#drill2) .p82-concept-japanese {
-    white-space: nowrap;
-    flex: none;
-}
+.practice82-page :is(#drill1,#drill2) .p82-concept-japanese { white-space: nowrap; flex: none; }
 .practice82-page :is(#drill1,#drill2) .p82-concept-english {
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
+    max-width: calc(100% - var(--p82-japanese-width) - 6px);
+    box-sizing: border-box;
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
     font-size: .9em;
@@ -4166,18 +4181,16 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
 }
-@media(max-width:900px) {
-    .practice82-page :is(#drill1,#drill2) .p81-example {
-        grid-template-columns: minmax(0,1fr) max-content max-content;
-    }
-    .practice82-page #drill1 .p81-example-row > .p81-kind {
-        width: var(--p82-ex1-concept-width, 220px);
-        max-width: 100%;
-    }
-    .practice82-page #drill2 .p81-example-row > .p81-kind {
-        width: var(--p82-ex2-concept-width, 140px);
-        max-width: 100%;
-    }
+
+.practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):is(:focus-visible,.p82-translation-open) > .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Touch must not leave an emulated mouse hover open after the second tap. */
+html[data-tooltip-input="touch"] .practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):not(.p82-translation-open):not(:focus-visible) > .custom-tip-box {
+    visibility: hidden;
+    opacity: 0;
 }
 
 /* Match the neutral 8.3 category badge in dark mode without overriding
