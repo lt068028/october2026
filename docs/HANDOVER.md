@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.2 日本語区分の誤装飾を修正
+
+- 8.2のページbodyは`practice81-page practice82-page`の両クラスを持つため、8.1用のダークモード規則 `.practice81-page :is(#drill1,#drill5) .p81-example-row > .p81-kind` が8.2 Dr1の日本語ラベル全体にも適用されていた。
+- `style.css` の8.1用セレクタを `.practice81-page:not(.practice82-page)` に限定。8.2では英語 `.p82-concept-english` のみに承認済みバッジ色を適用し、日本語の表示・右詰め・キュー配置は既存仕様を維持。
+- `practice8.2.html` のCSSキャッシュ識別子を `20261107-p82-english-only` に更新。ブラウザ実機での表示確認は未実施。
+
 # 2026-11-07 / Practice 8.1 Drill 5 ラベル右余白修正
 
 - 狭い画面でNatural/Unnatural/Inferred等のラベル右余白が消え、広い画面へ戻しても回復しないとの報告。
