@@ -3378,7 +3378,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
    Underline the entire (を), including both parentheses, without a fill. */
 [data-practice="8.2"] .optional-particle {
     display: inline-block;
-    padding: 0 0 4px;
+    padding: 0 0 2px;
     color: var(--text-primary);
     background: transparent;
     border: 0;
