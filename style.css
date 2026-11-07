@@ -3897,7 +3897,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 
 .unlearned-accordion {
     border: 1px solid #b8d4f5;
-    border-radius: 20px;
+    border-radius: 10px;
     background: #e6f0ff;
     overflow: hidden;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -3942,6 +3942,15 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .unlearned-summary-title {
     color: #275da8;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.unlearned-book-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
 }
 
 .unlearned-counts {
