@@ -13,10 +13,10 @@
     const measureRoot = measureHost.attachShadow({mode: 'closed'});
     let measures = new WeakMap();
     const properties = ['display','box-sizing','font-family','font-size','font-weight','font-style','font-variant','line-height','letter-spacing','word-spacing','text-transform','white-space','word-break','overflow-wrap','padding-top','padding-right','padding-bottom','padding-left','border-top-width','border-right-width','border-bottom-width','border-left-width','border-top-style','border-right-style','border-bottom-style','border-left-style','margin-top','margin-right','margin-bottom','margin-left','gap','column-gap','row-gap','align-items','justify-content','flex-direction','flex-wrap','flex-shrink','flex-grow','flex-basis','vertical-align','grid-auto-flow','grid-column','grid-row'];
-    function intrinsic(element) {
+    function intrinsic(element, presentation) {
         if (!measureHost.isConnected) document.body.append(measureHost);
         const style = getComputedStyle(element);
-        const key = element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + getComputedStyle(e).width).join('|');
+        const key = (presentation === 'category-inline' ? 'category-inline|' : '') + element.innerHTML + style.font + style.letterSpacing + style.padding + style.borderWidth + [...element.querySelectorAll('select,input')].map(e => e.value + getComputedStyle(e).width).join('|');
         if (measures.get(element)?.key === key) return measures.get(element).width;
         const copy = element.cloneNode(true);
         const originals = [element, ...element.querySelectorAll('*')];
@@ -31,6 +31,7 @@
         });
         copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t => t.remove());
         Object.assign(copy.style, {position: 'static', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap', display: style.display.includes('flex') ? 'inline-flex' : style.display.includes('grid') ? 'inline-grid' : 'inline-block', flexWrap: 'nowrap'});
+        if (presentation === 'category-inline') copy.style.flexDirection = 'column';
         measureRoot.append(copy);
         const width = copy.getBoundingClientRect().width;
         copy.remove();
@@ -171,21 +172,23 @@
         const style=getComputedStyle(root),width=root.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap)||4;
         const maximum=(key,fn=intrinsic)=>Math.max(0,...rows.map(r=>r[key]?fn(r[key]):0));
         const labelWidth=maximum('label'),cueWidth=maximum('cue'),cueMin=maximum('cue',modelMinimum),arrowWidth=maximum('arrow'),audioWidth=maximum('audio');
-        const categories=entries.filter(e=>e.category).map(e=>e.category),categoryWidth=Math.max(0,...categories.map(intrinsic));
+        const categories=entries.filter(e=>e.category).map(e=>e.category),categoryWidth=Math.max(0,...categories.map(e=>intrinsic(e,'category-inline')));
         let hasLabel=labelWidth>0,hasArrow=arrowWidth>0,hasCategory=categoryWidth>0;
         const required=()=> (hasCategory?categoryWidth+gap:0)+(hasLabel?labelWidth+gap:0)+cueMin+(hasArrow?arrowWidth+gap:0)+audioWidth+gap;
         if(required()>width+.25)hasCategory=false;
         if(required()>width+.25)hasLabel=false;
         const cueAbove=required()>width+.25;
         const fixed=(hasCategory?categoryWidth+gap:0)+(hasLabel?labelWidth+gap:0)+(hasArrow?arrowWidth+gap:0)+audioWidth+gap;
-        const cueTrack=cueAbove?0:Math.min(cueWidth,Math.max(0,width-fixed-gap));
+        const cueTrack=cueAbove?0:Math.min(cueWidth,Math.max(0,width-fixed));
+        const modelRoom=width-fixed-cueTrack-gap;
+        const hasModelTrack=!cueAbove&&rows.some(r=>modelMinimum(r.model)<=modelRoom+.25);
         const tracks=[];let catCol,labelCol,arrowCol;
         if(hasCategory){catCol=tracks.length+1;tracks.push(categoryWidth+'px');}
         if(hasLabel){labelCol=tracks.length+1;tracks.push(labelWidth+'px');}
         const cueCol=tracks.length+1;tracks.push(cueTrack+'px');
         if(hasArrow){arrowCol=tracks.length+1;tracks.push(arrowWidth+'px');}
-        const audioCol=tracks.length+1;tracks.push(audioWidth+'px');
-        const modelCol=tracks.length+1;tracks.push('minmax(0,1fr)');
+        const audioCol=tracks.length+1;tracks.push(hasModelTrack?audioWidth+'px':`minmax(${audioWidth}px,1fr)`);
+        const modelCol=tracks.length+1;if(hasModelTrack)tracks.push('minmax(0,1fr)');
         const previousTracks=root.style.gridTemplateColumns;
         root.style.setProperty('grid-template-columns',tracks.join(' '),'important');
         if(previousTracks!==root.style.gridTemplateColumns)exampleChanged=true;
@@ -214,8 +217,8 @@
             if(cueAbove&&r.cue){place(r.cue,'1 / -1',line++);}
             else place(r.cue,String(cueCol),line);
             place(r.arrow,String(arrowCol||cueCol),line);place(r.audio,String(audioCol),line);
-            const remaining=width-fixed-cueTrack-gap;
-            const inline=!cueAbove&&modelMinimum(r.model)<=remaining+.25;
+            const remaining=hasModelTrack?modelRoom:-1;
+            const inline=hasModelTrack&&modelMinimum(r.model)<=remaining+.25;
             const offset=(hasCategory?categoryWidth+gap:0)+(hasLabel?labelWidth+gap:0);
             const start=intrinsic(r.model)>width-offset+.25?(hasCategory?catCol+1:1):cueCol;
             place(r.model,inline?String(modelCol):start+' / -1',inline?line:line+1);

@@ -7,6 +7,8 @@ for(const name of (process.env.PRACTICE_PAGES||'practice1.1 practice1.2 practice
  await p.goto('http://vertical.test/'+name+'.html');
  for(const width of [600,1440])for(const theme of ['light','dark']){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});
+  // Viewport emulation resolves before ResizeObserver/RAF content-width placement.
+  await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
   const state=await p.evaluate(()=>({tokens:['--example-row-gap','--example-wrap-gap','--example-content-gap'].map(t=>getComputedStyle(document.documentElement).getPropertyValue(t).trim()),grids:[...document.querySelectorAll('.example-box .drill-example-table,.example-box .p73-example-table,.p81-example,.p23-conversation-models,.p21-which-models,.p2x-speaker-sentences')].map(e=>({display:getComputedStyle(e).display,gap:getComputedStyle(e).rowGap})),overflow:[...document.querySelectorAll('.example-box')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className)}));
   eq(state.tokens,['8px','4px','12px'],name+' tokens');eq(state.grids.every(x=>x.display!=='grid'||x.gap==='8px'),true,name+' shared grid spacing');eq(state.overflow,[],name+' fits '+width+theme);
   if(name==='practice2.2'){

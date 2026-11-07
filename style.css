@@ -4297,10 +4297,13 @@ body.site-scale .content-adaptive-example[data-content-degree="stacked"] .p81-de
 
 /* Existing semantic row wrappers share columns; 8px between rows, 4px within a wrap. */
 body.site-scale .example-box table.content-example-grid tr[data-content-example-owner],
-body.site-scale .content-adaptive-example [data-content-adaptive-owner] { display:grid!important; grid-column:1 / -1; grid-template-columns:subgrid!important; column-gap:inherit; row-gap:var(--example-wrap-gap); margin-block:0; padding-block:0; }
+body.site-scale .content-adaptive-example [data-content-adaptive-owner] { display:grid!important; grid-column:1 / -1; grid-template-columns:subgrid!important; column-gap:inherit; row-gap:var(--example-wrap-gap); align-items:baseline; margin-block:0; padding-block:0; }
 
 /* Approved when a food-scene callout cannot share the photograph with its prices. */
 body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
     position:relative; inset:auto; transform:none; width:max-content;
     max-width:calc(100% - 24px); margin:24px auto;
 }
+
+/* Price is one teacher-supplied cue, including in Hiragana / Vocab OFF. */
+body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }

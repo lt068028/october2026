@@ -30,5 +30,14 @@ let checks=0;const failures=[],boundaries=[],native=[];function check(ok,label,d
    if(lo>375)check(state.layout===(width<lo?'stacked':'inline'),[name,mode,width,'actual content transition'].join('/'),state);
   }
  }
+ if(name==='practice8.3')for(const mode of ['kanji','hiragana']){
+  await h.settings(p,mode,'hover','formal');
+  async function categoryAt(width,from){await p.setViewportSize({width:from,height:1100});await h.settle(p);await p.setViewportSize({width,height:1100});await h.settle(p);return p.locator('.p83-example-category').first().getAttribute('data-content-category');}
+  const thresholds=[];
+  for(const from of [375,1280]){let lo=375,hi=1280;while(lo<hi){const mid=Math.floor((lo+hi)/2);if(await categoryAt(mid,from)==='inline')hi=mid;else lo=mid+1;}thresholds.push(lo);}
+  check(thresholds[0]===thresholds[1],name+'/'+mode+' category threshold independent of resize direction',thresholds);
+  for(const width of [thresholds[0]-1,thresholds[0],thresholds[0]+1])for(const from of [375,1280])check(await categoryAt(width,from)===(width<thresholds[0]?'above':'inline'),name+'/'+mode+'/'+width+' category content boundary restores from '+from,thresholds);
+  boundaries.push({name,mode,category:thresholds});
+ }
  check(!p.errors.length,name+' runtime',p.errors);await p.close();console.log('BOUNDARIES',name);
 }await browser.close();fs.writeFileSync(process.env.BOUNDARY_REPORT||'/tmp/content-layout-boundaries.json',JSON.stringify({checks,failures,boundaries,native},null,2));console.log(JSON.stringify({checks,failures:failures.length,first:failures.slice(0,6)},null,2));if(failures.length)process.exitCode=1;})().catch(e=>{console.error(e);process.exit(1);});

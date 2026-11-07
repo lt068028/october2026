@@ -1255,7 +1255,7 @@ function practice2ShowNotice(resultSpan, message) {
     const price=o=>word(o.priceHira,o.priceKanji);
     const priceCue=o=>{
         const text=price(o);
-        if(hintMode==='off'||scriptMode==='hiragana')return text;
+        if(hintMode==='off'||scriptMode==='hiragana')return `<span class="p22-price-cue">${text}</span>`;
         if(hintMode==='paren')return `<span class="practice12-cue-unit display-cue-unit"><span class="target-word">${text}</span><span class="vocab-inline">(${o.priceHira})</span></span>`;
         return `<span class="tooltip-wrap"><span class="target-word">${text}</span><span class="tooltip-tip">${o.priceHira}</span></span>`;
     };

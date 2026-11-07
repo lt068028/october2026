@@ -244,3 +244,5 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 - `node tests/content-photograph-controls.cjs`：写真下の操作群、旧450px境界と実際の3列成立付近の検証。
 - `CONTENT_BASELINE=/path/to/baseline node tests/content-food-callout.cjs`：承認済み2.2 Ex3注釈の価格衝突・写真内外の往復・ノード／字形／色／写真座標の維持と実境界前後1px。
+
+- `CONTENT_BASELINE=/path/to/baseline node tests/content-price-cues.cjs`：2.2の価格が語中で改行されず、狭い共有列に収まり、全表示文字・フォーム・書体が変わらないことを確認する。
