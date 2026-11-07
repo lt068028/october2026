@@ -4350,7 +4350,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Practice 8.1 Drill 5: use the approved concept-badge treatment without changing
    pair-specific label widths, cue alignment, or selection controls. */
 .practice81-page #drill5 .p81-card .prompt-label > .p81-kind.p81-concept-badge {
-    box-sizing: border-box;
+    box-sizing: content-box;
     justify-self: end;
     text-align: center;
     font-family: 'Lato', sans-serif;
