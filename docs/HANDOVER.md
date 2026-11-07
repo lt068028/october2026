@@ -1,3 +1,10 @@
+# 現在のリレー状態（2026-11-07 / GitHub連携・Practice 8.1 Ex1英語ラベル）
+
+- 実装：Practice 8.1 Example 1の「Noun」「Verb＋の」を、Practice 8.2 Specific/Unspecifiedと同じLato・700・.9em・6px 10px余白・枠・背景・角丸の英語ラベルに変更。共有grid第1列の右端へ配置し、第2列のキュー開始位置を一致させる。日本語キュー／モデル／音声／録音／判定は変更しない。
+- 範囲：style.cssにpractice81-page #drill1限定CSSを追加、practice8.1.htmlのCSSキャッシュ識別子を更新。GitHub mainへ反映。製品コミット749626e8775e7415de5d35056642fe1e908275f0、HTML 8847dc8105aa5f5c4be6c4d6bfd95952a718e84c。
+- 横断調査：Practice 8.1 Ex5にSkillful／Observedの英語区分、8.2 Ex1/Ex2にUnspecified／None／All-inclusive／Specificの既存バッジ、7.2にPast／Present State、7.1/7.2/7.3/8.3等にQ/A役割ラベルを確認。Ex5など他のラベルの統一は別途承認が必要なため今回変更なし。
+- 未検証：実ブラウザ・ChromeOS実機、Vercel公開配信での描画確認は未実施。GitHubの変更反映のみ確認。旧Practice 2.1 Dr1の実機確認は作成者より完了報告あり。
+
 # 現在のリレー状態（2026-11-07 / GitHub連携・Practice 2.1 Dr1強調解除）
 
 - **状態**：Practice 2.1 Drill 1 Set 1「これは／それは／あれは」の通常文字化をmainに反映。旧残件リストの同項目は解消済み（過去の「未完了」は履歴）。
