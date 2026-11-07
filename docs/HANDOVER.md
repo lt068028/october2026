@@ -1,3 +1,9 @@
+# 2026-11-07 / Practice 8.1 Drill 5 ラベル右余白修正
+
+- 狭い画面でNatural/Unnatural/Inferred等のラベル右余白が消え、広い画面へ戻しても回復しないとの報告。
+- `style.css` のDr5専用 `.p81-concept-badge` を `box-sizing: border-box` から `content-box` へ変更。JSが設定するラベル列幅とは別に左右10pxのpaddingを確保する。既存のペア幅計測、装飾、選択欄・録音は維持。
+- `practice8.1.html` のstyle.cssキャッシュ識別子を `20261107-p81-dr5-padding` に更新しmainへPush。実機での狭幅→広幅リサイズの再現確認は未実施。
+
 # 2026-11-07 / Practice 8.1 HTML破損修復
 
 - JavaScript構文は検査で問題なし。一方、直前のキャッシュ識別子置換がHTMLコメント `<!-- Speech Style is inserted by practice8.1.js...` に誤一致し、`class="control-item"` の親divを欠落させていた。実際のscript srcは旧 `practice8.1.js?v=20261107-content-layout3` のままだった。
