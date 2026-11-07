@@ -10,7 +10,7 @@
 
 Example 1は飲むを使い、何か（something）・何も＋否定（nothing）・何でも（unlimited choice）の意味を対比する3行。
 
-Example 1の各モデル文の右側には英訳を表示する：`— I drink something.`／`— I don’t drink anything.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
+Example 1の左側の英語ラベルは `Something`／`Nothing`／`Anything` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
 
 Drill 1は時制選択を課題にせず、Formalの疑問文4問を出す。
 

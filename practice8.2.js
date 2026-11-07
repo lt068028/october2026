@@ -689,7 +689,7 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
- if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か','何も〜ません','何でも'][i],englishLabel:['Something','Nothing','Everything'][i],translation:['— I drink something.','— I don’t drink anything.','— I drink anything.'][i],intro:true}));
+ if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か','何も〜ません','何でも'][i],englishLabel:['Something','Nothing','Anything'][i],translation:['— I drink something.','— I drink nothing.','— I drink anything.'][i],intro:true}));
  else if(si===1)samples=[
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'What',translation:'— What do you see?'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Anything',translation:'— Do you see anything?'})
