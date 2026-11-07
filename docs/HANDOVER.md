@@ -1,3 +1,11 @@
+# 現在のリレー状態（2026-11-07 / GitHub連携・Practice 2.1 Dr1強調解除）
+
+- **状態**：Practice 2.1 Drill 1 Set 1「これは／それは／あれは」の通常文字化をmainに反映。旧残件リストの同項目は解消済み（過去の「未完了」は履歴）。
+- **変更**：practice2.1.jsの対象cueからstrong.grammar-highlightを除去し、`${pronoun}は…`の通常文字列に変更。practice2.1.htmlのJSキャッシュ識別子を更新。Set 2／他Drill・Example・model／TTS／STT・録音／保存には変更なし。
+- **コミット**：製品JS `172b3e3f74ce93598a8103d67cc0d21518daeae8`、HTML `b7259c56c50e6ddf26f938ff2b0fade059abb584`。GitHub main再取得で変更確認済み。
+- **検証と未確認**：GitHub上で対象コードとHTML参照の一致確認。Playwright等の実ブラウザテスト、Vercel配信反映、ユーザー実機確認は未実施。これらを済み扱いしない。前回のExample幅配分の実機確認はユーザーから完了申告あり。
+- **次の対応**：作成者の実機表示確認を待つ。別課題を自動着手しない。
+
 # 現在のリレー状態（2026-11-07 / Antigravity・F-1 Example左右折り返し行数最小化実装）
 
 - **状態：引き継ぎ可能（main反映・Push完了）**
