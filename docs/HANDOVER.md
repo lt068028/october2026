@@ -1,4 +1,31 @@
-# 現在のリレー状態 — Deutsche Übung 1.1 モデル音声再生修正完了
+# 現在のリレー状態 — W：ドイツ語ドリル開発の参照範囲最適化・専用仕様整備完了
+
+- 更新日時：2026-11-08T21:12:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex作業指示書 — W：ドイツ語ドリル開発の参照範囲最適化・専用仕様整備（GERMAN_DRILL_SPEC.md新設、GERMAN_DEVELOPMENT_GUIDE.md新設、AGENTS.md参照優先順位追記） ／ `60fbe3dcb1a470bcc1449a20c2c7f3db79f8629f` ／ `main`
+- 実装内容：
+  1. **ドイツ語専用仕様書の新設（`docs/GERMAN_DRILL_SPEC.md`）**:
+     - `Deutsche Übung 1.1` を第一参照実装とし、全12領域（標準ページ構造、Ex/Drill基本構成、モデル文表示・再生、録音・再生・STT、Autostop/Autoplay、地域変種DE/AT/CH、TTS/STTロケール・音声選択、語彙ヒント、Copy my sentences、共通CSS・Lato・Lucide、モバイル・アクセシビリティ、専用テスト）の仕様を明文化。
+     - 「実装済み」「既存共通仕様」「今後の設計方針」を厳格に区分し、未実装機能の実装済み扱いを排除。
+  2. **ドイツ語開発ガイドの新設（`docs/GERMAN_DEVELOPMENT_GUIDE.md`）**:
+     - 参照優先順位（1: 対象ドイツ語ページ → 2: GERMAN_DRILL_SPEC → 3: ドイツ語専用テスト → 4: 必要な共通モジュール → 5: 共通仕様書）の確立。
+     - 日本語ファイル（`practice*.js`, `practice*.html` 等）の原則参照禁止と、例外4条件（共通モジュール仕様確認、新機能移植、共通モジュール変更の影響調査、既存テスト失敗時の原因分析）および作業報告への理由明記義務を策定。
+     - 共通モジュール変更時の回帰確認方針（全日本語ファイルの無条件読み込みを禁止し既存自動テスト `tests/*.cjs` を優先）と、調査効率化ルール、新規ドイツ語ドリル（Deutsche Übung 1.2+）作成の標準手順を規定。
+  3. **プロジェクト継続ルールへの反映（`AGENTS.md`）**:
+     - `## 2. 最優先の実装・編集ルール` に「ドイツ語ドリル（Deutsche Übung）の参照優先順位と探索範囲（2026-11-08策定）」を追加。
+  4. **コード・テストの完全保全**:
+     - `uebung1.1.html` / `uebung1.1.js`、日本語ドリルのHTML/JS、`drill-audio-session.js`、`style.css`、既存自動テスト等の実行コードは一切無変更を維持。
+- 変更ファイル：`docs/GERMAN_DRILL_SPEC.md` (新規), `docs/GERMAN_DEVELOPMENT_GUIDE.md` (新規), `AGENTS.md`, `docs/HANDOVER.md`
+- スコープ厳守：ドイツ語ドリルの開発体制・仕様書整備のみ。実行コードの変更・リファクタリング・スタイル変更は一切なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - 全マークダウンファイル構文およびリンク整合性チェック：PASS
+  - 既存テストへの非干渉確認：PASS
+- ユーザー実機確認／CI／デプロイ：文書変更のため実機動作影響なし（Vercelデプロイ確認待ち）。
+- 次の具体的操作／判断待ち：
+  - Deutsche Übung 1.2以降の新規ドリル作成時に、本開発ガイドおよび専用仕様書に沿った開発運用の開始。
+
+# 前回のリレー状態 — Deutsche Übung 1.1 モデル音声再生修正完了
 
 - 更新日時：2026-11-08T21:05:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
