@@ -3527,21 +3527,22 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.05em;
+    font-family: 'Lato', sans-serif;
+    font-size: .9em;
     font-weight: 700;
     color: var(--text-primary, #1e293b);
-    padding: 3px 10px;
+    padding: 6px 10px;
     background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
-    border: 1px solid var(--border-color, #cbd5e1);
+    border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
-    letter-spacing: 0.03em;
+    letter-spacing: normal;
     line-height: 1.2;
 }
 @media (prefers-color-scheme: dark) {
     .practice83-page .p83-header-badge {
-        color: #f1f5f9;
-        background: var(--surface-bg-subtle, rgba(255, 255, 255, 0.06));
-        border-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        background: #304663;
+        border-color: #7998c3;
     }
 }
 .practice83-page .p83-example-category {
