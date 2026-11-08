@@ -1,3 +1,14 @@
+## 2026-11-08 — W-3: Practice 1.1 English Cues実装完了
+- 更新日時：2026-11-08T13:00:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：W-3 Practice 1.1 English Cues追加 / `fecd70a2790292372828a2c9acf2923190de8cd8` / `main`
+- 完了・未完了／変更ファイル：
+  - 完了：`practice1.1.html` に `#task4Container` を追加。`practice1.1.js` に `practice1State.englishCues`、`Drill 4: Practice with English cues` パネル生成関数 `renderEnglishCuePanel()` を追加し、Drill 1 のキュー表示を英語／日本語で動的に切り替え可能に接続（1. I / student, 2. I / teacher, 3. I / Japanese, 4. I / international student, 5. friend / student, 6. friend / home maker, 7. friend / American）。切替時のDrill 1上部への滑らかなスクロール、録音中ロック対応、録音結果・音声を保持したままの再描画を確認。
+  - 変更ファイル：`practice1.1.html`, `practice1.1.js`, `docs/HANDOVER.md`
+- 自動検証：Pythonによる全7問キュー変換シミュレーション全件一致PASS、`git diff --check` 合格。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
+- 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続のEnglish Cues未対応ページ（Practice 1.2, 8.1, 8.2, 8.3）またはF-2等へ移行可能。
+
 ## 2026-11-08 — F-1: Practice 2.2 English Cues実装完了
 - 更新日時：2026-11-08T11:40:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
@@ -22,7 +33,7 @@
 ### W：検討・仕様判断・前工程に依存する作業（優先順）
 1. **W-1 各ページの使用語・語彙表示見直し → Beyond新設置・デザイン展開**［未着手／段階依存］：対象候補はPractice 1.1／1.2／2.1／2.2／2.3／7.1／7.2／7.3／8.1／8.2／8.3。ページごとに使用語・学習範囲と表示内容を先に確定し、語句・Hover／Displayを整えてから、そのページにBeyondを新設または承認済みデザインを適用する。先行する語彙調整が終わらないページへBeyondを先行展開しない。既存Beyond 8.1〜8.3は現状を保持し、必要な差分のみ検討する。
 2. **W-2 人物表示・場所表示の見直し**［未着手］：人物X／Y／Z・人物ガイド（2.1／2.2／2.3）と、場所・都市・国の表示（2.2／2.3）。同じ画像・会話表示の検討としてまとめ、実装は対象要素ごとに切り分ける。
-3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り5ページ実装待ち］：対象は **Practice 1.1／1.2／8.1／8.2／8.3**。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。
+3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り4ページ実装待ち］：対象は **Practice 1.2／8.1／8.2／8.3**。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。Practice 1.1は実装・Push完了。
 4. **W-4 7.2／7.3時制区分の配置検討**［検討］：「きく」左への配置案。現行の確定配置を無断変更しない。
 5. **W-5 8系英語ラベルのフォント・色・区分表示の残件**［要確認］：既に確定・実装したLatoや装飾を再作業せず、未決の箇所だけ扱う。
 6. **W-6 Example／DrillのHover説明の改善**［検討］：Ex1／Dr1等の説明の出し方と範囲を決める。

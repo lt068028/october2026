@@ -133,7 +133,8 @@ const practice1State = {
     audioUrls: {},
     savedResults: {},
     views: {},
-    startingRow: null
+    startingRow: null,
+    englishCues: false
 };
 
 const AUDIO_ONLY_MESSAGE = "🐣Only Hiragana:🎙️Audio only";
@@ -662,6 +663,7 @@ function renderAll() {
     renderTask1();
     renderTask2();
     renderTask3();
+    renderEnglishCuePanel();
 }
 
 // ============================================================================
@@ -1531,22 +1533,28 @@ function renderTask1() {
             })
         );
 
-        const formattedX = formatWord(
-            item.x,
-            item.xKanji,
-            item.x === "わたし" ? "watashi" : "tomodachi",
-            item.x === "わたし" ? "I" : "friend"
-        );
+        if (practice1State.englishCues) {
+            const xEng = item.x === "わたし" ? "I" : "friend";
+            const yEng = item.yMeaning;
+            view.prompts.textContent = `${xEng} / ${yEng}`;
+        } else {
+            const formattedX = formatWord(
+                item.x,
+                item.xKanji,
+                item.x === "わたし" ? "watashi" : "tomodachi",
+                item.x === "わたし" ? "I" : "friend"
+            );
 
-        const formattedY = formatWord(
-            item.y,
-            item.yKanji,
-            item.yRomaji,
-            item.yMeaning
-        );
+            const formattedY = formatWord(
+                item.y,
+                item.yKanji,
+                item.yRomaji,
+                item.yMeaning
+            );
 
-        view.prompts.innerHTML =
-            formattedX + (hintMode === "paren" ? "" : " ／ ") + formattedY;
+            view.prompts.innerHTML =
+                formattedX + (hintMode === "paren" ? "" : " ／ ") + formattedY;
+        }
 
         refreshRow(view);
     });
@@ -1801,6 +1809,53 @@ function renderTask3() {
 
         update();
     }
+}
+
+// ============================================================================
+// Drill 4: English Cues Panel
+// ============================================================================
+
+function renderEnglishCuePanel() {
+    const container = document.getElementById("task4Container");
+    if (!container) return;
+    container.innerHTML = "";
+    container.hidden = false;
+
+    const panel = makeElement("section", "info-panel info-panel-task1 drill-cue-panel");
+    const copy = makeElement("div", "drill-cue-copy");
+    copy.append(
+        makeElement("span", "info-panel-title drill-cue-title", "Drill 4: Practice with English cues"),
+        makeElement("span", "info-panel-desc drill-cue-description", "💡Use English cues for Drill 1.")
+    );
+
+    const toggle = makeElement(
+        "button",
+        "drill-cue-button",
+        practice1State.englishCues ? "Display Japanese Cues" : "Display English Cues"
+    );
+    toggle.type = "button";
+    toggle.disabled = busy();
+    toggle.classList.toggle("is-english", Boolean(practice1State.englishCues));
+    toggle.setAttribute("aria-pressed", String(Boolean(practice1State.englishCues)));
+
+    toggle.onclick = () => {
+        if (busy()) return;
+        practice1State.englishCues = !practice1State.englishCues;
+        renderAll();
+        requestAnimationFrame(() => {
+            const target = document.querySelector("#task1Container .info-panel:not(.drill-cue-panel)") || document.querySelector("#drill1Container .info-panel:not(.drill-cue-panel)");
+            if (!target) return;
+            const style = getComputedStyle(target);
+            const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.5;
+            window.scrollTo({
+                top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - line),
+                behavior: "smooth"
+            });
+        });
+    };
+
+    panel.append(copy, toggle);
+    container.append(panel);
 }
 
 // ============================================================================
@@ -2710,7 +2765,7 @@ window.addEventListener("pagehide", () => {
         originalSync();
 
         document.querySelectorAll(
-            '.compact-settings .segmented-option'
+            '.compact-settings .segmented-option, .drill-cue-button'
         ).forEach(button => {
             button.disabled = busy();
         });
@@ -2890,7 +2945,7 @@ window.addEventListener("pagehide", () => {
         if (
             busy() &&
             event.target.closest?.(
-                '.compact-settings .segmented-option'
+                '.compact-settings .segmented-option, .drill-cue-button'
             )
         ) {
             event.preventDefault();
