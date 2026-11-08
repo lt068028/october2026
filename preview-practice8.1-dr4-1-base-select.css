@@ -1,0 +1,75 @@
+.p81-base-select-preview .p81-preview-note {
+    padding: 12px;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+    background: var(--bg-panel);
+}
+.p81-base-select-preview .p81-preview-note p { margin: 6px 0; }
+@supports (appearance: base-select) and selector(::picker(select)) {
+    .p81-base-select-preview #drill4 .p81-base-select,
+    .p81-base-select-preview #drill4 .p81-base-select::picker(select) {
+        appearance: base-select;
+    }
+    .p81-base-select-preview #drill4 .p81-base-select {
+        inline-size: var(--preview-select-width);
+        color: var(--text-primary);
+        background: var(--bg-panel);
+    }
+    .p81-base-select-preview #drill4 .p81-base-select > button {
+        font: inherit;
+        color: inherit;
+        text-align: inherit;
+    }
+    .p81-base-select-preview #drill4 selectedcontent .p81-option-english { display: none; }
+    .p81-base-select-preview #drill4 .p81-base-select::picker(select) {
+        box-sizing: border-box;
+        inline-size: max-content;
+        min-inline-size: anchor-size(width);
+        max-inline-size: calc(100vw - 24px);
+        max-block-size: min(480px, var(--preview-picker-height, calc(100dvh - 24px)));
+        overflow: auto;
+        padding: 4px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: var(--bg-main);
+        color: var(--text-primary);
+    }
+    .p81-base-select-preview #drill4 .p81-base-select option {
+        display: grid;
+        grid-template-columns: 1em minmax(0, 1fr);
+        gap: 2px 6px;
+        padding: 6px;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        color: var(--text-primary);
+        background: var(--bg-main);
+    }
+    .p81-base-select-preview #drill4 .p81-base-select option::checkmark {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .p81-base-select-preview #drill4 .p81-option-japanese,
+    .p81-base-select-preview #drill4 .p81-option-english { grid-column: 2; }
+    .p81-base-select-preview #drill4 .p81-option-english {
+        font-size: .8em;
+        font-weight: 400;
+        color: var(--text-secondary);
+        visibility: hidden;
+    }
+    .p81-base-select-preview #drill4 .p81-base-select option:is(:hover, :focus) {
+        background: var(--bg-panel);
+    }
+    .p81-base-select-preview #drill4 .p81-base-select option:is(:hover, :focus) .p81-option-english {
+        visibility: visible;
+    }
+    /* The existing selected-value tooltip must not cover the open picker. */
+    .p81-base-select-preview #drill4 .tooltip-wrap:has(> .p81-base-select:open) > .tooltip-tip {
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    @media (any-pointer: coarse), (hover: none) {
+        .p81-base-select-preview #drill4 .p81-base-select option .p81-option-english {
+            visibility: visible;
+        }
+    }
+}
