@@ -1,4 +1,33 @@
-# 現在のリレー状態 — Practice 8.3 疑問文アイコン未表示修正完了
+# 現在のリレー状態 — Deutsche Übung 1.1 Dr1 キュー改行修正・専用仕様書改訂完了
+
+- 更新日時：2026-11-08T22:16:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex指示書 — Deutsche Übung 1.1 Dr1 キュー改行修正・専用仕様書改訂（Drill 1設問3「Berlin / fahren」改行解消、自然幅計測契約の策定・実装・テスト強化） ／ `b0c2b0de31cbf04655458e0892019c0b1157973d` ／ `main`
+- 原因分析と修正内容：
+  1. **改行の確定原因**:
+     - `style.css` の `.uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell` に `white-space: normal !important;` が指定されており、キューの任意折り返しが許可されていた。
+     - `uebung1.1.js` の `alignDrill1Cues()` が、既に折り返された状態の `.cue-content` の `getBoundingClientRect().width` を測定していたため、折り返し後の狭い幅（約1行分）が `--drill-cue-width` に固定され、キューが復元されず改行状態に固定化される循環圧縮が発生していた。
+  2. **修正内容**:
+     - `style.css`: `.uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell` の `white-space` を `nowrap !important` に変更。通常の表示幅で地名・区切りスラッシュ・動詞が1行で表示されることを保証。
+     - `uebung1.1.js`: `alignDrill1Cues()` において、`cloneNode(true)` を用いた一時的な非表示クローン要素（`white-space: nowrap`, `width: max-content`, ツールチップ要素 `.tooltip-tip`, `.custom-tip-box` 除去済み）を生成して測定する方式に改善。折り返し前の純粋な自然幅（intrinsic width）を取得し、`--drill-cue-width` に設定。
+     - `uebung1.1.html`: スクリプトキャッシュバスターを `20261108-cue-width-fix` に更新。
+  3. **ドイツ語専用仕様書（`docs/GERMAN_DRILL_SPEC.md`）の改訂**:
+     - 「3.4 キューの非折り返し・自然幅計測契約」を新設。
+     - 1行表示原則、折り返し前の自然幅計測、循環圧縮の禁止、幅不足時の操作ボタン列折り返し優先、地名・記号・動詞の非分断、OFF/Hover/DisplayおよびResize後の再計測保証、極小幅時の安全なフォールバック、新規ドリルへの共通適用を明文化。
+  4. **回帰テスト（`tests/uebung11.cjs`）の強化**:
+     - Drill 1 キューセルの `white-space: nowrap !important` 指定、`alignDrill1Cues` のツールチップ除去処理、`max-content` / `whiteSpace: nowrap` による自然幅測定契約を検証するアサーションを追加。
+- 変更ファイル：`uebung1.1.js`, `style.css`, `uebung1.1.html`, `docs/GERMAN_DRILL_SPEC.md`, `tests/uebung11.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1 Drill 1 および専用仕様書・テスト・引き継ぎ文書のみ。Example、Drill 2〜4、他ページ、共通音声・録音ロジックは一切変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - 全マークダウン構文チェック：PASS
+  - `tests/uebung11.cjs` 全アサーション検証スクリプト：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Deutsche Übung 1.1 Drill 1 設問1〜3（特に設問3「Berlin / fahren」）の1行表示確認。
+  - 実機確認完了後、確定仕様をDrill 2〜4へ展開予定。
+
+# 前回のリレー状態 — Practice 8.3 疑問文アイコン未表示修正完了
 
 - 更新日時：2026-11-08T22:05:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

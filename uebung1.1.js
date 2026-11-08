@@ -866,7 +866,21 @@ document.addEventListener("DOMContentLoaded", () => {
         let max = 0;
         cues.forEach(cell => {
             const span = cell.querySelector(".cue-content") || cell;
-            const w = span.getBoundingClientRect().width;
+            const copy = span.cloneNode(true);
+            copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
+            Object.assign(copy.style, {
+                position: "absolute",
+                visibility: "hidden",
+                display: "inline-block",
+                width: "max-content",
+                minWidth: "0",
+                maxWidth: "none",
+                whiteSpace: "nowrap",
+                transform: "none"
+            });
+            cell.append(copy);
+            const w = copy.getBoundingClientRect().width;
+            copy.remove();
             if (w > max) max = w;
         });
         if (max > 0) {

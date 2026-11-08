@@ -75,4 +75,19 @@ assert.ok(js.includes('alignDrill1Cues'), 'JS must include alignDrill1Cues for D
 assert.ok(css.includes('.uebung11-page #drill1 .example-box .drill-example-table'), 'style.css must have Drill 1 Ex grid rules');
 assert.ok(css.includes('.uebung11-page #drill1 .drill-row .recording-table'), 'style.css must have Drill 1 Dr1 grid rules');
 
+// 5.6 Check Drill 1 Cue non-wrapping and intrinsic measurement contracts
+assert.ok(
+    css.includes('.uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell') &&
+    css.includes('white-space: nowrap !important;'),
+    'Drill 1 cue cell must enforce white-space: nowrap !important to prevent unwanted wrapping'
+);
+assert.ok(
+    js.includes('copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());'),
+    'alignDrill1Cues must exclude hidden tooltip text when measuring natural width'
+);
+assert.ok(
+    js.includes('width: "max-content"') && js.includes('whiteSpace: "nowrap"'),
+    'alignDrill1Cues must measure natural unconstrained width using max-content and nowrap'
+);
+
 console.log('PASS: All structural and contract tests passed successfully.');

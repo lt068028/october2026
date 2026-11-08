@@ -4847,7 +4847,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell {
     grid-column: 2;
     width: auto !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
 }
 
 .uebung11-page #drill1 .drill-row .recording-table td:has(> .recording-controls) {
