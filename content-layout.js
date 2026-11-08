@@ -79,7 +79,6 @@
             table.dataset.contentNumber = number > 0 ? 'true' : 'false';
             table.style.setProperty('--content-number-width', number + 'px');
             table.style.setProperty('--content-cue-width', track + 'px');
-            table.style.setProperty('--drill-cue-width', track + 'px');
             table.querySelectorAll('td[rowspan]').forEach(e => e.style.setProperty('--content-row-span', String(e.rowSpan)));
             numbers.forEach(e => e.dataset.contentCell = 'number');
             cues.forEach(e => e.dataset.contentCell = 'cue');
@@ -369,7 +368,9 @@
         if (entries.some(e => Math.abs(e.target.clientWidth - (widths.get(e.target) ?? -1)) > .25 || fonts.get(e.target)!==getComputedStyle(e.target).font)) schedule();
     });
     document.addEventListener('change', schedule);
-    window.addEventListener('resize', () => { measures = new WeakMap(); minimums = new WeakMap(); schedule(); });
+    // Natural measurements do not depend on viewport width. Content/value keys and
+    // font-load invalidation own the cache; resize only recomputes track allocation.
+    window.addEventListener('resize', schedule);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
     else schedule();
     document.fonts.ready.then(() => { measures = new WeakMap(); minimums = new WeakMap(); fontRevision++; schedule(); });

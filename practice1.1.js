@@ -2886,98 +2886,6 @@ window.addEventListener("pagehide", () => {
         example.replaceChildren(table);
     }
 
-    function alignCueColumns() {
-        [
-            'task1Container',
-            'task2Container',
-            'task3Container'
-        ].forEach(id => {
-            const tables = Array.from(
-                document.querySelectorAll(
-                    `#${id} table.recording-table`
-                )
-            );
-
-            let width = 0;
-
-            tables.forEach(table => {
-                const cell = table.querySelector(
-                    '.drill-cue-cell'
-                );
-                if (!cell) return;
-
-                const measure = makeElement('span');
-
-                measure.append(
-                    ...Array.from(
-                        cell.childNodes,
-                        node => node.cloneNode(true)
-                    )
-                );
-
-                measure.querySelectorAll(
-                    '.tooltip-tip,.custom-tip-box'
-                ).forEach(tip => tip.remove());
-
-                measure.querySelectorAll('select').forEach((sel, i) => {
-                    const originalSel = cell.querySelectorAll('select')[i];
-                    if (originalSel) sel.value = originalSel.value;
-                });
-
-                measure.querySelectorAll('*').forEach(el => {
-                    el.style.maxWidth = 'none';
-                    el.style.whiteSpace = 'nowrap';
-                });
-
-                Object.assign(measure.style, {
-                    position: 'fixed',
-                    left: '0',
-                    top: '0',
-                    visibility: 'hidden',
-                    pointerEvents: 'none',
-                    display: 'inline-block',
-                    width: 'max-content',
-                    minWidth: 'max-content',
-                    maxWidth: 'none',
-                    whiteSpace: 'nowrap',
-                    font: getComputedStyle(cell).font
-                });
-
-                document.body.append(measure);
-
-                width = Math.max(
-                    width,
-                    Math.ceil(
-                        measure.getBoundingClientRect().width
-                    )
-                );
-
-                measure.remove();
-            });
-
-            tables.forEach(table => {
-                table.style.setProperty('--drill-cue-width', `${width + 8}px`);
-                table.style.setProperty('--content-cue-width', `${width + 8}px`);
-                const col = table.querySelector('colgroup')?.children[1];
-                if (col) {
-                    col.style.width = `${width + 8}px`;
-                }
-            });
-        });
-    }
-
-    window.addEventListener('resize', alignCueColumns);
-    document.addEventListener('content-layout', alignCueColumns);
-
-    document.addEventListener('change', event => {
-        if (
-            !busy() &&
-            event.target.closest?.('#task2Container')
-        ) {
-            alignCueColumns();
-        }
-    });
-
     document.addEventListener('click', event => {
         if (
             busy() &&
@@ -2996,7 +2904,6 @@ window.addEventListener("pagehide", () => {
         originalRender();
         installSpeechStyle();
         updateExample();
-        alignCueColumns();
         syncRecordingButtons();
     };
 })();

@@ -1,22 +1,68 @@
 # 現在のリレー状態
 
+- 更新日：2026-11-08（Europe/Vienna）／担当：Codex Cloud。
+- 開始時main：`02c58ac5309d6f25424060b6f7deb30c38de6c76`／作業ブランチ：`work`。確定時は`HEAD:main`へ通常Push。
+- 対象：Practice 1.1 Exampleキュー縦割れ修正と、`faa1051`・`6f2965c`の関連共通変更の整理。教材文・ラベル・キュー・例文・音声・録音・判定内容は変更していない。
+- 確認済み原因：`.drill-example-table > tbody > tr > td:not(:last-child)`の`width:1%`がGridのキューセルへ残留。1363px新規表示で列175.703pxに対してセル実幅1.75px。Grid化セルだけ`width:auto`とし、同じ列計算のまま実幅175.703pxへ復元。Drillのrecording-tableとは区別した。
+- 撤去：全ページDrillへの`nowrap!important;display:inline-block`の組合せ（Displayの既存block改行と競合）、属性指定と重複するクラス配置フォールバック、Practice 1.1の`alignCueColumns`とresize／content-layout／changeリスナー・colgroup幅更新、共通側の未使用`--drill-cue-width`更新、リサイズのたびのWeakMap全消去。
+- 維持：既存の通常Drill単語保護、8.1系の固有折返し、Displayの語句＋ヒント単位、`task…Container`検出、測定クローンの非制約化、select選択値の複製、内容・選択値等の計測キー、フォント読込時のキャッシュ無効化。配信識別子は読込先のHTMLで`20261108-example-cell-width`へ更新。
+- 幅管理：Practice 1.1のGrid化Drillは`content-layout.js`の`--content-cue-width`が担当。ページ側から同じ幅を上書きしない。既存の`content-layout`イベントは8.1の利用箇所があるため維持。
+- 未確認の仮説：配置フォールバックに必要な属性欠落は今回の検査で再現せず。キャッシュ全消去の必要性も今回の条件では再現せず。あらゆる将来のページ・スタイル条件で不要と証明したものではない。再発時は測定条件とキー・限定した無効化条件を調べる。
+
+## 実測（Chromium・Hiragana Only／Vocab Hover）
+
+| 画面幅px | Exampleカード幅px | テーブル幅px | キュー列幅px | キューセル実幅px |
+| --- | --- | --- | --- | --- |
+| 1363・修正前 | 1248 | 1214 | 175.703 | 1.750 |
+| 1363・修正後 | 1248 | 1214 | 175.703 | 175.703 |
+| 1440・修正後 | 1248 | 1214 | 175.703 | 175.703 |
+| 1280・修正後 | 1184 | 1150 | 175.703 | 175.703 |
+| 850・修正後 | 754 | 720 | 153.703 | 153.703 |
+| 600・修正後 | 504 | 470 | 83.172 | 83.172 |
+| 375・修正後 | 279 | 245 | 121.953 | 121.953 |
+
+修正前1363px・修正後1363px／375pxの実スクリーンショットを会話内に提示。公開ページの画像とは扱わない。
+
+## 検証と残る確認
+
+- 状態：実装済み・以下の限定自動検証済み。公開表示・ユーザー実機確認は保留。
+- `tests/content-layout.cjs`：Drill内容幅・操作配置、16,965確認、不合格0。
+- `tests/content-examples.cjs`：Example実測・重なり・文字描画、265,716確認、不合格0。
+- `tests/content-layout-states.cjs`：設定・選択肢・倍率・安定性、6,331確認、不合格0。
+- `tests/content-layout-boundaries.cjs`：実測段組み境界・方向復元、241確認、不合格0。
+- `tests/p11-cue-resize.cjs`：Practice 1.1往復リサイズ・新規ロード比較・状態保持、2,365確認、不合格0。
+- `tests/p11-cue-resize.cjs`の録音URL比較を補強した状態保持部分も`STATE_ONLY=1`で19確認・不合格0。音声APIは既存モックを使用し、録音後の認識原文・判定結果・録音URL／結果DOM・選択／入力／設定の保持を比較。実音響検証ではない。
+- `tests/display-cue-lines.cjs`：348確認合格。Displayの語句＋ヒント単位、既存改行を確認。
+- 属性監査：全11Practice＋composition1／pronunciation1／2の14ページ、1440→375→1440pxの42状態・延べ408テーブルで属性欠落・ページ横はみ出しなし。初期状態の監査であり全Set全機能の証明ではない。
+- 専用テストは1440→1280→1024→900→850→760→600→375→600→760→850→900→1024→1280→1440→375→1440pxを両表記×Vocab OFF／Hover／Displayで測定（102リサイズ状態）。同じ最終幅の新規ロードと配置が一致し、Exampleキュー単語内の縦割れなし。
+- 共通Drillは11ページ×30条件、Exampleは11ページ×42条件。375／600／760／850／900／1024／1280px、両表記・Vocab各設定、追加のInformal／Casual・ダークを検証。ExampleとDrillを別々に測定し、対象領域の重なり・横はみ出し・操作配置を検査。制作途中の限定レイアウト検証として実行した。
+- `node --check practice1.1.js`、`node --check content-layout.js`、`node --check tests/p11-cue-resize.cjs`合格。`git diff --check`は差分形式のみの合格として別管理。
+
+- 仕様書：`docs/UI_LAYOUT_SPEC.md`更新済み。共通配置器の担当とGridセル実幅検証を既存節へ明記。PROJECT_SPECは更新不要（教材・動作の変更なし）。過去HANDOVERの解消断定とシミュレーション報告は履歴を保持して訂正。
+- 公開確認：`https://october2026.vercel.app/practice1.1.html`への接続はCloudプロキシのCONNECT 403／Chromiumの`ERR_TUNNEL_CONNECTION_FAILED`。旧公開ページの読み込みも修正版の読み込みもこの環境からは未確認。Push成功やVercelのステータスが得られても、公開表示の改善確認と混同しない。
+- 次の操作：ChatGPT Settings → Codex Cloud → Environments → 対象環境の… → Edit → Public internet access → Additional allowed domainsへ`october2026.vercel.app`を追加・保存・Republish。既存タスクは環境状態を保持するため、必要に応じ更新後環境の新規タスクで公開HTML／CSS／JS識別子と実セル幅、1363／1440→375→1440pxを確認する。このタスクには実行中環境の設定変更ツールがない。
+- 未検証：公開デプロイ後の実表示、ChromeOS等のユーザー実機、実マイク・実音声認識／音声品質。全ページ全機能の包括テスト合格とは扱わない。旧環境の未Push変更は直接調査できず、前担当記録では未回収なし。
+
+# 前担当のリレー状態（2026-11-08・履歴）
+
 - 更新日時：2026-11-08T08:35:00+01:00 / 担当環境：Antigravity (Remote Agent)
 - 状態：引き継ぎ可能（GitHub保存確認済み）
 - 課題／開始時mainのコミットID／作業ブランチ：Practice 8.2 英語ラベルB装飾復元・親要素不要囲み遮断、Practice 1.1 英字区分B装飾・コロン撤去、全ページ横断キュー単語文字縦折れ防止 / `6f2965c` / `main`（作業用一時ブランチ `preview/p82-concept-badge-b` は `main` に完全マージ済み）
 - 完了・未完了／変更ファイル：
-  - 完了：Practice 8.2 英語概念ラベルB装飾復元および親要素不要囲み完全遮断、Practice 1.1 Example英字区分（Affirmative／Negative）のコロン撤去とB装飾適用、全11ページ横断のキュー単語文字縦折れ防止・スタック行フォールバック・非制約幅測定保証。
+  - 当時の完了報告：Practice 8.2 英語概念ラベルB装飾復元、Practice 1.1 Example英字区分のコロン撤去とB装飾適用、共通キュー対策の追加。**2026-11-08訂正：共通キュー対策はPractice 1.1 Exampleに効いておらず、完全解消・全ページ適合確認を示す記録として扱わない。**
   - 変更ファイル：`style.css`, `content-layout.js`, `practice1.1.js`, `practice1.1.html`, `practice8.2.html`, 全Practice HTMLのキャッシュクエリ, `docs/PRACTICE82_SPEC.md`, `docs/HANDOVER.md`
 - 自動検証：`git diff --check` 合格、構文バランス検査合格。
 - ユーザー実機確認／CI／デプロイ：Vercel自動デプロイ完了（コミット `faa1051` まで反映済み）。Practice 8.2 および Practice 1.1 英字区分装飾はユーザー確認済み。キュー縦折れ解消のユーザー実機確認待ち。
 - 次の具体的操作／判断待ち／未回収作業：未回収作業なし。全変更はmainに通常Push済み。作業用ブランチ `preview/p82-concept-badge-b` はマージ済みのため安全に削除可能。
 
-# 2026-11-07 / 全ページ横断：キュー単語文字縦折れ防止・スタック行フォールバック・非制約幅復元
+# 2026-11-07 / 全ページ横断：キュー対策の追加（2026-11-08訂正あり）
 
 - **状態：引き継ぎ可能（main反映・Push完了）**
 - **課題**：Practice 1.1をはじめとする全ページのDrillテーブルにおいて、画面幅縮小時やリサイズ時にキューテキスト（「わたし」「がくせい」等）が文字ごとに分割されて1文字1行で縦折れ（縦書き化）する現象の根本解消、および全ページ横断点検。
-- **原因と修正内容**：
-  1. **単語内改行の物理的防止（全ページ共通）**：
-     `style.css` において `.site-scale .recording-table :is(.prompt-label, .drill-cue-cell) :is(.target-word, .display-cue-unit, .tooltip-wrap)` に `white-space: nowrap !important; display: inline-block;` を適用。単語自体が文字単位で縦折れすることを全ページで物理的に遮断（単語間のスラッシュや空白でのみ折り返しを許可）。
+- **2026-11-08訂正**：以下は当時追加した処理の履歴。Exampleセルの旧`width:1%`は未修正で、最新main `02c58ac`でも1363pxのセル実幅1.75pxを再現した。「全ページで物理的に遮断」「測定保証」等の断定は検証根拠不足。不要な強制指定・配置フォールバック・二重幅管理・リサイズ時の全キャッシュ破棄は今回の修正で整理した。
+- **当時の修正内容（現行仕様ではない）**：
+  1. **単語内改行対策として追加（全ページ共通）**：
+     `style.css` において `.site-scale .recording-table :is(.prompt-label, .drill-cue-cell) :is(.target-word, .display-cue-unit, .tooltip-wrap)` に `white-space: nowrap !important; display: inline-block;` を適用。当時は全ページの縦折れを遮断すると報告したが、対象はrecording-tableでありExampleには効かず、Displayの既存改行も変更していた。
   2. **スタック配置時のセル配置フォールバック（全ページ共通）**：
      `style.css` の `content-record-grid` において、`data-content-cell` 属性の有無に依存せず、既存のクラス名（`.drill-number-cell`, `.drill-cue-cell`, `.prompt-label`, `td:has(> .recording-controls)`, `.p81-controls`, `.p73-controls`）でも確実に `grid-column: 1`, `2`, `3` および `stacked` 時の `controls` の `grid-column: 1 / -1` を保証。スタック時に操作列が1列目に押し込められてキューが押しつぶされる現象を防止。
   3. **非制約自然幅の測定保証とキャッシュヒステリシス排除（全ページ共通）**：
@@ -84,7 +130,7 @@
     - `alignCueColumns()` 内でクローンされた `<select>` の選択値を保持し、子要素の制約を解除して正確な幅を測定。
     - `window.resize` および `document.content-layout` イベントリスナーを追加し、リサイズ時および共通レイアウト更新時にキュー列幅と `colgroup` 幅を最新のカード利用可能幅で再計算。
   - `practice1.1.html`：キャッシュ識別子を `20261107-cue-resize-fix` に更新。
-- **自動検証**：`git diff --check` 合格、構文バランス検査合格、1440px→375px→1440px反復シミュレーションおよび中間幅（375/600/760/850/900/1024/1280/1440px）両方向遷移におけるヒステリシスなし（同幅での新規ロードと同一レイアウト）の成立を確認。
+- **当時の検証報告（2026-11-08訂正）**：`git diff --check`・構文バランス検査と、1440→375→1440px・中間幅のシミュレーションを報告していた。Exampleセル実幅を検証しておらず、実ブラウザでの不具合解消・新規ロード一致の証明にはならない。今回の実測・回帰テストとは区別する。
 - **仕様書整合性**：更新不要（既存のUI_LAYOUT_SPEC「共通レスポンシブ・幅配分の設計契約」およびPROJECT_SPECに準拠したバグ修正）。
 - **未確認**：公開Vercelおよびユーザー実機ブラウザでの実機確認。従来のユーザー実機確認済み情報は維持。
 
