@@ -1034,7 +1034,7 @@ function measureCues() {
         group.querySelectorAll('.p81-comparison-card').forEach(card=>{
             card.style.removeProperty('--p81-kind-width');
             const promptCells=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body)')];
-            promptCells.forEach(c=>c.style.removeProperty('--p81-kind-width'));
+            promptCells.forEach(c=>{c.style.removeProperty('--p81-kind-width');c.style.removeProperty('--p81-kind-indent');});
             const labels=promptCells.map(c=>c.querySelector(':scope > .p81-kind'));
             if(labels.length!==2||!labels[0]||!labels[1])return;
             const labelWidths=labels.map(label=>{
@@ -1051,8 +1051,11 @@ function measureCues() {
             const anchorRect0=anchor.getBoundingClientRect(),firstRect0=first.getBoundingClientRect(),lastRect0=last.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
             const relCenter=(firstRect0.left+lastRect0.right)/2-anchorRect0.left;
             const row1KindWidth=Math.max(labelWidths[0],labelWidths[1]-Math.max(0,relCenter-markWidth/2));
+            const indent0=Math.max(0,row1KindWidth-labelWidths[0]);
             promptCells[0].style.setProperty('--p81-kind-width',row1KindWidth+'px');
+            promptCells[0].style.setProperty('--p81-kind-indent',indent0+'px');
             promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
+            promptCells[1].style.setProperty('--p81-kind-indent','0px');
             const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect();
             const centerX=(firstRect.left+lastRect.right)/2;
             spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
