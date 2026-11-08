@@ -25,7 +25,7 @@ const icons={
 const modes=[{id:'current',label:'現状 🙆 / 🙅'},{id:'person',label:'A · Google Person Add / Remove'},{id:'lucide',label:'Lucide · Check / X'},{id:'thumbs',label:'Lucide · Thumbs Up / Down'},{id:'smile',label:'Lucide · Smile / Frown (No eyes · Mono)'},{id:'smileColor',label:'Lucide · Smile / Frown (No eyes · Color)'}];
 let active='current',observer=null;
 const frame=document.getElementById('practice'),nav=document.getElementById('options');
-const bg=document.createElement('button');bg.textContent='背景: クールグレー #F3F5F7';bg.setAttribute('aria-pressed','true');bg.dataset.cool='true';bg.onclick=()=>{bg.dataset.cool=bg.dataset.cool==='true'?'false':'true';bg.setAttribute('aria-pressed',bg.dataset.cool);bg.textContent=bg.dataset.cool==='true'?'背景: クールグレー #F3F5F7':'背景: 元のブルー';decorate(true)};nav.append(bg);
+const bg=document.createElement('button');bg.textContent='背景: ウォームグレー #F5F2EE';bg.setAttribute('aria-pressed','true');bg.dataset.cool='true';bg.onclick=()=>{bg.dataset.cool=bg.dataset.cool==='true'?'false':'true';bg.setAttribute('aria-pressed',bg.dataset.cool);bg.textContent=bg.dataset.cool==='true'?'背景: ウォームグレー #F5F2EE':'背景: 元のブルー';decorate(true)};nav.append(bg);
 function mark(yes){if(active==='current')return yes?'🙆':'🙅';const key=active==='person'?(yes?'personAdd':'personRemove'):active==='lucide'?(yes?'check':'x'):active==='thumbs'?(yes?'thumbsUp':'thumbsDown'):(yes?'smile':'frown');return svg(key,active==='person',active==='smileColor'?(yes?'#16a34a':'#dc2626'):null)}
 function paintEmoji(doc,root){const walker=doc.createTreeWalker(root,NodeFilter.SHOW_TEXT);const matches=[];while(walker.nextNode()){const n=walker.currentNode;if(/[🙆🙅]/u.test(n.nodeValue)&&!n.parentElement.closest('script,style,.p71-preview-inline-icon,button.answer-choice'))matches.push(n)}for(const n of matches){const parts=n.nodeValue.split(/(🙆|🙅)/u);const frag=doc.createDocumentFragment();for(const part of parts){if(part==='🙆'||part==='🙅'){const span=doc.createElement('span');span.className='p71-preview-inline-icon';span.dataset.answer=part==='🙆'?'yes':'no';span.innerHTML=mark(part==='🙆');frag.append(span)}else if(part)frag.append(doc.createTextNode(part))}n.replaceWith(frag)}}
 function svg(key,material=false,color=null){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':(color||'currentColor'))+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
@@ -34,7 +34,7 @@ function decorate(force=false){
  try {
  const doc=frame.contentDocument;if(!doc||!doc.body)return;
  let style=doc.getElementById('p71-preview-styles');if(!style){style=doc.createElement('style');style.id='p71-preview-styles';doc.head.append(style)}
- const cool=bg.dataset.cool==='true';if(force||!style.textContent)style.textContent=` .practice7-page .example-button.answer-choice{background:${cool?'#F3F5F7':'#bae6fd'}!important;color:#17202c!important;border:1px solid ${cool?'#D8DEE4':'#a4d6f0'}!important} .practice7-page .example-button.answer-choice[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px} .p71-preview-inline-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;line-height:1;white-space:nowrap} .p71-preview-inline-icon svg{width:20px;height:20px} `;
+ const cool=bg.dataset.cool==='true';if(force||!style.textContent)style.textContent=` .practice7-page .example-button.answer-choice{background:${cool?'#F5F2EE':'#bae6fd'}!important;color:#17202c!important;border:1px solid ${cool?'#DDD5CC':'#a4d6f0'}!important} .practice7-page .example-button.answer-choice[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px} .p71-preview-inline-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;line-height:1;white-space:nowrap} .p71-preview-inline-icon svg{width:20px;height:20px} `;
  doc.querySelectorAll('button.answer-choice').forEach(btn=>{const yes=btn.dataset.answer==='yes';if(btn.dataset.iconPreview===active)return;btn.dataset.iconPreview=active;btn.innerHTML=mark(yes);btn.setAttribute('aria-label',yes?'Affirmative response':'Negative response')});
  doc.querySelectorAll('.p71-preview-inline-icon').forEach(el=>{if(force||el.dataset.iconPreview!==active){el.innerHTML=mark(el.dataset.answer==='yes');el.dataset.iconPreview=active}});
  // Replace icon glyphs in Example audio buttons, sentence text, and Drill 2 instructions, without replacing handlers.
@@ -51,7 +51,7 @@ frame.addEventListener('load',()=>{
   if(!doc||!doc.body)throw Error('Cannot access preview document');
   observer=new MutationObserver(()=>decorate());
   decorate();
-  document.getElementById('status').textContent='比較対象：DrillのY/Nボタン、Exampleの音声ボタン・文中マーク、Drill 2の説明文。背景はクールグレー／元のブルーを切替可能。本番ページは変更しません。';
+  document.getElementById('status').textContent='比較対象：DrillのY/Nボタン、Exampleの音声ボタン・文中マーク、Drill 2の説明文。背景はウォームグレー／元のブルーを切替可能。本番ページは変更しません。';
  }catch(err){document.getElementById('status').textContent='Preview error: '+err.message;}
 });
 </script></body></html>
