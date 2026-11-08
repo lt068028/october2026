@@ -4,7 +4,10 @@
 - 1.1および他ページのキュー縦割れ・不要変更整理はユーザーが実機確認全件OKと報告。公開版1363pxで1.1 Exampleセル175.703px・横表示をこちらでも確認済み。
 - F-1：8.1 Noun／Verb＋のの共通装飾は公開版で確認、完了。
 - F-2：全11Practiceの同様ラベルを調査。8.3 Ex1〜4 Verb／Adjectiveをユーザー承認により共通装飾へ統一。Q/Aはフォントのみ選定待ちで変更しない。7.3時制ラベルは別Preview、採用待ち。8.3 Ex1 Q/Aへの8.1 CSSの漏れは既知の別懸念。Q/Aの形状変更指示なしのため今回維持。
-- 変更：style.cssのp83-header-badgeだけ、practice8.3.htmlのCSS識別子、UI_LAYOUT_SPEC、本記録。公開表示の限定検証は保存後に確認。
+- 変更：style.cssのp83-header-badgeだけ、practice8.3.htmlのCSS識別子、UI_LAYOUT_SPEC、本記録。公開版1363pxで4見出しすべてLato・18.72px・padding 6px 10px・1px枠を確認。
+
+- 公開検証：7.3独立比較ページの現行／Latoのみ／B装飾リンクを確認。Latoのみは既存時制色、B装飾は共通中立背景・Lato・6px 10px余白をcomputed styleと画像で確認、1363pxでページ横はみ出しなし。mainの通常practice7.3.htmlは差分なし。375px・ダークの実表示、ユーザー採用判断は未確認。Q/Aは変更なし。
+- Lucide調査：公式リポジトリのcircle-letter-q／circle-letter-a SVGを確認。代案message-circle-question-mark／message-circle-replyも公式サイトで確認。候補提示のみで未採用。
 
 ## Wリスト追記（既存番号を変更しない）
 
