@@ -250,3 +250,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 ## 承認済みIcons8会話役割
 
 `node tests/qa-icons.cjs`：該当する10Practiceの画像読込・役割対応・空欄・帰属リンク・両テーマ・1440/375px・両表記/3ヒント/3文体・セット/English cues切替・入力/録音結果のリサイズ保持をChromiumで検査する。音声APIは既存モックであり実音響検証ではない。`QA_BASELINE`に変更前ツリーを指定すると役割の実外寸・位置・フォーム状態も比較する。`QA_OUTPUT`に測定JSONと代表画像を保存できる。`QA_PAGES`で変更影響を受けるページだけに限定できる。
+
+## Deutsche Übung 1.1: nach / in / zum / zur
+
+`node tests/uebung11.cjs`：Deutsche Übung 1.1 の静的構造、4 Drills（各Ex 1問＋練習3問）、German variety設定（DE / AT / CH）、地域別モデル文・許容回答、Copy my sentences、DrillAudioセッション管理、HTML・JS・CSS設計契約を検証する。

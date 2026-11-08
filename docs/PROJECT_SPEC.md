@@ -1288,3 +1288,62 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 漢字欄は「課番号→語句内の対象漢字のみ既存の強調色→全角括弧の読み」の順とし、対象字の独立表示は置かない。複数語句には各々の読みを付け、語句と読みを一組として自然に折り返す。対象字以外は通常色とし、既存の配色・文字サイズ・表示モードによる漢字欄の表示／非表示・開閉保持・Words欄は維持する。課番号・語句・読みのデータは各ページ実装を正本とし、対応不明や読み不足は推測で補わず報告する。適用は専用クラスへの明示参加とし、他ページへ自動展開しない。
 
 対象漢字と対応する読みの部分は、同じ既存の青色・太字スタイルで強調する。語ごとに対応範囲を明示し、文字数・位置から機械的に割り当てない。対象外の字・読み、括弧、課番号、区切りは通常表示。熟字訓や対応が確定できない読みは分割せず通常表示とし、その対象を報告する。なお本節の語句・読み・配当を変更しないという記述は当時の限定作業に関するものであり、現在の全Practice共通の掲載単位・複数未習漢字・配当併記の判断は本書冒頭「Beyond Kanjiの学習到達基準・掲載単位と強調」を正とする。
+
+---
+
+## Deutsche Übung 1.1 仕様（2026-11-08確定）
+
+### 概要と目的
+- ドイツ語練習ページ `uebung1.1.html` / `uebung1.1.js`。
+- 学習目標：行き先（場所・国・都市・施設）に応じて前置詞 `nach / in / zum / zur` を適切に選択し、ドイツ語文を発話・練習する。
+- 既存の日本語練習ページ（`practice1.1.html` 等）のUI構造・カードデザイン・録音・再生・自動判定・操作ロック・音声セッション仕様（`drill-audio-session.js`）を忠実に踏襲。
+
+### ドリル構成
+1. **Drill 1: nach: Cities & Countries**
+   - 文法焦点：冠詞なしの都市・国に対する方向前置詞 `nach`。
+   - Example: `Salzburg / fahren` → `Ich fahre nach Salzburg.`
+   - 1: `Graz / fahren` → `Ich fahre nach Graz.`
+   - 2: `Italien / reisen` → `Ich reise nach Italien.`
+   - 3: `Berlin / fahren` → `Ich fahre nach Berlin.`
+2. **Drill 2: in: Countries (with articles)**
+   - 文法焦点：定冠詞を伴う国名に対する方向前置詞 `in + Akkusativ`（die Schweiz, die Türkei, die USA, der Irak → den Irak）。
+   - Example: `die Schweiz / fahren` → `Ich fahre in die Schweiz.`
+   - 1: `die Türkei / fliegen` → `Ich fliege in die Türkei.`
+   - 2: `die USA / reisen` → `Ich reise in die USA.`
+   - 3: `der Irak / fliegen` → `Ich fliege in den Irak.`
+3. **Drill 3: zum: Masculine & Neuter**
+   - 文法焦点：男性・中性名詞施設に対する `zu + dem = zum + Dativ`。
+   - Example: `der Supermarkt / gehen` → `Ich gehe zum Supermarkt.`
+   - 1: `der Arzt / gehen` → `Ich gehe zum Arzt.`
+   - 2: `das Krankenhaus / fahren` → `Ich fahre zum Krankenhaus.`
+   - 3: `der Bahnhof / gehen` → `Ich gehe zum Bahnhof.`
+4. **Drill 4: zur: Feminine**
+   - 文法焦点：女性名詞施設に対する `zu + der = zur + Dativ`。
+   - Example: `die Post / gehen` → `Ich gehe zur Post.`
+   - 1: `die Bank / gehen` → `Ich gehe zur Bank.`
+   - 2: `die Apotheke / gehen` → `Ich gehe zur Apotheke.`
+   - 3: `die Schule / gehen` → 地域変種対応（下記参照）。
+
+### ドイツ語地域変種（German Variety）グローバル設定
+- 選択肢：🇩🇪 DE (Germany), 🇦🇹 AT (Austria), 🇨🇭 CH (Switzerland / Schweizer Hochdeutsch)。
+- 全ドリルに連動。選択状態は即座にモデル文・音声合成（TTS）・音声認識（STT）・判定基準に反映。
+- **Drill 4 Item 3（die Schule / gehen）の地域変種判定・フィードバック契約**:
+  - 許容文（Valid answers）：`Ich gehe zur Schule.` および `Ich gehe in die Schule.`（いずれも正解 ✅ と判定）。
+  - 地域推奨モデル文（Recommended models）：
+    - 🇩🇪 DE: `Ich gehe zur Schule.`
+    - 🇦🇹 AT: `Ich gehe in die Schule.`
+    - 🇨🇭 CH: `Ich gehe zur Schule.`
+  - フィードバック表示：
+    - 選択中の地域推奨モデルと一致：正解 ✅（補足注記なし）。
+    - 選択外の他地域許容文で発話（例：DE/CH選択時に `in die Schule`、またはAT選択時に `zur Schule`）：正解 ✅ としつつ、選択中の地域推奨文を補足バッジ（`.uebung-supplement-badge`）として明示（例：🇦🇹選択時 `🇦🇹 Ich gehe in die Schule.`、🇩🇪選択時 `🇩🇪 Ich gehe zur Schule.`）。
+    - 不正解：不正解 ❌ とし、選択中地域の推奨モデル文を表示。
+
+### 音声合成（TTS）と音声認識（STT）
+- ロケールタグ：DE = `de-DE`, AT = `de-AT`, CH = `de-CH`。
+- 音声合成（TTS）：端末ブラウザの音声一覧から選択地域ロケール（`de-AT`, `de-CH`）の音声を優先探索。未検出時は安易に無断代替（無言フォールバック）せず、UI上に透過的な案内表示（`#voiceRegionNotice`）を表示して端末状態を明示。
+- 音声認識（STT）：`webkitSpeechRecognition` / `SpeechRecognition` の `lang` 属性を選択中地域のロケールタグに設定。
+
+### 「Copy my sentences」機能
+- 各ドリルのカード3直下に右寄せ配置。
+- Lucide標準 `clipboard` SVGアイコン、ボタンテキスト `Copy my sentences`、説明文 `Copy your drill results to review or share.`。
+- クリック時、該当ドリルの学習者発話結果（STT生認識テキスト）をローカル日時ヘッダー付きでクリップボードへコピーし、成功時は `Copied!` を一時表示。

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutsche Übung 1.1: nach / in / zum / zur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20261108-uebung11">
+</head>
+<body class="site-scale uebung11-page">
+
+    <div class="main-header page-header">
+        <div class="page-heading">
+            <h1>Deutsche Übung 1.1: nach / in / zum / zur</h1>
+            <a href="index.html" class="back-link custom-tip-wrap">↩️もどる<span class="custom-tip-box">Return to Practice Menu.</span></a>
+        </div>
+
+        <div class="compact-settings">
+            <div class="settings-row settings-segments-row">
+
+                <!-- German Variety -->
+                <div class="control-item">
+                    <div
+                        id="germanVarietyControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="German Variety"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="DE"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🇩🇪</span>DE
+                            <span class="custom-tip-box">Germany (Standarddeutsch)</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="AT"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🇦🇹</span>AT
+                            <span class="custom-tip-box">Austria (Österreichisches Deutsch)</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="CH"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🇨🇭</span>CH
+                            <span class="custom-tip-box">Switzerland (Schweizer Hochdeutsch)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocabulary Display -->
+                <div class="control-item">
+                    <div
+                        id="hintModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Vocabulary Display"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="off"
+                            aria-pressed="false"
+                        >
+                            OFF
+                            <span class="custom-tip-box">Hides vocabulary translation hints.</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hover"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🔎</span>Hover
+                            <span class="custom-tip-box">Shows word translation when you hover over them.</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="paren"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🔡</span>Display
+                            <span class="custom-tip-box">Always shows word translation in parentheses.</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="settings-row settings-auto-row">
+
+                <!-- Autostop -->
+                <div class="control-item settings-onoff">
+                    <span id="labelAutoRecord" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">ON: Stop after 2 seconds of silence following speech. OFF: Use the stop button. All recordings stop after 20 seconds.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="toggleRecordMode" aria-label="Autostop" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Autoplay -->
+                <div class="control-item settings-onoff">
+                    <span id="labelAutoPlay" class="mode-label active-mode custom-tip-wrap">
+                        <span class="icon-emoji">▶️</span>Autoplay
+                        <span class="custom-tip-box">Plays the model and then your recording.</span>
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="togglePlaybackMode" aria-label="Autoplay" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Drills Container -->
+    <main id="drillsContainer"></main>
+
+    <!-- Footer: Voice Guide -->
+    <footer class="voice-guide-footer">
+        <label for="voiceSelect" class="voice-select-label">🔊Voice:</label>
+        <select id="voiceSelect" class="voice-select" aria-label="Voice"></select>
+        <span class="voice-help-icon custom-tip-wrap" tabindex="0" aria-label="Voice help">?
+            <span class="custom-tip-box">If no German voices appear, you can add a German voice in your device's Text-to-Speech settings.</span>
+        </span>
+        <span id="voiceRegionNotice" class="voice-region-notice" hidden></span>
+    </footer>
+
+    <script src="drill-audio-session.js"></script>
+    <script src="uebung1.1.js?v=20261108"></script>
+    <script src="tooltip-layout.js"></script>
+</body>
+</html>

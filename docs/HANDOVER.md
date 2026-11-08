@@ -1,4 +1,42 @@
-# 現在のリレー状態 — F6: サイト全域のYes/No (Y/N) アイコン・ボタン標準化完了
+# 現在のリレー状態 — Deutsche Übung 1.1 新規実装完了
+
+- 更新日時：2026-11-08T20:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Deutsche Übung 1.1: ドイツ語練習ページ新設（前置詞nach/in/zum/zur・ドイツ語地域変種DE/AT/CH対応・評価および補足バッジ・Copy my sentences実装） ／ `f8b06d8f9f65c514488da423a18545b454d45e6b` ／ `main`
+- 実装内容：
+  1. **ページ本体とドリルデータの実装（`uebung1.1.html`, `uebung1.1.js`）**:
+     - 既存の日本語練習ページ構造（`practice1.1.html` 等）を踏襲し、Drill 1（nach）、Drill 2（in + Akkusativ）、Drill 3（zum）、Drill 4（zur）の4ドリル（各Ex 1問＋Drill 3問）を構築。
+     - 日本語特有の設定（漢字/ひらがな、文体）を排し、ドイツ語地域変種（DE, AT, CH）セグメントコントロールを標準配備。
+     - ヒントモード（OFF, Hover, Display）、Autostop、Autoplay、音声選択を既存共通仕様に準拠して実装。
+  2. **地域変種（German Variety DE / AT / CH）と地域評価ロジック**:
+     - Drill 4 Item 3（die Schule / gehen）において、`Ich gehe zur Schule.` および `Ich gehe in die Schule.` の両文を正解（Valid）として判定。
+     - 選択中の地域（DE: zur Schule, AT: in die Schule, CH: zur Schule）の推奨文と異なる許容文を発話した際、正解 ✅ を付与しつつ、選択中地域の推奨文を補足バッジ（`.uebung-supplement-badge`）として提示。
+     - 地域変種切り替え時に、全ドリルのExampleおよびDrillのモデル文、ヒント、および現在表示結果の推奨文を即座に更新。
+  3. **音声合成（TTS）と音声認識（STT）**:
+     - 音声認識（STT）は選択地域タグ（`de-DE`, `de-AT`, `de-CH`）を自動設定。
+     - 音声合成（TTS）は選択地域ロケール（`de-AT`, `de-CH`）の音声を優先探索。未検出時は安易に無断代替（無言フォールバック）せず、UI上に透過的な案内（`#voiceRegionNotice`）を表示して端末状態を明示。
+     - 共通音声管理モジュール `drill-audio-session.js` と連携し、再生・録音の相互排他制御を保証。
+  4. **「Copy my sentences」機能**:
+     - 各ドリルのカード3直下に右寄せ配置。Lucide標準 `clipboard` SVGアイコン、ボタンテキスト `Copy my sentences`、説明文 `Copy your drill results to review or share.`。
+     - クリック時に当該ドリルの学習者発話結果（STT生認識テキスト）をローカル日時ヘッダー付きでクリップボードへコピー。
+  5. **ナビゲーションとスタイルの統合**:
+     - `index.html` に「Deutsche Übung 1.1: nach / in / zum / zur」へのリンクを追加。
+     - `style.css` にスコープ付きスタイル（`.uebung11-page` 配下）を追加。
+  6. **テストと検証**:
+     - `tests/uebung11.cjs` を新設し、`tests/README.md` にテスト内容を文書化。
+     - 全ファイル構文検査、正規化判定ロジック検証、地域変種推奨／許容マトリクス検証を実施し合格。
+- 変更ファイル：`uebung1.1.html` (新規), `uebung1.1.js` (新規), `tests/uebung11.cjs` (新規), `index.html`, `style.css`, `tests/README.md`, `docs/PROJECT_SPEC.md`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1新設のみ。既存の日本語ドリル14ページの教材文・ロジック・スタイル等への不要な干渉・改変は一切なし。
+- 自動検証：
+  - Pythonスクリプトによる全修正ファイルの構文・括弧・タグ対照整合性チェックPASS。
+  - 地域変種評価ロジック（DE/AT/CH × zur Schule / in die Schule / 不正解文）の全組み合わせ自動テストPASS。
+  - `git diff --check` 合格（空白・構文エラーなし）。
+  - ブラウザバイナリ未配備のため、Playwright実レンダリングテストは環境制約により NOT RUN（結果を詐称せず明示）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでのDeutsche Übung 1.1の表示、地域変種切替（DE/AT/CH）、音声合成・録音認識、Drill 4 Item 3の補足バッジ表示、Copy my sentencesの動作確認。
+
+# 前回のリレー状態 — F6: サイト全域のYes/No (Y/N) アイコン・ボタン標準化完了
 
 - 更新日時：2026-11-08T20:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

@@ -4697,3 +4697,69 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 /* Approved Practice 7.3 category typography; retain semantic colors and existing geometry. */
 .practice73-page :is(.tense-badge,.p73-tense) { font-family: 'Lato', sans-serif; }
+
+/* =========================================================
+   Deutsche Übung 1.1: nach / in / zum / zur
+   ========================================================= */
+.uebung11-page .uebung-copy-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 4px;
+    margin-bottom: 24px;
+    text-align: right;
+}
+
+.uebung11-page .uebung-copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Lato', sans-serif;
+    max-width: 100%;
+    white-space: normal;
+}
+
+.uebung11-page .uebung-copy-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.uebung11-page .uebung-copy-help,
+.uebung11-page .uebung-copy-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.uebung11-page .uebung-supplement-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+    background: rgba(0, 87, 231, 0.1);
+    color: var(--semantic-positive-color);
+    border: 1px solid rgba(0, 87, 231, 0.25);
+}
+
+@media (prefers-color-scheme: dark) {
+    .uebung11-page .uebung-supplement-badge {
+        background: rgba(99, 214, 245, 0.15);
+        border-color: rgba(99, 214, 245, 0.3);
+    }
+}
+
+.uebung11-page .voice-region-notice {
+    font-size: 0.8rem;
+    color: var(--warning-color, #d97706);
+    margin-left: 8px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .uebung11-page .voice-region-notice {
+        color: #fbbf24;
+    }
+}

@@ -1,0 +1,1058 @@
+// Deutsche Übung 1.1: nach / in / zum / zur
+// Follows October2026 site standards, architecture, and DrillAudio session management.
+
+document.addEventListener("DOMContentLoaded", () => {
+    // -------------------------------------------------------------
+    // 1. Data Model
+    // -------------------------------------------------------------
+    const drillsData = [
+        {
+            id: "drill1",
+            number: 1,
+            title: "Drill 1: nach — Cities & Countries",
+            instruction: "💡Use nach with cities and countries that have no grammatical article.",
+            learningFocus: "Cities & Countries",
+            example: {
+                cue: "Salzburg / fahren",
+                cueParts: ["Salzburg", "fahren"],
+                hints: ["Salzburg (city in Austria)", "to travel / drive"],
+                model: "Ich fahre nach Salzburg."
+            },
+            items: [
+                {
+                    id: "d1_1",
+                    cue: "Graz / fahren",
+                    cueParts: ["Graz", "fahren"],
+                    hints: ["Graz (city in Austria)", "to travel / drive"],
+                    model: "Ich fahre nach Graz."
+                },
+                {
+                    id: "d1_2",
+                    cue: "Italien / reisen",
+                    cueParts: ["Italien", "reisen"],
+                    hints: ["Italy", "to travel"],
+                    model: "Ich reise nach Italien."
+                },
+                {
+                    id: "d1_3",
+                    cue: "Berlin / fahren",
+                    cueParts: ["Berlin", "fahren"],
+                    hints: ["Berlin (city in Germany)", "to travel / drive"],
+                    model: "Ich fahre nach Berlin."
+                }
+            ]
+        },
+        {
+            id: "drill2",
+            number: 2,
+            title: "Drill 2: in — Countries with Articles (Akkusativ)",
+            instruction: "💡Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
+            learningFocus: "Countries with Articles",
+            example: {
+                cue: "die Schweiz / fahren",
+                cueParts: ["die Schweiz", "fahren"],
+                hints: ["Switzerland (fem.)", "to travel / drive"],
+                model: "Ich fahre in die Schweiz."
+            },
+            items: [
+                {
+                    id: "d2_1",
+                    cue: "die Türkei / fliegen",
+                    cueParts: ["die Türkei", "fliegen"],
+                    hints: ["Turkey (fem.)", "to fly"],
+                    model: "Ich fliege in die Türkei."
+                },
+                {
+                    id: "d2_2",
+                    cue: "die USA / reisen",
+                    cueParts: ["die USA", "reisen"],
+                    hints: ["USA (pl.)", "to travel"],
+                    model: "Ich reise in die USA."
+                },
+                {
+                    id: "d2_3",
+                    cue: "der Irak / fliegen",
+                    cueParts: ["der Irak", "fliegen"],
+                    hints: ["Iraq (masc.)", "to fly"],
+                    model: "Ich fliege in den Irak."
+                }
+            ]
+        },
+        {
+            id: "drill3",
+            number: 3,
+            title: "Drill 3: zum — Masculine & Neuter Destinations",
+            instruction: "💡Use zum (zu + dem) for masculine and neuter destinations.",
+            learningFocus: "Masculine & Neuter Destinations",
+            example: {
+                cue: "der Supermarkt / gehen",
+                cueParts: ["der Supermarkt", "gehen"],
+                hints: ["supermarket (masc.)", "to go / walk"],
+                model: "Ich gehe zum Supermarkt."
+            },
+            items: [
+                {
+                    id: "d3_1",
+                    cue: "der Arzt / gehen",
+                    cueParts: ["der Arzt", "gehen"],
+                    hints: ["doctor (masc.)", "to go"],
+                    model: "Ich gehe zum Arzt."
+                },
+                {
+                    id: "d3_2",
+                    cue: "das Krankenhaus / fahren",
+                    cueParts: ["das Krankenhaus", "fahren"],
+                    hints: ["hospital (neut.)", "to drive / travel"],
+                    model: "Ich fahre zum Krankenhaus."
+                },
+                {
+                    id: "d3_3",
+                    cue: "der Bahnhof / gehen",
+                    cueParts: ["der Bahnhof", "gehen"],
+                    hints: ["train station (masc.)", "to go"],
+                    model: "Ich gehe zum Bahnhof."
+                }
+            ]
+        },
+        {
+            id: "drill4",
+            number: 4,
+            title: "Drill 4: zur — Feminine Destinations",
+            instruction: "💡Use zur (zu + der) for feminine destinations.",
+            learningFocus: "Feminine Destinations",
+            example: {
+                cue: "die Post / gehen",
+                cueParts: ["die Post", "gehen"],
+                hints: ["post office (fem.)", "to go"],
+                model: "Ich gehe zur Post."
+            },
+            items: [
+                {
+                    id: "d4_1",
+                    cue: "die Bank / gehen",
+                    cueParts: ["die Bank", "gehen"],
+                    hints: ["bank (fem.)", "to go"],
+                    model: "Ich gehe zur Bank."
+                },
+                {
+                    id: "d4_2",
+                    cue: "die Apotheke / gehen",
+                    cueParts: ["die Apotheke", "gehen"],
+                    hints: ["pharmacy (fem.)", "to go"],
+                    model: "Ich gehe zur Apotheke."
+                },
+                {
+                    id: "d4_3",
+                    cue: "die Schule / gehen",
+                    cueParts: ["die Schule", "gehen"],
+                    hints: ["school (fem.)", "to go"],
+                    regionalModels: {
+                        DE: "Ich gehe zur Schule.",
+                        AT: "Ich gehe in die Schule.",
+                        CH: "Ich gehe zur Schule."
+                    },
+                    allowedAnswers: [
+                        "Ich gehe zur Schule.",
+                        "Ich gehe in die Schule."
+                    ]
+                }
+            ]
+        }
+    ];
+
+    // -------------------------------------------------------------
+    // 2. Global State
+    // -------------------------------------------------------------
+    let currentVariety = "DE"; // 'DE', 'AT', 'CH'
+    let hintMode = "hover"; // 'off', 'hover', 'paren'
+    let manual = false; // true = manual stop, false = autostop ON
+    let autoplay = true; // true = relay model + user voice
+
+    let session = null;
+    let preparing = false;
+    let activeAudio = null;
+    let playingButton = null;
+
+    const saved = new Map(); // key -> { url, raw, correct, modelText, supplement, variety }
+    const views = new Map(); // key -> { item, rec, listen, stop, result, correction }
+
+    const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
+    let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
+
+    // -------------------------------------------------------------
+    // 3. Helper Functions
+    // -------------------------------------------------------------
+    function node(tag, className = "", content = "") {
+        const el = document.createElement(tag);
+        if (className) el.className = className;
+        if (typeof content === "string") {
+            if (content) el.textContent = content;
+        } else if (content instanceof Node) {
+            el.append(content);
+        }
+        return el;
+    }
+
+    function button(label, tip, click) {
+        const b = node("button", "example-button custom-tip-wrap");
+        b.type = "button";
+        if (typeof label === "string") {
+            b.append(document.createTextNode(label));
+        } else if (label instanceof Node) {
+            b.append(label);
+        }
+        if (tip) {
+            b.append(node("span", "custom-tip-box", tip));
+        }
+        b.onclick = () => {
+            if (DrillAudio.leaving) return;
+            click?.();
+        };
+        return b;
+    }
+
+    function getModel(item, variety = currentVariety) {
+        if (item.regionalModels) {
+            return item.regionalModels[variety] || item.regionalModels.DE;
+        }
+        return item.model;
+    }
+
+    function getAllowed(item, variety = currentVariety) {
+        if (item.allowedAnswers) {
+            return item.allowedAnswers;
+        }
+        return [getModel(item, variety)];
+    }
+
+    function highlightGrammar(text) {
+        return text
+            .replace(/\b(nach)\b/g, '<strong class="grammar-highlight">$1</strong>')
+            .replace(/\b(in die|in den)\b/g, '<strong class="grammar-highlight">$1</strong>')
+            .replace(/\b(zum|zur)\b/g, '<strong class="grammar-highlight">$1</strong>');
+    }
+
+    function normalizeGerman(text) {
+        if (!text) return "";
+        return text
+            .toLowerCase()
+            .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'„“…]/g, "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function formatCue(item) {
+        if (hintMode === "off") {
+            return item.cue;
+        }
+        if (item.cueParts && item.hints && item.cueParts.length === item.hints.length) {
+            const parts = item.cueParts.map((part, idx) => {
+                const hint = item.hints[idx];
+                if (hintMode === "paren") {
+                    return `${part} <span class="vocab-inline">(${hint})</span>`;
+                }
+                return `<span class="custom-tip-wrap">${part}<span class="custom-tip-box">${hint}</span></span>`;
+            });
+            return parts.join(" / ");
+        }
+        return item.cue;
+    }
+
+    function sync() {
+        const busy = Boolean(session || preparing);
+        document.querySelectorAll(
+            ".compact-settings button, .compact-settings input, #drillsContainer button:not([data-stop])"
+        ).forEach(el => {
+            el.disabled = busy;
+        });
+
+        views.forEach((v, key) => {
+            const canStop = session?.key === key && session.manual && !session.stopping;
+            v.stop.disabled = !canStop;
+            v.stop.setAttribute("aria-disabled", String(!canStop));
+            v.stop.classList.toggle("stop-btn-active", Boolean(canStop));
+        });
+
+        updateCopyButtons();
+    }
+
+    // -------------------------------------------------------------
+    // 4. Audio & Speech Synthesis
+    // -------------------------------------------------------------
+    function stopAllPlayback() {
+        if (window.speechSynthesis) {
+            try {
+                window.speechSynthesis.pause();
+                window.speechSynthesis.cancel();
+            } catch (_) {}
+        }
+        if (activeAudio) {
+            try {
+                activeAudio.pause();
+                activeAudio.currentTime = 0;
+                activeAudio.src = "";
+            } catch (_) {}
+            activeAudio = null;
+        }
+        DrillAudio.invalidatePlayback();
+        if (playingButton) {
+            playingButton.classList.remove("is-playing");
+            const box = playingButton.querySelector(".custom-tip-box");
+            if (box && playingButton.dataset.originalTip) {
+                box.textContent = playingButton.dataset.originalTip;
+            }
+            playingButton = null;
+        }
+    }
+
+    function targetLocaleForVariety(variety) {
+        return variety === "AT" ? "de-AT" : (variety === "CH" ? "de-CH" : "de-DE");
+    }
+
+    function getGermanVoices() {
+        if (!window.speechSynthesis) return [];
+        return window.speechSynthesis.getVoices().filter(v =>
+            (v.lang || "").toLowerCase().startsWith("de")
+        );
+    }
+
+    function selectVoiceForVariety(variety) {
+        const voices = getGermanVoices();
+        if (!voices.length) return null;
+
+        if (preferredVoiceName) {
+            const found = voices.find(v => v.name === preferredVoiceName);
+            if (found) return found;
+        }
+
+        const targetLocale = targetLocaleForVariety(variety).toLowerCase();
+        const localeMatch = voices.find(v => (v.lang || "").toLowerCase() === targetLocale);
+        if (localeMatch) return localeMatch;
+
+        const deMatch = voices.find(v => (v.lang || "").toLowerCase().startsWith("de-de"));
+        if (deMatch) return deMatch;
+
+        return voices[0];
+    }
+
+    function updateVoiceSelector() {
+        const select = document.getElementById("voiceSelect");
+        const notice = document.getElementById("voiceRegionNotice");
+        if (!select) return;
+
+        const voices = getGermanVoices();
+        select.replaceChildren();
+
+        if (!voices.length) {
+            const opt = node("option", "", "Default German Voice");
+            opt.value = "";
+            select.append(opt);
+        } else {
+            voices.forEach(v => {
+                const opt = node("option", "", `${v.name} (${v.lang})`);
+                opt.value = v.name;
+                select.append(opt);
+            });
+        }
+
+        const chosen = selectVoiceForVariety(currentVariety);
+        if (chosen) {
+            select.value = chosen.name;
+        }
+
+        const targetLocale = targetLocaleForVariety(currentVariety).toLowerCase();
+        const hasDirectLocale = voices.some(v => (v.lang || "").toLowerCase() === targetLocale);
+
+        if (notice) {
+            if (voices.length > 0 && !hasDirectLocale) {
+                const label = currentVariety === "AT" ? "de-AT (Austria)" : "de-CH (Switzerland)";
+                notice.textContent = `⚠️ No ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`;
+                notice.hidden = false;
+            } else {
+                notice.hidden = true;
+            }
+        }
+    }
+
+    function speakModel(text, btn = null, onDone = null, isRelay = false) {
+        if (session && !isRelay) return;
+        stopAllPlayback();
+
+        const u = new SpeechSynthesisUtterance(text);
+        const locale = targetLocaleForVariety(currentVariety);
+        u.lang = locale;
+        u.rate = 0.85;
+
+        const voice = selectVoiceForVariety(currentVariety);
+        if (voice) u.voice = voice;
+
+        DrillAudio.guardUtterance(u);
+
+        if (btn) {
+            playingButton = btn;
+            btn.classList.add("is-playing");
+            const box = btn.querySelector(".custom-tip-box");
+            if (box) {
+                btn.dataset.originalTip = box.textContent;
+                box.textContent = "Playing...";
+            }
+        }
+
+        const cleanup = () => {
+            if (btn) {
+                btn.classList.remove("is-playing");
+                const box = btn.querySelector(".custom-tip-box");
+                if (box && btn.dataset.originalTip) {
+                    box.textContent = btn.dataset.originalTip;
+                }
+                if (playingButton === btn) playingButton = null;
+            }
+            onDone?.();
+        };
+
+        u.onend = cleanup;
+        u.onerror = cleanup;
+
+        window.speechSynthesis.speak(u);
+    }
+
+    function playRecording(key, btn) {
+        if (session) return;
+        stopAllPlayback();
+
+        const entry = saved.get(key);
+        if (!entry?.url) return;
+
+        const audio = new Audio(entry.url);
+        activeAudio = audio;
+        playingButton = btn;
+        btn.classList.add("is-playing");
+
+        const box = btn.querySelector(".custom-tip-box");
+        if (box) {
+            btn.dataset.originalTip = box.textContent;
+            box.textContent = "Playing...";
+        }
+
+        const cleanup = () => {
+            btn.classList.remove("is-playing");
+            if (box && btn.dataset.originalTip) {
+                box.textContent = btn.dataset.originalTip;
+            }
+            if (playingButton === btn) playingButton = null;
+            if (activeAudio === audio) activeAudio = null;
+        };
+
+        audio.onended = cleanup;
+        audio.onerror = cleanup;
+
+        DrillAudio.play(audio, cleanup);
+    }
+
+    // -------------------------------------------------------------
+    // 5. Recording & STT Evaluation
+    // -------------------------------------------------------------
+    async function record(key, item) {
+        if (session || preparing) return;
+
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Recognition || !window.MediaRecorder) {
+            showResult(key, "Speech recognition or recording is not supported in this browser.");
+            return;
+        }
+
+        stopAllPlayback();
+        preparing = true;
+        sync();
+
+        const v = views.get(key);
+        if (v) v.result.textContent = "Preparing microphone...";
+
+        let stream;
+        try {
+            stream = await DrillAudio.getUserMedia({ audio: true });
+        } catch (e) {
+            preparing = false;
+            sync();
+            if (e.name === "AbortError") return;
+            showResult(key, DrillAudio.microphoneError(e));
+            return;
+        }
+
+        preparing = false;
+
+        const s = {
+            key,
+            manual,
+            stopping: false,
+            finished: false,
+            heard: false,
+            raw: "",
+            interim: "",
+            chunks: [],
+            timers: [],
+            recognitionDone: false,
+            recorderDone: false,
+            discard: false,
+            notice: ""
+        };
+        session = s;
+
+        const clear = () => {
+            s.timers.forEach(id => {
+                clearTimeout(id);
+                clearInterval(id);
+            });
+            s.timers = [];
+        };
+
+        const finish = () => {
+            if (s.finished || !s.recognitionDone || !s.recorderDone) return;
+            s.finished = true;
+            clear();
+
+            stream.getTracks().forEach(t => t.stop());
+
+            if (s.recognition) {
+                s.recognition.onend = null;
+                s.recognition.onresult = null;
+                s.recognition.onerror = null;
+                try { s.recognition.abort(); } catch (_) {}
+            }
+
+            session = null;
+
+            if (s.interim?.trim()) {
+                s.raw += s.interim;
+            }
+
+            const raw = s.raw.trim();
+            const recModel = getModel(item, currentVariety);
+            const allowed = getAllowed(item, currentVariety);
+            const normRaw = normalizeGerman(raw);
+            const normRec = normalizeGerman(recModel);
+
+            let isCorrect = false;
+            let supplement = null;
+
+            if (normRaw && normRaw === normRec) {
+                isCorrect = true;
+            } else if (normRaw && allowed.some(ans => normalizeGerman(ans) === normRaw)) {
+                isCorrect = true;
+                const flag = currentVariety === "AT" ? "🇦🇹 " : (currentVariety === "CH" ? "🇨🇭 " : "🇩🇪 ");
+                supplement = flag + recModel;
+            }
+
+            const previous = saved.get(key) || {};
+            let url = previous.url;
+
+            if (!s.discard && s.heard && s.chunks.length) {
+                url = URL.createObjectURL(
+                    new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" })
+                );
+                if (previous.url) {
+                    URL.revokeObjectURL(previous.url);
+                }
+            }
+
+            if (!s.discard && raw) {
+                saved.set(key, {
+                    url,
+                    raw: s.raw,
+                    correct: isCorrect,
+                    modelText: recModel,
+                    supplement,
+                    variety: currentVariety
+                });
+            }
+
+            s.chunks = [];
+
+            showResult(key, s.notice || (!raw ? "No speech recognized." : ""));
+            sync();
+
+            if (autoplay && !s.discard && raw) {
+                const currentView = views.get(key);
+                DrillAudio.playRelay({
+                    recordButton: currentView.rec,
+                    result: currentView.result,
+                    speak: done => speakModel(recModel, null, done, true),
+                    url: () => saved.get(key)?.url
+                });
+            }
+        };
+
+        s.stop = (notice = "", discard = false) => {
+            if (s.stopping || s.finished) return;
+            s.stopping = true;
+            s.notice = notice;
+            s.discard = discard || !s.heard;
+
+            clear();
+            sync();
+
+            try {
+                s.recognition.stop();
+            } catch (_) {
+                s.recognitionDone = true;
+            }
+
+            if (!s.recorder || s.recorder.state === "inactive") {
+                s.recorderDone = true;
+            } else {
+                try {
+                    s.recorder.stop();
+                } catch (_) {
+                    s.recorderDone = true;
+                    s.discard = true;
+                }
+            }
+
+            s.timers.push(setTimeout(() => {
+                s.recognitionDone = true;
+                s.recorderDone = true;
+                finish();
+            }, 500));
+        };
+
+        // Initialize SpeechRecognition
+        try {
+            s.recognition = new Recognition();
+            s.recognition.lang = targetLocaleForVariety(currentVariety);
+            s.recognition.interimResults = true;
+            s.recognition.maxAlternatives = 1;
+
+            s.recognition.onresult = event => {
+                let finalStr = "";
+                let interimStr = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const trans = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) finalStr += trans;
+                    else interimStr += trans;
+                }
+                if (finalStr || interimStr) s.heard = true;
+                if (finalStr) s.raw += finalStr;
+                s.interim = interimStr;
+
+                const display = (s.raw + (s.interim ? ` (${s.interim})` : "")).trim();
+                const view = views.get(key);
+                if (view && display) {
+                    view.result.textContent = display;
+                }
+
+                if (!s.manual && s.heard) {
+                    clear();
+                    s.timers.push(setTimeout(() => {
+                        s.stop();
+                    }, 2000));
+                }
+            };
+
+            s.recognition.onerror = () => {
+                s.recognitionDone = true;
+                finish();
+            };
+
+            s.recognition.onend = () => {
+                s.recognitionDone = true;
+                finish();
+            };
+
+            s.recognition.start();
+        } catch (_) {
+            s.recognitionDone = true;
+        }
+
+        // Initialize MediaRecorder
+        try {
+            s.recorder = new MediaRecorder(stream);
+            s.recorder.ondataavailable = e => {
+                if (e.data.size > 0) s.chunks.push(e.data);
+            };
+            s.recorder.onstop = () => {
+                s.recorderDone = true;
+                finish();
+            };
+            s.recorder.start();
+        } catch (_) {
+            s.recorderDone = true;
+        }
+
+        // Watchdog timers
+        s.timers.push(setTimeout(() => {
+            if (!s.heard) s.stop("Recording stopped: no speech detected.", true);
+        }, 15000));
+
+        s.timers.push(setTimeout(() => {
+            s.stop("Recording stopped: 20-second limit reached.");
+        }, 20000));
+
+        sync();
+    }
+
+    function showResult(key, notice = "") {
+        const v = views.get(key);
+        if (!v) return;
+
+        const val = saved.get(key);
+        v.result.replaceChildren();
+        v.correction.replaceChildren();
+        v.correction.hidden = true;
+
+        if (session?.key === key) {
+            v.result.textContent = "Recording...";
+            return;
+        }
+
+        if (val?.raw) {
+            v.result.append(document.createTextNode(val.raw));
+            if (val.correct) {
+                v.result.append(document.createTextNode(" ✅ "));
+                if (val.supplement) {
+                    const supp = node("span", "uebung-supplement-badge", val.supplement);
+                    v.result.append(supp);
+                }
+            } else {
+                const mark = node("span", "result-incorrect", " ❌");
+                mark.style.color = "var(--semantic-negative-color, #E11D48)";
+                mark.style.fontWeight = "700";
+                v.result.append(mark);
+
+                v.correction.hidden = false;
+                const corrListen = button("🔊きく", "Listen to recommended model.", () => {
+                    speakModel(val.modelText, corrListen);
+                });
+                corrListen.classList.add("correction-listen-btn");
+                corrListen.style.marginRight = "8px";
+
+                const corrText = node("span", "", `🔥 Keep going! Try once more! → ${val.modelText}`);
+                v.correction.append(corrListen, corrText);
+            }
+        } else {
+            v.result.append(node("span", "result-text not-recorded-yet", "… Not yet"));
+        }
+
+        if (val?.url) {
+            const play = button("▶️", "Play your recorded voice.", () => {
+                playRecording(key, play);
+            });
+            play.classList.add("play-recording-btn");
+            play.style.marginLeft = "8px";
+            v.result.append(play);
+        }
+
+        if (notice) {
+            const note = node("span", "result-notice", ` ${notice}`);
+            note.style.color = "var(--text-secondary)";
+            v.result.append(note);
+        }
+    }
+
+    // -------------------------------------------------------------
+    // 6. Copy My Sentences
+    // -------------------------------------------------------------
+    function updateCopyButtons() {
+        drillsData.forEach(drill => {
+            const area = document.querySelector(`.uebung-copy-area[data-drill="${drill.number}"]`);
+            if (!area) return;
+            const btn = area.querySelector(".uebung-copy-button");
+            if (!btn) return;
+
+            const hasRecordings = drill.items.some(item => {
+                const s = saved.get(item.id);
+                return Boolean(s?.raw);
+            });
+
+            btn.disabled = Boolean(session || preparing || !hasRecordings);
+        });
+    }
+
+    function setupCopyArea(drill, container) {
+        const area = node("div", "uebung-copy-area");
+        area.dataset.drill = String(drill.number);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "example-button uebung-copy-button";
+        btn.disabled = true;
+
+        btn.innerHTML =
+            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="uebung-copy-icon" aria-hidden="true">' +
+            '<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>' +
+            '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>' +
+            '</svg><span>Copy my sentences</span>';
+
+        const help = node("span", "uebung-copy-help", "Copy your drill results to review or share.");
+        const status = node("span", "uebung-copy-status", "");
+        status.setAttribute("role", "status");
+        status.setAttribute("aria-live", "polite");
+        status.hidden = true;
+
+        btn.onclick = async () => {
+            if (session || preparing) return;
+            const entries = [];
+            drill.items.forEach((item, idx) => {
+                const entry = saved.get(item.id);
+                if (entry?.raw) {
+                    entries.push(`${idx + 1}. ${item.cue}: ${entry.raw}`);
+                }
+            });
+
+            if (!entries.length) return;
+
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+            const header = `Deutsche Übung 1.1 — Drill ${drill.number}: ${drill.title.replace(/^Drill \d+:\s*/, "")} — ${drill.learningFocus} — ${dateStr}`;
+            const fullText = `${header}\n${entries.join("\n")}`;
+
+            try {
+                await navigator.clipboard.writeText(fullText);
+                status.textContent = "Copied!";
+                status.style.color = "var(--semantic-positive-color, #0057E7)";
+            } catch (_) {
+                status.textContent = "Could not copy. Please allow clipboard access.";
+                status.style.color = "var(--semantic-negative-color, #E11D48)";
+            }
+            status.hidden = false;
+        };
+
+        area.append(btn, help, status);
+        container.append(area);
+    }
+
+    // -------------------------------------------------------------
+    // 7. Render All Drills
+    // -------------------------------------------------------------
+    function renderAll() {
+        const container = document.getElementById("drillsContainer");
+        if (!container) return;
+        container.replaceChildren();
+        views.clear();
+
+        drillsData.forEach(drill => {
+            const section = node("section", "drill-section");
+            section.id = drill.id;
+
+            // Info Panel
+            const panel = node("div", "info-panel info-panel-task1");
+            panel.append(
+                node("span", "info-panel-title", drill.title),
+                node("span", "info-panel-desc instruction-steps", drill.instruction)
+            );
+            section.append(panel);
+
+            // Example Box
+            const exBox = node("div", "example-box example-text-layout");
+            const exTable = node("table", "recording-table drill-example-table");
+            const exBody = node("tbody");
+            const exRow = node("tr");
+
+            // Ex cue
+            const exCueTd = node("td", "prompt-label drill-cue-cell");
+            exCueTd.append(node("strong", "example-label-title", "Ex: "));
+            const exCueSpan = node("span", "cue-content");
+            exCueSpan.innerHTML = formatCue(drill.example);
+            exCueTd.append(exCueSpan);
+
+            // Arrow
+            const exArrowTd = node("td", "example-arrow-cell", "👉️");
+            exArrowTd.style.width = "28px";
+            exArrowTd.style.textAlign = "center";
+
+            // Listen button
+            const exAudioTd = node("td", "example-audio-cell");
+            const exModelSentence = getModel(drill.example, currentVariety);
+            const exListenBtn = button("🔊きく", "Listen to the model sentence.", () => {
+                speakModel(getModel(drill.example, currentVariety), exListenBtn);
+            });
+            exAudioTd.append(exListenBtn);
+
+            // Model text
+            const exModelTd = node("td", "example-model-cell");
+            const exModelSpan = node("span", "model-text");
+            exModelSpan.innerHTML = highlightGrammar(exModelSentence);
+            exModelTd.append(exModelSpan);
+
+            exRow.append(exCueTd, exArrowTd, exAudioTd, exModelTd);
+            exBody.append(exRow);
+            exTable.append(exBody);
+            exBox.append(exTable);
+            section.append(exBox);
+
+            // Drill Cards
+            drill.items.forEach((item, index) => {
+                const card = node("div", "drill-row");
+                const table = node("table", "recording-table");
+                const cols = node("colgroup");
+                const colNum = node("col");
+                colNum.style.width = "34px";
+                cols.append(colNum, node("col"), node("col"));
+                table.append(cols);
+
+                const body = node("tbody");
+                const tr = node("tr");
+
+                // Number
+                const numTd = node("td", "drill-number-cell", `${index + 1}.`);
+
+                // Cue
+                const cueTd = node("td", "prompt-label drill-cue-cell");
+                const cueSpan = node("span", "cue-content");
+                cueSpan.innerHTML = formatCue(item);
+                cueTd.append(cueSpan);
+
+                // Controls
+                const ctrlTd = node("td", "recording-controls-cell");
+                const layout = node("div", "recording-controls");
+                const actions = node("div", "recording-actions");
+
+                const listenBtn = button("🔊きく", "Listen to the recommended model.", () => {
+                    speakModel(getModel(item, currentVariety), listenBtn);
+                });
+
+                const recBtn = button("🎙️とる", "Record your sentence.", () => {
+                    record(item.id, item);
+                });
+
+                const stopBtn = button("⏹️", "Stop active recording.", () => {
+                    if (session?.key === item.id) session.stop();
+                });
+                stopBtn.dataset.stop = "true";
+                stopBtn.disabled = true;
+
+                actions.append(listenBtn, recBtn, stopBtn);
+
+                const wrap = node("span", "recording-result");
+                const result = node("span", "result-text not-recorded-yet", "… Not yet");
+                wrap.append(result);
+                layout.append(actions, wrap);
+
+                const correction = node("div", "correction-box");
+                correction.hidden = true;
+
+                ctrlTd.append(layout, correction);
+                tr.append(numTd, cueTd, ctrlTd);
+                body.append(tr);
+                table.append(body);
+                card.append(table);
+                section.append(card);
+
+                views.set(item.id, {
+                    item,
+                    rec: recBtn,
+                    listen: listenBtn,
+                    stop: stopBtn,
+                    result,
+                    correction
+                });
+
+                showResult(item.id);
+            });
+
+            // Copy Area (positioned after the last card, outside the card)
+            setupCopyArea(drill, section);
+
+            container.append(section);
+        });
+
+        sync();
+    }
+
+    // -------------------------------------------------------------
+    // 8. Event Listeners & Global Controls
+    // -------------------------------------------------------------
+    // German Variety Control
+    const varietyButtons = document.querySelectorAll("#germanVarietyControl .segmented-option");
+    varietyButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (session || preparing) return;
+            stopAllPlayback();
+            varietyButtons.forEach(b => {
+                b.classList.remove("is-selected");
+                b.setAttribute("aria-pressed", "false");
+            });
+            btn.classList.add("is-selected");
+            btn.setAttribute("aria-pressed", "true");
+            currentVariety = btn.dataset.value;
+
+            updateVoiceSelector();
+            renderAll();
+        });
+    });
+
+    // Hint Mode Control
+    const hintButtons = document.querySelectorAll("#hintModeControl .segmented-option");
+    hintButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (session || preparing) return;
+            hintButtons.forEach(b => {
+                b.classList.remove("is-selected");
+                b.setAttribute("aria-pressed", "false");
+            });
+            btn.classList.add("is-selected");
+            btn.setAttribute("aria-pressed", "true");
+            hintMode = btn.dataset.value;
+            renderAll();
+        });
+    });
+
+    // Autostop Switch
+    const autoRecInput = document.getElementById("toggleRecordMode");
+    const autoRecLabel = document.getElementById("labelAutoRecord");
+    if (autoRecInput) {
+        autoRecInput.addEventListener("change", () => {
+            manual = !autoRecInput.checked;
+            autoRecLabel?.classList.toggle("active-mode", autoRecInput.checked);
+        });
+    }
+
+    // Autoplay Switch
+    const autoPlayInput = document.getElementById("togglePlaybackMode");
+    const autoPlayLabel = document.getElementById("labelAutoPlay");
+    if (autoPlayInput) {
+        autoPlayInput.addEventListener("change", () => {
+            autoplay = autoPlayInput.checked;
+            autoPlayLabel?.classList.toggle("active-mode", autoPlayInput.checked);
+        });
+    }
+
+    // Voice Selector
+    const voiceSelect = document.getElementById("voiceSelect");
+    if (voiceSelect) {
+        voiceSelect.addEventListener("change", () => {
+            stopAllPlayback();
+            preferredVoiceName = voiceSelect.value;
+            if (preferredVoiceName) {
+                localStorage.setItem(VOICE_STORAGE_KEY, preferredVoiceName);
+            } else {
+                localStorage.removeItem(VOICE_STORAGE_KEY);
+            }
+        });
+    }
+
+    if (window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = () => {
+            updateVoiceSelector();
+        };
+    }
+
+    // -------------------------------------------------------------
+    // 9. DrillAudio Registration
+    // -------------------------------------------------------------
+    DrillAudio.configure({
+        busy: () => Boolean(session || preparing),
+        sync,
+        stop: stopAllPlayback,
+        cancel: () => {
+            preparing = false;
+            if (session) {
+                session.discard = true;
+                session.stop("", true);
+            }
+        }
+    });
+
+    // Initial render
+    updateVoiceSelector();
+    renderAll();
+});
