@@ -1,3 +1,11 @@
+# 2026-11-08 / 8.3 Q/AのFluent Color Preview
+
+- ユーザー指定：Chat Bubbles Question（質問）＋Chat More（応答）を8.3でPreviewして判断。本番のpractice8.3.htmlは変更しない。
+- 独立ページ：preview-practice8.3-qa.html。クエリなしはカラー吹き出し、?qa=originalは現行Q/A。preview-qa-icons.js/cssとassets/qa-previewの2 SVG・MITライセンスを使用。画像はMicrosoft公式から取得。
+- 元のQuestion/Answerアクセシビリティ名を維持し、空の役割スペーサーは変更しない。動的再描画後にも適用する表示専用アダプタ。教材・音声・録音・判定は元の8.3を使用。
+- 7.3の時制区分Latoは適用・公開確認済み。7.2はまだLato未適用のため現状を確認して報告する。7.2への変更指示としては扱わない。
+- 保存後に公開ページで限定検証。ユーザー採用判断待ち。
+
 # 2026-11-08 / 8.3二段目英字とLato読み込み不足の修正
 
 ## 2026-11-08 / Lato読込と8.3二段目英字
