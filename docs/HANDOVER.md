@@ -1,3 +1,9 @@
+## 2026-11-08 — セット切替のLato共通仕様確定
+- ユーザー承認：調査で挙げた2.1・2.2・2.3・8.3の英字セット切替をLatoへ統一。先に共通ルールを仕様として確定する。
+- 正本：UI_LAYOUT_SPEC「セット切替ボタンの英字フォント」。今後の新規セット切替も初めから適用する。
+- 仕様登録済み・影響調査済み。今回は文書のみ更新。既存ページの実装対応・ブラウザ再検証・ユーザー実機確認は未実施／後続作業。対象は仕様書の棚卸しを参照。
+- 次の作業：共通CSS・フォント読込・混在ラベルの英字分離へ適用し、対象ボタンだけを検証する。音声等の動作ロジックは変更しない。
+
 ## 2026-11-08 — 8.3 English subtitles / Q&A decision status
 - Q／A icon comparison status: 決定待ち. Four preview choices retained; no adopted icon change.
 - Removed parentheses only from Example second-line p83-cat-sub labels: Who, What, Which, Where, When (9 rendered labels, 7 definitions).
