@@ -1,3 +1,9 @@
+## 2026-11-08 — Copy機能7.1実機確認・文言確定・全ページ展開準備
+- ユーザーがPractice 7.1のCopy機能（実装Commit `572aee9`）について実機確認完了を報告。先行実装の確認待ちは解消。
+- 共通表示文言をボタン `Copy my sentences`／補助説明 `Copy to review or share.` に確定。Lucide `clipboard` アイコンは維持。文言のコード変更は未実施。
+- 全ページ展開対象：録音による発話記録を持つすべてのDrill。Pronunciation 1・2、Compositionは除外。
+- 次工程：対象ページ・DrillのRead-only調査でデータ構造・再描画・録音ロック・共通化可能性と展開順序を報告。その結果の確認後に共通化・段階的実装。全ページ実装は未着手。
+
 ## 2026-11-08 — Practice 7.1 Copyボタン共通仕様適用完了
 - 更新日時：2026-11-08T13:40:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
@@ -13,7 +19,7 @@
     4. 動作保持：raw STT transcript、正誤マーカー（`✅`/`—`）、Q/A区分、未録音時・録音中の無効化ロック（`practice71SyncRecordingUI`連携）、クリップボード成否通知を維持。
   - 変更ファイル：`practice7.1.html`, `practice7.1.js`, `docs/HANDOVER.md`
 - 自動検証：PythonによるSVG構造・カード外配置・ローカル日付形式・見出し文字列・重複防止・録音中ロック検証全件PASS、`git diff --check` 合格。
-- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了。ユーザーは2026-11-08に当該Copy機能の実機確認完了を報告。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
 - 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続タスク（F-2 セット切替Lato適用、W-3 残り3ページEnglish Cues等）へ移行可能。
 
 ## 2026-11-08 — W-3: Practice 8.2 English Cues実装完了
