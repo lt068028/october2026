@@ -1,3 +1,15 @@
+# 現在のリレー状態
+
+- 更新日時：2026-11-08T08:35:00+01:00 / 担当環境：Antigravity (Remote Agent)
+- 状態：引き継ぎ可能（GitHub保存確認済み）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 8.2 英語ラベルB装飾復元・親要素不要囲み遮断、Practice 1.1 英字区分B装飾・コロン撤去、全ページ横断キュー単語文字縦折れ防止 / `6f2965c` / `main`（作業用一時ブランチ `preview/p82-concept-badge-b` は `main` に完全マージ済み）
+- 完了・未完了／変更ファイル：
+  - 完了：Practice 8.2 英語概念ラベルB装飾復元および親要素不要囲み完全遮断、Practice 1.1 Example英字区分（Affirmative／Negative）のコロン撤去とB装飾適用、全11ページ横断のキュー単語文字縦折れ防止・スタック行フォールバック・非制約幅測定保証。
+  - 変更ファイル：`style.css`, `content-layout.js`, `practice1.1.js`, `practice1.1.html`, `practice8.2.html`, 全Practice HTMLのキャッシュクエリ, `docs/PRACTICE82_SPEC.md`, `docs/HANDOVER.md`
+- 自動検証：`git diff --check` 合格、構文バランス検査合格。
+- ユーザー実機確認／CI／デプロイ：Vercel自動デプロイ完了（コミット `faa1051` まで反映済み）。Practice 8.2 および Practice 1.1 英字区分装飾はユーザー確認済み。キュー縦折れ解消のユーザー実機確認待ち。
+- 次の具体的操作／判断待ち／未回収作業：未回収作業なし。全変更はmainに通常Push済み。作業用ブランチ `preview/p82-concept-badge-b` はマージ済みのため安全に削除可能。
+
 # 2026-11-07 / 全ページ横断：キュー単語文字縦折れ防止・スタック行フォールバック・非制約幅復元
 
 - **状態：引き継ぎ可能（main反映・Push完了）**
