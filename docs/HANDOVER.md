@@ -1,3 +1,9 @@
+## 2026-11-08 — 8.3 English subtitles / Q&A decision status
+- Q／A icon comparison status: 決定待ち. Four preview choices retained; no adopted icon change.
+- Removed parentheses only from Example second-line p83-cat-sub labels: Who, What, Which, Where, When (9 rendered labels, 7 definitions).
+- Lato, Japanese labels, styling and drill switch button wording retained.
+- Canonical and comparison HTML reference updated script version. Public visual verification pending deployment.
+
 ## 2026-11-08 — Q/A comparison: Icons8 variants
 - Added Icons8 Color and iOS Outlined Ask Question / Speech Bubble to preview-practice8.3-qa.html alongside Microsoft Color and original Q/A.
 - Preview-only PNG assets stored locally; visible Icons8 attribution included. Monochrome inverts in dark mode.

@@ -745,7 +745,7 @@ function addExample(root,si){
  headerRow.append(spacer1,spacer2,headerCue);
  ex.append(headerRow);
  const currentExSets=si===0?exSets1:(si===1?exSets2:(si===2?exSets3:exSets4));
- const catLabels=si===3?[{main:'どれ',sub:'(Which)'},{main:'どこ',sub:'(Where)'},{main:'いつ',sub:'(When)'}]:(si===2?[{main:'どれ',sub:'(Which)'},{main:'どこ',sub:'(Where)'}]:[{main:'だれ',sub:'(Who)'},{main:'何',sub:'(What)'}]);
+ const catLabels=si===3?[{main:'どれ',sub:'Which'},{main:'どこ',sub:'Where'},{main:'いつ',sub:'When'}]:(si===2?[{main:'どれ',sub:'Which'},{main:'どこ',sub:'Where'}]:[{main:'だれ',sub:'Who'},{main:'何',sub:'What'}]);
  currentExSets.forEach((s,index)=>{
   if(index>0)ex.append(node('div','p83-example-divider'));
   const cat=node('div','p83-example-category');
