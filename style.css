@@ -4414,3 +4414,24 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
         border-color: #7998c3;
     }
 }
+
+/* Preview only: 7.3 category treatments selected by URL; Q/A is unchanged. */
+html[data-label-preview="font"] .practice73-page :is(.tense-badge,.p73-tense),
+html[data-label-preview="standard"] .practice73-page :is(.tense-badge,.p73-tense) {
+    font-family: 'Lato', sans-serif;
+}
+html[data-label-preview="standard"] .practice73-page :is(.tense-badge,.p73-tense) {
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    color: var(--text-primary, #1e293b);
+    background: var(--surface-bg-subtle, rgba(0,0,0,.04));
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+}
+@media (prefers-color-scheme: dark) {
+    html[data-label-preview="standard"] .practice73-page :is(.tense-badge,.p73-tense) {
+        color: #ffffff; background: #304663; border-color: #7998c3;
+    }
+}

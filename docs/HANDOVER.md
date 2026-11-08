@@ -1,3 +1,8 @@
+# 7.3ラベルPreview専用（mainへの取り込み禁止）
+
+- URLクエリ labelPreview=font はフォントだけLato、labelPreview=standard は共通B装飾。クエリなしは現行。7.3のExample／Drillの時制ラベルのみ。Q/A・日本語・教材・録音は変更しない。採用判断待ち。
+- 8.3確定変更は親コミットadd1d01。mainへ反映するのは親コミットまで。このPreviewコミットは反映しない。
+
 # 2026-11-08 / F-2・8.3品詞ラベルとW追記
 
 - 担当：GitHub API直接編集。基準main：1e0cc61e70a997a5c17d17a87b6e9cfe830c25a6。PCローカル編集なし。旧環境の未Push領域は直接確認不可。利用枠は取得不可。
