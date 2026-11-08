@@ -242,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .trim();
     }
 
-    function formatCue(item, isDrill1 = false) {
+    function formatCue(item, isDrill1 = true) {
         if (hintMode === "off") {
             return item.cue;
         }
@@ -252,10 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (hintMode === "paren") {
                     return `${part} <span class="vocab-inline">(${hint})</span>`;
                 }
-                if (isDrill1) {
-                    return `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
-                }
-                return `<span class="custom-tip-wrap">${part}<span class="custom-tip-box">${hint}</span></span>`;
+                return `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
             });
             return parts.join(" / ");
         }
@@ -859,33 +856,39 @@ document.addEventListener("DOMContentLoaded", () => {
         container.append(area);
     }
 
-    function alignDrill1Cues() {
-        const drill1 = document.getElementById("drill1");
-        if (!drill1) return;
-        const cues = drill1.querySelectorAll(".drill-row .drill-cue-cell");
-        let max = 0;
-        cues.forEach(cell => {
-            const span = cell.querySelector(".cue-content") || cell;
-            const copy = span.cloneNode(true);
-            copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
-            Object.assign(copy.style, {
-                position: "absolute",
-                visibility: "hidden",
-                display: "inline-block",
-                width: "max-content",
-                minWidth: "0",
-                maxWidth: "none",
-                whiteSpace: "nowrap",
-                transform: "none"
+    function alignDrillCues() {
+        ["drill1", "drill2", "drill3", "drill4"].forEach(drillId => {
+            const section = document.getElementById(drillId);
+            if (!section) return;
+            const cues = section.querySelectorAll(".drill-row .drill-cue-cell");
+            let max = 0;
+            cues.forEach(cell => {
+                const span = cell.querySelector(".cue-content") || cell;
+                const copy = span.cloneNode(true);
+                copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
+                Object.assign(copy.style, {
+                    position: "absolute",
+                    visibility: "hidden",
+                    display: "inline-block",
+                    width: "max-content",
+                    minWidth: "0",
+                    maxWidth: "none",
+                    whiteSpace: "nowrap",
+                    transform: "none"
+                });
+                cell.append(copy);
+                const w = copy.getBoundingClientRect().width;
+                copy.remove();
+                if (w > max) max = w;
             });
-            cell.append(copy);
-            const w = copy.getBoundingClientRect().width;
-            copy.remove();
-            if (w > max) max = w;
+            if (max > 0) {
+                section.style.setProperty("--drill-cue-width", `${Math.ceil(max) + 4}px`);
+            }
         });
-        if (max > 0) {
-            drill1.style.setProperty("--drill-cue-width", `${Math.ceil(max) + 4}px`);
-        }
+    }
+
+    function alignDrill1Cues() {
+        alignDrillCues();
     }
 
     // -------------------------------------------------------------
@@ -912,17 +915,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Example Box
             const exBox = node("div", "example-box example-text-layout");
-            const exTable = node("table", isDrill1 ? "drill-example-table" : "recording-table drill-example-table");
+            const exTable = node("table", "drill-example-table");
             const exBody = node("tbody");
             const exRow = node("tr");
 
             // Ex cue
             const exCueTd = node("td", "prompt-label drill-cue-cell");
-            if (!isDrill1) {
-                exCueTd.append(node("strong", "example-label-title", "Ex: "));
-            }
             const exCueSpan = node("span", "cue-content");
-            exCueSpan.innerHTML = formatCue(drill.example, isDrill1);
+            exCueSpan.innerHTML = formatCue(drill.example, true);
             exCueTd.append(exCueSpan);
 
             // Arrow
@@ -969,7 +969,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Cue
                 const cueTd = node("td", "prompt-label drill-cue-cell");
                 const cueSpan = node("span", "cue-content");
-                cueSpan.innerHTML = formatCue(item, isDrill1);
+                cueSpan.innerHTML = formatCue(item, true);
                 cueTd.append(cueSpan);
 
                 // Controls

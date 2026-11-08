@@ -86,7 +86,7 @@
 - 各設問（通常1ドリルあたり3問）を行形式カードとして配置。
   - テーブル（`table.recording-table`）内に 3 列の `colgroup`（番号幅 34px、キュー、操作/結果列）を配置。
   - **Col 1 (Number)**: `td.drill-number-cell`（例: `1.`）
-  - **Col 2 (Cue)**: `td.drill-cue-cell` ＋ `span.cue-content`（ホバー時は `.tooltip-wrap` / `.target-word` により点線下線を表示。Drill 1では実測幅に基づく `--drill-cue-width` により不要な余白を排除）
+  - **Col 2 (Cue)**: `td.drill-cue-cell` ＋ `span.cue-content`（ホバー時は `.tooltip-wrap` / `.target-word` により点線下線を表示。Drills 1〜4では実測自然幅に基づく `--drill-cue-width` により不要な余白を排除）
   - **Col 3 (Controls & Result)**:
     - 操作ボタン群（`.recording-actions`）:
       - モデル聴取ボタン：`🔊きく`（推奨モデルを発話）

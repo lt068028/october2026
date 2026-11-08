@@ -1,4 +1,37 @@
-# 現在のリレー状態 — Practice 2.3 Example 1 話者・導入文6px間隔再調査と修正完了
+# 現在のリレー状態 — Deutsche Übung 1.1 Drills 2・3・4 UI統一修正完了
+
+- 更新日時：2026-11-08T22:35:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Deutsche Übung 1.1 Drill 2・3・4のUIをDrill 1確定仕様に統一 ／ `f0f750b38c031d279761e389e81b672a9a463d12` ／ `main`
+- 修正内容と統一事項：
+  1. **Example表示の統一**:
+     - 不要な「Ex:」ラベルをDrill 2〜4の全Exampleから完全撤去（`uebung1.1.js`）。
+     - Exampleテーブルから設問用 `.recording-table` スタイルを排除し、全Drill（Drills 1〜4）で独立した `table.drill-example-table` 4列Grid（キュー、👉、🔊きく、モデル文）を適用。
+     - Hover時の語彙ヒントを共通の `.tooltip-wrap` / `.target-word` / `.tooltip-tip`（点線下線）に統一（`formatCue(item, true)`）。
+     - 音声ボタンとモデル文の重なり・改行分断を防止し、狭幅時（<= 520px / 375px）は上段にキュー、下段に👉・🔊きく・モデル文をまとめるレスポンシブ契約をDrills 1〜4全件に適用（`style.css`）。
+  2. **Drill設問群の統一**:
+     - キューセルに `white-space: nowrap !important;` を適用し、通常幅での1行表示を保証（`style.css`）。
+     - Hover時の点線下線（`.tooltip-wrap` / `.target-word`）を全設問に適用。
+     - 自然幅計測処理 `alignDrillCues()` を導入し、Drills 1〜4の各セクションごとに非表示クローン（`white-space: nowrap`, `width: max-content`, ツールチップ要素除外）を用いて最長キューの自然幅（intrinsic width）を測定し、各セクションの `--drill-cue-width` に設定。
+     - 循環圧縮の防止、過大幅（固定50%等）の排除、操作ボタン列との不要な余白を解消。
+     - 既存の `alignDrill1Cues()` は後方互換ラッパーとして維持。
+     - 狭幅（<= 480px / 375px）ではキューを圧縮せず、操作ボタン列を次段（`grid-column: 1 / -1;`）へ折り返す契約を全Drillに展開。
+     - OFF / Hover / Display 切替時およびウィンドウResize時の自動再計測を保証。
+  3. **仕様書・テスト・キャッシュ更新**:
+     - `docs/GERMAN_DRILL_SPEC.md`: Drills 1〜4全件への適用状態を反映。
+     - `tests/uebung11.cjs`: Drills 1〜4全体のExテーブル・Exラベル撤去・ツールチップ・自然幅計測・`white-space: nowrap !important` を検証する回帰テストに強化。
+     - `uebung1.1.html`: スクリプトキャッシュバスターを `20261108-drills-standardized` に更新。
+- 変更ファイル：`uebung1.1.js`, `style.css`, `uebung1.1.html`, `docs/GERMAN_DRILL_SPEC.md`, `tests/uebung11.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1 のみ。Drill 1の既存表示・動作・音声・判定・地域変種・他ページへの悪影響なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - 全マークダウン構文チェック：PASS
+  - `tests/uebung11.cjs` 全アサーション検証スクリプト：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Deutsche Übung 1.1 Drills 2・3・4 の Example 表示および設問キューの1行表示・整列確認。
+
+# 前回のリレー状態 — Practice 2.3 Example 1 話者・導入文6px間隔再調査と修正完了
 
 - 更新日時：2026-11-08T22:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

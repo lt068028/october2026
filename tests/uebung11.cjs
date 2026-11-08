@@ -67,27 +67,27 @@ assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must implement helper text');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 
-// 5.5 Check Example & Drill 1 UI improvements (Ex-1 ~ Ex-5, Dr1-1 ~ Dr1-2)
-assert.ok(js.includes('isDrill1 ? "drill-example-table" : "recording-table drill-example-table"'), 'Drill 1 Ex table must use drill-example-table without recording-table');
-assert.ok(js.includes('if (!isDrill1) {\n                exCueTd.append(node("strong", "example-label-title", "Ex: "));\n            }'), 'Ex: title must only be appended to non-Drill 1 examples');
-assert.ok(js.includes('tooltip-wrap') && js.includes('target-word'), 'Drill 1 cue must use tooltip-wrap with target-word in hover mode');
-assert.ok(js.includes('alignDrill1Cues'), 'JS must include alignDrill1Cues for Dr1 cue alignment');
-assert.ok(css.includes('.uebung11-page #drill1 .example-box .drill-example-table'), 'style.css must have Drill 1 Ex grid rules');
-assert.ok(css.includes('.uebung11-page #drill1 .drill-row .recording-table'), 'style.css must have Drill 1 Dr1 grid rules');
+// 5.5 Check Example & Drill UI standardization (Drills 1–4)
+assert.ok(js.includes('node("table", "drill-example-table")'), 'All Ex tables must use drill-example-table without recording-table');
+assert.ok(!js.includes('example-label-title", "Ex: "'), 'Ex: title must be removed from all examples (Drills 1–4)');
+assert.ok(js.includes('tooltip-wrap') && js.includes('target-word'), 'Drills 1–4 cues must use tooltip-wrap with target-word in hover mode');
+assert.ok(js.includes('alignDrillCues') && js.includes('alignDrill1Cues'), 'JS must include alignDrillCues and backward-compatible alignDrill1Cues');
+assert.ok(css.includes('.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .example-box .drill-example-table'), 'style.css must have Drills 1–4 Ex grid rules');
+assert.ok(css.includes('.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table'), 'style.css must have Drills 1–4 Dr grid rules');
 
-// 5.6 Check Drill 1 Cue non-wrapping and intrinsic measurement contracts
+// 5.6 Check Drill 1–4 Cue non-wrapping and intrinsic measurement contracts
 assert.ok(
-    css.includes('.uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell') &&
+    css.includes('.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table .drill-cue-cell') &&
     css.includes('white-space: nowrap !important;'),
-    'Drill 1 cue cell must enforce white-space: nowrap !important to prevent unwanted wrapping'
+    'Drills 1–4 cue cells must enforce white-space: nowrap !important to prevent unwanted wrapping'
 );
 assert.ok(
     js.includes('copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());'),
-    'alignDrill1Cues must exclude hidden tooltip text when measuring natural width'
+    'alignDrillCues must exclude hidden tooltip text when measuring natural width'
 );
 assert.ok(
     js.includes('width: "max-content"') && js.includes('whiteSpace: "nowrap"'),
-    'alignDrill1Cues must measure natural unconstrained width using max-content and nowrap'
+    'alignDrillCues must measure natural unconstrained width using max-content and nowrap'
 );
 
 console.log('PASS: All structural and contract tests passed successfully.');
