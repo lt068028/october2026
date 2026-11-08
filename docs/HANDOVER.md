@@ -6,7 +6,7 @@
   - 完了：`practice1.1.html` に `#task4Container` を追加。`practice1.1.js` に `practice1State.englishCues`、`Drill 4: Practice with English cues` パネル生成関数 `renderEnglishCuePanel()` を追加し、Drill 1 のキュー表示を英語／日本語で動的に切り替え可能に接続（1. I / student, 2. I / teacher, 3. I / Japanese, 4. I / international student, 5. friend / student, 6. friend / home maker, 7. friend / American）。切替時のDrill 1上部への滑らかなスクロール、録音中ロック対応、録音結果・音声を保持したままの再描画を確認。
   - 変更ファイル：`practice1.1.html`, `practice1.1.js`, `docs/HANDOVER.md`
 - 自動検証：Pythonによる全7問キュー変換シミュレーション全件一致PASS、`git diff --check` 合格。
-- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了。2026-11-08、ユーザーがPractice 1.1 English Cuesの実機確認完了を報告し、本作業を完了と確定。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
 - 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続のEnglish Cues未対応ページ（Practice 1.2, 8.1, 8.2, 8.3）またはF-2等へ移行可能。
 
 ## 2026-11-08 — F-1: Practice 2.2 English Cues実装完了
@@ -28,12 +28,12 @@
 1. **F-1 Q／Aアイコン採用・適用**［ユーザー申告：別担当で進行中］：旧W-3から移管。Icons8の採用範囲・進捗・GitHub反映状況は担当の作業報告で確認し、未Push成果や他作業を上書きしない。
 2. **F-2 セット切替ボタン英字Lato適用**［仕様確定・実装待ち］：2.1／2.2／2.3／8.3。UI_LAYOUT_SPECの確定仕様に従い対象ボタンのみ変更し、共有CSSとフォント読込を限定検証する。
 
-**完了・除外履歴（現行タスク外）**：Practice 8.1 Drill 5のバッジ左余白・`〃`位置修正は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `a5f2d9fe360956cc05c3b4361b8b89635f3efbc7`。`Poor`等のバッジを自然な左位置に戻し、`〃`は動詞位置に追従）。 Practice 8.1 Drill 5タイトル「へた」Hoverと語義「Bad at」への変更は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `59c947bef0ec4758a927bd5a586cab0b4e0f027d`）。Practice 7.1「いつも…／今…」表示調整は2026-11-08にユーザー実機確認完了（実装Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`）。Practice 2.2 English Cuesは実装・Push・ユーザー実機確認完了。Beyond漢字異なり字数も実装・Push・実機確認完了。Beyondの他ページ展開はW-1に統合。Preview／実機・回帰確認とProduction反映は各作業の標準完了手順。
+**完了・除外履歴（現行タスク外）**：Practice 8.1 Drill 5のバッジ左余白・`〃`位置修正は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `a5f2d9fe360956cc05c3b4361b8b89635f3efbc7`。`Poor`等のバッジを自然な左位置に戻し、`〃`は動詞位置に追従）。 Practice 8.1 Drill 5タイトル「へた」Hoverと語義「Bad at」への変更は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `59c947bef0ec4758a927bd5a586cab0b4e0f027d`）。Practice 7.1「いつも…／今…」表示調整は2026-11-08にユーザー実機確認完了（実装Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`）。Practice 1.1およびPractice 2.2 English Cuesは実装・Push・ユーザー実機確認完了。Beyond漢字異なり字数も実装・Push・実機確認完了。Beyondの他ページ展開はW-1に統合。Preview／実機・回帰確認とProduction反映は各作業の標準完了手順。
 
 ### W：検討・仕様判断・前工程に依存する作業（優先順）
 1. **W-1 各ページの使用語・語彙表示見直し → Beyond新設置・デザイン展開**［未着手／段階依存］：対象候補はPractice 1.1／1.2／2.1／2.2／2.3／7.1／7.2／7.3／8.1／8.2／8.3。ページごとに使用語・学習範囲と表示内容を先に確定し、語句・Hover／Displayを整えてから、そのページにBeyondを新設または承認済みデザインを適用する。先行する語彙調整が終わらないページへBeyondを先行展開しない。既存Beyond 8.1〜8.3は現状を保持し、必要な差分のみ検討する。
 2. **W-2 人物表示・場所表示の見直し**［未着手］：人物X／Y／Z・人物ガイド（2.1／2.2／2.3）と、場所・都市・国の表示（2.2／2.3）。同じ画像・会話表示の検討としてまとめ、実装は対象要素ごとに切り分ける。
-3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り4ページ実装待ち］：対象は **Practice 1.2／8.1／8.2／8.3**。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。Practice 1.1は実装・Push完了。
+3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り4ページ実装待ち］：対象は **Practice 1.2／8.1／8.2／8.3**。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。Practice 1.1は実装・Push・ユーザー実機確認完了（2026-11-08、Commit `2b75bfa`）で現行対象から除外。
 4. **W-4 7.2／7.3時制区分の配置検討**［検討］：「きく」左への配置案。現行の確定配置を無断変更しない。
 5. **W-5 8系英語ラベルのフォント・色・区分表示の残件**［要確認］：既に確定・実装したLatoや装飾を再作業せず、未決の箇所だけ扱う。
 6. **W-6 Example／DrillのHover説明の改善**［検討］：Ex1／Dr1等の説明の出し方と範囲を決める。
