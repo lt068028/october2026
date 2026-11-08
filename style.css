@@ -1709,7 +1709,8 @@ input:checked + .slider:before {
 /* 停止ボタンの右に表示する「いつも…／今…」 */
 #drill1Container .p71-start-hint {
     margin-left: 8px;
-    font-weight: bold;
+    font-weight: normal;
+    color: var(--text-secondary);
     white-space: nowrap;
 }
 
