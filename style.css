@@ -4402,7 +4402,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     font-size: .9em;
     font-weight: 700;
     line-height: 1.2;
-    padding: 6px 10px;
+    padding: 6px 6px;
     color: var(--text-primary, #1e293b);
     background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
     border: 1px solid var(--border-color, #e2e8f0);
