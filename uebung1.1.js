@@ -172,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let preparing = false;
     let activeAudio = null;
     let playingButton = null;
+    let currentUtterance = null;
 
     const saved = new Map(); // key -> { url, raw, correct, modelText, supplement, variety }
     const views = new Map(); // key -> { item, rec, listen, stop, result, correction }
@@ -279,14 +280,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // -------------------------------------------------------------
     // 4. Audio & Speech Synthesis
     // -------------------------------------------------------------
-    function stopAllPlayback() {
-        if (window.speechSynthesis) {
-            try {
-                window.speechSynthesis.pause();
-                window.speechSynthesis.cancel();
-            } catch (_) {}
+    function stopPlayback() {
+        if (currentUtterance) {
+            currentUtterance.onend = null;
+            currentUtterance.onerror = null;
+            currentUtterance = null;
         }
         if (activeAudio) {
+            activeAudio.onended = null;
+            activeAudio.onerror = null;
             try {
                 activeAudio.pause();
                 activeAudio.currentTime = 0;
@@ -294,15 +296,39 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (_) {}
             activeAudio = null;
         }
-        DrillAudio.invalidatePlayback();
+        if (window.speechSynthesis) {
+            try {
+                window.speechSynthesis.pause();
+                window.speechSynthesis.cancel();
+            } catch (_) {}
+        }
         if (playingButton) {
-            playingButton.classList.remove("is-playing");
-            const box = playingButton.querySelector(".custom-tip-box");
-            if (box && playingButton.dataset.originalTip) {
-                box.textContent = playingButton.dataset.originalTip;
+            playingButton.disabled = false;
+            if (playingButton._contents) {
+                playingButton.replaceChildren(...playingButton._contents);
             }
+            playingButton.classList.remove("is-playing");
             playingButton = null;
         }
+    }
+
+    function stopAllPlayback() {
+        DrillAudio.invalidatePlayback();
+        stopPlayback();
+    }
+
+    function markPlaying(b) {
+        if (!b) return;
+        stopPlayback();
+        playingButton = b;
+        b._contents = Array.from(b.childNodes);
+        b.disabled = true;
+        b.classList.add("is-playing");
+        b.textContent = "Playing...";
+    }
+
+    function normalizeLang(lang) {
+        return (lang || "").toLowerCase().replace(/_/g, "-");
     }
 
     function targetLocaleForVariety(variety) {
@@ -312,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function getGermanVoices() {
         if (!window.speechSynthesis) return [];
         return window.speechSynthesis.getVoices().filter(v =>
-            (v.lang || "").toLowerCase().startsWith("de")
+            normalizeLang(v.lang).startsWith("de")
         );
     }
 
@@ -325,11 +351,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (found) return found;
         }
 
-        const targetLocale = targetLocaleForVariety(variety).toLowerCase();
-        const localeMatch = voices.find(v => (v.lang || "").toLowerCase() === targetLocale);
+        const targetLocale = normalizeLang(targetLocaleForVariety(variety));
+        const localeMatch = voices.find(v => normalizeLang(v.lang) === targetLocale);
         if (localeMatch) return localeMatch;
 
-        const deMatch = voices.find(v => (v.lang || "").toLowerCase().startsWith("de-de"));
+        const startsMatch = voices.find(v => normalizeLang(v.lang).startsWith(targetLocale));
+        if (startsMatch) return startsMatch;
+
+        const deMatch = voices.find(v => normalizeLang(v.lang).startsWith("de-de"));
         if (deMatch) return deMatch;
 
         return voices[0];
@@ -344,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
         select.replaceChildren();
 
         if (!voices.length) {
-            const opt = node("option", "", "Default German Voice");
+            const opt = node("option", "", "No German Voice Detected");
             opt.value = "";
             select.append(opt);
         } else {
@@ -360,13 +389,16 @@ document.addEventListener("DOMContentLoaded", () => {
             select.value = chosen.name;
         }
 
-        const targetLocale = targetLocaleForVariety(currentVariety).toLowerCase();
-        const hasDirectLocale = voices.some(v => (v.lang || "").toLowerCase() === targetLocale);
+        const targetLocale = normalizeLang(targetLocaleForVariety(currentVariety));
+        const hasDirectLocale = voices.some(v => normalizeLang(v.lang) === targetLocale);
 
         if (notice) {
-            if (voices.length > 0 && !hasDirectLocale) {
-                const label = currentVariety === "AT" ? "de-AT (Austria)" : "de-CH (Switzerland)";
-                notice.textContent = `⚠️ No ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`;
+            if (!voices.length) {
+                notice.textContent = "⚠️ No German speech synthesis voice detected on this device. (Please verify your system TTS settings).";
+                notice.hidden = false;
+            } else if (!hasDirectLocale) {
+                const label = currentVariety === "AT" ? "de-AT (Austria)" : (currentVariety === "CH" ? "de-CH (Switzerland)" : "de-DE (Germany)");
+                notice.textContent = `⚠️ No native ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`;
                 notice.hidden = false;
             } else {
                 notice.hidden = true;
@@ -375,8 +407,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
-        if (session && !isRelay) return;
-        stopAllPlayback();
+        if ((session || preparing) && !isRelay) return;
+        if (!isRelay) stopAllPlayback();
+
+        if (!("speechSynthesis" in window)) {
+            DrillAudio.notify("Speech synthesis is not supported in this browser.");
+            onDone?.();
+            return;
+        }
+
+        // Resume if stalled/paused by browser bug
+        if (window.speechSynthesis.paused) {
+            try { window.speechSynthesis.resume(); } catch (_) {}
+        }
 
         const u = new SpeechSynthesisUtterance(text);
         const locale = targetLocaleForVariety(currentVariety);
@@ -384,40 +427,45 @@ document.addEventListener("DOMContentLoaded", () => {
         u.rate = 0.85;
 
         const voice = selectVoiceForVariety(currentVariety);
-        if (voice) u.voice = voice;
-
-        DrillAudio.guardUtterance(u);
-
-        if (btn) {
-            playingButton = btn;
-            btn.classList.add("is-playing");
-            const box = btn.querySelector(".custom-tip-box");
-            if (box) {
-                btn.dataset.originalTip = box.textContent;
-                box.textContent = "Playing...";
-            }
+        if (voice) {
+            u.voice = voice;
         }
 
-        const cleanup = () => {
-            if (btn) {
-                btn.classList.remove("is-playing");
-                const box = btn.querySelector(".custom-tip-box");
-                if (box && btn.dataset.originalTip) {
-                    box.textContent = btn.dataset.originalTip;
-                }
-                if (playingButton === btn) playingButton = null;
+        currentUtterance = u;
+        if (btn) markPlaying(btn);
+
+        const finish = (errorEvent = null) => {
+            if (currentUtterance !== u) return;
+            currentUtterance = null;
+
+            if (isRelay) {
+                // Relay owns restoring buttons
+            } else {
+                stopPlayback();
             }
+
+            if (errorEvent && errorEvent.error && errorEvent.error !== "canceled" && errorEvent.error !== "interrupted") {
+                console.warn("Speech synthesis error:", errorEvent.error, errorEvent);
+                DrillAudio.notify(`Speech synthesis error (${errorEvent.error}). Please verify device voice settings.`);
+            }
+
             onDone?.();
         };
 
-        u.onend = cleanup;
-        u.onerror = cleanup;
+        // Attach callbacks BEFORE DrillAudio.speak so guardUtterance can wrap them
+        u.onend = () => finish();
+        u.onerror = (e) => finish(e);
 
-        window.speechSynthesis.speak(u);
+        try {
+            DrillAudio.speak(u);
+        } catch (err) {
+            console.error("DrillAudio.speak execution error:", err);
+            finish(err);
+        }
     }
 
     function playRecording(key, btn) {
-        if (session) return;
+        if (session || preparing) return;
         stopAllPlayback();
 
         const entry = saved.get(key);
@@ -425,22 +473,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const audio = new Audio(entry.url);
         activeAudio = audio;
-        playingButton = btn;
-        btn.classList.add("is-playing");
-
-        const box = btn.querySelector(".custom-tip-box");
-        if (box) {
-            btn.dataset.originalTip = box.textContent;
-            box.textContent = "Playing...";
-        }
+        if (btn) markPlaying(btn);
 
         const cleanup = () => {
-            btn.classList.remove("is-playing");
-            if (box && btn.dataset.originalTip) {
-                box.textContent = btn.dataset.originalTip;
-            }
-            if (playingButton === btn) playingButton = null;
-            if (activeAudio === audio) activeAudio = null;
+            stopPlayback();
         };
 
         audio.onended = cleanup;
@@ -1027,13 +1063,19 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 localStorage.removeItem(VOICE_STORAGE_KEY);
             }
+            updateVoiceSelector();
         });
     }
 
     if (window.speechSynthesis) {
-        window.speechSynthesis.onvoiceschanged = () => {
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                updateVoiceSelector();
+            };
+        }
+        window.speechSynthesis.addEventListener?.("voiceschanged", () => {
             updateVoiceSelector();
-        };
+        });
     }
 
     // -------------------------------------------------------------

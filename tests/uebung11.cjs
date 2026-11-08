@@ -54,11 +54,13 @@ assert.ok(js.includes('die Schule / gehen'), 'Drill 4 must include die Schule / 
 assert.ok(js.includes('Ich gehe zur Schule.'), 'Must include Ich gehe zur Schule.');
 assert.ok(js.includes('Ich gehe in die Schule.'), 'Must include Ich gehe in die Schule.');
 
-// 5.3 Check DrillAudio configuration
+// 5.3 Check DrillAudio configuration and speech ordering
 assert.ok(js.includes('DrillAudio.configure'), 'JS must configure DrillAudio');
 assert.ok(js.includes('DrillAudio.getUserMedia'), 'JS must use DrillAudio.getUserMedia');
 assert.ok(js.includes('DrillAudio.playRelay'), 'JS must use DrillAudio.playRelay');
-assert.ok(js.includes('DrillAudio.guardUtterance'), 'JS must guard utterances with DrillAudio');
+assert.ok(js.includes('DrillAudio.speak'), 'JS must speak utterances through DrillAudio.speak');
+assert.ok(js.indexOf('u.onend =') < js.indexOf('DrillAudio.speak(u)'), 'u.onend must be assigned before DrillAudio.speak');
+assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.onerror must be assigned before DrillAudio.speak');
 
 // 5.4 Check Copy my sentences
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');

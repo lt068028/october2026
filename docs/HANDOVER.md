@@ -1,4 +1,43 @@
-# 現在のリレー状態 — Deutsche Übung 1.1 新規実装完了
+# 現在のリレー状態 — Deutsche Übung 1.1 モデル音声再生修正完了
+
+- 更新日時：2026-11-08T21:05:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Deutsche Übung 1.1: モデル音声再生不具合の調査・修正（speakModelとguardUtteranceの連携順序是正、DrillAudio.speak経由への統一、stopPlaybackとstopAllPlaybackの分離によるAutoplayリレー保全、端末音声検出とエラー通知改善） ／ `fceffb20d3fdb98fc04d7db8f1d392301901c0eb` ／ `main`
+- 調査結果と根本原因：
+  1. **コールバック設定順序とguardUtteranceの無効化**:
+     - `uebung1.1.js` の `speakModel()` 内で、`u.onend` / `u.onerror` を設定する前に `DrillAudio.guardUtterance(u)` を呼び出していたため、`guardUtterance` 内部で `callback` が未定義となり、その直後に `u.onend = cleanup` で上書きされたことで、`guardUtterance` のセッション管理ラッパーが完全に破棄されていた。
+  2. **`DrillAudio.speak(u)` 未使用と直接呼出**:
+     - 既存の全ページで共通利用されている `DrillAudio.speak(u)` ではなく、直接 `window.speechSynthesis.speak(u)` を呼んでいたため、実行時エラーの捕捉・セッション watchdog・旧音声キャンセルが一元管理されていなかった。
+  3. **`stopAllPlayback()` の無条件呼出によるAutoplayリレー破壊**:
+     - `speakModel()` 内で無条件に `stopAllPlayback()` を呼んでいたため、Autoplayリレー（`DrillAudio.playRelay`）実行時に `DrillAudio.invalidatePlayback()` が発火し、`relay = null` となって学習者の録音再生へ繋がらなくなっていた。
+  4. **Chromium系ブラウザの `speechSynthesis.paused` デッドロック**:
+     - `cancelSpeech()`（Pause-then-Cancel）の直後にブラウザ側で `paused === true` のまま固定化され、キューに入った発話が一切再生されなくなる問題が発生していた。
+  5. **端末音声未検出時の無言終了と通知の欠落**:
+     - 端末側にドイツ語音声が存在しない環境で、エラーが捕捉されずボタンも戻らない、あるいは無言で終了しユーザーに原因が伝わらなかった。
+- 実装内容：
+  1. **`speakModel()` の連携是正**:
+     - `u.onend` および `u.onerror` を先にアタッチし、`DrillAudio.speak(u)` 経由で再生するよう修正。
+     - `window.speechSynthesis.paused` の場合に `resume()` を呼んでブラウザのキュー詰まりを解除。
+     - 実行時例外および音声エラー（`canceled` / `interrupted` を除く）を `DrillAudio.notify` で通知し、無言終了を防止。
+  2. **`stopPlayback()` と `stopAllPlayback()` の分離**:
+     - 内部停止用の `stopPlayback()` と、外部中断・ボタンクリック用の `stopAllPlayback()`（`invalidatePlayback` を含む）を分離。
+     - `isRelay === true` 時は `stopAllPlayback()` をスキップし、Autoplayリレーを破壊しないよう修正。
+  3. **ボタン状態の確実な管理**:
+     - `markPlaying(btn)` / `stopPlayback()` により、`btn._contents` を退避・復元し、再生中は `disabled = true` かつ `Playing...` を表示。失敗時・エラー時も確実に復元。
+  4. **音声検出とロケール判定の堅牢化**:
+     - `normalizeLang()` により、アンダースコア（`de_DE`）とハイフン（`de-DE`）の差異を吸収。
+     - 端末にドイツ語音声が1件も存在しない場合の警告表示を `#voiceRegionNotice` に追加。
+- 変更ファイル：`uebung1.1.js`, `tests/uebung11.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1の音声制御のみ。日本語ドリル14ページおよび既存CSS・HTMLへの不要な変更は一切なし。
+- 自動検証：
+  - `tests/uebung11.cjs`（Python実行および契約チェック）：PASS
+  - `git diff --check`：PASS
+  - Playwright実レンダリングテスト：環境制約（ブラウザバイナリ未配備）のため NOT RUN。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでのDeutsche Übung 1.1のモデル音声再生、地域変種切り替え、Autoplay動作確認。
+
+# 前回のリレー状態 — Deutsche Übung 1.1 新規実装完了
 
 - 更新日時：2026-11-08T20:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
