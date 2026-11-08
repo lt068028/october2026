@@ -550,6 +550,7 @@ function model(r) {
 
     return {
         ...r,
+        question,
         text: convert(r.text, question),
         hira: convert(r.hira, question),
         replyHiras: r.replyHiras?.flatMap(text => [convert(text, false), convert(text, false, true)]),
@@ -1334,6 +1335,10 @@ function render() {
                 actions.append(listen);
                 if (type) actions.append(type);
                 actions.append(rec, stop);
+
+                if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
+                    window.QuestionIndicator.attach(stop, Boolean(r.question));
+                }
 
                 const wrap = document.createElement('span');
                 wrap.className = 'recording-result';
@@ -2554,6 +2559,10 @@ render = function () {
             });
 
             actions.append(listen, rec, stop);
+
+            if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
+                window.QuestionIndicator.attach(stop, kind === 'q');
+            }
 
             const wrap = document.createElement('span');
             wrap.className = 'recording-result';

@@ -925,6 +925,10 @@ body {
     flex-shrink: 0;
 }
 
+.stop-indicator-wrap > button {
+    margin-right: 0 !important;
+}
+
 .question-indicator {
     display: inline-flex;
     align-items: center;

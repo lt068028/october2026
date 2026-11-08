@@ -1,4 +1,47 @@
-# 現在のリレー状態 — Practice 2.1 / 2.2 / 2.3: 疑問文インジケーター一括実装
+# 現在のリレー状態 — Practice 7.1 / 7.2 / 7.3: 疑問文インジケーター実装
+
+- 更新日時：2026-11-08T17:55:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 7.1, 7.2, 7.3 疑問文インジケーター（Lucide `message-circle-question`）実装 ／ `887751a37c9569429d20c5418b76c8bb82d338f0` ／ `main`
+- 実装内容：
+  1. **共有ヘルパー（`question-indicator.js`）および共通スタイル（`style.css`）**:
+     - `style.css` に `.stop-indicator-wrap > button { margin-right: 0 !important; }` を追加し、ボタン固有の margin とラップ要素の gap: 4px の重複を防止（停止ボタン直後 4px の間隔を厳格に保持）。
+  2. **Practice 7.1（合計 5 箇所）**:
+     - Drill 1: 0（過去・現在完了習慣平叙文）
+     - Drill 2: 5（今～ていますか疑問文行 `kind === 'q'` に付与、回答行 `kind === 'a'` には非付与）
+     - Drill 3–4: 0（英語キュー・復習パネル）
+     - Example: 0
+     - 既存の Y/N Smile/Frown アイコンおよび Cool-Gray 背景（#E5E7EB）は完全維持。
+  3. **Practice 7.2（合計 5 箇所）**:
+     - Drill 1: 0（平叙文）
+     - Drill 2: 5（過去進行疑問文行 `kind === 'q'` に付与、回答行 `kind === 'a'` には非付与）
+     - Drill 3: 0
+     - Example: 0
+     - 既存の音声再生・録音ライフサイクルは完全維持（中断問題の個別修正は行わず維持）。
+  4. **Practice 7.3（合計 13 箇所）**:
+     - 2系統の録音行生成経路の両方に `window.QuestionIndicator.attach` を接続：
+       - 経路1（`sections.forEach` 内、L1336 付近）：`model(r)` に明示的 `question` プロパティ（`r.label === 'Q:'`）を追加し、`Boolean(r.question)` で判定。Drill 1（平叙文）= 0、Drill 3（何をしていましたか）= 3、Drill 4（いつまで）= 5。
+       - 経路2（`qa73` 内、L2560 付近）：`kind === 'q'` で判定。Drill 2（Yes/No 過去進行）= 5。
+       - Drill 5: 0（English Cues パネル）
+       - Example: 0
+     - 合計: 0 + 5 + 3 + 5 + 0 = 13 箇所。
+  5. **3ページ総計**: **23** 箇所（7.1: 5 + 7.2: 5 + 7.3: 13）。
+  6. **HTMLファイル更新**:
+     - `practice7.1.html`, `practice7.2.html`, `practice7.3.html` に `<script src="question-indicator.js?v=20261108"></script>` を追加。
+     - スクリプト配信識別子を `practice7.1.js?v=20261108-question-indicator`、`practice7.2.js?v=20261108-question-indicator`、`practice7.3.js?v=20261108-question-indicator` に更新。
+  7. **回帰テスト（`tests/question-indicator.cjs`）**:
+     - Practice 7.1（5）、Practice 7.2（5）、Practice 7.3（13）の件数、Example/Answer行非表示、ラッパー完全性、7.1 Y/N アイコン不変性、再レンダリング時の重複防止をテストに追加。
+- 変更ファイル：`practice7.1.html`, `practice7.1.js`, `practice7.2.html`, `practice7.2.js`, `practice7.3.html`, `practice7.3.js`, `style.css`, `tests/question-indicator.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 7.1, 7.2, 7.3 のみ対象。Practice 8.x, Composition への展開は未実施。Practice 2.1–2.3 は未変更。
+- 自動検証：
+  - Python静的構文チェック、HTML/JSスクリプト読込順検証、行生成パス検証全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Practice 7.1（5）、Practice 7.2（5）、Practice 7.3（13）の表示・整列・録音状態遷移の確認。
+  - ユーザー確認後、他ページへの適用検討および共通仕様書への反映。
+
+# 前回のリレー状態 — Practice 2.1 / 2.2 / 2.3: 疑問文インジケーター一括実装
 
 - 更新日時：2026-11-08T17:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

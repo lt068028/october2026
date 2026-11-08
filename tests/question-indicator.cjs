@@ -192,6 +192,40 @@ const root = path.resolve(__dirname, '..');
     const p23TotalVisible = await page.locator('.question-indicator').count();
     check(p23WrapCount, p23TotalVisible, 'All visible indicators in Practice 2.3 are wrapped with stop buttons');
 
+    // 8. Practice 7.1
+    await page.goto('http://qi.test/practice7.1.html');
+    check(await page.locator('.question-indicator').count(), 5, 'Practice 7.1 has exactly 5 question indicators total');
+    check(await page.locator('#practice71QuestionSection .question-indicator').count(), 5, 'Practice 7.1 Drill 2 has 5 question indicators');
+    check(await page.locator('.p71-stage-panel .question-indicator').count(), 0, 'Practice 7.1 Drill 1 has 0 question indicators');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.1 Examples have 0 question indicators');
+    check(await page.locator('.answer-choice .question-indicator').count(), 0, 'Practice 7.1 answer choices have 0 question indicators');
+    check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 7.1 answer rows have 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 5, 'All 5 indicators in Practice 7.1 are wrapped with stop buttons');
+    // Verify Y/N icons are preserved
+    check(await page.locator('.answer-choice svg').count(), 10, 'Practice 7.1 Y/N answer buttons preserve Lucide SVGs');
+
+    // 9. Practice 7.2
+    await page.goto('http://qi.test/practice7.2.html');
+    check(await page.locator('.question-indicator').count(), 5, 'Practice 7.2 has exactly 5 question indicators total');
+    check(await page.locator('.practice-qa-section .question-indicator').count(), 5, 'Practice 7.2 Drill 2 has 5 question indicators');
+    check(await page.locator('.p71-stage-panel .question-indicator').count(), 0, 'Practice 7.2 Drill 1 has 0 question indicators');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.2 Examples have 0 question indicators');
+    check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 7.2 answer rows have 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 5, 'All 5 indicators in Practice 7.2 are wrapped with stop buttons');
+
+    // 10. Practice 7.3
+    await page.goto('http://qi.test/practice7.3.html');
+    check(await page.locator('.question-indicator').count(), 13, 'Practice 7.3 has exactly 13 question indicators total');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.3 Examples have 0 question indicators');
+    check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 7.3 Drill 5 English cues panel has 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 13, 'All 13 indicators in Practice 7.3 are wrapped with stop buttons');
+
+    // Verify rerendering does not duplicate indicators on Practice 7.3
+    for (const script of ['hiragana', 'kanji']) {
+        await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
+        check(await page.locator('.question-indicator').count(), 13, `Practice 7.3 indicator count remains 13 after scriptMode=${script}`);
+    }
+
     check(errors, [], 'No runtime errors');
     await browser.close();
     console.log('PASS Question Indicator tests:', checks);
