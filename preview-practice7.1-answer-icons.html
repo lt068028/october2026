@@ -50,6 +50,18 @@ frame.addEventListener('load',()=>{
   if(observer)observer.disconnect();
   const doc=frame.contentDocument;
   if(!doc||!doc.body)throw Error('Cannot access preview document');
+  // Preview-only: keep Y/N selection interactive without invoking the production
+  // renderAll() path, which replaces the comparison controls.
+  doc.addEventListener('click',event=>{
+   const choice=event.target.closest?.('button.answer-choice');
+   if(!choice)return;
+   event.preventDefault();
+   event.stopImmediatePropagation();
+   const row=choice.closest('tr')||choice.parentElement;
+   row.querySelectorAll('button.answer-choice').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button===choice));
+   });
+  },true);
   observer=new MutationObserver(()=>decorate());
   decorate();
   document.getElementById('status').textContent='比較対象：DrillのY/Nボタン、Exampleの音声ボタン・文中マーク、Drill 2の説明文。背景はウォームグレー／元のブルーを切替可能。本番ページは変更しません。';
