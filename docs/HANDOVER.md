@@ -1,4 +1,51 @@
-# 現在のリレー状態 — Practice 8.3「Verb」と「だれ・何」のボタン表示差解消完了
+# 現在のリレー状態 — Practice 7.3・8.1「Copy my sentences」機能追加完了
+
+- 更新日時：2026-11-09T00:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex実装指示書 — Practice 7.3・8.1 Copy my sentences追加 ／ `1707076f7fbb64861448b3014a5ef8cbe9d784fc` ／ `main`
+- 実装内容と設計：
+  1. **スコープと対象Drill**:
+     - **Practice 7.3**：Drill 1（Compare Past & Past Continuous）、Drill 2（What were you doing?）、Drill 3（Until when?）の録音付きDrill各1箇所（計3箇所）。
+     - **Practice 8.1**：Drill 1（Nounが、すき ↔ Verbのが、すき）、Drill 2（Verbのが、すき ↔ きらい？）、Drill 3（Verbのが、じょうず ↔ にがて）、Drill 4（Degrees of Intensity）、Drill 5（Compare じょうず・とくい・へた・にがて）の全5Drill各1箇所（計5箇所）。
+     - Exampleには追加せず、各Drillの最終問題カード直後・カード枠外・右寄せに配置。
+     - 他の練習ページ・共通音声モジュール等の既存ロジックは一切変更せず保持。
+  2. **UI仕様（確定共通仕様準拠）**:
+     - ボタン：Lucide `clipboard` SVG（20×20px、`stroke-width: 2`、`stroke: currentColor`）、ラベル「`Copy my sentences`」。
+     - 補助説明：`Copy your drill results to review or share.`
+     - ステータス表示：ARIA属性（`role="status"`、`aria-live="polite"`）、成功時「`Copied!`」（2秒後自動フェードアウト）、失敗時「`Could not copy. Please allow clipboard access.`」。
+  3. **コピー内容とフォーマット**:
+     - 英語見出しとローカル日付：
+       - `Practice 7.3 — Drill 1: Compare Past & Past Continuous — ～ました／～ていました — YYYY-MM-DD`
+       - `Practice 7.3 — Drill 2: What were you doing? — ～ていましたか — YYYY-MM-DD`
+       - `Practice 7.3 — Drill 3: Until when? — ～まで～ていました — YYYY-MM-DD`
+       - `Practice 8.1 — Drill 1: Nounが、すき ↔ Verbのが、すき — Noun vs. Verb＋の — YYYY-MM-DD`
+       - `Practice 8.1 — Drill 2: Verbのが、すき ↔ きらい？ — すき／きらい — YYYY-MM-DD`
+       - `Practice 8.1 — Drill 3: Verbのが、じょうず ↔ にがて — じょうず／にがて — YYYY-MM-DD`
+       - `Practice 8.1 — Drill 4: Degrees of Intensity — ぜんぜん～すき — YYYY-MM-DD`
+       - `Practice 8.1 — Drill 5: Compare じょうず・とくい・へた・にがて — じょうず／とくい／へた／にがて — YYYY-MM-DD`
+     - 本文行：`${number}. ${role ? role + ': ' : ''}${isCorrect ? '✅ ' : '— '}${raw}`
+     - 各Drill内で発話された**raw STT transcriptのみ**を出力（モデル文、正答例、訂正文、音声URL、未録音行は一切含めない）。
+  4. **状態制御とライフサイクル連携**:
+     - 初期状態（未録音時）：Disabled。
+     - 録音準備中・録音中（`session || preparing`）：Disabled。
+     - 録音完了・確定時：自動的にEnabled。
+     - Script Mode（Hiragana/Kanji）、Speech Style（Formal/Casual）、Hint Mode（Off/Hover/Display）、English Cues切替等の再描画時も録音データを保全し、ボタンの重複生成を防止。
+  5. **スタイルとキャッシュバスター**:
+     - `style.css`: `.practice73-page .p73-copy-area`, `.practice81-page .p81-copy-area` および各ボタンスタイルを共通定義。
+     - `practice7.3.html`, `practice8.1.html`: `style.css?v=20261109-copy-sentences`, `practice7.3.js?v=20261109-copy-sentences`, `practice8.1.js?v=20261109-copy-sentences` に更新。
+  6. **自動検証（Chromium / Brave Headless CDP実機計測）**:
+     - Practice 7.3：3個のCopyエリア確認、初期Disabled確認、モック録音データ投入後のEnabled確認、クリップボード書込確認（日付・Drill名・学習テーマ・raw STT・正誤記号）、設定切替時のボタン重複なし（3個維持）、クリップボード拒否時のエラー通知確認、レスポンシブ幅（1200px/768px/375px）での横スクロールなし（overflow: false）。
+     - Practice 8.1：5個のCopyエリア確認、初期Disabled確認、モック録音データ投入後のEnabled確認、クリップボード書込確認（日付・Drill名・学習テーマ・raw STT・ロール接頭辞・正誤記号）、設定切替時のボタン重複なし（5個維持）、クリップボード拒否時のエラー通知確認、レスポンシブ幅（1200px/768px/375px）での横スクロールなし（overflow: false）。
+- 変更ファイル：`style.css`, `practice7.3.html`, `practice7.3.js`, `practice8.1.html`, `practice8.1.js`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 7.3およびPractice 8.1のCopy機能追加に限定。他ページへの横展開なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Brave Headless CDP実機計測（Practice 7.3 / Practice 8.1 全12検証項目、1200/768/375px）：全項目PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境にて検証済み）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 7.3（Drill 1〜3）および Practice 8.1（Drill 1〜5）の「Copy my sentences」ボタン表示、録音後のコピー機能、クリップボード出力テキストの確認。
+
+# 前回のリレー状態 — Practice 8.3「Verb」と「だれ・何」のボタン表示差解消完了
 
 - 更新日時：2026-11-09T00:15:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

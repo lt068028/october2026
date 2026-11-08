@@ -1279,6 +1279,7 @@ function render() {
         section.items.forEach((sources, index) => {
             const card = document.createElement('div');
             card.className = 'drill-row p73-question-card';
+            card.dataset.section = String(si);
 
             const table = document.createElement('table');
             table.className =
@@ -2676,6 +2677,132 @@ for (const [index, section] of sections.entries()) {
         r.replyHiras = [full, r.hira];
     }
 }
+
+// Practice 7.3 Copy: page-owned recording keys and results.
+const headers73 = {
+    0: 'Practice 7.3 — Drill 1: Compare Past & Past Continuous — ～ました／～ていました',
+    1: 'Practice 7.3 — Drill 2: What were you doing? — ～ていましたか',
+    2: 'Practice 7.3 — Drill 3: Until when? — ～まで～ていました'
+};
+
+function entriesFor73(si) {
+    const entries = [];
+    const section = sections[si];
+    if (!section) return entries;
+    section.items.forEach((sources, index) => {
+        sources.forEach((source, ri) => {
+            const key = `${si}-${index}-${ri}`;
+            const entry = saved.get(key);
+            const text = entry?.raw;
+            if (typeof text !== 'string' || !text.trim()) return;
+            const role = source.label ? source.label.replace(/:$/, '') : '';
+            const mark = entry.correct === true ? '✅ ' : '— ';
+            const prefix = role ? `${role}: ` : '';
+            entries.push(`${index + 1}. ${prefix}${mark}${text}`);
+        });
+    });
+    return entries;
+}
+
+function updateCopyButtons73() {
+    document.querySelectorAll('.p73-copy-area').forEach(area => {
+        const button = area.querySelector('.p73-copy-button');
+        if (!button) return;
+        const si = Number(area.dataset.drillIndex);
+        const count = entriesFor73(si).length;
+        const busy = Boolean(session || preparing);
+        button.disabled = busy || count === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+
+function mountCopyAreas73() {
+    const root = $('drill1Container');
+    if (!root) return;
+
+    [0, 1, 2].forEach(si => {
+        const cards = root.querySelectorAll(`.drill-row.p73-question-card[data-section="${si}"]`);
+        const lastCard = [...cards].at(-1);
+        if (!lastCard) return;
+
+        let area = root.querySelector(`.p73-copy-area[data-drill-index="${si}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p73-copy-area';
+            area.dataset.drillIndex = String(si);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p73-copy-button';
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p73-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+
+            const help = document.createElement('span');
+            help.className = 'p73-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+
+            const status = document.createElement('span');
+            status.className = 'p73-copy-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.hidden = true;
+
+            let timer = null;
+            button.addEventListener('click', async () => {
+                if (session || preparing) return;
+                const entries = entriesFor73(si);
+                if (!entries.length) return;
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                try {
+                    await navigator.clipboard.writeText(headers73[si] + ' — ' + date + '\n' + entries.join('\n'));
+                    status.textContent = 'Copied!';
+                } catch (error) {
+                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                }
+                status.hidden = false;
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    status.hidden = true;
+                }, 2000);
+            });
+
+            area.append(button, help, status);
+        }
+
+        root.querySelectorAll(`.p73-copy-area[data-drill-index="${si}"]`).forEach(other => {
+            if (other !== area) other.remove();
+        });
+
+        if (lastCard.nextElementSibling !== area) {
+            lastCard.after(area);
+        }
+    });
+
+    updateCopyButtons73();
+}
+
+const p73BaseRender = render;
+render = function(...args) {
+    const result = p73BaseRender.apply(this, args);
+    mountCopyAreas73();
+    return result;
+};
+
+const p73BaseSync = sync;
+sync = function(...args) {
+    const result = p73BaseSync.apply(this, args);
+    updateCopyButtons73();
+    return result;
+};
+
+const p73BaseShowResult = showResult;
+showResult = function(...args) {
+    const result = p73BaseShowResult.apply(this, args);
+    updateCopyButtons73();
+    return result;
+};
+
+window.practice73State = { saved, sections, sync, render };
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

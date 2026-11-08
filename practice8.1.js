@@ -1684,6 +1684,135 @@ function init() {
     render();
 }
 
+// Practice 8.1 Copy: page-owned recording keys and results.
+const headers81 = {
+    0: 'Practice 8.1 — Drill 1: Nounが、すき ↔ Verbのが、すき — Noun vs. Verb＋の',
+    1: 'Practice 8.1 — Drill 2: Verbのが、すき ↔ きらい？ — すき／きらい',
+    2: 'Practice 8.1 — Drill 3: Verbのが、じょうず ↔ にがて — じょうず／にがて',
+    3: 'Practice 8.1 — Drill 4: Degrees of Intensity — ぜんぜん～すき',
+    4: 'Practice 8.1 — Drill 5: Compare じょうず・とくい・へた・にがて — じょうず／とくい／へた／にがて'
+};
+
+function entriesFor81(si) {
+    const entries = [];
+    const itemRows = rowsFor(si);
+    itemRows.forEach((rows, index) => {
+        rows.forEach(r => {
+            if (r.pending) return;
+            const key = keyFor(r);
+            const entry = saved.get(key);
+            const text = entry?.raw;
+            if (typeof text !== 'string' || !text.trim()) return;
+            const isCorrect = entry?.correct === true;
+            const mark = isCorrect ? '✅ ' : '— ';
+            const prefix = r.kind ? `${r.kind}: ` : '';
+            entries.push(`${index + 1}. ${prefix}${mark}${text}`);
+        });
+    });
+    return entries;
+}
+
+function updateCopyButtons81() {
+    document.querySelectorAll('.p81-copy-area').forEach(area => {
+        const button = area.querySelector('.p81-copy-button');
+        if (!button) return;
+        const si = Number(area.dataset.drillIndex);
+        const count = entriesFor81(si).length;
+        const busy = Boolean(session || preparing);
+        button.disabled = busy || count === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+
+function mountCopyAreas81() {
+    const root = $('drill1Container');
+    if (!root) return;
+
+    [0, 1, 2, 3, 4].forEach(si => {
+        const group = document.getElementById('drill' + (si + 1));
+        if (!group) return;
+        const cards = group.querySelectorAll(':scope > .drill-row');
+        const lastCard = [...cards].at(-1);
+        if (!lastCard) return;
+
+        let area = group.querySelector(`:scope > .p81-copy-area[data-drill-index="${si}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p81-copy-area';
+            area.dataset.drillIndex = String(si);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p81-copy-button';
+            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p81-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+
+            const help = document.createElement('span');
+            help.className = 'p81-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+
+            const status = document.createElement('span');
+            status.className = 'p81-copy-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.hidden = true;
+
+            let timer = null;
+            button.addEventListener('click', async () => {
+                if (session || preparing) return;
+                const entries = entriesFor81(si);
+                if (!entries.length) return;
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                try {
+                    await navigator.clipboard.writeText(headers81[si] + ' — ' + date + '\n' + entries.join('\n'));
+                    status.textContent = 'Copied!';
+                } catch (error) {
+                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                }
+                status.hidden = false;
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    status.hidden = true;
+                }, 2000);
+            });
+
+            area.append(button, help, status);
+        }
+
+        group.querySelectorAll(`:scope > .p81-copy-area[data-drill-index="${si}"]`).forEach(other => {
+            if (other !== area) other.remove();
+        });
+
+        if (lastCard.nextElementSibling !== area) {
+            lastCard.after(area);
+        }
+    });
+
+    updateCopyButtons81();
+}
+
+const p81BaseRender = render;
+render = function(...args) {
+    const result = p81BaseRender.apply(this, args);
+    mountCopyAreas81();
+    return result;
+};
+
+const p81BaseSync = sync;
+sync = function(...args) {
+    const result = p81BaseSync.apply(this, args);
+    updateCopyButtons81();
+    return result;
+};
+
+const p81BaseShowResult = showResult;
+showResult = function(...args) {
+    const result = p81BaseShowResult.apply(this, args);
+    updateCopyButtons81();
+    return result;
+};
+
+window.practice81State = { saved, sections, sync, render, choices };
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});

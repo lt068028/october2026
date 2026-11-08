@@ -751,7 +751,8 @@ h1 {
 
 /* 時制バッジ・コピー用ボタン（全ページ統合） */
 :is(.tense-badge, .p73-tense),
-.practice7-page :is(.p71-copy-button, .p72-copy-button),
+.practice7-page :is(.p71-copy-button, .p72-copy-button, .p73-copy-button),
+.practice81-page .p81-copy-button,
 .behind-the-cues-btn,
 .cues-drawer-title,
 .cues-drawer-lead,
@@ -4879,4 +4880,50 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     .uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table td:has(> .recording-controls) {
         grid-column: 1 / -1;
     }
+}
+
+/* =========================================================
+   Practice 7.3 & Practice 8.1: Copy my sentences
+   ========================================================= */
+.practice73-page .p73-copy-area,
+.practice81-page .p81-copy-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+
+.practice73-page .p73-copy-button,
+.practice81-page .p81-copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Lato', sans-serif;
+    max-width: 100%;
+    white-space: normal;
+}
+
+.practice73-page .p73-copy-icon,
+.practice81-page .p81-copy-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.practice73-page .p73-copy-help,
+.practice73-page .p73-copy-status,
+.practice81-page .p81-copy-help,
+.practice81-page .p81-copy-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.practice73-page .p73-copy-button:disabled,
+.practice81-page .p81-copy-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
 }
