@@ -22,10 +22,10 @@ const icons={
  smile:'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/>',
  frown:'<circle cx="12" cy="12" r="10"/><path d="M8 16s1.5-2 4-2 4 2 4 2M9 9h.01M15 9h.01"/>'
 };
-const modes=[{id:'current',label:'現状 🙆 / 🙅'},{id:'person',label:'A · Google Person Add / Remove'},{id:'lucide',label:'Lucide · Check / X'},{id:'thumbs',label:'Lucide · Thumbs Up / Down'},{id:'smile',label:'Lucide · Smile / Frown'}];
+const modes=[{id:'current',label:'現状 🙆 / 🙅'},{id:'person',label:'A · Google Person Add / Remove'},{id:'lucide',label:'Lucide · Check / X'},{id:'thumbs',label:'Lucide · Thumbs Up / Down'},{id:'smile',label:'Lucide · Smile / Frown'},{id:'smileColor',label:'Lucide · Smile / Frown (Color)'}];
 let active='current',observer=null;
 const frame=document.getElementById('practice'),nav=document.getElementById('options');
-function svg(key,material=false){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':'currentColor')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
+function svg(key,material=false,color=null){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':(color||'currentColor'))+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
 function decorate(){
  const doc=frame.contentDocument;if(!doc||!doc.body)return;
  doc.querySelectorAll('button.answer-choice').forEach(btn=>{
@@ -34,7 +34,7 @@ function decorate(){
   btn.dataset.iconPreview=active;
   if(active==='current'){btn.textContent=yes?'🙆':'🙅';return}
   const key=active==='person'?(yes?'personAdd':'personRemove'):active==='lucide'?(yes?'check':'x'):active==='thumbs'?(yes?'thumbsUp':'thumbsDown'):(yes?'smile':'frown');
-  btn.innerHTML=svg(key,active==='person');
+  btn.innerHTML=svg(key,active==='person',active==='smileColor'?(yes?'#16a34a':'#dc2626'):null);
   btn.setAttribute('aria-label',yes?'Affirmative response':'Negative response');
  });
 }
