@@ -78,9 +78,12 @@
         visibility: hidden !important;
         opacity: 0 !important;
     }
-    @media (any-pointer: coarse), (hover: none) {
-        .p81-base-select-preview[data-preview-vocab="hover"] #drill4 .p81-base-select option .p81-option-english {
-            visibility: visible;
-        }
-    }
+    /* Never reveal every candidate on hybrid touch/mouse devices. */
 }
+
+/* The placeholder is not a vocabulary item: suppress its redundant Select tooltip. */
+.p81-base-select-preview #drill4 .p81-preview-choice-wrap:has(.p81-base-select:not([data-selected])) > .tooltip-tip { display: none !important; }
+.p81-base-select-preview #drill4 .p81-base-select option .p81-option-english { visibility: hidden !important; }
+.p81-base-select-preview[data-preview-vocab="hover"] #drill4 .p81-base-select option:is(:hover, :focus) .p81-option-english,
+.p81-base-select-preview[data-preview-vocab="paren"] #drill4 .p81-base-select option .p81-option-english { visibility: visible !important; }
+.p81-base-select-preview[data-preview-vocab="off"] #drill4 .p81-base-select option .p81-option-english { display: none !important; }
