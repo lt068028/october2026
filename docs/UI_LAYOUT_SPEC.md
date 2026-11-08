@@ -1,11 +1,12 @@
 ## 録音付きDrillのCopyボタンアイコン表示（2026-11-08確定）
 
 - コピー操作領域のボタンは、左に **Lucide `clipboard` SVG（20×20px、stroke-width 2、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。
+- ボタンの下の補助説明は `Copy to review or share.` とする。旧文言 `Copy your sentences to review or share.` は使用しない。
 - SVGとラベルを中央揃えにし、既存のボタンの色・背景・枠・角丸・余白を原則維持する。375px幅でもラベルの縦折れや横はみ出しを起こさない。
 
 ## 録音付きDrillのCopyボタン配置（2026-11-08確定）
 
-- `📋 Copy my sentences` は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
+- `Copy my sentences`（Lucide `clipboard` SVG付き）は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
 - ボタン・短い補助説明・成功／失敗ステータスをひとまとまりのコピー操作領域とし、Drill内の右端に揃える。既存のボタン外観・ラベル・余白感を保ち、375px幅で横はみ出しや文字の縦折れが生じないようにする。
 - 操作領域は1つのDrillにつき1つとし、再描画や設定変更で重複生成しない。録音中の無効状態と結果更新を正しく反映する。
 - Practice 7.1は先行実装の修正対象。Drill 1とDrill 2の両方でカード外へ移動する。実装は共通仕様の登録とは別作業とし、既存ページへ無条件に横展開しない。
