@@ -179,7 +179,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 `node tests/labels-and-speakers.cjs`で、1.1/1.2のtitle・h1・Index、全7対象JSのQ/A、練習2全3ページ・各セットのX/Y/Zラベルと旧名の不存在、文字/ひらがな/カタカナの名前照合、TTS専用読みを確認する。内部A/B/Cと画面名は別の期待値で検証。既存のpractice21/practice2-next/practice23-cities/practice22-umbrellas/speaker-guide/lesson2-speaker-pulseも新しい表示・モデルに合わせた期待値で維持する。
 
-- `node tests/practice22-qa.cjs`：2.2限定Q/A円形・人物角丸の試験。順序、幅別表示、Ex2/Ex3矢印・音声の共有列、Ex1/Ex2/Ex3とD1〜D5両セットの図内外話者強調・終了解除、再描画、2.3への非影響。
+- `node tests/practice22-qa.cjs`：2.2限定Q/A役割アイコン・人物角丸の試験。順序、幅別表示、Ex2/Ex3矢印・音声の共有列、Ex1/Ex2/Ex3とD1〜D5両セットの図内外話者強調・終了解除、再描画、2.3への非影響。
 
 - `node tests/example-arrow-alignment.cjs`：練習1/2/7/8の9ページ、幅600/1440の初期表示で同一Example内の👉️開始位置を比較する。
 
@@ -246,3 +246,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 - `CONTENT_BASELINE=/path/to/baseline node tests/content-food-callout.cjs`：承認済み2.2 Ex3注釈の価格衝突・写真内外の往復・ノード／字形／色／写真座標の維持と実境界前後1px。
 
 - `CONTENT_BASELINE=/path/to/baseline node tests/content-price-cues.cjs`：2.2の価格が語中で改行されず、狭い共有列に収まり、全表示文字・フォーム・書体が変わらないことを確認する。
+
+## 承認済みIcons8会話役割
+
+`node tests/qa-icons.cjs`：該当する10Practiceの画像読込・役割対応・空欄・帰属リンク・両テーマ・1440/375px・両表記/3ヒント/3文体・セット/English cues切替・入力/録音結果のリサイズ保持をChromiumで検査する。音声APIは既存モックであり実音響検証ではない。`QA_BASELINE`に変更前ツリーを指定すると役割の実外寸・位置・フォーム状態も比較する。`QA_OUTPUT`に測定JSONと代表画像を保存できる。`QA_PAGES`で変更影響を受けるページだけに限定できる。

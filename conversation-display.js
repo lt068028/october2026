@@ -26,7 +26,17 @@ window.ConversationDisplay = (() => {
                 if(document.body.dataset.practice==='2.2')label.classList.add('p22-conversation-role');
                 const circle=document.createElement('span');circle.className='conversation-role-circle';
                 if(document.body.dataset.practice==='2.2')circle.classList.add('p22-role-circle');
-                circle.textContent=pair?pair[2]:role[1];circle.setAttribute('aria-label',circle.textContent==='Q'?'Question':'Answer');
+                const letter=pair?pair[2]:role[1];
+                circle.setAttribute('aria-label',letter==='Q'?'Question':'Answer');
+                // Comparison pages keep their original roles for their isolated adapters.
+                if(document.documentElement.hasAttribute('data-qa-preview')||document.documentElement.hasAttribute('data-role-preview'))circle.textContent=letter;
+                else{
+                    circle.classList.add('conversation-role-icon');circle.setAttribute('role','img');
+                    const image=document.createElement('img');
+                    image.src='assets/qa-icons/icons8-mono-'+(letter==='Q'?'question':'answer')+'.png?v=20261108-icons8-mono';
+                    image.alt='';image.setAttribute('aria-hidden','true');image.width=50;image.height=50;
+                    circle.append(image);
+                }
                 label.replaceChildren(circle);if(pair)label.append(person(pair[1]));
             }else if(name){
                 if(label.tagName==='TD'){label.dataset.conversationLabel='true';label.replaceChildren(person(name[1]));return;}

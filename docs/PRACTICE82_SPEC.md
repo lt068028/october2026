@@ -13,7 +13,7 @@ Practice 8.2 Example 1（Unspecified／None／All-inclusive）およびExample 2
 
 ## 構成とモデル
 
-各Drillセクションの先頭に対応するExample群を置く。共通の練習8レイアウト、表示設定、丸囲みQ/A、独立したモデル音声、録音・採点結果保持を使う。
+各Drillセクションの先頭に対応するExample群を置く。共通の練習8レイアウト、表示設定、共通Q/A役割表示、独立したモデル音声、録音・採点結果保持を使う。
 
 ### Example 1／Drill 1 — 何かの質問
 

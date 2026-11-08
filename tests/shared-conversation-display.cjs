@@ -6,8 +6,8 @@ const p=await b.newPage();await p.addInitScript(mock);await p.route('http://shar
 for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','pronunciation1','pronunciation2','composition1']){
  const errors=[];const error=e=>errors.push(e.message);p.on('pageerror',error);await p.goto('http://shared.test/'+name+'.html');
  for(const width of [375,600,900,1440])for(const dark of [false,true]){
-  await p.setViewportSize({width,height:1100});await p.emulateMedia({colorScheme:dark?'dark':'light'});
-  eq(await p.locator('.conversation-role-circle').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='50%'&&/^[QA]$/.test(e.textContent))),true,name+' role circles');
+  await p.setViewportSize({width,height:1100});await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));await p.emulateMedia({colorScheme:dark?'dark':'light'});
+  eq(await p.locator('.conversation-role-circle').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderWidth==='0px'&&['Question','Answer'].includes(e.getAttribute('aria-label'))&&!!e.querySelector('img'))),true,name+' labelled role icons');
   eq(await p.locator('.conversation-person[data-person="A"],.conversation-person[data-person="B"]').evaluateAll((es,dark)=>es.every(e=>{const st=getComputedStyle(e),bg=e.dataset.person==='A'?(dark?'rgb(196, 181, 253)':'rgb(109, 40, 217)'):(dark?'rgb(103, 232, 249)':'rgb(125, 211, 252)');return st.backgroundColor===bg&&st.borderRadius==='4px'}),dark),true,name+' person palette');
   eq(await p.locator('.example-box').evaluateAll(es=>{const tips=[...document.querySelectorAll('.tooltip-tip,.custom-tip-box')].filter(e=>getComputedStyle(e).visibility==='hidden');const styles=tips.map(e=>e.style.display);tips.forEach(e=>e.style.display='none');const overflow=es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className);tips.forEach((e,i)=>e.style.display=styles[i]);return overflow;}),[],name+' Example fits '+width);
  }
@@ -21,10 +21,10 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
   await p.locator('#scriptModeControl [data-value="kanji"]').click();
   eq((await p.locator('#drill2Container .info-panel-desc').textContent()).includes('+ 専攻.'),true,'major instruction follows Kanji');
  }
- if(name==='practice8.1')eq(await p.locator('#drill2 .p81-card .conversation-role-circle').count(),8,'all D2 Q/A roles are circles');
+ if(name==='practice8.1')eq(await p.locator('#drill2 .p81-card .conversation-role-circle').count(),8,'all D2 roles retain icon containers');
  if(name==='practice2.1'){
   for(const width of [600,1440]){
-   await p.setViewportSize({width,height:1100});
+   await p.setViewportSize({width,height:1100});await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
    const xs=await p.locator('.p21-which-model-line').evaluateAll(es=>es.slice(0,2).map(e=>e.querySelector('.conversation-person').getBoundingClientRect().x));
    eq(Math.abs(xs[0]-xs[1])<1,true,'2.1 Example2 X shares person column '+width);
   }
@@ -33,7 +33,7 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
  }
  if(name==='practice2.3'){
   for(const width of [600,1440]){
-   await p.setViewportSize({width,height:1100});
+   await p.setViewportSize({width,height:1100});await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
    const xs=await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es=>es.slice(0,2).map(e=>(e.querySelector('.conversation-person')||e).getBoundingClientRect().x));
    eq(Math.abs(xs[0]-xs[1])<1,true,'2.3 intro X shares Q person column '+width);
   }
@@ -70,7 +70,7 @@ const ex=p.locator('.p21-which-example'),qs=ex.locator('.p21-which-models button
 await qs.nth(0).click();eq(await ex.locator('.p21-drill-item.is-target').getAttribute('data-zone'),'A','known intro target');await p.evaluate(()=>t.spoken.at(-1).onend());
 await qs.nth(1).click();eq(await ex.locator('.p21-drill-item.is-target').count(),0,'unknown which Example');await p.evaluate(()=>t.spoken.at(-1).onend());
 await qs.nth(2).click();eq(await ex.locator('.p21-drill-item.is-target').getAttribute('data-zone'),'far','known Example reply');await p.evaluate(()=>t.spoken.at(-1).onend());
-await p.locator('#drill4Container button').click();eq(await p.locator('#drill2Container .conversation-role-circle').count()>0,true,'English cues keep role circles');eq(await p.locator('#drill2Container .conversation-person').count()>0,true,'English cues keep people');
+await p.locator('#drill4Container button').click();eq(await p.locator('#drill2Container .conversation-role-circle').count()>0,true,'English cues keep role icons');eq(await p.locator('#drill2Container .conversation-person').count()>0,true,'English cues keep people');
 await p.goto('http://shared.test/practice2.3.html');
 for(const control of await p.locator('.p23-example-audio button').all()){
  const who=await control.getAttribute('data-speaker');await control.click();

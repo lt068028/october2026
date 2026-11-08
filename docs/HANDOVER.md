@@ -1,3 +1,33 @@
+# 現在のリレー状態 — Icons8会話役割アイコン採用
+
+- 更新日：2026-11-08（Europe/Vienna）／担当：Codex Cloud。開始時main：`d31fa525be6e96a9f7cac0338c74f755366dc0da`。作業ブランチ：`work`、保存先：GitHub `main`。
+- Q/Aアイコン状態：採用決定・実装中 → 実装済み・検証済み（アイコン適用範囲、最新main ab69d6fと比較済み）。公開確認・ユーザー実機・実音響は別状態。
+- 対象：Practice 1.2、2.1、2.2、2.3、7.1、7.2、7.3、8.1、8.2、8.3。初期状態の役割コンテナ数は順に4、10、28、16、2、2、6、10、20、54（8.3は空スペーサー18を含み、画像は36）。Example／Drillの実在する会話役割だけを変換。1.1・発音1/2・作文1・Indexは役割なしとブラウザで確認。
+- 実装：`conversation-display.js`の既存生成経路へ、承認済みIcons8 mono Ask Question／Speech Bubbleを統合。`assets/qa-icons/`へ元Previewと同一バイトのPNGをコピーし出典・Icons8帰属条件を記録。各使用ページに可視の小さなIcons8リンクを追加。Microsoft素材のMITライセンスはIcons8へ適用しない。
+- 見た目：既存互換クラスと外寸・基線・位置・間隔を保持。囲み・背景なし、通常は黒線、ダークはCSS反転した白線。Question／Answer名は親に残し画像は装飾扱い。空欄には画像を入れない。`content-layout.js`では画像だけの役割も「内容あり」と認識し、8.1／8.3の狭幅で旧配置から変わらないよう統合した。
+- 比較Preview：4種類を維持し、元Q/Aも比較可能。7.3の別ラベル比較も役割の旧表示を維持。本番へPreview置換スクリプトは読み込まない。8.3のWho／What／Which／Where／Whenは括弧なしを維持。教材・Lato・人物・操作・音声・録音・認識・採点処理は変更なし。
+- 変更範囲：共有表示JS・共有内容幅JS・CSS、該当10ページのHTML（帰属と配信識別子）、1.1 HTML（共有JS識別子のみ）、比較2 HTML、PNG2点＋CREDITS、関連テスト・仕様・入口・本追跡記録。配信識別子：`20261108-icons8-mono`。
+
+## 今回の検証
+
+- `tests/qa-icons.cjs`最終比較：10ページ、313条件、35,458確認、不合格0。240設定条件（1440／375px × ライト／ダーク × かな／漢字 × Vocab OFF／Hover／Display）、43セット／English cues切替、30保存結果付きリサイズ。文体はOFF→Formal、Hover→Informal、Display→Casualで各テーマ・幅・表記に適用し、全文体の再描画を確認。全ての文体×Vocab組合せの総当たりではない。
+- 全非空役割で正しい承認済み画像の読込・Question／Answer名・装飾画像・枠背景なし・テーマ反転を確認。旧mainとの役割コンテナ数・実外寸・位置・フォーム状態の比較に合格。空欄へ画像を生成せず、8.3の括弧なし英語9表示を保持。例：標準役割外寸は変更前後とも25.859375px四方。
+- 既存APIモックの録音／停止イベントで保存結果を生成し、各ページで1440→375→1440px後の入力・設定・選択・録音再生／判定結果DOM保持を確認。
+- 補足実測：10ページ×2幅×2テーマ＝40条件で、役割画像と操作／人物要素の交差、Example／テーブル境界からのクリップを検査し、該当不具合0。
+- Preview：4選択肢×2幅×2テーマ＝16条件。元Q/Aは画像0、Microsoft／Icons8 Color／Icons8 monoは各36画像読込、空欄画像0、ページ横はみ出し0。
+- `node tests/labels-and-speakers.cjs`：100確認合格。`node tests/practice22-qa.cjs`：540確認合格。画像役割への期待値更新を行い、既存の人物・音声イベント等の検証を保持。
+- `node --check`：共有表示JS・共有内容幅JSと変更テストの構文確認合格。`git diff --check`は差分形式のみの合格として別扱い。PNG2点の`cmp`で承認済みPreview素材との同一性を確認。
+- 再開時にmainが`ab69d6f0f1fce400ea5dc1a73c1d5886f7b91d38`へ進んでいたため、全更新を保全してfast-forward同期し、そのツリーを変更前baselineとして全10ページを再検証した。新English Cues・7.1 Copy・Beyond件数・新仕様を保持。CopyのQ/A区分は保存データから生成する既存処理のままで、アイコン画像から文字を抽出しない。
+
+- 最終同期：`efb8014`の7.1 Copy補助説明短縮と関連文書を保全。描画コード差分はその1文だけのため、最新efb8014をbaselineに7.1の28条件・624確認を追加再実行し不合格0。他9ページの描画コードはab69d6fでの最終確認時から不変。
+- 検証はローカル配信した実ページのChromium描画・操作による。数式シミュレーションや構文確認だけで合格にしていない。before／afterの代表画像：8.3と2.2の会話Example、1440pxライト／375pxダークを同じHiragana／Hover／Formalで撮影し会話へ提示。
+- 実音響・実マイク・実Web Speech認識品質・ChromeOS等のユーザー実機は未検証。録音／判定の保持試験は既存APIモックで生成した保存結果を使用。
+- 既存共有テスト：`tests/shared-conversation-display.cjs`は未合格。初回は2.1 Exampleの375px幅チェックで失敗し、未変更の開始時mainでも同じ失敗。フォントと配置の確定を待つようテストを整えた後は2.3の600px「intro X shares Q person column」で失敗し、同じ待機を加えた最新ab69d6fの未変更baselineでも再現（再開後に両方を再実行）。今回のアイコン配置差分検査とは区別し、既存の人物列整列問題を解消済みとは扱わない。アイコン採用以外のレイアウト修正は行っていない。
+- 初回アイコン差分テストでは8.1／8.3狭幅の24条件で位置変化を検出。画像役割を空ラベルと誤認する上記統合箇所を修正し、最終実行で再検証した。初回失敗を合格として転記しない。
+- 仕様書：UI_LAYOUT_SPEC・UI_ROLLOUT_REVIEW（採用追跡）更新済み。AGENTSと関連共通／ページ仕様の旧丸囲み記述を現行共通表示への参照へ整合させた。過去のPreview比較記録は履歴として保持。
+- 公開確認：この実行環境から`https://october2026.vercel.app/practice8.3.html`はCONNECT 403。公開画面・公開ファイルの新識別子は未確認。Push・Vercelチェック成功・公開描画確認を混同しない。
+- 次の具体的操作：許可ドメインを反映した実行環境で公開ページの`20261108-icons8-mono`読み込み、PNG画像・帰属・テーマ・狭幅を確認する。既存共有テストの2.3人物列整列は別の未解決事項として扱う。
+
 ## 2026-11-08 — Copy機能7.1実機確認・文言確定・全ページ展開準備
 - ユーザーがPractice 7.1のCopy機能（実装Commit `572aee9`）について実機確認完了を報告。先行実装の確認待ちは解消。
 - 共通表示文言をボタン `Copy my sentences`／補助説明 `Copy to review or share.` に確定。Lucide `clipboard` アイコンは維持。文言のコード変更は未実施。
@@ -60,10 +90,9 @@
 この節を**現行の作業管理一覧**とする。以下の番号は固定IDではなく、着手順・依存関係・ユーザー判断に応じて振り直す。過去のF/W/C番号は履歴として維持し、旧番号と現行番号を同一視しない。履歴にある「未完了」は現行状態を上書きしない。
 
 ### F：比較的独立して進められる作業（優先順）
-1. **F-1 Q／Aアイコン採用・適用**［ユーザー申告：別担当で進行中］：旧W-3から移管。Icons8の採用範囲・進捗・GitHub反映状況は担当の作業報告で確認し、未Push成果や他作業を上書きしない。
-2. **F-2 セット切替ボタン英字Lato適用**［仕様確定・実装待ち］：2.1／2.2／2.3／8.3。UI_LAYOUT_SPECの確定仕様に従い対象ボタンのみ変更し、共有CSSとフォント読込を限定検証する。
+1. **F-1 セット切替ボタン英字Lato適用**［仕様確定・実装待ち］：2.1／2.2／2.3／8.3。UI_LAYOUT_SPECの確定仕様に従い対象ボタンのみ変更し、共有CSSとフォント読込を限定検証する。
 
-**完了・除外履歴（現行タスク外）**：Practice 8.1 Drill 5のバッジ左余白・`〃`位置修正は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `a5f2d9fe360956cc05c3b4361b8b89635f3efbc7`。`Poor`等のバッジを自然な左位置に戻し、`〃`は動詞位置に追従）。 Practice 8.1 Drill 5タイトル「へた」Hoverと語義「Bad at」への変更は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `59c947bef0ec4758a927bd5a586cab0b4e0f027d`）。Practice 7.1「いつも…／今…」表示調整は2026-11-08にユーザー実機確認完了（実装Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`）。Practice 1.1およびPractice 2.2 English Cuesは実装・Push・ユーザー実機確認完了。Beyond漢字異なり字数も実装・Push・実機確認完了。Beyondの他ページ展開はW-1に統合。Preview／実機・回帰確認とProduction反映は各作業の標準完了手順。
+**完了・除外履歴（現行タスク外）**：Icons8 Q/Aアイコン採用は全該当10ページの実装・ブラウザ検証を完了しmainへ保存。公開接続403・実機未確認と既存共有テストの別件失敗は冒頭のIcons8リレー状態を参照。 Practice 8.1 Drill 5のバッジ左余白・`〃`位置修正は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `a5f2d9fe360956cc05c3b4361b8b89635f3efbc7`。`Poor`等のバッジを自然な左位置に戻し、`〃`は動詞位置に追従）。 Practice 8.1 Drill 5タイトル「へた」Hoverと語義「Bad at」への変更は実装・Push・ユーザー実機確認完了（2026-11-08、実装Commit `59c947bef0ec4758a927bd5a586cab0b4e0f027d`）。Practice 7.1「いつも…／今…」表示調整は2026-11-08にユーザー実機確認完了（実装Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`）。Practice 1.1およびPractice 2.2 English Cuesは実装・Push・ユーザー実機確認完了。Beyond漢字異なり字数も実装・Push・実機確認完了。Beyondの他ページ展開はW-1に統合。Preview／実機・回帰確認とProduction反映は各作業の標準完了手順。
 
 ### W：検討・仕様判断・前工程に依存する作業（優先順）
 1. **W-1 各ページの使用語・語彙表示見直し → Beyond新設置・デザイン展開**［未着手／段階依存］：対象候補はPractice 1.1／1.2／2.1／2.2／2.3／7.1／7.2／7.3／8.1／8.2／8.3。ページごとに使用語・学習範囲と表示内容を先に確定し、語句・Hover／Displayを整えてから、そのページにBeyondを新設または承認済みデザインを適用する。先行する語彙調整が終わらないページへBeyondを先行展開しない。既存Beyond 8.1〜8.3は現状を保持し、必要な差分のみ検討する。
@@ -75,7 +104,7 @@
 7. **W-7 8.1 Dr4ドロップダウン候補Hover**［Antigravity調査終了／Codex追加調査待ち・実装未承認］：プルダウンを開いた状態で、各選択肢にカーソルを合わせると、その候補の英語の意味を選択前に表示したい。追加UI・無関係な変更は不要。Antigravity調査ではネイティブ`select`／`option`での信頼できる実現は困難とされ、DOMカスタムドロップダウン案が提示されたが、既存`voiceDropdown`再利用の範囲・実際のCSSスコープ・キーボード／タッチ操作の保持をCodexで追加調査する。実装方法は未決定。コード変更・Commit・Pushは承認まで禁止。
 8. **W-8 教師への報告機能**［構想］：報告ボタン・送信先・データ最小化・失敗時挙動を先に設計。
 9. **W-9 追加練習の自動生成**［構想］：教材範囲と教師キューの制約を先に確定。
-10. **W-10 絵文字／Lucideの表示統一調査**［検討］：進行中のIcons8 Q／A実装範囲を重複調査しない。
+10. **W-10 絵文字／Lucideの表示統一調査**［検討］：採用済みのIcons8 Q／Aは再調査せず、未決の表示だけを扱う。
 
 ### C：独立作業ではなく、関連作業で監視する懸念
 1. **C-1 共通CSS／JSの波及・Previewブランチの競合**：Ex／Dr・他ページへの意図しない影響、ブランチ差分、未Push成果の上書きを防止。各変更の事前影響調査・差分確認に組み込む。
@@ -110,7 +139,7 @@
 - 次の作業：共通CSS・フォント読込・混在ラベルの英字分離へ適用し、対象ボタンだけを検証する。音声等の動作ロジックは変更しない。
 
 ## 2026-11-08 — 8.3 English subtitles / Q&A decision status
-- Q／A icon comparison status: 決定待ち. Four preview choices retained; no adopted icon change.
+- Q／A icon status: 実装済み・検証済み（アイコン適用範囲）（Icons8 monochrome outlined Ask Question / Speech Bubble、全該当会話役割へ適用）。Four preview choices retained.
 - Removed parentheses only from Example second-line p83-cat-sub labels: Who, What, Which, Where, When (9 rendered labels, 7 definitions).
 - Lato, Japanese labels, styling and drill switch button wording retained.
 - Canonical and comparison HTML reference updated script version. Public browser verification: all 9 subtitles show plain Who/What/Which/Where/When, computed font Lato; Example 1 screenshot visually checked.

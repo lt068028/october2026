@@ -183,6 +183,8 @@
         });
     }
     function adaptiveExample(root,entries) {
+        // A decorative role image still represents a non-empty labelled role.
+        const labelHasContent=label=>Boolean(label&&(label.textContent.trim()||label.querySelector('.conversation-role-icon[aria-label]')));
         const rows=entries.filter(e=>e.audio&&e.model);if(!rows.length)return;
         root.classList.add('content-adaptive-example');
         if(!observed.has(root)){resize.observe(root);observed.add(root);}
@@ -228,10 +230,10 @@
                 owner.style.setProperty('grid-column','1 / -1','important');owner.style.setProperty('grid-row',nextRow,'important');
                 line=1;
             }
-            if(entry.introOnly){if(!hasLabel&&entry.label?.textContent.trim())place(entry.label,'1 / -1',line++);else place(entry.label,String(labelCol||1),line);place(entry.before,cueCol+' / -1',line++);line=outerLine+1;continue;}
+            if(entry.introOnly){if(!hasLabel&&labelHasContent(entry.label))place(entry.label,'1 / -1',line++);else place(entry.label,String(labelCol||1),line);place(entry.before,cueCol+' / -1',line++);line=outerLine+1;continue;}
             const r=entry;if(!r.audio||!r.model)continue;
-            if(r.before&&r.before.textContent.trim()){if(!hasLabel&&r.label?.textContent.trim())place(r.label,'1 / -1',line++);else place(r.label,String(labelCol||1),line);place(r.before,cueCol+' / -1',line++);}
-            else if(!hasLabel&&r.label?.textContent.trim())place(r.label,'1 / -1',line++);
+            if(r.before&&r.before.textContent.trim()){if(!hasLabel&&labelHasContent(r.label))place(r.label,'1 / -1',line++);else place(r.label,String(labelCol||1),line);place(r.before,cueCol+' / -1',line++);}
+            else if(!hasLabel&&labelHasContent(r.label))place(r.label,'1 / -1',line++);
             else place(r.label,hasLabel?String(labelCol):'1',line);
             if(cueAbove&&r.cue){place(r.cue,'1 / -1',line++);}
             else place(r.cue,String(cueCol),line);

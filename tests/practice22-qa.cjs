@@ -14,7 +14,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:dark?'dark':'light'});
   const lines=p.locator('.p22-conversation-line');check(await lines.count(),4);
   check(await lines.evaluateAll(es=>es.every(e=>e.children[0].classList.contains('conversation-role')&&e.children[1].classList.contains('p22-cue-arrow'))),true);
-  check(await p.locator('.p22-role-circle').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='50%' && e.textContent.match(/^[QA]$/))),true);
+  check(await p.locator('.p22-role-circle').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderWidth==='0px' && ['Question','Answer'].includes(e.getAttribute('aria-label')) && !!e.querySelector('img'))),true);
   check(await p.locator('.p22-person-badge').evaluateAll(es=>es.every(e=>getComputedStyle(e).borderRadius==='4px')),true);
   check(await lines.evaluateAll(es=>es.every(e=>e.getBoundingClientRect().right<=innerWidth+1)),true);
   check(await lines.evaluateAll(es=>es.every(e=>getComputedStyle(e).alignItems==='baseline')),true);
@@ -50,13 +50,13 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   const switcher=p.locator('#drill'+drill+'Container .p21-set-switcher button');
   if(await switcher.count()>1){await switcher.nth(1).click();await auditAudio();}
  }
- check(await p.locator('[data-speaker-recording-key="p22_people_classmate_q_2"] .drill-cue-cell').evaluate(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());return c.textContent.replace(/\s/g,'')}),'QXYさんのクラスメート／どのひと');
+ check(await p.locator('[data-speaker-recording-key="p22_people_classmate_q_2"] .drill-cue-cell').evaluate(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());c.querySelectorAll('.conversation-role-circle').forEach(x=>x.textContent=x.getAttribute('aria-label')==='Question'?'Q':'A');return c.textContent.replace(/\s/g,'')}),'QXYさんのクラスメート／どのひと');
  const button=p.locator('.p2x-price-example > .p22-conversation-line button').first();await button.click();
  check(await p.locator('.p2x-price-example > p .p22-person-badge.is-speaking').allTextContents(),['X']);
  check(await p.locator('.p22-role-circle.is-speaking').count(),0);
  await p.evaluate(()=>t.spoken.at(-1).onend());check(await p.locator('.p22-person-badge.is-speaking').count(),0);
  await p.locator('#drill5Container .p21-set-switcher button').nth(1).click();
- check(await p.locator('#drill5Container .p22-role-circle').allTextContents(),['Q','A','Q','A','Q','A']);
+ check(await p.locator('#drill5Container .p22-role-circle').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),['Question','Answer','Question','Answer','Question','Answer']);
  for(const selector of ['.p2x-price-example','.p2x-food-example']){await p.locator(selector).screenshot({path:'/tmp/'+selector.slice(1)+'-qa.png'});}
  await p.emulateMedia({reducedMotion:'reduce'});await button.click();
  check(await p.locator('.p22-person-badge.is-speaking').evaluate(e=>{const s=getComputedStyle(e);return s.animationName==='none'&&s.boxShadow.includes('rgb(255, 255, 255)')&&s.boxShadow.includes('rgb(51, 65, 85)')&&s.boxShadow.endsWith('8px')}),true);
