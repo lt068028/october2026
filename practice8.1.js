@@ -782,6 +782,52 @@ function showResult(key,notice='') {
     if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
 }
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
+// Approved 91ba544 customizable-select interaction, scoped to Drill 4 activities.
+const activityPickerSupported = CSS.supports('appearance', 'base-select') &&
+    CSS.supports('selector(::picker(select))');
+const activityMeanings = {
+    washDish: 'Wash dishes',
+    discardThing: 'Throw things away',
+    useSmartphone: 'Use a smartphone',
+    cutHair: 'Cut hair',
+    carryBag: 'Carry a bag',
+    beginStudy: 'Start studying'
+};
+function fitActivityPicker(select) {
+    const rect=select.getBoundingClientRect();
+    const available=Math.max(rect.top-12,innerHeight-rect.bottom-12);
+    select.style.setProperty('--p81-picker-height',Math.max(0,Math.min(480,available))+'px');
+}
+function fitActivityPickers() {
+    document.querySelectorAll('#drill4 .p81-base-select').forEach(fitActivityPicker);
+}
+function enhanceActivitySelects() {
+    if(!activityPickerSupported)return; // Conventional native select in older browsers.
+    document.querySelectorAll('#drill4 select.p81-activity-select').forEach(select=>{
+        const value=select.value;
+        const nativeWidth=select.getBoundingClientRect().width+'px';
+        select.style.setProperty('--p81-select-width',nativeWidth);
+        // The shared layout measures in an isolated shadow root. Preserve the
+        // closed field width there too; English belongs only to the picker.
+        select.style.width=nativeWidth;
+        const button=node('button');button.type='button';
+        button.append(document.createElement('selectedcontent'));select.prepend(button);
+        for(const option of select.options){
+            const japanese=node('span','p81-option-japanese',option.textContent);
+            option.replaceChildren(japanese);
+            if(activityMeanings[option.value]){
+                const english=node('span','p81-option-english',activityMeanings[option.value]);
+                option.append(english);
+                if(hintMode!=='off')option.setAttribute('aria-label',japanese.textContent+' — '+english.textContent);
+            }
+        }
+        select.classList.add('p81-base-select');select.dataset.vocab=hintMode;
+        select.value=value;
+        select.addEventListener('pointerdown',()=>fitActivityPicker(select));
+        select.addEventListener('keydown',()=>fitActivityPicker(select));
+        fitActivityPicker(select);
+    });
+}
 function addSelect(cue,r,key) {
     if(!r.selectKind)return;
     const select=node('select','custom-select p81-select'+(r.selectKind==='activity'?' p81-activity-select':''));
@@ -805,9 +851,9 @@ function addSelect(cue,r,key) {
     if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     const selectedActivity=isActivity?degreeActions.find(a=>a.actionId===activity):null;
-    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+words[selectedActivity.verb].meaning:select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'Select.':'Choose an expression first.';
-    if(hintMode==='hover'){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
-    else {cue.append(select);if(hintMode==='paren')cue.append(node('span','vocab-inline','('+hint.textContent+')'));}
+    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+words[selectedActivity.verb].meaning:select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'':'Choose an expression first.';
+    if(hintMode==='hover'&&(!isActivity||activity)){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
+    else {cue.append(select);if(hintMode==='paren'&&hint.textContent)cue.append(node('span','vocab-inline','('+hint.textContent+')'));}
     select.onchange=()=>{
         if(session||preparing)return;
         stopPlayback();choices.set(r.id,select.value);render();
@@ -962,7 +1008,7 @@ function render() {
         });
         root.append(group);
     });
-    ConversationDisplay.format();measureCues();sync();
+    ConversationDisplay.format();measureCues();enhanceActivitySelects();sync();
 }
 function measureExampleCues() {
     document.querySelectorAll('.p81-example :is(.p81-repeat-spacer,.p81-repeat-separator-spacer,.p81-model-repeat-spacer,.p81-model-repeat-after-spacer)').forEach(e=>{e.style.width='0px';});
@@ -1627,6 +1673,7 @@ function init() {
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
-window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();});
+window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();fitActivityPickers();});
+document.addEventListener('scroll',fitActivityPickers,{capture:true,passive:true});
 document.fonts.ready.then(measureCues);
 })();
