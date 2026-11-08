@@ -1,3 +1,14 @@
+## 2026-11-08 — W-3: Practice 8.2 English Cues実装完了
+- 更新日時：2026-11-08T13:20:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：W-3 Practice 8.2 English Cues追加 / `eabbbcde5d1d3d7c61dc454b6dfe0fc399fa61d0` / `main`
+- 完了・未完了／変更ファイル：
+  - 完了：`practice8.2.html` に `#drill5Container` を追加。`practice8.2.js` に `englishCues`、`Drill 5: Practice with English cues` パネル生成関数 `renderEnglishCuePanel()` を追加。既存の `cues(r)` および `words` のデータ構造を活用し、Drill 1〜4 の全設問で英語キュー切り替えを可能に接続（Drill 1: class / speak, school / learn, college / teach, teacher / ask。Drill 2: what/read, something/read 等。Drill 3: birthday/do, party/take along 等のQ行キュー、A行は従来のYes/No回答選択肢を完全維持。Drill 4: what kind of/cooking/make 等のQ行、anything/make 等のA行）。Example行は日本語表示のまま保持。切替時のDrill 1上部へのスムーズスクロール、録音中ロック対応、録音結果・選択状態・音声URLを保持したままの再描画を確認。
+  - 変更ファイル：`practice8.2.html`, `practice8.2.js`, `docs/HANDOVER.md`
+- 自動検証：PythonによるDrill 1〜4全問キュー変換シミュレーション全件PASS（Example日本語不変性・Drill英語キュー英語性・Drill 3 Yes/No保持確認）、`git diff --check` 合格。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち（Practice 8.2は実機確認待ちとして記録）。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
+- 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続のEnglish Cues未対応ページ（Practice 1.2, 8.1, 8.3）またはF-2等へ移行可能。
+
 ## 2026-11-08 — W-3: Practice 1.1 English Cues実装完了
 - 更新日時：2026-11-08T13:00:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
@@ -33,7 +44,7 @@
 ### W：検討・仕様判断・前工程に依存する作業（優先順）
 1. **W-1 各ページの使用語・語彙表示見直し → Beyond新設置・デザイン展開**［未着手／段階依存］：対象候補はPractice 1.1／1.2／2.1／2.2／2.3／7.1／7.2／7.3／8.1／8.2／8.3。ページごとに使用語・学習範囲と表示内容を先に確定し、語句・Hover／Displayを整えてから、そのページにBeyondを新設または承認済みデザインを適用する。先行する語彙調整が終わらないページへBeyondを先行展開しない。既存Beyond 8.1〜8.3は現状を保持し、必要な差分のみ検討する。
 2. **W-2 人物表示・場所表示の見直し**［未着手］：人物X／Y／Z・人物ガイド（2.1／2.2／2.3）と、場所・都市・国の表示（2.2／2.3）。同じ画像・会話表示の検討としてまとめ、実装は対象要素ごとに切り分ける。
-3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り4ページ実装待ち］：対象は **Practice 1.2／8.1／8.2／8.3**。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。Practice 1.1は実装・Push・ユーザー実機確認完了（2026-11-08、Commit `2b75bfa`）で現行対象から除外。
+3. **W-3 English Cues未対応ページへの最小追加**［共通原則確定／残り3ページ実装待ち＋8.2実機確認待ち］：対象は **Practice 1.2／8.1／8.3**。Practice 8.2は実装・Push完了（実機確認待ち）。Practice 1.1は実装・Push・ユーザー実機確認完了（2026-11-08、Commit `2b75bfa`）で現行対象から除外。PROJECT_SPEC「English Cues追加の共通実装原則」に従い、既存ボタン・切替方式を再利用し、各Drillの日本語キューに対応する英単語・短い英語表現のみを定義・接続する。新規教材設計・UI再設計・無関係な変更はしない。既存の日本語キュー・Example・モデル・音声・判定・配置を保持。各ページを小さな独立変更として進める。
 4. **W-4 7.2／7.3時制区分の配置検討**［検討］：「きく」左への配置案。現行の確定配置を無断変更しない。
 5. **W-5 8系英語ラベルのフォント・色・区分表示の残件**［要確認］：既に確定・実装したLatoや装飾を再作業せず、未決の箇所だけ扱う。
 6. **W-6 Example／DrillのHover説明の改善**［検討］：Ex1／Dr1等の説明の出し方と範囲を決める。

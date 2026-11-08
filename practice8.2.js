@@ -4,19 +4,20 @@
 const $ = id => document.getElementById(id);
 const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
+let englishCues=false;
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map();
 const words={};
-function W(id,kanji,hira,romaji,meaning,cue) {
-    words[id]={kanji,hira,romaji,meaning,cue:cue||kanji};
+function W(id,kanji,hira,romaji,meaning,cue,english) {
+    words[id]={kanji,hira,romaji,meaning,cue:cue||kanji,english:english||meaning.replace(/^to\s+/,'').split(';')[0].trim()};
     STTDisplay.register(kanji,hira,meaning);
     if(cue&&cue!==kanji)STTDisplay.register(cue,hira,meaning);
 }
 
 W('something','何か','なにか','nanika','something');
-W('nothing','何も','なにも','nanimo','nothing (with a negative ending)');
-W('anything','何でも','なんでも','nandemo','everything');
+W('nothing','何も','なにも','nanimo','nothing (with a negative ending)',null,'nothing');
+W('anything','何でも','なんでも','nandemo','everything',null,'anything');
 W('what','何','なに','nani','what','何');
 W('whatkind','どんな','どんな','donna','what kind of');
 W('tomorrow','明日','あした','ashita','tomorrow','あした');
@@ -26,7 +27,7 @@ W('store','デパート','デパート','depāto','department store');
 W('teacher','先生','せんせい','sensei','teacher');
 W('friend','友達','ともだち','tomodachi','friend','ともだち');
 W('barbecue','バーベキュー','バーベキュー','bābekyū','barbecue');
-W('cook','料理','りょうり','ryōri','cooking; cuisine','りょうり');
+W('cook','料理','りょうり','ryōri','cooking; cuisine','りょうり','cooking');
 W('song','歌','うた','uta','song','うた');
 W('hat','帽子','ぼうし','bōshi','hat','ぼうし');
 W('shoes','靴','くつ','kutsu','shoes','くつ');
@@ -41,19 +42,19 @@ W('college','大学','だいがく','daigaku','college; university','大学');
 W('birthday','誕生日','たんじょうび','tanjōbi','birthday','たんじょうび');
 W('smartphone','スマホ','スマホ','sumaho','smartphone');
 const verbs={};
-function V(id,dict,hira,romaji,meaning,forms,cue){W(id,dict,hira,romaji,meaning,cue);verbs[id]={dict,...forms};}
+function V(id,dict,hira,romaji,meaning,forms,cue,english){W(id,dict,hira,romaji,meaning,cue,english);verbs[id]={dict,...forms};}
 V('drink','飲む','のむ','nomu','to drink',{masu:'飲みます',past:'飲みました',neg:'飲みません',pastNeg:'飲みませんでした',plainPast:'飲んだ',plainNeg:'飲まない',plainPastNeg:'飲まなかった'});
 V('eat','食べる','たべる','taberu','to eat',{masu:'食べます',past:'食べました',neg:'食べません',pastNeg:'食べませんでした',plainPast:'食べた',plainNeg:'食べない',plainPastNeg:'食べなかった'});
 V('buy','買う','かう','kau','to buy',{masu:'買います',past:'買いました',neg:'買いません',pastNeg:'買いませんでした',plainPast:'買った',plainNeg:'買わない',plainPastNeg:'買わなかった'},'かう');
 V('do','する','する','suru','to do',{masu:'します',past:'しました',neg:'しません',pastNeg:'しませんでした',plainPast:'した',plainNeg:'しない',plainPastNeg:'しなかった'});
-V('listen','聞く','きく','kiku','to listen; to ask',{masu:'聞きます',past:'聞きました',neg:'聞きません',pastNeg:'聞きませんでした',plainPast:'聞いた',plainNeg:'聞かない',plainPastNeg:'聞かなかった'});
-V('takealong','持っていく','もっていく','motte iku','to take something along',{masu:'持っていきます',past:'持っていきました',neg:'持っていきません',pastNeg:'持っていきませんでした',plainPast:'持っていった',plainNeg:'持っていかない',plainPastNeg:'持っていかなかった'},'もっていく');
+V('listen','聞く','きく','kiku','to listen; to ask',{masu:'聞きます',past:'聞きました',neg:'聞きません',pastNeg:'聞きませんでした',plainPast:'聞いた',plainNeg:'聞かない',plainPastNeg:'聞かなかった'},null,'ask');
+V('takealong','持っていく','もっていく','motte iku','to take something along',{masu:'持っていきます',past:'持っていきました',neg:'持っていきません',pastNeg:'持っていきませんでした',plainPast:'持っていった',plainNeg:'持っていかない',plainPastNeg:'持っていかなかった'},'もっていく','take along');
 V('discard','捨てる','すてる','suteru','to throw away',{masu:'捨てます',past:'捨てました',neg:'捨てません',pastNeg:'捨てませんでした',plainPast:'捨てた',plainNeg:'捨てない',plainPastNeg:'捨てなかった'},'すてる');
 V('wash','洗う','あらう','arau','to wash',{masu:'洗います',past:'洗いました',neg:'洗いません',pastNeg:'洗いませんでした',plainPast:'洗った',plainNeg:'洗わない',plainPastNeg:'洗わなかった'},'あらう');
 V('cut','切る','きる','kiru','to cut',{masu:'切ります',past:'切りました',neg:'切りません',pastNeg:'切りませんでした',plainPast:'切った',plainNeg:'切らない',plainPastNeg:'切らなかった'},'きる');
 V('make','作る','つくる','tsukuru','to make',{masu:'作ります',past:'作りました',neg:'作りません',pastNeg:'作りませんでした',plainPast:'作った',plainNeg:'作らない',plainPastNeg:'作らなかった'});
 V('sing','歌う','うたう','utau','to sing',{masu:'歌います',past:'歌いました',neg:'歌いません',pastNeg:'歌いませんでした',plainPast:'歌った',plainNeg:'歌わない',plainPastNeg:'歌わなかった'},'うたう');
-V('cap','かぶる','かぶる','kaburu','to wear a hat',{masu:'かぶります',past:'かぶりました',neg:'かぶりません',pastNeg:'かぶりませんでした',plainPast:'かぶった',plainNeg:'かぶらない',plainPastNeg:'かぶらなかった'});
+V('cap','かぶる','かぶる','kaburu','to wear a hat',{masu:'かぶります',past:'かぶりました',neg:'かぶりません',pastNeg:'かぶりませんでした',plainPast:'かぶった',plainNeg:'かぶらない',plainPastNeg:'かぶらなかった'},null,'wear');
 V('wearshoes','はく','はく','haku','to wear footwear',{masu:'はきます',past:'はきました',neg:'はきません',pastNeg:'はきませんでした',plainPast:'はいた',plainNeg:'はかない',plainPastNeg:'はかなかった'});
 V('see','見る','みる','miru','to see; to watch',{masu:'見ます',past:'見ました',neg:'見ません',pastNeg:'見ませんでした',plainPast:'見た',plainNeg:'見ない',plainPastNeg:'見なかった'},'見る');
 V('read','読む','よむ','yomu','to read',{masu:'読みます',past:'読みました',neg:'読みません',pastNeg:'読みませんでした',plainPast:'読んだ',plainNeg:'読まない',plainPastNeg:'読まなかった'},'読む');
@@ -64,7 +65,7 @@ V('help','手伝う','てつだう','tetsudau','to help',{masu:'手伝います'
 V('speak','話す','はなす','hanasu','to speak; to talk',{masu:'話します',past:'話しました',neg:'話しません',pastNeg:'話しませんでした',plainPast:'話した',plainNeg:'話さない',plainPastNeg:'話さなかった'},'はなす');
 V('learn','習う','ならう','narau','to learn',{masu:'習います',past:'習いました',neg:'習いません',pastNeg:'習いませんでした',plainPast:'習った',plainNeg:'習わない',plainPastNeg:'習わなかった'},'ならう');
 V('teach','教える','おしえる','oshieru','to teach',{masu:'教えます',past:'教えました',neg:'教えません',pastNeg:'教えませんでした',plainPast:'教えた',plainNeg:'教えない',plainPastNeg:'教えなかった'},'おしえる');
-V('attach','つける','つける','tsukeru','to put on; to attach',{masu:'つけます',past:'つけました',neg:'つけません',pastNeg:'つけませんでした',plainPast:'つけた',plainNeg:'つけない',plainPastNeg:'つけなかった'},'つける');
+V('attach','つける','つける','tsukeru','to put on; to attach',{masu:'つけます',past:'つけました',neg:'つけません',pastNeg:'つけませんでした',plainPast:'つけた',plainNeg:'つけない',plainPastNeg:'つけなかった'},'つける','attach');
 // Register complete inflections: a dictionary-form reading alone cannot read 飲みます.
 const formReadings=[];
 for(const [id,v]of Object.entries(verbs)){
@@ -192,12 +193,13 @@ function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown,markup){const w=words[id],text=markup??escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
-function cues(r){
- if(r.mode==='contrast'){
-  const ids=[r.person,r.pronoun,r.verb].filter(Boolean);
-  return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');
+function cues(r,isDrill=false){
+ const ids=r.mode==='contrast'
+  ?[r.person,r.pronoun,r.verb].filter(Boolean)
+  :(r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.object,r.verb].filter(Boolean));
+ if(isDrill&&englishCues){
+  return ids.map(id=>'<span class="target-word">'+escape(words[id]?.english||id)+'</span>').join(' / ');
  }
- const ids=r.mode==='reply'?[]:r.mode==='any'?['anything',r.verb]:r.mode==='wh'?['whatkind',r.object,r.verb]:[r.time,r.place,r.person,r.object,r.verb].filter(Boolean);
  return ids.map(id=>hintMode==='paren'?'<span class="display-cue-unit">'+word(id)+'</span>':word(id)).join(hintMode==='paren'?'':'／');
 }
 // Display-only segmentation: keep cue data, readings, and model/TTS strings intact.
@@ -741,10 +743,36 @@ function render(){
  const root=$('drill1Container');root.replaceChildren();views.clear();
  sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);panel.append(heading,node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
- rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);
+ rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const [value,label]of [['yes','🙆'],['no','🙅']]){const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
  const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
- });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();sync();
+ });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
+}
+function renderEnglishCuePanel(){
+ const container=$('drill5Container');
+ if(!container)return;
+ container.replaceChildren();
+ const panel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
+ copy.append(node('span','info-panel-title drill-cue-title','Drill 5: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–4.'));
+ const toggle=node('button','drill-cue-button',englishCues?'Display Japanese Cues':'Display English Cues');
+ toggle.type='button';
+ toggle.classList.toggle('is-english',Boolean(englishCues));
+ toggle.setAttribute('aria-pressed',String(Boolean(englishCues)));
+ toggle.disabled=Boolean(session||preparing);
+ toggle.onclick=()=>{
+  if(session||preparing)return;
+  stopPlayback();
+  englishCues=!englishCues;
+  render();
+  requestAnimationFrame(()=>{
+   const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');
+   if(!example)return;
+   const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;
+   window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});
+  });
+ };
+ panel.append(copy,toggle);
+ container.append(panel);
 }
 function measureExampleColumns(){
  // Measure uncropped content, not the result of the previous layout pass.
@@ -781,7 +809,7 @@ function measureCues(){
  document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
 function sync() {
     const busy=Boolean(session||preparing);
-    document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
+    document.querySelectorAll('#drill1Container button,#drill5Container button,#drill1Container select,.compact-settings button,.compact-settings input,.drill-cue-button').forEach(e=>e.disabled=busy);
     views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':'Choose an expression first.';}}
         const canStop=session?.key===keyFor(v.r)&&session.manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
 }
