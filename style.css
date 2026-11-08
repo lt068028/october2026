@@ -4397,7 +4397,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .practice81-page #drill5 .p81-card .prompt-label > .p81-kind.p81-concept-badge {
     box-sizing: border-box;
     width: max-content;
-    margin-left: var(--p81-kind-indent, 0px);
+    margin-left: 0;
     margin-right: 8px;
     justify-self: end;
     text-align: center;
