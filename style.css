@@ -3184,7 +3184,9 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         appearance: base-select;
     }
     .practice81-page #drill4 .p81-base-select {
-        inline-size: var(--p81-select-width);
+        inline-size: max-content;
+        min-inline-size: var(--p81-select-width, max-content);
+        max-inline-size: 100%;
         color: var(--text-primary);
         background: var(--bg-panel);
     }
@@ -3192,6 +3194,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         font: inherit;
         color: inherit;
         text-align: inherit;
+        white-space: nowrap;
     }
     .practice81-page #drill4 selectedcontent .p81-option-english { display: none; }
     .practice81-page #drill4 .p81-base-select::picker(select) {
@@ -3228,7 +3231,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
         grid-column: 1;
         grid-row: 1;
     }
-    .practice81-page #drill4 .p81-option-japanese { grid-column: 2; grid-row: 1; }
+    .practice81-page #drill4 .p81-option-japanese {
+        grid-column: 2;
+        grid-row: 1;
+        white-space: nowrap;
+    }
     .practice81-page #drill4 .p81-option-english {
         grid-column: 3;
         grid-row: 1;

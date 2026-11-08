@@ -805,11 +805,9 @@ function enhanceActivitySelects() {
     if(!activityPickerSupported)return; // Conventional native select in older browsers.
     document.querySelectorAll('#drill4 select.p81-activity-select').forEach(select=>{
         const value=select.value;
-        const nativeWidth=select.getBoundingClientRect().width+'px';
+        const nativeWidth=Math.ceil(select.getBoundingClientRect().width)+'px';
         select.style.setProperty('--p81-select-width',nativeWidth);
-        // The shared layout measures in an isolated shadow root. Preserve the
-        // closed field width there too; English belongs only to the picker.
-        select.style.width=nativeWidth;
+        select.style.removeProperty('width');
         const button=node('button');button.type='button';
         button.append(document.createElement('selectedcontent'));select.prepend(button);
         for(const option of select.options){

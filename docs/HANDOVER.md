@@ -1,4 +1,34 @@
-# 現在のリレー状態 — Practice 8.1 Drill 4承認済み候補Hoverの本番統合
+# 現在のリレー状態 — Practice 8.1 Drill 4: Fix Japanese Text Wrapping
+
+- 更新日時：2026-11-08T15:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 8.1 Drill 4: 日本語テキスト折り返し不具合（「べんきょうをはじめる」の「る」が次行へ落ちる問題）の修正 ／ `508a994aaf059b315840810b947a70e0d6f1b476` ／ `main`
+- 根本原因：
+  1. CSS側：`.practice81-page #drill4 .p81-option-japanese` およびボタンに `white-space: nowrap` が未指定だったため、日本語テキストが任意の文字間で改行可能だった。
+  2. レイアウト制約＆計算：`.practice81-page #drill4 .p81-base-select` に `inline-size: var(--p81-select-width)` が指定され、さらに JS（`enhanceActivitySelects`）で `select.style.width = nativeWidth` と狭い固定幅がインライン強制設定されていた。`appearance: base-select` 適用後の `<button>` の内部余白・ピッカー矢印により、利用可能幅がネイティブ `<select>` より数px不足し、十分な水平余白があるにもかかわらず「る」が折り返されていた。
+- 修正内容：
+  1. `style.css`：
+     - `.practice81-page #drill4 .p81-option-japanese` に `white-space: nowrap;` を追加（閉じた選択表示・開いたドロップダウン両方で適用）。
+     - `.practice81-page #drill4 .p81-base-select > button` に `white-space: nowrap;` を追加。
+     - `.practice81-page #drill4 .p81-base-select` を `inline-size: max-content; min-inline-size: var(--p81-select-width, max-content); max-inline-size: 100%;` に変更（内容に応じて自然にフィットし、未選択時の最小幅を保ちつつ、狭小幅での横あふれを防止）。
+  2. `practice8.1.js`：
+     - `enhanceActivitySelects()` でインラインスタイル `select.style.width` の強制固定設定を撤廃（`select.style.removeProperty('width')`）。
+     - `nativeWidth` は `Math.ceil(...)` で四捨五入し `--p81-select-width` へ提供。
+  3. `tests/practice81-activity-select.cjs`：
+     - closed select（全6問）および open picker options（全選択肢）において、日本語テキストが複数行に折り返されていないこと（`range.getClientRects().length <= 1`）を検証する回帰アサーションを追加。
+  4. キャッシュバスター：`practice8.1.html` および `preview-practice8.1-dr4-1-base-select.html` の配信識別子を `20261108-p81-wrap-fix` に更新。
+  5. 仕様書：`docs/UI_LAYOUT_SPEC.md` に Drill 4 の日本語ラベル折り返し防止契約を追記。PROJECT_SPECの変更は不要。
+- 変更ファイル：`style.css`, `practice8.1.js`, `practice8.1.html`, `preview-practice8.1-dr4-1-base-select.html`, `tests/practice81-activity-select.cjs`, `docs/UI_LAYOUT_SPEC.md`, `docs/HANDOVER.md`
+- 自動検証：
+  - Python静的・DOM構造・CSS/JSセレクタ解析全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+  - （※Node/Playwrightブラウザ実行はコンテナ制約のため未実施。CI/Codex Cloud環境での実行を想定）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち／未回収作業：
+  - GitHub `origin/main` への push 完了後、Vercel でのデプロイ完了確認および実機ブラウザでの「べんきょうをはじめる」表示確認。
+  - 未回収作業なし。
+
+# 前回のリレー状態 — Practice 8.1 Drill 4承認済み候補Hoverの本番統合
 
 - 担当：Codex Cloud／2026-11-08。開始時main：`91ba5447fae58b026935c31ef877d53504c60c9c`。未コミット変更なしを確認してfast-forward同期。作業中のmain更新`562e9dd`／`0c15f03`は7.1 Previewのみで、内容を保持してfast-forward取得。
 - 対象：Practice 8.1 / Drill 4 / degree-0〜degree-5 / 活動候補select。承認済みPreview `91ba544`の右側英語説明を6問へ統合。Previewの実機承認はユーザー報告。本番統合後の実機確認とは区別する。
