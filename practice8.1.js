@@ -104,7 +104,7 @@ W("begin","始める","はじめる","hajimeru","to begin");
 W("like","好き","すき","suki","like");
 W("dislike","きらい","きらい","kirai","dislike");
 W("good","上手","じょうず","jōzu","skillful");
-W("bad","下手","へた","heta","not skilled");
+W("bad","下手","へた","heta","Bad at");
 W("strong","得意","とくい","tokui","Comfortable and confident");
 W("difficult","苦手","にがて","nigate","not comfortable");
 W("totemo","とても","とても","totemo","very");
@@ -907,7 +907,15 @@ function render() {
         const group=node('section','p81-section');group.id='drill'+(si+1);
         addExample(group,si);
         const panel=node('div','info-panel info-panel-task1');
-        panel.append(node('span','info-panel-title',section.title));if(section.instruction)panel.append(node('span','info-panel-desc',section.instruction));group.append(panel);
+        const title=node('span','info-panel-title');
+        if(si===4){
+            const parts=section.title.split('へた');
+            title.append(document.createTextNode(parts[0]));
+            const hover=node('span','tooltip-wrap');
+            hover.append(node('span','target-word','へた'),node('span','tooltip-tip',words.bad.romaji+', '+words.bad.meaning));
+            title.append(hover,document.createTextNode(parts[1]));
+        }else title.textContent=section.title;
+        panel.append(title);if(section.instruction)panel.append(node('span','info-panel-desc',section.instruction));group.append(panel);
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
             const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
