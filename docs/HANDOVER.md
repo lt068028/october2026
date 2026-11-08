@@ -1,4 +1,38 @@
-# 現在のリレー状態 — Practice 7.1: Y/Nアイコン統一完了（Example 2・Drillタイトル）
+# 現在のリレー状態 — Practice 1.1 / 1.2: 疑問文インジケーター実装（第1段階）
+
+- 更新日時：2026-11-08T16:50:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 1.1 / Practice 1.2 疑問文インジケーター（Lucide `message-circle-question`）の第1段階実装 ／ `e0d2ec31ab763a5ee0e0bf967254678a7f94939b` ／ `main`
+- 実装内容：
+  1. **共通再利用ヘルパー（`question-indicator.js`）**:
+     - `window.QuestionIndicator` を新設。
+     - Lucide `message-circle-question`（16×16px、stroke="currentColor"、stroke-width="2"、`aria-hidden="true"`）を生成。
+     - `attach(target, isInterrogative)`：明示的な真偽値 `isInterrogative` を受け取り、録音停止ボタン直後に配置。再レンダリング時の重複防止および停止ボタンとの行分離防止のため、`.stop-indicator-wrap` でアトミックにグループ化。
+  2. **共通スタイル（`style.css`）**:
+     - `.stop-indicator-wrap`：`display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;`。
+     - `.question-indicator`：`color: var(--text-secondary); pointer-events: none; user-select: none;`。背景なし・非対話・フォーカス不可。ライト/ダーク両テーマ対応。
+  3. **Practice 1.1**:
+     - 調査結果を現行コードと照合し、疑問文発話生成行が存在しない（Drill 1〜3は名詞平叙文「XはYです」）ことを確認。
+     - 不要なコード変更は行わず、表示インジケーター数：**0**。
+  4. **Practice 1.2**:
+     - 疑問文発話生成行に明示的フラグ `isInterrogative: true` を渡してインジケーターを付与：
+       - Drill 1: 5 問（Q 行に付与、A 行には非付与）
+       - Drill 2: 3 問（Q 行に付与、A 行には非付与）
+       - 合計: **8** 箇所。Example や応答行には非表示。
+     - `<script src="question-indicator.js?v=20261108"></script>` を追加し、スクリプト配信識別子を `practice1.2.js?v=20261108-question-indicator` に更新。
+  5. **回帰テスト（`tests/question-indicator.cjs`）**:
+     - Practice 1.1（0件）、Practice 1.2（Drill 1: 5件、Drill 2: 3件、計8件）、Example/Answer行非表示、375px幅での停止ボタン同一行保持、設定切替時の重複防止を検証するテストを追加。
+- 変更ファイル：`question-indicator.js`, `style.css`, `practice1.2.js`, `practice1.2.html`, `tests/question-indicator.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 1.1 / 1.2 のみ対象。他ページ（7.x, 8.x, 2.x等）への展開は未実施。全Drill展開や共通仕様書（UI_LAYOUT_SPEC）の確定は行わず第1段階完了。
+- 自動検証：
+  - Python静的構文チェック、XML/SVG妥当性検証、HTML/JS整合性チェック全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Practice 1.1（0件）および Practice 1.2（Drill 1: 5件、Drill 2: 3件、計8件）の表示・整列・録音状態遷移の確認。
+  - ユーザー確認後、他ページへの適用検討および共通仕様書への反映。
+
+# 前回のリレー状態 — Practice 7.1: Y/Nアイコン統一完了（Example 2・Drillタイトル）
 
 - 更新日時：2026-11-08T16:35:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

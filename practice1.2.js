@@ -1506,7 +1506,8 @@ function practice2ShowNotice(resultSpan, message) {
         cue,
         key,
         getText,
-        enabled = true
+        enabled = true,
+        isInterrogative = false
     ) {
         const row = node("tr");
 
@@ -1563,6 +1564,10 @@ function practice2ShowNotice(resultSpan, message) {
             recordBtn,
             stopBtn
         );
+
+        if (window.QuestionIndicator) {
+            window.QuestionIndicator.attach(stopBtn, isInterrogative);
+        }
 
         controls.append(actions, result);
 
@@ -1722,7 +1727,9 @@ function practice2ShowNotice(resultSpan, message) {
                 () => question(
                     word(item.x, item.xKanji),
                     y()
-                )
+                ),
+                true,
+                true
             );
 
             const choices = node("span");
@@ -1790,7 +1797,8 @@ function practice2ShowNotice(resultSpan, message) {
                 choices,
                 `p2_drill1_a_${index}`,
                 getText,
-                Boolean(state.answerMode)
+                Boolean(state.answerMode),
+                false
             );
 
 
@@ -1891,7 +1899,9 @@ function practice2ShowNotice(resultSpan, message) {
                 () => question(
                     subject(),
                     word("なん", "何")
-                )
+                ),
+                true,
+                true
             );
 
             const choices = node("span");
@@ -1959,7 +1969,8 @@ function practice2ShowNotice(resultSpan, message) {
                 choices,
                 `${key}_a`,
                 getText,
-                Boolean(state.selectedValue)
+                Boolean(state.selectedValue),
+                false
             );
 
 

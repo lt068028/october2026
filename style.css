@@ -917,6 +917,34 @@ body {
     flex-shrink: 0;
 }
 
+/* Question sentence indicator: noninteractive Lucide message-circle-question immediately right of stop button */
+.stop-indicator-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.question-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.question-indicator .question-indicator-icon {
+    display: block;
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
 /* 短い結果は同じ行、長い結果は操作部分の下へ移す */
 .recording-controls > .recording-result {
     display: block !important;
