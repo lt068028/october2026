@@ -1,4 +1,37 @@
-# 現在のリレー状態 — W：ドイツ語ドリル開発の参照範囲最適化・専用仕様整備完了
+# 現在のリレー状態 — Deutsche Übung 1.1：Ex・Dr1のUI修正完了
+
+- 更新日時：2026-11-08T21:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Deutsche Übung 1.1：Ex・Dr1のUI修正（Ex-1: 「Ex.」撤去、Ex-2: キュー点線表示、Ex-3: キューと👉の余白修正、Ex-4: 👉と音声ボタンの改行修正、Ex-5: モデル文と音声ボタンの重なり解消、Dr1-1: キュー点線表示、Dr1-2: キューと音声ボタンの余白修正） ／ `81ea7811cfe8a5e50e5a01fd8427e1ed469d01ce` ／ `main`
+- 根本原因の分析：
+  1. **Ex-1**: `uebung1.1.js` の `exCueTd` 生成時に `strong.example-label-title` ("Ex: ") を独自追加していた。
+  2. **Ex-2 & Dr1-1**: 語彙ヒント生成関数 `formatCue()` で、ホバー時に共通の `.tooltip-wrap`（`border-bottom: 1px dotted var(--accent-color)`）ではなく `.custom-tip-wrap` を使用していたため点線下線がスタイル付与されなかった。
+  3. **Ex-3, Ex-4, Ex-5**: `exTable` に `recording-table` クラスが付与されていたため、共通CSS（`style.css` L2450）の3列Gridレイアウト（34px / 50% / 1fr）が誤適用され、行1でキューが50%幅を占有して👉️との間に巨大な空白が生じ（Ex-3）、列溢れにより音声ボタンが次行へ強制改行され（Ex-4）、34px幅セル内に配置された音声ボタンが隣接セル（モデル文）と重なって表示されていた（Ex-5）。
+  4. **Dr1-2**: Drill 1の `.recording-table` において `--drill-cue-width` が未定義だったため、`style.css` の既定値 `50%` 幅がキュー列に割り当てられ、キュー文字列と音声ボタンの間に約250pxの不要な空白が生じていた。
+- 実装内容：
+  1. **Ex（Drill 1 Example）の修正**:
+     - `exCueTd` から「Ex: 」項目名を撤去（カード枠・見出し等は維持）。
+     - ホバー時に `.tooltip-wrap` / `.target-word` / `.tooltip-tip` を適用し、確定共通仕様の点線下線を表示（OFF/Paren時の動作契約維持）。
+     - `exTable` から `recording-table` クラスを撤去し、`.uebung11-page #drill1 .example-box .drill-example-table` に4列Grid（`max-content max-content max-content minmax(0, 1fr)`、`column-gap: 8px`）を適用。広幅時は同一行・8px間隔で整列させ、不要な改行およびモデル文との重なりを解消。
+     - 狭幅（<= 520px / 375px）時はコンテナクエリによりキューを上段、[👉️] [🔊きく] [モデル文] を下段に配置し、矢印と音声ボタンを同一行に維持。
+  2. **Dr1（Drill 1 設問群）の修正**:
+     - ホバー時に `.tooltip-wrap` / `.target-word` を適用し点線下線を表示。
+     - `alignDrill1Cues()` を新設し、Drill 1の最長キュー幅を実測して `--drill-cue-width` に同期。不要な固定50%空白を撤去し、8px間隔で音声ボタンへ近接配置。
+     - 狭幅（<= 480px / 375px）時は操作群を自然に次段へ折り返す。
+     - 録音・再生・停止・Autostop・Autoplayの動作ロジックは一切変更なし。
+  3. **Dr2〜Dr4および日本語ページの完全保全**:
+     - スタイリングはすべて `.uebung11-page #drill1` に限定スコープ化。Dr2〜Dr4のDOM構造・スタイル・動作、および日本語Practiceページには一切の変更なし。
+- 変更ファイル：`uebung1.1.js`, `style.css`, `tests/uebung11.cjs`, `docs/GERMAN_DRILL_SPEC.md`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1のExおよびDr1のみ。Dr2〜Dr4および他ページへの不要な変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - `tests/uebung11.cjs`（全項目およびEx-1〜Ex-5, Dr1-1〜Dr1-2検証）：PASS
+  - Python契約整合性テスト：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザ（通常幅および375px幅）でのEx・Dr1の表示・操作確認。
+
+# 前回のリレー状態 — W：ドイツ語ドリル開発の参照範囲最適化・専用仕様整備完了
 
 - 更新日時：2026-11-08T21:12:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

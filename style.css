@@ -4763,3 +4763,105 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
         color: #fbbf24;
     }
 }
+
+/* Deutsche Übung 1.1 — Example (Drill 1 Ex) Layout */
+.uebung11-page #drill1 .example-box .drill-example-table {
+    display: grid;
+    grid-template-columns: max-content max-content max-content minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: 8px;
+    row-gap: 6px;
+    width: 100%;
+}
+
+.uebung11-page #drill1 .example-box .drill-example-table > tbody,
+.uebung11-page #drill1 .example-box .drill-example-table > tbody > tr {
+    display: contents;
+}
+
+.uebung11-page #drill1 .example-box .drill-example-table .drill-cue-cell {
+    grid-column: 1;
+    width: auto !important;
+    white-space: normal !important;
+}
+
+.uebung11-page #drill1 .example-box .drill-example-table .example-arrow-cell {
+    grid-column: 2;
+    width: 28px !important;
+    text-align: center;
+}
+
+.uebung11-page #drill1 .example-box .drill-example-table .example-audio-cell {
+    grid-column: 3;
+    width: auto !important;
+    white-space: nowrap;
+}
+
+.uebung11-page #drill1 .example-box .drill-example-table .example-model-cell {
+    grid-column: 4;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+@container (max-width: 520px) {
+    .uebung11-page #drill1 .example-box .drill-example-table {
+        grid-template-columns: 28px max-content minmax(0, 1fr);
+    }
+    .uebung11-page #drill1 .example-box .drill-example-table .drill-cue-cell {
+        grid-column: 1 / -1;
+        grid-row: 1;
+    }
+    .uebung11-page #drill1 .example-box .drill-example-table .example-arrow-cell {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .uebung11-page #drill1 .example-box .drill-example-table .example-audio-cell {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    .uebung11-page #drill1 .example-box .drill-example-table .example-model-cell {
+        grid-column: 3;
+        grid-row: 2;
+    }
+}
+
+/* Deutsche Übung 1.1 — Drill 1 Items Layout */
+.uebung11-page #drill1 .drill-row .recording-table {
+    display: grid;
+    grid-template-columns: 34px var(--drill-cue-width, max-content) minmax(0, 1fr);
+    align-items: center;
+    gap: 6px 8px;
+}
+
+.uebung11-page #drill1 .drill-row .recording-table :is(tbody, tr) {
+    display: contents;
+}
+
+.uebung11-page #drill1 .drill-row .recording-table .drill-number-cell {
+    grid-column: 1;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell {
+    grid-column: 2;
+    width: auto !important;
+    white-space: normal !important;
+}
+
+.uebung11-page #drill1 .drill-row .recording-table td:has(> .recording-controls) {
+    grid-column: 3;
+}
+
+@container (max-width: 480px) {
+    .uebung11-page #drill1 .drill-row .recording-table {
+        grid-template-columns: 34px minmax(0, 1fr);
+    }
+    .uebung11-page #drill1 .drill-row .recording-table .drill-cue-cell {
+        grid-column: 2;
+    }
+    .uebung11-page #drill1 .drill-row .recording-table td:has(> .recording-controls) {
+        grid-column: 1 / -1;
+    }
+}

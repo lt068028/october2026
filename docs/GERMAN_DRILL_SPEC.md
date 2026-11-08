@@ -72,18 +72,21 @@
 
 ### 3.2 Card 2: Example カード（`.example-box`） 【実装済み】
 - カード構造：
-  - テーブル（`table.recording-table`）内に 4 列の `colgroup` を配置。
-  - **Col 1 (Cue)**: `strong.example-label-title` ("Ex: ") ＋ `span.cue-content`（`formatCue()` によるヒント展開）
-  - **Col 2 (Arrow)**: `span.example-arrow-cell` ("👉️", 幅 28px, 中央寄せ)
-  - **Col 3 (Audio)**: `button("🔊きく", "Listen to the model sentence.", ...)`
-  - **Col 4 (Model)**: `span.model-text`（`highlightGrammar()` による文法強調）
+  - テーブル（`table.drill-example-table`、`recording-table` とは分離して4列Gridでレイアウト）。
+  - **Col 1 (Cue)**: `span.cue-content`（`formatCue()` によるヒント展開。ユーザー未指定の「Ex: 」項目名は配置せず、ホバー時は `.tooltip-wrap` / `.target-word` / `.tooltip-tip` により日本語Practiceと同様の点線下線を表示）。
+  - **Col 2 (Arrow)**: `td.example-arrow-cell` ("👉️", 幅 28px, 中央寄せ)
+  - **Col 3 (Audio)**: `button("🔊きく", "Listen to the model sentence.", ...)`（幅に余裕がある場合は 👉️ と同列に配置）
+  - **Col 4 (Model)**: `span.model-text`（`highlightGrammar()` による文法強調。音声ボタンとの重なりを防止）
+- **レスポンシブ契約**:
+  - 広幅時: [キュー] [👉️] [🔊きく] [モデル文] を同一行・8px列間隔で整列。
+  - 狭幅時（<= 520px / 375px）: キューを上段（行1）、[👉️] [🔊きく] [モデル文] を下段（行2）にまとめて配置し、矢印と音声ボタンを不自然に改行分断させず、モデル文の表示領域を確保。
 - **責務分離原則**: Example は独立した変更対象であり、Exampleの修正がDrill設問に波及したり、Drillの修正がExampleに波及してはならない。
 
 ### 3.3 Card 3: Drill 設問群（`.drill-row`） 【実装済み】
 - 各設問（通常1ドリルあたり3問）を行形式カードとして配置。
   - テーブル（`table.recording-table`）内に 3 列の `colgroup`（番号幅 34px、キュー、操作/結果列）を配置。
   - **Col 1 (Number)**: `td.drill-number-cell`（例: `1.`）
-  - **Col 2 (Cue)**: `td.drill-cue-cell` ＋ `span.cue-content`
+  - **Col 2 (Cue)**: `td.drill-cue-cell` ＋ `span.cue-content`（ホバー時は `.tooltip-wrap` / `.target-word` により点線下線を表示。Drill 1では実測幅に基づく `--drill-cue-width` により不要な余白を排除）
   - **Col 3 (Controls & Result)**:
     - 操作ボタン群（`.recording-actions`）:
       - モデル聴取ボタン：`🔊きく`（推奨モデルを発話）
@@ -94,6 +97,7 @@
       - 録音後：生テキスト ＋ 判定アイコン（`✅` / `❌`） ＋ 録音再生ボタン `▶️`
     - 訂正ガイダンス（`.correction-box`、不正解時のみ表示）:
       - モデル音声ボタン `🔊きく` ＋ お手本テキスト
+  - **レスポンシブ契約**: 通常幅では番号・キュー・操作を1行で整列し、狭幅時（<= 480px / 375px）は操作群を次段へ折り返す。
 
 ---
 

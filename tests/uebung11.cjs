@@ -67,4 +67,12 @@ assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must implement helper text');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 
+// 5.5 Check Example & Drill 1 UI improvements (Ex-1 ~ Ex-5, Dr1-1 ~ Dr1-2)
+assert.ok(js.includes('isDrill1 ? "drill-example-table" : "recording-table drill-example-table"'), 'Drill 1 Ex table must use drill-example-table without recording-table');
+assert.ok(js.includes('if (!isDrill1) {\n                exCueTd.append(node("strong", "example-label-title", "Ex: "));\n            }'), 'Ex: title must only be appended to non-Drill 1 examples');
+assert.ok(js.includes('tooltip-wrap') && js.includes('target-word'), 'Drill 1 cue must use tooltip-wrap with target-word in hover mode');
+assert.ok(js.includes('alignDrill1Cues'), 'JS must include alignDrill1Cues for Dr1 cue alignment');
+assert.ok(css.includes('.uebung11-page #drill1 .example-box .drill-example-table'), 'style.css must have Drill 1 Ex grid rules');
+assert.ok(css.includes('.uebung11-page #drill1 .drill-row .recording-table'), 'style.css must have Drill 1 Dr1 grid rules');
+
 console.log('PASS: All structural and contract tests passed successfully.');
