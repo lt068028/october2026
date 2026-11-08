@@ -302,6 +302,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return element;
     };
 
+    const ANSWER_ICONS = {
+        yes: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/>',
+        no: '<circle cx="12" cy="12" r="10"/><path d="M8 16s1.5-2 4-2 4 2 4 2"/>'
+    };
+
+    const createAnswerIcon = kind => {
+        const span = document.createElement('span');
+        span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-answer-icon" aria-hidden="true">${ANSWER_ICONS[kind]}</svg>`;
+        return span.firstElementChild;
+    };
+
     const button = (label, tip, click) => {
         const b = node(
             'button',
@@ -310,10 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         b.type = 'button';
 
-        b.append(
-            document.createTextNode(label),
-            node('span', 'custom-tip-box', tip)
-        );
+        if (typeof label === 'string') {
+            b.append(document.createTextNode(label));
+        } else if (label instanceof Node) {
+            b.append(label);
+        }
+
+        b.append(node('span', 'custom-tip-box', tip));
 
         b.onclick = () => {
             if (!blocked()) click();
@@ -686,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ['yes', 'no'].forEach((kind, i) => {
                 const choice = button(
-                    i ? '🙅' : '🙆',
+                    createAnswerIcon(kind),
                     i
                         ? 'Negative response'
                         : 'Affirmative response',
@@ -699,6 +713,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 choice.classList.add('answer-choice');
                 choice.dataset.answer = kind;
+                choice.setAttribute(
+                    'aria-label',
+                    i ? 'Negative response' : 'Affirmative response'
+                );
 
                 choice.setAttribute(
                     'aria-pressed',

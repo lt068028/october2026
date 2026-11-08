@@ -39,9 +39,92 @@
             opacity: .45;
             cursor: not-allowed;
         }
+
+        /* Practice 7.1 Y/N answer buttons: Lucide smile/frown with cool-gray background */
+        .practice71-page .example-button.answer-choice {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            background: #E5E7EB;
+            border: 1px solid #d1d5db;
+        }
+
+        .practice71-page .example-button.answer-choice .p71-answer-icon {
+            display: block;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            flex-shrink: 0;
+        }
+
+        .practice71-page .example-button.answer-choice[data-answer="yes"] {
+            color: #16a34a;
+        }
+
+        .practice71-page .example-button.answer-choice[data-answer="no"] {
+            color: #dc2626;
+        }
+
+        .practice71-page .example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+            background: #4ade80;
+            border-color: #22c55e;
+            color: #14532d;
+        }
+
+        .practice71-page .example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+            background: #fca5a5;
+            border-color: #ef4444;
+            color: #7f1d1d;
+        }
+
+        .practice71-page .example-button.answer-choice[aria-pressed="true"] {
+            outline: 2px solid #64748b;
+            outline-offset: 1px;
+        }
+
+        .practice71-page .example-button.answer-choice:hover:not(:disabled) {
+            filter: brightness(0.96);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .practice71-page .example-button.answer-choice {
+                background: #374151;
+                border-color: #4b5563;
+            }
+
+            .practice71-page .example-button.answer-choice[data-answer="yes"] {
+                color: #4ade80;
+            }
+
+            .practice71-page .example-button.answer-choice[data-answer="no"] {
+                color: #f87171;
+            }
+
+            .practice71-page .example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+                background: #14532d;
+                border-color: #15803d;
+                color: #bbf7d0;
+            }
+
+            .practice71-page .example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+                background: #7f1d1d;
+                border-color: #b91c1c;
+                color: #fecaca;
+            }
+
+            .practice71-page .example-button.answer-choice[aria-pressed="true"] {
+                outline: 2px solid #94a3b8;
+                outline-offset: 1px;
+            }
+
+            .practice71-page .example-button.answer-choice:hover:not(:disabled) {
+                filter: brightness(1.1);
+            }
+        }
     </style>
 </head>
-<body class="site-scale practice7-page">
+<body class="site-scale practice7-page practice71-page">
 
     <!-- Header & Settings -->
     <div class="main-header page-header">
@@ -196,7 +279,7 @@
     <script src="drill-audio-session.js"></script>
     <script src="drill-answer-rules.js"></script>
     <script src="stt-display.js"></script>
-    <script src="practice7.1.js?v=20261108-copy-pilot"></script>
+    <script src="practice7.1.js?v=20261108-lucide-yn"></script>
     <script src="practice7-categories.js"></script>
     <script src="settings-appearance.js"></script>
     <script src="tooltip-layout.js"></script>
