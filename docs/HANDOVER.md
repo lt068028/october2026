@@ -20,7 +20,7 @@
      - バッジ・Drawer：`:is(.tense-badge, .p73-tense)`, `.practice7-page :is(.p71-copy-button, .p72-copy-button)`, `.behind-the-cues-btn`, `.cues-drawer-title`, `.cues-drawer-lead`, `.cues-drawer-section h4`。
   3. **日本語フォントの保全と混在ラベルの分離**:
      - 日本語のみのセットボタン（P2.1 D3の「辞書」「さいふ」等）は変更せず、元の日本語フォント設定を完全に維持。
-     - Practice 8.3 の日英混在セットボタン（`だれ (Who)` 等）は、JS（`practice8.3.js`）で `<span class="p83-btn-ja">` と `<span class="p83-btn-en">` に分離し、英語部分のみに Lato を指定。日本語グリフのフォールバックおよび既存文字設定を維持。
+     - Practice 8.3 の日英混在セットボタン（`だれ (Who)` 等）は、DOM分割・再構成を行わず、CSSフォントフォールバック（`'Lato', sans-serif`）により英語部分のみLatoで描画し、日本語部分は既存の日本語フォント設定を完全に維持。キュー文セル（`.drill-cue-cell`）も同様にフォールバックを活用し、英語キュー有効時のみLatoが適用され日本語キュー時は日本語フォントを維持。
      - `practice2.1.js` および `practice2-next.js` の `setButtons` において、英字を含むボタン群に `p21-set-switcher-latin` クラスを自動付与。
   4. **共通仕様書の更新**:
      - `docs/UI_LAYOUT_SPEC.md` に「共通ラテン文字タイポグラフィ（Lato標準化・2026-11-08確定）」を新設・承認文書化。

@@ -625,8 +625,7 @@ h1 {
     [data-set-state="cityDrillSet"],
     [data-set-state="whereDrillSet"],
     [data-set-state="cityDialogueSet"]) .example-button,
-.practice83-page .p21-set-switcher .example-button,
-.practice83-page .p21-set-switcher .p83-btn-en {
+.practice83-page .p21-set-switcher .example-button {
     font-family: var(--font-latin);
 }
 
@@ -655,6 +654,7 @@ h1 {
 }
 
 /* 英語キューテキスト・英訳・インラインヒント */
+.drill-cue-cell,
 .composition1-page .drill-cue-cell,
 .composition-table .drill-cue-cell,
 .vocab-inline,

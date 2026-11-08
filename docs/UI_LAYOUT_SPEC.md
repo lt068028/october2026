@@ -15,7 +15,7 @@
 
 - Latin-script UI text in the Japanese-learning drill website uses Lato as its standard font family. Japanese text retains its established Japanese font configuration. New drill pages and UI components must follow this rule from initial implementation.
 - 対象範囲：英語Cue文・英語ラベル・セット切替ボタン・ドリル切替／操作案内・セグメント制御オプション・ドロップダウン項目・英語見出し／説明文・ツールチップ。
-- 日本語テキストの維持：日本語テキストをLatoへ強制しない。日英混在テキストではCSSフォントフォールバック（`Lato, sans-serif`）または明示的分離により、日本語グリフは従来の日本語フォント（sans-serif / Noto Sans CJK JP等）で描画する。
+- 日本語テキストの維持：日本語テキストをLatoへ強制しない。日英混在テキストではCSSフォントフォールバック（`Lato, sans-serif`）または言語別セレクタにより、日本語グリフは従来の日本語フォント（sans-serif / Noto Sans CJK JP等）で描画する。フォント適用のために既存コンテンツを不必要にDOM分割・再構成しない。
 - アイコン・記号の維持：Lucideアイコン、絵文字、録音／再生アイコン等の記号はフォント変更の対象外とし、既存の表示を維持する。
 - 既存視覚設計の保持：フォントサイズ、ウェイト、行高、字間、色彩、パディング、マージン、ボタン寸法、配置、テキスト折り返し、レスポンシブ配置を維持する。
 - 実装原則：`style.css` の `:root` に `--font-latin: 'Lato', sans-serif;` を定義し、共通セレクタを通じて一元管理する。個別ページへの競合する重複指定を避け、全14ドリルページのHTML `<head>` でLatoフォント（wght@400;500;700）を確実に読み込む。
