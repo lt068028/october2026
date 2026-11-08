@@ -1,4 +1,42 @@
-# 現在のリレー状態 — Deutsche Übung 1.1 Drills 2・3・4 UI統一修正完了
+# 現在のリレー状態 — Practice 2.3 Example 1 Q/Aラベルとキューの接触解消完了
+
+- 更新日時：2026-11-08T23:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Practice 2.3 Example 1 Q/Aラベルとキューの接触解消 ／ `691bbe054317e593f8cff33d031c902fa6d82773` ／ `main`
+- 原因分析と修正内容：
+  1. **確定した原因（適応セル min-width: 0 と flex-gap 計算の干渉）**:
+     - `content-layout.js` の `adaptiveExample` により、音声とモデル文を持つ設問行（行1, 行4の Q行）の話者ラベル `strong.p23-model-speaker.conversation-role` に `data-content-adaptive-cell="label"` が付与される。
+     - `style.css` 4601行目の `body.site-scale .content-adaptive-example [data-content-adaptive-cell]:not(button) { min-width: 0; max-width: 100%; }` により、Q行の話者ラベル要素が幅圧縮を許容される。
+     - この要素は `display: flex; gap: 6px;` を持つ複合要素（Qアイコン25.86px ＋ Xバッジ23.88px ＝ 内容幅49.73px ＋ flex gap 6px ＝ 55.73px）であるが、`min-width: 0` と `justify-self: end` の組み合わせにより、ブラウザのGrid配置計算時に外側要素の幅が flex gap 6px を除いた `48.7344px` に縮小された。
+     - その結果、`justify-self: end` によって外側要素が右端（120.73px）に揃えられた際、左端が `72.0px`（本来の列開始65.0pxから7px右）に配置され、内部の Xバッジが右側に 7px はみ出して `127.73px` に達し、次列のキュー「Yさん／どこ」（開始位置 `126.73px`）と -1px の接触・食い込みを発生させていた。
+  2. **修正内容**:
+     - `style.css`:
+       - `.p23-conversation-models .p23-model-speaker { grid-column: 1; min-width: max-content; }` を適用。
+       - `body.site-scale .content-adaptive-example.p23-conversation-models .p23-model-speaker { min-width: max-content; }` を追加（詳細度 `(0, 4, 1)` で適応セルの `min-width: 0` を確実に上書き）。
+     - `practice2.3.html`: キャッシュバスターを `style.css?v=20261108-p23-qa-gap` に更新。
+     - これにより、Q行の話者ラベルが本来の自然幅 `55.7344px`（65.0px〜120.7344px）を常に保ち、内包する Xバッジの右端が厳密に `120.7344px` に収まる。
+     - 次列のキュー（`126.7344px`）との間隔が**厳密に 6.0000px**となり、接触・食い込みが完全に解消。
+     - 同時に、行1の単独Xと導入文（`126.7344px - 120.7344px = 6.0000px`）、次行キューとの開始位置完全一致（差0px）、A行の配置も完全維持。
+  3. **自動検証（Chromium / Brave Headless CDP実機計測）**:
+     - 375px / 768px / 1000px / 1200px の全画面幅で計測：
+       - 行1 X右端 → 導入文左端: **6.00px**
+       - Q行 X右端 → キュー左端: **6.00px**
+       - A行 Y右端 → キュー左端: **6.00px**
+       - 導入文左端とキュー左端の差: **0.00px**
+       - Q/Aラベルとキューの重なり: **なし (false)**
+       - ページ横はみ出し: **なし (false)**
+     - `tests/practice23-cities.cjs` に上記契約を検証する自動アサーションを追加。
+- 変更ファイル：`style.css`, `practice2.3.html`, `tests/practice23-cities.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 2.3 Example 1の話者ラベル幅・配置に限定。Example 2以降、Drill 1・2、他ページへの変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Brave Headless CDP実機座標測定（375/768/1000/1200px）：全項目PASS
+  - `tests/practice23-cities.cjs` 全アサーション検証：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境にて検証済み）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 2.3 Example 1 の Q/Aラベルとキューの間隔（6px）、行1のXと導入文間隔（6px）、重なり解消の確認。
+
+# 前回のリレー状態 — Deutsche Übung 1.1 Drills 2・3・4 UI統一修正完了
 
 - 更新日時：2026-11-08T22:35:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

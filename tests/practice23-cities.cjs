@@ -31,9 +31,27 @@ function mock(){
  check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Zさんは、アメリカです。'],'E1 text-only introductions');
  check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Yさんは、どこですか。','ここは、よるです。','Zさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
  check(await p.locator('.p23-model-speaker').allTextContents(),['X','QX','AY','','QX','AY',''],'model row roles');
- // Verify speaker label right-alignment contract in Example 1
+ // Verify speaker label right-alignment and min-width contract in Example 1
  const speakerAligns = await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es => es.map(e => getComputedStyle(e).justifySelf));
  check(speakerAligns.every(v => v === 'end'), true, 'All p23-model-speaker elements have justify-self: end for 6px grid spacing');
+ const speakerMinWidths = await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es => es.map(e => getComputedStyle(e).minWidth));
+ check(speakerMinWidths.every(v => v === 'max-content'), true, 'All p23-model-speaker elements have min-width: max-content to prevent role compression');
+ const qaGaps = await p.evaluate(() => {
+   const lines = Array.from(document.querySelectorAll('.p23-conversation-models .p21-model-line'));
+   const l0_speaker = lines[0].querySelector('.p23-model-speaker');
+   const l0_intro = lines[0].querySelector('.p23-model-intro');
+   const l0_cue = lines[0].querySelector('.p23-example-cue');
+   const l1_speaker = lines[1].querySelector('.p23-model-speaker .conversation-person');
+   const l1_cue = lines[1].querySelector('.p23-example-cue');
+   return {
+     row0_gap: Math.round(l0_intro.getBoundingClientRect().left - l0_speaker.getBoundingClientRect().right),
+     row1_qa_gap: Math.round(l1_cue.getBoundingClientRect().left - l1_speaker.getBoundingClientRect().right),
+     intro_cue_align: Math.round(l0_intro.getBoundingClientRect().left - l0_cue.getBoundingClientRect().left)
+   };
+ });
+ check(qaGaps.row0_gap, 6, 'Row 0 speaker X to intro gap is 6px');
+ check(qaGaps.row1_qa_gap, 6, 'Row 1 Q-label X to cue gap is 6px (no overlap)');
+ check(qaGaps.intro_cue_align, 0, 'Row 0 intro and cue start at identical horizontal position');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item1','Item2'],'D1 has people, WH and Y/N item tasks');
