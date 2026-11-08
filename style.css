@@ -3646,6 +3646,20 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Practice 8.3 example set divider and switcher spacing */
 .practice83-page .p83-example-divider { grid-column: 1 / -1; border-top: 1px dashed var(--border-color, #cbd5e1); margin: 6px 0; }
 .practice83-page .p21-set-switcher { margin: 12px 0 16px; }
+.practice83-page .p21-set-switcher .example-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-latin);
+    font-size: .9em;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 6px 10px;
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    letter-spacing: normal;
+    box-sizing: border-box;
+}
 
 /* Practice 8.2 uses the established Practice 8 layout, with wrapping concept names. */
 .practice82-page .p81-example { grid-template-columns: fit-content(25%) fit-content(var(--example-cue-limit)) max-content max-content minmax(0,1fr); }

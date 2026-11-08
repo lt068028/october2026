@@ -1,4 +1,37 @@
-# 現在のリレー状態 — Deutsche Übung 1.1 Vercel配信・CSSキャッシュ問題解消完了
+# 現在のリレー状態 — Practice 8.3「Verb」と「だれ・何」のボタン表示差解消完了
+
+- 更新日時：2026-11-09T00:15:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Practice 8.3「Verb」と「だれ・何」のボタン表示差 ／ `5a91ddfd668ae69614f107fbaae22616a1c89f5c` ／ `main`
+- 原因分析と修正内容：
+  1. **確定した原因（Example内VerbバッジとDrill内セット切替ボタンのスタイル不一致）**:
+     - Example 1最上段の英語カテゴリ「Verb」（`.p83-header-badge`）は、共通仕様（Lato 700、0.9em、padding 6px 10px、1px枠、8px角丸、height 36.45px、inline-flex配置）へ統一されていた。
+     - 一方、Drill 1のセット切替ボタン「だれ (Who)」「何 (What)」（`.practice83-page .p21-set-switcher .example-button`）は、全般的な `.example-button` の既定値（font-weight 400、padding 4px 8px、4px角丸、height 33.8px、display: block）のまま残存していた。
+     - このため、同じPractice 8.3内で角丸（8px vs 4px）、余白（6px 10px vs 4px 8px）、太さ（700 vs 400）、高さ（36.45px vs 33.8px）の不統一が生じていた。
+  2. **修正内容**:
+     - `style.css`: `.practice83-page .p21-set-switcher .example-button` に対し、共通UI契約（`display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-latin); font-size: .9em; font-weight: 700; line-height: 1.2; padding: 6px 10px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; letter-spacing: normal; box-sizing: border-box;`）を明示適用。
+     - これにより、英字部分（`(Who)`, `(What)` 等）はLato 700で描画され、日本語部分（`だれ`, `何` 等）は既定の日本語フォント（sans-serifフォールバック）を維持したまま、高さ（36.45px）、余白（6px 10px）、角丸（8px）、枠線、文字の垂直中央整列がVerbバッジと完全に一致。
+     - 文字幅に応じた自然な横幅（だれ 115.08px、何 102.78px）を維持し、固定幅の強制は行わない。
+     - 選択状態（`[aria-pressed="true"]` の青枠アウトライン）、Hover動作、クリック操作、およびQuestionIndicator（疑問文アイコン）は100%保持。
+     - `practice8.3.html`: スタイルシートのキャッシュバスターを `style.css?v=20261109-p83-btn-unify` に更新。
+  3. **自動検証（Chromium / Brave Headless CDP実機計測）**:
+     - computed style計測：
+       - `verbBadge`: height 36.45px, padding 6px 10px, border-radius 8px, font-weight 700, font-size 18.72px
+       - `dareSetBtn`: height 36.45px, padding 6px 10px, border-radius 8px, font-weight 700, font-size 18.72px
+       - `naniSetBtn`: height 36.45px, padding 6px 10px, border-radius 8px, font-weight 700, font-size 18.72px
+     - 375px / 768px / 1200px の全画面幅で横はみ出しなし（docWidth <= winWidth、水平スクロールなし）。
+     - セット切替クリック操作検証：状態切替、設問再レンダリング、スタイル保持を確認。
+     - 疑問文アイコン検証：18個の `.question-indicator-icon` がすべてDOM内に正常表示。
+- 変更ファイル：`style.css`, `practice8.3.html`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 8.3のセット切替ボタンに限定。他ページ、Ex本文、学習内容、音声/録音ロジックへの影響なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Brave Headless CDP実機計測（375/768/1200px、クリック動作、computed style比較、ダークモード）：全項目PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境にて検証済み）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 8.3 の「Verb」と「だれ・何」ボタンの外観統一（高さ36px、角丸8px、余白6px 10px、文字の太さ・位置）の確認。
+
+# 前回のリレー状態 — Deutsche Übung 1.1 Vercel配信・CSSキャッシュ問題解消完了
 
 - 更新日時：2026-11-08T23:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
