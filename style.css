@@ -4347,7 +4347,7 @@ body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
 body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }
 
 /* Practice 8.1 Ex1 and Ex5: match the 8.2 English concept badges; align cue starts. */
-.practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind {
+.practice81-page[data-practice="8.1"] :is(#drill1,#drill5) .p81-example-row > .p81-kind {
     justify-self: end;
     box-sizing: border-box;
     white-space: nowrap;
@@ -4381,7 +4381,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Approved standard dark-mode English concept labels (8.1 Ex1/Ex5; 8.2 Ex1/Ex2; 1.1 Ex).
    Preserve light mode, label dimensions, right alignment, and Japanese semantic colors. */
 @media (prefers-color-scheme: dark) {
-    .practice81-page:not(.practice82-page) :is(#drill1,#drill5) .p81-example-row > .p81-kind,
+    .practice81-page[data-practice="8.1"] :is(#drill1,#drill5) .p81-example-row > .p81-kind,
     .practice82-page :is(#drill1,#drill2) .p82-concept-english,
     .practice1-page .example-box .example-label-title.p11-concept-badge {
         color: #ffffff;
@@ -4414,3 +4414,6 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
         border-color: #7998c3;
     }
 }
+
+/* Approved Practice 7.3 category typography; retain semantic colors and existing geometry. */
+.practice73-page :is(.tense-badge,.p73-tense) { font-family: 'Lato', sans-serif; }
