@@ -1051,7 +1051,22 @@ function measureCues() {
             promptCells[0].style.setProperty('--p81-kind-width',labelWidths[0]+'px');
             promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
             const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-            const centerX=(firstRect.left+lastRect.right)/2;
+            let centerX=(firstRect.left+lastRect.right)/2;
+            if(labels.some(l=>l.textContent.includes('Uncomfortable'))){
+                const text=last.textContent;
+                const idx=text.indexOf('話')!==-1?text.indexOf('話'):text.indexOf('は');
+                let found=false;
+                if(idx!==-1&&last.firstChild){
+                    try{
+                        const range=document.createRange();
+                        range.setStart(last.firstChild,idx);
+                        range.setEnd(last.firstChild,idx+1);
+                        const r=range.getBoundingClientRect();
+                        if(r.width>0){centerX=(r.left+r.right)/2;found=true;}
+                    }catch(_){}
+                }
+                if(!found)centerX=lastRect.left+markWidth/2;
+            }
             spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
             if(afterSpacer){
                 const anchorRight=Math.max(anchor.getBoundingClientRect().right,lastRect.right);
