@@ -1,4 +1,31 @@
-# 現在のリレー状態 — Deutsche Übung 1.1 Dr1 キュー改行修正・専用仕様書改訂完了
+# 現在のリレー状態 — Practice 2.3 Example 1 話者・導入文6px間隔再調査と修正完了
+
+- 更新日時：2026-11-08T22:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Practice 2.3 Example 1・6px間隔の再調査と修正（話者ラベル右揃え指定のセレクタ不一致解消とキャッシュ更新） ／ `b9889cc46d0a793544d0cb66687aeb4a4d6f851d` ／ `main`
+- 原因分析と修正内容：
+  1. **確定した原因（セレクタ不一致による右寄せ未適用）**:
+     - `practice-next.js` の Example 1 導入文行（行1: `X:`）では、`node('strong', 'p23-model-speaker', label ?? speakerName(who) + ':')` で生成され、`ConversationDisplay.format()` により `label.classList.add('conversation-person')` が付与される。
+     - しかし、Q/Aアイコン行（行2, 3, 5, 6）では `pair || role` の分岐に入り、`label.classList.add('conversation-role')` が付与されるため、外側の要素は `strong.p23-model-speaker.conversation-role` となり、`conversation-person` クラスは子要素の `span.conversation-person` に付与される。
+     - 一方、`style.css` の右寄せ規則は `.site-scale :is(.p21-which-model-line > .conversation-person,.p23-model-speaker.conversation-person) { justify-self: end; }` となっており、また一般的な `.conversation-person:not([data-conversation-image]) { justify-self: start; }` が存在した。
+     - このため、第1列の幅が最大要素（Q/Aアイコン付きラベル約48px）によって決まる一方、単独の `X` は左寄せ（`justify-self: start`）となり、要素幅約22pxの右側に余分な空間（約26px）が残存し、実効間隔が 6px + 26px = 約32px となってしまっていた。
+  2. **修正内容**:
+     - `style.css`: `.site-scale :is(.p21-which-model-line > .conversation-person,.p23-model-speaker.conversation-person,.p23-model-speaker) { justify-self: end; }` と修正。
+     - これにより、`conversation-person` クラスの有無や `conversation-role` との合成状態にかかわらず、`.p23-conversation-models` の第1列に配置されるすべての話者ラベル（`strong.p23-model-speaker`）が常に確実に列の右端（`justify-self: end`）へ整列される。
+     - 第1列の右端と第2列（導入文および次行キュー）の左端との距離が、Gridの `column-gap: 6px` により**厳密に 6px** となる。
+     - `practice2.3.html`: スタイルシートのキャッシュバスターを `style.css?v=20261108-p23-speaker-align` へ更新。
+  3. **回帰テスト（`tests/practice23-cities.cjs`）の強化**:
+     - すべての `.p23-model-speaker` 要素が `justify-self: end` を保持していることを検証するアサーションを追加。
+- 変更ファイル：`style.css`, `practice2.3.html`, `tests/practice23-cities.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 2.3 Example 1の話者ラベル・導入文間隔に限定。Example 2以降、Drill 1・2、他ページへの変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Python静的構文チェック・セレクタ整合性検証：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 2.3 Example 1 の X/Y と導入文頭（わたしは…）の間隔（6px）および導入文と次行キュー開始位置の一致確認。
+
+# 前回のリレー状態 — Deutsche Übung 1.1 Dr1 キュー改行修正・専用仕様書改訂完了
 
 - 更新日時：2026-11-08T22:16:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

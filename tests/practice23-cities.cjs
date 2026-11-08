@@ -31,6 +31,9 @@ function mock(){
  check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Zさんは、アメリカです。'],'E1 text-only introductions');
  check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Yさんは、どこですか。','ここは、よるです。','Zさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
  check(await p.locator('.p23-model-speaker').allTextContents(),['X','QX','AY','','QX','AY',''],'model row roles');
+ // Verify speaker label right-alignment contract in Example 1
+ const speakerAligns = await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es => es.map(e => getComputedStyle(e).justifySelf));
+ check(speakerAligns.every(v => v === 'end'), true, 'All p23-model-speaker elements have justify-self: end for 6px grid spacing');
  check(await p.locator('.p23-example-audio button').evaluateAll(es=>es.map(e=>e.dataset.speaker)),['A','A','B','A','B'],'five model clips follow conversation roles');
  check(await p.locator('.p23-unknown-guide .p21-question-sound').textContent(),'ど','unknown-place concept is in E1');
  check(await p.locator('[data-set-state="whereDrillSet"] button').allTextContents(),['People','Item1','Item2'],'D1 has people, WH and Y/N item tasks');
