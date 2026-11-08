@@ -1,4 +1,30 @@
-# 現在のリレー状態 — F8 Practice 2.3 Example 1 話者・導入文間隔修正完了
+# 現在のリレー状態 — F5: Example発話行間のグレー点線撤去・共通仕様確定完了
+
+- 更新日時：2026-11-08T21:52:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex指示書 — F5 Example発話行間のグレー点線撤去（共通表示仕様の確定・全ページ横断監査・UI_LAYOUT_SPEC.md正本化） ／ `6b0cf4544d9f67a26f8d3886566ae8cfbe038166` ／ `main`
+- 調査および監査結果：
+  1. **点線の発生原因と既存撤去状況**:
+     - かつて `style.css` の `.drill-example-table > tbody > tr + tr > td`（L453）および `.practice12-page .drill-example-table > tbody > tr + tr`（L2306）に `border-top: 1px dashed var(--border-color);` が、`practice1.1.js` に `dashed-border` クラス（`border-top: 1px dashed #fbc02d;`）が存在していた。
+     - これらは先行コミット `8abcf8d` でスタイル定義が撤去されており、日本語Practice全14ページおよびドイツ語ページのExample発話行間においてグレー点線が残存していないことを横断監査で確認。
+  2. **非対象の区切り線の維持確認**:
+     - 語彙キューのホバー点線（`.tooltip-wrap` の `border-bottom: 1px dotted var(--accent-color);`）は全ページで正常に維持されている。
+     - Drill設問行間の区切り線（`practice7.1.js` L1377 の `tr2.style.borderTop`）はDrill設問テーブル専用のため保持。
+     - Practice 8.3 Example内のセット大区切り線（`.practice83-page .p83-example-divider`）はカテゴリ大区分のため保持。
+     - Exampleカード外枠（`.example-box` の黄色/オレンジ境界線）は維持。
+  3. **共通UI仕様書（`docs/UI_LAYOUT_SPEC.md`）への明文化**:
+     - 指示書規定の共通ルール「Example内の発話行を区切るグレーの点線は使用しない。発話行の区別は既存の行配置・余白・話者表示で維持する。語彙キューのホバー対象を示す点線下線は、この撤去対象に含まない。」を新規セクションとして追記。
+- 変更ファイル：`docs/UI_LAYOUT_SPEC.md`, `docs/HANDOVER.md`
+- スコープ厳守：F5の仕様書確定および横断監査のみ。余白・行間・他UIへの不要な変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - 全マークダウン構文チェック：PASS
+  - 全Practiceファイル横断境界線監査スクリプト：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの全Practice Example表示確認。
+
+# 前回のリレー状態 — F8 Practice 2.3 Example 1 話者・導入文間隔修正完了
 
 - 更新日時：2026-11-08T21:48:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

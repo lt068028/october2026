@@ -686,3 +686,18 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 - 日本語ラベル（特に「べんきょうをはじめる」）は閉じた選択欄および開いたドロップダウン候補の両方で `white-space: nowrap` とし、文字単位の不自然な折り返しを起こさない。selectの幅は固定せず `inline-size: max-content; min-inline-size: var(--p81-select-width); max-inline-size: 100%` として内容と利用可能幅に適合させる。
 - 候補一覧は画面内の空き高さで制限し内部スクロール。非対応ブラウザは従来のnative selectへ戻り、候補ごとのHover説明は保証しない。
 - Previewも同じ本番JS・CSSを参照し、別の候補表示実装は保有しない。今回の本番版のユーザー実機確認は、Preview承認とは別に扱う。
+
+## F5: Example発話行間の区切り線廃止（2026-11-08確定）
+
+Example内の発話行を区切るグレーの点線は使用しない。発話行の区別は既存の行配置・余白・話者表示で維持する。語彙キューのホバー対象を示す点線下線は、この撤去対象に含まない。
+
+- **対象**: 日本語PracticeページのExampleセクション内の発話行間区切り線（`border-top` / `border-bottom` 等）。
+- **共通レイアウト規則**:
+  - 発話行間（Q/A行間、肯定/否定行間、時制比較行間等）の境界にグレー点線（dashed/dotted border）を描画しない。
+  - 行間は共通バーティカルリズムトークン（`--example-row-gap: 8px`、`row-gap`、`padding-top: 10px` 等）による自然な余白で維持・分離する。
+  - 発話行同士の間隔を無断で詰めたり広げたりしない。
+- **維持対象（非対象の境界線）**:
+  - 語彙キューのホバー対象を示す点線下線（`.tooltip-wrap` / `.target-word` 等）。
+  - Exampleカード外枠（`.example-box` の黄色/オレンジ境界線・ヘッダーバッジ）。
+  - Drill設問行間の区切り線（Practice 7.1 等のDrillカード内区切り線）。
+  - Practice 8.3 Example内のカテゴリ／セット大区切り線（`.p83-example-divider`）。
