@@ -570,6 +570,7 @@
     --error-text: #be123c;
     --rec-active-bg: #be123c;
     --rec-active-text: #ffffff;
+    --font-latin: 'Lato', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -606,6 +607,87 @@ body {
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
+}
+
+/* =========================================================
+   共通Latinタイポグラフィ（Lato標準化 / F4）
+   Latin-script UI text uses Lato as standard.
+   Japanese text retains its established Japanese font configuration.
+   ========================================================= */
+
+/* セット切替ボタン（Set 1 / Set 2, Adjectives / Pronouns, Country / Cities, etc.） */
+.p21-drill1 > .p21-set-switcher .example-button,
+.p21-set-switcher-latin .example-button,
+:is([data-set-state="namingSet"],
+    [data-set-state="describeSet"],
+    [data-set-state="peopleConversationSet"],
+    [data-set-state="umbrellaModeSet"],
+    [data-set-state="cityDrillSet"],
+    [data-set-state="whereDrillSet"],
+    [data-set-state="cityDialogueSet"]) .example-button,
+.practice83-page .p21-set-switcher .example-button,
+.practice83-page .p21-set-switcher .p83-btn-en {
+    font-family: var(--font-latin);
+}
+
+/* セグメント制御（With漢字, Hiragana Only, Formal, Informal, Casual） */
+.segmented-control .segmented-option {
+    font-family: var(--font-latin);
+}
+
+/* 設定On/Offラベルおよびスライダーテキスト（Autostop, Autoplay, ON, OFF） */
+.settings-onoff .mode-label,
+.settings-onoff .slider::after {
+    font-family: var(--font-latin);
+}
+
+/* 音声選択・各種ドロップダウン・設定入力 */
+.custom-select,
+.custom-input,
+.voice-select,
+.voice-guide-footer label {
+    font-family: var(--font-latin);
+}
+
+/* 英語キュー切り替えパネル・ボタン */
+.drill-cue-panel .drill-cue-button {
+    font-family: var(--font-latin);
+}
+
+/* 英語キューテキスト・英訳・インラインヒント */
+.composition1-page .drill-cue-cell,
+.composition-table .drill-cue-cell,
+.vocab-inline,
+.p81-cue-english,
+.example-model-translation,
+.p82-translation-text {
+    font-family: var(--font-latin);
+}
+
+/* 英語見出し・案内・説明パネル */
+.info-panel-title,
+.info-panel-desc,
+.pitch-lab-title,
+.pitch-lab-description,
+.instruction-line,
+.voice-recommend-note {
+    font-family: var(--font-latin);
+}
+
+/* ツールチップ説明文 */
+.custom-tip-box,
+.custom-tip-box-inline {
+    font-family: var(--font-latin);
+}
+
+/* 時制バッジ・コピー用ボタン（全ページ統合） */
+:is(.tense-badge, .p73-tense),
+.practice7-page :is(.p71-copy-button, .p72-copy-button),
+.behind-the-cues-btn,
+.cues-drawer-title,
+.cues-drawer-lead,
+.cues-drawer-section h4 {
+    font-family: var(--font-latin);
 }
 
 /* ==========================================
@@ -1314,7 +1396,7 @@ input:checked + .slider:before {
     border-radius: 7px;
     background-color: transparent;
     color: var(--text-secondary);
-    font-family: inherit;
+    font-family: var(--font-latin);
     font-size: 13px;
     line-height: 18px;
     font-weight: normal;
@@ -1400,7 +1482,7 @@ input:checked + .slider:before {
     justify-content: center;
     transform: none;
     color: #ffffff;
-    font-family: inherit;
+    font-family: var(--font-latin);
     font-size: 12px;
     font-weight: bold;
     line-height: 1;
@@ -1443,6 +1525,7 @@ input:checked + .slider:before {
    ========================================== */
 
 .vocab-inline {
+    font-family: var(--font-latin);
     color: var(--text-secondary);
     font-size: 0.85em;
 }

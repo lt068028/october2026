@@ -1339,7 +1339,7 @@ function practice2ShowNotice(resultSpan, message) {
         panel.append(node('span','info-panel-title','Drill 1: Describe the objects'),
             node('span','info-panel-desc',setIndex===0?'💡Complete three sentences as X, then as Y.':'💡X: Ask. Y: Say no and give the correct name.'));
         drill.append(panel);
-        const switcher=node('div','p21-set-switcher');
+        const switcher=node('div','p21-set-switcher p21-set-switcher-latin');
         switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
         sets.forEach((_,i)=>{
             const control=node('button','example-button',`Set ${i+1}`);control.type='button';
@@ -1472,7 +1472,8 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function setButtons(container,labels,property) {
         const index=practice2State[property]??0;
-        const switcher=node('div','p21-set-switcher');switcher.dataset.setState=property;switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
+        const isLatin=labels.some(l=>/[A-Za-z]/.test(typeof l==='string'?l:l?.textContent||''));
+        const switcher=node('div','p21-set-switcher'+(isLatin?' p21-set-switcher-latin':''));switcher.dataset.setState=property;switcher.setAttribute('role','group');switcher.setAttribute('aria-label','Practice set');
         labels.forEach((label,i)=>{
             const control=node('button','example-button',label);control.type='button';control.setAttribute('aria-pressed',String(i===index));
             control.onclick=()=>{

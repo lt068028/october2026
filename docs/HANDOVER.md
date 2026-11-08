@@ -1,4 +1,41 @@
-# 現在のリレー状態 — F1: サイト全域の音声セッション競合調査・最小安全修正完了
+# 現在のリレー状態 — F4: サイト全域のLatin UIタイポグラフィLato標準化完了
+
+- 更新日時：2026-11-08T19:42:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F4: サイト全体（14ページ）のLatin-script UIテキストのLatoフォント標準化・フォント読込補完・日本語フォント保全・仕様書更新 ／ `3f59c7e995138f2958493da1421fbc135addadd8` ／ `main`
+- 実装内容：
+  1. **全14ページのフォント読込棚卸しと統一**:
+     - 調査結果：LatoフォントをHTMLで読み込んでいたのは5ページ（1.1, 7.3, 8.1, 8.2, 8.3）のみで、9ページ（1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 8.3の一部ウェイト, Pronunciation 1, Pronunciation 2, Composition 1）で未読み込みまたはウェイト不足を確認。
+     - 補完：全14ドリルページのHTML `<head>` に Google Fonts Lato（`wght@400;500;700`）の事前接続（`preconnect`）およびスタイルシートリンクを標準配備。
+     - スタイルシート参照のキャッシュバスターを `style.css?v=20261108-lato-standard` に更新。
+  2. **共通スタイルシート（`style.css`）の一元化**:
+     - `:root` に `--font-latin: 'Lato', sans-serif;` を定義。
+     - セット切替ボタン：`.p21-drill1 > .p21-set-switcher .example-button`, `.p21-set-switcher-latin .example-button`, 各 `data-set-state`（namingSet, describeSet, peopleConversationSet, umbrellaModeSet, cityDrillSet, whereDrillSet, cityDialogueSet）、および Practice 8.3 のセットボタンに `--font-latin` を適用。
+     - セグメント制御：`.segmented-control .segmented-option`（With漢字, Hiragana Only, Formal, Informal, Casual）。
+     - 設定スイッチ：`.settings-onoff .mode-label`, `.settings-onoff .slider::after`（Autostop, Autoplay, ON, OFF）。
+     - ドロップダウン・設定入力：`.custom-select`, `.custom-input`, `.voice-select`, `.voice-guide-footer label`。
+     - 英語キュー関連：`.drill-cue-panel .drill-cue-button`, Composition 1 の `.composition1-page .drill-cue-cell` / `.composition-table .drill-cue-cell`, `.vocab-inline`, `.p81-cue-english`, `.example-model-translation`, `.p82-translation-text`。
+     - 英語見出し・案内：`.info-panel-title`, `.info-panel-desc`, `.pitch-lab-title`, `.pitch-lab-description`, `.instruction-line`, `.voice-recommend-note`。
+     - ツールチップ：`.custom-tip-box`, `.custom-tip-box-inline`。
+     - バッジ・Drawer：`:is(.tense-badge, .p73-tense)`, `.practice7-page :is(.p71-copy-button, .p72-copy-button)`, `.behind-the-cues-btn`, `.cues-drawer-title`, `.cues-drawer-lead`, `.cues-drawer-section h4`。
+  3. **日本語フォントの保全と混在ラベルの分離**:
+     - 日本語のみのセットボタン（P2.1 D3の「辞書」「さいふ」等）は変更せず、元の日本語フォント設定を完全に維持。
+     - Practice 8.3 の日英混在セットボタン（`だれ (Who)` 等）は、JS（`practice8.3.js`）で `<span class="p83-btn-ja">` と `<span class="p83-btn-en">` に分離し、英語部分のみに Lato を指定。日本語グリフのフォールバックおよび既存文字設定を維持。
+     - `practice2.1.js` および `practice2-next.js` の `setButtons` において、英字を含むボタン群に `p21-set-switcher-latin` クラスを自動付与。
+  4. **共通仕様書の更新**:
+     - `docs/UI_LAYOUT_SPEC.md` に「共通ラテン文字タイポグラフィ（Lato標準化・2026-11-08確定）」を新設・承認文書化。
+- 変更ファイル：`style.css`, `practice2.1.js`, `practice2-next.js`, `practice8.3.js`, `practice1.1.html`, `practice1.2.html`, `practice2.1.html`, `practice2.2.html`, `practice2.3.html`, `practice7.1.html`, `practice7.2.html`, `practice7.3.html`, `practice8.1.html`, `practice8.2.html`, `practice8.3.html`, `pronunciation1.html`, `pronunciation2.html`, `composition1.html`, `docs/UI_LAYOUT_SPEC.md`, `docs/HANDOVER.md`
+- スコープ厳守：F4 タイポグラフィ標準化のみ。音声制御（F1）、選択遅延（F3）、Example境界線（F5）、Y/Nアイコン（F6）、疑問文インジケーター（F7）、話者間隔（F8）、教材問題文・学習データ等は一切変更なし。
+- 自動検証：
+  - HTMLパーサーによる全14ファイルの構文検証PASS。全ファイルでのLato読込・キャッシュバスター設定を確認。
+  - `style.css` ブロック対照整合性チェックPASS（1444ブロック整合）。
+  - `git diff --check` 合格（空白・構文エラーなし）。
+  - ブラウザバイナリ未配備のため、Playwright実レンダリングテストは環境制約により NOT RUN（結果を詐称せず明示）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの各ページにおける英字UI（セットボタン、セグメント、英語キュー、見出し等）のLatoフォント適用、および日本語フォントの維持状態の確認。
+
+# 前回のリレー状態 — F1: サイト全域の音声セッション競合調査・最小安全修正完了
 
 - 更新日時：2026-11-08T19:20:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

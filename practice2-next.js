@@ -1289,7 +1289,8 @@ function practice2ShowNotice(resultSpan, message) {
     }
     function setButtons(container,labels,property) {
         const index=practice2State[property]??0;
-        const group=node('div','p21-set-switcher');group.dataset.setState=property;group.setAttribute('role','group');group.setAttribute('aria-label','Practice set');
+        const isLatin=labels.some(l=>/[A-Za-z]/.test(typeof l==='string'?l:l?.textContent||''));
+        const group=node('div','p21-set-switcher'+(isLatin?' p21-set-switcher-latin':''));group.dataset.setState=property;group.setAttribute('role','group');group.setAttribute('aria-label','Practice set');
         labels.forEach((label,i)=>{
             const b=node('button','example-button',label);b.type='button';b.setAttribute('aria-pressed',String(i===index));
             b.onclick=()=>{

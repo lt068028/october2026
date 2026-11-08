@@ -868,9 +868,17 @@ function render(){
   const isD1=si===0,isD2=si===1,isD3=si===2;
   const sets=isD1?d1Sets:(isD2?d2Sets:(isD3?d3Sets:d4Sets));
   const currentSet=isD1?currentD1Set:(isD2?currentD2Set:(isD3?currentD3Set:currentD4Set));
-  const switcher=node('div','p21-set-switcher');switcher.setAttribute('role','group');switcher.setAttribute('aria-label',`Drill ${si+1} Practice Set`);
+  const switcher=node('div','p21-set-switcher p21-set-switcher-latin');switcher.setAttribute('role','group');switcher.setAttribute('aria-label',`Drill ${si+1} Practice Set`);
   sets.forEach((setDef,setIdx)=>{
-   const b=node('button','example-button',setDef.label);b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentSet));
+   const b=node('button','example-button');b.type='button';b.setAttribute('aria-pressed',String(setIdx===currentSet));
+   const match=setDef.label.match(/^([^\(\s]+)\s*(\(.+\))$/);
+   if(match){
+    const jaSpan=node('span','p83-btn-ja',match[1]);
+    const enSpan=node('span','p83-btn-en',match[2]);
+    b.append(jaSpan,' ',enSpan);
+   }else{
+    b.textContent=setDef.label;
+   }
    b.onclick=()=>{if(session||preparing||setIdx===currentSet)return;stopPlayback();if(isD1)currentD1Set=setIdx;else if(isD2)currentD2Set=setIdx;else if(isD3)currentD3Set=setIdx;else currentD4Set=setIdx;render();};
    switcher.append(b);
   });
