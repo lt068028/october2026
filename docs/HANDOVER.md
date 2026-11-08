@@ -1,4 +1,33 @@
-# 現在のリレー状態 — 疑問文インジケーター全展開完了（Practice 8.1 / 8.2 / 8.3 / Composition 1）
+# 現在のリレー状態 — F5: Example発話行間のグレー点線撤去完了
+
+- 更新日時：2026-11-08T18:37:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F5: Example発話行間のグレー点線区切り線撤去（サイト全体承認済み仕様） ／ `7101cfb49181da4ec551b4852e93dac768985bc0` ／ `main`
+- 実装内容：
+  1. **サイト全体共通設計原則の確立**:
+     - Exampleセクション内の発話行（Q/A行、Affirmative/Negative行、Tense比較行など）の間を区切るグレー点線（dotted/dashed border）を全廃。
+     - 行間は共通バーティカルリズムトークン（`--example-row-gap: 8px`、`row-gap`、`padding-top`）による自然な余白で整列・分離を維持。
+  2. **共通スタイル（`style.css`）修正**:
+     - `.drill-example-table > tbody > tr + tr > td`（行384付近）: `border-top: 1px dashed var(--border-color);` を削除。
+     - `.practice12-page .drill-example-table > tbody > tr + tr`（行2155付近）: `border-top: 1px dashed var(--border-color);` を削除。
+  3. **個別ページ修正（`practice1.1.js` / `practice1.1.html`）**:
+     - `practice1.1.js`: Example内のNegative発話行のラッパーから `dashed-border` クラスを削除（`class="flex-row-center"` に修正）。
+     - `practice1.1.html`: スクリプト配信識別子およびスタイルシート参照を `practice1.1.js?v=20261108-no-example-separators`、`style.css?v=20261108-no-example-separators` に更新。
+  4. **保持・非対象（意図的に変更しなかった要素）**:
+     - Exampleボックス自体の外枠・ヘッダー装飾（`.example-box` の黄色/オレンジ境界線・バッジ）。
+     - Drill本体の設問テーブル区切り線（`practice7.1.js` の `tr2.style.borderTop` は Drill 1 設問行のため保持）。
+     - Practice 8.3 Example内のカテゴリ／セット大区切り線（`.p83-example-divider` はだれ/何等のセット区分線のため保持）。
+     - 単語ヒントの点線（`.tooltip-wrap` の下点線）。
+- 変更ファイル：`style.css`, `practice1.1.js`, `practice1.1.html`, `docs/HANDOVER.md`
+- スコープ厳守：F5のみ。F1、F3、F4、F6、F8等の他タスクや録音・再生ロジックは一切変更なし。
+- 自動検証：
+  - Python静的構文チェック、CSSセレクタ検証、HTML/JSスクリプト読込順検証全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Example 内発話行間の外観確認（点線撤去・余白保持）。
+
+# 前回のリレー状態 — 疑問文インジケーター全展開完了（Practice 8.1 / 8.2 / 8.3 / Composition 1）
 
 - 更新日時：2026-11-08T18:18:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

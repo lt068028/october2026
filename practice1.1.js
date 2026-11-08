@@ -715,7 +715,7 @@ function renderExampleSection() {
             </div>
 
             <div
-                class="flex-row-center dashed-border"
+                class="flex-row-center"
                 style="margin-top:12px;padding-top:12px;"
             >
                 <span class="example-label-title p11-concept-badge">
