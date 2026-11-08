@@ -1,4 +1,29 @@
-# 現在のリレー状態 — F5: Example発話行間のグレー点線撤去完了
+# 現在のリレー状態 — F8: Practice 2.3 話者・導入文間スペーシング調整完了
+
+- 更新日時：2026-11-08T18:41:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F8: Practice 2.3 Example 1 における話者ラベルX/Yと導入文間の余白ピンポイント修正 ／ `8abcf8d57fe4edd5ccd01bd33b4639b3e964a74b` ／ `main`
+- 実装内容：
+  1. **確認されたCSS Grid構造と原因**:
+     - `.practice-next-page .p23-conversation-models` は4列グリッド（列1: 話者ラベル `X`/`Y`、列2: キュー、列3: 音声ボタン、列4: モデル文）。
+     - 導入文行（Line 1: わたしは日本です、Line 3: わたしはイギリスです、Line 6: Zさんはアメリカです）では、`.p23-model-intro` が `grid-column: 2 / -1` を占有。
+     - 既存のグローバル列ギャップ `gap: 8px 6px` により、列1の話者ラベルと列2から始まる導入文との物理間隔が 6px のみとなっており、ラベルと文頭が近接する不具合が発生。
+  2. **ピンポイント修正（`style.css`）**:
+     - `.p23-conversation-models .p23-model-intro` に `padding-left: 4px;` を追加。
+     - これにより、既存の列ギャップ 6px ＋ padding 4px で、話者ラベルと導入文テキストとの間に**意図通りの合計 10px の実効スペーシング**を確保（※実機レンダリングでの計算値であり、ブラウザ実測値としては未計測）。
+     - グリッドの全体列ギャップ（`gap: 8px 6px`）、キュー幅計算（`--p23-example-cue-width`）、音声ボタン列、モデル回答列（列4）の配置・位置関係は完全不変。
+  3. **キャッシュバスター更新（`practice2.3.html`）**:
+     - `practice2.3.html` のスタイルシート参照を `style.css?v=20261108-p23-intro-spacing` に更新。
+- 変更ファイル：`style.css`, `practice2.3.html`, `docs/HANDOVER.md`
+- スコープ厳守：F8のみ。F1、F3、F4、F6等の他タスクやPractice 2.1、2.2、8.x等への変更なし。
+- 自動検証：
+  - Python静的構文チェック、HTML/CSSセレクタ検証全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Practice 2.3 Example 1 の X/Y と導入文頭（わたしは…）の余白確認（デスクトップ・375pxモバイル）。
+
+# 前回のリレー状態 — F5: Example発話行間のグレー点線撤去完了
 
 - 更新日時：2026-11-08T18:37:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
