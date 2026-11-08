@@ -59,7 +59,11 @@
             }
         }
         select.classList.add('p81-base-select');
+        // Prevent the legacy selected-value tooltip from appearing on the placeholder.
+        const wrapper = select.closest('.tooltip-wrap');
+        if (wrapper) wrapper.classList.add('p81-preview-choice-wrap');
         select.value = value;
+        if (value) select.dataset.selected = 'true';
         select.addEventListener('pointerdown', () => fitPicker(select));
         select.addEventListener('keydown', () => fitPicker(select));
         fitPicker(select);
