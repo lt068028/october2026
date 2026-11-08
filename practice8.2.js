@@ -716,8 +716,17 @@ function updateUnlearnedLexicon(){
  });
  if(kanjiGroup)kanjiGroup.style.display=isKanji?'block':'none';
  const wordCount=document.querySelectorAll('.unlearned-vocab-group li').length;
- const kanjiCount=kanjiGroup?kanjiGroup.querySelectorAll('li').length:0;
- if(counts)counts.textContent='ことば('+wordCount+'語)'+(isKanji?' 漢字('+kanjiCount+'項目)':'');
+ let kanjiCount=0;
+ if(kanjiGroup){
+  const unique=new Set();
+  kanjiGroup.querySelectorAll('.unlearned-kanji-phrase code').forEach(c=>{
+   for(const ch of c.textContent){
+    if(/\p{Script=Han}/u.test(ch))unique.add(ch);
+   }
+  });
+  kanjiCount=unique.size;
+ }
+ if(counts)counts.textContent='ことば('+wordCount+'語)'+(isKanji?' 漢字('+kanjiCount+'字)':'');
 }
 function setupUnlearnedAccordion(){
  const acc=$('unlearnedAccordion');

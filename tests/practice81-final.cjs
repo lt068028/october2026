@@ -31,7 +31,7 @@ async function open(browser,hasTouch=false){const page=await browser.newPage({vi
  for(const scheme of ['light','dark'])for(const mode of ['kanji','hiragana']){
   await page.emulateMedia({colorScheme:scheme});await page.locator('#scriptModeControl [data-value="'+mode+'"]').click();await page.locator('#unlearnedAccordion').evaluate(e=>e.open=true);
   eq(await page.locator('.unlearned-vocab-group li').count(),6,'Words count');eq(await page.locator('#unlearnedKanjiGroup li').count(),11,'Kanji item count');
-  eq(await page.locator('#unlearnedKanjiGroup').isVisible(),mode==='kanji','Kanji visibility');eq(await page.locator('#unlearnedCounts').textContent(),'ことば(6語)'+(mode==='kanji'?' 漢字(11項目)':''),'counts match visibility');
+  eq(await page.locator('#unlearnedKanjiGroup').isVisible(),mode==='kanji','Kanji visibility');eq(await page.locator('#unlearnedCounts').textContent(),'ことば(6語)'+(mode==='kanji'?' 漢字(14字)':''),'counts match visibility');
   eq(await page.locator('.unlearned-list li').evaluateAll(es=>es.filter(e=>e.getBoundingClientRect().width>0).every(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&e.scrollWidth<=e.clientWidth+1;})),true,'Beyond items fit without clipping');
   const wordText=await page.locator('.unlearned-vocab-group code').allTextContents();eq(wordText,['バイク','アニメ','ふく','ギター','ひく','りょうり'],'Words both scripts');
   if(mode==='kanji'){

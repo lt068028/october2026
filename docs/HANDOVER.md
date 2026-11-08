@@ -1,3 +1,14 @@
+## 2026-11-08 — F-5: Beyond Kanji counts updated to unique characters
+- 更新日時：2026-11-08T11:03:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F-5: Beyond Kanji Count修正（掲載項目数から対象未習漢字のユニーク文字数「字」へ変更） / `0ee897c370e7bc6f663bea80730b219ec2fb3747` / `main`
+- 完了・未完了／変更ファイル：
+  - 完了：8.1, 8.2, 8.3 各JSの `updateUnlearnedLexicon()` 動的計算ロジック修正、8.1, 8.2, 8.3, preview-8.3 各HTML初期テキスト修正、PROJECT_SPEC.md 件数規定更新、tests/practice81-final.cjs および tests/practice82.cjs 期待値更新。
+  - 変更ファイル：`practice8.1.js`, `practice8.2.js`, `practice8.3.js`, `practice8.1.html`, `practice8.2.html`, `practice8.3.html`, `preview-practice8.3-qa.html`, `docs/PROJECT_SPEC.md`, `tests/practice81-final.cjs`, `tests/practice82.cjs`, `docs/HANDOVER.md`
+- 自動検証：Python DOMシミュレーションによるユニーク漢字数検証（8.1: 14字, 8.2: 3字, 8.3: 18字）全件PASS、`git diff --check` 合格。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち。
+- 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続タスク（セット切替Lato適用、またはQ/Aアイコン判断等）へ移行可能。
+
 ## 2026-11-08 — セット切替のLato共通仕様確定
 - ユーザー承認：調査で挙げた2.1・2.2・2.3・8.3の英字セット切替をLatoへ統一。先に共通ルールを仕様として確定する。
 - 正本：UI_LAYOUT_SPEC「セット切替ボタンの英字フォント」。今後の新規セット切替も初めから適用する。
