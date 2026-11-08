@@ -3568,6 +3568,7 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     color: var(--text-primary, #1e293b);
 }
 .practice83-page .p83-example-category .p83-cat-sub {
+    font-family: 'Lato', sans-serif;
     font-size: 0.85em;
     font-weight: normal;
     color: var(--secondary-text, #64748b);
