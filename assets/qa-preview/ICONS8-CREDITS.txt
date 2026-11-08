@@ -1,0 +1,9 @@
+Icons8: Ask Question and Speech Bubble.
+Color (48px PNG) and iOS Outlined (50px PNG).
+Sources: https://icons8.com/icon/13720/ask-question
+https://icons8.com/icon/13751/speech-bubble
+https://icons8.com/icon/6651/ask-question
+https://icons8.com/icon/143/speech-bubble
+License/attribution: https://icons8.com/license
+Preview includes visible link attribution to https://icons8.com/.
+Downloaded from img.icons8.com; monochrome image is inverted in dark mode for contrast.

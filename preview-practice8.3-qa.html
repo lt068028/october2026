@@ -8,11 +8,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=20261108-lato-loaded">
-    <link rel="stylesheet" href="preview-qa-icons.css?v=20261108">
-    <script>document.documentElement.dataset.qaPreview = new URLSearchParams(location.search).get('qa') === 'original' ? 'original' : 'icons';</script>
+    <link rel="stylesheet" href="preview-qa-icons.css?v=20261108-icons8">
+    <script>document.documentElement.dataset.qaPreview = ['original', 'icons8-color', 'icons8-mono'].includes(new URLSearchParams(location.search).get('qa')) ? new URLSearchParams(location.search).get('qa') : 'icons';</script>
 </head>
 <body class="site-scale practice81-page practice83-page" data-practice="8.3">
-<nav class="qa-preview-nav" aria-label="Q／Aアイコン比較"><strong>8.3 Q／Aアイコン比較（採用前）</strong><a data-choice="icons" href="preview-practice8.3-qa.html">吹き出しの対</a><a data-choice="original" href="preview-practice8.3-qa.html?qa=original">現在のQ／A</a></nav>
+<nav class="qa-preview-nav" aria-label="Q／Aアイコン比較"><strong>8.3 Q／Aアイコン比較（採用前）</strong><a data-choice="icons" href="preview-practice8.3-qa.html">Microsoft Color</a><a data-choice="icons8-color" href="preview-practice8.3-qa.html?qa=icons8-color">Icons8 Color</a><a data-choice="icons8-mono" href="preview-practice8.3-qa.html?qa=icons8-mono">Icons8 色なし（線画）</a><a data-choice="original" href="preview-practice8.3-qa.html?qa=original">現在のQ／A</a></nav><p class="qa-preview-credit">Icons8版：Ask Question ／ Speech Bubble — <a href="https://icons8.com/">Icons8</a></p>
 
     <div class="main-header page-header">
         <div class="page-heading">
@@ -311,6 +311,6 @@
     <script src="settings-appearance.js"></script>
     <script src="tooltip-layout.js"></script>
     <script src="content-layout.js?v=20261108-example-cell-width"></script>
-    <script src="preview-qa-icons.js?v=20261108"></script>
+    <script src="preview-qa-icons.js?v=20261108-icons8"></script>
 </body>
 </html>

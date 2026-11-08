@@ -1,3 +1,9 @@
+## 2026-11-08 — Q/A comparison: Icons8 variants
+- Added Icons8 Color and iOS Outlined Ask Question / Speech Bubble to preview-practice8.3-qa.html alongside Microsoft Color and original Q/A.
+- Preview-only PNG assets stored locally; visible Icons8 attribution included. Monochrome inverts in dark mode.
+- Canonical practice8.3.html unchanged. Await visual selection before adoption.
+- Validation: PNG signatures verified; public rendered verification pending deployment.
+
 # 2026-11-08 / 8.3 Q/AのFluent Color Preview
 
 - ユーザー指定：Chat Bubbles Question（質問）＋Chat More（応答）を8.3でPreviewして判断。本番のpractice8.3.htmlは変更しない。
