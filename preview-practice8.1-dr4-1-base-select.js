@@ -5,7 +5,7 @@
     const supported = CSS.supports('appearance', 'base-select') &&
         CSS.supports('selector(::picker(select))');
     document.getElementById('p81-preview-support').textContent = supported
-        ? 'Drill 4-1: 💬 marks Hover hints inside the open menu. OFF hides hints; Display shows meanings. Select a choice to use the existing selected-word Hover.'
+        ? 'Drill 4-1: Hover over a Japanese option to see its English meaning on the right. OFF hides meanings; Display shows them. Selection retains the existing Hover behavior.'
         : 'Native-select fallback: option-level English hover is unavailable in this browser.';
     if (!supported) return;
 
@@ -50,11 +50,7 @@
                 const english = document.createElement('span');
                 english.className = 'p81-option-english';
                 english.textContent = meanings[option.value];
-                const icon = document.createElement('span');
-                icon.className = 'p81-option-hint-icon';
-                icon.textContent = '💬';
-                icon.setAttribute('aria-hidden', 'true');
-                option.append(icon, english);
+                option.append(english);
                 option.setAttribute('aria-label', japanese.textContent + ' — ' + english.textContent);
             }
         }
