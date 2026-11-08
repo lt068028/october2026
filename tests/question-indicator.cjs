@@ -226,6 +226,77 @@ const root = path.resolve(__dirname, '..');
         check(await page.locator('.question-indicator').count(), 13, `Practice 7.3 indicator count remains 13 after scriptMode=${script}`);
     }
 
+    // 11. Practice 8.1
+    await page.goto('http://qi.test/practice8.1.html');
+    check(await page.locator('.question-indicator').count(), 4, 'Practice 8.1 has exactly 4 question indicators total');
+    check(await page.locator('#drill2 .question-indicator').count(), 4, 'Practice 8.1 Drill 2 has 4 question indicators');
+    check(await page.locator('#drill1 .question-indicator').count(), 0, 'Practice 8.1 Drill 1 has 0 question indicators');
+    check(await page.locator('#drill3 .question-indicator').count(), 0, 'Practice 8.1 Drill 3 has 0 question indicators');
+    check(await page.locator('#drill4 .question-indicator').count(), 0, 'Practice 8.1 Drill 4 has 0 question indicators');
+    check(await page.locator('#drill5 .question-indicator').count(), 0, 'Practice 8.1 Drill 5 has 0 question indicators');
+    check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.1 Examples have 0 question indicators');
+    check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.1 answer rows have 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 4, 'All 4 indicators in Practice 8.1 are wrapped with stop buttons');
+
+    // Verify rerendering does not duplicate indicators on Practice 8.1
+    for (const script of ['hiragana', 'kanji']) {
+        await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
+        check(await page.locator('.question-indicator').count(), 4, `Practice 8.1 indicator count remains 4 after scriptMode=${script}`);
+    }
+
+    // 12. Practice 8.2
+    await page.goto('http://qi.test/practice8.2.html');
+    check(await page.locator('.question-indicator').count(), 20, 'Practice 8.2 has exactly 20 question indicators total');
+    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.2 Drill 1 has 4 question indicators');
+    check(await page.locator('#drill2 .question-indicator').count(), 8, 'Practice 8.2 Drill 2 has 8 question indicators');
+    check(await page.locator('#drill3 .question-indicator').count(), 5, 'Practice 8.2 Drill 3 has 5 question indicators');
+    check(await page.locator('#drill4 .question-indicator').count(), 3, 'Practice 8.2 Drill 4 has 3 question indicators');
+    check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.2 Examples have 0 question indicators');
+    check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 8.2 Drill 5 English cues panel has 0 question indicators');
+    check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.2 answer rows have 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 20, 'All 20 indicators in Practice 8.2 are wrapped with stop buttons');
+
+    // Verify rerendering does not duplicate indicators on Practice 8.2
+    for (const script of ['hiragana', 'kanji']) {
+        await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
+        check(await page.locator('.question-indicator').count(), 20, `Practice 8.2 indicator count remains 20 after scriptMode=${script}`);
+    }
+
+    // 13. Practice 8.3
+    await page.goto('http://qi.test/practice8.3.html');
+    // Default sets visible: D1 (4), D2 (6), D3 (4), D4 (4) -> total visible = 18
+    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.3 D1 Set 1 has 4 indicators');
+    check(await page.locator('#drill2 .question-indicator').count(), 6, 'Practice 8.3 D2 Set 1 has 6 indicators');
+    check(await page.locator('#drill3 .question-indicator').count(), 4, 'Practice 8.3 D3 Set 1 has 4 indicators');
+    check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 1 has 4 indicators');
+    check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.3 Examples have 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 18, 'All 18 visible indicators in Practice 8.3 are wrapped with stop buttons');
+
+    // Switch D1 to Set 2 (何): 4 indicators
+    await page.locator('#drill1 .p21-set-switcher button:nth-child(2)').click();
+    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators');
+
+    // Switch D2 to Set 2 (何): 6 indicators
+    await page.locator('#drill2 .p21-set-switcher button:nth-child(2)').click();
+    check(await page.locator('#drill2 .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators');
+
+    // Switch D3 to Set 2 (どこ): 4 indicators
+    await page.locator('#drill3 .p21-set-switcher button:nth-child(2)').click();
+    check(await page.locator('#drill3 .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators');
+
+    // Switch D4 to Set 2 (どこ): 4 indicators, Set 3 (いつ): 4 indicators
+    await page.locator('#drill4 .p21-set-switcher button:nth-child(2)').click();
+    check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators');
+    await page.locator('#drill4 .p21-set-switcher button:nth-child(3)').click();
+    check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators');
+
+    // Total slots across all alternative sets in Practice 8.3:
+    // D1: Set 1 (4) + Set 2 (4) = 8
+    // D2: Set 1 (6) + Set 2 (6) = 12
+    // D3: Set 1 (4) + Set 2 (4) = 8
+    // D4: Set 1 (4) + Set 2 (4) + Set 3 (4) = 12
+    // Total = 8 + 12 + 8 + 12 = 40.
+
     check(errors, [], 'No runtime errors');
     await browser.close();
     console.log('PASS Question Indicator tests:', checks);

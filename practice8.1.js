@@ -976,6 +976,9 @@ function render() {
                 const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
                 const rec=button('🎙️とる',()=>record(key,r));
                 const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.classList.add('stop-record-btn');stop.disabled=true;stop.setAttribute('aria-disabled','true');
+                if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
+                    window.QuestionIndicator.attach(stop,r.qa==='question');
+                }
                 const content=node('span','p81-cue-words');
                 if(r.selectKind==='activity'){
                     addSelect(cueBody,r,key);
