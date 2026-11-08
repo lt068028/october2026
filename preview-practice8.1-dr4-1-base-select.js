@@ -5,7 +5,7 @@
     const supported = CSS.supports('appearance', 'base-select') &&
         CSS.supports('selector(::picker(select))');
     document.getElementById('p81-preview-support').textContent = supported
-        ? 'Drill 4-1: hover or use arrow keys to preview English; click or Enter to select. On touch, English appears alongside Japanese.'
+        ? 'Drill 4-1: 💬 marks Hover hints inside the open menu. OFF hides hints; Display shows meanings. Select a choice to use the existing selected-word Hover.'
         : 'Native-select fallback: option-level English hover is unavailable in this browser.';
     if (!supported) return;
 
@@ -17,6 +17,13 @@
         carryBag: 'Carry a bag',
         beginStudy: 'Start studying'
     };
+    function syncHintMode() {
+        const pressed = document.querySelector('#hintModeControl button[aria-pressed="true"]');
+        const mode = pressed?.dataset.value || 'hover';
+        document.body.dataset.previewVocab = mode;
+    }
+    document.getElementById('hintModeControl')?.addEventListener('click', () => queueMicrotask(syncHintMode));
+    syncHintMode();
     function fitPicker(select) {
         if (!select) return;
         const rect = select.getBoundingClientRect();
@@ -24,6 +31,7 @@
         select.style.setProperty('--preview-picker-height', Math.max(0, Math.min(480, available)) + 'px');
     }
     function enhance() {
+        syncHintMode();
         const select = document.querySelector('#drill4 select[data-choice="degree-0"]');
         if (!select || select.classList.contains('p81-base-select')) return;
         const value = select.value;
@@ -42,7 +50,11 @@
                 const english = document.createElement('span');
                 english.className = 'p81-option-english';
                 english.textContent = meanings[option.value];
-                option.append(english);
+                const icon = document.createElement('span');
+                icon.className = 'p81-option-hint-icon';
+                icon.textContent = '💬';
+                icon.setAttribute('aria-hidden', 'true');
+                option.append(icon, english);
                 option.setAttribute('aria-label', japanese.textContent + ' — ' + english.textContent);
             }
         }
