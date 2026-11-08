@@ -30,7 +30,7 @@
 
 ## 2026-11-08 — Copy機能7.1実機確認・文言確定・全ページ展開準備
 - ユーザーがPractice 7.1のCopy機能（実装Commit `572aee9`）について実機確認完了を報告。先行実装の確認待ちは解消。
-- 共通表示文言をボタン `Copy my sentences`／補助説明 `Copy to review or share.` に確定。Lucide `clipboard` アイコンは維持。文言のコード変更は未実施。
+- 共通表示文言の現行確定版：ボタン `Copy my sentences`／補助説明 `Copy your drill results to review or share.`。Lucide `clipboard` アイコンは維持。Practice 7.1の補助説明はコミット `131edf1` で変更済み（GitHub再取得によるコード確認済み）。この行は以前の文言 `Copy to review or share.` と「コード変更は未実施」の記録を更新したもの。7.2以降へのCopy機能展開は別作業として扱う。
 - 全ページ展開対象：録音による発話記録を持つすべてのDrill。Pronunciation 1・2、Compositionは除外。
 - 次工程：対象ページ・DrillのRead-only調査でデータ構造・再描画・録音ロック・共通化可能性と展開順序を報告。その結果の確認後に共通化・段階的実装。全ページ実装は未着手。
 
