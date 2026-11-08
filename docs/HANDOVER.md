@@ -14,7 +14,7 @@
 
 ---
 
-- 7.3比較：preview-practice7.3.html（クエリなし＝現行、labelPreview=font＝Latoのみ、labelPreview=standard＝B装飾）。専用CSSはassets/review/p73-label-preview.cssだけに隔離し、通常のpractice7.3.htmlは変更しない。Vercel Previewドメインは認証壁のため公開本番ドメインの独立ページを使用。採用後は比較用ファイルを整理する。
+- 7.3比較：preview-practice7.3.html（クエリなし＝現行、labelPreview=font＝Latoのみ、labelPreview=standard＝B装飾）。専用CSSはpreview-p73-labels.cssだけに隔離し、通常のpractice7.3.htmlは変更しない。Vercel Previewドメインは認証壁のため公開本番ドメインの独立ページを使用。採用後は比較用ファイルを整理する。
 
 # 現在のリレー状態
 
