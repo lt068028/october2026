@@ -1,4 +1,21 @@
-# 現在のリレー状態 — Icons8会話役割アイコン採用
+# 現在のリレー状態 — Practice 7.2 Copy my sentences
+
+- 更新日：2026-11-08（Europe/Vienna）／担当：Codex Cloud。開始時main：`131edf1b779be7ad1e470acddd0abbaf94879dae`。作業中に文書のみの更新`df85867`をfast-forward取得・保持。保存先：GitHub main。
+- 対象：Practice 7.2 / Drill 1（Past・Present State）とDrill 2（Present StateのQ/A）/ 最終問題カード直後・枠外・右寄せのCopy UI。Drill 3はEnglish Cues切替で独立した録音結果がないためCopyを新設しない。Example・Practice 7.1・他ページ・共通CSS/JSは変更しない。
+- 実装済み・限定自動検証済み：7.1のCopy UI・Lucide clipboard（20×20、stroke-width 2、currentColor）・成功/失敗通知に合わせ、7.2の保存キーへ適応。ボタンは`Copy my sentences`、補助説明は現行確定文言`Copy your drill results to review or share.`。
+- コピー内容：明示したDrill見出し・学習テーマ・コピー操作時のローカル日付と、表示中のDrillのrawTranscript・保存済み正誤マーカーだけ。原文の空白・句読点も保持し、モデル・表示用かな変換・採点し直しを混ぜない。D1はPast／Present State、D2はQ／A。D2の旧Yes/No viewも保存レジストリへ残るため、現在のaria-pressed選択から該当回答だけを抽出する。
+- 録音開始待ち・録音中・原文なしは無効化。既存renderAll／processResult／practice7SyncRecordingUIを戻り値・引数ごと維持して表示更新だけを追加し、再描画後の重複生成を防止。音声・録音・認識・判定の内容は変更しない。
+- 変更ファイル：`practice7.2.js`、`practice7.2.html`（7.2専用スタイルとJS識別子`20261108-copy72`）、`tests/copy72.cjs`、本書。
+- 自動検証：
+  - `node tests/copy72.cjs`：Chromium 69確認合格。1440/375px・ライト/ダークで枠外/最終カード直後/右揃え/表示文言/アイコン、原文・マーカー・Drill境界・未選択と非表示の回答除外、文体/表記/Vocab/English cues再描画、録音開始待ちと実際の録音/停止イベント、空状態、Clipboard失敗を確認。
+  - ローカル日付はブラウザをAmerica/Los_Angeles、UTC 2026-11-09T00:30に固定し、コピーには2026-11-08が入ることを確認。アプリの利用者タイムゾーンを固定する変更ではない。
+  - `PRACTICE_PAGES=practice7.2 node tests/audio-relay.cjs`：既存の限定音声リレー検証32確認合格。
+  - 変更前131edf1とのChromium比較19状態で、Copy UIを除いた本文・Example・フォーム状態が一致（両表記×3Vocab×3文体、およびEnglish cuesのExample比較）。
+  - `node --check practice7.2.js`、`node --check tests/copy72.cjs`合格。`git diff --check`は差分形式の確認として別管理。
+- 仕様整合性：既存のCopy共通仕様に沿った個別適用で、共通仕様の追加変更は不要。7.2の保存キー/現選択への対応はページ実装を正本とする。7.1や他ページへのCopy追加・共通化は行わない。
+- 未検証：ユーザー実機のClipboard権限/実際の貼付け・実マイク/実音声品質・ChromeOS等。音声イベントとClipboardはブラウザテストのモックであり、実機確認完了とは扱わない。次の操作は公開後にD1/D2の実録音・Yes/No切替・貼付けを実機確認すること。
+
+# 前回のリレー状態 — Icons8会話役割アイコン採用
 
 - 更新日：2026-11-08（Europe/Vienna）／担当：Codex Cloud。開始時main：`d31fa525be6e96a9f7cac0338c74f755366dc0da`。作業ブランチ：`work`、保存先：GitHub `main`。
 - Q/Aアイコン状態：採用決定・実装中 → 実装済み・検証済み（アイコン適用範囲、最新main ab69d6fと比較済み）。公開確認・ユーザー実機・実音響は別状態。

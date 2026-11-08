@@ -3514,6 +3514,111 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 })();
 
 
+// Practice 7.2 Copy: page-owned recording keys and currently displayed answers.
+(() => {
+    const headers = {
+        main: 'Practice 7.2 — Drill 1: Compare Past & Present State — ～ました／～から～ています',
+        qa: 'Practice 7.2 — Drill 2: Ask and answer — Present State — ～ていますか'
+    };
+    const busy = () => Boolean(activeRecognitionSession || practice7State.startingRow);
+    function entriesFor(kind) {
+        const entries = [];
+        const append = (key, number, role) => {
+            const saved = practice7State.savedResults[key];
+            const text = saved?.rawTranscript;
+            if (typeof text !== 'string' || !text.trim()) return;
+            entries.push(`${number}. ${role}: ${saved.isCorrect === true ? '✅ ' : '— '}${text}`);
+        };
+        const cards = document.querySelectorAll(kind === 'main'
+            ? '#drill1List > .drill-row'
+            : '#practice72QuestionSection > .drill-row');
+        cards.forEach((card, index) => {
+            if (kind === 'main') {
+                append(`p7_drill_past_${index}`, index + 1, 'Past');
+                append(`p7_drill_perf_${index}`, index + 1, 'Present State');
+            } else {
+                append(`p72_d2_${index}_q`, index + 1, 'Q');
+                // The recorder view registry also retains old answer views.
+                const answer = card.querySelector('.answer-choice[aria-pressed="true"]')?.dataset.answer;
+                if (answer === 'yes' || answer === 'no') append(`p72_d2_${index}_${answer}`, index + 1, 'A');
+            }
+        });
+        return entries;
+    }
+    function updateCopyButtons() {
+        document.querySelectorAll('.p72-copy-area').forEach(area => {
+            const button = area.querySelector('.p72-copy-button');
+            button.disabled = busy() || entriesFor(area.dataset.copyKind).length === 0;
+            button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+        });
+    }
+    function mountCopyAreas() {
+        for (const [kind, selector] of [['main', '#drill1List'], ['qa', '#practice72QuestionSection']]) {
+            const root = document.querySelector(selector);
+            const lastCard = root ? [...root.querySelectorAll(':scope > .drill-row')].at(-1) : null;
+            if (!lastCard) continue;
+            let area = root.querySelector(`:scope > .p72-copy-area[data-copy-kind="${kind}"]`);
+            if (!area) {
+                area = document.createElement('div');
+                area.className = 'p72-copy-area';
+                area.dataset.copyKind = kind;
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'example-button p72-copy-button';
+                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p72-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+                const help = document.createElement('span');
+                help.className = 'p72-copy-help';
+                help.textContent = 'Copy your drill results to review or share.';
+                const status = document.createElement('span');
+                status.className = 'p72-copy-status';
+                status.setAttribute('role', 'status');
+                status.setAttribute('aria-live', 'polite');
+                status.hidden = true;
+                button.addEventListener('click', async () => {
+                    if (busy()) return;
+                    const entries = entriesFor(kind);
+                    if (!entries.length) return;
+                    const now = new Date();
+                    const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    try {
+                        await navigator.clipboard.writeText(headers[kind] + ' — ' + date + '\n' + entries.join('\n'));
+                        status.textContent = 'Copied!';
+                    } catch (error) {
+                        status.textContent = 'Could not copy. Please allow clipboard access.';
+                    }
+                    status.hidden = false;
+                });
+                area.append(button, help, status);
+            }
+            root.querySelectorAll(`.p72-copy-area[data-copy-kind="${kind}"]`).forEach(other => {
+                if (other !== area) other.remove();
+            });
+            if (lastCard.nextElementSibling !== area) lastCard.after(area);
+        }
+        updateCopyButtons();
+    }
+    const previousRender = renderAll;
+    renderAll = function(...args) {
+        const result = previousRender.apply(this, args);
+        // Drill 2 is installed by the earlier DOMContentLoaded render wrapper.
+        queueMicrotask(mountCopyAreas);
+        return result;
+    };
+    const previousProcess = processResult;
+    processResult = function(...args) {
+        const result = previousProcess.apply(this, args);
+        queueMicrotask(updateCopyButtons);
+        return result;
+    };
+    const previousSync = practice7SyncRecordingUI;
+    practice7SyncRecordingUI = function(...args) {
+        const result = previousSync.apply(this, args);
+        updateCopyButtons();
+        return result;
+    };
+    document.addEventListener('DOMContentLoaded', () => queueMicrotask(mountCopyAreas));
+})();
+
 // Keep lifecycle and Voice locks aligned with this page's existing recorder.
 DrillAudio.configure({
     busy: () => Boolean(activeRecognitionSession || practice7State.startingRow),
