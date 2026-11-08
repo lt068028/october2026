@@ -274,10 +274,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         b.type = 'button';
 
-        b.append(
-            document.createTextNode(label),
-            node('span', 'custom-tip-box', tip)
-        );
+        if (typeof label === 'string') {
+            b.append(document.createTextNode(label));
+        } else if (label instanceof Node) {
+            b.append(label);
+        }
+
+        b.append(node('span', 'custom-tip-box', tip));
 
         b.onclick = () => {
             if (!blocked()) click();
@@ -435,7 +438,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const cues = node('td', 'example-empty-cell');
             const arrow = node('td', 'example-empty-cell');
             const sound = node('td', 'example-audio-cell');
-            sound.append(listen(() => model(example, kind), index ? '🔊🙅' : '🔊🙆'));
+            const listenBtn = listen(
+                () => model(example, kind),
+                window.AnswerIcons.createExampleLabel(kind)
+            );
+            listenBtn.dataset.answer = kind;
+            listenBtn.setAttribute(
+                'aria-label',
+                kind === 'yes' ? 'Listen to affirmative model.' : 'Listen to negative model.'
+            );
+            sound.append(listenBtn);
             const text = node('td');
             text.append(highlighted(display(model(example, kind))));
             row.append(label, cues, arrow, sound, text);
@@ -617,17 +629,25 @@ document.addEventListener('DOMContentLoaded', () => {
             'info-panel info-panel-task1'
         );
 
+        const desc = node(
+            'span',
+            'info-panel-desc instruction-steps'
+        );
+        desc.append(
+            document.createTextNode('💡Ask a Yes/No question.\nChoose '),
+            window.AnswerIcons.create('yes', true),
+            document.createTextNode(' or '),
+            window.AnswerIcons.create('no', true),
+            document.createTextNode(' and record your answer.')
+        );
+
         panel.append(
             node(
                 'span',
                 'info-panel-title',
                 'Drill 2: Ask and answer — Present State'
             ),
-            node(
-                'span',
-                'info-panel-desc instruction-steps',
-                '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.'
-            )
+            desc
         );
 
         section.append(panel);
@@ -663,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             ['yes', 'no'].forEach((kind, i) => {
                 const choice = button(
-                    i ? '🙅' : '🙆',
+                    window.AnswerIcons.create(kind),
                     i
                         ? 'Negative response'
                         : 'Affirmative response',
@@ -676,6 +696,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 choice.classList.add('answer-choice');
                 choice.dataset.answer = kind;
+                choice.setAttribute(
+                    'aria-label',
+                    i ? 'Negative response' : 'Affirmative response'
+                );
 
                 choice.setAttribute(
                     'aria-pressed',

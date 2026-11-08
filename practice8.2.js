@@ -89,7 +89,7 @@ function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').repl
 const sections=[
  {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か (unspecified item).'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
- {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (unspecified item). For 🙅, use 何も〜ません (none).'},
+ {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (unspecified item). For negative answers, use 何も〜ません (none).'},
  {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
 ];
 const statements=[
@@ -239,7 +239,11 @@ function button(text, fn, tip = '') {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'example-button';
-    b.append(document.createTextNode(text));
+    if (typeof text === 'string') {
+        b.append(document.createTextNode(text));
+    } else if (text instanceof Node) {
+        b.append(text);
+    }
     b.onclick = fn;
 
     if (tip) {
@@ -714,9 +718,9 @@ function addExample(root,si){
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Specific',translation:'— What do you see?'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Unspecified',translation:'— Do you see anything?'})
  ];
- else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:'🔊🙆'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:'🔊🙅'})];
+ else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:window.AnswerIcons.createExampleLabel('yes')}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:window.AnswerIcons.createExampleLabel('no')})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0||si===1){kind.classList.add('p82-concept-label');const ja=node('span','p82-concept-japanese');ja.innerHTML=kind.innerHTML;kind.replaceChildren(ja,exampleTranslation(r.englishLabel,'p82-concept-english'));}}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),text=node('span','p81-model');if(si<2){const japanese=node('span','p82-model-japanese');japanese.innerHTML=modelHTML(r);text.append(japanese);if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));}else text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0||si===1){kind.classList.add('p82-concept-label');const ja=node('span','p82-concept-japanese');ja.innerHTML=kind.innerHTML;kind.replaceChildren(ja,exampleTranslation(r.englishLabel,'p82-concept-english'));}}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'／'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});if(r.answer){listen.dataset.answer=r.answer;listen.setAttribute('aria-label',r.answer==='yes'?'Listen to affirmative model.':'Listen to negative model.');}const text=node('span','p81-model');if(si<2){const japanese=node('span','p82-model-japanese');japanese.innerHTML=modelHTML(r);text.append(japanese);if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));}else text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
 }
 function updateUnlearnedLexicon(){
  const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';
@@ -748,10 +752,10 @@ function setupUnlearnedAccordion(){
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);panel.append(heading,node('span','info-panel-desc',scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));group.append(panel);
+ sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');if(si===2){desc.append(document.createTextNode('💡Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.textContent=scriptMode==='kanji'?section.instruction:displayKana(section.instruction);panel.append(heading,desc);group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
- if(r.yn)for(const [value,label]of [['yes','🙆'],['no','🙅']]){const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
+ if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
  const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(stop,r.mode==='question'||r.mode==='contrast'||r.mode==='wh');}actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
 }

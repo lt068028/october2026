@@ -660,7 +660,11 @@ function button(text, fn, tip = '') {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'example-button';
-    b.append(document.createTextNode(text));
+    if (typeof text === 'string') {
+        b.append(document.createTextNode(text));
+    } else if (text instanceof Node) {
+        b.append(text);
+    }
     b.onclick = fn;
 
     if (tip) {
@@ -2431,7 +2435,12 @@ render = function () {
         cells[3].className = 'example-audio-cell';
         cells[4].className = 'p73-example-model';
         const r = qa73Model(qa73.example, kind);
-        const listen = button(kind === 'yes' ? '🔊🙆' : '🔊🙅', () => speak(r.text, listen));
+        const listen = button(window.AnswerIcons.createExampleLabel(kind), () => speak(r.text, listen));
+        listen.dataset.answer = kind;
+        listen.setAttribute(
+            'aria-label',
+            kind === 'yes' ? 'Listen to affirmative model.' : 'Listen to negative model.'
+        );
         cells[3].append(listen);
         cells[4].innerHTML = SemanticDisplay.exampleNegativeHTML(sentence(r));
         row.append(...cells);
@@ -2446,11 +2455,21 @@ render = function () {
     const panel = document.createElement('div');
     panel.className = 'info-panel info-panel-task1';
 
-    panel.innerHTML =
-        '<span class="info-panel-title">' +
-        'Drill 2: Yes / No — Past Ongoing</span>' +
-        '<span class="info-panel-desc instruction-steps">' +
-        '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.</span>';
+    const panelTitle = document.createElement('span');
+    panelTitle.className = 'info-panel-title';
+    panelTitle.textContent = 'Drill 2: Yes / No — Past Ongoing';
+
+    const panelDesc = document.createElement('span');
+    panelDesc.className = 'info-panel-desc instruction-steps';
+    panelDesc.append(
+        document.createTextNode('💡Ask a Yes/No question.\nChoose '),
+        window.AnswerIcons.create('yes', true),
+        document.createTextNode(' or '),
+        window.AnswerIcons.create('no', true),
+        document.createTextNode(' and record your answer.')
+    );
+
+    panel.append(panelTitle, panelDesc);
 
     section.append(panel);
 
@@ -2504,7 +2523,7 @@ render = function () {
             } else {
                 ['yes', 'no'].forEach(answer => {
                     const choice = button(
-                        answer === 'yes' ? '🙆' : '🙅',
+                        window.AnswerIcons.create(answer),
                         () => {
                             if (
                                 session ||
@@ -2515,7 +2534,8 @@ render = function () {
                             stopPlayback();
                             state.answer = answer;
                             render();
-                        }
+                        },
+                        answer === 'yes' ? 'Affirmative response' : 'Negative response'
                     );
 
                     choice.classList.add('answer-choice');
@@ -2528,7 +2548,7 @@ render = function () {
 
                     choice.setAttribute(
                         'aria-label',
-                        answer === 'yes' ? 'Yes' : 'No'
+                        answer === 'yes' ? 'Affirmative response' : 'Negative response'
                     );
 
                     cue.append(choice);

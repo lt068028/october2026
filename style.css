@@ -14,35 +14,104 @@
     margin-top: var(--practice-section-gap);
 }
 
-/* Yes／No選択 */
+/* Yes／No選択 (F6 standardized Lucide Y/N buttons and icons) */
 .example-button.answer-choice {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    background: #E5E7EB;
+    border: 1px solid #d1d5db;
     margin-right: 4px;
-    background: #bae6fd;
-    color: #142346;
 }
 
-.example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+:is(.example-button.answer-choice, .yn-inline-icon, .p71-inline-icon) :is(.yn-answer-icon, .p71-answer-icon) {
+    display: block;
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+:is(.yn-inline-icon, .p71-inline-icon) {
+    display: inline-flex;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+:is(.example-audio-cell, .p81-example-row, .practice12-example-answer) .example-button:has(:is(.yn-inline-icon, .p71-inline-icon)),
+:is(.example-audio-cell, .p81-example-row, .practice12-example-answer) .example-button[data-answer] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+:is(.example-button.answer-choice, .yn-inline-icon, .p71-inline-icon)[data-answer="yes"] {
+    color: #16a34a;
+}
+
+:is(.example-button.answer-choice, .yn-inline-icon, .p71-inline-icon)[data-answer="no"] {
+    color: #dc2626;
+}
+
+.example-button.answer-choice[data-answer="yes"]:is([aria-pressed="true"], .is-selected) {
     background: #4ade80;
+    border-color: #22c55e;
+    color: #14532d;
 }
 
-.example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+.example-button.answer-choice[data-answer="no"]:is([aria-pressed="true"], .is-selected) {
     background: #fca5a5;
+    border-color: #ef4444;
+    color: #7f1d1d;
+}
+
+.example-button.answer-choice:is([aria-pressed="true"], .is-selected) {
+    outline: 2px solid #64748b;
+    outline-offset: 1px;
+}
+
+.example-button.answer-choice:hover:not(:disabled) {
+    filter: brightness(0.96);
 }
 
 @media (prefers-color-scheme: dark) {
     .example-button.answer-choice {
-        background: #1e3a5f;
-        color: #e5efff;
+        background: #374151;
+        border-color: #4b5563;
     }
 
-    .example-button.answer-choice[data-answer="yes"][aria-pressed="true"] {
+    :is(.example-button.answer-choice, .yn-inline-icon, .p71-inline-icon)[data-answer="yes"] {
+        color: #4ade80;
+    }
+
+    :is(.example-button.answer-choice, .yn-inline-icon, .p71-inline-icon)[data-answer="no"] {
+        color: #f87171;
+    }
+
+    .example-button.answer-choice[data-answer="yes"]:is([aria-pressed="true"], .is-selected) {
         background: #14532d;
+        border-color: #15803d;
         color: #bbf7d0;
     }
 
-    .example-button.answer-choice[data-answer="no"][aria-pressed="true"] {
+    .example-button.answer-choice[data-answer="no"]:is([aria-pressed="true"], .is-selected) {
         background: #7f1d1d;
+        border-color: #b91c1c;
         color: #fecaca;
+    }
+
+    .example-button.answer-choice:is([aria-pressed="true"], .is-selected) {
+        outline: 2px solid #94a3b8;
+        outline-offset: 1px;
+    }
+
+    .example-button.answer-choice:hover:not(:disabled) {
+        filter: brightness(1.1);
     }
 }
 /* =========================================================

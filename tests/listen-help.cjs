@@ -20,7 +20,7 @@ const root=path.resolve(__dirname,'..');
    check(await lock.locator('.custom-tip-box').evaluate(e=>getComputedStyle(e).visibility),'visible',name+' real hover shows reason');
    await lock.focus();check(await lock.locator('.custom-tip-box').evaluate(e=>getComputedStyle(e).visibility),'visible',name+' keyboard reason');
    const before=await p.locator('.selection-help-wrap').count();
-   await lock.evaluate(e=>{const card=e.closest('.drill-row');const yes=[...card.querySelectorAll('button')].find(b=>b.firstChild?.textContent.trim()==='🙆');yes.click();});
+   await lock.evaluate(e=>{const card=e.closest('.drill-row');const yes=[...card.querySelectorAll('button')].find(b=>b.dataset.answer==='yes'||b.firstChild?.textContent.trim()==='🙆');yes.click();});
    check(await p.locator('.selection-help-wrap').count(),before-2,name+' reason removed after Y/N selection');
   }
   if(name==='practice1.1') {

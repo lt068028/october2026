@@ -83,11 +83,12 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('#drill5 .recording-actions button').evaluateAll(es=>es.filter(e=>/きく|とる/.test(e.textContent)).every(e=>e.disabled)),true,'model and recording wait for matching adjective');
  check(await page.locator('#drill5 .p81-impression-result:not([hidden])').count(),0,'no impression choice preselected');
  check(await page.locator('#drill5 .example-box .p81-gold').allTextContents(),['は','のが','のが'],'Example5 topic and nominalizer highlighted');
- check(await page.locator('#drill2 .example-box button').allTextContents(),['🔊きく','🔊🙆','🔊🙅'],'question, Yes and No model buttons');
+ check(await page.locator('#drill2 .example-box button').count(),3,'question, Yes and No model buttons');
+ check(await page.locator('#drill2 .example-box button :is(.yn-answer-icon, .p71-answer-icon)').count(),2,'Yes and No model buttons have Lucide icons');
  check(await page.locator('#drill2 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['散歩するのが、好きですか。','はい、好きです。','いいえ、好きじゃないです。'],'affirmative and negative models always visible');
- for(const label of ['🔊🙆','🔊🙅']){
-  const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button').filter({hasText:label}).click();
-  check(await page.evaluate(()=>t.spoken.at(-1).text),label==='🔊🙆'?'はい、好きです。':'いいえ、好きじゃないです。','independent response TTS');
+ for(const [kind, expectedText] of [['yes','はい、好きです。'],['no','いいえ、好きじゃないです。']]){
+  const before=await page.evaluate(()=>t.spoken.length);const selections=await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));await page.locator('#drill2 .example-box button[data-answer="'+kind+'"]').click();
+  check(await page.evaluate(()=>t.spoken.at(-1).text),expectedText,'independent response TTS');
   await page.evaluate(()=>t.spoken.at(-1).onend());check(await page.evaluate(()=>t.spoken.length),before+1,'Example playback does not select Drill response');check(await page.locator('#drill2 .answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed'))),selections,'Example leaves Y/N selections unchanged');
  }
  for(const r of await page.evaluate(()=>audit81.rowsFor(4).flat().map(r=>({id:r.id,expected:r.adjective,other:r.options.find(x=>x!==r.adjective)})))){

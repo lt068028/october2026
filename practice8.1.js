@@ -333,7 +333,11 @@ function button(text, fn, tip = '') {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'example-button';
-    b.append(document.createTextNode(text));
+    if (typeof text === 'string') {
+        b.append(document.createTextNode(text));
+    } else if (text instanceof Node) {
+        b.append(text);
+    }
     b.onclick = fn;
 
     if (tip) {
@@ -869,7 +873,7 @@ function addExample(root,si) {
     const ex=node('div','example-box example-text-layout p81-example');if(si===3)ex.classList.add('p81-degree-example');if(si===4)ex.classList.add('p81-meaning-example');
     const samples=[
         [makeRow('ex1-noun',{...action('travel','do'),noun:true,adjective:'like'},{kind:'Noun'}),makeRow('ex1-action',{...action('travel','do'),adjective:'like'},{kind:'Verb＋の',compoundCue:true})],
-        [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q',compoundCue:true}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:'🔊🙆'}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:'🔊🙅'})],
+        [makeRow('ex2-q',{...action('walk','do'),adjective:'like',qa:'question'},{kind:'Q',compoundCue:true}),makeRow('ex2-a',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'yes'},{kind:'A',listenLabel:window.AnswerIcons.createExampleLabel('yes')}),makeRow('ex2-no',{...action('walk','do'),adjective:'like',qa:'response',short:true,answer:'no'},{listenLabel:window.AnswerIcons.createExampleLabel('no')})],
         [makeRow('ex3-good',{subject:'youngerSister',...action('photo','take'),adjective:'good',highlightTopic:true}),makeRow('ex3-difficult',{subject:'youngerSister',...action('photo','take'),adjective:'difficult',highlightTopic:true})],
         exampleDegreeLevels.map((level,i)=>makeRow('ex4-'+i,{...action('anime','watch'),...level,degreeLevel:level})),
         [makeRow('ex5-skill',{subject:'olderSister',...action('guitar','play'),adjective:'good',highlightTopic:true},{kind:'Skillful'}),makeRow('ex5-perception',{subject:'olderSister',...action('guitar','play'),adjective:'strong',highlightTopic:true},{kind:'Observed'})]
@@ -905,6 +909,7 @@ function addExample(root,si) {
         }
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
+        if(r.answer){listen.dataset.answer=r.answer;listen.setAttribute('aria-label',r.answer==='yes'?'Listen to affirmative model.':'Listen to negative model.');}
         const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);SemanticDisplay.exampleNegatives(text);
         if(si===2||si===3||si===4){
             if(index===0)text.dataset.repeatModelAnchor=String(si);
@@ -999,8 +1004,8 @@ function render() {
                 }
                 if(r.comparison)listen.classList.add('p81-cue-listen');
                 if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
-                if(r.qa==='response')for(const [value,label]of [['yes','🙆'],['no','🙅']]){
-                    const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
+                if(r.qa==='response')for(const value of ['yes','no']){
+                    const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
                 }
                 const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
                 if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}

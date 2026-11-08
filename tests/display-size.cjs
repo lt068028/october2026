@@ -82,7 +82,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await p.setViewportSize({width:1280,height:900});
  await p.locator('#drill1Container .drill-row').first().locator('.drill-cue-cell button[aria-pressed]').first().click();
  let row=p.locator('#drill1Container .drill-row').first();
- check(await row.locator('.drill-cue-cell button').evaluateAll(es=>es.map(e=>e.firstChild.textContent.trim())),['🙆','🙅'],'only Yes/No remain in the cue group');
+ check(await row.locator('.drill-cue-cell button').evaluateAll(es=>es.map(e=>e.dataset.answer||e.firstChild.textContent.trim())),['yes','no'],'only Yes/No remain in the cue group');
  await p.locator('#drill2Container select.custom-select').first().selectOption('せいじ');
  check(await p.locator('#drill2Container .drill-row').first().locator('.recording-actions').last().locator('button').filter({hasText:/^🎙️とる/}).isEnabled(),true,'major selection still enables response recording');
  check(await p.locator('button').evaluateAll(es=>es.filter(b=>/^(👀Text|🕶️Hide)/.test(b.textContent)).length),0,'no Text or Hide controls');

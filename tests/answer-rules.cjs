@@ -103,7 +103,7 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    await p.locator('#speechStyleControl [data-value="formal"]').click();
 
    // Use the real row callbacks and saved-result predicate, not a synthetic matcher.
-   const yes=p.locator('#drill1Container button[aria-pressed]').filter({hasText:'🙆'}).first();
+   const yes=p.locator('#drill1Container button.answer-choice[data-answer="yes"], #drill1Container button[aria-pressed]').first();
    if(await yes.getAttribute('aria-pressed')!=='true')await yes.click();
    const out=await p.evaluate(()=>{
     isAutoPlay=false;

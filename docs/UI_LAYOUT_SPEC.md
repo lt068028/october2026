@@ -577,20 +577,42 @@ PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承�
 
 - 8.1改訂（2026-10-30）：文法強調を当時の共通色へ修正（現行色はPROJECT_SPECの共通意味色を参照）。Ex3の主題はも強調。ExampleのQ/R等は内容に基づく共通列で音声を整列。D4は目的語/動詞/副詞選択/ADJ。D2返答の選択前理由はListenとRecordの両方に表示し、選択後は撤去。旧D5の日本語表現選択と操作ロックは2行常時表示への再構築で廃止。当時の色候補3案は比較記録であり、現行色の正本はPROJECT_SPECの共通意味色。
 
-## Yes/No Exampleの共通仕様（2026-10-30明文化）
+## Yes/No Exampleの共通仕様（2026-10-30明文化、2026-11-08 F6標準化）
 
-既存の1.2 Example1、7.1/7.2/7.3のY/N Exampleを根拠として、8.1以降のYes/No質問を導入するExampleにも適用する。選択と再生の分離・練習7の縦列の規定は従来から存在した。今回、以下の欠けていた適用範囲を明文化した。
+既存の1.2 Example1、7.1/7.2/7.3のY/N Exampleを根拠として、8.1以降のYes/No質問を導入するExampleにも適用する。選択と再生の分離・練習7の縦列の規定は従来から存在した。
 
 - 質問、肯定返答、否定返答の3モデルを同じExampleに常時表示する。Y/N選択で片方のモデルを隠さない。
-- 質問は🔊きく、肯定返答は🔊🙆、否定返答は🔊🙅。各モデルを独立再生し、押してもDrillのY/N選択を変更しない。
+- 質問は🔊きく、肯定返答は🔊＋肯定アイコン（Smile）、否定返答は🔊＋否定アイコン（Frown）。各モデルを独立再生し、押してもDrillのY/N選択を変更しない。
 - Question:とResponse:の役割を表示。Response:は返答群の最初だけ。肯定・否定本文は縦並びで、3音声ボタンの列を共有する。返答にキューが不要なら、同じキューや矢印を繰り返さない。
 - Formal/Informal/Casual、漢字/ひらがなを切り替えても3モデルを維持し、表示文と再生文の意味・肯定否定を一致させる。
 - 会話の省略を使う自然な短答モデルと、完全回答の許容はPROJECT_SPEC §74および各課題の仕様に従う。CasualのNoの表示ううん/TTSううんんの分離を維持。
 - 文法強調は共通grammar-highlightを使い、返答語・肯定/否定の語尾等、その課題の指定箇所に適用する。ページ独自のゴールド値を無承認で作らない。
-- Drillの🙆/🙅は選択のみ。返答側のきく/とるは選択前ロック、理由はChoose 🙆 or 🙅 first.。Exampleは学習用のため選択なしで両方聴ける。
+- DrillのYes/Noは選択のみ。返答側のきく/とるは選択前ロック、理由はChoose 🙆 or 🙅 first.（プレーンテキストツールチップ）。Exampleは学習用のため選択なしで両方聴ける。
 - 否定訂正だけを目的とするなど、片方に限定する課題は、明示された個別仕様を適用する。
 
 - Exampleの音声縦位置（8.1修正・2026-10-30）：同じ行のボタン文字とモデル本文はベースラインを共有する。個別のalign-self:startや固定px移動で共通揃えを崩さない。広幅の実測で基線差を検証し、モデルが次行になる狭幅は別に扱う。
+
+## Yes/No (Y/N) ボタンおよびアイコンの共通標準仕様（2026-11-08確定、F6標準化）
+
+全サイトにおけるYes/No選択ボタン、Example音声ボタン、およびDrill説明文のインラインアイコンは、Practice 7.1の承認済み実装を唯一の正本として全ページに標準化する。
+
+- **承認済みアイコン**: 目なしのLucide smile（肯定）およびfrown（否定）SVG（20×20px、stroke-width 2）。emoji（🙆/🙅）はUI表示から全面撤去。
+- **共通JSヘルパー**: `answer-icons.js`（`window.AnswerIcons`）
+  - `AnswerIcons.create('yes' | 'no', inline = false)`
+  - `AnswerIcons.createExampleLabel('yes' | 'no')`（DocumentFragment: `🔊` + インラインSVG）
+- **スタイル規定（`style.css`に共通集約）**:
+  - **ボタン未選択時**: クールグレー背景（ライト `#E5E7EB` / border `#d1d5db`、ダーク `#374151` / border `#4b5563`）
+  - **未選択アイコン色**: Yesは緑（ライト `#16a34a`、ダーク `#4ade80`）、Noは赤（ライト `#dc2626`、ダーク `#f87171`）
+  - **選択時（アクティブ）**:
+    - Yes: ライト背景 `#4ade80`、ボーダー `#22c55e`、文字色 `#14532d`（ダーク背景 `#14532d`、ボーダー `#15803d`、文字色 `#bbf7d0`）
+    - No: ライト背景 `#fca5a5`、ボーダー `#ef4444`、文字色 `#7f1d1d`（ダーク背景 `#7f1d1d`、ボーダー `#b91c1c`、文字色 `#fecaca`）
+    - アウトライン: `2px solid #64748b`（ダーク `2px solid #94a3b8`）、outline-offset: 1px
+  - **ホバー**: `filter: brightness(0.96)`（ダーク `filter: brightness(1.1)`）
+- **セマンティック属性とアクセシビリティ**:
+  - 選択ボタン: `class="example-button answer-choice"`, `data-answer="yes|no"`, `aria-label="Affirmative response" | "Negative response"`, `aria-pressed="true|false"`
+  - Example音声ボタン: `data-answer="yes|no"`, `aria-label="Listen to affirmative model." | "Listen to negative model."`
+  - SVG要素: `aria-hidden="true"`, `class="yn-answer-icon p71-answer-icon"`
+- **適用ページ**: Practice 1.2, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3（その他ページは該当なし）
 
 ## 共通UIの既定契約（2026-10-30確定）
 

@@ -1,4 +1,44 @@
-# 現在のリレー状態 — F4: サイト全域のLatin UIタイポグラフィLato標準化完了
+# 現在のリレー状態 — F6: サイト全域のYes/No (Y/N) アイコン・ボタン標準化完了
+
+- 更新日時：2026-11-08T20:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F6: サイト全体（14ページ）のYes/No (Y/N) アイコン・ボタン外観標準化・共通ヘルパー配備・CSS共通化・仕様書更新 ／ `1279a2f77ddcbaf06fa1a1188fb855e378c894c2` ／ `main`
+- 実装内容：
+  1. **全14ページのY/N要素棚卸しと分類**:
+     - 対象7ページ（Y/N要素あり）: Practice 1.2, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3
+     - 対象外7ページ（Y/N要素なし）: Practice 1.1, 2.1, 2.2, 2.3, Pronunciation 1, Pronunciation 2, Composition 1
+  2. **共通ヘルパー（`answer-icons.js`）の新規作成**:
+     - Practice 7.1の承認済み実装（commit `0cbc5a1`, `e0d2ec3`）を忠実に踏襲し、目なしのLucide smile（肯定）およびfrown（否定）SVG（20×20px）を提供する `window.AnswerIcons` を新設。
+     - `AnswerIcons.create(kind, inline = false)`: SVG要素（未選択色）またはインラインラッパー（`.yn-inline-icon.p71-inline-icon`）を生成。
+     - `AnswerIcons.createExampleLabel(kind)`: DocumentFragment（`🔊` ＋ インラインSVG）を生成し、Example音声ボタンで統一利用可能に。
+  3. **共通スタイルシート（`style.css`）の統合**:
+     - 従来のレガシー青色スタイル（`#bae6fd`）を撤去し、Practice 7.1で承認済みのクールグレー配色（ライト `#E5E7EB` / border `#d1d5db`、ダーク `#374151` / border `#4b5563`）を共通化。
+     - 未選択アイコンストローク色：Yesは緑（ライト `#16a34a`、ダーク `#4ade80`）、Noは赤（ライト `#dc2626`、ダーク `#f87171`）。
+     - 選択時（アクティブ）配色：Yesは緑（ライト `#4ade80` / `#14532d`、ダーク `#14532d` / `#bbf7d0`）、Noは赤（ライト `#fca5a5` / `#7f1d1d`、ダーク `#7f1d1d` / `#fecaca`）。
+     - アウトライン：`2px solid #64748b`（ダーク `2px solid #94a3b8`）、offset 1px。
+  4. **対象ドリルページの実装更新**:
+     - **Practice 7.2**: `button` でNode型ラベルをサポート。Example 1音声ボタン（`🔊🙆`/`🔊🙅`）を `AnswerIcons.createExampleLabel` に置換、Drill 2説明文のインラインアイコンおよびDrill 2回答選択ボタンを `AnswerIcons.create` に置換。
+     - **Practice 7.3**: `button` でNode型ラベルをサポート。Example 1音声ボタンを `AnswerIcons.createExampleLabel` に置換、Drill 2説明文および回答選択ボタンを `AnswerIcons.create` に置換。
+     - **Practice 8.1**: `button` でNode型ラベルをサポート。Example 2音声ボタンを `AnswerIcons.createExampleLabel` に置換、Drill 2回答選択ボタンを `AnswerIcons.create` に置換。
+     - **Practice 8.2**: `button` でNode型ラベルをサポート。Example 3音声ボタンを `AnswerIcons.createExampleLabel` に置換、Drill 3回答選択ボタンを `AnswerIcons.create` に置換。
+     - **Practice 8.3**: `button` でNode型ラベルをサポート。Drill 1〜4回答選択ボタンを `AnswerIcons.create` に置換。
+     - **Practice 1.2**: `node` および `button` でNode型コンテンツをサポート。Drill 1説明文、Example 1音声ボタン、Drill 1回答選択ボタン（青色ハードコード背景スタイル撤去）を `AnswerIcons` に置換。
+     - **Practice 7.1**: `answer-icons.js` をリンクし、共通CSSとの整合性を維持。
+  5. **テストファイルの適合更新**:
+     - `tests/practice81.cjs`, `tests/display-size.cjs`, `tests/answer-rules.cjs`, `tests/listen-help.cjs`, `tests/README.md` において、旧絵文字依存のセレクタ・期待値を新Lucideアイコン／`data-answer`属性へ適合させ、かつ後方互換性を維持。
+  6. **仕様書更新**:
+     - `docs/UI_LAYOUT_SPEC.md` に「Yes/No (Y/N) ボタンおよびアイコンの共通標準仕様（2026-11-08確定、F6標準化）」を追加明文化。
+- 変更ファイル：`answer-icons.js` (新規), `style.css`, `practice1.2.html`, `practice1.2.js`, `practice7.1.html`, `practice7.2.html`, `practice7.2.js`, `practice7.3.html`, `practice7.3.js`, `practice8.1.html`, `practice8.1.js`, `practice8.2.html`, `practice8.2.js`, `practice8.3.html`, `practice8.3.js`, `tests/practice81.cjs`, `tests/display-size.cjs`, `tests/answer-rules.cjs`, `tests/listen-help.cjs`, `tests/README.md`, `docs/UI_LAYOUT_SPEC.md`, `docs/HANDOVER.md`
+- スコープ厳守：F6 Y/N標準化のみ。F1（音声セッション）、F4（Lato）、F5（Example破線）、F7（疑問文インジケーター）、F8（話者間隔）、教材問題文・学習データ等は一切変更なし。
+- 自動検証：
+  - Pythonスクリプトによる全修正ファイルの構文・括弧・タグ対照整合性チェックPASS。
+  - `git diff --check` 合格（空白・構文エラーなし）。
+  - ブラウザバイナリ未配備のため、Playwright実レンダリングテストは環境制約により NOT RUN（結果を詐称せず明示）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの各ページ（1.2, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）におけるY/Nボタン・Example音声ボタン・説明文アイコンのLucide表示、クールグレー未選択色、緑/赤アクティブ配色、ダークモード表示の確認。
+
+# 前回のリレー状態 — F4: サイト全域のLatin UIタイポグラフィLato標準化完了
 
 - 更新日時：2026-11-08T19:42:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

@@ -710,10 +710,10 @@ function renderAll() {
 
             const buttons = Array.from(row.querySelectorAll("button"));
             const yes = buttons.find(button =>
-                button.textContent.trim() === "🙆"
+                button.dataset.answer === "yes"
             );
             const no = buttons.find(button =>
-                button.textContent.trim() === "🙅"
+                button.dataset.answer === "no"
             );
             const textButton = buttons.find(button =>
                 button.textContent.startsWith("👀Text") ||
@@ -1093,16 +1093,25 @@ function practice2ShowNotice(resultSpan, message) {
     const node = (tag, className = "", text = "") => {
         const element = document.createElement(tag);
         element.className = className;
-        element.textContent = text;
+        if (typeof text === "string") {
+            element.textContent = text;
+        } else if (text instanceof Node) {
+            element.append(text);
+        }
         return element;
     };
 
     const button = (label, tip, action) => {
         const element = node(
             "button",
-            "example-button custom-tip-wrap",
-            label
+            "example-button custom-tip-wrap"
         );
+
+        if (typeof label === "string") {
+            element.append(document.createTextNode(label));
+        } else if (label instanceof Node) {
+            element.append(label);
+        }
 
         element.type = "button";
         element.append(node("span", "custom-tip-box", tip));
@@ -1386,6 +1395,17 @@ function practice2ShowNotice(resultSpan, message) {
             }
         );
 
+        const inline = element.querySelector(':is(.yn-inline-icon, .p71-inline-icon)');
+        if (inline?.dataset.answer) {
+            element.dataset.answer = inline.dataset.answer;
+            element.setAttribute(
+                'aria-label',
+                inline.dataset.answer === 'yes'
+                    ? 'Listen to affirmative model.'
+                    : 'Listen to negative model.'
+            );
+        }
+
         return element;
     }
 
@@ -1643,10 +1663,19 @@ function practice2ShowNotice(resultSpan, message) {
     function renderSections() {
         practice2State.ui ??= {};
 
+        const drill1Desc = document.createDocumentFragment();
+        drill1Desc.append(
+            document.createTextNode("💡Ask a Yes/No question.\nPractise both "),
+            window.AnswerIcons.create("yes", true),
+            document.createTextNode(" and "),
+            window.AnswerIcons.create("no", true),
+            document.createTextNode(" answers.")
+        );
+
         const first = section(
             "drill1Container",
             "Drill 1: Yes/No Questions",
-            "💡Ask a Yes/No question.\nPractise both 🙆 and 🙅 answers."
+            drill1Desc
         );
 
         const father = formatWord(
@@ -1679,7 +1708,7 @@ function practice2ShowNotice(resultSpan, message) {
                     word("かんごし", "看護師"),
                     true
                 ),
-                "🔊🙆"
+                window.AnswerIcons.createExampleLabel("yes")
             ],
             [
                 "A:",
@@ -1688,7 +1717,7 @@ function practice2ShowNotice(resultSpan, message) {
                     word("かんごし", "看護師"),
                     false
                 ),
-                "🔊🙅"
+                window.AnswerIcons.createExampleLabel("no")
             ]
         ]);
 
@@ -1740,11 +1769,11 @@ function practice2ShowNotice(resultSpan, message) {
             const choices = node("span");
 
             for (
-                const [mode, label]
-                of [["yes", "🙆"], ["no", "🙅"]]
+                const mode
+                of ["yes", "no"]
             ) {
                 const choice = button(
-                    label,
+                    window.AnswerIcons.create(mode),
                     mode === "yes"
                         ? "Affirmative response"
                         : "Negative response",
@@ -1759,28 +1788,25 @@ function practice2ShowNotice(resultSpan, message) {
                     }
                 );
 
+                choice.classList.add("answer-choice");
+                choice.dataset.answer = mode;
+
                 choice.setAttribute(
                     "aria-pressed",
                     String(state.answerMode === mode)
+                );
+
+                choice.setAttribute(
+                    "aria-label",
+                    mode === "yes"
+                        ? "Affirmative response"
+                        : "Negative response"
                 );
 
                 choice.classList.toggle(
                     "is-selected",
                     state.answerMode === mode
                 );
-
-                const theme = rowColorThemes[
-                    index % rowColorThemes.length
-                ];
-
-                choice.style.backgroundColor =
-                    state.answerMode === mode
-                        ? (
-                            mode === "yes"
-                                ? theme.yesActive
-                                : theme.noActive
-                        )
-                        : theme.unselected;
 
                 choices.append(choice);
             }

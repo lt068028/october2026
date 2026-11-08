@@ -281,7 +281,11 @@ function button(text, fn, tip = '') {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'example-button';
-    b.append(document.createTextNode(text));
+    if (typeof text === 'string') {
+        b.append(document.createTextNode(text));
+    } else if (text instanceof Node) {
+        b.append(text);
+    }
     b.onclick = fn;
 
     if (tip) {
@@ -883,7 +887,7 @@ function render(){
     const cue=node('td','prompt-label drill-cue-cell');
     cue.append(makeKindBadge(r.kind));
     const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);
-    if(r.yn)for(const [value,label]of [['yes','🙆'],['no','🙅']]){const choose=button(label,()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Yes':'No');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
+    if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
     const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(stop,r.id.endsWith('-q1')||r.id.endsWith('-q2'));}actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
    });card.append(table);group.append(card);
   });root.append(group);
