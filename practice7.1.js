@@ -3617,11 +3617,14 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 // Practice 7.1 copy pilot: use recorded STT, never model answers or regraded results.
 (() => {
     const explanation = 'Copy your sentences to review or share.';
+    const CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
 
-    function getMainTitle() {
-        return document.querySelector(
-            '#drill1Container > .info-panel:not(.drill-cue-panel) .info-panel-title'
-        )?.textContent.trim() || 'Drill 1';
+    function getLocalDateString() {
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     function getQASection() {
@@ -3666,66 +3669,80 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         document.querySelectorAll('.p71-copy-area').forEach(area => {
             const kind = area.dataset.copyKind;
             const button = area.querySelector('.p71-copy-button');
+            if (!button) return;
             const busy = Boolean(activeRecognitionSession || practice71State.startingRow);
             button.disabled = busy || getDrillEntries(kind).length === 0;
         });
     }
 
-    function installCopyArea(card, kind, heading) {
-        if (!card || card.querySelector(':scope > .p71-copy-area')) return;
-        const area = document.createElement('div');
-        area.className = 'p71-copy-area';
-        area.dataset.copyKind = kind;
+    function installCopyArea(card, kind, header) {
+        if (!card) return;
+        let area = document.querySelector(`.p71-copy-area[data-copy-kind="${kind}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p71-copy-area';
+            area.dataset.copyKind = kind;
 
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'example-button p71-copy-button';
-        button.textContent = '📋 Copy my sentences';
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p71-copy-button';
+            button.innerHTML = CLIPBOARD_SVG + '<span>Copy my sentences</span>';
 
-        const help = document.createElement('span');
-        help.className = 'p71-copy-help';
-        help.textContent = explanation;
+            const help = document.createElement('span');
+            help.className = 'p71-copy-help';
+            help.textContent = explanation;
 
-        const status = document.createElement('span');
-        status.className = 'p71-copy-status';
-        status.setAttribute('role', 'status');
-        status.setAttribute('aria-live', 'polite');
-        status.hidden = true;
+            const status = document.createElement('span');
+            status.className = 'p71-copy-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.hidden = true;
 
-        button.addEventListener('click', async () => {
-            if (activeRecognitionSession || practice71State.startingRow) return;
-            const entries = getDrillEntries(kind);
-            if (!entries.length) return;
-            // Read the current drill title at click time, after stage switches.
-            const title = kind === 'qa'
-                ? getQASection()?.querySelector('.info-panel-title')?.textContent.trim()
-                : getMainTitle();
-            const content = 'Practice 7.1 — ' + (title || heading)
-                + '\n' + entries.join('\n');
-            try {
-                await navigator.clipboard.writeText(content);
-                status.textContent = 'Copied!';
-            } catch (error) {
-                status.textContent = 'Could not copy. Please allow clipboard access.';
-            }
-            status.hidden = false;
+            button.addEventListener('click', async () => {
+                if (activeRecognitionSession || practice71State.startingRow) return;
+                const entries = getDrillEntries(kind);
+                if (!entries.length) return;
+                const content = header + ' — ' + getLocalDateString()
+                    + '\n' + entries.join('\n');
+                try {
+                    await navigator.clipboard.writeText(content);
+                    status.textContent = 'Copied!';
+                } catch (error) {
+                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                }
+                status.hidden = false;
+            });
+
+            area.append(button, help, status);
+        }
+
+        document.querySelectorAll(`.p71-copy-area[data-copy-kind="${kind}"]`).forEach(el => {
+            if (el !== area) el.remove();
         });
 
-        area.append(button, help, status);
-        card.append(area);
+        if (card.nextElementSibling !== area) {
+            card.after(area);
+        }
     }
 
     function mountCopyAreas() {
+        document.querySelectorAll('.drill-row > .p71-copy-area').forEach(el => el.remove());
+
         const mainCards = document.querySelectorAll('#drill1List > .drill-row');
         if (mainCards.length) {
-            installCopyArea(mainCards[mainCards.length - 1], 'main', getMainTitle());
+            installCopyArea(
+                mainCards[mainCards.length - 1],
+                'main',
+                'Practice 7.1 — Drill 1: Compare Habit & Ongoing — いつも～ています／今～ています'
+            );
         }
         const qa = getQASection();
         const qaCards = qa?.querySelectorAll(':scope > .drill-row');
         if (qaCards?.length) {
             installCopyArea(
-                qaCards[qaCards.length - 1], 'qa',
-                'Drill 2: Ask and answer'
+                qaCards[qaCards.length - 1],
+                'qa',
+                'Practice 7.1 — Drill 2: Ask and answer — 今～ていますか'
             );
         }
         updateCopyButtons();
@@ -3744,6 +3761,12 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         const result = previousProcessResult.apply(this, args);
         queueMicrotask(updateCopyButtons);
         return result;
+    };
+
+    const previousSync = practice71SyncRecordingUI;
+    practice71SyncRecordingUI = function() {
+        previousSync();
+        updateCopyButtons();
     };
 
     document.addEventListener('DOMContentLoaded', () => {

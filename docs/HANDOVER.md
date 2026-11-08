@@ -1,3 +1,21 @@
+## 2026-11-08 — Practice 7.1 Copyボタン共通仕様適用完了
+- 更新日時：2026-11-08T13:40:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 7.1 Copyボタン共通仕様適用（Lucide clipboard SVG、カード外右寄せ配置、YYYY-MM-DDローカル日付付きヘッダー） / `642a6c585807b14f75f08b35b746738a63080bbe` / `main`
+- 完了・未完了／変更ファイル：
+  - 完了：
+    1. アイコン：絵文字 `📋` を Lucide `clipboard` SVG（20×20px、stroke-width 2、currentColor、aria-hidden="true"）に置換。ラベル `Copy my sentences` を併記。
+    2. 配置：Drill 1（`#drill1List`最終カード直後）およびDrill 2（`#practice71QuestionSection`最終カード直後）の両方で、カード枠内からカード枠外の直後へ移動し、右端揃え。再描画時の重複生成を防止。
+    3. コピー先頭見出し：
+       - Drill 1: `Practice 7.1 — Drill 1: Compare Habit & Ongoing — いつも～ています／今～ています — YYYY-MM-DD`
+       - Drill 2: `Practice 7.1 — Drill 2: Ask and answer — 今～ていますか — YYYY-MM-DD`
+       利用者のローカル日付（`YYYY-MM-DD`）をコピー操作時に生成して付与。
+    4. 動作保持：raw STT transcript、正誤マーカー（`✅`/`—`）、Q/A区分、未録音時・録音中の無効化ロック（`practice71SyncRecordingUI`連携）、クリップボード成否通知を維持。
+  - 変更ファイル：`practice7.1.html`, `practice7.1.js`, `docs/HANDOVER.md`
+- 自動検証：PythonによるSVG構造・カード外配置・ローカル日付形式・見出し文字列・重複防止・録音中ロック検証全件PASS、`git diff --check` 合格。
+- ユーザー実機確認／CI／デプロイ：GitHub push 完了後のデプロイ・ユーザー実機確認待ち。Node／Playwrightのブラウザ自動テストは未実施（コンテナ制約）。
+- 次の具体的操作／判断待ち／未回収作業：未回収作業なし。後続タスク（F-2 セット切替Lato適用、W-3 残り3ページEnglish Cues等）へ移行可能。
+
 ## 2026-11-08 — W-3: Practice 8.2 English Cues実装完了
 - 更新日時：2026-11-08T13:20:00+01:00 / 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

@@ -6,19 +6,29 @@
     <title>Practice 7.1: ているform① Ongoing</title>
     <link rel="stylesheet" href="style.css?v=20261108-example-cell-width">
     <style>
-        /* Practice 7.1 copy pilot only. Keep the action inside each Drill's final card. */
+        /* Practice 7.1 copy action. Positioned immediately after each Drill's final card. */
         .practice7-page .p71-copy-area {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 5px;
-            margin-top: 12px;
+            margin-top: 4px;
+            margin-bottom: 16px;
             text-align: right;
         }
         .practice7-page .p71-copy-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             font-family: 'Lato', sans-serif;
             max-width: 100%;
             white-space: normal;
+        }
+        .practice7-page .p71-copy-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
         }
         .practice7-page .p71-copy-help,
         .practice7-page .p71-copy-status {
