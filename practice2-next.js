@@ -1476,16 +1476,24 @@ function practice2ShowNotice(resultSpan, message) {
         select.placeButton=(button,o)=>{const holder=node('div','p23-in-scene-audio');holder.dataset.zone=o.zone;holder.append(button);stage.querySelector(`.p23-city-region[data-zone="${o.zone}"]`).append(holder);};
         select.announce=speaker=>SpeakerGuide.play(context,speaker);select('A');return select;
     }
+    const englishCue=(view,parts)=>{
+        if(!practice2State.englishCues)return;
+        const role=view.cueCell.querySelector('strong')?.cloneNode(true);
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
+    };
+    const englishDemonstrative=(speaker,o)=>{
+        const d=demonstrative(speaker,o);
+        return {'この':'this','その':'that','あの':'that (over there)'}[d]||'which';
+    };
+    const englishPersonCue=(speaker,o)=>{
+        const d=demonstrative(speaker,o);
+        return {'この':'this person','その':'that person','あの':'that person over there'}[d]||'which person';
+    };
     function renderCitySections(){
         practice2State.exampleCueObserver?.disconnect();
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const identifySpeaker=(view,key)=>{view.row.dataset.p23RecordingKey=key;};
         const englishPlace=place=>({'ここ':'here','そこ':'there','あそこ':'over there','Zさん':'Z','Yさん':'Y','Xさん':'X'}[place]||place);
-        const englishCue=(view,parts)=>{
-            if(!practice2State.englishCues)return;
-            const role=view.cueCell.querySelector('strong')?.cloneNode(true);
-            view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
-        };
         const cs=cityObjects(),whereContainer=document.getElementById('drill2Container'),describeContainer=document.getElementById('drill1Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ・どこ'));
@@ -1742,7 +1750,7 @@ function practice2ShowNotice(resultSpan, message) {
             });
         }
         }
-        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderPeopleChoosing(document.getElementById('drill4Container'));renderUmbrellaComparison(document.getElementById('drill5Container'));}
+        if(is22){renderPriceDialogue(document.getElementById('drill2Container'));renderFoodChoosing(document.getElementById('drill3Container'));renderPeopleChoosing(document.getElementById('drill4Container'));renderUmbrellaComparison(document.getElementById('drill5Container'));renderEnglishCuePanel(document.getElementById('drill5Container'));}
         else {renderDialogue();renderChoosing();}
     }
     function renderPriceStatements(container) {
@@ -1750,7 +1758,9 @@ function practice2ShowNotice(resultSpan, message) {
         const set=setButtons(container,[word('かばん','カバン'),word('とけい','時計')],'describeSet'),objects=merchandise(set===0?'bag':'clock'),select=scene(container,objects,{speakerGuide:false});
         [['B',objects[0]],['A',objects[0]],['B',objects[2]]].forEach(([speaker,o],i)=>{
             const current=card(container,String(i+1));
-            const row=recordingRow(current,'q',`<strong>${speakerName(speaker)}:</strong> ${demonstrative(speaker,o)}／${vocabulary(o)}／Price`,`p22_statements_s${set}_${speaker}_${i}`,()=>describe(speaker,o));attach(row,speaker,o,select);
+            const row=recordingRow(current,'q',`<strong>${speakerName(speaker)}:</strong> ${demonstrative(speaker,o)}／${vocabulary(o)}／Price`,`p22_statements_s${set}_${speaker}_${i}`,()=>describe(speaker,o));
+            englishCue(row,[englishDemonstrative(speaker,o),o.meaning,'price']);
+            attach(row,speaker,o,select);
         });
         select('B');
     }
@@ -1775,6 +1785,8 @@ function practice2ShowNotice(resultSpan, message) {
             const current=card(container,String(i+1)),prefix=`p22_price_s${set}_A_${i}`;
             const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${demonstrative('A',o)}／${vocabulary(o)}／${formatWord('いくら','いくら','ikura','how much')}`,prefix+'_q',()=>question(adnominal('A',o),'いくら'));
             const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${practice2State.englishCues?'adjective/'+o.meaning:'…の／'+vocabulary(o)}`,prefix+'_r',()=>statement(adnominal('B',o),price(o)));
+            englishCue(q,[englishDemonstrative('A',o),o.meaning,'how much']);
+            englishCue(r,['adjective',o.meaning]);
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
@@ -1796,6 +1808,8 @@ function practice2ShowNotice(resultSpan, message) {
             practice2State.replyReferences[prefix+'_r']=()=>[adnominal('B',o)+'が、'+price(o)+ending(),statement(adnominal('B',o),price(o))];
             const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${practice2State.englishCues?'adjective/'+o.meaning:'…の／'+vocabulary(o)}`,prefix+'_r',()=>short(adnominal('B',o)));
             q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';
+            englishCue(q,['which',o.meaning,o.priceNumber+' yen']);
+            englishCue(r,['adjective',o.meaning]);
             attach(q,'A',o,select);attach(r,'B',o,select);
         });
     }
@@ -1822,6 +1836,8 @@ function practice2ShowNotice(resultSpan, message) {
                     practice2State.replyReferences[key+'_r_2']=()=>[short(subject(answerer)),statement(mine(),subject(answerer))];
                     const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${personCue(answerer)}`,key+'_r_2',()=>short(subject(answerer)));
                     q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';
+                    englishCue(q,["Y's classmate",'which person']);
+                    englishCue(r,[englishPersonCue(answerer,o)]);
                     container.querySelector(':scope > .p2x-picture').dataset.whTargets='true';
                     attach(q,asker,o,select);attach(r,answerer,o,select);return;
                 }
@@ -1835,6 +1851,8 @@ function practice2ShowNotice(resultSpan, message) {
                 practice2State.replyReferences[key]=()=>[no()+correct(),no()+short(predicate()),no()+short(noun(relation)),response(word('わたし','私')+'のクラスメート',false)+correct(),response(word('わたし','私')+'のクラスメート',false)+short(predicate()),response(word('わたし','私')+'のクラスメート',false)+short(noun(relation))];
                 const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${personCue(answerer)}／${formatWord('わたしの'+relation.hira,'私の'+relation.kanji,'watashi no '+relation.romaji,'my '+relation.meaning)}`,key,()=>no()+correct());
                 r.actions.append(node('span','p21-response-lead',speechStyle==='casual'?'ううん…':'いいえ…'));
+                englishCue(q,[englishPersonCue(asker,o),speakerName(answerer)+"'s classmate"]);
+                englishCue(r,[englishPersonCue(answerer,o),'my '+relation.meaning]);
                 attach(q,asker,o,select);attach(r,answerer,o,select);return;
             }
             const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${personCue(asker)}／${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')));
@@ -1842,8 +1860,23 @@ function practice2ShowNotice(resultSpan, message) {
             practice2State.replyReferences[key]=()=>[short(noun(o)+'さん'),short(noun(o)),statement(subject(answerer),noun(o)+'さん'),statement(subject(answerer),noun(o))];
             const cue=(full?personCue(answerer)+'／':'')+vocabulary(o);
             const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${cue}`,key,()=>full?statement(subject(answerer),noun(o)+'さん'):short(noun(o)+'さん'));
+            englishCue(q,[englishPersonCue(asker,o),'who']);
+            englishCue(r,full?[englishPersonCue(answerer,o),o.meaning]:[o.meaning]);
             attach(q,asker,o,select);attach(r,answerer,o,select);
         });select('A');
+    }
+
+    function renderEnglishCuePanel(container) {
+        const cuePanel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
+        copy.append(node('span','info-panel-title drill-cue-title','Drill 5: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–4.'));
+        const toggle=node('button','drill-cue-button',practice2State.englishCues?'Display Japanese Cues':'Display English Cues');toggle.type='button';
+        toggle.classList.toggle('is-english',Boolean(practice2State.englishCues));toggle.setAttribute('aria-pressed',String(Boolean(practice2State.englishCues)));
+        toggle.onclick=()=>{
+            if(busy())return;
+            practice2State.englishCues=!practice2State.englishCues;renderAll();
+            requestAnimationFrame(()=>{const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');if(!example)return;const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});});
+        };
+        cuePanel.append(copy,toggle);container.append(cuePanel);
     }
 
     function renderUmbrellaComparison(container) {
