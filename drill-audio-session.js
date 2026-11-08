@@ -4,6 +4,7 @@ window.DrillAudio = (() => {
     let leaving = false;
     let model = null;
     let relay = null;
+    let activeAudio = null;
     let generation = 0;
     let playbackGeneration = 0;
     let requestGeneration = 0;
@@ -15,6 +16,25 @@ window.DrillAudio = (() => {
     const nativeGetUserMedia = navigator.mediaDevices?.getUserMedia?.bind(navigator.mediaDevices);
     const settings = '.compact-settings button, .compact-settings input, #voiceSelect, #voiceDropdownBtn';
     const voice = '#voiceSelect, #voiceDropdown';
+
+    function stopAudio(audio) {
+        if (!audio) return;
+        try {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.onended = null;
+            audio.onerror = null;
+            audio.src = '';
+        } catch (_) {}
+    }
+
+    function cancelSpeech() {
+        if (!window.speechSynthesis) return;
+        try {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.cancel();
+        } catch (_) {}
+    }
 
     function isAudioButton(el) {
         return el.matches('button') && (
@@ -109,6 +129,23 @@ window.DrillAudio = (() => {
         clearNotice();
         if (leaving) throw new DOMException('Page left', 'AbortError');
         const request = requestGeneration;
+        if (activeAudio) {
+            stopAudio(activeAudio);
+            activeAudio = null;
+        }
+        if (relay) {
+            const old = relay;
+            relay = null;
+            if (old.audio) {
+                stopAudio(old.audio);
+                if (activeAudio === old.audio) activeAudio = null;
+            }
+            old.buttons.forEach(({ button, nodes, disabled }) => {
+                button.replaceChildren(...nodes);
+                button.disabled = disabled;
+            });
+        }
+        cancelSpeech();
         // Native cancellation can outlive cancel(); never record the old model.
         const deadline = performance.now() + 2000;
         while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
@@ -116,7 +153,8 @@ window.DrillAudio = (() => {
                 throw new DOMException('Recording cancelled', 'AbortError');
             }
             if (performance.now() >= deadline) {
-                throw new DOMException('Speech is still stopping', 'PlaybackStopError');
+                cancelSpeech();
+                break;
             }
             await new Promise(resolve => setTimeout(resolve, 25));
         }
@@ -278,6 +316,11 @@ window.DrillAudio = (() => {
         if (leaving) return;
         leaving = true;
         ++requestGeneration;
+        if (activeAudio) {
+            stopAudio(activeAudio);
+            activeAudio = null;
+        }
+        cancelSpeech();
         for (const state of analyses.keys()) cancelAnalysis(state);
         adapter?.cancel();
         adapter?.stop();
@@ -346,15 +389,23 @@ window.DrillAudio = (() => {
         invalidatePlayback() {
             ++playbackGeneration;
             playbackStage?.cancel();
+            if (activeAudio) {
+                stopAudio(activeAudio);
+                activeAudio = null;
+            }
             if (relay) {
                 const old = relay;
                 relay = null;
-                old.audio?.pause();
+                if (old.audio) {
+                    stopAudio(old.audio);
+                    if (activeAudio === old.audio) activeAudio = null;
+                }
                 old.buttons.forEach(({ button, nodes, disabled }) => {
                     button.replaceChildren(...nodes);
                     button.disabled = disabled;
                 });
             }
+            cancelSpeech();
         },
         // Ordinary grammar rows: keep both labels throughout a single relay.
         // The toggle is sampled by the recorder, never by this running sequence.
@@ -403,12 +454,26 @@ window.DrillAudio = (() => {
             }
         },
         speak(utterance) {
+            if (activeAudio) {
+                stopAudio(activeAudio);
+                activeAudio = null;
+            }
+            cancelSpeech();
             this.guardUtterance(utterance);
             try { window.speechSynthesis.speak(utterance); }
             catch (error) { utterance.onerror?.(error); }
         },
         play(audio, onError) {
+            if (activeAudio && activeAudio !== audio) {
+                stopAudio(activeAudio);
+            }
+            activeAudio = audio;
             const started = performance.now();
+            const cleanupAudio = () => {
+                audio.removeEventListener?.('loadedmetadata', update);
+                audio.removeEventListener?.('durationchange', update);
+                if (activeAudio === audio) activeAudio = null;
+            };
             const update = () => {
                 if (!stage.valid()) return;
                 const duration = Number(audio.duration);
@@ -417,22 +482,21 @@ window.DrillAudio = (() => {
                     ? duration * 1000 / rate + 3000 : 23000;
                 stage.arm(budget - (performance.now() - started));
             };
-            const stage = startPlaybackStage(23000, () => {
-                audio.removeEventListener?.('loadedmetadata', update);
-                audio.removeEventListener?.('durationchange', update);
-            });
+            const stage = startPlaybackStage(23000, cleanupAudio);
             audio.addEventListener?.('loadedmetadata', update);
             audio.addEventListener?.('durationchange', update);
             update();
             for (const key of ['onended', 'onerror']) {
                 const callback = audio[key];
                 audio[key] = event => {
+                    if (activeAudio === audio) activeAudio = null;
                     if (!stage.valid()) return;
                     stage.cancel();
                     callback?.(event);
                 };
             }
             const failed = error => {
+                if (activeAudio === audio) activeAudio = null;
                 if (!stage.valid()) return;
                 stage.cancel();
                 onError(error);

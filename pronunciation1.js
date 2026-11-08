@@ -335,6 +335,7 @@ function stopAllPlayback() {
     }
 
     try {
+        speechSynthesis.pause();
         speechSynthesis.cancel();
     } catch (e) {}
 
@@ -343,7 +344,11 @@ function stopAllPlayback() {
     if (currentPlayingAudio) {
         currentPlayingAudio.onended = null;
         currentPlayingAudio.onerror = null;
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (_) {}
         currentPlayingAudio = null;
     }
 

@@ -402,13 +402,20 @@ function stopAllPlayback() {
     currentUtteranceRef = null;
 
     if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+        try {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.cancel();
+        } catch (_) {}
     }
 
     if (currentPlayingAudio) {
         currentPlayingAudio.onended = null;
         currentPlayingAudio.onerror = null;
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (_) {}
         currentPlayingAudio = null;
     }
 
@@ -1931,10 +1938,9 @@ async function startRecording(initialView) {
             audio: true
         });
     } catch (error) {
-            if (error.name === "AbortError") return;
         practice1State.startingRow = null;
-
         refreshRow(currentView());
+        if (error.name === "AbortError") return;
 
         displayResult(
             currentView(),

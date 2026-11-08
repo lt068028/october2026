@@ -275,12 +275,19 @@ function stopAllPlayback() {
     }
     DrillAudio.cancelModel();
     if (currentPlayTimeoutId) { clearTimeout(currentPlayTimeoutId); currentPlayTimeoutId = null; }
-    try { speechSynthesis.cancel(); } catch (e) {}
+    try {
+        speechSynthesis.pause();
+        speechSynthesis.cancel();
+    } catch (e) {}
     currentUtteranceRef = null;
     if (currentPlayingAudio) {
         currentPlayingAudio.onended = null;
         currentPlayingAudio.onerror = null;
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (_) {}
         currentPlayingAudio = null;
     }
     restorePlayButtons();
@@ -1227,9 +1234,9 @@ async function p2Record(key) {
             audio: true
         });
     } catch (error) {
-        if (error.name === "AbortError") return;
         p2.pending = false;
         p2Sync();
+        if (error.name === "AbortError") return;
 
         p2Show(
             p2.views[key],

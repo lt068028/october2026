@@ -1117,13 +1117,18 @@ function stopAllPlayback() {
     }
 
     try {
+        speechSynthesis.pause();
         speechSynthesis.cancel();
     } catch (e) {}
 
     currentUtteranceRef = null;
 
     if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (e) {}
         currentPlayingAudio = null;
     }
 
@@ -2221,9 +2226,9 @@ function bindRecorderEvents(
                 audio: true
             });
         } catch (error) {
-            if (error.name === "AbortError") return;
             practice7State.startingRow = null;
             practice7SyncRecordingUI();
+            if (error.name === "AbortError") return;
             restoreResult(DrillAudio.microphoneError(error));
             practice7SyncRecordingUI();
             return;

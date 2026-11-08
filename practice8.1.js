@@ -359,10 +359,17 @@ function stopPlayback() {
         playingAudio.onended = null;
         playingAudio.onerror = null;
     }
-    window.speechSynthesis?.cancel();
+    try {
+        window.speechSynthesis?.pause();
+        window.speechSynthesis?.cancel();
+    } catch (e) {}
 
     if (playingAudio) {
-        playingAudio.pause();
+        try {
+            playingAudio.pause();
+            playingAudio.currentTime = 0;
+            playingAudio.src = "";
+        } catch (e) {}
         playingAudio = null;
     }
 
@@ -1179,8 +1186,9 @@ async function record(key, r) {
             audio: true
         });
     } catch (e) {
-            if (e.name === "AbortError") return;
         preparing = false;
+        sync();
+        if (e.name === "AbortError") return;
         showResult(key, DrillAudio.microphoneError(e));
         sync();
         return;

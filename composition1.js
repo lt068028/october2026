@@ -276,13 +276,20 @@ function stopAllPlayback() {
     }
 
     try {
-        if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();
+        if (typeof speechSynthesis !== "undefined") {
+            speechSynthesis.pause();
+            speechSynthesis.cancel();
+        }
     } catch (e) {}
 
     currentUtteranceRef = null;
 
     if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (e) {}
         currentPlayingAudio = null;
     }
 
@@ -1417,9 +1424,9 @@ async function compositionRecord(rowIndex) {
             audio: true
         });
     } catch (error) {
-            if (error.name === "AbortError") return;
         compositionState.starting = null;
         compositionSync();
+        if (error.name === "AbortError") return;
         compositionShow(
             compositionState.views[rowIndex],
             DrillAudio.microphoneError(error)

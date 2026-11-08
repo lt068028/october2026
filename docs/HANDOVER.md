@@ -1,4 +1,41 @@
-# 現在のリレー状態 — F8: Practice 2.3 話者・導入文間スペーシング調整完了
+# 現在のリレー状態 — F1: サイト全域の音声セッション競合調査・最小安全修正完了
+
+- 更新日時：2026-11-08T19:20:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：F1: サイト全体（14ページ）の音声セッション競合調査と Practice 7.2 等の録音・再生中断不具合の最小安全修正 ／ `da43795d7cb1777ff40c1318f9c16d4485710ae0` ／ `main`
+- 実装内容：
+  1. **不具合根本原因の特定**:
+     - **共通マネージャー（`drill-audio-session.js`）**:
+       - `DrillAudio.play(audio)` が再生中 `Audio` オブジェクトの参照（`activeAudio`）を一元保持していなかったため、`invalidatePlayback()` が呼ばれた際にリレー以外の再生中音声（▶️ボタン等）の停止や `currentTime = 0` / `src = ''` へのリセットが完全に行われず、OS音声バッファや非同期再生Promiseとの競合が発生していた。
+       - `invalidatePlayback()` や `getUserMedia()` が `speechSynthesis.cancel()` のみを呼んでおり、Chromium等のブラウザで音声キューがロックされた際に `cancel()` が無視される既知の不具合に対して、`speechSynthesis.pause()` を前置する「Pause-then-Cancel」イディオムが適用されていなかった。
+       - `getUserMedia()` の中で `speaking` ループが最長2000msで `PlaybackStopError` を投げていたため、ブラウザの `speaking` フラグが解除されない場合に新規録音の開始自体が遮断されていた（"Playback is still stopping..." 表示）。
+     - **個別13ページにおける `AbortError` 時のロック残存（`startingRow` / `preparing` リーク）**:
+       - 13ページ（Practice 1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, Pronunciation 2, Composition 1）において、`DrillAudio.getUserMedia` の catch ブロックで `if (error.name === "AbortError") return;` が `startingRow = null`（または `preparing = false`）の初期化処理の前に置かれていた。このため、行の切り替えや再生中断等で `AbortError` が発生すると `startingRow` が `true` のまま残存し、`adapter.busy()` が恒久的にロックされ、以後の「とる」クリックが `control(event)` で完全に破棄される致命的バグが存在していた。
+     - **個別ページの `stopAllPlayback()` / `stopPlayback()`**:
+       - `speechSynthesis.pause()` の前置漏れと、`currentPlayingAudio` の `currentTime = 0` / `src = ""` クリーンアップ漏れ。
+  2. **最小安全修正**:
+     - `drill-audio-session.js`:
+       - `activeAudio` 変数および `stopAudio(audio)` / `cancelSpeech()` ヘルパーを新設。
+       - `DrillAudio.play(audio, onError)`: 前回の `activeAudio` を確実に完全停止し、今回の `audio` を登録。完了・エラー・ステージ破棄時に参照を自動解除。
+       - `DrillAudio.speak(utterance)`: 発話開始前に `activeAudio` を停止し、`cancelSpeech()` を実行。
+       - `DrillAudio.invalidatePlayback()`: `activeAudio` および `relay.audio` を完全停止（pause、currentTime=0、src=''、コールバック解除）し、`cancelSpeech()` を実行。
+       - `DrillAudio.getUserMedia(options)`: マイク取得処理の入口で `activeAudio` / `relay.audio` を完全停止し、`cancelSpeech()` を実行。`speaking` ループのタイムアウト時には再度 `cancelSpeech()` してループを抜け、録音開始を不当に阻害しないよう改善。
+     - 13ページ（Practice 1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, Pronunciation 2, Composition 1）:
+       - `catch (error)` 内で `startingRow = null`（または `preparing = false`, `p2.pending = false`, `compositionState.starting = null`）と UI 同期（`syncUI()`）を `if (error.name === "AbortError") return;` の前に実行するように修正。
+       - 全14ページの `stopAllPlayback()` / `stopPlayback()` において、`speechSynthesis.pause(); speechSynthesis.cancel();` を適用し、再生中 `Audio` の `currentTime = 0; src = "";` を確実に実行。
+  3. **データ保全の維持**:
+     - 録音済みURL（`audioUrls`）、音声認識結果（`rawTranscript`）、正誤判定、各入力フィールドは一切破棄せず完全保持。
+- 変更ファイル：`drill-audio-session.js`, `practice7.2.js`, `practice7.1.js`, `practice7.3.js`, `practice8.1.js`, `practice8.2.js`, `practice8.3.js`, `practice1.1.js`, `practice1.2.js`, `practice2.1.js`, `practice2-next.js`, `composition1.js`, `pronunciation1.js`, `pronunciation2.js`, `docs/HANDOVER.md`
+- スコープ厳守：F1 音声競合修正のみ。UIレイアウト、フォント、問題文、CSSスタイル、F3/F4/F6/F7/F8等の他タスクへの変更は一切なし。
+- 自動検証：
+  - Python静的構文チェック全14ファイルPASS。
+  - `git diff --check` 合格（空白・構文エラーなし）。
+  - ブラウザバイナリ未配備のため、Playwrightテストは環境制約により NOT RUN（結果を詐称せず明示）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Practice 7.2（および他ページ）における、モデル音声再生中・録音ファイル再生中・連続再生（リレー）中に別行の「とる」をクリックした際の即座な音声中断と新規録音開始の確認。
+
+# 前回のリレー状態 — F8: Practice 2.3 話者・導入文間スペーシング調整完了
 
 - 更新日時：2026-11-08T18:41:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

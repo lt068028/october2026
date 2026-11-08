@@ -327,13 +327,18 @@ function stopAllPlayback() {
     }
 
     try {
+        speechSynthesis.pause();
         speechSynthesis.cancel();
     } catch (e) {}
 
     currentUtteranceRef = null;
 
     if (currentPlayingAudio) {
-        currentPlayingAudio.pause();
+        try {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+            currentPlayingAudio.src = "";
+        } catch (e) {}
         currentPlayingAudio = null;
     }
 
@@ -2715,9 +2720,9 @@ function bindRecorderEvents(
                 audio: true
             });
         } catch (error) {
-            if (error.name === "AbortError") return;
             practice2State.startingRow = null;
             practice2SyncRecordingUI();
+            if (error.name === "AbortError") return;
 
             practice2ShowNotice(
                 currentView().resultSpan,
