@@ -1078,7 +1078,8 @@ function practice2ShowNotice(resultSpan, message) {
         cue,
         key,
         getText,
-        enabled = true
+        enabled = true,
+        isInterrogative = false
     ) {
         const row = node("tr");
         row.dataset.speakerRecordingKey = key;
@@ -1131,6 +1132,10 @@ function practice2ShowNotice(resultSpan, message) {
             recordBtn,
             stopBtn
         );
+
+        if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === "function") {
+            window.QuestionIndicator.attach(stopBtn, isInterrogative);
+        }
 
         controls.append(actions, result);
 
@@ -1376,7 +1381,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const pronoun=pro(speaker,o);
                 const cue=`${pronoun}は…`;
                 const getText=()=>statement(pronoun,noun(o));
-                const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText);
+                const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText,true,false);
                 englishCue(view,[englishObject(pronoun),'…']);
                 view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';
                 view.listenBtn.addEventListener('click',()=>showSpeaker(speaker));
@@ -1393,7 +1398,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const prefix=speechStyle==='casual'?'ううん':'いいえ';
                 const ending={formal:'です',informal:'だ',casual:'だよ'}[speechStyle];
                 const answerCue=`<strong>Y · A:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
-                const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])));
+                const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])),true,true);
                 const key=`p21_d1_s1_r_${i}`;
                 const answer=()=>`${prefix}、${noun(o)}${ending}。`;
                 practice2State.replyReferences[key]=()=>{
@@ -1404,7 +1409,7 @@ function practice2ShowNotice(resultSpan, message) {
                         return [`${prefix}、${topic}${no}${yes}`,`${prefix}、${no}${topic}${yes}`,`${prefix}、${no}${yes}`,`${prefix}、${topic}${no}${topic}${yes}`];
                     })].flatMap(text=>[text,text.replace(/^(?:いいえ|ううん)、/,'')]);
                 };
-                const r=recordingRow(current,'a',answerCue,key,answer);
+                const r=recordingRow(current,'a',answerCue,key,answer,true,false);
                 englishCue(q,[englishObject(pro('A',o)),wrong[i].meaning]);englishCue(r,['no',o.meaning]);
                 r.actions.append(node('span','p21-response-lead',`${prefix}…`));
                 for(const [view,speaker] of [[q,'A'],[r,'B']]) {
@@ -1486,11 +1491,11 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
-            const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'));
+            const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'),true,true);
             const key=`p21_d2_s${s2}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o)),noun(o)+ending];
-            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)));
+            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)),true,false);
             englishCue(q,[englishObject(pro('A',o)),'what']);
             englishCue(r,[englishObject(pro('B',o)),o.meaning]);
             for(const view of [q,r]){view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';}
@@ -1535,13 +1540,13 @@ function practice2ShowNotice(resultSpan, message) {
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
             const owner=s3===0?(i===0?'B':'A'):answering;
             const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
-            const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'));
+            const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'),true,true);
             const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
             const color=node('span','p21-color-cue',({red:'🔴',blue:'🔵',green:'🟢'})[o.colorName]);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro(answering,o),possessive()+noun(o)),statement(possessive()+noun(o),pro(answering,o)),statement(noun(o),pro(answering,o)),statement(pro(answering,o),possessive()),pro(answering,o)+'が'+possessive()+noun(o)+ending];
-            const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o));
+            const r=recordingRow(current,'a',cue,key,()=>shortAnswer(answering,o),true,false);
             englishCue(q,[speakerName(owner),o.meaning,'which one']);
             q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';r.row.dataset.targetZone=o.zone;
             bindSpeaker(q,asking,show3);bindSpeaker(r,answering,show3);

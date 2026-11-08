@@ -92,6 +92,106 @@ const root = path.resolve(__dirname, '..');
     check(layout.sameTop, true, 'Stop button and indicator are on the same line at 375px');
     check(layout.iconRightOfBtn, true, 'Indicator is positioned immediately to the right of stop button');
 
+    // 5. Practice 2.1
+    await page.setViewportSize({width: 1440, height: 900});
+    await page.goto('http://qi.test/practice2.1.html');
+    // Default sets: D1 Set 1 (0), D2 Set 1 (3), D3 Set 1 (2), D4 (0) -> visible: 5
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.1 D1 Set 1 has 0 indicators');
+    check(await page.locator('#drill2Container .question-indicator').count(), 3, 'Practice 2.1 D2 Set 1 has 3 indicators');
+    check(await page.locator('#drill3Container .question-indicator').count(), 2, 'Practice 2.1 D3 Set 1 has 2 indicators');
+    check(await page.locator('#drill4Container .question-indicator').count(), 0, 'Practice 2.1 D4 English cues panel has 0 indicators');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 2.1 Examples have 0 indicators');
+    check(await page.locator('.question-indicator').count(), 5, 'Practice 2.1 default visible indicators count is 5');
+
+    // Switch D1 to Set 2 (dialogue practice: 3 interrogatives)
+    await page.locator('[data-set-state="speakerPracticeSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill1Container .question-indicator').count(), 3, 'Practice 2.1 D1 Set 2 has 3 indicators');
+
+    // Switch D2 to Set 2 (3 interrogatives)
+    await page.locator('[data-set-state="namingSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill2Container .question-indicator').count(), 3, 'Practice 2.1 D2 Set 2 has 3 indicators');
+
+    // Switch D3 to Set 2 (2 interrogatives)
+    await page.locator('[data-set-state="choosingSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill3Container .question-indicator').count(), 2, 'Practice 2.1 D3 Set 2 has 2 indicators');
+
+    // Wrap check in 2.1
+    const p21WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
+    const p21TotalVisible = await page.locator('.question-indicator').count();
+    check(p21WrapCount, p21TotalVisible, 'All visible indicators in Practice 2.1 are wrapped with stop buttons');
+
+    // 6. Practice 2.2
+    await page.goto('http://qi.test/practice2.2.html');
+    // Default sets: D1 (0), D2 (3), D3 (3), D4 (3), D5 (3), English cues panel (0) -> visible: 12
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.2 D1 Set 1 has 0 indicators');
+    check(await page.locator('#drill2Container .question-indicator').count(), 3, 'Practice 2.2 D2 Set 1 has 3 indicators');
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.2 D3 Set 1 has 3 indicators');
+    check(await page.locator('#drill4Container .question-indicator').count(), 3, 'Practice 2.2 D4 Set 1 has 3 indicators');
+    check(await page.locator('#drill5Container .question-indicator').count(), 3, 'Practice 2.2 D5 Set 1 has 3 indicators');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 2.2 Examples have 0 indicators');
+    check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 2.2 English cues panel has 0 indicators');
+    check(await page.locator('.question-indicator').count(), 12, 'Practice 2.2 default visible indicators count is 12');
+
+    // Switch D1 to Set 2: still 0
+    await page.locator('[data-set-state="describeSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.2 D1 Set 2 has 0 indicators');
+
+    // Switch D2 to Set 2: 3 indicators
+    await page.locator('[data-set-state="priceDialogueSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill2Container .question-indicator').count(), 3, 'Practice 2.2 D2 Set 2 has 3 indicators');
+
+    // Switch D3 to Set 2: 3 indicators
+    await page.locator('[data-set-state="choosingSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.2 D3 Set 2 has 3 indicators');
+
+    // Switch D4 to Set 2: 3 indicators
+    await page.locator('[data-set-state="peopleConversationSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill4Container .question-indicator').count(), 3, 'Practice 2.2 D4 Set 2 has 3 indicators');
+
+    // Switch D5 to Set 2: 3 indicators
+    await page.locator('[data-set-state="umbrellaModeSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill5Container .question-indicator').count(), 3, 'Practice 2.2 D5 Set 2 has 3 indicators');
+
+    // Wrap check in 2.2
+    const p22WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
+    const p22TotalVisible = await page.locator('.question-indicator').count();
+    check(p22WrapCount, p22TotalVisible, 'All visible indicators in Practice 2.2 are wrapped with stop buttons');
+
+    // 7. Practice 2.3
+    await page.goto('http://qi.test/practice2.3.html');
+    // Default sets: D1 Country (0), D2 People (3), D3 Country (3), D4 (0) -> visible: 6
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.3 D1 Country has 0 indicators');
+    check(await page.locator('#drill2Container .question-indicator').count(), 3, 'Practice 2.3 D2 People has 3 indicators');
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.3 D3 Country has 3 indicators');
+    check(await page.locator('#drill4Container .question-indicator').count(), 0, 'Practice 2.3 D4 English cues panel has 0 indicators');
+    check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 2.3 Examples have 0 indicators');
+    check(await page.locator('.question-indicator').count(), 6, 'Practice 2.3 default visible indicators count is 6');
+
+    // Switch D1 to Cities (0) and Time (0)
+    await page.locator('[data-set-state="cityDrillSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.3 D1 Cities has 0 indicators');
+    await page.locator('[data-set-state="cityDrillSet"] button:nth-child(3)').click();
+    check(await page.locator('#drill1Container .question-indicator').count(), 0, 'Practice 2.3 D1 Time has 0 indicators');
+
+    // Switch D2 to Item1 (4) and Item2 (4)
+    await page.locator('[data-set-state="whereDrillSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill2Container .question-indicator').count(), 4, 'Practice 2.3 D2 Item 1 has 4 indicators');
+    await page.locator('[data-set-state="whereDrillSet"] button:nth-child(3)').click();
+    check(await page.locator('#drill2Container .question-indicator').count(), 4, 'Practice 2.3 D2 Item 2 has 4 indicators');
+
+    // Switch D3 to Cities (3), Time (3), Day (3)
+    await page.locator('[data-set-state="cityDialogueSet"] button:nth-child(2)').click();
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.3 D3 Cities has 3 indicators');
+    await page.locator('[data-set-state="cityDialogueSet"] button:nth-child(3)').click();
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.3 D3 Time has 3 indicators');
+    await page.locator('[data-set-state="cityDialogueSet"] button:nth-child(4)').click();
+    check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.3 D3 Day has 3 indicators');
+
+    // Wrap check in 2.3
+    const p23WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
+    const p23TotalVisible = await page.locator('.question-indicator').count();
+    check(p23WrapCount, p23TotalVisible, 'All visible indicators in Practice 2.3 are wrapped with stop buttons');
+
     check(errors, [], 'No runtime errors');
     await browser.close();
     console.log('PASS Question Indicator tests:', checks);

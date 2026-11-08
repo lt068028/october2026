@@ -1,4 +1,50 @@
-# 現在のリレー状態 — Practice 1.1 / 1.2: 疑問文インジケーター実装（第1段階）
+# 現在のリレー状態 — Practice 2.1 / 2.2 / 2.3: 疑問文インジケーター一括実装
+
+- 更新日時：2026-11-08T17:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 2.1, 2.2, 2.3 疑問文インジケーター（Lucide `message-circle-question`）一括実装 ／ `30eede101dfeb0863c635e6b8bab79292f3359ba` ／ `main`
+- 実装内容：
+  1. **共有ヘルパー（`question-indicator.js`）の適用**:
+     - `practice2.1.js` および `practice2-next.js` の `recordingRow` に `isInterrogative = false` 引数を追加し、`window.QuestionIndicator.attach(stopBtn, isInterrogative)` を呼び出し。
+     - 記号（`?` や `か`）や Q ラベルからの推測を排し、各ドリル・各セットの文型生成ロジックから明示的に真偽値を渡す設計を徹底。
+     - 録音停止ボタン直後に 16×16px Lucide `message-circle-question`（`var(--text-secondary)`）を配置。`.stop-indicator-wrap` により狭小幅（375px）でも停止ボタンと行分離しないアトミック構造を保持。
+  2. **Practice 2.1（合計 13 箇所）**:
+     - Drill 1: Set 1（平叙文発話）= 0、Set 2（対話練習・X疑問文）= 3
+     - Drill 2: Set 1 = 3、Set 2 = 3（X「これは何ですか」疑問文）
+     - Drill 3: Set 1 = 2、Set 2 = 2（「〜さんのスマホ／辞書／財布はどれですか」疑問文）
+     - Drill 4: English Cues パネル = 0
+     - 初期表示件数: 5（D1: 0 + D2: 3 + D3: 2）、Example・回答行は 0。
+  3. **Practice 2.2（合計 24 箇所）**:
+     - Drill 1: Both sets（名詞＋価格平叙文）= 0
+     - Drill 2: Set 1 = 3、Set 2 = 3（X「いくらですか」疑問文）
+     - Drill 3: Set 1 = 3、Set 2 = 3（X「どの〜が〜ですか」疑問文）
+     - Drill 4: Set 1 = 3、Set 2 = 3（X「だれですか」「どの人ですか」疑問文）
+     - Drill 5: Set 1 = 3、Set 2 = 3（「どのかさ／どれですか」疑問文）
+     - English Cues パネル = 0
+     - 初期表示件数: 12（D1: 0 + D2: 3 + D3: 3 + D4: 3 + D5: 3）、Example・回答行は 0。
+  4. **Practice 2.3（合計 23 箇所）**:
+     - Drill 1: Country / Cities / Time（ここ／そこ／あそこ平叙文）= 0
+     - Drill 2: People = 3、Item 1 = 4、Item 2 = 4（「どこですか」疑問文）
+     - Drill 3: Country = 3、Cities = 3、Time = 3、Day = 3（「どこ」「何時」「何曜日」疑問文）
+     - Drill 4: English Cues パネル = 0
+     - 初期表示件数: 6（D1: 0 + D2: 3 + D3: 3）、Example・回答行は 0。
+  5. **3ページ切替セット総計**: **60** 箇所（2.1: 13 + 2.2: 24 + 2.3: 23）。
+  6. **HTMLファイル更新**:
+     - `practice2.1.html`, `practice2.2.html`, `practice2.3.html` に `<script src="question-indicator.js?v=20261108"></script>` を追加。
+     - スクリプト配信識別子を `practice2.1.js?v=20261108-question-indicator`、`practice2-next.js?v=20261108-question-indicator` に更新。
+  7. **回帰テスト（`tests/question-indicator.cjs`）**:
+     - Practice 1.1（0）、Practice 1.2（8）に加え、Practice 2.1（5→8）、Practice 2.2（12）、Practice 2.3（6→8→7）の各セット切替テスト、各ドリル件数、Example非表示、ラッパー完全性を自動テストに追加。
+- 変更ファイル：`practice2.1.html`, `practice2.1.js`, `practice2.2.html`, `practice2.3.html`, `practice2-next.js`, `tests/question-indicator.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 2.1, 2.2, 2.3 のみ対象。他ページ（7.x, 8.x等）への展開は未実施。全Drill展開や共通仕様書（UI_LAYOUT_SPEC）の確定は行わず一括コミット。
+- 自動検証：
+  - Python静的構文チェック、HTML/JSスクリプト読込順検証、すべての `recordingRow` 呼出引数（`isInterrogative`）検証全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Practice 2.1（13）、Practice 2.2（24）、Practice 2.3（23）の表示・整列・録音状態遷移の確認。
+  - ユーザー確認後、他ページへの適用検討および共通仕様書への反映。
+
+# 前回のリレー状態 — Practice 1.1 / 1.2: 疑問文インジケーター実装（第1段階）
 
 - 更新日時：2026-11-08T16:50:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
