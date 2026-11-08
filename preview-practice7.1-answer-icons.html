@@ -8,7 +8,7 @@ nav{display:flex;gap:8px;flex-wrap:wrap}nav button{font:inherit;font-size:.86rem
 nav button[aria-pressed=true]{background:#e7f1ff;border:2px solid #2471bd;padding:8px 11px;font-weight:700}
 small{display:block;color:#546070;margin-top:9px}iframe{width:100%;height:calc(100vh - 137px);border:0;background:white}
 @media(max-width:600px){header{padding:10px}iframe{height:calc(100vh - 205px)}} 
-</style></head><body><header><h1>Practice 7.1 — Yes / No icon comparison (Preview only)</h1><nav id="options"></nav><small id="status">実際のPractice 7.1を読み込み、回答選択ボタンのアイコンだけを比較します。本番ページは変更しません。</small></header>
+</style></head><body><header><h1>Practice 7.1 — Yes / No icon comparison (Preview only)</h1><nav id="options"></nav><small id="status">実際のPractice 7.1を読み込み、回答選択ボタンとExample・説明文内のY/Nマークを比較します。本番ページは変更しません。</small></header>
 <iframe id="practice" title="Practice 7.1 preview" src="practice7.1.html"></iframe>
 <script>
 'use strict';
@@ -25,19 +25,20 @@ const icons={
 const modes=[{id:'current',label:'現状 🙆 / 🙅'},{id:'person',label:'A · Google Person Add / Remove'},{id:'lucide',label:'Lucide · Check / X'},{id:'thumbs',label:'Lucide · Thumbs Up / Down'},{id:'smile',label:'Lucide · Smile / Frown (No eyes · Mono)'},{id:'smileColor',label:'Lucide · Smile / Frown (No eyes · Color)'}];
 let active='current',observer=null;
 const frame=document.getElementById('practice'),nav=document.getElementById('options');
+const bg=document.createElement('button');bg.textContent='背景: クールグレー #F3F5F7';bg.setAttribute('aria-pressed','true');bg.dataset.cool='true';bg.onclick=()=>{bg.dataset.cool=bg.dataset.cool==='true'?'false':'true';bg.setAttribute('aria-pressed',bg.dataset.cool);bg.textContent=bg.dataset.cool==='true'?'背景: クールグレー #F3F5F7':'背景: 元のブルー';decorate(true)};nav.append(bg);
+function mark(yes){if(active==='current')return yes?'🙆':'🙅';const key=active==='person'?(yes?'personAdd':'personRemove'):active==='lucide'?(yes?'check':'x'):active==='thumbs'?(yes?'thumbsUp':'thumbsDown'):(yes?'smile':'frown');return svg(key,active==='person',active==='smileColor'?(yes?'#16a34a':'#dc2626'):null)}
+function paintEmoji(doc,root){const walker=doc.createTreeWalker(root,NodeFilter.SHOW_TEXT);const matches=[];while(walker.nextNode()){const n=walker.currentNode;if(/[🙆🙅]/u.test(n.nodeValue)&&!n.parentElement.closest('script,style'))matches.push(n)}for(const n of matches){const parts=n.nodeValue.split(/(🙆|🙅)/u);const frag=doc.createDocumentFragment();for(const part of parts){if(part==='🙆'||part==='🙅'){const span=doc.createElement('span');span.className='p71-preview-inline-icon';span.dataset.answer=part==='🙆'?'yes':'no';span.innerHTML=mark(part==='🙆');frag.append(span)}else if(part)frag.append(doc.createTextNode(part))}n.replaceWith(frag)}}
 function svg(key,material=false,color=null){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':(color||'currentColor'))+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
-function decorate(){
+function decorate(force=false){
  const doc=frame.contentDocument;if(!doc||!doc.body)return;
- doc.querySelectorAll('button.answer-choice').forEach(btn=>{
-  const yes=btn.dataset.answer==='yes';
-  if(btn.dataset.iconPreview===active)return;
-  btn.dataset.iconPreview=active;
-  if(active==='current'){btn.textContent=yes?'🙆':'🙅';return}
-  const key=active==='person'?(yes?'personAdd':'personRemove'):active==='lucide'?(yes?'check':'x'):active==='thumbs'?(yes?'thumbsUp':'thumbsDown'):(yes?'smile':'frown');
-  btn.innerHTML=svg(key,active==='person',active==='smileColor'?(yes?'#16a34a':'#dc2626'):null);
-  btn.setAttribute('aria-label',yes?'Affirmative response':'Negative response');
- });
+ let style=doc.getElementById('p71-preview-styles');if(!style){style=doc.createElement('style');style.id='p71-preview-styles';doc.head.append(style)}
+ const cool=bg.dataset.cool==='true';style.textContent=` .practice7-page .example-button.answer-choice{background:${cool?'#F3F5F7':'#bae6fd'}!important;color:#17202c!important;border:1px solid ${cool?'#D8DEE4':'#a4d6f0'}!important} .practice7-page .example-button.answer-choice[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px} .p71-preview-inline-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;line-height:1;white-space:nowrap} .p71-preview-inline-icon svg{width:20px;height:20px} `;
+ doc.querySelectorAll('button.answer-choice').forEach(btn=>{const yes=btn.dataset.answer==='yes';if(!force&&btn.dataset.iconPreview===active)return;btn.dataset.iconPreview=active;btn.innerHTML=mark(yes);btn.setAttribute('aria-label',yes?'Affirmative response':'Negative response')});
+ doc.querySelectorAll('.p71-preview-inline-icon').forEach(el=>{el.innerHTML=mark(el.dataset.answer==='yes')});
+ // Replace icon glyphs in Example audio buttons, sentence text, and Drill 2 instructions, without replacing handlers.
+ doc.querySelectorAll('.example-box,.practice-qa-section .info-panel,.practice-qa-section .recording-table').forEach(el=>paintEmoji(doc,el));
 }
+
 function select(id){active=id;nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===id)));decorate();}
 modes.forEach(m=>{const b=document.createElement('button');b.type='button';b.dataset.mode=m.id;b.textContent=m.label;b.setAttribute('aria-pressed',String(m.id===active));b.onclick=()=>select(m.id);nav.append(b)});
 frame.addEventListener('load',()=>{
@@ -48,7 +49,7 @@ frame.addEventListener('load',()=>{
   observer=new MutationObserver(()=>decorate());
   observer.observe(doc.body,{subtree:true,childList:true});
   decorate();
-  document.getElementById('status').textContent='比較対象：Drill内のYes / No選択ボタンのみ。切替・再描画後も適用。本番ページは変更しません。';
+  document.getElementById('status').textContent='比較対象：DrillのY/Nボタン、Exampleの音声ボタン・文中マーク、Drill 2の説明文。背景はクールグレー／元のブルーを切替可能。本番ページは変更しません。';
  }catch(err){document.getElementById('status').textContent='Preview error: '+err.message;}
 });
 </script></body></html>
