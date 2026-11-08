@@ -31,8 +31,9 @@ function paintEmoji(doc,root){const walker=doc.createTreeWalker(root,NodeFilter.
 function svg(key,material=false,color=null){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':(color||'currentColor'))+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
 function decorate(force=false){
  if(observer)observer.disconnect();
+ const doc=frame.contentDocument;
  try {
- const doc=frame.contentDocument;if(!doc||!doc.body)return;
+ if(!doc||!doc.body)return;
  let style=doc.getElementById('p71-preview-styles');if(!style){style=doc.createElement('style');style.id='p71-preview-styles';doc.head.append(style)}
  const cool=bg.dataset.cool==='true';if(force||!style.textContent)style.textContent=` .practice7-page .example-button.answer-choice{background:${cool?'#F5F2EE':'#bae6fd'}!important;color:#17202c!important;border:1px solid ${cool?'#DDD5CC':'#a4d6f0'}!important} .practice7-page .example-button.answer-choice[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px} .p71-preview-inline-icon{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;line-height:1;white-space:nowrap} .p71-preview-inline-icon svg{width:20px;height:20px} `;
  doc.querySelectorAll('button.answer-choice').forEach(btn=>{const yes=btn.dataset.answer==='yes';if(btn.dataset.iconPreview===active)return;btn.dataset.iconPreview=active;btn.innerHTML=mark(yes);btn.setAttribute('aria-label',yes?'Affirmative response':'Negative response')});
