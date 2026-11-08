@@ -9,6 +9,7 @@ nav button[aria-pressed=true]{background:#e7f1ff;border:2px solid #2471bd;paddin
 small{display:block;color:#546070;margin-top:9px}.comparison{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 20px;background:#fff;border-bottom:1px solid #d8dee8}.comparison .sample{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:42px;border-radius:7px;cursor:pointer;font-size:23px}.comparison .sample[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px}.comparison .sample svg{pointer-events:none}.comparison .hint{font-size:12px;color:#546070}iframe{width:100%;height:calc(100vh - 198px);border:0;background:white}
 @media(max-width:600px){header{padding:10px}iframe{height:calc(100vh - 270px)}} 
 </style></head><body><header><h1>Practice 7.1 — Yes / No icon comparison (Preview only)</h1><nav id="options"></nav><small id="status">実際のPractice 7.1を読み込み、回答選択ボタンとExample・説明文内のY/Nマークを比較します。本番ページは変更しません。</small></header>
+<div id="mode-gallery" class="comparison" style="display:flex;gap:8px;flex-wrap:wrap;align-items:stretch"></div>
 <div class="comparison" id="comparison"><strong>切り替え比較</strong><button class="sample" data-answer="yes" aria-label="Yes" aria-pressed="false"></button><button class="sample" data-answer="no" aria-label="No" aria-pressed="false"></button><span class="hint">上のアイコン種類・背景ボタンを押すと即時反映。Yes/Noも何度でも切り替え可能。</span></div>
 <iframe id="practice" title="Practice 7.1 preview" src="practice7.1.html"></iframe>
 <script>
@@ -46,9 +47,10 @@ function decorate(force=false){
 
 function refreshComparison(){const cool=bg.dataset.cool==='true';document.querySelectorAll('#comparison .sample').forEach(btn=>{const yes=btn.dataset.answer==='yes';btn.innerHTML=mark(yes);const selected=btn.getAttribute('aria-pressed')==='true';btn.style.background=selected?(yes?'#4ade80':'#fca5a5'):(cool?'#F5F2EE':'#bae6fd');btn.style.border='1px solid '+(cool?'#DDD5CC':'#a4d6f0');btn.style.color='#17202c';});}
 document.querySelectorAll('#comparison .sample').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('#comparison .sample').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));refreshComparison();});
-function select(id){active=id;refreshComparison();nav.querySelectorAll('button[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===id)));decorate();}
+function select(id){active=id;refreshComparison();renderGallery();nav.querySelectorAll('button[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===id)));try{decorate();}catch(err){document.getElementById('status').textContent='アイコン比較は上部で利用できます。埋め込み反映エラー: '+err.message;}}
 modes.forEach(m=>{const b=document.createElement('button');b.type='button';b.dataset.mode=m.id;b.textContent=m.label;b.setAttribute('aria-pressed',String(m.id===active));b.onclick=()=>select(m.id);nav.append(b)});
-refreshComparison();
+function renderGallery(){const gallery=document.getElementById('mode-gallery');gallery.replaceChildren();for(const m of modes){const b=document.createElement('button');b.type='button';b.style.cssText='font:inherit;display:flex;flex-direction:column;align-items:center;gap:7px;padding:10px;border:2px solid '+(m.id===active?'#2471bd':'#b8c2d0')+';border-radius:8px;background:'+(m.id===active?'#e7f1ff':'white')+';color:#17202c;cursor:pointer;min-width:125px';b.setAttribute('aria-pressed',String(m.id===active));const name=document.createElement('span');name.style.fontSize='12px';name.textContent=m.label;const icons=document.createElement('span');icons.style.cssText='display:flex;gap:16px;align-items:center';const prev=active;active=m.id;icons.innerHTML=mark(true)+mark(false);active=prev;b.append(icons,name);b.onclick=()=>select(m.id);gallery.append(b);}}
+refreshComparison();renderGallery();
 frame.addEventListener('load',()=>{
  try{
   if(observer)observer.disconnect();
