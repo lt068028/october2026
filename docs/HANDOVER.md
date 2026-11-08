@@ -4,7 +4,7 @@
 
 ### F：比較的独立して進められる作業（優先順）
 1. **F-1 Q／Aアイコン採用・適用**［ユーザー申告：別担当で進行中］：旧W-3から移管。Icons8の採用範囲・進捗・GitHub反映状況は担当の作業報告で確認し、未Push成果や他作業を上書きしない。
-2. **F-2 Practice 7.1「いつも…／今…」表示調整**［実装・GitHub Push済み／ユーザー実機確認待ち］：ユーザー承認に基づき、Drillの停止ボタン右側`.p71-start-hint`のみを`font-weight: normal`＋`color: var(--text-secondary)`へ変更。Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`。時制バッジ／Example／操作ロジックは変更なし。限定CSS差分確認済み。ブラウザ・実機確認は未実施。
+2. **F-2 Practice 7.1「いつも…／今…」表示調整**［完了・ユーザー実機確認済み（2026-11-08）］：Drillの停止ボタン右側`.p71-start-hint`のみを`font-weight: normal`＋`color: var(--text-secondary)`へ変更。実装Commit `acbb9ff828cc8621dfd3b9b4a7224a0eebb3810e`。時制バッジ／Example／操作ロジックは変更なし。ユーザーが実機確認完了を報告。
 3. **F-3 セット切替ボタン英字Lato適用**［仕様確定・実装待ち］：2.1／2.2／2.3／8.3。UI_LAYOUT_SPECの確定仕様に従い対象ボタンのみ変更し、共有CSSとフォント読込を限定検証する。
 
 **Fから除外済み**：English Cuesの2.2は他の未対応ページとともにW-3へ移管（実装指示済み・完了報告待ち）。旧F-5 Beyond漢字異なり字数は2026-11-08に実装・Push済み、ユーザー申告により8.1／8.2／8.3の実機確認も完了（Node／Playwrightは未実施）。旧F-6 Beyondデザインの他ページ展開はW-1へ統合。旧F-7 Preview／実機・回帰確認と旧F-8 Production反映は、独立タスクではなく各作業の標準完了手順とする。過去の番号は履歴を参照。
