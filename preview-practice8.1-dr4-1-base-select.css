@@ -37,7 +37,7 @@
     }
     .p81-base-select-preview #drill4 .p81-base-select option {
         display: grid;
-        grid-template-columns: 1em minmax(0, 1fr) auto;
+        grid-template-columns: 1em minmax(0, max-content) minmax(9em, 1fr);
         gap: 2px 6px;
         padding: 6px;
         white-space: normal;
@@ -49,16 +49,12 @@
         grid-column: 1;
         grid-row: 1;
     }
-    .p81-base-select-preview #drill4 .p81-option-japanese,
-    .p81-base-select-preview #drill4 .p81-option-english { grid-column: 2; }
-    .p81-base-select-preview #drill4 .p81-option-hint-icon {
+    .p81-base-select-preview #drill4 .p81-option-japanese { grid-column: 2; grid-row: 1; }
+    .p81-base-select-preview #drill4 .p81-option-english {
         grid-column: 3;
         grid-row: 1;
-        font-size: .8em;
-        opacity: .7;
-        pointer-events: none;
-    }
-    .p81-base-select-preview #drill4 .p81-option-english {
+        align-self: center;
+        padding-inline-start: 10px;
         font-size: .8em;
         font-weight: 400;
         color: var(--text-secondary);
@@ -71,8 +67,6 @@
     .p81-base-select-preview[data-preview-vocab="paren"] #drill4 .p81-option-english {
         visibility: visible;
     }
-    .p81-base-select-preview[data-preview-vocab="off"] #drill4 .p81-option-hint-icon,
-    .p81-base-select-preview[data-preview-vocab="paren"] #drill4 .p81-option-hint-icon { display: none; }
     /* The existing selected-value tooltip must not cover the open picker. */
     .p81-base-select-preview #drill4 .tooltip-wrap:has(> .p81-base-select:open) > .tooltip-tip {
         visibility: hidden !important;
@@ -87,3 +81,6 @@
 .p81-base-select-preview[data-preview-vocab="hover"] #drill4 .p81-base-select option:is(:hover, :focus) .p81-option-english,
 .p81-base-select-preview[data-preview-vocab="paren"] #drill4 .p81-base-select option .p81-option-english { visibility: visible !important; }
 .p81-base-select-preview[data-preview-vocab="off"] #drill4 .p81-base-select option .p81-option-english { display: none !important; }
+
+/* Keep English in the right-hand column, aligned across options. */
+.p81-base-select-preview #drill4 .p81-base-select option .p81-option-english { grid-column: 3; grid-row: 1; }
