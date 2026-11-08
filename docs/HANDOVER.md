@@ -1,4 +1,31 @@
-# 現在のリレー状態 — F5: Example発話行間のグレー点線撤去・共通仕様確定完了
+# 現在のリレー状態 — Practice 8.3 疑問文アイコン未表示修正完了
+
+- 更新日時：2026-11-08T22:05:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Practice 8.3 疑問文アイコン未表示（停止ボタンラッパーのDOM孤立不具合の修正と回帰テスト強化） ／ `028f44eed8b86e85543a3db1bc04141682de143e` ／ `main`
+- 不具合の原因と修正内容：
+  1. **不具合メカニズム（実行順序の不整合）**:
+     - `practice8.3.js` の録音行生成（L891）において、`actions.append(listen, rec, stop)` より前に `QuestionIndicator.attach(stop, ...)` が呼び出されていた。
+     - `attach()` 実行時、`stop` は親要素を持たない（`stop.parentElement === null`）。そのため `container`（`.recording-actions`）が取得できず、作成された `.stop-indicator-wrap` はDOMツリーに追加されない状態となっていた。
+     - その直後に `actions.append(listen, rec, stop)` が実行されたため、`stop` のみが `actions` へ直接移動され、アイコンを含むラッパーはDOMから切り離されて完全に孤立していた。
+  2. **修正内容**:
+     - `practice8.3.js` L891 の実行順序を修正し、`actions.append(listen, rec, stop)` を先に実行した上で `QuestionIndicator.attach(stop, ...)` を呼び出すように変更。
+     - これにより、`stop` が `.recording-actions` 内に存在する状態で `attach()` が実行され、`stop` が `.stop-indicator-wrap` で正しく置換され、`[stop, indicator]` が `.recording-actions` の直接の子要素として正常に配置される。
+     - `practice8.3.html` のスクリプトキャッシュバスターを `20261108-question-indicator-fix` へ更新。
+  3. **回帰テスト（`tests/question-indicator.cjs`）の強化**:
+     - 単なるセレクタ存在判定だけでなく、`.recording-actions > .stop-indicator-wrap > .question-indicator` の階層構造を直接検証するアサーションを追加。
+     - 疑問文行（`-q1`, `-q2`）のみにインジケーターが存在し、回答行（`-a`）には一切付与されないことを厳格に検証。
+     - セット切り替え時（D1 Set 2, D2 Set 2, D3 Set 2, D4 Set 2 & Set 3）の全代替セットでも `.recording-actions` 内に正しく配置されることを確認。
+- 変更ファイル：`practice8.3.js`, `practice8.3.html`, `tests/question-indicator.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 8.3 およびテスト・引き継ぎ文書のみ。他ページや Example、動詞・疑問詞ボタン等のロジックは一切変更なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - DOMツリー構築・孤立防止シミュレーションテスト：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 8.3 Drills 1〜4 疑問文アイコン表示確認。
+
+# 前回のリレー状態 — F5: Example発話行間のグレー点線撤去・共通仕様確定完了
 
 - 更新日時：2026-11-08T21:52:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）

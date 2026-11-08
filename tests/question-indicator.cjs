@@ -272,23 +272,33 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.3 Examples have 0 question indicators');
     check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 18, 'All 18 visible indicators in Practice 8.3 are wrapped with stop buttons');
 
+    // Strict DOM hierarchy check: verify that stop-indicator-wrap is inside .recording-actions
+    const p83InsideActions = await page.locator('.recording-actions > .stop-indicator-wrap > .question-indicator').count();
+    check(p83InsideActions, 18, 'All 18 question indicators in Practice 8.3 are properly nested inside .recording-actions > .stop-indicator-wrap');
+
+    // Strict row check: interrogative rows (-q1, -q2) have indicator, answer rows (-a) do NOT have indicator
+    const p83QRowsWithIndicator = await page.locator('tr[data-row$="-q1"] .question-indicator, tr[data-row$="-q2"] .question-indicator').count();
+    check(p83QRowsWithIndicator, 18, 'Every interrogative row (-q1, -q2) has a question indicator');
+    const p83ARowsWithIndicator = await page.locator('tr[data-row$="-a"] .question-indicator').count();
+    check(p83ARowsWithIndicator, 0, 'Answer rows (-a) have 0 question indicators in Practice 8.3');
+
     // Switch D1 to Set 2 (何): 4 indicators
     await page.locator('#drill1 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators');
+    check(await page.locator('#drill1 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators inside actions');
 
     // Switch D2 to Set 2 (何): 6 indicators
     await page.locator('#drill2 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill2 .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators');
+    check(await page.locator('#drill2 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators inside actions');
 
     // Switch D3 to Set 2 (どこ): 4 indicators
     await page.locator('#drill3 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill3 .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators');
+    check(await page.locator('#drill3 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators inside actions');
 
     // Switch D4 to Set 2 (どこ): 4 indicators, Set 3 (いつ): 4 indicators
     await page.locator('#drill4 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators');
+    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators inside actions');
     await page.locator('#drill4 .p21-set-switcher button:nth-child(3)').click();
-    check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators');
+    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators inside actions');
 
     // Total slots across all alternative sets in Practice 8.3:
     // D1: Set 1 (4) + Set 2 (4) = 8
