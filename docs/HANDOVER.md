@@ -1,4 +1,27 @@
-# 現在のリレー状態 — Deutsche Übung 1.1：Ex・Dr1のUI修正完了
+# 現在のリレー状態 — F8 Practice 2.3 Example 1 話者・導入文間隔修正完了
+
+- 更新日時：2026-11-08T21:48:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex指示書 — F8 Practice 2.3 Example 1 間隔修正（候補B: 実効間隔6pxの採用、padding-left: 4px撤去、導入文と次行キュー開始位置の一致） ／ `8903a14d5199b9f14549b34798a90eaaf413ab7e` ／ `main`
+- 実装内容：
+  1. **Practice 2.3 Example 1 話者ラベルと導入文の間隔修正**:
+     - `style.css` の `.p23-conversation-models .p23-model-intro` から `padding-left: 4px;` を撤去。
+     - 既存の `column-gap: 6px` を維持し、話者ラベル「X」（右揃え）と導入文（「わたしは、にほんです。」）の実効間隔を 10px から **6px** へ変更。
+     - 導入文（第2列開始）と次行のキュー（「ここ／あさ」等、第2列開始）の水平開始位置を完全に一致。
+     - Q/A行（`[Q] [X]` / `[A] [Y]`）の配置・整列を完全維持。
+  2. **影響範囲の厳密な局所化**:
+     - 変更対象は `style.css` の `.p23-conversation-models .p23-model-intro` のみ。
+     - Practice 2.3 の Drill、他の Example、他ページへの影響は一切なし。不要なリファクタリングも未実施。
+- 変更ファイル：`style.css`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 2.3 Example 1のみ。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - CSS構文・セレクタ検証：PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境なしのため未実施）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの Practice 2.3 Example 1 表示確認。
+
+# 前回のリレー状態 — Deutsche Übung 1.1：Ex・Dr1のUI修正完了
 
 - 更新日時：2026-11-08T21:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
