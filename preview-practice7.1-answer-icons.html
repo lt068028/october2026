@@ -6,9 +6,10 @@
 header{background:white;padding:15px 20px;border-bottom:1px solid #d8dee8}h1{font-size:1.1rem;margin:0 0 9px}
 nav{display:flex;gap:8px;flex-wrap:wrap}nav button{font:inherit;font-size:.86rem;background:white;color:#17202c;border:1px solid #b8c2d0;border-radius:8px;padding:9px 12px;cursor:pointer}
 nav button[aria-pressed=true]{background:#e7f1ff;border:2px solid #2471bd;padding:8px 11px;font-weight:700}
-small{display:block;color:#546070;margin-top:9px}iframe{width:100%;height:calc(100vh - 137px);border:0;background:white}
-@media(max-width:600px){header{padding:10px}iframe{height:calc(100vh - 205px)}} 
+small{display:block;color:#546070;margin-top:9px}.comparison{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 20px;background:#fff;border-bottom:1px solid #d8dee8}.comparison .sample{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:42px;border-radius:7px;cursor:pointer;font-size:23px}.comparison .sample[aria-pressed=true]{outline:2px solid #64748b;outline-offset:1px}.comparison .sample svg{pointer-events:none}.comparison .hint{font-size:12px;color:#546070}iframe{width:100%;height:calc(100vh - 198px);border:0;background:white}
+@media(max-width:600px){header{padding:10px}iframe{height:calc(100vh - 270px)}} 
 </style></head><body><header><h1>Practice 7.1 — Yes / No icon comparison (Preview only)</h1><nav id="options"></nav><small id="status">実際のPractice 7.1を読み込み、回答選択ボタンとExample・説明文内のY/Nマークを比較します。本番ページは変更しません。</small></header>
+<div class="comparison" id="comparison"><strong>切り替え比較</strong><button class="sample" data-answer="yes" aria-label="Yes" aria-pressed="false"></button><button class="sample" data-answer="no" aria-label="No" aria-pressed="false"></button><span class="hint">上のアイコン種類・背景ボタンを押すと即時反映。Yes/Noも何度でも切り替え可能。</span></div>
 <iframe id="practice" title="Practice 7.1 preview" src="practice7.1.html"></iframe>
 <script>
 'use strict';
@@ -25,7 +26,7 @@ const icons={
 const modes=[{id:'current',label:'現状 🙆 / 🙅'},{id:'person',label:'A · Google Person Add / Remove'},{id:'lucide',label:'Lucide · Check / X'},{id:'thumbs',label:'Lucide · Thumbs Up / Down'},{id:'smile',label:'Lucide · Smile / Frown (No eyes · Mono)'},{id:'smileColor',label:'Lucide · Smile / Frown (No eyes · Color)'}];
 let active='current',observer=null;
 const frame=document.getElementById('practice'),nav=document.getElementById('options');
-const bg=document.createElement('button');bg.textContent='背景: ウォームグレー #F5F2EE';bg.setAttribute('aria-pressed','true');bg.dataset.cool='true';bg.onclick=()=>{bg.dataset.cool=bg.dataset.cool==='true'?'false':'true';bg.setAttribute('aria-pressed',bg.dataset.cool);bg.textContent=bg.dataset.cool==='true'?'背景: ウォームグレー #F5F2EE':'背景: 元のブルー';decorate(true)};nav.append(bg);
+const bg=document.createElement('button');bg.textContent='背景: ウォームグレー #F5F2EE';bg.setAttribute('aria-pressed','true');bg.dataset.cool='true';bg.onclick=()=>{bg.dataset.cool=bg.dataset.cool==='true'?'false':'true';bg.setAttribute('aria-pressed',bg.dataset.cool);bg.textContent=bg.dataset.cool==='true'?'背景: ウォームグレー #F5F2EE':'背景: 元のブルー';decorate(true);refreshComparison()};nav.append(bg);
 function mark(yes){if(active==='current')return yes?'🙆':'🙅';const key=active==='person'?(yes?'personAdd':'personRemove'):active==='lucide'?(yes?'check':'x'):active==='thumbs'?(yes?'thumbsUp':'thumbsDown'):(yes?'smile':'frown');return svg(key,active==='person',active==='smileColor'?(yes?'#16a34a':'#dc2626'):null)}
 function paintEmoji(doc,root){const walker=doc.createTreeWalker(root,NodeFilter.SHOW_TEXT);const matches=[];while(walker.nextNode()){const n=walker.currentNode;if(/[🙆🙅]/u.test(n.nodeValue)&&!n.parentElement.closest('script,style,.p71-preview-inline-icon,button.answer-choice'))matches.push(n)}for(const n of matches){const parts=n.nodeValue.split(/(🙆|🙅)/u);const frag=doc.createDocumentFragment();for(const part of parts){if(part==='🙆'||part==='🙅'){const span=doc.createElement('span');span.className='p71-preview-inline-icon';span.dataset.answer=part==='🙆'?'yes':'no';span.innerHTML=mark(part==='🙆');frag.append(span)}else if(part)frag.append(doc.createTextNode(part))}n.replaceWith(frag)}}
 function svg(key,material=false,color=null){return '<svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 24 24" aria-hidden="true" fill="'+(material?'currentColor':'none')+'" stroke="'+(material?'none':(color||'currentColor'))+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:block;pointer-events:none">'+icons[key]+'</svg>'}
@@ -43,8 +44,11 @@ function decorate(force=false){
  } finally {if(observer && doc.body)observer.observe(doc.body,{subtree:true,childList:true})}
 }
 
-function select(id){active=id;nav.querySelectorAll('button[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===id)));decorate();}
+function refreshComparison(){const cool=bg.dataset.cool==='true';document.querySelectorAll('#comparison .sample').forEach(btn=>{const yes=btn.dataset.answer==='yes';btn.innerHTML=mark(yes);const selected=btn.getAttribute('aria-pressed')==='true';btn.style.background=selected?(yes?'#4ade80':'#fca5a5'):(cool?'#F5F2EE':'#bae6fd');btn.style.border='1px solid '+(cool?'#DDD5CC':'#a4d6f0');btn.style.color='#17202c';});}
+document.querySelectorAll('#comparison .sample').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('#comparison .sample').forEach(b=>b.setAttribute('aria-pressed',String(b===btn)));refreshComparison();});
+function select(id){active=id;refreshComparison();nav.querySelectorAll('button[data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===id)));decorate();}
 modes.forEach(m=>{const b=document.createElement('button');b.type='button';b.dataset.mode=m.id;b.textContent=m.label;b.setAttribute('aria-pressed',String(m.id===active));b.onclick=()=>select(m.id);nav.append(b)});
+refreshComparison();
 frame.addEventListener('load',()=>{
  try{
   if(observer)observer.disconnect();
