@@ -1,4 +1,32 @@
-# 現在のリレー状態 — Practice 2.3 Example 1 Q/Aラベルとキューの接触解消完了
+# 現在のリレー状態 — Deutsche Übung 1.1 Vercel配信・CSSキャッシュ問題解消完了
+
+- 更新日時：2026-11-08T23:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Deutsche Übung 1.1 Vercel配信・CSSキャッシュ問題 ／ `650186e885ee8d98d02e07173e6d24ba208d88e6` ／ `main`
+- 原因分析と修正内容：
+  1. **確定した原因分類：区分B（公開HTMLは最新だが、ユーザー実機ブラウザにおいて同一URLパラメータによるCSSキャッシュ残存が発生）**:
+     - コミット `691bbe0` において、Drill 2〜4へのUI統一適用時に `uebung1.1.js?v=20261108-drills-standardized` のキャッシュバスターは更新されていたが、`uebung1.1.html` 内のスタイルシート参照が Drill 1 修正時の `style.css?v=20261108-uebung11` のまま据え置かれていた。
+     - このため、Drill 1 修正段階で同ページにアクセスしていたユーザーの実機ブラウザ（Chrome等）では、クエリパラメータが同一の旧 `style.css?v=20261108-uebung11`（`#drill1` のみ対象で `#drill2`〜`#drill4` のGrid規則を含まない古いCSS）がブラウザのディスク・メモリキャッシュから継続利用された。
+     - 一方、JavaScriptは新バージョンがロードされたため、CSS Gridのセレクタが適用されない状態とJSの動作が不整合を起こし、Drill 2〜4でキュー改行や重なりなどの未反映状態が生じていた。
+  2. **修正内容**:
+     - `uebung1.1.html`: スタイルシートのキャッシュバスターを `<link rel="stylesheet" href="style.css?v=20261108-drills-standardized">` に更新。
+     - これにより、全ユーザー環境で最新のCSS（`:is(#drill1, #drill2, #drill3, #drill4)` 対応）が強制再取得され、ブラウザキャッシュによる不整合が解消される。
+  3. **自動検証（Chromium / Brave Headless CDP実機計測）**:
+     - 1200px: Drills 1〜4 全件 `display: grid`、キュー折り返しなし、音声とモデル文の重なりなし（0件）、横スクロールなし（docWidth 1185px <= 1200px）。
+     - 768px: Drills 1〜4 全件 `display: grid`、キュー折り返しなし、音声とモデル文の重なりなし（0件）、横スクロールなし（docWidth 753px <= 768px）。
+     - 520px / 480px / 375px: モバイル用レスポンシブ契約が正常動作（操作部が安全に次段折り返し、横スクロールなし docWidth 375px <= 375px）。
+     - ウィンドウResizeイベント発火時の `--drill-cue-width` 動的再計算が正常動作。
+     - 地域変種（DE / AT / CH）切り替え時のレイアウト破損なし。
+- 変更ファイル：`uebung1.1.html`, `docs/HANDOVER.md`
+- スコープ厳守：Deutsche Übung 1.1 のみ。Drill 1確定仕様、学習コンテンツ、日本語Practice、共通UI仕様への影響なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Brave Headless CDP実機計測（375/480/520/768/1200px、リサイズ、変種切替）：全項目PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境にて検証済み）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザでの `https://october2026.vercel.app/uebung1.1.html` の更新確認（キャッシュクリア不要で最新CSSが自動適用されることの確認）。
+
+# 前回のリレー状態 — Practice 2.3 Example 1 Q/Aラベルとキューの接触解消完了
 
 - 更新日時：2026-11-08T23:25:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
