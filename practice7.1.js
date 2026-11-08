@@ -307,10 +307,18 @@ document.addEventListener('DOMContentLoaded', () => {
         no: '<circle cx="12" cy="12" r="10"/><path d="M8 16s1.5-2 4-2 4 2 4 2"/>'
     };
 
-    const createAnswerIcon = kind => {
+    const createAnswerIcon = (kind, inline = false) => {
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-answer-icon" aria-hidden="true">${ANSWER_ICONS[kind]}</svg>`;
+        if (!inline) {
+            const span = document.createElement('span');
+            span.innerHTML = svg;
+            return span.firstElementChild;
+        }
         const span = document.createElement('span');
-        span.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-answer-icon" aria-hidden="true">${ANSWER_ICONS[kind]}</svg>`;
-        return span.firstElementChild;
+        span.className = 'p71-inline-icon';
+        span.dataset.answer = kind;
+        span.innerHTML = svg;
+        return span;
     };
 
     const button = (label, tip, click) => {
@@ -464,7 +472,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const cues = node('td', 'example-empty-cell');
             const arrow = node('td', 'example-empty-cell');
             const sound = node('td', 'example-audio-cell');
-            sound.append(listen(() => model(example, kind), index ? '🔊🙅' : '🔊🙆'));
+            const labelFrag = document.createDocumentFragment();
+            labelFrag.append(
+                document.createTextNode('🔊'),
+                createAnswerIcon(kind, true)
+            );
+            const listenBtn = listen(() => model(example, kind), labelFrag);
+            listenBtn.dataset.answer = kind;
+            listenBtn.setAttribute(
+                'aria-label',
+                kind === 'yes' ? 'Listen to affirmative model.' : 'Listen to negative model.'
+            );
+            sound.append(listenBtn);
             const text = node('td');
             text.append(highlighted(display(model(example, kind))));
             row.append(label, cues, arrow, sound, text);
@@ -654,17 +673,25 @@ document.addEventListener('DOMContentLoaded', () => {
             'info-panel info-panel-task1'
         );
 
+        const desc = node(
+            'span',
+            'info-panel-desc instruction-steps'
+        );
+        desc.append(
+            document.createTextNode('💡Ask a Yes/No question.\nChoose '),
+            createAnswerIcon('yes', true),
+            document.createTextNode(' or '),
+            createAnswerIcon('no', true),
+            document.createTextNode(' and record your answer.')
+        );
+
         panel.append(
             node(
                 'span',
                 'info-panel-title',
                 'Drill 2: Ask and answer — 今～ていますか'
             ),
-            node(
-                'span',
-                'info-panel-desc instruction-steps',
-                '💡Ask a Yes/No question.\nChoose 🙆 or 🙅 and record your answer.'
-            )
+            desc
         );
 
         section.append(panel);

@@ -11,15 +11,17 @@ const root=path.resolve(__dirname,'..');
   await p.goto('http://yn.test/'+name+'.html');
   for(const style of ['formal','informal','casual']){
    await p.locator('#speechStyleControl [data-value="'+style+'"]').click();
-   const boxes=await p.locator('.example-box').evaluateAll(es=>es.filter(e=>['🔊🙆','🔊🙅'].every(label=>[...e.querySelectorAll('button')].some(b=>b.textContent.trim()===label))).map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());return c.textContent;}));
+   const targets=[{kind:'yes',label:'🔊🙆'},{kind:'no',label:'🔊🙅'}];
+   const boxes=await p.locator('.example-box').evaluateAll(es=>es.filter(e=>['yes','no'].every(k=>[...e.querySelectorAll('button')].some(b=>b.textContent.trim()===(k==='yes'?'🔊🙆':'🔊🙅')||b.dataset.answer===k))).map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());return c.textContent;}));
    eq(boxes.length>0,true,name+' '+style+' has both Example answers');
    eq(boxes.every(s=>/はい|うん/.test(s)&&/いいえ|ううん/.test(s)&&/じゃない|ません|ない|なかった/.test(s)),true,name+' affirmative and negative models visible');
-   for(const label of ['🔊🙆','🔊🙅']){
+   for(const item of targets){
     const before=await p.locator('.answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed')));
-    await p.locator('.example-box button').filter({hasText:label}).first().click();
+    const btn=p.locator('.example-box button').filter({hasText:item.label}).or(p.locator('.example-box button[data-answer="'+item.kind+'"]')).first();
+    await btn.click();
     const text=await p.evaluate(()=>spoken.at(-1)?.text||'');
-    eq(Boolean(text),true,name+' independent playback '+label);
-    eq(label==='🔊🙅'?/いいえ|ううん|うんん/.test(text):/はい|うん/.test(text),true,name+' matching answer TTS '+label);
+    eq(Boolean(text),true,name+' independent playback '+item.label);
+    eq(item.kind==='no'?/いいえ|ううん|うんん/.test(text):/はい|うん/.test(text),true,name+' matching answer TTS '+item.label);
     await p.evaluate(()=>spoken.at(-1).onend?.());
     eq(await p.locator('.answer-choice').evaluateAll(es=>es.map(e=>e.getAttribute('aria-pressed'))),before,name+' Example does not select Drill answer');
    }

@@ -1,4 +1,31 @@
-# 現在のリレー状態 — Practice 7.1: Yes/Noボタン Lucideアイコン・Cool-Gray背景実装
+# 現在のリレー状態 — Practice 7.1: Y/Nアイコン統一完了（Example 2・Drillタイトル）
+
+- 更新日時：2026-11-08T16:35:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 7.1: Y/Nアイコン完全統一（Example 2 音声ボタン、Drill 2 タイトル説明文） ／ `0cbc5a18651697e0cd5294f98abb4c7369158439` ／ `main`
+- 実装内容：
+  1. `practice7.1.js`：
+     - `createAnswerIcon(kind, inline)` に `inline` オプションを追加。非選択肢のインライン配置時に `<span class="p71-inline-icon" data-answer="${kind}"><svg ...></svg></span>` を生成。
+     - **Example 2**: 音声モデル再生ボタン（`🔊🙆`/`🔊🙅`）の絵文字を置換し、`'🔊'` ＋ `createAnswerIcon(kind, true)`（Lucide smile/frown 線画）を配置。`data-answer` および `aria-label` を付与。非対話ボタンであるため Cool-Gray 背景は付与せず通常の音声ボタン背景を保持。
+     - **Drill 2 タイトル**: 説明文（`Choose 🙆 or 🙅 and record your answer.`）内の絵文字を `createAnswerIcon('yes', true)` および `createAnswerIcon('no', true)` に置換。見出しテキスト・フォント・余白・レスポンシブ配置を完全維持。
+     - **Drill 2 回答ボタン**: 前回コミット（`0cbc5a1`）で導入した Lucide アイコン＋Cool-Gray 背景（#E5E7EB）の設計を完全維持。全3箇所で同一の Lucide smile（緑）/ frown（赤）線画デザイン・同一カラー・同一サイズ（20×20px）に統一完了。旧絵文字 `🙆`/`🙅` は全3箇所から完全に除去。
+  2. `practice7.1.html`：
+     - `<style>` に `.practice71-page .p71-inline-icon` および `.practice71-page .example-audio-cell .example-button` の整列スタイルを追加。
+     - インラインアイコンの配色を Drill 2 回答ボタンと共通化（`:is(.example-button.answer-choice, .p71-inline-icon)[data-answer="yes|no"]`）：ライト（緑 `#16a34a` / 赤 `#dc2626`）、ダーク（緑 `#4ade80` / 赤 `#f87171`）。
+     - スクリプト配信識別子を `practice7.1.js?v=20261108-lucide-yn-complete` に更新。
+  3. `tests/common-yn-examples.cjs`：
+     - Example 2 の音声ボタン検索で、従来の `🔊🙆`/`🔊🙅` テキスト照合に加え `data-answer` 属性対応を追加（他ページ 1.2, 7.2, 7.3, 8.1 との完全後方互換性を維持）。
+- 変更ファイル：`practice7.1.html`, `practice7.1.js`, `tests/common-yn-examples.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 7.1 のみ変更。Practice 7.2・8.x・共通CSS（`style.css`）・共通仕様書（UI_LAYOUT_SPEC）は未変更。
+- 自動検証：
+  - Python静的構文チェック、XML/SVG妥当性検証、HTML/JS整合性チェック全件PASS。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの各箇所（Example 2、Drill 2タイトル、Drill 2回答ボタン）の表示・操作確認。
+  - ユーザー確認後、他ページへの適用検討および共通仕様書への反映。
+
+# 前回のリレー状態 — Practice 7.1: Yes/Noボタン Lucideアイコン・Cool-Gray背景実装
 
 - 更新日時：2026-11-08T16:10:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
