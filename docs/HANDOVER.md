@@ -2,7 +2,7 @@
 - Added Icons8 Color and iOS Outlined Ask Question / Speech Bubble to preview-practice8.3-qa.html alongside Microsoft Color and original Q/A.
 - Preview-only PNG assets stored locally; visible Icons8 attribution included. Monochrome inverts in dark mode.
 - Canonical practice8.3.html unchanged. Await visual selection before adoption.
-- Validation: PNG signatures verified; public rendered verification pending deployment.
+- Validation: PNG signatures and JS syntax verified. Vercel success. Public browser verified both Icons8 modes: 36/36 images loaded, preview border removed, no horizontal overflow at desktop width. Color and outlined screenshots visually checked. Narrow width/dark mode not browser-tested in this change.
 
 # 2026-11-08 / 8.3 Q/AのFluent Color Preview
 
