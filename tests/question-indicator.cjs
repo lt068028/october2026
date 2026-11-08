@@ -297,6 +297,23 @@ const root = path.resolve(__dirname, '..');
     // D4: Set 1 (4) + Set 2 (4) + Set 3 (4) = 12
     // Total = 8 + 12 + 8 + 12 = 40.
 
+    // 14. Composition 1
+    await page.goto('http://qi.test/composition1.html');
+    check(await page.locator('.question-indicator').count(), 2, 'Composition 1 has exactly 2 question indicators total');
+    check(await page.locator('#drill1Container .question-indicator').count(), 2, 'Composition 1 Drill 1 has 2 question indicators');
+    check(await page.locator('#drill2Container .question-indicator').count(), 0, 'Composition 1 Drill 2 has 0 question indicators');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 2, 'All 2 indicators in Composition 1 are wrapped with stop buttons');
+
+    // Verify row 5 and row 6 specifically have indicators
+    const rowsWithIndicator = await page.locator('#drill1Container .drill-row:has(.question-indicator) .drill-number-cell').allTextContents();
+    check(rowsWithIndicator.map(t => t.trim()), ['5.', '6.'], 'Composition 1 questions are rows 5 and 6');
+
+    // Verify rerendering does not duplicate indicators on Composition 1
+    for (const script of ['hiragana', 'kanji']) {
+        await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
+        check(await page.locator('.question-indicator').count(), 2, `Composition 1 indicator count remains 2 after scriptMode=${script}`);
+    }
+
     check(errors, [], 'No runtime errors');
     await browser.close();
     console.log('PASS Question Indicator tests:', checks);

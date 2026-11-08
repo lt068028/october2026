@@ -7,8 +7,8 @@ const drill1Data = [
     { en: "I want a watch.", jaKanji: "時計がほしいです", jaHira: "とけいが、ほしいです" },
     { en: "Work is fun.", jaKanji: "仕事は楽しいです", jaHira: "しごとは、たのしいです" },
     { en: "Studying is interesting.", jaKanji: "勉強はおもしろいです", jaHira: "べんきょうは、おもしろいです" },
-    { en: "Don't you have time?", jaKanji: "時間がないですか", jaHira: "じかんが、ないですか" },
-    { en: "Is the weather bad?", jaKanji: "天気が悪いですか", jaHira: "てんきが、わるいですか" },
+    { en: "Don't you have time?", jaKanji: "時間がないですか", jaHira: "じかんが、ないですか", question: true },
+    { en: "Is the weather bad?", jaKanji: "天気が悪いですか", jaHira: "てんきが、わるいですか", question: true },
     { en: "The weather is not good.", jaKanji: "天気が良くないです", jaHira: "てんきが、よくないです" },
     { en: "I want an umbrella.", jaKanji: "傘がほしいです", jaHira: "かさが、ほしいです" }
 ];
@@ -1123,6 +1123,13 @@ function compositionCreateRow(
 
     stopBtn.disabled = true;
     actions.append(recordBtn, stopBtn);
+
+    if (
+        window.QuestionIndicator
+        && typeof window.QuestionIndicator.attach === "function"
+    ) {
+        window.QuestionIndicator.attach(stopBtn, Boolean(item?.question));
+    }
 
     const resultSpan = element(
         "span",

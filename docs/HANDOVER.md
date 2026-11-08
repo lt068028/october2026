@@ -1,4 +1,51 @@
-# 現在のリレー状態 — Practice 8.1 / 8.2 / 8.3: 疑問文インジケーター一括実装
+# 現在のリレー状態 — 疑問文インジケーター全展開完了（Practice 8.1 / 8.2 / 8.3 / Composition 1）
+
+- 更新日時：2026-11-08T18:18:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了）
+- 課題／開始時mainのコミットID／作業ブランチ：Practice 8.1, 8.2, 8.3 および Composition 1 疑問文インジケーター（Lucide `message-circle-question`）最終展開 ／ `fc6c83ee3fb52e308946fda1ccba0f02a6dcee6b` ／ `main`
+- 実装内容：
+  1. **共有ヘルパー（`question-indicator.js`）および共通スタイル（`style.css`）の再利用**:
+     - 既存の Lucide `message-circle-question`、16×16px、`var(--text-secondary)`、非対話（`aria-hidden="true"`, `pointer-events: none`）、停止ボタン直後 4px（`.stop-indicator-wrap`）を全ページ共通で使用。
+  2. **対象ページと疑問文スロット内訳（今回バッチ計 66 箇所、サイト全体計 157 箇所）**:
+     - **Practice 8.1（4 箇所）**:
+       - Drill 2: 4（`r.qa === 'question'` の質問行のみ付与、回答行 `r.qa === 'response'` は非付与）
+       - Drill 1, 3, 4, 5, Example: 0
+     - **Practice 8.2（20 箇所）**:
+       - Drill 1: 4（`mode === 'question'`、何か疑問文）
+       - Drill 2: 8（`mode === 'contrast'`、何を／何か対比疑問文：4ペア×2）
+       - Drill 3: 5（`qa === 'question'`、Yes/No疑問文行のみ付与、回答行は非付与）
+       - Drill 4: 3（`mode === 'wh'` / `qa === 'question'`、どんな疑問文行のみ付与、回答行は非付与）
+       - Drill 5, Example: 0
+     - **Practice 8.3（全代替セット含め 40 箇所）**:
+       - 各アイテムの q1 行・q2 行（`r.id.endsWith('-q1') || r.id.endsWith('-q2')`）に付与、回答行 a（`r.id.endsWith('-a')`）は非付与。
+       - Drill 1: だれ (4) + 何 (4) = 8
+       - Drill 2: だれ (6) + 何 (6) = 12
+       - Drill 3: どれ (4) + どこ (4) = 8
+       - Drill 4: どれ (4) + どこ (4) + いつ (4) = 12
+       - デフォルト表示時: 4 + 6 + 4 + 4 = 18。全セット合計: 8 + 12 + 8 + 12 = 40。
+       - Example: 0
+     - **Composition 1（2 箇所）**:
+       - Drill 1 第5行（`en: "Don't you have time?"`）: 1（`question: true`）
+       - Drill 1 第6行（`en: "Is the weather bad?"`）: 1（`question: true`）
+       - 他の Drill 1 行（平叙文 6行）および Drill 2（自由練習 1行）: 0
+       - 判定条件: `Boolean(item?.question)` で明示的に判定し、録音停止ボタン直後に `.stop-indicator-wrap` で付与。
+       - `composition1.html` に `<script src="question-indicator.js?v=20261108"></script>` を追加し、スクリプトバージョンを `composition1.js?v=20261108-question-indicator` に更新。
+     - **サイト全体インベントリ（157 箇所）**:
+       - 既実装分（91）: P1.1 (0) + P1.2 (8) + P2.1 (13) + P2.2 (24) + P2.3 (23) + P7.1 (5) + P7.2 (5) + P7.3 (13) = 91
+       - 本バッチ分（66）: P8.1 (4) + P8.2 (20) + P8.3 (40) + Comp1 (2) = 66
+       - 総計: 91 + 66 = 157 箇所。
+  3. **回帰テスト（`tests/question-indicator.cjs`）**:
+     - Practice 8.1（4）、Practice 8.2（20）、Practice 8.3（40）、Composition 1（2、第5・第6行検証）のアサーションを追加。
+- 変更ファイル：`composition1.html`, `composition1.js`, `tests/question-indicator.cjs`, `docs/HANDOVER.md`
+- スコープ厳守：Composition 1 およびテスト・引き継ぎ文書のみ。既存の Practice 1.x, 2.x, 7.x, 8.x および共通音声制御・UIへの変更なし。
+- 自動検証：
+  - Python静的構文チェック、HTML/JSスクリプト読込順検証、行生成パス検証全件PASS（計66スロットおよびサイト全体157スロット整合確認）。
+  - `git diff --check` 合格（構文・空白エラーなし）。
+- ユーザー実機確認／CI／デプロイ：未実施（Push後にVercelデプロイ・実機確認依頼）。物理実機での確認は断定しない。
+- 次の具体的操作／判断待ち：
+  - Vercelデプロイ完了確認および実機ブラウザでの Composition 1（行5・6の疑問文アイコン表示・整列・録音）の実機確認。
+
+# 前回のリレー状態 — Practice 8.1 / 8.2 / 8.3: 疑問文インジケーター一括実装
 
 - 更新日時：2026-11-08T18:10:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
