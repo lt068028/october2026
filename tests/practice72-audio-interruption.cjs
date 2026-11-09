@@ -162,6 +162,16 @@ function mock() {
         await page.goto('http://p72.test/practice7.2.html');
         await page.waitForTimeout(100);
 
+        // Switch to Manual Stop mode so that the user explicitly clicks the stop button
+        await page.evaluate(() => {
+            const toggle = document.getElementById('toggleRecordMode');
+            if (toggle && toggle.checked) {
+                toggle.checked = false;
+                toggle.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+        await page.waitForTimeout(50);
+
         const recButtons = page.locator('#drill1List button').filter({ hasText: /^(🎙️|⏺️)とる/ });
         const rec1 = recButtons.nth(0);
         const rec2 = recButtons.nth(1);
@@ -172,6 +182,7 @@ function mock() {
         // Helper: Record on given row and wait for Autoplay model speech to start
         async function recordAndStartAutoplay(recBtn, transcript) {
             await recBtn.click();
+            await page.waitForFunction(() => Boolean(window.activeRecognitionSession || practice7State?.startingRow), { timeout: 3000 });
             await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
             await page.evaluate(text => {
                 const r = window.t.recognitions.at(-1);
