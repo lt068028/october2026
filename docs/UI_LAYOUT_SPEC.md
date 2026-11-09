@@ -664,6 +664,14 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 - Q／AアイコンはIcons8色なし線画を採用決定。実装・検証状態はUI_ROLLOUT_REVIEWとHANDOVER参照。Previewの4選択肢は比較履歴として維持。
 - 7.3の時制ラベルはPreviewで判断し、本番には未適用。
 
+## 2026-11-09 / Practice 8.3 バッジ表示統一（Verb・だれ・何）
+
+- Practice 8.3 Example 1 において、品詞バッジ（`Verb`、`.p83-header-badge`）と疑問詞カテゴリバッジ（「だれ」「何」等の `.p83-example-category`）の外観を共通仕様に統一。
+- 共通スタイル：`font-size: .9em; font-weight: 700; line-height: 1.2; padding: 6px 10px; border: 1px solid var(--border-color, #e2e8f0); border-radius: 8px; box-sizing: border-box;`。
+- ダークモード表示：文字色 `#ffffff`、背景色 `#304663`、枠線色 `#7998c3`。
+- カテゴリ内の `.p83-cat-main`（日本語）および `.p83-cat-sub`（英字Lato）は文字色を親から継承（`inherit`）し、余白・外観の均一性を維持。
+- セット切替ボタン（`.p21-set-switcher .example-button`）等の別要素の外観は変更しない。
+
 ## 2026-11-08 / 7.3 Lato採用と8.3 Ex1装飾漏れ是正
 
 - ユーザー決定：7.3の時制・アスペクトラベルはLatoへ。フォントのみ変更し、意味色・枠・余白・文字サイズ・時制区分配置を維持。Q/Aのフォント選定とは別。7.1/7.2には未適用。
