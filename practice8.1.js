@@ -865,8 +865,13 @@ function addSelect(cue,r,key) {
     else {cue.append(select);if(hintMode==='paren'&&hint.textContent)cue.append(node('span','vocab-inline','('+hint.textContent+')'));}
     select.onchange=()=>{
         if(session||preparing)return;
-        stopPlayback();choices.set(r.id,select.value);render();
-        document.querySelector(`[data-choice="${r.id}"]`)?.focus({preventScroll:true});
+        stopPlayback();choices.set(r.id,select.value);
+        if(isActivity){
+            renderDrill4(r.id);
+        }else{
+            render();
+            document.querySelector(`[data-choice="${r.id}"]`)?.focus({preventScroll:true});
+        }
     };
 }
 function addExample(root,si) {
@@ -956,6 +961,76 @@ function setupUnlearnedAccordion(){
  acc.open=sessionStorage.getItem('p81-unlearned-open')==='true';
  acc.addEventListener('toggle',()=>sessionStorage.setItem('p81-unlearned-open',String(acc.open)));
 }
+function buildCard(rows,index,si) {
+    const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
+    if(rows[0].abilityGroup){const scenario=node('p','p81-scenario');scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].abilityGroup));card.append(scenario);}
+    if(rows[0].comparison)card.classList.add('p81-comparison-card');
+    const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
+    let pairNotice=null;if(rows[0].comparison){pairNotice=node('div','p81-nuance-note');pairNotice.hidden=true;pairNotice.setAttribute('role','note');pairNotice.append(node('div','p81-nuance-note-title','✨Notice the difference:'));rows.forEach(item=>{const noteLine=node('div','p81-nuance-note-text');noteLine.append(node('strong','p81-nuance-adjective',cueText(item.adjective)+'：'),document.createTextNode(item.impressions[item.adjective].replace(/上手|下手|得意|苦手/g,t=>({'上手':'じょうず','下手':'へた','得意':'とくい','苦手':'にがて'}[t]))));pairNotice.append(noteLine);});}
+    rows.forEach((r,ri)=>{
+        const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
+        if(!ri&&si!==4){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
+        const cue=node('td','prompt-label drill-cue-cell');
+        if(r.kind)cue.append(node('span','example-label-title p81-kind'+(r.comparison?' p81-concept-badge':''),r.kind));
+        const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
+        const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
+        const rec=button('🎙️とる',()=>record(key,r));
+        const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.classList.add('stop-record-btn');stop.disabled=true;stop.setAttribute('aria-disabled','true');
+        if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
+            window.QuestionIndicator.attach(stop,r.qa==='question');
+        }
+        const content=node('span','p81-cue-words');
+        if(r.selectKind==='activity'){
+            addSelect(cueBody,r,key);
+            cueBody.append(document.createTextNode('／'));
+            const target=node('span','p81-degree-target');target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
+            if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
+        }else{
+            if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'),node('span','p81-drill-repeat-after-spacer'));}
+            else{content.innerHTML=cues(r);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
+            cueBody.append(content);addSelect(cueBody,r,key);
+        }
+        if(r.comparison)listen.classList.add('p81-cue-listen');
+        if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
+        if(r.qa==='response')for(const value of ['yes','no']){
+            const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
+        }
+        const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
+        if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
+        else actions.append(listen,rec,stop);
+        const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
+        line.append(wrap);
+        const correction=node('div','correction-box');correction.hidden=true;
+        const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
+        cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);
+        views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance:pairNotice});showResult(key);
+    });
+    card.append(table);if(pairNotice)card.append(pairNotice);
+    return card;
+}
+function renderDrill4(changedId) {
+    const group=document.getElementById('drill4');
+    if(!group){render();return;}
+    for(let i=0;i<degreeLevels.length;i++){
+        const id=`degree-${i}`;
+        for(const k of Array.from(views.keys())){
+            if(k.startsWith(id+':'))views.delete(k);
+        }
+    }
+    const oldCards=group.querySelectorAll(':scope > .p81-card');
+    const newCards=rowsFor(3).map((rows,index)=>buildCard(rows,index,3));
+    if(oldCards.length>0){
+        oldCards[0].before(...newCards);
+        oldCards.forEach(c=>c.remove());
+    }else{
+        group.append(...newCards);
+    }
+    measureSectionCues(group);
+    enhanceActivitySelects();
+    if(changedId){
+        document.querySelector(`[data-choice="${changedId}"]`)?.focus({preventScroll:true});
+    }
+}
 function render() {
     updateUnlearnedLexicon();
     const root=$('drill1Container');root.replaceChildren();views.clear();
@@ -974,50 +1049,7 @@ function render() {
         panel.append(title);if(section.instruction)panel.append(node('span','info-panel-desc',section.instruction));group.append(panel);
         if(si===3)addScale(group);
         rowsFor(si).forEach((rows,index)=>{
-            const card=node('div','drill-row p81-card');card.dataset.item=String(index+1);
-            if(rows[0].abilityGroup){const scenario=node('p','p81-scenario');scenario.append(node('span','p81-scenario-number',(index+1)+'.'),document.createTextNode(' '+rows[0].abilityGroup));card.append(scenario);}
-            if(rows[0].comparison)card.classList.add('p81-comparison-card');
-            const table=node('table','recording-table p81-table');const body=node('tbody');table.append(body);
-            let pairNotice=null;if(rows[0].comparison){pairNotice=node('div','p81-nuance-note');pairNotice.hidden=true;pairNotice.setAttribute('role','note');pairNotice.append(node('div','p81-nuance-note-title','✨Notice the difference:'));rows.forEach(item=>{const noteLine=node('div','p81-nuance-note-text');noteLine.append(node('strong','p81-nuance-adjective',cueText(item.adjective)+'：'),document.createTextNode(item.impressions[item.adjective].replace(/上手|下手|得意|苦手/g,t=>({'上手':'じょうず','下手':'へた','得意':'とくい','苦手':'にがて'}[t]))));pairNotice.append(noteLine);});}
-            rows.forEach((r,ri)=>{
-                const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;
-                if(!ri&&si!==4){const number=node('td','drill-number-cell',(index+1)+'.');number.rowSpan=rows.length;tr.append(number);}
-                const cue=node('td','prompt-label drill-cue-cell');
-                if(r.kind)cue.append(node('span','example-label-title p81-kind'+(r.comparison?' p81-concept-badge':''),r.kind));
-                const cueBody=r.comparison?node('span','p81-cue-body'):cue;if(r.comparison)cue.append(cueBody);
-                const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
-                const rec=button('🎙️とる',()=>record(key,r));
-                const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.classList.add('stop-record-btn');stop.disabled=true;stop.setAttribute('aria-disabled','true');
-                if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
-                    window.QuestionIndicator.attach(stop,r.qa==='question');
-                }
-                const content=node('span','p81-cue-words');
-                if(r.selectKind==='activity'){
-                    addSelect(cueBody,r,key);
-                    cueBody.append(document.createTextNode('／'));
-                    const target=node('span','p81-degree-target');target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
-                    if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
-                }else{
-                    if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'),node('span','p81-drill-repeat-after-spacer'));}
-                    else{content.innerHTML=cues(r);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
-                    cueBody.append(content);addSelect(cueBody,r,key);
-                }
-                if(r.comparison)listen.classList.add('p81-cue-listen');
-                if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
-                if(r.qa==='response')for(const value of ['yes','no']){
-                    const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
-                }
-                const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
-                if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
-                else actions.append(listen,rec,stop);
-                const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
-                line.append(wrap);
-                const correction=node('div','correction-box');correction.hidden=true;
-                const feeling=node('div','p81-feedback');feeling.setAttribute('role','status');feeling.hidden=true;
-                cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);
-                views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling,notYet,nuance:pairNotice});showResult(key);
-            });
-            card.append(table);if(pairNotice)card.append(pairNotice);group.append(card);
+            group.append(buildCard(rows,index,si));
         });
         root.append(group);
     });
@@ -1078,67 +1110,68 @@ function measureExampleCues() {
     });
 }
 document.addEventListener('content-layout',measureExampleCues);
+function measureSectionCues(group) {
+    group.style.removeProperty('--p81-kind-width');
+    const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
+    for(const cell of cells) {
+        const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(e=>e.remove());
+        Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});
+        group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();
+    }
+    for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
+    group.querySelectorAll('.p81-comparison-card').forEach(card=>{
+        card.style.removeProperty('--p81-kind-width');
+        const promptCells=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body)')];
+        promptCells.forEach(c=>c.style.removeProperty('--p81-kind-width'));
+        const labels=promptCells.map(c=>c.querySelector(':scope > .p81-kind'));
+        if(labels.length!==2||!labels[0]||!labels[1])return;
+        const labelWidths=labels.map(label=>{
+            const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
+            card.append(copy);const w=copy.getBoundingClientRect().width;copy.remove();return w;
+        });
+        const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
+        const spacer=target?.querySelector('.p81-drill-repeat-spacer'),mark=target?.querySelector('.p81-repeat-mark'),afterSpacer=target?.querySelector('.p81-drill-repeat-after-spacer');
+        const display=id=>cueText(id);
+        const firstText=display(anchor?.dataset.repeatStart),lastText=display(anchor?.dataset.repeatEnd);
+        const targets=[...(anchor?.querySelectorAll('.target-word')||[])];
+        const first=targets.find(e=>e.textContent.includes(firstText||'\u0000')),last=[...targets].reverse().find(e=>e.textContent.includes(lastText||'\u0000'));
+        if(!anchor||!target||!spacer||!mark||!first||!last)return;
+        promptCells[0].style.setProperty('--p81-kind-width',labelWidths[0]+'px');
+        promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
+        const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
+        let centerX=(firstRect.left+lastRect.right)/2;
+        if(labels.some(l=>l.textContent.includes('Uncomfortable'))){
+            const text=last.textContent;
+            const idx=text.indexOf('話')!==-1?text.indexOf('話'):text.indexOf('は');
+            let found=false;
+            if(idx!==-1&&last.firstChild){
+                try{
+                    const range=document.createRange();
+                    range.setStart(last.firstChild,idx);
+                    range.setEnd(last.firstChild,idx+1);
+                    const r=range.getBoundingClientRect();
+                    if(r.width>0){centerX=(r.left+r.right)/2;found=true;}
+                }catch(_){}
+            }
+            if(!found)centerX=lastRect.left+markWidth/2;
+        }
+        spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
+        if(afterSpacer){
+            const anchorRight=Math.max(anchor.getBoundingClientRect().right,lastRect.right);
+            const markRight=mark.getBoundingClientRect().right;
+            afterSpacer.style.width=Math.max(0,anchorRight-markRight)+'px';
+            const selects=[...card.querySelectorAll('select.p81-select')];
+            if(selects.length===2&&Math.abs(selects[0].getBoundingClientRect().top-firstRect.top)<8){
+                const delta=selects[0].getBoundingClientRect().left-selects[1].getBoundingClientRect().left;
+                if(Math.abs(delta)>0.1)afterSpacer.style.width=Math.max(0,parseFloat(afterSpacer.style.width)+delta)+'px';
+            }
+        }
+    });
+}
 function measureCues() {
     document.querySelectorAll('.p81-drill-repeat-spacer,.p81-drill-repeat-after-spacer').forEach(e=>{e.style.width='0px';});
     measureExampleCues();
-    document.querySelectorAll('.p81-section').forEach(group=>{
-        group.style.removeProperty('--p81-kind-width');
-        const cards=group.querySelectorAll('.p81-card'),cells=group.querySelectorAll('.p81-card .prompt-label');let width=0;
-        for(const cell of cells) {
-            const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(e=>e.remove());
-            Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});
-            group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();
-        }
-        for(const card of cards)card.style.setProperty('--p81-cue-width',(width+8)+'px');
-        group.querySelectorAll('.p81-comparison-card').forEach(card=>{
-            card.style.removeProperty('--p81-kind-width');
-            const promptCells=[...card.querySelectorAll('.prompt-label:has(> .p81-cue-body)')];
-            promptCells.forEach(c=>c.style.removeProperty('--p81-kind-width'));
-            const labels=promptCells.map(c=>c.querySelector(':scope > .p81-kind'));
-            if(labels.length!==2||!labels[0]||!labels[1])return;
-            const labelWidths=labels.map(label=>{
-                const copy=label.cloneNode(true);Object.assign(copy.style,{position:'absolute',visibility:'hidden',width:'max-content',maxWidth:'none'});
-                card.append(copy);const w=copy.getBoundingClientRect().width;copy.remove();return w;
-            });
-            const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
-            const spacer=target?.querySelector('.p81-drill-repeat-spacer'),mark=target?.querySelector('.p81-repeat-mark'),afterSpacer=target?.querySelector('.p81-drill-repeat-after-spacer');
-            const display=id=>cueText(id);
-            const firstText=display(anchor?.dataset.repeatStart),lastText=display(anchor?.dataset.repeatEnd);
-            const targets=[...(anchor?.querySelectorAll('.target-word')||[])];
-            const first=targets.find(e=>e.textContent.includes(firstText||'\u0000')),last=[...targets].reverse().find(e=>e.textContent.includes(lastText||'\u0000'));
-            if(!anchor||!target||!spacer||!mark||!first||!last)return;
-            promptCells[0].style.setProperty('--p81-kind-width',labelWidths[0]+'px');
-            promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
-            const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
-            let centerX=(firstRect.left+lastRect.right)/2;
-            if(labels.some(l=>l.textContent.includes('Uncomfortable'))){
-                const text=last.textContent;
-                const idx=text.indexOf('話')!==-1?text.indexOf('話'):text.indexOf('は');
-                let found=false;
-                if(idx!==-1&&last.firstChild){
-                    try{
-                        const range=document.createRange();
-                        range.setStart(last.firstChild,idx);
-                        range.setEnd(last.firstChild,idx+1);
-                        const r=range.getBoundingClientRect();
-                        if(r.width>0){centerX=(r.left+r.right)/2;found=true;}
-                    }catch(_){}
-                }
-                if(!found)centerX=lastRect.left+markWidth/2;
-            }
-            spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
-            if(afterSpacer){
-                const anchorRight=Math.max(anchor.getBoundingClientRect().right,lastRect.right);
-                const markRight=mark.getBoundingClientRect().right;
-                afterSpacer.style.width=Math.max(0,anchorRight-markRight)+'px';
-                const selects=[...card.querySelectorAll('select.p81-select')];
-                if(selects.length===2&&Math.abs(selects[0].getBoundingClientRect().top-firstRect.top)<8){
-                    const delta=selects[0].getBoundingClientRect().left-selects[1].getBoundingClientRect().left;
-                    if(Math.abs(delta)>0.1)afterSpacer.style.width=Math.max(0,parseFloat(afterSpacer.style.width)+delta)+'px';
-                }
-            }
-        });
-    });
+    document.querySelectorAll('.p81-section').forEach(measureSectionCues);
 }
 function sync() {
     const busy=Boolean(session||preparing);
