@@ -3289,19 +3289,26 @@ function renderEnglishCuePanel() {
     container.innerHTML = "";
     container.hidden = false;
 
-    const panel = node("section", "info-panel info-panel-task1 drill-cue-panel");
-    const copy = node("div", "drill-cue-copy");
-    copy.append(
-        node("span", "info-panel-title drill-cue-title", "Drill 3: Practice with English cues"),
-        node("span", "info-panel-desc drill-cue-description", "💡Use English cues for Drills 1–2.")
-    );
+    const panel = document.createElement("section");
+    panel.className = "info-panel info-panel-task1 drill-cue-panel";
 
-    const toggle = node(
-        "button",
-        "drill-cue-button",
-        practice2State.englishCues ? "Display Japanese Cues" : "Display English Cues"
-    );
+    const copy = document.createElement("div");
+    copy.className = "drill-cue-copy";
+
+    const title = document.createElement("span");
+    title.className = "info-panel-title drill-cue-title";
+    title.textContent = "Drill 3: Practice with English cues";
+
+    const desc = document.createElement("span");
+    desc.className = "info-panel-desc drill-cue-description";
+    desc.textContent = "💡Use English cues for Drills 1–2.";
+
+    copy.append(title, desc);
+
+    const toggle = document.createElement("button");
     toggle.type = "button";
+    toggle.className = "drill-cue-button";
+    toggle.textContent = practice2State.englishCues ? "Display Japanese Cues" : "Display English Cues";
     toggle.classList.toggle("is-english", Boolean(practice2State.englishCues));
     toggle.setAttribute("aria-pressed", String(Boolean(practice2State.englishCues)));
 
