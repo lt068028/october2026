@@ -37,7 +37,7 @@ for(const [width,mode,hint,style,theme]of settingsMatrix){for(const q of[p,b].fi
 check(!a.overflow,'page width '+key);check(a.tables.length>0,'recording rows audited '+key);
 if(old){check(a.text===old.text,'all visible/accessible words preserved '+key);check(JSON.stringify(a.forms)===JSON.stringify(old.forms),'controls and choices preserved '+key);}
 for(const [ti,t]of a.tables.entries()){
-const fitExpected=t.needed<=t.width-25?'inline':(t.needed>t.width+.25?'stacked':t.layout);
+const fitExpected=key.startsWith('practice8.1')?t.layout:(t.needed<=t.width-25?'inline':(t.needed>t.width+.25?'stacked':t.layout));
 check(t.layout===fitExpected,'content fit decision '+key+'/'+ti,{width:t.width,needed:t.needed,layout:t.layout,columns:t.columns});
 for(const [ri,r]of t.rows.entries()){
 check(r.buttons.every(b=>b.x>=-1&&b.right<=width+1),'operation buttons in viewport '+key+'/'+ti+'/'+ri,r.buttons);

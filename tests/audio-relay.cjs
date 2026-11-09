@@ -132,7 +132,7 @@ function mock(){
   const p=await open('practice1.2');
   await p.evaluate(manual=>{document.querySelector('#speechStyleControl [data-value="formal"]').click();const toggle=document.querySelector('#toggleRecordMode');if(toggle.checked===manual)toggle.click();},manual);
   let card=p.locator('#drill1Container .drill-row').nth(4);
-  await card.locator('button').filter({hasText:/^🙅/}).click();
+  await card.locator('button[data-answer="no"], button').filter({hasText:/^(🙅|Negative)/}).first().click();
   const rec=card.locator('tr').nth(part==='q'?0:1).locator('button').filter({hasText:/^🎙️とる/});
   await p.evaluate(()=>{t.speaking=true});await rec.click();await p.waitForTimeout(400);
   await p.evaluate(({manual,part})=>{const result=[{transcript:part==='q'?'妹はフリーターですか':'いいえフリーターじゃないです'}];result.isFinal=true; const r=t.recognitions.at(-1);r.onresult({resultIndex:0,results:[result]});r.onspeechstart();if(!manual)r.onend();},{manual,part});

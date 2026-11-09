@@ -976,9 +976,6 @@ function buildCard(rows,index,si) {
         const listen=button('🔊きく',()=>{if(!session&&!preparing&&!r.pending&&!(r.selectKind==='activity'&&!choices.get(r.id)))speak(r.text,listen);});
         const rec=button('🎙️とる',()=>record(key,r));
         const stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.classList.add('stop-record-btn');stop.disabled=true;stop.setAttribute('aria-disabled','true');
-        if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
-            window.QuestionIndicator.attach(stop,r.qa==='question');
-        }
         const content=node('span','p81-cue-words');
         if(r.selectKind==='activity'){
             addSelect(cueBody,r,key);
@@ -998,6 +995,9 @@ function buildCard(rows,index,si) {
         const cell=node('td','p81-controls');const line=node('div','recording-controls');const actions=node(r.comparison?'span':'div','recording-actions');let notYet=null;
         if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
         else actions.append(listen,rec,stop);
+        if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
+            window.QuestionIndicator.attach(stop,r.qa==='question');
+        }
         const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
         line.append(wrap);
         const correction=node('div','correction-box');correction.hidden=true;

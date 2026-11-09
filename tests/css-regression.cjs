@@ -16,6 +16,7 @@ const pages=['index','practice1.1','practice1.2','practice7.1','practice7.2','pr
    Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Chrome OS 日本語3',lang:'ja-JP',voiceURI:'3'}],addEventListener(){},cancel(){},speak(u){window.cssUtterance=u}}});
    window.SpeechSynthesisUtterance=class{constructor(text){this.text=text}};
    Object.defineProperty(navigator,'mediaDevices',{value:{getUserMedia:()=>new Promise(()=>{})}});
+   const orig=window.scrollTo.bind(window);window.scrollTo=(opts,y)=>{if(typeof opts==='object'&&opts){opts.behavior='auto';orig(opts);}else{orig(opts,y);}};
   });
   await p.route('http://css.test/**',r=>{
    const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});
