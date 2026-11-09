@@ -1,0 +1,88 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run pure Node.js contract test (uebung11)
+        run: |
+          echo "=== Step 1: Running pure Node.js contract test (uebung11) ==="
+          node tests/uebung11.cjs
+
+      - name: Install Playwright test dependencies
+        run: |
+          echo "=== Step 2: Installing Playwright and test dependencies in runner ==="
+          npm install --no-save playwright pngjs
+          npx playwright install --with-deps chromium
+          CHROMIUM_BIN=$(find ~/.cache/ms-playwright -name "chrome" -type f -perm /111 | head -n 1)
+          if [ -n "$CHROMIUM_BIN" ]; then
+            sudo ln -sf "$CHROMIUM_BIN" /usr/bin/chromium
+            echo "Linked $CHROMIUM_BIN to /usr/bin/chromium"
+          fi
+          /usr/bin/chromium --version || true
+
+      - name: Run Playwright test suite
+        env:
+          CHROMIUM_PATH: /usr/bin/chromium
+        run: |
+          echo "=== Step 3: Running Playwright test suite ==="
+
+          TOTAL=0
+          PASS=0
+          FAIL=0
+          FAILED_TESTS=()
+
+          for test_file in tests/*.cjs; do
+            # Skip uebung11.cjs as it was already executed in the dedicated step
+            if [ "$test_file" = "tests/uebung11.cjs" ]; then
+              continue
+            fi
+
+            TOTAL=$((TOTAL + 1))
+            echo "----------------------------------------------------"
+            echo "Running [$TOTAL]: $test_file"
+            echo "----------------------------------------------------"
+
+            if node "$test_file"; then
+              echo ">>> [PASS]: $test_file"
+              PASS=$((PASS + 1))
+            else
+              echo ">>> [FAIL]: $test_file"
+              FAIL=$((FAIL + 1))
+              FAILED_TESTS+=("$test_file")
+            fi
+          done
+
+          echo "===================================================="
+          echo "Test Summary:"
+          echo "Total Playwright tests: $TOTAL"
+          echo "Passed: $PASS"
+          echo "Failed: $FAIL"
+          if [ $FAIL -gt 0 ]; then
+            echo "Failed test files:"
+            for ft in "${FAILED_TESTS[@]}"; do
+              echo "  - $ft"
+            done
+            exit 1
+          fi
+          echo "All Playwright tests passed successfully!"
+          exit 0

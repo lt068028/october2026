@@ -6,19 +6,23 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T11:32:00+01:00
+- **最終更新日時**：2026-11-09T11:59:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
-- **Vercel本番状態**：Deploying / Pending Verification
+- **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Vercel `ignoreCommand` 256文字スキーマ制限の解消（外部シェルスクリプト化）
-- **変更内容**：`vercel.json` の256文字制限エラーに対応するため、Git差分判定ロジックを新規スクリプト `scripts/vercel-ignore-build.sh` へ移動し、`vercel.json` の `ignoreCommand` を `bash scripts/vercel-ignore-build.sh`（実測35文字）に短縮。コミット存在確認（`git cat-file -e`）、差分判定（`git diff --quiet`）、異常時ビルド実行（Exit 1）、差分なし時スキップ（Exit 0）、除外パス（`docs/`, `tests/`, `scripts/`, `*.md`）の判定仕様を維持。
-- **検証結果**：全6パターン（差分あり・差分なし・コミット不在・異常終了・docs除外・環境変数未設定）動作テストPASSED、`bash -n` 構文チェック合格、`git diff --check` 合格。
+- **課題**：C3: GitHub Actions自動テスト環境の導入（`.github/workflows/test.yml`）
+- **変更内容**：
+  1. `.github/workflows/test.yml` を新規作成。Node.js 20、Playwright、Chromiumの自動プロビジョニングを設定。
+  2. 純Node.js単体契約テスト `tests/uebung11.cjs` を独立ステップとして実行。
+  3. Playwright実ブラウザテスト群（59件）を別ステップでループ実行し、各テストのPASS/FAILをログ出力・集計するCIパイプラインを構築。
+  4. テスト依存関係はCIランナー一時領域（`--no-save`）に限定し、Productionサイトへの依存関係追加ゼロ・ゼロビルド方針を維持。
+- **検証結果**：YAML構文検査合格、`git diff --check` 合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
-- [ ] **Vercel本番デプロイ**：`041944b`（FWC W9 ドイツ語TTS診断・通知バナー）および本修正のProductionデプロイ完了確認（スキーマエラー解消確認）。
+- [ ] **GitHub Actions CI確認**：初回Push時の自動テストワークフロー実行結果（PASS/FAIL状況）の確認。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。
@@ -49,11 +53,11 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-09: Vercel ignoreCommand 256文字制限解消・スクリプト分離（Commit `338cbd2`）
 - 2026-11-09: Deutsche Übung 1.1 ドイツ語TTS診断・通知バナー実装（Commit `041944b`）
 - 2026-11-09: Practice 8.1 Drill 4活動選択の根本的高速化（Commit `8955bcf`）
 - 2026-11-09: 不要プレビュー15件削除およびテスト・クレジット整合（Commit `5d233a1`）
 - 2026-11-09: HANDOVER軽量化・過去ログアーカイブ分割（Commit `a45f304`）
-- 2026-11-09: Practice 8.3「Verb」「だれ」「何」バッジ表示統一（Commit `f8b694a`）
 
 ## 8. 過去履歴アーカイブ（History Index）
 過去の詳細な作業ログ・リレー記録は以下のアーカイブファイルに保管されています。
