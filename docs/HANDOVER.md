@@ -6,19 +6,19 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T11:27:00+01:00
+- **最終更新日時**：2026-11-09T11:32:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Deploying / Pending Verification
 
 ## 2. 直近の完了作業
-- **課題**：Vercel `ignoreCommand` 恒久修正（`fatal: bad object` 解消とShallow Clone耐性向上）
-- **変更内容**：`vercel.json` の `ignoreCommand` を修正。比較対象コミット（`VERCEL_GIT_PREVIOUS_SHA`, `VERCEL_GIT_COMMIT_SHA`）の存在を `git cat-file -e` で事前検証し、コミット不在時や `git diff` 異常終了（Exit 128等）時は安全にビルド実行（Exit 1）へ倒すよう変更。差分なし（Exit 0）の時のみビルドスキップとし、`docs/`, `tests/`, `scripts/`, `*.md` の除外条件を維持。
-- **検証結果**：全5パターン（差分あり・差分なし・コミット不在・異常終了・docs除外）のテスト実行PASSED、`git diff --check` 合格。
+- **課題**：Vercel `ignoreCommand` 256文字スキーマ制限の解消（外部シェルスクリプト化）
+- **変更内容**：`vercel.json` の256文字制限エラーに対応するため、Git差分判定ロジックを新規スクリプト `scripts/vercel-ignore-build.sh` へ移動し、`vercel.json` の `ignoreCommand` を `bash scripts/vercel-ignore-build.sh`（実測35文字）に短縮。コミット存在確認（`git cat-file -e`）、差分判定（`git diff --quiet`）、異常時ビルド実行（Exit 1）、差分なし時スキップ（Exit 0）、除外パス（`docs/`, `tests/`, `scripts/`, `*.md`）の判定仕様を維持。
+- **検証結果**：全6パターン（差分あり・差分なし・コミット不在・異常終了・docs除外・環境変数未設定）動作テストPASSED、`bash -n` 構文チェック合格、`git diff --check` 合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
-- [ ] **Vercel本番デプロイ**：`041944b`（FWC W9 ドイツ語TTS診断・通知バナー）および本修正のProductionデプロイ完了確認。
+- [ ] **Vercel本番デプロイ**：`041944b`（FWC W9 ドイツ語TTS診断・通知バナー）および本修正のProductionデプロイ完了確認（スキーマエラー解消確認）。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。
