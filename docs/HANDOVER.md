@@ -6,25 +6,31 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T17:00:00+01:00
+- **最終更新日時**：2026-11-09T16:30:00+01:00
 - **担当環境**：Codex / Antigravity
-- **対象ブランチ / 最新コミット**：`main`
+- **対象ブランチ / 最新コミット**：`main` (`97b8d2d`)
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：C3-FAIL 第1弾：確定仕様に基づく6テストの更新
+- **課題**：W7: Practice 7.2 音声排他制御の回帰テスト追加（`tests/practice72-audio-interruption.cjs`）
 - **変更内容**：
-  1. `tests/speaker-guide.cjs`: Practice 2.3 Example 1の通話案内表示を現行の `X ↔ Y` および `.p23-phone-icon`、`conversation-person` バッジ構造に準拠した検証に更新。
-  2. `tests/shared-conversation-display.cjs`: 同じ通話案内の旧英文期待値を現行の `X ↔ Y`、電話アイコンおよび話者バッジの保持検証に更新。
-  3. `tests/practice21.cjs`: Drill 3質問の人物呼称期待値を、確定仕様（人物X/Y/Z統一ルール）に基づく `わいさんの`/`えっくすさんの` に更新（旧 `'あなたの'` からの乖離解消）。
-  4. `tests/practice23-cities.cjs`: Q/A役割アイコン（`.conversation-role-circle`）導入後の話者ラベル textContent（`['X','X','Y','','X','Y','']`）および役割アイコンの aria-label（Question/Answer）検証に更新。
-  5. `tests/practice22-umbrellas.cjs`: 確定仕様（「どの／どれ」質問時に正答品物を囲まず、返答時のみハイライト）に基づき、質問行クリック時はターゲット非囲み（`count() === 0`）、返答行クリック時は正答傘をハイライト、再生終了時は解除されることを検証。
-  6. `tests/practice83-speech-style.cjs`: `speechSynthesis` モックに `current: null` および `pause(){}, resume(){}` を補完。スタイル切替前に能動的にモデル音声を再生し、スタイル切替による即時再生中断（`current === null`）および遅延コールバックによる不要な再生復帰の抑止を検証。
-  7. 本体HTML/CSS/JSおよび共有モジュールには一切変更を加えず、テストファイル6件のみを限定修正。
+  1. Practice 7.2専用の音声排他制御回帰テスト `tests/practice72-audio-interruption.cjs` を新規作成。
+  2. 検証ケースB1（モデル音声中の中断）、B2（録音音声中の中断）、B3（遅延コールバックによる旧録音再生の抑止）、B4（中断後の再録音と他行データ保持）を実装。
+  3. テストランナー内のモック（AudioContext、SpeechRecognition、MediaRecorder、speechSynthesis）を整備し、セッション遷移・非同期終了の待機条件を精密化。
+  4. `.github/workflows/test.yml` に新規テストを追加（Group 2）。あわせてGroup 3のタイムアウトを解消するため、4グループの負荷を再均衡化（16/17/13/15、計61件）。
+  5. 本体HTML/CSS/JSおよび共通音声制御モジュールは一切変更せず、既存仕様・コードの保持を徹底。
+- **検証結果**：
+  - GitHub Actions（Run ID: 42642127235）にて全61テストがタイムアウト中断なく100%完走。
+  - `tests/practice72-audio-interruption.cjs` の全ケース（B1, B2, B3, B4）がすべて **PASS**（所要時間: 3秒）。
+  - 各ケース結果：
+    - [B1] PASS: モデル音声（TTS）再生中に次行録音開始時、モデル音声が即時中断され次行の録音準備が開始される。
+    - [B2] PASS: 録音音声再生中に次行録音開始時、録音音声が即時停止され次行の録音準備が開始される。
+    - [B3] PASS: 中断後に旧モデル音声の `onend` コールバックが遅延発火しても、旧録音音声が再生されない。
+    - [B4] PASS: 中断後に再録音した行が新しいテキストで正常保存され、別行の保存済みデータ・音声URLが保持される。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
-- [ ] **GitHub Actions CI確認**：更新した6テストを含む全61テストの実行結果確認。
+- [ ] **GitHub Actions CI確認**：`practice72-audio-interruption.cjs`（B1〜B4）の実行結果および全61テストの完走確認。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。
@@ -35,7 +41,7 @@
 ※ Practice 7.3およびPractice 8.1の「Copy my sentences」機能追加（Commit `69b917f`）はユーザー実機確認済みのため完了。
 
 ## 4. 検証済み成果・動作確認状態（Verified Results）
-- **自動検証**：Playwright Headless（Chromium）CIテスト（`tests/*.cjs`）、`git diff --check`。
+- **自動検証**：Playwright Headless（Chromium / Brave）実測測定、既存自動テスト（`tests/*.cjs`）、`git diff --check`。
 - **実機確認済み機能**：
   - Practice 1.1, 1.2, 2.1, 2.2, 7.1, 7.2 の既存機能全般
   - Practice 7.3, 8.1 の「Copy my sentences」機能（ユーザー実機確認完了）
@@ -55,7 +61,6 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
-- 2026-11-09: W7: Practice 7.2 音声排他制御の回帰テスト追加（Commit `97b8d2d`, `959100a`）
 - 2026-11-09: Vercel ignoreCommand 256文字制限解消・スクリプト分離（Commit `338cbd2`）
 - 2026-11-09: Deutsche Übung 1.1 ドイツ語TTS診断・通知バナー実装（Commit `041944b`）
 - 2026-11-09: Practice 8.1 Drill 4活動選択の根本的高速化（Commit `8955bcf`）
