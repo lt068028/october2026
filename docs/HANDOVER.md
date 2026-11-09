@@ -1,4 +1,50 @@
-# 現在のリレー状態 — Practice 7.3・8.1「Copy my sentences」機能追加完了
+# 現在のリレー状態 — Practice 8.3 バッジ表示統一（再修正）完了
+
+- 更新日時：2026-11-09T08:05:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
+- 状態：引き継ぎ可能（GitHub保存完了・FWC F1はユーザー実機確認待ちのため未完了として維持）
+- 課題／開始時mainのコミットID／作業ブランチ：Codex修正指示書 — Practice 8.3 バッジ表示統一（再修正） ／ `69b917fc9ffb7fb58231c5ff681a293db2bf3a2d` ／ `main`
+- 原因分析と修正内容：
+  1. **前回の取り違いの原因特定**:
+     - 前回のコミット `1707076` では、指示書の「Verb」と「だれ・何」をDrill 1のセット切替ボタン（`.p21-set-switcher .example-button`）と誤認し、セット切替ボタンのCSSを変更していた。
+     - 本来の対象は、Example 1内の3つのバッジ（述語区分バッジ「Verb」`.p83-header-badge`、疑問詞区分バッジ「だれ」`.p83-example-category`、疑問詞区分バッジ「何」`.p83-example-category`）であった。
+     - コミット `1707076` で追加された `.practice83-page .p21-set-switcher .example-button` の余分なCSSルールを安全に削除し、セット切替ボタンは全ページ共通の標準ボタンスタイル（`font-weight: 400`, `padding: 4px 8px`, `border-radius: 4px`）に復旧（共通Lato設定 `var(--font-latin)` は維持）。
+  2. **3つのバッジの視覚スタイル完全統一**:
+     - `style.css` において `.practice83-page :is(.p83-header-badge, .p83-example-category)` を導入し、共通仕様を適用。
+       - 背景色：Light `var(--surface-bg-subtle, rgba(0, 0, 0, 0.04))` ／ Dark `#304663`
+       - 枠線：Light `1px solid var(--border-color, #e2e8f0)` ／ Dark `1px solid #7998c3`
+       - 角丸：`8px`
+       - 内側余白：`6px 10px`
+       - 文字色：Light `var(--text-primary, #1e293b)` ／ Dark `#ffffff`
+       - フォントサイズ：`.9em`（18.72px）
+       - フォントウェイト：`700`
+       - 行高：`1.2`（22.464px）
+       - 配置：`display: inline-flex`（Categoryは3行結合のグリッド配置 `grid-column: 1; grid-row: span 3; align-self: center; justify-self: center` を維持）
+     - 日本語主ラベル（`.p83-cat-main`：だれ／何）は既存の日本語フォント（sans-serifフォールバック）を維持し、英語副ラベル（`.p83-cat-sub`：Who／What）および「Verb」は `Lato` を適用。
+     - ダークモード時、これまで透過白色（`rgba(255, 255, 255, 0.05)`）で見劣りしていた「だれ」「何」の背景・枠線・文字色を、Verbと同一の `#304663`（背景）・`#7998c3`（枠線）・`#ffffff`（文字色）へ完全統一。
+     - モバイル時（`max-width: 760px`）のCategoryバッジ（`flex-direction: row`）のパディングも `6px 10px` に統一し、全3バッジの高さが `36.45px` で完全一致。
+     - `practice8.3.html`: スタイルシートのキャッシュバスターを `style.css?v=20261109-p83-badge-unify` に更新。
+  3. **自動検証（Chromium / Brave Headless CDP実機計測）**:
+     - Computed Style実測値（Light Mode）：
+       - `Verb`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #e2e8f0, border-radius 8px, bg rgba(0,0,0,0.04), color #1e293b, height 36.45px
+       - `だれ`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #e2e8f0, border-radius 8px, bg rgba(0,0,0,0.04), color #1e293b, height 60.91px
+       - `何`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #e2e8f0, border-radius 8px, bg rgba(0,0,0,0.04), color #1e293b, height 60.91px
+     - Computed Style実測値（Dark Mode）：
+       - `Verb`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #7998c3, border-radius 8px, bg #304663, color #ffffff, height 36.45px
+       - `だれ`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #7998c3, border-radius 8px, bg #304663, color #ffffff, height 60.91px
+       - `何`: font-size 18.72px, font-weight 700, line-height 22.464px, padding 6px 10px, border 1px solid #7998c3, border-radius 8px, bg #304663, color #ffffff, height 60.91px
+     - 画面幅別検証（1200px / 768px / 375px × Light / Dark）：横はみ出しなし（overflow: false）、疑問文アイコン18個すべて保持、セット切替動作正常。
+     - スクリーンショット取得完了：`scratch/p83_ex1_1200px_light_after.png`, `scratch/p83_ex1_1200px_dark_after.png`, `scratch/p83_ex1_768px_light_after.png`, `scratch/p83_ex1_768px_dark_after.png`, `scratch/p83_ex1_375px_light_after.png`, `scratch/p83_ex1_375px_dark_after.png`。
+- 変更ファイル：`style.css`, `practice8.3.html`, `docs/HANDOVER.md`
+- スコープ厳守：Practice 8.3のExampleバッジスタイルおよびセット切替ボタンスタイル復旧に限定。Ex/Drill本文、設問、キュー、録音・再生ロジックへの影響なし。
+- 自動検証：
+  - `git diff --check`：PASS（空白・改行不整合なし）
+  - Brave Headless CDP実機計測（1200/768/375px、Light/Dark、computed style比較、セット切替・アイコン保持）：全項目PASS
+- ユーザー実機確認／CI／デプロイ：Vercelデプロイ後の実機確認待ち（ブラウザ自動検証環境にて検証済み）。
+- 次の具体的操作／判断待ち：
+  - 実機ブラウザ（`https://october2026.vercel.app/practice8.3.html`）での Practice 8.3 Example 1 における「Verb」「だれ」「何」バッジの視覚スタイル統一（背景色、枠線色、文字色、角丸、余白、太さ、ダークモード表示）の確認。
+  - FWC F1は実機確認完了まで未完了として維持。
+
+# 前回のリレー状態 — Practice 7.3・8.1「Copy my sentences」機能追加完了
 
 - 更新日時：2026-11-09T00:45:00+01:00 ／ 担当環境：Antigravity (Gemini 3.8 Flash, Linux)
 - 状態：引き継ぎ可能（GitHub保存完了）
