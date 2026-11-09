@@ -6,22 +6,19 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T09:35:00+01:00
+- **最終更新日時**：2026-11-09T11:27:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
-- **Vercel本番状態**：Ready
+- **Vercel本番状態**：Deploying / Pending Verification
 
 ## 2. 直近の完了作業
-- **課題**：Deutsche Übung 1.1: ドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー（FWC W9）
-- **変更内容**：
-  1. ヘッダー直下に専用の通知バナー `#germanTtsNotice`（×ボタン付き、非モーダル、375pxレスポンシブ）を新設。既存の `#audioRecoveryStatus` および `#voiceRegionNotice` とは完全に分離。
-  2. 起動時TTS診断 `diagnoseTtsStartup()` を導入（`available`, `unavailable`, `unknown`, `unsupported`）。遅延ロード（1000ms）と `voiceschanged` を監視し誤警告を防止。
-  3. 再生ライフサイクル監視を強化。`u.addEventListener` により `guardUtterance` のコールバック非呼出を回避して確実にエラーを捕捉。
-  4. 開始タイムアウト監視（5000ms）、明示的エラー通知、長文（>=10文字）の極短時間終了（<150ms）時の音量確認サジェスチョン表示、意図的キャンセル保護（`cancelActivePlaybackToken`）を実装。正常再生成功時の再生エラー通知自動解除に対応。
-- **検証結果**：`tests/uebung11.cjs` 契約検証全件PASS、`git diff --check` 合格。
+- **課題**：Vercel `ignoreCommand` 恒久修正（`fatal: bad object` 解消とShallow Clone耐性向上）
+- **変更内容**：`vercel.json` の `ignoreCommand` を修正。比較対象コミット（`VERCEL_GIT_PREVIOUS_SHA`, `VERCEL_GIT_COMMIT_SHA`）の存在を `git cat-file -e` で事前検証し、コミット不在時や `git diff` 異常終了（Exit 128等）時は安全にビルド実行（Exit 1）へ倒すよう変更。差分なし（Exit 0）の時のみビルドスキップとし、`docs/`, `tests/`, `scripts/`, `*.md` の除外条件を維持。
+- **検証結果**：全5パターン（差分あり・差分なし・コミット不在・異常終了・docs除外）のテスト実行PASSED、`git diff --check` 合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Vercel本番デプロイ**：`041944b`（FWC W9 ドイツ語TTS診断・通知バナー）および本修正のProductionデプロイ完了確認。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。
@@ -52,6 +49,7 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-09: Deutsche Übung 1.1 ドイツ語TTS診断・通知バナー実装（Commit `041944b`）
 - 2026-11-09: Practice 8.1 Drill 4活動選択の根本的高速化（Commit `8955bcf`）
 - 2026-11-09: 不要プレビュー15件削除およびテスト・クレジット整合（Commit `5d233a1`）
 - 2026-11-09: HANDOVER軽量化・過去ログアーカイブ分割（Commit `a45f304`）
