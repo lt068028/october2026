@@ -34,6 +34,7 @@ jobs:
               tests/p11-cue-resize.cjs
               tests/practice11-topic.cjs
               tests/tooltip-layout.cjs
+              tests/beyond-button.cjs
           - group: 2
             name: "Examples, Audio & Speech"
             tests: >-
@@ -52,11 +53,11 @@ jobs:
               tests/lesson2-speaker-pulse.cjs
               tests/stt-display.cjs
               tests/uebung11.cjs
-          - group: 3
-            name: "Beyond, Practice 1-2 & QA"
-            tests: >-
-              tests/beyond-button.cjs
               tests/content-layout-boundaries.cjs
+              tests/practice72-audio-interruption.cjs
+          - group: 3
+            name: "Practice 1-2, QA & Order"
+            tests: >-
               tests/practice21.cjs
               tests/practice2-next.cjs
               tests/practice22-qa.cjs
