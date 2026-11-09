@@ -6,7 +6,7 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T15:35:00+01:00
+- **最終更新日時**：2026-11-09T16:12:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
@@ -17,8 +17,9 @@
 - **変更内容**：
   1. Practice 7.2専用の音声排他制御回帰テスト `tests/practice72-audio-interruption.cjs` を新規作成。
   2. 検証ケースB1（モデル音声中の中断）、B2（録音音声中の中断）、B3（遅延コールバックによる旧録音再生の抑止）、B4（中断後の再録音と他行データ保持）を実装。
-  3. `.github/workflows/test.yml` に新規テストを追加（Group 2）。あわせてGroup 3のタイムアウト（約10分の `example-order.cjs` 起因）を解消するため、`beyond-button.cjs` をGroup 1、`content-layout-boundaries.cjs` をGroup 2へ移管し、4グループの負荷を再均衡化（16/17/13/15、計61件）。
-  4. 本体HTML/CSS/JSおよび共通音声制御モジュールは一切変更せず、既存仕様・コードの保持を徹底。
+  3. テストランナー内のモック（AudioContext、SpeechRecognition、MediaRecorder、speechSynthesis）を整備し、セッション遷移・非同期終了の待機条件を精密化。
+  4. `.github/workflows/test.yml` に新規テストを追加（Group 2）。あわせてGroup 3のタイムアウトを解消するため、4グループの負荷を再均衡化（16/17/13/15、計61件）。
+  5. 本体HTML/CSS/JSおよび共通音声制御モジュールは一切変更せず、既存仕様・コードの保持を徹底。
 - **検証結果**：全61テストの重複・漏れなし検証合格、YAML構文確認完了、`git diff --check` 合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）

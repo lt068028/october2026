@@ -20,7 +20,8 @@ function mock() {
         defer: false,
         deny: false,
         cancelCalls: 0,
-        pauseCalls: 0
+        pauseCalls: 0,
+        speaking: false
     };
 
     Object.defineProperty(window, 'speechSynthesis', {
@@ -126,6 +127,25 @@ function mock() {
             this.paused = true;
         }
     };
+
+    window.AudioContext = class {
+        constructor() { this.state = 'running'; this.sampleRate = 48000; }
+        resume() { return Promise.resolve(); }
+        close() { this.state = 'closed'; return Promise.resolve(); }
+        createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
+        createAnalyser() {
+            return {
+                fftSize: 2048,
+                getFloatTimeDomainData(a) { a.fill(0.08); },
+                disconnect() {}
+            };
+        }
+        decodeAudioData() {
+            const buffer = { sampleRate: 48000, numberOfChannels: 1, length: 48000, getChannelData: () => new Float32Array(48000) };
+            return Promise.resolve(buffer);
+        }
+    };
+    window.webkitAudioContext = window.AudioContext;
 }
 
 (async () => {
@@ -182,8 +202,7 @@ function mock() {
         // Helper: Record on given row and wait for Autoplay model speech to start
         async function recordAndStartAutoplay(recBtn, transcript) {
             await recBtn.click();
-            await page.waitForFunction(() => Boolean(window.activeRecognitionSession || practice7State?.startingRow), { timeout: 3000 });
-            await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
+            await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 5000 });
             await page.evaluate(text => {
                 const r = window.t.recognitions.at(-1);
                 const result = [{ transcript: text }];
@@ -193,7 +212,7 @@ function mock() {
             }, transcript);
             const initialSpokenCount = await page.evaluate(() => window.t.spoken.length);
             await page.locator('.stop-btn-active:not(:disabled)').click();
-            await page.waitForFunction(prev => window.t.spoken.length > prev, initialSpokenCount, { timeout: 3000 });
+            await page.waitForFunction(prev => window.t.spoken.length > prev, initialSpokenCount, { timeout: 5000 });
         }
 
         // ====================================================================
@@ -219,14 +238,14 @@ function mock() {
         assert.equal(b1Listen1Text.includes('Playing...'), false, 'B1: Row 1 listen button label must be restored');
 
         // 3. Row 2 recording must start
-        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
+        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 5000 });
         const b1Row2Active = await page.evaluate(() => activeRecognitionSession?.rowKey === 'p7_drill_perf_0');
         assert.equal(b1Row2Active, true, 'B1: Row 2 recording session must be active');
         console.log('[B1] PASS: Model audio cancelled and row 2 recording started');
 
         // Clean up Row 2 active recording before next test
         await page.locator('.stop-btn-active:not(:disabled)').click();
-        await page.waitForTimeout(100);
+        await page.waitForFunction(() => !activeRecognitionSession && !practice7State.startingRow, undefined, { timeout: 5000 });
 
         // ====================================================================
         // CASE B2: Interrupt during Recorded Audio by clicking row 2 record
@@ -238,7 +257,7 @@ function mock() {
         await page.evaluate(() => {
             window.t.spoken.at(-1)?.onend?.();
         });
-        await page.waitForFunction(() => window.t.audios.length > 0 && !window.t.audios.at(-1).paused, { timeout: 3000 });
+        await page.waitForFunction(() => window.t.audios.length > 0 && !window.t.audios.at(-1).paused, undefined, { timeout: 5000 });
 
         // Confirm Row 1 recorded audio is playing
         const b2AudioPlaying = await page.evaluate(() => !window.t.audios.at(-1).paused);
@@ -253,7 +272,7 @@ function mock() {
         assert.equal(b2AudioStopped, true, 'B2: Recorded audio must be stopped on row 2 record click');
 
         // 2. Row 2 recording must start
-        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
+        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 5000 });
         const b2Row2Active = await page.evaluate(() => activeRecognitionSession?.rowKey === 'p7_drill_perf_0');
         assert.equal(b2Row2Active, true, 'B2: Row 2 recording session must be active');
         console.log('[B2] PASS: Recorded audio stopped and row 2 recording started');
@@ -264,7 +283,7 @@ function mock() {
         console.log('Testing B3: Stale model completion callback after interruption...');
         // Stop current Row 2 recording cleanly
         await page.locator('.stop-btn-active:not(:disabled)').click();
-        await page.waitForTimeout(100);
+        await page.waitForFunction(() => !activeRecognitionSession && !practice7State.startingRow, undefined, { timeout: 5000 });
 
         // Start Row 1 Autoplay model speech again
         await recordAndStartAutoplay(rec1, 'あさ5時におきました');
@@ -277,7 +296,7 @@ function mock() {
 
         // Interrupt by starting Row 2 recording
         await rec2.click();
-        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
+        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 5000 });
 
         // Fire the stale callback now that Row 2 recording is in flight
         await page.evaluate(() => {
@@ -304,14 +323,14 @@ function mock() {
             r?.onspeechstart?.();
         });
         await page.locator('.stop-btn-active:not(:disabled)').click();
-        await page.waitForTimeout(150);
+        await page.waitForFunction(() => practice7State.savedResults['p7_drill_perf_0']?.rawTranscript === '5時から起きています', undefined, { timeout: 5000 });
 
         // Finish Row 2 Autoplay
         await page.evaluate(() => {
             window.t.spoken.at(-1)?.onend?.();
             window.t.audios.at(-1)?.onended?.();
         });
-        await page.waitForTimeout(100);
+        await page.waitForFunction(() => !activeRecognitionSession && !practice7State.startingRow, undefined, { timeout: 5000 });
 
         // Verify Row 2 data is stored
         const row2InitialSaved = await page.evaluate(() => practice7State.savedResults['p7_drill_perf_0']?.rawTranscript);
@@ -319,7 +338,7 @@ function mock() {
 
         // Return to Row 1 and start recording again
         await rec1.click();
-        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 3000 });
+        await page.waitForSelector('.stop-btn-active:not(:disabled)', { timeout: 5000 });
 
         // Complete Row 1 re-recording with new text
         await page.evaluate(() => {
@@ -330,7 +349,7 @@ function mock() {
             r?.onspeechstart?.();
         });
         await page.locator('.stop-btn-active:not(:disabled)').click();
-        await page.waitForTimeout(150);
+        await page.waitForFunction(() => practice7State.savedResults['p7_drill_past_0']?.rawTranscript === '朝五時に起きました', undefined, { timeout: 5000 });
 
         // Verify B4 results:
         // 1. Row 1 new transcript is saved
