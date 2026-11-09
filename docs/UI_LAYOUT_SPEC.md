@@ -33,11 +33,11 @@
 
 ## 会話役割アイコン（2026-11-08採用決定）
 
-質問はIcons8 iOS OutlinedのAsk Question、応答はSpeech Bubble。承認済み`assets/qa-preview/icons8-mono-question.png`／`icons8-mono-answer.png`と同一バイトの画像を`assets/qa-icons/`から配信する。Colorの白黒化やMicrosoft等の別素材に置き換えない。
+質問はIcons8 iOS OutlinedのAsk Question、応答はSpeech Bubble。承認済みの本番画像（`assets/qa-icons/icons8-mono-question.png`／`icons8-mono-answer.png`）から配信する。Colorの白黒化やMicrosoft等の別素材に置き換えない。
 
 `conversation-display.js`の会話役割生成で適用し、互換クラス`conversation-role-circle`と既存の位置・基線・間隔・外寸を保持する。追加の囲み・背景・バッジは付けない。通常は元の黒線、ダークでは画像を反転して明るい線とする。空の継続役割欄は非表示のまま幅を保持し、画像を生成しない。Question／Answerのアクセシブル名を役割コンテナへ残し、画像は装飾用の空altとする。
 
-適用はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3の会話役割だけ。説明中のQ/A、疑問符、人物・場所・語彙・文法ラベルは対象外。設定・セット切替等の再描画にも共通生成を適用する。比較Previewの置換スクリプトは本番へ読み込まず、Previewでは元の比較選択を維持する。
+適用はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3の会話役割だけ。説明中のQ/A、疑問符、人物・場所・語彙・文法ラベルは対象外。設定・セット切替等の再描画にも共通生成を適用する。
 
 使用ページには小さな可視のIcons8リンクを置く。出典・Icons8ライセンス／帰属先は`assets/qa-icons/ICONS8-CREDITS.txt`で管理する。Microsoft素材のMITライセンスをIcons8へ適用しない。人物色・Lato・8.3の括弧なし二段目英語は維持する。
 

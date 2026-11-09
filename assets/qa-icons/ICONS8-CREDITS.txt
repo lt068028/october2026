@@ -1,8 +1,7 @@
 Icons8 monochrome iOS Outlined icons (50px PNG), approved 2026-11-08.
 Question: Ask Question — https://icons8.com/icon/6651/ask-question
 Answer: Speech Bubble — https://icons8.com/icon/143/speech-bubble
-Exact copies of assets/qa-preview/icons8-mono-question.png and icons8-mono-answer.png.
+Files: assets/qa-icons/icons8-mono-question.png and assets/qa-icons/icons8-mono-answer.png.
 License and attribution requirements: https://icons8.com/license
 Visible link to https://icons8.com/ is provided on every production page using these icons.
-These Icons8 assets are not covered by the Microsoft MIT license in assets/qa-preview/LICENSE.txt.
 Dark mode uses CSS inversion; original asset bytes are unchanged.
