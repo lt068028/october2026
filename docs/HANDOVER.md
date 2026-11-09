@@ -6,23 +6,24 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T11:59:00+01:00
+- **最終更新日時**：2026-11-09T15:10:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：C3: GitHub Actions自動テスト環境の導入（`.github/workflows/test.yml`）
+- **課題**：C3: GitHub Actionsテスト実行の安定化（4並列Matrix Strategy導入）
 - **変更内容**：
-  1. `.github/workflows/test.yml` を新規作成。Node.js 20、Playwright、Chromiumの自動プロビジョニングを設定。
-  2. 純Node.js単体契約テスト `tests/uebung11.cjs` を独立ステップとして実行。
-  3. Playwright実ブラウザテスト群（59件）を別ステップでループ実行し、各テストのPASS/FAILをログ出力・集計するCIパイプラインを構築。
-  4. テスト依存関係はCIランナー一時領域（`--no-save`）に限定し、Productionサイトへの依存関係追加ゼロ・ゼロビルド方針を維持。
-- **検証結果**：YAML構文検査合格、`git diff --check` 合格。
+  1. 初回CI実行（Run ID: 42605443944）で発生した20分タイムアウト（12ファイル実行時点で中断、48ファイル未実行）を解消するため、全60テストを4並列Matrixグループ（各15ファイル）に分割。
+  2. 初回ログ分析に基づき、長時間実行テスト（`content-layout.cjs`, `content-examples.cjs`, `beyond-button.cjs`, `content-layout-states.cjs`, `content-layout-boundaries.cjs`, `css-regression.cjs` 等）を4グループに分散配置。
+  3. `strategy.fail-fast: false` を設定し、一部テスト（既知の `audio-relay.cjs`, `audio-transitions.cjs` 等）がFAILしても他グループおよび同一グループ内の残りのテストが継続実行されるよう構成。
+  4. タイムアウト発生時にも未実行テストを特定できるよう、実行前に対象15テストを事前一覧表示。
+  5. 各テストの所要秒数（Duration）を計測し、実行ログおよび `$GITHUB_STEP_SUMMARY` にMarkdownテーブルとして出力。
+- **検証結果**：全60テストの重複・漏れなし検証合格（各グループ15ファイル、計60ファイル）、YAML構文確認完了、`git diff --check` 合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
-- [ ] **GitHub Actions CI確認**：初回Push時の自動テストワークフロー実行結果（PASS/FAIL状況）の確認。
+- [ ] **GitHub Actions CI確認**：4並列Matrix Strategyによる全60テストの実行結果・ログ確認。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。

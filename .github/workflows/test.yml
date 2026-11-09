@@ -9,8 +9,85 @@ on:
 
 jobs:
   test:
+    name: Group ${{ matrix.group }} - ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: 1
+            name: "Layout & Spacing"
+            tests: >-
+              tests/content-layout.cjs
+              tests/content-food-callout.cjs
+              tests/content-photograph-controls.cjs
+              tests/content-price-cues.cjs
+              tests/layout-rules.cjs
+              tests/fluid-width.cjs
+              tests/section-spacing.cjs
+              tests/example-arrow-alignment.cjs
+              tests/example-vertical-spacing.cjs
+              tests/display-cue-lines.cjs
+              tests/display-size.cjs
+              tests/lesson2-cue-spacing.cjs
+              tests/p11-cue-resize.cjs
+              tests/practice11-topic.cjs
+              tests/tooltip-layout.cjs
+          - group: 2
+            name: "Examples, Audio & Speech"
+            tests: >-
+              tests/content-examples.cjs
+              tests/audio-lifecycle.cjs
+              tests/audio-recovery.cjs
+              tests/audio-relay.cjs
+              tests/audio-transitions.cjs
+              tests/relay-zero-gap.cjs
+              tests/listen-help.cjs
+              tests/model-recorder.cjs
+              tests/tts-model-script.cjs
+              tests/voice-default.cjs
+              tests/speaker-guide.cjs
+              tests/labels-and-speakers.cjs
+              tests/lesson2-speaker-pulse.cjs
+              tests/stt-display.cjs
+              tests/uebung11.cjs
+          - group: 3
+            name: "Beyond, Practice 1-2 & QA"
+            tests: >-
+              tests/beyond-button.cjs
+              tests/content-layout-boundaries.cjs
+              tests/practice21.cjs
+              tests/practice2-next.cjs
+              tests/practice22-qa.cjs
+              tests/practice22-umbrellas.cjs
+              tests/practice23-cities.cjs
+              tests/common-yn-examples.cjs
+              tests/example-negative.cjs
+              tests/example-order.cjs
+              tests/qa-icons.cjs
+              tests/shared-conversation-display.cjs
+              tests/english-cue-navigation.cjs
+              tests/copy72.cjs
+              tests/preview73.cjs
+          - group: 4
+            name: "Content States & Practice 7-8"
+            tests: >-
+              tests/content-layout-states.cjs
+              tests/css-regression.cjs
+              tests/question-indicator.cjs
+              tests/practice81.cjs
+              tests/practice81-activity-select.cjs
+              tests/practice81-cue-fit.cjs
+              tests/practice81-final.cjs
+              tests/practice81-timing.cjs
+              tests/practice82.cjs
+              tests/practice82-example-layout.cjs
+              tests/practice83-speech-style.cjs
+              tests/answer-rules.cjs
+              tests/global-display.cjs
+              tests/semantic-colors.cjs
+              tests/settings-availability.cjs
 
     steps:
       - name: Checkout repository
@@ -23,14 +100,21 @@ jobs:
         with:
           node-version: 20
 
-      - name: Run pure Node.js contract test (uebung11)
+      - name: Verify assigned tests on disk
         run: |
-          echo "=== Step 1: Running pure Node.js contract test (uebung11) ==="
-          node tests/uebung11.cjs
+          read -r -a TESTS_ARRAY <<< "${{ matrix.tests }}"
+          echo "Verifying ${#TESTS_ARRAY[@]} assigned test files..."
+          for t in "${TESTS_ARRAY[@]}"; do
+            if [ ! -f "$t" ]; then
+              echo "Error: Test file $t does not exist on disk!"
+              exit 1
+            fi
+          done
+          echo "All ${#TESTS_ARRAY[@]} test files verified on disk."
 
       - name: Install Playwright test dependencies
         run: |
-          echo "=== Step 2: Installing Playwright and test dependencies in runner ==="
+          echo "=== Installing Playwright and test dependencies in runner ==="
           npm install --no-save playwright pngjs
           npx playwright install --with-deps chromium
           CHROMIUM_BIN=$(find ~/.cache/ms-playwright -name "chrome" -type f -perm /111 | head -n 1)
@@ -40,49 +124,90 @@ jobs:
           fi
           /usr/bin/chromium --version || true
 
-      - name: Run Playwright test suite
+      - name: Run test suite (${{ matrix.name }})
         env:
           CHROMIUM_PATH: /usr/bin/chromium
+          TEST_FILES: ${{ matrix.tests }}
+          GROUP_NAME: ${{ matrix.name }}
+          GROUP_ID: ${{ matrix.group }}
         run: |
-          echo "=== Step 3: Running Playwright test suite ==="
+          echo "=== Group $GROUP_ID: $GROUP_NAME ==="
+          read -r -a TESTS_ARRAY <<< "$TEST_FILES"
+          TOTAL_SCHEDULED=${#TESTS_ARRAY[@]}
 
-          TOTAL=0
-          PASS=0
-          FAIL=0
+          echo "Scheduled tests ($TOTAL_SCHEDULED files):"
+          for t in "${TESTS_ARRAY[@]}"; do
+            echo "  - $t"
+          done
+          echo "----------------------------------------------------"
+
+          # Initialize GitHub Step Summary table
+          echo "### Group $GROUP_ID: $GROUP_NAME Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| # | Test File | Result | Duration |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|:---:|---:|" >> "$GITHUB_STEP_SUMMARY"
+
+          TOTAL_COUNT=0
+          PASSED_COUNT=0
+          FAILED_COUNT=0
           FAILED_TESTS=()
+          RESULTS=()
 
-          for test_file in tests/*.cjs; do
-            # Skip uebung11.cjs as it was already executed in the dedicated step
-            if [ "$test_file" = "tests/uebung11.cjs" ]; then
-              continue
-            fi
+          GROUP_START=$(date +%s)
 
-            TOTAL=$((TOTAL + 1))
+          for test_file in "${TESTS_ARRAY[@]}"; do
+            TOTAL_COUNT=$((TOTAL_COUNT + 1))
+            echo ""
             echo "----------------------------------------------------"
-            echo "Running [$TOTAL]: $test_file"
+            echo "Running [$TOTAL_COUNT/$TOTAL_SCHEDULED]: $test_file"
             echo "----------------------------------------------------"
 
+            START_TIME=$(date +%s)
             if node "$test_file"; then
-              echo ">>> [PASS]: $test_file"
-              PASS=$((PASS + 1))
+              END_TIME=$(date +%s)
+              DURATION=$((END_TIME - START_TIME))
+              echo ">>> [PASS]: $test_file (${DURATION}s)"
+              PASSED_COUNT=$((PASSED_COUNT + 1))
+              RESULTS+=("PASS | ${DURATION}s | $test_file")
+              echo "| $TOTAL_COUNT | \`$test_file\` | :white_check_mark: PASS | ${DURATION}s |" >> "$GITHUB_STEP_SUMMARY"
             else
-              echo ">>> [FAIL]: $test_file"
-              FAIL=$((FAIL + 1))
-              FAILED_TESTS+=("$test_file")
+              END_TIME=$(date +%s)
+              DURATION=$((END_TIME - START_TIME))
+              echo ">>> [FAIL]: $test_file (${DURATION}s)"
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+              FAILED_TESTS+=("$test_file (${DURATION}s)")
+              RESULTS+=("FAIL | ${DURATION}s | $test_file")
+              echo "| $TOTAL_COUNT | \`$test_file\` | :x: FAIL | ${DURATION}s |" >> "$GITHUB_STEP_SUMMARY"
             fi
           done
 
+          GROUP_END=$(date +%s)
+          GROUP_DURATION=$((GROUP_END - GROUP_START))
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Group $GROUP_ID Summary**: Total: $TOTAL_COUNT | Passed: $PASSED_COUNT | Failed: $FAILED_COUNT | Duration: ${GROUP_DURATION}s" >> "$GITHUB_STEP_SUMMARY"
+
+          echo ""
           echo "===================================================="
-          echo "Test Summary:"
-          echo "Total Playwright tests: $TOTAL"
-          echo "Passed: $PASS"
-          echo "Failed: $FAIL"
-          if [ $FAIL -gt 0 ]; then
-            echo "Failed test files:"
+          echo "Group $GROUP_ID Summary: $GROUP_NAME (${GROUP_DURATION}s)"
+          echo "Scheduled: $TOTAL_SCHEDULED"
+          echo "Executed:  $TOTAL_COUNT"
+          echo "Passed:    $PASSED_COUNT"
+          echo "Failed:    $FAILED_COUNT"
+          echo "----------------------------------------------------"
+          echo "Detailed Results:"
+          for res in "${RESULTS[@]}"; do
+            echo "  $res"
+          done
+          echo "===================================================="
+
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "Failed tests in Group $GROUP_ID ($GROUP_NAME):"
             for ft in "${FAILED_TESTS[@]}"; do
               echo "  - $ft"
             done
             exit 1
           fi
-          echo "All Playwright tests passed successfully!"
+
+          echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
           exit 0
