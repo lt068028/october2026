@@ -60,7 +60,7 @@
         ).forEach(visit);
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function initModelLabels() {
         const previousRender = renderAll;
 
         renderAll = function() {
@@ -76,7 +76,13 @@
         };
 
         updateModelLabels();
-    });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initModelLabels);
+    } else {
+        initModelLabels();
+    }
 
     // Textボタンで後から表示するモデル文にも適用する。
     document.addEventListener(
@@ -523,11 +529,17 @@ function speakText(text, rate = 0.75, onEndCallback) {
         finish();
     }
 }
-document.addEventListener("DOMContentLoaded", () => {
+function initPractice12() {
     initSettingsPanel();
     renderAll();
     setupFooterGuide();
-});
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPractice12);
+} else {
+    initPractice12();
+}
 
 function setupFooterGuide() {
     setupPreferredVoice();
