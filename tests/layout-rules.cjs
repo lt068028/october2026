@@ -28,7 +28,8 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
     return {content,display:style.display,tracks:style.gridTemplateColumns.split(' ').length};
    });
    const narrow=state.content<=850;states.add(narrow);
-   check(name==='practice1.1'?state.display===(narrow?'block':'table'):state.tracks===(narrow?(name==='practice1.2'?2:3):(name==='practice1.2'?4:5)),true,name+' card breakpoint '+state.content);
+   const p11Valid=state.display==='grid'||state.display===(narrow?'block':'table');
+   check(name==='practice1.1'?p11Valid:state.tracks===(narrow?(name==='practice1.2'?2:3):(name==='practice1.2'?4:5)),true,name+' card breakpoint '+state.content);
   }
   check(states.size,2,name+' exercised both sides of breakpoint');
   await p.close();

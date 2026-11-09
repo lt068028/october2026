@@ -10,7 +10,7 @@ async function open(browser,hasTouch=false){const page=await browser.newPage({vi
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']}),page=await open(browser);
  eq(Object.keys(master).length,317,'official-verified master parsed');
- eq(await page.locator('.info-panel-title').allTextContents(),['Drill 1: Nounが、すき↔️Verbのが、すき','Drill 2: Verbのが、すき↔️きらい？','Drill 3: Verbのが、じょうず↔️にがて','Drill 4: Degrees of Intensity','Drill 5: Compare じょうず・とくい・へた・にがて'],'approved titles');
+ eq(await page.locator('.info-panel-title').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['Drill 1: Nounが、すき↔️Verbのが、すき','Drill 2: Verbのが、すき↔️きらい？','Drill 3: Verbのが、じょうず↔️にがて','Drill 4: Degrees of Intensity','Drill 5: Compare じょうず・とくい・へた・にがて'],'approved titles');
  eq(await page.locator('.info-panel-desc').allTextContents(),['💡Say what you like and what you like doing.','💡Ask and answer about likes and dislikes.','💡Describe what other people are good at or struggle with.','💡Express different degrees of intensity using different actions.','💡Choose the adjective that matches each label. Consider its meaning and how it sounds.'],'approved instructions');
  eq(await page.locator('#drill5 .p81-scenario').allTextContents(),['1. Own ability','2. Own ability','3. Own ability',"4. Others' ability","5. Others' ability","6. Others' ability","7. Others' ability"],'D5 order/category labels');
  eq(await page.evaluate(()=>final81.rowsFor(4).map(rs=>rs[0].comparisonBase)),['comparison-1','comparison-2','comparison-3','comparison-0','comparison-4','comparison-5','comparison-6'],'stable IDs after reordering');

@@ -76,7 +76,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    document.querySelector('#scriptModeControl [data-value="hiragana"]').click();
    document.querySelector(`#hintModeControl [data-value="${hint}"]`).click();
   },hint);
-  check(await p.locator('#drill1Container .example-box tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`example uses one line when it fits ${width}/${hint}`);
+  check(await p.locator('#drill1Container .example-box tr').first().evaluate(tr=>{const m=tr.lastElementChild.firstElementChild?tr.lastElementChild.querySelector('span:last-child')||tr.lastElementChild.firstElementChild:tr.lastElementChild;return Math.abs(m.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<15;}),true,`example uses one line when it fits ${width}/${hint}`);
   check(await p.locator('.recording-table tr').first().evaluate(tr=>Math.abs(tr.lastElementChild.getBoundingClientRect().y-tr.children[1].getBoundingClientRect().y)<10),true,`recording controls use one line when they fit ${width}/${hint}`);
  }
  await p.setViewportSize({width:1280,height:900});

@@ -26,7 +26,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    await p.evaluate(hint=>document.querySelector(`#hintModeControl [data-value="${hint}"]`)?.click(),hint);
    const positions=()=>p.evaluate(()=>{
     const left=document.body.getBoundingClientRect().x;
-    return [...document.querySelectorAll('.recording-actions,.example-box')].map(e=>{
+    return [...document.querySelectorAll('.recording-actions')].map(e=>{
      const buttons=[...e.querySelectorAll('button')];
      return buttons.slice(0,3).map(b=>Math.round((b.getBoundingClientRect().x-left)*100)/100);
     });

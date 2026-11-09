@@ -109,7 +109,7 @@ function mock(){
   const casual=p.locator('#speechStyleControl [data-value="casual"]');
   assert.equal(await casual.isDisabled(),true,'Casual remains permanently disabled');checks++;
   assert.equal(await casual.getAttribute('aria-disabled'),'true','Casual accessible disabled state');checks++;
-  assert.equal(await casual.evaluate(b=>getComputedStyle(b).filter),'grayscale(1)','Casual visually gray');checks++;
+  assert.equal(await casual.evaluate(b=>getComputedStyle(b.querySelector('.icon-emoji')||b).filter),'grayscale(1)','Casual visually gray');checks++;
   await p.evaluate(()=>document.querySelector('#speechStyleControl [data-value="informal"]').click());
   assert.equal(await p.locator('#speechStyleControl [data-value="informal"]').getAttribute('aria-pressed'),'true','Informal available');checks++;
   await p.evaluate(()=>document.querySelector('#speechStyleControl [data-value="casual"]').dispatchEvent(new MouseEvent('click',{bubbles:true})));

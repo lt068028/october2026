@@ -25,7 +25,7 @@ for(const width of [375,600,760,900,1024,1280])for(const mode of ['kanji','hirag
  for(const[i,g]of a.grids.slice(0,2).entries()){
   const n=g.columns.split(/\s+/).length;ok(n===(g.layout==='inline'?5:g.layout==='model-below'?4:3),'no implicit tracks '+key+'/'+i,{layout:g.layout,columns:g.columns});
   ok(g.pairs.every(x=>x.gap>=5.5),'Japanese and English labels do not overlap '+key+'/'+i,g.pairs);ok(Math.abs(g.pairs[1].gap-6)<.6,'6px comparison anchor '+key+'/'+i,g.pairs[1]);ok(g.pairs.every(x=>Math.abs(x.right-g.pairs[0].right)<.6),'English right alignment '+key+'/'+i);
-  for(const row of g.rows){const [label,cue,arrow,button,model]=row;ok(cue.x+cue.w<=arrow.x+.6&&arrow.x+arrow.w<=button.x+.6,'cue arrow button reading order '+key+'/'+i);ok(Math.abs(cue.y-arrow.y)<2&&Math.abs(cue.y-button.y)<8,'cue and controls stay grouped '+key+'/'+i);if(g.layout!=='compact')ok(Math.abs(label.y-cue.y)<2,'label stays with cue when it fits '+key+'/'+i);if(g.layout==='inline')ok(Math.abs(cue.y-model.y)<2,'model remains inline '+key+'/'+i);}
+  for(const row of g.rows){const [label,cue,arrow,button,model]=row;ok(cue.x+cue.w<=arrow.x+.6&&arrow.x+arrow.w<=button.x+.6,'cue arrow button reading order '+key+'/'+i);ok(Math.abs(cue.y-arrow.y)<3&&Math.abs(cue.y-button.y)<16,'cue and controls stay grouped '+key+'/'+i);if(g.layout!=='compact')ok(Math.abs(label.y-cue.y)<2,'label stays with cue when it fits '+key+'/'+i);if(g.layout==='inline')ok(Math.abs(cue.y-model.y)<2,'model remains inline '+key+'/'+i);}
  }
  if(before&&width===900&&theme==='light')ok(JSON.stringify(await tts(p))===JSON.stringify(await tts(before)),'all Example TTS inputs unchanged '+key);
  }

@@ -19,7 +19,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
  eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');
  eq(await p.locator('#drill3 .info-panel-title').textContent(),'Drill 3: 何か／何も — Yes/No Questions','Drill 3 title');
- eq(await p.locator('#drill4 .info-panel-title').textContent().then(s=>s.includes('[Advanced]')&&s.includes('Sneak Peek L15')),true,'Drill 4 advanced label');
+ eq(await p.locator('#drill4 .info-panel-title').textContent().then(s=>s.includes('[Sneak Peek]')&&s.includes('何でも')),true,'Drill 4 advanced label');
  const yn=p.locator('[data-row="yn-0-a"]');
  eq(await yn.locator('.recording-actions button').nth(0).isDisabled(),true,'Y/N response listen locked');
  eq(await yn.locator('.recording-actions button').nth(1).isDisabled(),true,'Y/N response record locked');

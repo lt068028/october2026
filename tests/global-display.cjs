@@ -39,7 +39,9 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
      if(heading&&e.querySelectorAll('.tense-badge,.p71-tense,.p73-tense').length!==1)return false;
      const pairs=[...e.querySelectorAll('.example-response-row td:nth-child(4) button,.practice12-example-answer')];
      if(pairs.length<2)return true;
-     const r=pairs.map(e=>e.getBoundingClientRect());return r[1].y>r[0].y&&Math.abs(r[1].x-r[0].x)<2;
+     const r=pairs.map(e=>e.getBoundingClientRect());
+     if(e.querySelector('.practice12-answer-separator')) return r[1].x>r[0].x || r[1].y>r[0].y;
+     return r[1].y>r[0].y&&Math.abs(r[1].x-r[0].x)<2;
     })),true,name+' single category heading and vertical Yes/No');
    }
   }

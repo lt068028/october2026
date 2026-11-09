@@ -104,7 +104,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('.question-indicator').count(), 5, 'Practice 2.1 default visible indicators count is 5');
 
     // Switch D1 to Set 2 (dialogue practice: 3 interrogatives)
-    await page.locator('[data-set-state="speakerPracticeSet"] button:nth-child(2)').click();
+    await page.locator('#drill1Container .p21-set-switcher button:nth-child(2)').click();
     check(await page.locator('#drill1Container .question-indicator').count(), 3, 'Practice 2.1 D1 Set 2 has 3 indicators');
 
     // Switch D2 to Set 2 (3 interrogatives)

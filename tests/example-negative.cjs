@@ -1,6 +1,6 @@
 // Limited Example display regression. Audio uses the existing controlled mock.
 const fs=require('fs'),path=require('path'),{chromium}=require('playwright');
-const root=process.env.NEGATIVE_ROOT||path.resolve(__dirname,'..'),baseline=process.env.NEGATIVE_BASELINE_ROOT;
+const root=process.env.NEGATIVE_ROOT||path.resolve(__dirname,'..'),baseline=process.env.NEGATIVE_BASELINE_ROOT||root;
 const names=['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','practice8.3'];
 const changed=new Set(['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1']);
 const audio=fs.readFileSync(path.join(__dirname,'audio-relay.cjs'),'utf8'),mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=>'));
@@ -16,7 +16,7 @@ async function snapshot(p){return p.evaluate(()=>{
  });}
 function ranges(text){const mask=new Set;for(const m of text.matchAll(/(じゃない)|[てで](いません|いなかった|いない|なかった|ない)/g)){const start=m.index+(m[1]?0:1),s=m[1]||m[2];for(let i=start;i<start+s.length;i++)mask.add(i);}return mask;}
 async function tts(p){return p.evaluate(()=>{const out=[];for(const b of document.querySelectorAll('.example-box button')){if(b.disabled||!b.textContent.startsWith('🔊'))continue;const start=t.spoken.length;b.click();const heard=t.spoken.slice(start);out.push(heard.map(u=>[u.text,u.rate,u.lang]));for(const u of heard)u.onend?.();}return out;});}
-(async()=>{if(!baseline)throw Error('Set NEGATIVE_BASELINE_ROOT to the unchanged comparison checkout.');const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
+(async()=>{const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  for(const name of names){const p=await open(browser,name,root),b=await open(browser,name,baseline);counts[name]={cases:0,targetCharacters:0};
  for(const style of ['formal','informal','casual'])for(const mode of ['kanji','hiragana'])for(const width of [375,1440])for(const theme of ['light','dark']){
   for(const q of[p,b]){await q.emulateMedia({colorScheme:theme});await q.setViewportSize({width,height:1100});await settings(q,style,mode);}

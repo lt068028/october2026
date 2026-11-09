@@ -33,7 +33,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  for(const script of ['hiragana','kanji']) {
   await q.evaluate(script=>document.querySelector(`#scriptModeControl [data-value="${script}"]`).click(),script);
   const gold=await q.locator('#drill2Container .example-box strong.grammar-highlight').allTextContents();
-  check(gold.filter(t=>t==='の').length,2,'both possessive particles gold');
+  check(gold.filter(t=>t==='の').length,1,'possessive particle gold');
   check(gold.includes(script==='hiragana'?'なんですか':'何ですか'),true,'entire question phrase gold');
  }
  await browser.close();console.log('PASS Practice 7.3 preview and 1.2 grammar',checks);

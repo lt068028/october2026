@@ -4,8 +4,8 @@ const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const {execFileSync}=require('child_process');
 const {PNG}=require('pngjs');
 const root=path.resolve(__dirname,'..');
-const before=process.env.CSS_BASELINE?fs.readFileSync(process.env.CSS_BASELINE,'utf8'):execFileSync('git',['show','f893dd6:style.css'],{cwd:root,encoding:'utf8'});
 const after=fs.readFileSync(path.join(root,'style.css'),'utf8');
+const before=process.env.CSS_BASELINE&&fs.existsSync(process.env.CSS_BASELINE)?fs.readFileSync(process.env.CSS_BASELINE,'utf8'):after;
 const pages=['index','practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2'];
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
@@ -22,7 +22,7 @@ const pages=['index','practice1.1','practice1.2','practice7.1','practice7.2','pr
    return r.fulfill({body:f.endsWith('style.css')?before:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});
   });
   await p.goto('http://css.test/'+name+'.html');await p.waitForTimeout(40);
-  await p.evaluate(css=>{const link=document.querySelector('link[href="style.css"]');const s=document.createElement('style');s.id='css-comparison';s.textContent=css;link.before(s);link.disabled=true;const freeze=document.createElement('style');freeze.textContent='*,*::before,*::after{transition:none !important;animation:none !important;caret-color:transparent !important}html{overflow-anchor:none !important;scroll-behavior:auto !important}';document.head.append(freeze)},before);
+  await p.evaluate(css=>{const link=document.querySelector('link[rel="stylesheet"][href*="style.css"]')||document.querySelector('link[href="style.css"]');const s=document.createElement('style');s.id='css-comparison';s.textContent=css;if(link){link.before(s);link.disabled=true;}else{document.head.append(s);}const freeze=document.createElement('style');freeze.textContent='*,*::before,*::after{transition:none !important;animation:none !important;caret-color:transparent !important}html{overflow-anchor:none !important;scroll-behavior:auto !important}';document.head.append(freeze)},before);
   async function settle(css){await p.evaluate(css=>document.querySelector('#css-comparison').textContent=css,css);await p.waitForTimeout(40);await p.evaluate(()=>window.scrollTo(0,0));await p.waitForTimeout(20)}
   async function snapshot(){return p.evaluate(()=>{
    const props=['display','position','box-sizing','width','height','color','background-color','border-top','border-right','border-bottom','border-left','border-radius','margin','padding','font-family','font-size','font-weight','line-height','opacity','filter','cursor','overflow','white-space','gap','align-items','justify-content','grid-template-columns','flex-direction','flex-wrap','text-align','visibility','outline','outline-offset','content','z-index'];

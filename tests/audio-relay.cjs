@@ -74,7 +74,7 @@ function mock(){
   await p.locator('.play-recording-btn, .recorded-play-button').first().click();
   ok(await labels(p)===1,name+' manual own marks one button');
   await p.evaluate(()=>t.audios.at(-1).onended());
-  const listen=p.locator('button').filter({hasText:/^🔊きく/}).first();
+  const listen=p.locator('button:not(.p23-dialogue-play-button)').filter({hasText:/^🔊きく/}).first();
   await listen.click();ok(await labels(p)===1,name+' manual model marks one button');
   await p.evaluate(()=>t.spoken.at(-1).onend());
   ok(await labels(p)===0,name+' manual model restores label');

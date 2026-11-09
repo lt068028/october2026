@@ -29,7 +29,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  }
  // Audit every visible audio row, then every alternate set in D1-D5.
  async function auditAudio(){
-  const controls=p.locator('.p2x-example .p2x-audio button, .p22-conversation-line button, tr[data-speaker-recording-key] .recording-actions button:first-child');
+  const controls=p.locator('.p2x-example .p2x-audio button, .p22-conversation-line button, tr[data-speaker-recording-key] .recording-actions > button:first-child');
   const n=await controls.count();
   for(let i=0;i<n;i++){
    const b=controls.nth(i);await b.click();

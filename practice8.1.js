@@ -1027,6 +1027,7 @@ function renderDrill4(changedId) {
     }
     measureSectionCues(group);
     enhanceActivitySelects();
+    sync();
     if(changedId){
         document.querySelector(`[data-choice="${changedId}"]`)?.focus({preventScroll:true});
     }

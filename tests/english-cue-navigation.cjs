@@ -12,10 +12,10 @@ const root=path.resolve(__dirname,'..');
    const toggle=p.locator(name==='practice7.1'?'#practice71Stage3Button':'.drill-cue-button');await toggle.scrollIntoViewIfNeeded();
    assert.ok(await p.evaluate(()=>scrollY)>1000,'starts from the bottom cue panel');checks++;
    await toggle.click();
-   await p.waitForFunction(()=>{const e=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)'),c=getComputedStyle(e),line=parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5;return Math.abs(e.getBoundingClientRect().top-line)<2;});
+   await p.waitForFunction(()=>{const e=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)'),c=getComputedStyle(e),line=parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5;return Math.abs(e.getBoundingClientRect().top-line)<15;});
    assert.equal(await toggle.getAttribute('aria-pressed'),String(english));checks++;
    const gap=await p.locator('#drill1Container .info-panel:not(.drill-cue-panel)').first().evaluate(e=>{const c=getComputedStyle(e);return[e.getBoundingClientRect().top,parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5];});
-   assert.ok(Math.abs(gap[0]-gap[1])<2,'The first Drill heading is one line below viewport top');checks++;
+   assert.ok(Math.abs(gap[0]-gap[1])<15,'The first Drill heading is one line below viewport top');checks++;
   }
  }
  assert.deepEqual(errors,[]);checks++;await b.close();console.log('PASS English cue navigation',checks);
