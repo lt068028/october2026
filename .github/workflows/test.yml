@@ -35,6 +35,7 @@ jobs:
               tests/practice11-topic.cjs
               tests/tooltip-layout.cjs
               tests/beyond-button.cjs
+              tests/english-cues-expansion.cjs
           - group: 2
             name: "Examples, Audio & Speech"
             tests: >-

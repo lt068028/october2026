@@ -4,12 +4,13 @@
 const $ = id => document.getElementById(id);
 const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
+let englishCues=false;
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map(),comparisonOptionOrder=new Map();
 const words={};
-function W(id,kanji,hira,romaji,meaning) {
-    words[id]={kanji,hira,romaji,meaning};
+function W(id,kanji,hira,romaji,meaning,english) {
+    words[id]={kanji,hira,romaji,meaning,english:english||meaning.replace(/^to\s+/,'').split(';')[0].trim()};
     STTDisplay.register(kanji,hira,meaning);
 }
 W("you","あなた","あなた","anata","you");
@@ -299,8 +300,22 @@ function actionText(a,mode=scriptMode) {
 function degreePhraseHTML(level) {
     return level.adverb?word(level.adverb):word(level.adjective);
 }
-function cues(r,visibleIds) {
+function cues(r,visibleIds,isDrill=false) {
     if(r.qa==='response')return '';
+    if(isDrill&&englishCues){
+        if(r.joinedActionCue&&!visibleIds){
+            const objEng = words[r.object]?.english || r.object;
+            const verbEng = words[r.verb]?.english || r.verb;
+            const subjEng = words[r.subject]?.english || r.subject;
+            return `<span class="target-word">${escape(subjEng)}</span> / <span class="target-word">${escape(objEng)}</span> <span class="target-word">${escape(verbEng)}</span>`;
+        }
+        const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
+        const compound=!visibleIds&&r.compoundCue&&r.verb==='do'&&!r.noun&&compoundCueMeanings[r.object];
+        return ids.filter(id=>!compound||id!==r.verb).map(id=>{
+            const text = (compound&&id===r.object)?compoundCueMeanings[id]:(words[id]?.english||id);
+            return '<span class="target-word">'+escape(text)+'</span>';
+        }).join(' / ');
+    }
     if(r.joinedActionCue&&!visibleIds){
         const phrase=word(r.object)+escape(r.particle)+word(r.verb);
         return word(r.subject)+(hintMode==='paren'?'':'／')+phrase;
@@ -979,16 +994,28 @@ function buildCard(rows,index,si) {
         const content=node('span','p81-cue-words');
         if(r.selectKind==='activity'){
             addSelect(cueBody,r,key);
-            cueBody.append(document.createTextNode('／'));
-            const target=node('span','p81-degree-target');target.innerHTML=degreePhraseHTML(r.degreeLevel);cueBody.append(target);
-            if(r.adverb){cueBody.append(document.createTextNode('／'));const adjective=node('span','p81-degree-target');adjective.innerHTML=word('dislike');cueBody.append(adjective);}
+            cueBody.append(document.createTextNode(englishCues?' / ':'／'));
+            const target=node('span','p81-degree-target');
+            target.innerHTML=englishCues?`<span class="target-word">${escape(r.degreeLevel.adverb ? (words[r.degreeLevel.adverb]?.english||words[r.degreeLevel.adverb]?.meaning) : (words[r.degreeLevel.adjective]?.english||words[r.degreeLevel.adjective]?.meaning))}</span>`:degreePhraseHTML(r.degreeLevel);
+            cueBody.append(target);
+            if(r.adverb){
+                cueBody.append(document.createTextNode(englishCues?' / ':'／'));
+                const adjective=node('span','p81-degree-target');
+                adjective.innerHTML=englishCues?`<span class="target-word">${escape(words.dislike.english||words.dislike.meaning)}</span>`:word('dislike');
+                cueBody.append(adjective);
+            }
         }else{
             if(r.comparison&&ri>0){content.dataset.repeatCue='true';content.append(node('span','p81-drill-repeat-spacer'),node('span','p81-repeat-mark','〃'),node('span','p81-drill-repeat-after-spacer'));}
-            else{content.innerHTML=cues(r);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
+            else{content.innerHTML=cues(r,null,true);if(r.comparison){content.dataset.repeatAnchor=r.verb;content.dataset.repeatStart=r.subject||r.object;content.dataset.repeatEnd=r.verb;}}
             cueBody.append(content);addSelect(cueBody,r,key);
         }
         if(r.comparison)listen.classList.add('p81-cue-listen');
-        if(r.selectKind==='adverb'){cueBody.append(document.createTextNode(hintMode==='paren'?'':'／'));const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');tail.innerHTML=word(r.adjective);cueBody.append(tail);}
+        if(r.selectKind==='adverb'){
+            cueBody.append(document.createTextNode(englishCues?' / ':(hintMode==='paren'?'':'／')));
+            const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');
+            tail.innerHTML=englishCues?`<span class="target-word">${escape(words[r.adjective]?.english||words[r.adjective]?.meaning||r.adjective)}</span>`:word(r.adjective);
+            cueBody.append(tail);
+        }
         if(r.qa==='response')for(const value of ['yes','no']){
             const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cueBody.append(choose);
         }
@@ -1054,7 +1081,33 @@ function render() {
         });
         root.append(group);
     });
-    ConversationDisplay.format();measureCues();enhanceActivitySelects();sync();
+    ConversationDisplay.format();measureCues();enhanceActivitySelects();renderEnglishCuePanel();sync();
+}
+function renderEnglishCuePanel(){
+    const container=$('drill6Container');
+    if(!container)return;
+    container.replaceChildren();
+    const panel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
+    copy.append(node('span','info-panel-title drill-cue-title','Drill 6: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–5.'));
+    const toggle=node('button','drill-cue-button',englishCues?'Display Japanese Cues':'Display English Cues');
+    toggle.type='button';
+    toggle.classList.toggle('is-english',Boolean(englishCues));
+    toggle.setAttribute('aria-pressed',String(Boolean(englishCues)));
+    toggle.disabled=Boolean(session||preparing);
+    toggle.onclick=()=>{
+        if(session||preparing)return;
+        stopPlayback();
+        englishCues=!englishCues;
+        render();
+        requestAnimationFrame(()=>{
+            const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');
+            if(!example)return;
+            const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;
+            window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});
+        });
+    };
+    panel.append(copy,toggle);
+    container.append(panel);
 }
 function measureExampleCues() {
     document.querySelectorAll('.p81-example :is(.p81-repeat-spacer,.p81-repeat-separator-spacer,.p81-model-repeat-spacer,.p81-model-repeat-after-spacer)').forEach(e=>{e.style.width='0px';});
@@ -1176,7 +1229,7 @@ function measureCues() {
 }
 function sync() {
     const busy=Boolean(session||preparing);
-    document.querySelectorAll('#drill1Container button:not(.stop-record-btn),#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
+    document.querySelectorAll('#drill1Container button:not(.stop-record-btn),#drill1Container select,.compact-settings button,.compact-settings input,#drill6Container button').forEach(e=>e.disabled=busy);
     document.querySelectorAll('#drill1Container .stop-record-btn').forEach(b=>{b.disabled=true;b.setAttribute('aria-disabled','true');b.classList.remove('stop-btn-active');});
     views.forEach(v=>{
         const activitySelect=v.r.selectKind==='activity'?document.querySelector('[data-choice="'+v.r.id+'"]'):null;

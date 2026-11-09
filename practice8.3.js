@@ -4,12 +4,13 @@
 const $ = id => document.getElementById(id);
 const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let scriptMode='kanji',hintMode='hover',speechStyle='formal';
+let englishCues=false;
 let manual=false,autoplay=true,session=null,preparing=false;
 let playingAudio=null,utterance=null,playButton=null;
 const views=new Map(),saved=new Map(),choices=new Map();
 const words={};
-function W(id,kanji,hira,romaji,meaning) {
-    words[id]={kanji,hira,romaji,meaning};
+function W(id,kanji,hira,romaji,meaning,english) {
+    words[id]={kanji,hira,romaji,meaning,english:english||meaning.replace(/^to\s+/,'').split(';')[0].trim()};
     STTDisplay.register(kanji,hira,meaning);
 }
 
@@ -271,7 +272,22 @@ function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'kanji':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
-function cues(r){const ids=r.cueIds||[];return ids.map(id=>{const found=Object.keys(words).find(k=>words[k].kanji===id||words[k].hira===id);if(!found)return escape(scriptMode==='kanji'?id:displayKana(id));const value=word(found,scriptMode==='kanji'?id:displayKana(id));return hintMode==='paren'?'<span class="display-cue-unit">'+value+'</span>':value;}).join(hintMode==='paren'?'':'／');}
+function cues(r,isDrill=false){
+ const ids=r.cueIds||[];
+ if(isDrill&&englishCues){
+  return ids.map(id=>{
+   const found=Object.keys(words).find(k=>words[k].kanji===id||words[k].hira===id);
+   const text=found?(words[found].english||words[found].meaning):id;
+   return '<span class="target-word">'+escape(text)+'</span>';
+  }).join(' / ');
+ }
+ return ids.map(id=>{
+  const found=Object.keys(words).find(k=>words[k].kanji===id||words[k].hira===id);
+  if(!found)return escape(scriptMode==='kanji'?id:displayKana(id));
+  const value=word(found,scriptMode==='kanji'?id:displayKana(id));
+  return hintMode==='paren'?'<span class="display-cue-unit">'+value+'</span>':value;
+ }).join(hintMode==='paren'?'':'／');
+}
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;
  // Highlight the subject marker in the same shared grammar-highlight style as other pages.
@@ -886,17 +902,43 @@ function render(){
     if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}
     const cue=node('td','prompt-label drill-cue-cell');
     cue.append(makeKindBadge(r.kind));
-    const content=node('span','p81-cue-words');content.innerHTML=cues(r);cue.append(content);
+    const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
     if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
     const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(stop,r.id.endsWith('-q1')||r.id.endsWith('-q2'));}const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
    });card.append(table);group.append(card);
   });root.append(group);
- });ConversationDisplay.format();measureCues();sync();
+ });ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
+}
+function renderEnglishCuePanel(){
+ const container=$('drill5Container');
+ if(!container)return;
+ container.replaceChildren();
+ const panel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
+ copy.append(node('span','info-panel-title drill-cue-title','Drill 5: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–4.'));
+ const toggle=node('button','drill-cue-button',englishCues?'Display Japanese Cues':'Display English Cues');
+ toggle.type='button';
+ toggle.classList.toggle('is-english',Boolean(englishCues));
+ toggle.setAttribute('aria-pressed',String(Boolean(englishCues)));
+ toggle.disabled=Boolean(session||preparing);
+ toggle.onclick=()=>{
+  if(session||preparing)return;
+  stopPlayback();
+  englishCues=!englishCues;
+  render();
+  requestAnimationFrame(()=>{
+   const example=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)');
+   if(!example)return;
+   const style=getComputedStyle(example),line=parseFloat(style.lineHeight)||parseFloat(style.fontSize)*1.5;
+   window.scrollTo({top:Math.max(0,window.scrollY+example.getBoundingClientRect().top-line),behavior:'smooth'});
+  });
+ };
+ panel.append(copy,toggle);
+ container.append(panel);
 }
 function measureCues(){const intro=document.querySelector('#drill1 .example-box');if(intro){intro.style.removeProperty('--p82-concept-factor');const labels=[...intro.querySelectorAll('.p81-kind')],natural=Math.max(...labels.map(e=>{const r=document.createRange();r.selectNodeContents(e);return r.getBoundingClientRect().width;}));if(natural)intro.style.setProperty('--p82-concept-factor',parseFloat(getComputedStyle(labels[0]).fontSize)/natural);}document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
 function sync() {
     const busy=Boolean(session||preparing);
-    document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input').forEach(e=>e.disabled=busy);
+    document.querySelectorAll('#drill1Container button,#drill1Container select,.compact-settings button,.compact-settings input,#drill5Container button').forEach(e=>e.disabled=busy);
     views.forEach(v=>{if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':'Choose an expression first.';}}
         const canStop=session?.key===keyFor(v.r)&&session.manual&&!session.stopping;v.stop.disabled=!canStop;v.stop.classList.toggle('stop-btn-active',Boolean(canStop));});
 }

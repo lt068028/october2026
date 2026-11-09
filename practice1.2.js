@@ -130,7 +130,8 @@ let activeRecognitionSession = null;
 const practice2State = {
     customSelects: {},
     audioUrls: {},
-    savedResults: {}
+    savedResults: {},
+    englishCues: false
 };
 
 const VOICE_STORAGE_KEY = "october2026.selectedVoiceName";
@@ -793,6 +794,7 @@ function renderAll() {
     connectRows("drill1Container");
     connectRows("drill2Container");
 
+    renderEnglishCuePanel();
     practice2SyncRecordingUI();
 }
 
@@ -808,7 +810,8 @@ function practice2SyncRecordingUI() {
 
     const controls = document.querySelectorAll(
         "#drill1Container button, #drill1Container select, " +
-        "#drill2Container button, #drill2Container select"
+        "#drill2Container button, #drill2Container select, " +
+        "#drill3Container button"
     );
 
     if (blocked) {
@@ -1738,8 +1741,9 @@ function practice2ShowNotice(resultSpan, message) {
 
             const y = () => word(item.y, item.yKanji);
 
-            const cue =
-                formatWord(
+            const cue = practice2State.englishCues
+                ? `<span class="target-word">${escape(item.xMeaning)}</span> / <span class="target-word">${escape(item.yMeaning)}</span>`
+                : formatWord(
                     item.x,
                     item.xKanji,
                     item.xRomaji,
@@ -1905,8 +1909,9 @@ function practice2ShowNotice(resultSpan, message) {
                 target.possessiveKanji + "専攻"
             );
 
-            const cue =
-                formatWord(
+            const cue = practice2State.englishCues
+                ? `<span class="target-word">${escape(target.labelMeaning)}</span> / <span class="target-word">major</span>`
+                : formatWord(
                     target.label,
                     target.labelKanji,
                     target.labelRomaji,
@@ -1936,7 +1941,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const choices = node("span");
-            choices.innerHTML = cue + (hintMode === "paren" ? "" : "／");
+            choices.innerHTML = cue + (practice2State.englishCues ? " / " : (hintMode === "paren" ? "" : "／"));
 
             const select = node(
                 "select",
@@ -3277,3 +3282,46 @@ DrillAudio.configure({
         }
     }
 });
+
+function renderEnglishCuePanel() {
+    const container = document.getElementById("drill3Container");
+    if (!container) return;
+    container.innerHTML = "";
+    container.hidden = false;
+
+    const panel = node("section", "info-panel info-panel-task1 drill-cue-panel");
+    const copy = node("div", "drill-cue-copy");
+    copy.append(
+        node("span", "info-panel-title drill-cue-title", "Drill 3: Practice with English cues"),
+        node("span", "info-panel-desc drill-cue-description", "💡Use English cues for Drills 1–2.")
+    );
+
+    const toggle = node(
+        "button",
+        "drill-cue-button",
+        practice2State.englishCues ? "Display Japanese Cues" : "Display English Cues"
+    );
+    toggle.type = "button";
+    toggle.classList.toggle("is-english", Boolean(practice2State.englishCues));
+    toggle.setAttribute("aria-pressed", String(Boolean(practice2State.englishCues)));
+
+    toggle.onclick = () => {
+        if (activeRecognitionSession || practice2State.startingRow) return;
+        stopAllPlayback();
+        practice2State.englishCues = !practice2State.englishCues;
+        renderAll();
+        requestAnimationFrame(() => {
+            const target = document.querySelector("#drill1Container .info-panel:not(.drill-cue-panel)");
+            if (!target) return;
+            const style = getComputedStyle(target);
+            const line = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.5;
+            window.scrollTo({
+                top: Math.max(0, window.scrollY + target.getBoundingClientRect().top - line),
+                behavior: "smooth"
+            });
+        });
+    };
+
+    panel.append(copy, toggle);
+    container.append(panel);
+}
