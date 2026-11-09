@@ -302,6 +302,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.speechSynthesis.cancel();
             } catch (_) {}
         }
+        if (!isNaturalFinish) {
+            cancelActivePlaybackToken(true);
+        }
         if (playingButton) {
             playingButton.disabled = false;
             if (playingButton._contents) {
@@ -312,7 +315,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    function cancelActivePlaybackToken(intentional = true) {
+        if (activePlaybackToken) {
+            if (intentional) {
+                activePlaybackToken.userCancelled = true;
+            }
+            if (activePlaybackToken.startTimeoutTimer) {
+                clearTimeout(activePlaybackToken.startTimeoutTimer);
+                activePlaybackToken.startTimeoutTimer = null;
+            }
+            activePlaybackToken = null;
+        }
+    }
+
     function stopAllPlayback() {
+        cancelActivePlaybackToken(true);
         DrillAudio.invalidatePlayback();
         stopPlayback();
     }
@@ -325,6 +342,101 @@ document.addEventListener("DOMContentLoaded", () => {
         b.disabled = true;
         b.classList.add("is-playing");
         b.textContent = "Playing...";
+    }
+
+    // -------------------------------------------------------------
+    // German TTS Notice Banner Controller
+    // -------------------------------------------------------------
+    let currentNoticeKind = null; // 'startup' | 'playback' | null
+
+    function showGermanTtsNotice({ type = "warning", title, message, isStartup = false }) {
+        const banner = document.getElementById("germanTtsNotice");
+        if (!banner) return;
+
+        const titleEl = banner.querySelector(".german-tts-notice-title");
+        const msgEl = banner.querySelector(".german-tts-notice-message");
+
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.textContent = message;
+
+        banner.classList.toggle("is-error", type === "error");
+        banner.setAttribute("role", type === "error" ? "alert" : "status");
+        banner.setAttribute("aria-live", type === "error" ? "assertive" : "polite");
+
+        currentNoticeKind = isStartup ? "startup" : "playback";
+        banner.hidden = false;
+    }
+
+    function hideGermanTtsNotice(force = false) {
+        const banner = document.getElementById("germanTtsNotice");
+        if (!banner) return;
+        banner.hidden = true;
+        currentNoticeKind = null;
+    }
+
+    function setupGermanTtsNoticeEvents() {
+        const closeBtn = document.getElementById("germanTtsNoticeClose");
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+                hideGermanTtsNotice(true);
+            });
+        }
+    }
+
+    // -------------------------------------------------------------
+    // German TTS Startup Diagnostics
+    // -------------------------------------------------------------
+    let ttsStartupStatus = "unknown"; // 'available' | 'unavailable' | 'unknown' | 'unsupported'
+    let startupDiagnosticsTimer = null;
+
+    function diagnoseTtsStartup(isDelayedCheck = false) {
+        if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
+            ttsStartupStatus = "unsupported";
+            showGermanTtsNotice({
+                type: "error",
+                title: "German audio is not supported",
+                message: "Your browser does not support speech synthesis. Please try a compatible browser.",
+                isStartup: true
+            });
+            return ttsStartupStatus;
+        }
+
+        const germanVoices = getGermanVoices();
+        if (germanVoices.length > 0) {
+            ttsStartupStatus = "available";
+            if (currentNoticeKind === "startup") {
+                hideGermanTtsNotice();
+            }
+            if (startupDiagnosticsTimer) {
+                clearTimeout(startupDiagnosticsTimer);
+                startupDiagnosticsTimer = null;
+            }
+            return ttsStartupStatus;
+        }
+
+        // Check if voices array has loaded at all
+        const allVoices = window.speechSynthesis.getVoices?.() || [];
+        if (allVoices.length === 0 && !isDelayedCheck) {
+            // Voices still loading asynchronously (common in Chromium/Chrome OS)
+            ttsStartupStatus = "unknown";
+            if (!startupDiagnosticsTimer) {
+                startupDiagnosticsTimer = setTimeout(() => {
+                    startupDiagnosticsTimer = null;
+                    diagnoseTtsStartup(true);
+                }, 1000);
+            }
+            return ttsStartupStatus;
+        }
+
+        // Either voices loaded and 0 are German, or delayed timeout elapsed with no German voices
+        ttsStartupStatus = "unavailable";
+        showGermanTtsNotice({
+            type: "warning",
+            title: "German voice not detected",
+            message: "Your browser could not find a German voice. Model audio may not work on this device. Please check your browser or system speech settings.",
+            isStartup: true
+        });
+        return ttsStartupStatus;
     }
 
     function normalizeLang(lang) {
@@ -406,12 +518,24 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Active playback token tracking
+    let activePlaybackToken = null;
+    let playbackTokenSeq = 0;
+
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
         if ((session || preparing) && !isRelay) return;
-        if (!isRelay) stopAllPlayback();
+        if (!isRelay) {
+            cancelActivePlaybackToken(true);
+            stopAllPlayback();
+        }
 
         if (!("speechSynthesis" in window)) {
-            DrillAudio.notify("Speech synthesis is not supported in this browser.");
+            showGermanTtsNotice({
+                type: "error",
+                title: "German audio is not supported",
+                message: "Your browser does not support speech synthesis. Please try a compatible browser.",
+                isStartup: false
+            });
             onDone?.();
             return;
         }
@@ -431,22 +555,125 @@ document.addEventListener("DOMContentLoaded", () => {
             u.voice = voice;
         }
 
+        const token = {
+            id: ++playbackTokenSeq,
+            text,
+            btn,
+            started: false,
+            ended: false,
+            userCancelled: false,
+            startTimeoutTimer: null,
+            startTime: 0,
+            requestTime: performance.now(),
+            handled: false
+        };
+        activePlaybackToken = token;
         currentUtterance = u;
+
         if (btn) markPlaying(btn);
 
+        const handlePlaybackError = (errorEvent) => {
+            if (token.startTimeoutTimer) {
+                clearTimeout(token.startTimeoutTimer);
+                token.startTimeoutTimer = null;
+            }
+            if (token.userCancelled || activePlaybackToken !== token) {
+                return;
+            }
+            const errCode = errorEvent?.error;
+            if (errCode === "canceled" || errCode === "interrupted") {
+                if (token.userCancelled) return;
+            }
+
+            const errorDetail = errCode ? ` (${errCode})` : "";
+            showGermanTtsNotice({
+                type: "error",
+                title: "German audio could not be played",
+                message: `The speech service reported an error${errorDetail}. Try another German voice, check your speech settings, or reload the page.`,
+                isStartup: false
+            });
+        };
+
+        const handlePlaybackStart = () => {
+            if (token.userCancelled || activePlaybackToken !== token) return;
+            token.started = true;
+            token.startTime = performance.now();
+            if (token.startTimeoutTimer) {
+                clearTimeout(token.startTimeoutTimer);
+                token.startTimeoutTimer = null;
+            }
+        };
+
+        const handlePlaybackEnd = () => {
+            if (token.startTimeoutTimer) {
+                clearTimeout(token.startTimeoutTimer);
+                token.startTimeoutTimer = null;
+            }
+            if (token.userCancelled || activePlaybackToken !== token) return;
+            token.ended = true;
+
+            const duration = performance.now() - (token.startTime || token.requestTime);
+            // B3. Short duration end check:
+            // Do not treat unconditionally as error. Only warn if substantial text (>= 10 chars)
+            // finishes suspiciously fast (< 150ms).
+            if (text.trim().length >= 10 && duration < 150) {
+                showGermanTtsNotice({
+                    type: "warning",
+                    title: "Can't hear the audio?",
+                    message: "Check your device volume, mute settings, and audio output. You can also try another German voice.",
+                    isStartup: false
+                });
+            } else {
+                // Normal playback succeeded! Clear any stale playback failure notice.
+                if (currentNoticeKind === "playback") {
+                    hideGermanTtsNotice();
+                }
+            }
+        };
+
+        // B2. Start timeout watchdog (5000ms)
+        token.startTimeoutTimer = setTimeout(() => {
+            if (activePlaybackToken === token && !token.started && !token.userCancelled) {
+                token.userCancelled = true;
+                if (!isRelay) stopPlayback(true);
+                showGermanTtsNotice({
+                    type: "error",
+                    title: "German audio did not start",
+                    message: "The speech service did not respond in time. Please try again or reload the page.",
+                    isStartup: false
+                });
+            }
+        }, 5000);
+
+        // Attach listeners directly to u to guarantee event arrival regardless of guardUtterance
+        if (typeof u.addEventListener === "function") {
+            u.addEventListener("start", handlePlaybackStart);
+            u.addEventListener("error", handlePlaybackError);
+            u.addEventListener("end", handlePlaybackEnd);
+        }
+
         const finish = (errorEvent = null) => {
+            if (token.startTimeoutTimer) {
+                clearTimeout(token.startTimeoutTimer);
+                token.startTimeoutTimer = null;
+            }
+            if (token.handled) return;
+            token.handled = true;
+
             if (currentUtterance !== u) return;
             currentUtterance = null;
+            if (activePlaybackToken === token) {
+                activePlaybackToken = null;
+            }
 
             if (isRelay) {
                 // Relay owns restoring buttons
             } else {
-                stopPlayback();
+                stopPlayback(true);
             }
 
-            if (errorEvent && errorEvent.error && errorEvent.error !== "canceled" && errorEvent.error !== "interrupted") {
-                console.warn("Speech synthesis error:", errorEvent.error, errorEvent);
-                DrillAudio.notify(`Speech synthesis error (${errorEvent.error}). Please verify device voice settings.`);
+            if (errorEvent) {
+                handlePlaybackError(errorEvent);
             }
 
             onDone?.();
@@ -460,6 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
             DrillAudio.speak(u);
         } catch (err) {
             console.error("DrillAudio.speak execution error:", err);
+            handlePlaybackError(err);
             finish(err);
         }
     }
@@ -1104,14 +1332,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (window.speechSynthesis) {
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                updateVoiceSelector();
-            };
-        }
-        window.speechSynthesis.addEventListener?.("voiceschanged", () => {
+        const handleVoicesChanged = () => {
             updateVoiceSelector();
-        });
+            diagnoseTtsStartup();
+        };
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
+        }
+        window.speechSynthesis.addEventListener?.("voiceschanged", handleVoicesChanged);
     }
 
     // -------------------------------------------------------------
@@ -1134,7 +1362,9 @@ document.addEventListener("DOMContentLoaded", () => {
         alignDrill1Cues();
     });
 
-    // Initial render
+    // Initial setup and render
+    setupGermanTtsNoticeEvents();
     updateVoiceSelector();
+    diagnoseTtsStartup();
     renderAll();
 });

@@ -148,6 +148,23 @@
   - `stopAllPlayback()`：外部クリックや中断時に呼ばれ、`DrillAudio.invalidatePlayback()` と `stopPlayback()` の両方を実行する。
   - Autoplayリレー中（`isRelay === true`）は `stopAllPlayback()` をスキップし、リレーの破壊を防止する。
 
+### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー（FWC W9） 【実装済み】
+- **専用通知バナー（`#germanTtsNotice`）**:
+  - ヘッダー直下に配置された専用のインラインバナー。既存の `#audioRecoveryStatus` および `#voiceRegionNotice` とは完全に分離・独立。
+  - 閉じるボタン（`#germanTtsNoticeClose`）を備え、キーボード操作および375px幅のレスポンシブ表示に対応。
+  - 新たな再生失敗時は自動的に再表示され、正常再生成功時には再生エラー通知を自動消去する。
+- **起動時TTS診断（`diagnoseTtsStartup`）**:
+  - `unsupported`: Web Speech API非対応ブラウザへの案内（`German audio is not supported`）。
+  - `unknown`: 初回 `getVoices()` が空配列の場合、1000msのタイマーと `voiceschanged` イベントで遅延ロードを待機（断定的な誤警告を防止）。
+  - `unavailable`: 音声一覧確定後もドイツ語音声が0件の場合の案内（`German voice not detected`）。
+  - `available`: ドイツ語音声が検出された場合（既存の未検出警告があれば自動解除）。
+- **再生時診断とライフサイクル監視**:
+  - `addEventListener('start' / 'error' / 'end')` を `u` に直接付与し、`guardUtterance` によるコールバック握り潰しを回避して確実にエラーを捕捉。
+  - **開始タイムアウト（5000ms）**: 発話開始（`onstart`）が遅延・未達の場合に検知し、`German audio did not start` を通知。
+  - **明示的エラー（`onerror`）**: サービスエラー時に `German audio could not be played` を通知。
+  - **短時間終了（<150ms）**: 10文字以上の文が極短時間で終了した（音声データ欠落や無音終了の疑い）場合に `Can't hear the audio?` を案内。
+  - **意図的キャンセル保護**: 別ボタンクリック、録音開始、地域変更等の正規中断時は `cancelActivePlaybackToken(true)` により誤通知を完全に防止。
+
 ---
 
 ## 5. 学習者の録音・再生・音声認識（STT）

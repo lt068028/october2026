@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261108-drills-standardized">
+    <link rel="stylesheet" href="style.css?v=20261109-tts-notice">
 </head>
 <body class="site-scale uebung11-page">
 
@@ -128,6 +128,18 @@
         </div>
     </div>
 
+    <!-- Dedicated German TTS Notice Banner -->
+    <aside id="germanTtsNotice" class="german-tts-notice" aria-live="polite" hidden>
+        <div class="german-tts-notice-body">
+            <span class="german-tts-notice-icon" aria-hidden="true">⚠️</span>
+            <div class="german-tts-notice-content">
+                <strong class="german-tts-notice-title"></strong>
+                <p class="german-tts-notice-message"></p>
+            </div>
+        </div>
+        <button type="button" id="germanTtsNoticeClose" class="german-tts-notice-close" aria-label="Dismiss notice">&times;</button>
+    </aside>
+
     <!-- Drills Container -->
     <main id="drillsContainer"></main>
 
@@ -142,7 +154,7 @@
     </footer>
 
     <script src="drill-audio-session.js"></script>
-    <script src="uebung1.1.js?v=20261108-drills-standardized"></script>
+    <script src="uebung1.1.js?v=20261109-tts-notice"></script>
     <script src="tooltip-layout.js"></script>
 </body>
 </html>

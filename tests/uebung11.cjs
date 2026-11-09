@@ -90,4 +90,43 @@ assert.ok(
     'alignDrillCues must measure natural unconstrained width using max-content and nowrap'
 );
 
+// 6. Check German TTS Diagnostic and Notice Banner contracts (FWC W9)
+// 6.1 HTML dedicated banner
+assert.ok(html.includes('id="germanTtsNotice"'), 'HTML must have dedicated #germanTtsNotice');
+assert.ok(html.includes('german-tts-notice-title'), 'HTML must have german-tts-notice-title');
+assert.ok(html.includes('german-tts-notice-message'), 'HTML must have german-tts-notice-message');
+assert.ok(html.includes('id="germanTtsNoticeClose"'), 'HTML must have #germanTtsNoticeClose');
+
+// 6.2 CSS banner rules
+assert.ok(css.includes('.uebung11-page #germanTtsNotice'), 'CSS must define .uebung11-page #germanTtsNotice');
+assert.ok(css.includes('.uebung11-page #germanTtsNotice.is-error'), 'CSS must define .is-error state');
+assert.ok(css.includes('.uebung11-page .german-tts-notice-close'), 'CSS must define close button');
+
+// 6.3 JS Diagnostic and Notice functions
+assert.ok(js.includes('function showGermanTtsNotice'), 'JS must define showGermanTtsNotice');
+assert.ok(js.includes('function hideGermanTtsNotice'), 'JS must define hideGermanTtsNotice');
+assert.ok(js.includes('function diagnoseTtsStartup'), 'JS must define diagnoseTtsStartup');
+assert.ok(js.includes('function cancelActivePlaybackToken'), 'JS must define cancelActivePlaybackToken');
+
+// 6.4 Required Notice Copy
+assert.ok(js.includes('German audio is not supported'), 'JS must contain unsupported title');
+assert.ok(js.includes('Your browser does not support speech synthesis. Please try a compatible browser.'), 'JS must contain unsupported message');
+assert.ok(js.includes('German voice not detected'), 'JS must contain voice not detected title');
+assert.ok(js.includes('Your browser could not find a German voice. Model audio may not work on this device. Please check your browser or system speech settings.'), 'JS must contain voice not detected message');
+assert.ok(js.includes('German audio could not be played'), 'JS must contain playback error title');
+assert.ok(js.includes('German audio did not start'), 'JS must contain start timeout title');
+assert.ok(js.includes('The speech service did not respond in time. Please try again or reload the page.'), 'JS must contain start timeout message');
+assert.ok(js.includes("Can't hear the audio?"), 'JS must contain inaudible audio title');
+assert.ok(js.includes('Check your device volume, mute settings, and audio output. You can also try another German voice.'), 'JS must contain inaudible audio message');
+
+// 6.5 Preservation of voiceRegionNotice and independent notice banner
+assert.ok(html.includes('id="voiceRegionNotice"'), 'HTML must keep #voiceRegionNotice');
+assert.ok(js.includes('No native') && js.includes('with') && js.includes('tag'), 'JS must preserve existing de-AT region notice format');
+
+// 6.6 Playback diagnostics and watchdog listeners
+assert.ok(js.includes('u.addEventListener("start"'), 'JS must listen to utterance start');
+assert.ok(js.includes('u.addEventListener("error"'), 'JS must listen to utterance error');
+assert.ok(js.includes('u.addEventListener("end"'), 'JS must listen to utterance end');
+assert.ok(js.includes('startTimeoutTimer'), 'JS must have start timeout timer');
+
 console.log('PASS: All structural and contract tests passed successfully.');
