@@ -30,7 +30,8 @@ function mock(){
  check(await visibleTexts('.p23-conversation-models .p23-example-cue'),['ここ／あさ','Yさん／どこ','ここ／よる','Zさん／どこ','あそこ／ゆうがた'],'E1 cue sequence');
  check((await visibleTexts('.p23-model-intro')).filter(Boolean),['わたしは、にほんです。','わたしは、イギリスです。','Zさんは、アメリカです。'],'E1 text-only introductions');
  check(await visibleTexts('.p23-model-answer > span:first-child'),['ここは、あさです。','Yさんは、どこですか。','ここは、よるです。','Zさんは、どこですか。','あそこは、ゆうがたです。'],'E1 primary models');
- check(await p.locator('.p23-model-speaker').allTextContents(),['X','QX','AY','','QX','AY',''],'model row roles');
+ check(await p.locator('.p23-model-speaker').allTextContents(),['X','X','Y','','X','Y',''],'model row roles');
+ check(await p.locator('.p23-conversation-models .conversation-role-circle').evaluateAll(es=>es.map(e=>e.getAttribute('aria-label'))),['Question','Answer','Question','Answer'],'role circle icons');
  // Verify speaker label right-alignment and min-width contract in Example 1
  const speakerAligns = await p.locator('.p23-conversation-models .p23-model-speaker').evaluateAll(es => es.map(e => getComputedStyle(e).justifySelf));
  check(speakerAligns.every(v => v === 'end'), true, 'All p23-model-speaker elements have justify-self: end for 6px grid spacing');

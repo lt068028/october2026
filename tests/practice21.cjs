@@ -216,7 +216,7 @@ function mock(){
     await p.locator('#drill3Container tr').nth(i).locator('.recording-actions button').first().click();
     const text=await p.evaluate(()=>{const u=t.spoken.at(-1),text=practice2Normalize(u.text);u.onend?.();return text;});
     const target=[[1,2],[2,0]][set][Math.floor(i/2)],noun=['じしょ','さいふ'][set];
-    const expected=i%2?(set===0||Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):(set===0?(Math.floor(i/2)===0?'わいさんの':'えっくすさんの'):'あなたの')+noun+'はどれ'+(style==='formal'?'ですか':'');
+    const expected=i%2?(set===0||Math.floor(i/2)===0?['それ','これ','あれ']:['これ','それ','あれ'])[target]+(style==='formal'?'です':'だ'):(Math.floor(i/2)===0?'わいさんの':'えっくすさんの')+noun+'はどれ'+(style==='formal'?'ですか':'');
     check(text,expected,'D3 color cue, B perspective');
    }
   }

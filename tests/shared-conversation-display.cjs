@@ -40,7 +40,11 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
  }
  if(name.startsWith('practice2.')){
   eq(await p.locator('.p21-photo-context:not(.p23-call-note)').count(),0,name+' no Who guide');
-  if(name==='practice2.3')eq(await p.locator('.p23-call-note').textContent(),'X is calling Y and talking about Z.','scenario retained');
+  if(name==='practice2.3'){
+   eq(await p.locator('.p23-call-note').textContent(),'X ↔ Y','scenario retained');
+   eq(await p.locator('.p23-call-note .p23-phone-icon').count(),1,'call note preserves phone icon');
+   eq(await p.locator('.p23-call-note .conversation-person').evaluateAll(es=>es.map(e=>({text:e.textContent,person:e.dataset.person}))),[{text:'X',person:'A'},{text:'Y',person:'B'}],'call note preserves speaker badges');
+  }
  }else eq(await p.locator('.conversation-person').count(),0,name+' no added speaker');
  eq(errors,[],name+' runtime');p.off('pageerror',error);
 }

@@ -20,7 +20,7 @@ const plainGolden=[
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- await page.addInitScript('('+mock.trim()+')();');
+ await page.addInitScript('('+mock.trim()+')(); Object.assign(window.speechSynthesis, {current: null, pause(){}, resume(){}});');
  await page.route('http://practice83.test/**',route=>{
   const file=path.join(root,new URL(route.request().url()).pathname);
   if(!fs.existsSync(file))return route.fulfill({status:404,body:''});
@@ -46,9 +46,18 @@ const plainGolden=[
   await page.locator('#scriptModeControl [data-value="'+mode+'"]').click();
   for(const style of ['formal','informal','casual','formal']){
    const previous=await page.evaluate(()=>audit83.getStyle());
-   await page.locator('#speechStyleControl [data-value="'+style+'"]').click();
-   check(await page.evaluate(()=>audit83.getStyle()),style,'style control updates');
-   if(previous!==style)check(await page.evaluate(()=>speechSynthesis.current===null),true,'style change cancels old playback');
+   if(previous!==style){
+    await page.locator('.p81-example-row button').first().click();
+    check(await page.evaluate(()=>Boolean(speechSynthesis.current)),true,'playback started before style switch');
+    await page.locator('#speechStyleControl [data-value="'+style+'"]').click();
+    check(await page.evaluate(()=>audit83.getStyle()),style,'style control updates');
+    check(await page.evaluate(()=>speechSynthesis.current===null),true,'style change cancels old playback');
+    await page.evaluate(()=>{const u=t.spoken.at(-1);u?.onend?.();u?.onerror?.({error:'interrupted'});});
+    check(await page.evaluate(()=>speechSynthesis.current===null),true,'stale callback does not resume playback');
+   }else{
+    await page.locator('#speechStyleControl [data-value="'+style+'"]').click();
+    check(await page.evaluate(()=>audit83.getStyle()),style,'style control updates');
+   }
    const data=await page.evaluate(()=>{
     const a=audit83,groups=a.collect(),examples=a.examples();
     return {
