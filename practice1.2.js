@@ -125,6 +125,7 @@ let hintMode = "hover";
 let scriptMode = "hiragana";
 let isAutoPlay = true;
 let activeRecognitionSession = null;
+const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // 変数名は構文エラーを防ぐため practice2State のまま維持
 const practice2State = {

@@ -14,13 +14,19 @@ const root = path.resolve(__dirname, '..');
 
     const page = await browser.newPage();
     const errors = [];
-    page.on('pageerror', e => errors.push(e.message));
+    page.on('pageerror', e => {
+        console.error('PAGEERROR:', e.message);
+        errors.push(e.message);
+    });
+    page.on('console', msg => {
+        if (msg.type() === 'error') console.error('PAGECONSOLE:', msg.text());
+    });
 
     await page.route('http://local.test/**', route => {
         const urlPath = new URL(route.request().url()).pathname;
         const filePath = path.join(root, urlPath);
         if (!fs.existsSync(filePath)) {
-            return route.abort();
+            return route.fulfill({ status: 404, body: '' });
         }
         const content = fs.readFileSync(filePath);
         const contentType = filePath.endsWith('.js')
