@@ -1547,7 +1547,7 @@ function practice2ShowNotice(resultSpan, message) {
             const owner=s3===0?(i===0?'B':'A'):answering;
             const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
             const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}/どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'),true,true);
-            const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
+            const cue=node('span','p21-d3-answer-cue');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
             const color=node('span','p21-color-cue',({red:'🔴',blue:'🔵',green:'🟢'})[o.colorName]);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
