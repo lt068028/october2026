@@ -1,164 +1,516 @@
 // Deutsche Übung 1.1: nach / in / zum / zur
 // Follows October2026 site standards, architecture, and DrillAudio session management.
 
-document.addEventListener("DOMContentLoaded", () => {
-    // -------------------------------------------------------------
-    // 1. Data Model
-    // -------------------------------------------------------------
-    const drillsData = [
-        {
-            id: "drill1",
-            number: 1,
-            title: "Drill 1: nach — Cities & Countries",
-            instruction: "💡Use nach with cities and countries that have no grammatical article.",
-            learningFocus: "Cities & Countries",
-            example: {
-                cue: "Salzburg / fahren",
-                cueParts: ["Salzburg", "fahren"],
-                hints: ["Salzburg (city in Austria)", "to travel / drive"],
-                model: "Ich fahre nach Salzburg."
-            },
-            items: [
-                {
-                    id: "d1_1",
-                    cue: "Graz / fahren",
-                    cueParts: ["Graz", "fahren"],
-                    hints: ["Graz (city in Austria)", "to travel / drive"],
-                    model: "Ich fahre nach Graz."
-                },
-                {
-                    id: "d1_2",
-                    cue: "Italien / reisen",
-                    cueParts: ["Italien", "reisen"],
-                    hints: ["Italy", "to travel"],
-                    model: "Ich reise nach Italien."
-                },
-                {
-                    id: "d1_3",
-                    cue: "Berlin / fahren",
-                    cueParts: ["Berlin", "fahren"],
-                    hints: ["Berlin (city in Germany)", "to travel / drive"],
-                    model: "Ich fahre nach Berlin."
-                }
-            ]
+// -------------------------------------------------------------
+// 1. Data Model
+// -------------------------------------------------------------
+const drillsData = [
+    {
+        id: "drill1",
+        number: 1,
+        title: "Drill 1: nach — Cities & Countries",
+        instruction: "💡Use nach with cities and countries that have no grammatical article.",
+        learningFocus: "Cities & Countries",
+        example: {
+            cue: "Salzburg / fahren",
+            cueParts: ["Salzburg", "fahren"],
+            hints: ["Salzburg (city in Austria)", "to travel / drive"],
+            model: "Ich fahre nach Salzburg."
         },
-        {
-            id: "drill2",
-            number: 2,
-            title: "Drill 2: in — Countries with Articles (Akkusativ)",
-            instruction: "💡Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
-            learningFocus: "Countries with Articles",
-            example: {
-                cue: "die Schweiz / fahren",
-                cueParts: ["die Schweiz", "fahren"],
-                hints: ["Switzerland (fem.)", "to travel / drive"],
-                model: "Ich fahre in die Schweiz."
+        items: [
+            {
+                id: "d1_1",
+                cue: "Graz / fahren",
+                cueParts: ["Graz", "fahren"],
+                hints: ["Graz (city in Austria)", "to travel / drive"],
+                model: "Ich fahre nach Graz."
             },
-            items: [
-                {
-                    id: "d2_1",
-                    cue: "die Türkei / fliegen",
-                    cueParts: ["die Türkei", "fliegen"],
-                    hints: ["Turkey (fem.)", "to fly"],
-                    model: "Ich fliege in die Türkei."
-                },
-                {
-                    id: "d2_2",
-                    cue: "die USA / reisen",
-                    cueParts: ["die USA", "reisen"],
-                    hints: ["USA (pl.)", "to travel"],
-                    model: "Ich reise in die USA."
-                },
-                {
-                    id: "d2_3",
-                    cue: "der Irak / fliegen",
-                    cueParts: ["der Irak", "fliegen"],
-                    hints: ["Iraq (masc.)", "to fly"],
-                    model: "Ich fliege in den Irak."
-                }
-            ]
+            {
+                id: "d1_2",
+                cue: "Italien / reisen",
+                cueParts: ["Italien", "reisen"],
+                hints: ["Italy", "to travel"],
+                model: "Ich reise nach Italien."
+            },
+            {
+                id: "d1_3",
+                cue: "Berlin / fahren",
+                cueParts: ["Berlin", "fahren"],
+                hints: ["Berlin (city in Germany)", "to travel / drive"],
+                model: "Ich fahre nach Berlin."
+            }
+        ]
+    },
+    {
+        id: "drill2",
+        number: 2,
+        title: "Drill 2: in — Countries with Articles (Akkusativ)",
+        instruction: "💡Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
+        learningFocus: "Countries with Articles",
+        example: {
+            cue: "die Schweiz / fahren",
+            cueParts: ["die Schweiz", "fahren"],
+            hints: ["Switzerland (fem.)", "to travel / drive"],
+            model: "Ich fahre in die Schweiz."
         },
-        {
-            id: "drill3",
-            number: 3,
-            title: "Drill 3: zum — Masculine & Neuter Destinations",
-            instruction: "💡Use zum (zu + dem) for masculine and neuter destinations.",
-            learningFocus: "Masculine & Neuter Destinations",
-            example: {
-                cue: "der Supermarkt / gehen",
-                cueParts: ["der Supermarkt", "gehen"],
-                hints: ["supermarket (masc.)", "to go / walk"],
-                model: "Ich gehe zum Supermarkt."
+        items: [
+            {
+                id: "d2_1",
+                cue: "die Türkei / fliegen",
+                cueParts: ["die Türkei", "fliegen"],
+                hints: ["Turkey (fem.)", "to fly"],
+                model: "Ich fliege in die Türkei."
             },
-            items: [
-                {
-                    id: "d3_1",
-                    cue: "der Arzt / gehen",
-                    cueParts: ["der Arzt", "gehen"],
-                    hints: ["doctor (masc.)", "to go"],
-                    model: "Ich gehe zum Arzt."
-                },
-                {
-                    id: "d3_2",
-                    cue: "das Krankenhaus / fahren",
-                    cueParts: ["das Krankenhaus", "fahren"],
-                    hints: ["hospital (neut.)", "to drive / travel"],
-                    model: "Ich fahre zum Krankenhaus."
-                },
-                {
-                    id: "d3_3",
-                    cue: "der Bahnhof / gehen",
-                    cueParts: ["der Bahnhof", "gehen"],
-                    hints: ["train station (masc.)", "to go"],
-                    model: "Ich gehe zum Bahnhof."
-                }
-            ]
+            {
+                id: "d2_2",
+                cue: "die USA / reisen",
+                cueParts: ["die USA", "reisen"],
+                hints: ["USA (pl.)", "to travel"],
+                model: "Ich reise in die USA."
+            },
+            {
+                id: "d2_3",
+                cue: "der Irak / fliegen",
+                cueParts: ["der Irak", "fliegen"],
+                hints: ["Iraq (masc.)", "to fly"],
+                model: "Ich fliege in den Irak."
+            }
+        ]
+    },
+    {
+        id: "drill3",
+        number: 3,
+        title: "Drill 3: zum — Masculine & Neuter Destinations",
+        instruction: "💡Use zum (zu + dem) for masculine and neuter destinations.",
+        learningFocus: "Masculine & Neuter Destinations",
+        example: {
+            cue: "der Supermarkt / gehen",
+            cueParts: ["der Supermarkt", "gehen"],
+            hints: ["supermarket (masc.)", "to go / walk"],
+            model: "Ich gehe zum Supermarkt."
         },
-        {
-            id: "drill4",
-            number: 4,
-            title: "Drill 4: zur — Feminine Destinations",
-            instruction: "💡Use zur (zu + der) for feminine destinations.",
-            learningFocus: "Feminine Destinations",
-            example: {
-                cue: "die Post / gehen",
-                cueParts: ["die Post", "gehen"],
-                hints: ["post office (fem.)", "to go"],
-                model: "Ich gehe zur Post."
+        items: [
+            {
+                id: "d3_1",
+                cue: "der Arzt / gehen",
+                cueParts: ["der Arzt", "gehen"],
+                hints: ["doctor (masc.)", "to go"],
+                model: "Ich gehe zum Arzt."
             },
-            items: [
-                {
-                    id: "d4_1",
-                    cue: "die Bank / gehen",
-                    cueParts: ["die Bank", "gehen"],
-                    hints: ["bank (fem.)", "to go"],
-                    model: "Ich gehe zur Bank."
+            {
+                id: "d3_2",
+                cue: "das Krankenhaus / fahren",
+                cueParts: ["das Krankenhaus", "fahren"],
+                hints: ["hospital (neut.)", "to drive / travel"],
+                model: "Ich fahre zum Krankenhaus."
+            },
+            {
+                id: "d3_3",
+                cue: "der Bahnhof / gehen",
+                cueParts: ["der Bahnhof", "gehen"],
+                hints: ["train station (masc.)", "to go"],
+                model: "Ich gehe zum Bahnhof."
+            }
+        ]
+    },
+    {
+        id: "drill4",
+        number: 4,
+        title: "Drill 4: zur — Feminine Destinations",
+        instruction: "💡Use zur (zu + der) for feminine destinations.",
+        learningFocus: "Feminine Destinations",
+        example: {
+            cue: "die Post / gehen",
+            cueParts: ["die Post", "gehen"],
+            hints: ["post office (fem.)", "to go"],
+            model: "Ich gehe zur Post."
+        },
+        items: [
+            {
+                id: "d4_1",
+                cue: "die Bank / gehen",
+                cueParts: ["die Bank", "gehen"],
+                hints: ["bank (fem.)", "to go"],
+                model: "Ich gehe zur Bank."
+            },
+            {
+                id: "d4_2",
+                cue: "die Apotheke / gehen",
+                cueParts: ["die Apotheke", "gehen"],
+                hints: ["pharmacy (fem.)", "to go"],
+                model: "Ich gehe zur Apotheke."
+            },
+            {
+                id: "d4_3",
+                cue: "die Schule / gehen",
+                cueParts: ["die Schule", "gehen"],
+                hints: ["school (fem.)", "to go"],
+                regionalModels: {
+                    DE: "Ich gehe zur Schule.",
+                    AT: "Ich gehe in die Schule.",
+                    CH: "Ich gehe zur Schule."
                 },
-                {
-                    id: "d4_2",
-                    cue: "die Apotheke / gehen",
-                    cueParts: ["die Apotheke", "gehen"],
-                    hints: ["pharmacy (fem.)", "to go"],
-                    model: "Ich gehe zur Apotheke."
-                },
-                {
-                    id: "d4_3",
-                    cue: "die Schule / gehen",
-                    cueParts: ["die Schule", "gehen"],
-                    hints: ["school (fem.)", "to go"],
-                    regionalModels: {
-                        DE: "Ich gehe zur Schule.",
-                        AT: "Ich gehe in die Schule.",
-                        CH: "Ich gehe zur Schule."
-                    },
-                    allowedAnswers: [
-                        "Ich gehe zur Schule.",
-                        "Ich gehe in die Schule."
-                    ]
-                }
-            ]
+                allowedAnswers: [
+                    "Ich gehe zur Schule.",
+                    "Ich gehe in die Schule."
+                ]
+            }
+        ]
+    }
+];
+
+// -------------------------------------------------------------
+// German Motion Grammar Engine & Variety Evaluation (3-State)
+// -------------------------------------------------------------
+const GERMAN_VERBS = {
+    fahren: {
+        präsens: {
+            "ich": ["fahre"],
+            "du": ["fährst"],
+            "er": ["fährt"],
+            "sie": ["fährt", "fahren"],
+            "es": ["fährt"],
+            "man": ["fährt"],
+            "wir": ["fahren"],
+            "ihr": ["fahrt"],
+            "Sie": ["fahren"]
+        },
+        präteritum: {
+            "ich": ["fuhr"],
+            "du": ["fuhrst"],
+            "er": ["fuhr"],
+            "sie": ["fuhr", "fuhren"],
+            "es": ["fuhr"],
+            "man": ["fuhr"],
+            "wir": ["fuhren"],
+            "ihr": ["fuhrt"],
+            "Sie": ["fuhren"]
+        },
+        partizip: "gefahren"
+    },
+    reisen: {
+        präsens: {
+            "ich": ["reise"],
+            "du": ["reist"],
+            "er": ["reist"],
+            "sie": ["reist", "reisen"],
+            "es": ["reist"],
+            "man": ["reist"],
+            "wir": ["reisen"],
+            "ihr": ["reist"],
+            "Sie": ["reisen"]
+        },
+        präteritum: {
+            "ich": ["reiste"],
+            "du": ["reistest"],
+            "er": ["reiste"],
+            "sie": ["reiste", "reisten"],
+            "es": ["reiste"],
+            "man": ["reiste"],
+            "wir": ["reisten"],
+            "ihr": ["reistet"],
+            "Sie": ["reisten"]
+        },
+        partizip: "gereist"
+    },
+    fliegen: {
+        präsens: {
+            "ich": ["fliege"],
+            "du": ["fliegst"],
+            "er": ["fliegt"],
+            "sie": ["fliegt", "fliegen"],
+            "es": ["fliegt"],
+            "man": ["fliegt"],
+            "wir": ["fliegen"],
+            "ihr": ["fliegt"],
+            "Sie": ["fliegen"]
+        },
+        präteritum: {
+            "ich": ["flog"],
+            "du": ["flogst"],
+            "er": ["flog"],
+            "sie": ["flog", "flogen"],
+            "es": ["flog"],
+            "man": ["flog"],
+            "wir": ["flogen"],
+            "ihr": ["flogt"],
+            "Sie": ["flogen"]
+        },
+        partizip: "geflogen"
+    },
+    gehen: {
+        präsens: {
+            "ich": ["gehe"],
+            "du": ["gehst"],
+            "er": ["geht"],
+            "sie": ["geht", "gehen"],
+            "es": ["geht"],
+            "man": ["geht"],
+            "wir": ["gehen"],
+            "ihr": ["geht"],
+            "Sie": ["gehen"]
+        },
+        präteritum: {
+            "ich": ["ging"],
+            "du": ["gingst"],
+            "er": ["ging"],
+            "sie": ["ging", "gingen"],
+            "es": ["ging"],
+            "man": ["ging"],
+            "wir": ["gingen"],
+            "ihr": ["gingt"],
+            "Sie": ["gingen"]
+        },
+        partizip: "gegangen"
+    }
+};
+
+const SEIN_FORMS = {
+    "ich": ["bin"],
+    "du": ["bist"],
+    "er": ["ist"],
+    "sie": ["ist", "sind"],
+    "es": ["ist"],
+    "man": ["ist"],
+    "wir": ["sind"],
+    "ihr": ["seid"],
+    "Sie": ["sind"]
+};
+
+const ALL_SEIN = new Set(["bin", "bist", "ist", "sind", "seid", "war", "warst", "waren", "wart"]);
+const KNOWN_SUBJECTS = new Set(["ich", "du", "er", "sie", "es", "man", "wir", "ihr"]);
+
+function normalizeGerman(text) {
+    if (!text) return "";
+    return text
+        .toLowerCase()
+        .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'„“…]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getModel(item, variety = (typeof currentVariety !== "undefined" ? currentVariety : "DE")) {
+    if (item.regionalModels) {
+        return item.regionalModels[variety] || item.regionalModels.DE;
+    }
+    return item.model;
+}
+
+function getAllowed(item, variety = (typeof currentVariety !== "undefined" ? currentVariety : "DE")) {
+    if (item.allowedAnswers) {
+        return item.allowedAnswers;
+    }
+    return [getModel(item, variety)];
+}
+
+function getItemGrammarSpec(item) {
+    const cueVerb = item.cueParts && item.cueParts[1] ? item.cueParts[1].toLowerCase().trim() : "";
+    const cuePlace = item.cueParts && item.cueParts[0] ? item.cueParts[0] : "";
+
+    const models = [item.model];
+    if (item.allowedAnswers) models.push(...item.allowedAnswers);
+    if (item.regionalModels) models.push(...Object.values(item.regionalModels));
+
+    const validPrepPhrases = [];
+    const targetPreps = new Set();
+
+    models.forEach(m => {
+        if (!m) return;
+        const norm = normalizeGerman(m);
+        const words = norm.split(" ");
+        for (let i = 0; i < words.length; i++) {
+            const w = words[i];
+            if (w === "nach" || w === "zum" || w === "zur") {
+                validPrepPhrases.push(words.slice(i).join(" "));
+                targetPreps.add(w);
+                break;
+            } else if (w === "in" && i + 1 < words.length && ["die", "den", "dem", "das"].includes(words[i + 1])) {
+                validPrepPhrases.push(words.slice(i).join(" "));
+                targetPreps.add(`in ${words[i + 1]}`);
+                break;
+            }
         }
-    ];
+    });
+
+    const normCuePlace = normalizeGerman(cuePlace);
+    const placeNoun = normCuePlace.split(" ").pop() || "";
+
+    return {
+        cueVerb,
+        validPrepPhrases: Array.from(new Set(validPrepPhrases)),
+        targetPreps: Array.from(targetPreps),
+        targetPlace: placeNoun
+    };
+}
+
+function evaluateGermanAnswer(raw, item, variety = "DE") {
+    const normRaw = normalizeGerman(raw);
+    if (!normRaw) {
+        return { judgment: "undetermined", redPart: null, supplement: null, reason: "empty" };
+    }
+
+    const recModel = getModel(item, variety);
+    const normRec = normalizeGerman(recModel);
+
+    // Exact model match
+    if (normRaw === normRec) {
+        return { judgment: "accepted", redPart: null, supplement: null, reason: "exact_model" };
+    }
+
+    // Allowed answers check (e.g. regional differences like zur Schule / in die Schule)
+    const allowed = getAllowed(item, variety);
+    if (allowed.some(ans => normalizeGerman(ans) === normRaw)) {
+        const flag = variety === "AT" ? "🇦🇹 " : (variety === "CH" ? "🇨🇭 " : "🇩🇪 ");
+        return { judgment: "accepted", redPart: null, supplement: flag + recModel, reason: "allowed_answer" };
+    }
+
+    const words = normRaw.split(" ");
+    if (words.length < 3) {
+        return { judgment: "undetermined", redPart: null, supplement: null, reason: "incomplete_speech" };
+    }
+
+    // Complex / unsupported structures (modals, conjunctions) -> undetermined
+    const unsupportedMarkers = new Set(["möchte", "will", "kann", "muss", "soll", "darf", "weil", "dass", "wenn", "ob", "obwohl"]);
+    if (words.some(w => unsupportedMarkers.has(w))) {
+        return { judgment: "undetermined", redPart: null, supplement: null, reason: "complex_structure" };
+    }
+
+    const spec = getItemGrammarSpec(item);
+    const cueVerb = spec.cueVerb;
+    const targetPreps = spec.targetPreps;
+    const targetPlace = spec.targetPlace;
+    const validPrepPhrases = spec.validPrepPhrases;
+
+    // Check subject pronoun
+    let subj = null;
+    let subjPos = -1;
+    for (let i = 0; i < words.length; i++) {
+        if (KNOWN_SUBJECTS.has(words[i])) {
+            subj = words[i];
+            subjPos = i;
+            break;
+        }
+    }
+
+    if (!subj) {
+        return { judgment: "undetermined", redPart: null, supplement: null, reason: "unknown_subject" };
+    }
+
+    // Determine finite verb position based on subject position
+    let finiteVerb = null;
+    if (subjPos === 0) {
+        finiteVerb = words[1];
+    } else if (subjPos === 3) {
+        // e.g. Nach Graz fahre ich.
+        finiteVerb = words[2];
+    } else if (subjPos === 4) {
+        // e.g. In die Türkei fliegen wir.
+        finiteVerb = words[3];
+    }
+
+    // Preposition and place extracted from learner words
+    let prepWord = null;
+    let placeWord = null;
+    for (let i = 0; i < words.length; i++) {
+        const w = words[i];
+        if (w === "nach" || w === "zum" || w === "zur" || w === "zu") {
+            prepWord = w;
+            if (i + 1 < words.length) placeWord = words[i + 1];
+            break;
+        } else if (w === "in" && i + 2 < words.length && ["die", "den", "dem", "das"].includes(words[i + 1])) {
+            prepWord = `in ${words[i + 1]}`;
+            placeWord = words[i + 2];
+            break;
+        } else if (w === "in" && i + 1 < words.length) {
+            prepWord = "in";
+            placeWord = words[i + 1];
+            break;
+        }
+    }
+
+    // Check if another motion verb root was erroneously used
+    for (const [otherVerb, otherInfo] of Object.entries(GERMAN_VERBS)) {
+        if (otherVerb !== cueVerb) {
+            const allForms = [];
+            Object.values(otherInfo.präsens).forEach(forms => allForms.push(...forms));
+            Object.values(otherInfo.präteritum).forEach(forms => allForms.push(...forms));
+            allForms.push(otherInfo.partizip);
+            for (const f of allForms) {
+                if (words.includes(f)) {
+                    return { judgment: "mismatch", redPart: f, supplement: null, reason: "wrong_verb_root" };
+                }
+            }
+        }
+    }
+
+    const verbInfo = GERMAN_VERBS[cueVerb];
+    const isPerfekt = words.some(w => ALL_SEIN.has(w));
+    let participle = null;
+    for (const vInfo of Object.values(GERMAN_VERBS)) {
+        if (words.includes(vInfo.partizip)) {
+            participle = vInfo.partizip;
+            break;
+        }
+    }
+
+    if (verbInfo) {
+        if (isPerfekt) {
+            const expectedAux = SEIN_FORMS[subj] || [];
+            let auxFound = null;
+            for (const w of words) {
+                if (ALL_SEIN.has(w)) {
+                    auxFound = w;
+                    break;
+                }
+            }
+            if (auxFound && !expectedAux.includes(auxFound)) {
+                return { judgment: "mismatch", redPart: auxFound, supplement: null, reason: "aux_agreement_mismatch" };
+            }
+            if (participle !== verbInfo.partizip) {
+                if (participle) {
+                    return { judgment: "mismatch", redPart: participle, supplement: null, reason: "wrong_participle" };
+                } else {
+                    return { judgment: "undetermined", redPart: null, supplement: null, reason: "missing_participle" };
+                }
+            }
+        } else if (finiteVerb) {
+            const expectedPraesens = verbInfo.präsens[subj] || [];
+            const expectedPraet = verbInfo.präteritum[subj] || [];
+            const expectedForms = [...expectedPraesens, ...expectedPraet];
+
+            const allCueForms = [];
+            Object.values(verbInfo.präsens).forEach(forms => allCueForms.push(...forms));
+            Object.values(verbInfo.präteritum).forEach(forms => allCueForms.push(...forms));
+            allCueForms.push(cueVerb);
+
+            if (allCueForms.includes(finiteVerb) && !expectedForms.includes(finiteVerb)) {
+                return { judgment: "mismatch", redPart: finiteVerb, supplement: null, reason: "agreement_mismatch" };
+            } else if (!expectedForms.includes(finiteVerb)) {
+                return { judgment: "undetermined", redPart: null, supplement: null, reason: "unrecognized_finite_verb" };
+            }
+        }
+    }
+
+    // Check wrong preposition
+    if (prepWord && targetPreps.length > 0 && !targetPreps.includes(prepWord)) {
+        return { judgment: "mismatch", redPart: prepWord, supplement: null, reason: "wrong_preposition" };
+    }
+
+    // Check wrong destination place
+    if (placeWord && targetPlace && placeWord !== targetPlace) {
+        return { judgment: "mismatch", redPart: placeWord, supplement: null, reason: "wrong_place" };
+    }
+
+    // Valid preposition phrase match
+    const hasValidPrepPhrase = validPrepPhrases.some(pp => normRaw.includes(pp));
+    if (hasValidPrepPhrase) {
+        return { judgment: "accepted", redPart: null, supplement: null, reason: "valid_motion_sentence" };
+    }
+
+    return { judgment: "undetermined", redPart: null, supplement: null, reason: "fallback_undetermined" };
+}
+
+function initGermanDrill() {
 
     // -------------------------------------------------------------
     // 2. Global State
@@ -212,18 +564,41 @@ document.addEventListener("DOMContentLoaded", () => {
         return b;
     }
 
-    function getModel(item, variety = currentVariety) {
-        if (item.regionalModels) {
-            return item.regionalModels[variety] || item.regionalModels.DE;
+    function highlightRedPart(rawText, redPart) {
+        if (!redPart) return [document.createTextNode(rawText)];
+        const escaped = redPart.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const rx = new RegExp(`(^|\\s|[.,!?;:])(${escaped})($|\\s|[.,!?;:])`, "i");
+        const match = rx.exec(rawText);
+        if (match) {
+            const prefix = match[1];
+            const matchStart = match.index + prefix.length;
+            const matchStr = rawText.slice(matchStart, matchStart + redPart.length);
+            const before = rawText.slice(0, matchStart);
+            const after = rawText.slice(matchStart + redPart.length);
+            const nodes = [];
+            if (before) nodes.push(document.createTextNode(before));
+            const mark = node("span", "result-incorrect", matchStr);
+            mark.style.color = "var(--semantic-negative-color, #E11D48)";
+            mark.style.fontWeight = "700";
+            nodes.push(mark);
+            if (after) nodes.push(document.createTextNode(after));
+            return nodes;
         }
-        return item.model;
-    }
-
-    function getAllowed(item, variety = currentVariety) {
-        if (item.allowedAnswers) {
-            return item.allowedAnswers;
+        const idx = rawText.toLowerCase().indexOf(redPart.toLowerCase());
+        if (idx !== -1) {
+            const before = rawText.slice(0, idx);
+            const matchStr = rawText.slice(idx, idx + redPart.length);
+            const after = rawText.slice(idx + redPart.length);
+            const nodes = [];
+            if (before) nodes.push(document.createTextNode(before));
+            const mark = node("span", "result-incorrect", matchStr);
+            mark.style.color = "var(--semantic-negative-color, #E11D48)";
+            mark.style.fontWeight = "700";
+            nodes.push(mark);
+            if (after) nodes.push(document.createTextNode(after));
+            return nodes;
         }
-        return [getModel(item, variety)];
+        return [document.createTextNode(rawText)];
     }
 
     function highlightGrammar(text) {
@@ -231,15 +606,6 @@ document.addEventListener("DOMContentLoaded", () => {
             .replace(/\b(nach)\b/g, '<strong class="grammar-highlight">$1</strong>')
             .replace(/\b(in die|in den)\b/g, '<strong class="grammar-highlight">$1</strong>')
             .replace(/\b(zum|zur)\b/g, '<strong class="grammar-highlight">$1</strong>');
-    }
-
-    function normalizeGerman(text) {
-        if (!text) return "";
-        return text
-            .toLowerCase()
-            .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'„“…]/g, "")
-            .replace(/\s+/g, " ")
-            .trim();
     }
 
     function formatCue(item, isDrill1 = true) {
@@ -792,20 +1158,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const raw = s.raw.trim();
             const recModel = getModel(item, currentVariety);
-            const allowed = getAllowed(item, currentVariety);
-            const normRaw = normalizeGerman(raw);
-            const normRec = normalizeGerman(recModel);
-
-            let isCorrect = false;
-            let supplement = null;
-
-            if (normRaw && normRaw === normRec) {
-                isCorrect = true;
-            } else if (normRaw && allowed.some(ans => normalizeGerman(ans) === normRaw)) {
-                isCorrect = true;
-                const flag = currentVariety === "AT" ? "🇦🇹 " : (currentVariety === "CH" ? "🇨🇭 " : "🇩🇪 ");
-                supplement = flag + recModel;
-            }
+            const evalResult = evaluateGermanAnswer(raw, item, currentVariety);
+            const isCorrect = evalResult.judgment === "accepted";
+            const supplement = evalResult.supplement;
 
             const previous = saved.get(key) || {};
             let url = previous.url;
@@ -824,6 +1179,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     url,
                     raw: s.raw,
                     correct: isCorrect,
+                    judgment: evalResult.judgment,
+                    redPart: evalResult.redPart,
                     modelText: recModel,
                     supplement,
                     variety: currentVariety
@@ -969,28 +1326,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (val?.raw) {
-            v.result.append(document.createTextNode(val.raw));
-            if (val.correct) {
-                v.result.append(document.createTextNode(" ✅ "));
+            const judgment = val.judgment || (val.correct ? "accepted" : "mismatch");
+
+            if (judgment === "accepted") {
+                v.result.append(document.createTextNode(val.raw + " ✅ "));
                 if (val.supplement) {
                     const supp = node("span", "uebung-supplement-badge", val.supplement);
                     v.result.append(supp);
                 }
-            } else {
-                const mark = node("span", "result-incorrect", " ❌");
-                mark.style.color = "var(--semantic-negative-color, #E11D48)";
-                mark.style.fontWeight = "700";
-                v.result.append(mark);
+                v.correction.hidden = true;
+            } else if (judgment === "mismatch") {
+                if (val.redPart) {
+                    const nodes = highlightRedPart(val.raw, val.redPart);
+                    v.result.append(...nodes);
+                } else {
+                    v.result.append(document.createTextNode(val.raw));
+                }
 
                 v.correction.hidden = false;
-                const corrListen = button("🔊きく", "Listen to recommended model.", () => {
-                    speakModel(val.modelText, corrListen);
-                });
-                corrListen.classList.add("correction-listen-btn");
-                corrListen.style.marginRight = "8px";
-
-                const corrText = node("span", "", `🔥 Keep going! Try once more! → ${val.modelText}`);
-                v.correction.append(corrListen, corrText);
+                const corrText = node("span", "", "🔥 Keep going!");
+                v.correction.append(corrText);
+            } else if (judgment === "undetermined") {
+                v.result.append(document.createTextNode(val.raw + " 👣"));
+                v.correction.hidden = true;
             }
         } else {
             v.result.append(node("span", "result-text not-recorded-yet", "… Not yet"));
@@ -1367,4 +1725,22 @@ document.addEventListener("DOMContentLoaded", () => {
     updateVoiceSelector();
     diagnoseTtsStartup();
     renderAll();
-});
+}
+
+if (typeof document !== "undefined") {
+    document.addEventListener("DOMContentLoaded", initGermanDrill);
+}
+
+if (typeof module !== "undefined" && module.exports) {
+    module.exports = {
+        drillsData,
+        evaluateGermanAnswer,
+        normalizeGerman,
+        getModel,
+        getAllowed,
+        getItemGrammarSpec,
+        GERMAN_VERBS,
+        SEIN_FORMS,
+        ALL_SEIN
+    };
+}

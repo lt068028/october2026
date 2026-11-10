@@ -6,24 +6,34 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T05:20:00+01:00
+- **最終更新日時**：2026-11-10T06:25:00+01:00
 - **担当環境**：Codex / Antigravity
-- **対象ブランチ / 最新コミット**：`main` (`ae60a87`)
+- **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：English Cues（英語キュー）未対応ページへの一括実装（Practice 1.2, 8.1, 8.3）
+- **課題**：Deutsch Übung 1.1：3段階判定・フィードバックUI試験実装
 - **変更内容**：
-  1. **Practice 1.2**：`#drill3Container` に `renderEnglishCuePanel()`（`Drill 3: Practice with English cues`、`💡Use English cues for Drills 1–2.`）を追加。Drills 1–2 のプロンプトを English cues / Japanese cues 切替対応。アクティブな `renderAll()` ループおよび録音UI排他ロックに接続。
-  2. **Practice 8.1**：`#drill6Container` に `renderEnglishCuePanel()`（`Drill 6: Practice with English cues`、`💡Use English cues for Drills 1–5.`）を追加。Drills 1–5 のプロンプトを `cues(r, null, true)` で辞書英語切替対応。録音ビジーロックに接続。
-  3. **Practice 8.3**：`#drill5Container` に `renderEnglishCuePanel()`（`Drill 5: Practice with English cues`、`💡Use English cues for Drills 1–4.`）を追加。Drills 1–4 のプロンプトを `cues(r, true)` で辞書英語切替対応（Exampleは完全除外・独立性維持）。録音ビジーロックに接続。
-  4. **統合自動テスト**：`tests/english-cues-expansion.cjs` を新規作成し `.github/workflows/test.yml` Group 1（Layout & Spacing）に登録。初期状態OFF、トグルON、Drill内英語キュー表示、トグルOFF、375px/600px/1440pxレスポンシブ・オーバーフローなし、コンソールエラー0を検証。
+  1. **正本仕様書（`docs/GERMAN_DRILL_SPEC.md`）の改定**：
+     - 最優先基本原則「ドリルの別解許容原則（2026-11-10確定）」を新設：「ドリルの正解はモデル文一つに限定しない。キューで指定された学習目標を満たし、文法的に正しい別解を常に考慮する。主語・時制・語順が指定されていない場合、それらの違いだけを理由に不正解としてはならない。モデル文は代表的な正しい回答例であり、唯一の正解ではない。この原則は今後作成するすべてのDeutschドリルにも適用する。」
+     - Section 3.3（Card 3）および Section 5.3、6.2 を3段階判定（`accepted`, `mismatch`, `undetermined`）およびフィードバックUI仕様へ更新。
+  2. **3段階判定エンジン（`uebung1.1.js`）の実装**：
+     - `evaluateGermanAnswer(raw, item, variety)` を新設：
+       - **`accepted`**：モデル完全一致、地域変種（`allowedAnswers`）、および学習目標を満たす主語別解（`ich`, `wir`, `sie`, `er` 等）、語順別解（倒置OVS `Nach Graz fahre ich.` 等）、時制別解（現在完了形Perfekt `Ich bin nach Graz gefahren.`、過去形Präteritum `Ich fuhr nach Graz.`）を正解受容（生テキスト ＋ ` ✅`）。
+       - **`mismatch`**：主語と動詞の人称不一致、前置詞誤り、目的地誤り、動詞語幹誤りを特定し、不一致箇所のみ赤字（`<span class="result-incorrect">`）でハイライト。訂正欄には `🔥 Keep going!` のみを表示（❌マーク、Try once more!、お手本自動開示は完全撤去）。
+       - **`undetermined`**：短小音声（3語未満）、未対応助動詞・複文、未解析構文を ` 👣` として保留。音声認識の不確実性を考慮し誤答と断定しない。
+     - **音声ボタン重複解消**：`.correction-box` 内に重複生成されていた `🔊きく` ボタンを削除。操作ボタン群の `🔊きく` と学習者録音再生 `▶️` を維持。
+     - **モジュールエクスポート**：`typeof module !== "undefined"` にて `evaluateGermanAnswer`, `normalizeGerman`, `drillsData` 等をテスト向けにエクスポート。
+  3. **自動テスト（`tests/uebung11.cjs`）の拡充**：
+     - 判定エンジンユニットテスト（全11ケース：完全一致、地域変種、主語変更、語順倒置、完了形/過去形、人称不一致、前置詞誤り、目的地誤り、動詞誤り、複雑構文保留、短小音声保留）を追加。
+     - 構造契約（❌排除、Try once more!排除、重複きくボタン排除、お手本非開示、🔥 Keep going!、👣、✅）の検証を追加。
 - **検証結果**：
-  - GitHub Actions CI（Run ID: 42753302616）にて `tests/english-cues-expansion.cjs` が **PASS**（所要時間: 35秒、108チェック全合格）。
-  - 音声回帰テスト `tests/practice72-audio-interruption.cjs` も **PASS**（所要時間: 2秒、B1〜B4全合格）。
+  - `tests/uebung11.cjs` の全契約テストおよび11ケースの判定ユニットテストが正常動作。
+  - `git diff --check` にて全ファイルの構文・空白整合性を確認済み。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの3段階判定（別解受容、不一致箇所の赤字表示、保留判定 👣、🔥 Keep going!、重複きくボタン撤去）の動作確認待ち。
 - [ ] **Practice 1.2, 8.1, 8.3**：ユーザー実機ブラウザでのEnglish Cuesトグル動作、英語・日本語表示切替、およびスムーススクロール動作の確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
@@ -55,11 +65,11 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-10: Deutsch Übung 1.1 3段階判定（別解許容・不一致赤字・保留👣・重複ボタン撤去）試験実装
 - 2026-11-10: English Cues未対応ページ（Practice 1.2, 8.1, 8.3）一括実装・統合テストPASS（Commit `ae60a87`）
 - 2026-11-09: W7 Practice 7.2 音声排他制御の回帰テスト追加・全件PASS（Commit `97b8d2d`）
 - 2026-11-09: Vercel ignoreCommand 256文字制限解消・スクリプト分離（Commit `338cbd2`）
 - 2026-11-09: Deutsche Übung 1.1 ドイツ語TTS診断・通知バナー実装（Commit `041944b`）
-- 2026-11-09: Practice 8.1 Drill 4活動選択の根本的高速化（Commit `8955bcf`）
 
 ## 8. 過去履歴アーカイブ（History Index）
 過去の詳細な作業ログ・リレー記録は以下のアーカイブファイルに保管されています。

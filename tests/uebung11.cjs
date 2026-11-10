@@ -129,4 +129,110 @@ assert.ok(js.includes('u.addEventListener("error"'), 'JS must listen to utteranc
 assert.ok(js.includes('u.addEventListener("end"'), 'JS must listen to utterance end');
 assert.ok(js.includes('startTimeoutTimer'), 'JS must have start timeout timer');
 
-console.log('PASS: All structural and contract tests passed successfully.');
+// 7. 3-Stage Evaluation & Feedback UI Contracts (FWC / W10)
+// 7.1 Structural and feedback text contracts
+assert.ok(!js.includes('result-incorrect", " ❌"'), 'Must not render ❌ mark in result');
+assert.ok(!js.includes('Try once more!'), 'Must not contain Try once more!');
+assert.ok(!js.includes('correction-listen-btn'), 'Must not create duplicate listen button in correction-box');
+assert.ok(!js.includes('→ ${val.modelText}'), 'Must not auto-disclose model sentence in correction-box');
+assert.ok(js.includes('🔥 Keep going!'), 'Must include 🔥 Keep going!');
+assert.ok(js.includes(' 👣'), 'Must include 👣 undetermined marker');
+assert.ok(js.includes(' ✅ '), 'Must include ✅ accepted marker');
+assert.ok(js.includes('module.exports ='), 'Must export modules for testing');
+
+// 7.2 Functional unit tests on 3-stage evaluation engine
+const {
+    drillsData,
+    evaluateGermanAnswer,
+    normalizeGerman,
+    getItemGrammarSpec
+} = require(jsPath);
+
+assert.ok(Array.isArray(drillsData) && drillsData.length === 4, 'drillsData must contain 4 drills');
+
+// Locate test items
+const itemGraz = drillsData[0].items[0]; // d1_1: Graz / fahren -> "Ich fahre nach Graz."
+const itemItalien = drillsData[0].items[1]; // d1_2: Italien / reisen -> "Ich reise nach Italien."
+const itemTuerkei = drillsData[1].items[0]; // d2_1: die Türkei / fliegen -> "Ich fliege in die Türkei."
+const itemIrak = drillsData[1].items[2]; // d2_3: der Irak / fliegen -> "Ich fliege in den Irak."
+const itemArzt = drillsData[2].items[0]; // d3_1: der Arzt / gehen -> "Ich gehe zum Arzt."
+const itemPost = drillsData[3].example; // Ex 4: die Post / gehen -> "Ich gehe zur Post."
+const itemSchule = drillsData[3].items[2]; // d4_3: die Schule / gehen -> regional models
+
+console.log('Running 3-stage evaluation engine unit tests...');
+
+// Case 1: Exact model match
+const resCase1 = evaluateGermanAnswer("Ich fahre nach Graz.", itemGraz, "DE");
+assert.equal(resCase1.judgment, "accepted", "Exact match must be accepted");
+assert.equal(resCase1.redPart, null, "Exact match has no redPart");
+
+// Case 2: Registered regional alternative from allowedAnswers
+const resCase2 = evaluateGermanAnswer("Ich gehe in die Schule.", itemSchule, "DE");
+assert.equal(resCase2.judgment, "accepted", "Allowed regional alternative must be accepted");
+assert.ok(resCase2.supplement && resCase2.supplement.includes("zur Schule"), "Should include regional model supplement");
+
+// Case 3: Alternate grammatical subjects
+const resCase3a = evaluateGermanAnswer("Wir fahren nach Graz.", itemGraz, "DE");
+assert.equal(resCase3a.judgment, "accepted", "Alternate subject 'Wir' must be accepted");
+const resCase3b = evaluateGermanAnswer("Sie fliegt in die Türkei.", itemTuerkei, "DE");
+assert.equal(resCase3b.judgment, "accepted", "Alternate subject 'Sie' (3sg) must be accepted");
+const resCase3c = evaluateGermanAnswer("Er geht zum Arzt.", itemArzt, "DE");
+assert.equal(resCase3c.judgment, "accepted", "Alternate subject 'Er' must be accepted");
+
+// Case 4: Inverted word order (OVS)
+const resCase4a = evaluateGermanAnswer("Nach Graz fahre ich.", itemGraz, "DE");
+assert.equal(resCase4a.judgment, "accepted", "Inverted word order 'Nach Graz fahre ich.' must be accepted");
+const resCase4b = evaluateGermanAnswer("In die Türkei fliegen wir.", itemTuerkei, "DE");
+assert.equal(resCase4b.judgment, "accepted", "Inverted word order 'In die Türkei fliegen wir.' must be accepted");
+const resCase4c = evaluateGermanAnswer("Zum Arzt geht er.", itemArzt, "DE");
+assert.equal(resCase4c.judgment, "accepted", "Inverted word order 'Zum Arzt geht er.' must be accepted");
+
+// Case 5: Alternate tenses (Perfekt / Präteritum)
+const resCase5a = evaluateGermanAnswer("Ich bin nach Graz gefahren.", itemGraz, "DE");
+assert.equal(resCase5a.judgment, "accepted", "Perfekt 'Ich bin nach Graz gefahren.' must be accepted");
+const resCase5b = evaluateGermanAnswer("Wir sind nach Graz gefahren.", itemGraz, "DE");
+assert.equal(resCase5b.judgment, "accepted", "Perfekt 'Wir sind nach Graz gefahren.' must be accepted");
+const resCase5c = evaluateGermanAnswer("Ich fuhr nach Graz.", itemGraz, "DE");
+assert.equal(resCase5c.judgment, "accepted", "Präteritum 'Ich fuhr nach Graz.' must be accepted");
+const resCase5d = evaluateGermanAnswer("Ich bin zum Arzt gegangen.", itemArzt, "DE");
+assert.equal(resCase5d.judgment, "accepted", "Perfekt 'Ich bin zum Arzt gegangen.' must be accepted");
+
+// Case 6: Subject-verb agreement mismatch
+const resCase6 = evaluateGermanAnswer("Er fahren nach Graz.", itemGraz, "DE");
+assert.equal(resCase6.judgment, "mismatch", "Agreement mismatch must be mismatch");
+assert.equal(resCase6.redPart, "fahren", "Mismatched verb form must be flagged as redPart");
+
+// Case 7: Wrong preposition for destination
+const resCase7 = evaluateGermanAnswer("Ich fahre zu Graz.", itemGraz, "DE");
+assert.equal(resCase7.judgment, "mismatch", "Wrong preposition must be mismatch");
+assert.equal(resCase7.redPart, "zu", "Wrong preposition must be flagged as redPart");
+
+// Case 8: Wrong place / cue mismatch
+const resCase8 = evaluateGermanAnswer("Ich fahre nach Berlin.", itemGraz, "DE");
+assert.equal(resCase8.judgment, "mismatch", "Wrong destination place must be mismatch");
+assert.equal(resCase8.redPart, "berlin", "Wrong place must be flagged as redPart");
+
+// Case 9: Wrong verb root
+const resCase9 = evaluateGermanAnswer("Ich gehe nach Graz.", itemGraz, "DE");
+assert.equal(resCase9.judgment, "mismatch", "Wrong motion verb root must be mismatch");
+assert.equal(resCase9.redPart, "gehe", "Wrong verb root must be flagged as redPart");
+
+// Case 10: Unknown / complex sentence structure -> undetermined
+const resCase10 = evaluateGermanAnswer("Ich möchte nach Graz fahren.", itemGraz, "DE");
+assert.equal(resCase10.judgment, "undetermined", "Complex/modal structure must be undetermined");
+assert.equal(resCase10.redPart, null, "Undetermined must have null redPart");
+
+// Case 11: Incomplete speech / short fragments (< 3 words) -> undetermined
+const resCase11a = evaluateGermanAnswer("fahre nach", itemGraz, "DE");
+assert.equal(resCase11a.judgment, "undetermined", "Short fragment must be undetermined");
+const resCase11b = evaluateGermanAnswer("Graz", itemGraz, "DE");
+assert.equal(resCase11b.judgment, "undetermined", "Single word fragment must be undetermined");
+const resCase11c = evaluateGermanAnswer("nach", itemGraz, "DE");
+assert.equal(resCase11c.judgment, "undetermined", "Single preposition must be undetermined");
+
+// 7.3 Responsive style contract verification
+assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
+assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
+assert.ok(css.includes('.result-incorrect'), 'CSS must style .result-incorrect');
+
+console.log('PASS: All structural, contract, and 3-stage evaluation tests passed successfully.');
