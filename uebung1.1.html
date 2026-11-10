@@ -8,6 +8,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css?v=20261109-tts-notice">
+
+    <style>
+        /* Deutsch 1.1 preview: icon-only audio controls. */
+        .uebung11-page .uebung-icon-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            min-width: 36px;
+            height: 36px;
+            padding: 6px;
+            vertical-align: middle;
+        }
+        .uebung11-page .uebung-icon-button .uebung-audio-icon {
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+        }
+        .uebung11-page .uebung-icon-button .custom-tip-box { pointer-events: none; }
+        .uebung11-page .uebung-icon-button:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
+    </style>
 </head>
 <body class="site-scale uebung11-page">
 
@@ -154,7 +178,7 @@
     </footer>
 
     <script src="drill-audio-session.js"></script>
-    <script src="uebung1.1.js?v=20261109-tts-notice"></script>
+    <script src="uebung1.1.js?v=20261110-lucide-audio-preview"></script>
     <script src="tooltip-layout.js"></script>
 </body>
 </html>
