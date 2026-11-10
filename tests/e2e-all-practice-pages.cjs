@@ -560,6 +560,81 @@ async function setupPage(browser, pageName, width = 1440) {
             }
 
             if (config.name === 'practice1.2') {
+                // Assert Drill 1 and Drill 2 choices update only the selected answer
+                // recording cell, preserving cue controls and sibling row identity.
+                const scopedState = await page.evaluate(() => {
+                    const d1 = document.querySelector('#drill1Container');
+                    const d2 = document.querySelector('#drill2Container');
+                    const card1 = d1.querySelector('.drill-row');
+                    const card2 = d2.querySelector('.drill-row');
+                    const rows1 = card1.querySelectorAll('tr');
+                    const rows2 = card2.querySelectorAll('tr');
+                    window.__p12Scoped = {
+                        d1, d2, card1, card2,
+                        question1: rows1[0], answer1: rows1[1],
+                        question2: rows2[0], answer2: rows2[1],
+                        yes: card1.querySelector('.answer-choice[data-answer="yes"]'),
+                        select: card2.querySelector('select.custom-select'),
+                        sibling1: d1.querySelectorAll('.drill-row')[1],
+                        sibling2: d2.querySelectorAll('.drill-row')[1]
+                    };
+                    return Boolean(window.__p12Scoped.yes && window.__p12Scoped.select);
+                });
+                check(scopedState, 'Practice 1.2 scoped update test controls exist');
+
+                const unchanged = async label => {
+                    check(await page.evaluate(() => {
+                        const x = window.__p12Scoped;
+                        return x.d1 === document.querySelector('#drill1Container')
+                            && x.d2 === document.querySelector('#drill2Container')
+                            && x.card1 === x.d1.querySelector('.drill-row')
+                            && x.card2 === x.d2.querySelector('.drill-row')
+                            && x.question1 === x.card1.querySelectorAll('tr')[0]
+                            && x.answer1 === x.card1.querySelectorAll('tr')[1]
+                            && x.question2 === x.card2.querySelectorAll('tr')[0]
+                            && x.answer2 === x.card2.querySelectorAll('tr')[1]
+                            && x.yes === x.card1.querySelector('.answer-choice[data-answer="yes"]')
+                            && x.select === x.card2.querySelector('select.custom-select')
+                            && x.sibling1 === x.d1.querySelectorAll('.drill-row')[1]
+                            && x.sibling2 === x.d2.querySelectorAll('.drill-row')[1];
+                    }), `Practice 1.2 DOM identity preserved after ${label}`);
+                };
+
+                const d1 = page.locator('#drill1Container .drill-row').first();
+                const yes = d1.locator('.answer-choice[data-answer="yes"]');
+                const no = d1.locator('.answer-choice[data-answer="no"]');
+                await yes.click();
+                check(await yes.getAttribute('aria-pressed') === 'true', 'Practice 1.2 Drill 1 Yes active');
+                await unchanged('Drill 1 Yes');
+
+                await page.evaluate(() => {
+                    practice2State.savedResults['p2_drill1_a_0_yes'] = { text: 'P12-YES-SAVED' };
+                });
+                await no.click();
+                check(await no.getAttribute('aria-pressed') === 'true', 'Practice 1.2 Drill 1 No active');
+                check(!(await d1.locator('tr:nth-child(2) .recording-result').innerText()).includes('P12-YES-SAVED'), 'Practice 1.2 Drill 1 No has distinct saved result');
+                await unchanged('Drill 1 No');
+                await yes.click();
+                check((await d1.locator('tr:nth-child(2) .recording-result').innerText()).includes('P12-YES-SAVED'), 'Practice 1.2 Drill 1 Yes saved result restored');
+                await unchanged('Drill 1 Yes again');
+
+                const d2 = page.locator('#drill2Container .drill-row').first();
+                const major = d2.locator('select.custom-select');
+                await major.selectOption('けいざい');
+                check(await major.inputValue() === 'けいざい', 'Practice 1.2 Drill 2 economics selected');
+                await unchanged('Drill 2 economics');
+                await page.evaluate(() => {
+                    practice2State.savedResults['p2_drill2_ともだち_a_けいざい'] = { text: 'P12-ECONOMICS-SAVED' };
+                });
+                await major.selectOption('せいじ');
+                check(!(await d2.locator('tr:nth-child(2) .recording-result').innerText()).includes('P12-ECONOMICS-SAVED'), 'Practice 1.2 Drill 2 different major has distinct result');
+                await unchanged('Drill 2 politics');
+                await major.selectOption('けいざい');
+                check((await d2.locator('tr:nth-child(2) .recording-result').innerText()).includes('P12-ECONOMICS-SAVED'), 'Practice 1.2 Drill 2 economics result restored');
+                await unchanged('Drill 2 economics again');
+            }
+
+            if (config.name === 'practice1.2') {
                 // Practice 1.2 Drill 1 Yes/No and Drill 2 Select state retention
                 const d1Choices = page.locator('#drill1Container .answer-choice[data-answer="yes"]').first();
                 if (await d1Choices.count() > 0) {
