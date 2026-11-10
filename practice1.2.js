@@ -2244,6 +2244,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         installSettings();
         renderSections();
+        renderEnglishCuePanel();
         ConversationDisplay.format();
         alignColumns();
         practice2SyncRecordingUI();
