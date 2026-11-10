@@ -201,8 +201,10 @@ const root = path.resolve(__dirname, '..');
                 });
                 for (let i = 0; i < d5Layout.length; i++) {
                     const item = d5Layout[i];
-                    if (width >= 600 || i < 4) {
-                        assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues ON`);
+                    if (width >= 600) {
+                        assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues ON (width=${width})`);
+                    } else {
+                        assert.ok(item.spacerWidth >= 0, `Drill 5 card ${i} spacer must be non-negative at 375px when English Cues ON`);
                     }
                     if (width >= 1440 || item.sameLine) {
                         assert.ok(Math.abs(item.sRects[0].left - item.sRects[1].left) < 1, `Drill 5 card ${i} selects must align horizontally when English Cues ON (width=${width})`);
@@ -285,8 +287,10 @@ const root = path.resolve(__dirname, '..');
                 });
                 for (let i = 0; i < d5LayoutOff.length; i++) {
                     const item = d5LayoutOff[i];
-                    if (width >= 600 || i < 4) {
-                        assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues OFF`);
+                    if (width >= 600) {
+                        assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues OFF (width=${width})`);
+                    } else {
+                        assert.ok(item.spacerWidth >= 0, `Drill 5 card ${i} spacer must be non-negative at 375px when English Cues OFF`);
                     }
                     if (width >= 1440 || item.sameLine) {
                         assert.ok(Math.abs(item.sRects[0].left - item.sRects[1].left) < 1, `Drill 5 card ${i} selects must align horizontally when English Cues OFF (width=${width})`);

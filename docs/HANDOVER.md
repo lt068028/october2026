@@ -6,31 +6,33 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T12:15:00+01:00
+- **最終更新日時**：2026-11-10T15:10:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：全11ページのブラウザE2Eテスト基盤構築・スラッシュ仕様回帰検証
+- **課題**：全11ページE2Eテストの品質監査・不足項目補強・CI安定化
 - **変更内容**：
-  1. **実ブラウザE2E基盤（Playwright Chromium）の構築**:
-     - `tests/e2e-all-practice-pages.cjs` を新規作成。全11 Practiceページ（1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）を網羅。
-     - 正常読み込み、JS未処理例外なし、日本語半角スラッシュ（ページ別スペース規則維持：1.1は `父 / 母`、他は `父/母`）、English Cues（`" / "`）、Vocab Display非表示、Script切替、Yes/No・Select選択、音声排他制御（モデルTTSと録音の中断連携）、レスポンシブ375/600/1440px横スクロールなし、8.1の `〃` スペーサー位置合わせを自動検証。
-     - **960項目全件PASS**（11/11ページ）。
-  2. **テストコードの不備是正（テスト期待値・セレクタ）**:
-     - `tests/practice71-answer-selection.cjs`: 102行目・158行目・178行目のセレクタを `.recording-actions button` に修正（第1セルのYes選択ボタンとの誤一致を解消）。PASS（23 checks）。
-     - `tests/english-cues-expansion.cjs`: Practice 1.2 の改行・インデントによる不備を修正、Practice 8.1 の Hiragana表記（`おさらをあらう`）および `totemo`（`very`）、375px幅での折り返し時のスペーサークランプ許容に対応。PASS（234 checks across 3 pages）。
-  3. **npm scripts & CI統合**:
-     - `package.json` を新設（`npm run test:e2e` 等）。
-     - `.github/workflows/test.yml` に Group 5 として `tests/e2e-all-practice-pages.cjs` を登録。
-     - `tests/README.md` にテスト仕様・実行手順を追記。
+  1. **E2E総合回帰テストの品質監査・大幅補強** (`tests/e2e-all-practice-pages.cjs`):
+     - **960件から1,071件へ検証項目拡大**（全11 Practiceページ、100% PASS）。
+     - **スラッシュ仕様のページ別実体検証**: 日本語キュー（1.1の `わたし / がくせい`、他10ページの `これ/なに`、`その/かばん` 等のコンパクト表記）および英語キュー（`I / student`, `older brother / student`, `this / …`, `that / bag` 等の `" / "` 表記）の代表語句実描画を自動照合。
+     - **DOM Churn・局所更新の機械的立証**: Practice 7.1 Drill 2 の Yes/No 選択時に第2行（Row 1）のDOMノード同一性（`__domRow1 === rows[1]`）を検証し、全体再描画が発生せず局所更新が行われていることを実証。
+     - **選択状態・回答保持の検証**: Practice 1.2（Drill 1 Yes/No、Drill 2 専攻Select）、Practice 7.1、Practice 7.2 の状態維持を検証。
+     - **音声ライフサイクル & モデルTTS検証**: モデル音声再生時の `window.speechSynthesis.speak` 発火および発話テキストが空でないこと、録音中の排他制御・操作ロック状態を検証。
+     - **レスポンシブ実測検証の厳格化**: 375px/600px/1440px での横スクロールはみ出し防止に加え、キュー要素の画面外クリップ、およびキュー文字列の1文字縦落ち（single-character vertical collapse）の不在をバウンディングボックスで実測検証。
+  2. **CI安定化・既存テストの仕様同期是正**:
+     - `tests/english-cues-expansion.cjs`: 375pxモバイル幅でシステムフォント環境に依存せずスペーサークランプ（`>= 0`）を許容。PASS（234 checks）。
+     - `tests/lesson2-cue-spacing.cjs`: 全11ページ統一英語キュー仕様（`" / "`）との不整合を是正。日本語キュー（スペース禁止）と英語キュー（前後スペース必須）をモード・行種別（Drill / Example）に応じて厳密に判定。PASS（2,568 checks）。
+  3. **プロダクションコード不変の堅持**:
+     - プロダクションコード（HTML/CSS/JS）は一切変更なし。テストスイートおよびドキュメントのみを更新。
 - **検証結果**：
-  - `tests/e2e-all-practice-pages.cjs`: PASS（11/11ページ、960 checks）。
-  - `tests/practice71-answer-selection.cjs`: PASS（23 checks）。
-  - `tests/english-cues-expansion.cjs`: PASS（234 checks）。
-  - `git diff --check` にて空白・構文不備なし。プロダクションコード（HTML/CSS/JS）は一切変更なし。
+  - `tests/e2e-all-practice-pages.cjs`: **PASS（11/11ページ、1,071 checks）**。
+  - `tests/lesson2-cue-spacing.cjs`: **PASS（2,568 cue rows）**。
+  - `tests/english-cues-expansion.cjs`: **PASS（234 checks across 3 pages）**。
+  - `tests/practice71-answer-selection.cjs`: **PASS（23 checks）**。
+  - `git diff --check` にて空白・構文不備なし。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
 - [ ] **全11ページ**：新仕様である半角スラッシュキュー表示（日本語 `父/母` または `父 / 母`、英語 `word / word`）および 375px／600px／1440px での表示・視認性・折り返しのユーザー実機ブラウザ確認待ち。

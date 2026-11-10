@@ -138,6 +138,8 @@ const PAGES = [
         title: 'Practice 1.1',
         hasSlash: true,
         slashSpacing: 'spaced', // " / "
+        sampleJaCues: ['わたし / がくせい'],
+        sampleEnCues: ['I / student'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -146,6 +148,8 @@ const PAGES = [
         title: 'Practice 1.2',
         hasSlash: true,
         slashSpacing: 'compact', // "/"
+        sampleJaCues: ['おにいさん', 'がくせい'],
+        sampleEnCues: ['older brother / student'],
         hasEnglishCues: true,
         hasDrill1YN: true,
         hasDrill2Select: true,
@@ -156,6 +160,8 @@ const PAGES = [
         title: 'Practice 2.1',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['これ/なに'],
+        sampleEnCues: ['this / …'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -164,6 +170,8 @@ const PAGES = [
         title: 'Practice 2.2',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['その/かばん'],
+        sampleEnCues: ['that / bag'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -172,6 +180,8 @@ const PAGES = [
         title: 'Practice 2.3',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['Yさん/どこ'],
+        sampleEnCues: ['Y / where'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -195,6 +205,8 @@ const PAGES = [
         title: 'Practice 7.3',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['昨日/母/電話する'],
+        sampleEnCues: ['yesterday / my mother / call'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -203,6 +215,8 @@ const PAGES = [
         title: 'Practice 8.1',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['りょこう/すき'],
+        sampleEnCues: ['book / like'],
         hasEnglishCues: true,
         hasDrill4Select: true,
         hasDrill5Select: true,
@@ -214,6 +228,8 @@ const PAGES = [
         title: 'Practice 8.2',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['何か/飲む'],
+        sampleEnCues: ['class / speak'],
         hasEnglishCues: true,
         hasAudio: true
     },
@@ -222,6 +238,8 @@ const PAGES = [
         title: 'Practice 8.3',
         hasSlash: true,
         slashSpacing: 'compact',
+        sampleJaCues: ['だれ/おしえる'],
+        sampleEnCues: ['who / help'],
         hasEnglishCues: true,
         hasAudio: true
     }
@@ -295,27 +313,33 @@ async function setupPage(browser, pageName, width = 1440) {
 
             // 2. Japanese Slash Cue Verification (Default English Cues OFF)
             if (config.hasSlash) {
-                const cueCells = await page.evaluate(() => {
+                const cueData = await page.evaluate(() => {
                     const els = document.querySelectorAll('.drill-cue-cell:not(:has(select)), .p73-example-cues, .prompt-label:not(:has(select)), .p81-example-cue, .p81-comparison-card .p81-cue-words:not(:has(select))');
                     return Array.from(els).map(el => {
                         const clone = el.cloneNode(true);
                         clone.querySelectorAll('.tooltip-tip, .vocab-inline').forEach(t => t.remove());
-                        return clone.textContent.trim();
+                        const raw = clone.textContent.trim();
+                        const norm = raw.replace(/\s+/g, ' ');
+                        return { raw, norm };
                     });
                 });
                 let slashFound = false;
 
-                for (const cueText of cueCells) {
+                if (config.sampleJaCues) {
+                    const hasSampleJa = config.sampleJaCues.every(sample => cueData.some(c => c.norm.includes(sample)));
+                    check(hasSampleJa, `${config.name} renders expected Japanese sample cue (${config.sampleJaCues.join(', ')})`);
+                }
+                for (const cue of cueData) {
                     // Title, explanations, and vocabulary translations are excluded
-                    check(!cueText.includes('／'), `${config.name} must never contain fullwidth slash in cues`);
-                    if (cueText.includes('/')) {
+                    check(!cue.raw.includes('／'), `${config.name} must never contain fullwidth slash in cues`);
+                    if (cue.raw.includes('/')) {
                         slashFound = true;
                         if (config.slashSpacing === 'spaced') {
                             // Practice 1.1 retains space around slash
-                            check(cueText.includes(' / '), `${config.name} Japanese cue retains spaced slash (' / ')`);
+                            check(cue.raw.includes(' / '), `${config.name} Japanese cue retains spaced slash (' / ')`);
                         } else if (config.slashSpacing === 'compact') {
                             // Others retain no space around slash
-                            check(!cueText.includes(' / '), `${config.name} Japanese cue does not have loose spaces around slash: ${cueText}`);
+                            check(!cue.raw.includes(' / '), `${config.name} Japanese cue does not have loose spaces around slash: ${cue.raw}`);
                         }
                     }
                 }
@@ -331,21 +355,27 @@ async function setupPage(browser, pageName, width = 1440) {
                 await page.waitForTimeout(200);
                 check(await enButton.getAttribute('aria-pressed') === 'true', `${config.name} English cues button active aria-pressed`);
 
-                const enCueCells = await page.evaluate(() => {
+                const enCueData = await page.evaluate(() => {
                     const els = document.querySelectorAll('.drill-cue-cell:not(:has(select)), .p73-example-cues, .prompt-label:not(:has(select)), .p81-comparison-card .p81-cue-words:not(:has(select))');
                     return Array.from(els).map(el => {
                         const clone = el.cloneNode(true);
                         clone.querySelectorAll('.tooltip-tip, .vocab-inline').forEach(t => t.remove());
-                        return clone.textContent.trim();
+                        const raw = clone.textContent.trim();
+                        const norm = raw.replace(/\s+/g, ' ');
+                        return { raw, norm };
                     });
                 });
+                if (config.sampleEnCues) {
+                    const hasSampleEn = config.sampleEnCues.every(sample => enCueData.some(c => c.norm.includes(sample)));
+                    check(hasSampleEn, `${config.name} renders expected English sample cue (${config.sampleEnCues.join(', ')})`);
+                }
                 let enSlashFound = false;
-                for (const cueText of enCueCells) {
-                    check(!cueText.includes('／'), `${config.name} cues must not contain fullwidth slash`);
+                for (const cue of enCueData) {
+                    check(!cue.raw.includes('／'), `${config.name} cues must not contain fullwidth slash`);
                     // When an English cue has a slash between English words, it must use " / "
-                    if (/[a-zA-Z]\s*\/\s*[a-zA-Z]/.test(cueText)) {
+                    if (/[a-zA-Z]\s*\/\s*[a-zA-Z]/.test(cue.norm)) {
                         enSlashFound = true;
-                        check(/[a-zA-Z]\s\/\s[a-zA-Z]/.test(cueText), `${config.name} English cue has single space before and after slash (" / "): ${cueText}`);
+                        check(/[a-zA-Z]\s\/\s[a-zA-Z]/.test(cue.norm), `${config.name} English cue has single space before and after slash (" / "): ${cue.norm}`);
                     }
                 }
                 if (config.hasSlash) {
@@ -385,9 +415,9 @@ async function setupPage(browser, pageName, width = 1440) {
                 check(await kanjiBtn.getAttribute('aria-pressed') === 'true' || await kanjiBtn.evaluate(el => el.classList.contains('active')), `${config.name} Kanji mode activated`);
             }
 
-            // 6. Page-Specific Behavioral Tests
+            // 6. Page-Specific Behavioral Tests & Churn Verification
             if (config.name === 'practice7.1') {
-                // Practice 7.1 Drill 2 Yes/No localized update & result retention
+                // Practice 7.1 Drill 2 Yes/No localized update & zero DOM churn verification
                 const d2Rows = page.locator('#practice71QuestionSection .drill-row');
                 check(await d2Rows.count() >= 5, 'Practice 7.1 has 5 Drill 2 rows');
                 const row0 = d2Rows.nth(0);
@@ -396,48 +426,73 @@ async function setupPage(browser, pageName, width = 1440) {
                 const initialSound = row0.locator('tr:nth-child(2) .recording-actions button').first();
                 check(await initialSound.getAttribute('data-selection-help') === 'Choose 🙆 or 🙅 first.', 'Practice 7.1 sound button has initial help hint');
 
+                // Snapshot row 1 DOM node to verify immutability (proving localized update without re-rendering row 1)
+                await page.evaluate(() => {
+                    const rows = document.querySelectorAll('#practice71QuestionSection .drill-row');
+                    window.__domRow1 = rows[1];
+                });
+
                 // Select Yes
                 await row0.locator('.answer-choice[data-answer="yes"]').click();
+                await page.waitForTimeout(50);
                 check(await row0.locator('.answer-choice[data-answer="yes"]').getAttribute('aria-pressed') === 'true', 'Practice 7.1 Yes button aria-pressed="true"');
                 check(await row0.locator('.answer-choice[data-answer="no"]').getAttribute('aria-pressed') === 'false', 'Practice 7.1 No button aria-pressed="false"');
 
+                // Verify row 1 was NOT re-rendered (DOM node identity equality)
+                const isRow1Same = await page.evaluate(() => {
+                    const rows = document.querySelectorAll('#practice71QuestionSection .drill-row');
+                    return window.__domRow1 === rows[1];
+                });
+                check(isRow1Same, 'Practice 7.1 Drill 2 row 1 DOM node remains identical across selection (zero DOM churn)');
+
                 // Switch to No
                 await row0.locator('.answer-choice[data-answer="no"]').click();
+                await page.waitForTimeout(50);
                 check(await row0.locator('.answer-choice[data-answer="no"]').getAttribute('aria-pressed') === 'true', 'Practice 7.1 No button aria-pressed="true"');
                 check(await row0.locator('.answer-choice[data-answer="yes"]').getAttribute('aria-pressed') === 'false', 'Practice 7.1 Yes button aria-pressed="false"');
             }
 
-            if (config.name === 'practice7.2' && config.testInterruption) {
-                // Practice 7.2 Audio Interruption Test: Model TTS interrupted by recording
-                await page.evaluate(() => {
-                    const toggle = document.getElementById('toggleRecordMode');
-                    if (toggle && toggle.checked) {
-                        toggle.checked = false;
-                        toggle.dispatchEvent(new Event('change', { bubbles: true }));
-                    }
-                });
-                await page.waitForTimeout(50);
+            if (config.name === 'practice7.2') {
+                // Practice 7.2 Drill 2 Selection & Audio Interruption Test
+                const yesBtn = page.locator('.answer-choice[data-answer="yes"]').first();
+                if (await yesBtn.count() > 0) {
+                    await yesBtn.click();
+                    await page.waitForTimeout(100);
+                    // Query current DOM element (handles Practice 7.2's renderAll re-render churn)
+                    const updatedYes = page.locator('.answer-choice[data-answer="yes"]').first();
+                    check(await updatedYes.getAttribute('aria-pressed') === 'true', 'Practice 7.2 Drill 2 Yes choice selected');
+                }
 
-                const listenBtn = page.locator('#drill1List button').filter({ hasText: /^🔊きく/ }).first();
-                if (await listenBtn.count() > 0) {
-                    await listenBtn.click();
-                    check(await page.evaluate(() => window.t.spoken.length > 0), 'Practice 7.2 Model TTS started');
+                if (config.testInterruption) {
+                    await page.evaluate(() => {
+                        const toggle = document.getElementById('toggleRecordMode');
+                        if (toggle && toggle.checked) {
+                            toggle.checked = false;
+                            toggle.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                    await page.waitForTimeout(50);
 
-                    // Start recording on row 2 to interrupt row 1 TTS
-                    const recBtn = page.locator('#drill1List button').filter({ hasText: /^(🎙️|⏺️)とる/ }).nth(1);
-                    if (await recBtn.count() > 0) {
-                        await recBtn.click();
-                        await page.waitForTimeout(100);
-                        check(await page.evaluate(() => window.t.cancelCalls > 0), 'Practice 7.2 Model TTS interrupted when recording started');
-                        
-                        const stopActive = page.locator('.stop-btn-active:not(:disabled)').first();
-                        if (await stopActive.count() > 0) {
-                            await stopActive.click();
+                    const listenBtn = page.locator('#drill1List button').filter({ hasText: /^🔊きく/ }).first();
+                    if (await listenBtn.count() > 0) {
+                        await listenBtn.click();
+                        check(await page.evaluate(() => window.t.spoken.length > 0), 'Practice 7.2 Model TTS started');
+
+                        // Start recording on row 2 to interrupt row 1 TTS
+                        const recBtn = page.locator('#drill1List button').filter({ hasText: /^(🎙️|⏺️)とる/ }).nth(1);
+                        if (await recBtn.count() > 0) {
+                            await recBtn.click();
                             await page.waitForTimeout(100);
+                            check(await page.evaluate(() => window.t.cancelCalls > 0), 'Practice 7.2 Model TTS interrupted when recording started');
+
+                            const stopActive = page.locator('.stop-btn-active:not(:disabled)').first();
+                            if (await stopActive.count() > 0) {
+                                await stopActive.click();
+                                await page.waitForTimeout(100);
+                            }
                         }
                     }
                 }
-                report.audioChecked++;
             }
 
             if (config.name === 'practice8.1') {
@@ -449,25 +504,77 @@ async function setupPage(browser, pageName, width = 1440) {
             }
 
             if (config.name === 'practice1.2') {
-                // Practice 1.2 Drill 1 Yes/No and Drill 2 Select
-                const d1Choices = page.locator('#drill1Container .answer-choice');
+                // Practice 1.2 Drill 1 Yes/No and Drill 2 Select state retention
+                const d1Choices = page.locator('#drill1Container .answer-choice[data-answer="yes"]').first();
                 if (await d1Choices.count() > 0) {
-                    await d1Choices.first().click();
-                    await page.waitForTimeout(100);
-                    check(await page.locator('#drill1Container .answer-choice').first().getAttribute('aria-pressed') === 'true', 'Practice 1.2 Drill 1 choice selected');
+                    await d1Choices.click();
+                    await page.waitForTimeout(50);
+                    check(await d1Choices.getAttribute('aria-pressed') === 'true', 'Practice 1.2 Drill 1 choice selected');
+                }
+
+                const majorSelect = page.locator('#drill2Container select.custom-select').first();
+                if (await majorSelect.count() > 0) {
+                    await majorSelect.selectOption({ value: 'けいざい' });
+                    await page.waitForTimeout(50);
+                    check(await majorSelect.inputValue() === 'けいざい', 'Practice 1.2 Drill 2 major select option set');
+
+                    // Verify retention across script toggle
+                    const kanjiBtn = page.locator('#scriptModeControl [data-value="kanji"]').first();
+                    if (await kanjiBtn.count() > 0) {
+                        await kanjiBtn.click();
+                        await page.waitForTimeout(50);
+                        check(await majorSelect.inputValue() === 'けいざい', 'Practice 1.2 Drill 2 select preserved across Kanji toggle');
+                        if (await d1Choices.count() > 0) {
+                            check(await page.locator('#drill1Container .answer-choice[data-answer="yes"]').first().getAttribute('aria-pressed') === 'true', 'Practice 1.2 Drill 1 choice preserved across Kanji toggle');
+                        }
+                    }
                 }
             }
 
-            // 7. Responsive Viewports Validation (375px, 600px, 1440px)
+            // 7. Audio Lifecycle & Model TTS Verification
+            if (config.hasAudio) {
+                const listenBtn = page.locator('button').filter({ hasText: /^🔊きく/ }).first();
+                if (await listenBtn.count() > 0) {
+                    const beforeSpoken = await page.evaluate(() => window.t.spoken.length);
+                    await listenBtn.click();
+                    await page.waitForTimeout(100);
+                    const afterSpoken = await page.evaluate(() => window.t.spoken.length);
+                    check(afterSpoken > beforeSpoken, `${config.name} Model TTS triggered speech synthesis`);
+                    const lastText = await page.evaluate(() => window.t.spoken[window.t.spoken.length - 1]?.text);
+                    check(typeof lastText === 'string' && lastText.length > 0, `${config.name} Model TTS spoke valid text: ${lastText}`);
+                    report.audioChecked++;
+                }
+            }
+
+            // 8. Responsive Viewports Validation (375px, 600px, 1440px)
             for (const width of [375, 600, 1440]) {
                 await page.setViewportSize({ width, height: 900 });
                 await page.waitForTimeout(150);
 
-                // Horizontal scroll overflow check
-                const hasOverflow = await page.evaluate(() => {
-                    return document.documentElement.scrollWidth > window.innerWidth + 5;
-                });
-                check(!hasOverflow, `${config.name} has no horizontal scroll overflow at ${width}px (scrollWidth=${await page.evaluate(() => document.documentElement.scrollWidth)}, innerWidth=${width})`);
+                const audit = await page.evaluate((vpWidth) => {
+                    const scrollOverflow = document.documentElement.scrollWidth > vpWidth + 5;
+                    const cues = [...document.querySelectorAll('.drill-cue-cell, .prompt-label, .p81-cue-words')];
+                    let collapsedCue = null;
+                    let clippedCue = null;
+                    for (const c of cues) {
+                        const r = c.getBoundingClientRect();
+                        if (r.width > 0 && r.height > 0) {
+                            if (r.left < -2 || r.right > vpWidth + 5) {
+                                clippedCue = { text: c.textContent.trim().slice(0, 15), left: r.left, right: r.right };
+                                break;
+                            }
+                            if (c.textContent.trim().length > 3 && r.width < 22 && r.height > 60) {
+                                collapsedCue = { text: c.textContent.trim().slice(0, 15), width: r.width, height: r.height };
+                                break;
+                            }
+                        }
+                    }
+                    return { scrollOverflow, scrollWidth: document.documentElement.scrollWidth, collapsedCue, clippedCue };
+                }, width);
+
+                check(!audit.scrollOverflow, `${config.name} has no horizontal scroll overflow at ${width}px (scrollWidth=${audit.scrollWidth})`);
+                check(!audit.clippedCue, `${config.name} cues within viewport bounds at ${width}px`);
+                check(!audit.collapsedCue, `${config.name} cues do not collapse into single vertical column at ${width}px`);
                 report.responsiveChecked++;
             }
 

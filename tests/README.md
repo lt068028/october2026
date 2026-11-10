@@ -262,11 +262,14 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 ## 全11ページ E2E総合回帰テスト
 
 `node tests/e2e-all-practice-pages.cjs`（または `npm run test:e2e`）：
-全11 Practiceページ（1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）を実ブラウザ（Playwright Chromium）で自動横断検証する包括的E2Eテスト。
+全11 Practiceページ（1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）を実ブラウザ（Playwright Chromium）で自動横断検証する包括的E2Eテスト（1,071検証項目）。
 - **正常読み込みとJS例外なし**: 全11ページで未処理例外（uncaught runtime errors）0件を確認。
-- **スラッシュキュー仕様検証**: 全角 `／` の完全排除、日本語キューのページ別スペース規則維持（1.1は `父 / 母`、他は `父/母`）、English Cues ON時の前後半角スペース付き半角スラッシュ（`word / word`）の自動検証（語彙訳内のスラッシュ等は除外）。
+- **スラッシュキュー仕様検証**: 全角 `／` の完全排除、日本語キューのページ別スペース規則維持（1.1は `わたし / がくせい`、他は `これ/なに`、`その/かばん` 等のコンパクト表記）、English Cues ON時の前後半角スペース付き半角スラッシュ（`word / word`）およびページ別代表英単語キュー（`I / student`, `older brother / student`, `this / …`, `that / bag` 等）の実描画自動検証（語彙訳内のスラッシュ等は除外）。
 - **Vocab / Script切替**: Vocab OFF/Hover/Display時の表示破綻なし、With漢字／Hiragana Only切替時の状態維持。
-- **回答選択と局所更新**: Yes/NoおよびSelect選択の動作と属性同期。
-- **音声・録音排他制御**: モデル音声再生、録音開始時の先行音声中断、操作ロックの解放。
-- **レスポンシブ検証**: 375px（モバイル）、600px（タブレット）、1440px（PC）の3画面幅で横スクロールはみ出し（horizontal overflow）がないことを実測検証。
+- **回答選択と局所更新・DOM Churn監査**:
+  - Practice 7.1: Drill 2 Yes/No選択時に行1のDOMノード同一性を検証し、全体再描画（DOM churn）が発生せず局所更新が行われていることを実証。
+  - Practice 7.2: Drill 2 Yes/No選択の属性同期・状態保持と再描画動作の検証。
+  - Practice 1.2: Drill 1 Yes/NoおよびDrill 2 Select（専攻選択）の状態が、With漢字／Hiragana OnlyおよびEnglish Cues切替をまたいで確実に保持されることを検証。
+- **音声・録音排他制御**: モデル音声再生（`speechSynthesis.speak` 発火および発話内容の非空日本語テキスト検証）、録音開始時の先行音声中断（Cancel）、操作ロックの解放。
+- **レスポンシブ検証**: 375px（モバイル）、600px（タブレット）、1440px（PC）の3画面幅で横スクロールはみ出し（horizontal overflow）がないこと、キュー要素の画面外クリップがないこと、およびキュー文字列の1文字縦落ち（single-character vertical collapse）が発生していないことを要素バウンディングボックスで実測検証。
 - **Practice 8.1 〃 位置合わせ**: 比較設問におけるDitto Mark（`〃`）およびスペーサー要素の整合性。

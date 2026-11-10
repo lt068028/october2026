@@ -1,12 +1,24 @@
 const {chromium}=require('playwright'),fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..'),before=process.argv.includes('--snapshot');
-(async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage();let checks=0;const findings=new Map();
-await p.route('http://cues.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);return r.fulfill({body:before&&['practice2.1.js','practice2-next.js'].includes(path.basename(f))?require('child_process').execFileSync('git',['show','dc7d12b:'+path.basename(f)],{cwd:root}):fs.readFileSync(f),contentType:f.endsWith('.html')?'text/html':f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.json')?'application/json':'image/png'});});
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage();let checks=0;const findings=new Map();
+await p.route('**',r=>{const u=r.request().url();if(!u.startsWith('http://cues.test/'))return r.abort();const f=path.join(root,new URL(u).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});return r.fulfill({body:before&&['practice2.1.js','practice2-next.js'].includes(path.basename(f))?require('child_process').execFileSync('git',['show','dc7d12b:'+path.basename(f)],{cwd:root}):fs.readFileSync(f),contentType:f.endsWith('.html')?'text/html':f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.json')?'application/json':'image/png'});});
 for(const page of ['practice2.1','practice2.2','practice2.3']){
- await p.goto('http://cues.test/'+page+'.html');
- async function collect(state){const rows=await p.locator('.drill-cue-cell,.p23-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('strong,.tooltip-tip,.vocab-inline').forEach(x=>x.remove());return{key:e.closest('tr')?.dataset.speakerRecordingKey||'Example',text:c.textContent.replace(/\s+/g,' ').trim(),words:[...e.querySelectorAll('.target-word')].map(x=>x.textContent)};}));
+ console.log('Checking page:', page);
+ await p.goto('http://cues.test/'+page+'.html',{waitUntil:'domcontentloaded'});
+ async function collect(state){console.log('  State:', state);const rows=await p.locator('.drill-cue-cell,.p23-example-cue').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('strong,.tooltip-tip,.vocab-inline').forEach(x=>x.remove());return{key:e.closest('tr')?.dataset.speakerRecordingKey||'Example',text:c.textContent.replace(/\s+/g,' ').trim(),words:[...e.querySelectorAll('.target-word')].map(x=>x.textContent)};}));
  for(const r of rows){checks++;if(/\s/.test(r.text)){const key=page+' '+r.key+' '+r.text;const old=findings.get(key)||{page,key:r.key,text:r.text,states:[]};if(!old.states.includes(state))old.states.push(state);findings.set(key,old);}
- if(!before){assert.ok(!/\s[／/]|[／/]\s/.test(r.text),'no padding around cue separators: '+r.text);assert.ok(!/(?:この|その|あの)\s+ひと|(?:この|その|あの)\s+人/.test(r.text),'demonstrative and person stay joined: '+r.text);assert.ok(!/[\p{Script=Hiragana}\p{Script=Han}\p{Script=Katakana}]\s+[\p{Script=Hiragana}\p{Script=Han}\p{Script=Katakana}]/u.test(r.text),'no inserted Japanese cue spaces: '+r.text);}}
+ if(!before){
+  assert.ok(!/[／]/.test(r.text),'no fullwidth slash in cues: '+r.text);
+  if(state.startsWith('English cues') && r.key !== 'Example'){
+   if(/[／/]/.test(r.text)){
+    assert.ok(!/\S\/|\/\S/.test(r.text),'English cue slash must have space on both sides: '+r.text);
+   }
+  } else {
+   assert.ok(!/\s[／/]|[／/]\s/.test(r.text),'no padding around Japanese cue separators: '+r.text);
+   assert.ok(!/(?:この|その|あの)\s+ひと|(?:この|その|あの)\s+人/.test(r.text),'demonstrative and person stay joined: '+r.text);
+   assert.ok(!/[\p{Script=Hiragana}\p{Script=Han}\p{Script=Katakana}]\s+[\p{Script=Hiragana}\p{Script=Han}\p{Script=Katakana}]/u.test(r.text),'no inserted Japanese cue spaces: '+r.text);
+  }
+ }}
  }
  for(const script of ['hiragana','kanji'])for(const hint of ['hover','off','paren']){
   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();await collect(script+'/'+hint+' initial');
