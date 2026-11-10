@@ -105,10 +105,12 @@ const root = path.resolve(__dirname, '..');
             } else if (target.name === 'practice8.1') {
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
                 if (await actSelect.count() > 0) {
+                    const placeholder = await actSelect.locator('option[value=""]').textContent();
+                    assert.equal(placeholder, 'Select', 'Practice 8.1 Drill 4 placeholder must be "Select"');
                     const jaAct = await actSelect.locator('option[value="washDish"]').textContent();
                     assert.ok(jaAct.includes('洗う') || jaAct.includes('皿'), 'Drill 4 activity option must be Japanese when OFF');
                     await actSelect.selectOption('washDish');
-                    checks++;
+                    checks += 2;
                 }
             }
 
@@ -135,7 +137,7 @@ const root = path.resolve(__dirname, '..');
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
                 if (await actSelect.count() > 0) {
                     const enAct = await actSelect.locator('option[value="washDish"]').textContent();
-                    assert.ok(enAct.includes('Wash dishes'), 'Drill 4 activity option must be English (Wash dishes) when ON');
+                    assert.ok(enAct.includes('wash dishes'), 'Drill 4 activity option must be English (wash dishes) when ON');
                     const val = await actSelect.inputValue();
                     assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues ON toggle');
                     checks += 2;
@@ -164,7 +166,11 @@ const root = path.resolve(__dirname, '..');
                         assert.ok(Math.abs(item.sRects[0].left - item.sRects[1].left) < 1, `Drill 5 card ${i} selects must align horizontally when English Cues ON (width=${width})`);
                     }
                 }
-                checks += 2;
+                // Verify Drill 5 English cues clean and cook (without "to")
+                const d5Cues = await page.locator('#drill5 .p81-comparison-card .p81-cue-words[data-repeat-anchor]').allTextContents();
+                assert.ok(d5Cues[2].includes('clean') && !d5Cues[2].includes('to clean'), 'Drill 5 item 3 cue must be "clean" without "to"');
+                assert.ok(d5Cues[3].includes('cook') && !d5Cues[3].includes('to cook'), 'Drill 5 item 4 cue must be "cook" without "to"');
+                checks += 4;
             }
 
             // 3. Verify English cue content is present in drill

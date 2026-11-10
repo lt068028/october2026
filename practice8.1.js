@@ -152,12 +152,12 @@ const degreeActions=[
     {actionId:'beginStudy',...action('study','begin')}
 ];
 const activityMeanings={
-    washDish:'Wash dishes',
-    discardThing:'Throw things away',
-    useSmartphone:'Use a smartphone',
-    cutHair:'Cut hair',
-    carryBag:'Carry a bag',
-    beginStudy:'Start studying'
+    washDish:'wash dishes',
+    discardThing:'throw things away',
+    useSmartphone:'use a smartphone',
+    cutHair:'cut hair',
+    carryBag:'carry a bag',
+    beginStudy:'start studying'
 };
 const degreeLevels=[
     {adjective:'like',degree:'like',tone:'positive'},
@@ -327,7 +327,8 @@ function cues(r,visibleIds,isDrill=false) {
         const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
         const compound=!visibleIds&&r.compoundCue&&r.verb==='do'&&!r.noun&&compoundCueMeanings[r.object];
         return ids.filter(id=>!compound||id!==r.verb).map(id=>{
-            const text = (compound&&id===r.object)?compoundCueMeanings[id]:(words[id]?.english||id);
+            let text = (compound&&id===r.object)?compoundCueMeanings[id]:(words[id]?.english||id);
+            if(r.comparison&&compound&&id===r.object)text=text.replace(/^to\s+/,'');
             return '<span class="target-word">'+escape(text)+'</span>';
         }).join(' / ');
     }
@@ -879,7 +880,7 @@ function addSelect(cue,r,key) {
     const ids=isActivity?activityOptions.map(a=>a.actionId):r.selectKind==='comparison'?comparisonOptionOrder.get(r.id):r.selectKind==='preference'?['like','dislike']:r.selectKind==='adverb'?adverbs:r.selectKind==='ability'?['good','difficult']:adjectives;
     select.setAttribute('aria-label',isActivity?'Select':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
-    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'Adj');empty.value='';select.append(empty);}
+    if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'Select':'Adj');empty.value='';select.append(empty);}
     for(const id of ids){
         const action=degreeActions.find(a=>a.actionId===id);
         const labelText=isActivity?(englishCues?actionEnglishText(action):actionText(action)):cueText(id);
@@ -895,7 +896,7 @@ function addSelect(cue,r,key) {
     if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
     const hint=node('span','p81-selection-hint');
     const selectedActivity=isActivity?degreeActions.find(a=>a.actionId===activity):null;
-    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+words[selectedActivity.verb].meaning:select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'':'Choose an expression first.';
+    hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+(activityMeanings[selectedActivity.actionId]||words[selectedActivity.verb].meaning):select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'':'Choose an expression first.';
     if(hintMode==='hover'&&(!isActivity||activity)){hint.className='tooltip-tip';const host=node('span','tooltip-wrap');host.append(select,hint);cue.append(host);}
     else {cue.append(select);if(hintMode==='paren'&&hint.textContent)cue.append(node('span','vocab-inline','('+hint.textContent+')'));}
     select.onchange=()=>{

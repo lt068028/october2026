@@ -120,6 +120,8 @@
 
 > **8.1 D5表示の短縮と整列（2026-10-31）**：Skill assessment/Personal perceptionをSkill/Perceptionへ短縮。Ex5の母・花育てをD5で反復せず、D5は母・料理へ変更。キューが折返しても旧nowrap幅を保持せず、実内容の最長端から共通列間隔だけ空けて共有きく列を配置する。前半意味/後半対人的印象、Adjクイズ、録音仕様は維持。
 
+> **8.1 D4・D5表示統一（2026-11-10確定）**：Drill 4の未選択プレースホルダーを `Select` に統一し、選択欄・選択肢を左揃え、英語選択肢・ホバーをすべて小文字化（`wash dishes`, `throw things away`, `use a smartphone`, `cut hair`, `carry a bag`, `start studying`）、アプリ独自のチェックマークを撤去。Drill 5のEnglish Cues表示キューから `to` を撤去（`clean` / `cook`）。他Drill・課題固有プレースホルダー `Adj`・整列ロジックは維持。
+
 > **Practice 8.2現行構成（2026-11-04）**：Example 4件・Drill 4件。E1/D1は何か質問、E2/D2は何を vs 何かの4組、E3/D3は何か／何もを使う5組のYes/No会話、E4/D4は何でもを使う習慣・種類の3組。D4は[Sneak Peek] 何でも — Unlimited Choice（当該Lessonの教科書範囲外の補足練習で、L15の正式導入を意味しない）。モデル文とTTSに文節単位の読点を適用。共通設定・共通Q/A役割表示・Y/N選択・録音／0秒リレー／STT原文保持を継承。詳細・許容回答は[PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)。
 
 > **8.1 D5刷新（2026-10-31）**：前半Meaning（Skill assessment／Personal perception等）、後半Speaker & listener（Boastful／Confident、Praise／Direct、Patronizing／Rude等）の７組14行。左のオレンジ指定に合わせて日本語Adjを２択で選ぶ。未選択・不一致時はきく/とるをロックし、合致で解除、選択だけで再生しない。Ex5も母の上手／得意を上記意味指定で紹介。第三者への得意を禁止しない。行・選択ごとの録音保持、文法判定と意味/印象クイズの分離、共通レイアウトを維持。詳細はPRACTICE8_SPEC。

@@ -6,7 +6,7 @@ const root=path.resolve(__dirname,'..'),baseline=process.env.P81_BASELINE;
 const source=fs.readFileSync(path.join(__dirname,'audio-relay.cjs'),'utf8');
 const mock=source.slice(source.indexOf('function mock()'),source.indexOf('(async()=>'));
 const ids=['washDish','discardThing','useSmartphone','cutHair','carryBag','beginStudy'];
-const meanings=['Wash dishes','Throw things away','Use a smartphone','Cut hair','Carry a bag','Start studying'];
+const meanings=['wash dishes','throw things away','use a smartphone','cut hair','carry a bag','start studying'];
 let checks=0;function eq(actual,expected,label){assert.deepEqual(actual,expected,label);checks++;}
 const select=(p,i)=>p.locator(`#drill4 select[data-choice="degree-${i}"]`);
 const card=(p,i)=>p.locator('#drill4 .p81-card').nth(i);

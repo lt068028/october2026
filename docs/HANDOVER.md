@@ -6,31 +6,34 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T09:05:00+01:00
+- **最終更新日時**：2026-11-10T09:15:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Deutsch Übung 1.1 ボタンのドイツ語化・Autoplayホバー修正
+- **課題**：Practice 8.1 Drill 4・Drill 5 表示統一
 - **変更内容**：
-  1. **基本操作ボタン3種類のドイツ語化**：
-     - `🔊きく` → `🔊 Anhören`（Example 1〜4 および Drill 1〜4 の全モデル聴取ボタン）
-     - `🎙️とる` → `⏺️ Aufnehmen`（Drill 1〜4 の全録音ボタン）
-     - `↩️もどる` → `↩️ Zurück`（メインヘッダー戻るリンク）
-     - 既存の内部ID、イベントハンドラ、有効・無効状態、初学者英語ホバー説明（`Listen to the example.` / `Listen to the model answer.` / `Record your answer.`）、戻る先（`index.html`）は完全維持。
-  2. **Autoplay OFF ホバー英文の修正**：
-     - `uebung1.1.html` 内の Autoplay スイッチの OFF 説明文を `Play them manually.` から `Choose what and when to play.` に更新。
-     - ON（`After recording, the model audio and your recording play automatically.`）および `<span class="tip-line">` による別行表示スタイルを完全維持。
-  3. **仕様書およびテストの更新**：
-     - `docs/GERMAN_DRILL_SPEC.md`（Section 2.2, 2.3, 3.2, 3.3）の確定表記・ホバー文を更新。
-     - `tests/uebung11.cjs` に Section 8.6（ドイツ語ボタン表記契約）を追加し、Autoplay ホバー文の更新を反映。
+  1. **Drill 4 Select 表示統一**：
+     - 未選択プレースホルダーを `Select` に統一（`— Select —` から変更、装飾アイコン・記号なし）。
+     - ネイティブ `select` および `base-select` の表示テキスト・選択肢一覧の文字を左揃え（`text-align: left; text-align-last: left;`）に統一（未選択時の中央揃えを撤去）。
+     - 英語選択肢および英語ホバー説明（ツールチップ）をすべて小文字開始に統一（`wash dishes`, `throw things away`, `use a smartphone`, `cut hair`, `carry a bag`, `start studying`）。
+     - `base-select` のアプリ独自チェックマーク（`option::checkmark`）を撤去（`display: none;`）し、選択肢文字を左端から整列。
+     - 内部値（`option.value`）、活動排他、録音、正誤判定は完全維持。
+  2. **Drill 5 英語キューの修正**：
+     - English Cues ON 時の Drill 5 表示キューから `to` を撤去（設問3: `clean`、設問4: `cook`）。
+     - 他Drill（Drill 1〜4）、共通語彙辞書、日本語表示、解答判定、課題固有プレースホルダー `Adj` は完全維持。
+     - Commit `9949c4a` の `Adj`・`〃` 整列修正が正常に保持されることを確認。
+  3. **共通ルール記録・テスト更新**：
+     - `docs/UI_LAYOUT_SPEC.md`（Section F7）および `docs/PROJECT_SPEC.md` に今後の共通表示ルールを記録（全ページへの一括適用は行わず今回対象のみ適用）。
+     - `tests/english-cues-expansion.cjs` および `tests/practice81-activity-select.cjs` のテスト期待値を小文字表記・`Select` プレースホルダー・`clean`/`cook` に更新。
 - **検証結果**：
   - `git diff --check` にて全変更の構文・空白整合性を確認済み。
   - 静的構文・アサーション検証にすべて合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Practice 8.1**：Drill 4 の `Select` プレースホルダー・左揃え・小文字英語選択肢・チェックマーク撤去、および Drill 5 の `clean` / `cook` 表示のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのボタンドイツ語表記（`🔊 Anhören`, `⏺️ Aufnehmen`, `↩️ Zurück`）および Autoplay OFF ホバー（`Choose what and when to play.`）の確認待ち。
 - [ ] **Practice 8.1**：Drill 5 の English Cues ON／OFF 時における `Adj`（形容詞セレクト）と `〃`（同上符）の水平整列・表示位置のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの英語ホバー表示（Example 1 / Drill 1 設問1、Autostop動的切替、設定の別行表示、👣ホバー）の確認待ち。
