@@ -1758,7 +1758,7 @@ function practice2ShowNotice(resultSpan, message) {
             const y = () => word(item.y, item.yKanji);
 
             const cue = practice2State.englishCues
-                ? `<span class="target-word">${escape(item.xMeaning)}</span>/<span class="target-word">${escape(item.yMeaning)}</span>`
+                ? `<span class="target-word">${escape(item.xMeaning)}</span> / <span class="target-word">${escape(item.yMeaning)}</span>`
                 : formatWord(
                     item.x,
                     item.xKanji,
@@ -1926,7 +1926,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const cue = practice2State.englishCues
-                ? `<span class="target-word">${escape(target.labelMeaning)}</span>/<span class="target-word">major</span>`
+                ? `<span class="target-word">${escape(target.labelMeaning)}</span> / <span class="target-word">major</span>`
                 : formatWord(
                     target.label,
                     target.labelKanji,
@@ -1957,7 +1957,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const choices = node("span");
-            choices.innerHTML = cue + (practice2State.englishCues ? "/" : (hintMode === "paren" ? "" : "/"));
+            choices.innerHTML = cue + (practice2State.englishCues ? " / " : (hintMode === "paren" ? "" : "/"));
 
             const select = node(
                 "select",

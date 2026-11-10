@@ -50,7 +50,7 @@ const root = path.resolve(__dirname, '..');
             name: 'practice1.2',
             buttonSelector: '#drill3Container .drill-cue-button',
             drillCueSelector: '#drill1Container .drill-cue-cell',
-            englishSample: 'older brother/student',
+            englishSample: 'older brother / student',
             panelTitle: 'Drill 3: Practice with English cues'
         },
         {
@@ -139,10 +139,10 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'けいざい', 'Selected value must be preserved across English cues ON toggle');
                     checks += 2;
                 }
-                // Verify Practice 1.2 English cue slash is halfwidth with no space
+                // Verify Practice 1.2 English cue slash is halfwidth with spaces around slash
                 const p12Cue = await page.locator('#drill1Container .drill-cue-cell').first().textContent();
-                assert.ok(p12Cue.includes('older brother/student'), 'Drill 1 cue must use compact slash without spaces: older brother/student');
-                assert.ok(!p12Cue.includes('older brother / student'), 'Drill 1 cue must not have spaces around slash');
+                assert.ok(p12Cue.includes('older brother / student'), 'Drill 1 cue must use halfwidth slash with spaces: older brother / student');
+                assert.ok(!p12Cue.includes('older brother/student'), 'Drill 1 cue must have spaces around English slash');
                 checks += 2;
             } else if (target.name === 'practice8.1') {
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
