@@ -532,13 +532,7 @@ function initGermanDrill() {
     const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
     let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
 
-    let drill1FirstStopTipBox = null;
-    function updateFirstStopTip() {
-        if (!drill1FirstStopTipBox) return;
-        drill1FirstStopTipBox.textContent = manual
-            ? "Stop recording."
-            : "No need to press. Autostop is ON.";
-    }
+    function updateFirstStopTip() {} // Tooltip follows the recording button state.
 
     // -------------------------------------------------------------
     // 3. Helper Functions
@@ -571,6 +565,33 @@ function initGermanDrill() {
             click?.();
         };
         return b;
+    }
+
+
+    // Lucide-style inline SVGs: no external icon runtime or font dependency.
+    const AUDIO_ICONS = {
+        listen: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/>',
+        mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
+        stop: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
+        play: '<path d="m8 5 11 7-11 7V5Z"/>'
+    };
+    function audioIcon(kind) {
+        const template = document.createElement("template");
+        template.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="uebung-audio-icon">' + AUDIO_ICONS[kind] + '</svg>';
+        return template.content.firstElementChild;
+    }
+    function setAudioIcon(btn, kind, label) {
+        const tooltip = btn.querySelector(".custom-tip-box");
+        btn.replaceChildren(audioIcon(kind));
+        if (tooltip) btn.append(tooltip);
+        btn.setAttribute("aria-label", label);
+        btn.setAttribute("title", label);
+    }
+    function audioButton(kind, label, click) {
+        const btn = button(audioIcon(kind), label, click);
+        btn.classList.add("uebung-icon-button");
+        btn.setAttribute("aria-label", label);
+        return btn;
     }
 
     function highlightRedPart(rawText, redPart) {
@@ -643,10 +664,17 @@ function initGermanDrill() {
         });
 
         views.forEach((v, key) => {
-            const canStop = session?.key === key && session.manual && !session.stopping;
-            v.stop.disabled = !canStop;
-            v.stop.setAttribute("aria-disabled", String(!canStop));
-            v.stop.classList.toggle("stop-btn-active", Boolean(canStop));
+            const isRecording = session?.key === key && !session.stopping;
+            const label = isRecording ? "Stoppen" : "Aufnehmen";
+            const icon = isRecording ? "stop" : "mic";
+            // One button changes from microphone to stop while this item records.
+            v.rec.disabled = Boolean(preparing || (session && !isRecording));
+            v.rec.setAttribute("aria-disabled", String(v.rec.disabled));
+            v.rec.classList.toggle("stop-btn-active", Boolean(isRecording));
+            if (v.rec.dataset.audioState !== icon) {
+                setAudioIcon(v.rec, icon, label);
+                v.rec.dataset.audioState = icon;
+            }
         });
 
         updateCopyButtons();
@@ -1366,7 +1394,7 @@ function initGermanDrill() {
         }
 
         if (val?.url) {
-            const play = button("▶️", "Play your recorded voice.", () => {
+            const play = audioButton("play", "Abspielen", () => {
                 playRecording(key, play);
             });
             play.classList.add("play-recording-btn");
@@ -1531,7 +1559,7 @@ function initGermanDrill() {
             const exAudioTd = node("td", "example-audio-cell");
             const exModelSentence = getModel(drill.example, currentVariety);
             const exListenTip = drill.number === 1 ? "Listen to the example." : "";
-            const exListenBtn = button("🔊 Anhören", exListenTip, () => {
+            const exListenBtn = audioButton("listen", "Anhören", () => {
                 speakModel(getModel(drill.example, currentVariety), exListenBtn);
             });
             exAudioTd.append(exListenBtn);
@@ -1577,30 +1605,20 @@ function initGermanDrill() {
 
                 const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
 
-                const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
-                const listenBtn = button("🔊 Anhören", listenTip, () => {
+                const listenBtn = audioButton("listen", "Anhören", () => {
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
 
-                const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
-                const recBtn = button("⏺️ Aufnehmen", recTip, () => {
-                    record(item.id, item);
+                const recBtn = audioButton("mic", "Aufnehmen", () => {
+                    if (session?.key === item.id) {
+                        if (!session.stopping) session.stop();
+                    } else if (!session && !preparing) {
+                        record(item.id, item);
+                    }
                 });
-
-                let stopTip = "";
-                if (isFirstItemOfDrill1) {
-                    stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
-                }
-                const stopBtn = button("⏹️", stopTip, () => {
-                    if (session?.key === item.id) session.stop();
-                });
-                stopBtn.dataset.stop = "true";
-                stopBtn.disabled = true;
-                if (isFirstItemOfDrill1) {
-                    drill1FirstStopTipBox = stopBtn.querySelector(".custom-tip-box");
-                }
-
-                actions.append(listenBtn, recBtn, stopBtn);
+                recBtn.dataset.stop = "true"; // Managed explicitly by sync().
+                recBtn.dataset.audioState = "mic";
+                actions.append(listenBtn, recBtn);
 
                 const wrap = node("span", "recording-result");
                 const result = node("span", "result-text not-recorded-yet", "… Not yet");
@@ -1621,7 +1639,6 @@ function initGermanDrill() {
                     item,
                     rec: recBtn,
                     listen: listenBtn,
-                    stop: stopBtn,
                     result,
                     correction
                 });
