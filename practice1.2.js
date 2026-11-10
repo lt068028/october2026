@@ -1662,6 +1662,19 @@ function practice2ShowNotice(resultSpan, message) {
         };
     }
 
+    // Build a replacement answer recording cell off-DOM. The existing row,
+    // cue, selection controls and all unrelated rows retain their identity.
+    function refreshAnswerRecording(current, getText, key, enabled) {
+        const row = current.body.lastElementChild;
+        const previousCell = row.lastElementChild;
+        const detached = { body: document.createElement("tbody"), number: "" };
+        recordingRow(detached, "a", "", key, getText, enabled, false);
+        const replacement = detached.body.lastElementChild.lastElementChild;
+        previousCell.replaceWith(replacement);
+        // Remove stale view references; recordings and saved results remain keyed.
+        return replacement;
+    }
+
     function section(id, title, instruction) {
         const container = document.getElementById(id);
         container.replaceChildren();
@@ -1787,6 +1800,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const choices = node("span");
+            let answerRowReady = false;
 
             for (
                 const mode
@@ -1798,13 +1812,22 @@ function practice2ShowNotice(resultSpan, message) {
                         ? "Affirmative response"
                         : "Negative response",
                     () => {
+                        if (busy()) return;
+                        stopAllPlayback();
                         state.answerMode =
-                            state.answerMode === mode
-                                ? null
-                                : mode;
-
+                            state.answerMode === mode ? null : mode;
                         state.textVisible = false;
-                        renderAll();
+
+                        choices.querySelectorAll(".answer-choice").forEach(button => {
+                            const selected = button.dataset.answer === state.answerMode;
+                            button.setAttribute("aria-pressed", String(selected));
+                            button.classList.toggle("is-selected", selected);
+                        });
+
+                        if (answerRowReady) {
+                            const key = `p2_drill1_a_${index}_${state.answerMode || "answer"}`;
+                            refreshAnswerRecording(current, getText, key, Boolean(state.answerMode));
+                        }
                     }
                 );
 
@@ -1846,12 +1869,12 @@ function practice2ShowNotice(resultSpan, message) {
                 current,
                 "a",
                 choices,
-                `p2_drill1_a_${index}`,
+                `p2_drill1_a_${index}_${state.answerMode || "answer"}`,
                 getText,
                 Boolean(state.answerMode),
                 false
             );
-
+            answerRowReady = true;
 
         });
 
@@ -1959,6 +1982,7 @@ function practice2ShowNotice(resultSpan, message) {
             const choices = node("span");
             choices.innerHTML = cue + (practice2State.englishCues ? " / " : (hintMode === "paren" ? "" : "/"));
 
+            let answerRowReady = false;
             const select = node(
                 "select",
                 "custom-select"
@@ -1991,11 +2015,17 @@ function practice2ShowNotice(resultSpan, message) {
             select.value = state.selectedValue;
 
             select.onchange = () => {
-                if (busy()) return;
-
+                if (busy()) {
+                    select.value = state.selectedValue;
+                    return;
+                }
+                stopAllPlayback();
                 state.selectedValue = select.value;
                 state.textVisible = false;
-                renderAll();
+                if (answerRowReady) {
+                    const selectedKey = `${key}_a_${state.selectedValue || "answer"}`;
+                    refreshAnswerRecording(current, getText, selectedKey, Boolean(state.selectedValue));
+                }
             };
 
             choices.append(select);
@@ -2019,12 +2049,12 @@ function practice2ShowNotice(resultSpan, message) {
                 current,
                 "a",
                 choices,
-                `${key}_a`,
+                `${key}_a_${state.selectedValue || "answer"}`,
                 getText,
                 Boolean(state.selectedValue),
                 false
             );
-
+            answerRowReady = true;
 
         });
     }
