@@ -1,33 +1,38 @@
-/* Preview only: Practice 2.1 Drill 2 — Set 1 Lucide, Set 2 Microsoft Fluent.
- * Does not alter shared Q/A icons or other drills/pages.
- * Original SVGs: lucide-icons/lucide (ISC), microsoft/fluentui-system-icons (MIT).
+/* Preview only — Practice 2.1, all Q/A roles and interrogative indicators.
+ * Lucide original SVGs: message-circle-question-mark, message-circle-text.
+ * Other pages continue using their existing assets until approved.
+ * License: https://lucide.dev/license (ISC).
  */
-(()=> {
+(() => {
   'use strict';
-  const ICONS = ["<svg\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719\" />\n  <path d=\"M9 9.5a3 2.5 0 016 0c0 2-2 2-3 3.5\" />\n  <path d=\"M12 17h.01\" />\n</svg>\n","<svg\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3.086 17.509a2 2 0 00-.094-1.167 10 10 0 114.777 4.719 2 2 0 00-1.099-.092l-3.413.998a1 1 0 01-1.236-1.168z\" />\n  <path d=\"M8 12h9\" />\n  <path d=\"M8 16h5\" />\n  <path d=\"M8 8h7\" />\n</svg>\n","<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M8.14303 6.30723C8.57707 6.07535 9.04414 6.00076 9.49888 6.00073C10.0253 6.0007 10.6367 6.17363 11.1305 6.57829C11.6475 7.00192 11.9989 7.65186 11.9989 8.5C11.9989 9.47459 11.3102 10.0037 10.9219 10.302C10.8918 10.3252 10.8634 10.347 10.8373 10.3675C10.4127 10.7012 10.2489 10.8795 10.2489 11.25C10.2489 11.6642 9.91314 12 9.49892 12C9.08471 12 8.74892 11.6642 8.74892 11.25C8.74892 10.116 9.46017 9.54195 9.91052 9.18806C10.4238 8.78469 10.4989 8.69484 10.4989 8.5C10.4989 8.10296 10.3503 7.87825 10.1798 7.73853C9.98616 7.57985 9.72254 7.50072 9.49896 7.50073C9.20371 7.50075 9.00078 7.54962 8.84982 7.63027C8.70637 7.7069 8.55459 7.84146 8.40826 8.11137C8.21083 8.47551 7.7556 8.61066 7.39146 8.41324C7.02732 8.21582 6.89217 7.76058 7.08959 7.39644C7.35326 6.91012 7.70147 6.54311 8.14303 6.30723ZM9.49909 15.0001C10.0514 15.0001 10.4992 14.5524 10.4992 14.0001C10.4992 13.4477 10.0514 13 9.49909 13C8.94677 13 8.49902 13.4477 8.49902 14.0001C8.49902 14.5524 8.94677 15.0001 9.49909 15.0001ZM9.49908 3C5.35694 3 1.99908 6.35786 1.99908 10.5C1.99908 11.6329 2.25075 12.7088 2.70173 13.6734C2.4477 14.6714 2.16388 15.7842 1.97749 16.5147C1.74447 17.428 2.5669 18.2588 3.48124 18.039C4.23146 17.8587 5.38449 17.5819 6.41197 17.337C7.35428 17.7631 8.39991 18 9.49908 18C13.6412 18 16.9991 14.6421 16.9991 10.5C16.9991 6.35786 13.6412 3 9.49908 3ZM3.49908 10.5C3.49908 7.18629 6.18537 4.5 9.49908 4.5C12.8128 4.5 15.4991 7.18629 15.4991 10.5C15.4991 13.8137 12.8128 16.5 9.49908 16.5C8.53834 16.5 7.63237 16.2748 6.82911 15.8749L6.5857 15.7537L6.32118 15.8167C5.39845 16.0363 4.33239 16.2919 3.53342 16.4838C3.73217 15.7047 3.99534 14.6724 4.22351 13.7757L4.29369 13.4998L4.16318 13.2468C3.73895 12.4246 3.49908 11.4914 3.49908 10.5ZM14.4991 21.0001C12.5297 21.0001 10.7376 20.241 9.39941 18.9995C9.43261 18.9999 9.46585 19.0001 9.49913 19.0001C10.2171 19.0001 10.9143 18.911 11.5802 18.7434C12.4442 19.2254 13.4396 19.5001 14.4991 19.5001C15.4598 19.5001 16.3658 19.2748 17.1691 18.8749L17.4125 18.7537L17.677 18.8167C18.5986 19.0361 19.6421 19.2625 20.4162 19.4262C20.2412 18.6757 20.0025 17.6711 19.7747 16.7757L19.7045 16.4999L19.835 16.2469C20.2592 15.4247 20.4991 14.4915 20.4991 13.5001C20.4991 11.3853 19.4051 9.52617 17.7521 8.45761C17.5738 7.73435 17.3028 7.04756 16.9525 6.41052C19.8898 7.42684 21.9991 10.2171 21.9991 13.5001C21.9991 14.6332 21.7473 15.7094 21.2961 16.6741C21.5492 17.6821 21.8054 18.774 21.9679 19.4773C22.1723 20.3623 21.3929 21.1633 20.5005 20.9768C19.7733 20.8248 18.6308 20.581 17.587 20.3367C16.6445 20.763 15.5986 21.0001 14.4991 21.0001Z\" fill=\"currentColor\"/>\n</svg>\n","<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.3817 22 8.81782 21.6146 7.41286 20.888L3.58704 21.9553C2.92212 22.141 2.23258 21.7525 2.04691 21.0876C1.98546 20.8676 1.98549 20.6349 2.04695 20.4151L3.11461 16.5922C2.38637 15.186 2 13.6203 2 12C2 6.47715 6.47715 2 12 2ZM12 3.5C7.30558 3.5 3.5 7.30558 3.5 12C3.5 13.4696 3.87277 14.8834 4.57303 16.1375L4.72368 16.4072L3.61096 20.3914L7.59755 19.2792L7.86709 19.4295C9.12006 20.1281 10.5322 20.5 12 20.5C16.6944 20.5 20.5 16.6944 20.5 12C20.5 7.30558 16.6944 3.5 12 3.5ZM8.75 13H13.2483C13.6625 13 13.9983 13.3358 13.9983 13.75C13.9983 14.1297 13.7161 14.4435 13.35 14.4932L13.2483 14.5H8.75C8.33579 14.5 8 14.1642 8 13.75C8 13.3703 8.28215 13.0565 8.64823 13.0068L8.75 13H13.2483H8.75ZM8.75 9.5H15.2545C15.6687 9.5 16.0045 9.83579 16.0045 10.25C16.0045 10.6297 15.7223 10.9435 15.3563 10.9932L15.2545 11H8.75C8.33579 11 8 10.6642 8 10.25C8 9.8703 8.28215 9.55651 8.64823 9.50685L8.75 9.5H15.2545H8.75Z\" fill=\"currentColor\"/>\n</svg>\n"];
-  const root = document.getElementById('drill2Container');
-  if (!root) return;
-  function update() {
-    const buttons = root.querySelectorAll('[data-set-state="namingSet"] button');
-    if (buttons.length !== 2) return;
-    const set = buttons[0].getAttribute('aria-pressed') === 'true' ? 0 : 1;
-    root.querySelectorAll('.p21-naming-practice .conversation-role-icon').forEach(role=>{
-      const img=role.querySelector('img');
-      if(!img) return;
-      const isQuestion=role.getAttribute('aria-label')==='Question';
-      const svgText=ICONS[set*2+(isQuestion?0:1)];
-      const template=document.createElement('template');
-      template.innerHTML=svgText.trim();
-      const svg=template.content.firstElementChild;
-      if(!svg) return;
-      svg.setAttribute('width','100%');svg.setAttribute('height','100%');
-      svg.setAttribute('aria-hidden','true');
-      svg.classList.add('qa-compare-svg');
+  const ICONS = ["<svg\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719\" />\n  <path d=\"M9 9.5a3 2.5 0 016 0c0 2-2 2-3 3.5\" />\n  <path d=\"M12 17h.01\" />\n</svg>\n","<svg\n  xmlns=\"http://www.w3.org/2000/svg\"\n  width=\"24\"\n  height=\"24\"\n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3.086 17.509a2 2 0 00-.094-1.167 10 10 0 114.777 4.719 2 2 0 00-1.099-.092l-3.413.998a1 1 0 01-1.236-1.168z\" />\n  <path d=\"M8 12h9\" />\n  <path d=\"M8 16h5\" />\n  <path d=\"M8 8h7\" />\n</svg>\n"];
+  const parseSvg = (source, extraClass) => {
+    const template = document.createElement('template');
+    template.innerHTML = source.trim();
+    const svg = template.content.firstElementChild;
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add(extraClass);
+    return svg;
+  };
+  const update = () => {
+    // The shared ConversationDisplay creates Icons8 PNGs; replace only on Practice 2.1.
+    document.querySelectorAll('.practice21-page .conversation-role-icon > img').forEach(img => {
+      const role = img.closest('.conversation-role-icon');
+      const isQuestion = role?.getAttribute('aria-label') === 'Question';
+      const svg = parseSvg(ICONS[isQuestion ? 0 : 1], 'qa-compare-svg');
       img.replaceWith(svg);
-      role.dataset.qaPreviewLibrary=set===0?'lucide':'fluent';
+      role.dataset.qaPreviewLibrary = 'lucide';
     });
-  }
-  const observer=new MutationObserver(update);
-  observer.observe(root,{childList:true,subtree:true});
+    // The small icon beside the stop button identifies a question sentence.
+    // Use the same Lucide question-mark bubble for visual consistency.
+    document.querySelectorAll('.practice21-page .question-indicator svg:not(.qa-compare-question-indicator)').forEach(oldSvg => {
+      const svg = parseSvg(ICONS[0], 'qa-compare-question-indicator');
+      oldSvg.replaceWith(svg);
+    });
+  };
+  const observer = new MutationObserver(update);
+  observer.observe(document.body, {childList:true, subtree:true});
   update();
 })();
