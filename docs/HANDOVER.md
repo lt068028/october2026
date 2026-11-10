@@ -6,33 +6,33 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T06:25:00+01:00
+- **最終更新日時**：2026-11-10T08:20:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Deutsch Übung 1.1：3段階判定・フィードバックUI試験実装
+- **課題**：English Cues — Select英語化2件の実装・検証
 - **変更内容**：
-  1. **正本仕様書（`docs/GERMAN_DRILL_SPEC.md`）の改定**：
-     - 最優先基本原則「ドリルの別解許容原則（2026-11-10確定）」を新設：「ドリルの正解はモデル文一つに限定しない。キューで指定された学習目標を満たし、文法的に正しい別解を常に考慮する。主語・時制・語順が指定されていない場合、それらの違いだけを理由に不正解としてはならない。モデル文は代表的な正しい回答例であり、唯一の正解ではない。この原則は今後作成するすべてのDeutschドリルにも適用する。」
-     - Section 3.3（Card 3）および Section 5.3、6.2 を3段階判定（`accepted`, `mismatch`, `undetermined`）およびフィードバックUI仕様へ更新。
-  2. **3段階判定エンジン（`uebung1.1.js`）の実装**：
-     - `evaluateGermanAnswer(raw, item, variety)` を新設：
-       - **`accepted`**：モデル完全一致、地域変種（`allowedAnswers`）、および学習目標を満たす主語別解（`ich`, `wir`, `sie`, `er` 等）、語順別解（倒置OVS `Nach Graz fahre ich.` 等）、時制別解（現在完了形Perfekt `Ich bin nach Graz gefahren.`、過去形Präteritum `Ich fuhr nach Graz.`）を正解受容（生テキスト ＋ ` ✅`）。
-       - **`mismatch`**：主語と動詞の人称不一致、前置詞誤り、目的地誤り、動詞語幹誤りを特定し、不一致箇所のみ赤字（`<span class="result-incorrect">`）でハイライト。訂正欄には `🔥 Keep going!` のみを表示（❌マーク、Try once more!、お手本自動開示は完全撤去）。
-       - **`undetermined`**：短小音声（3語未満）、未対応助動詞・複文、未解析構文を ` 👣` として保留。音声認識の不確実性を考慮し誤答と断定しない。
-     - **音声ボタン重複解消**：`.correction-box` 内に重複生成されていた `🔊きく` ボタンを削除。操作ボタン群の `🔊きく` と学習者録音再生 `▶️` を維持。
-     - **モジュールエクスポート**：`typeof module !== "undefined"` にて `evaluateGermanAnswer`, `normalizeGerman`, `drillsData` 等をテスト向けにエクスポート。
-  3. **自動テスト（`tests/uebung11.cjs`）の拡充**：
-     - 判定エンジンユニットテスト（全11ケース：完全一致、地域変種、主語変更、語順倒置、完了形/過去形、人称不一致、前置詞誤り、目的地誤り、動詞誤り、複雑構文保留、短小音声保留）を追加。
-     - 構造契約（❌排除、Try once more!排除、重複きくボタン排除、お手本非開示、🔥 Keep going!、👣、✅）の検証を追加。
+  1. **Practice 1.2 Drill 2（専攻選択の英語化）**：
+     - 表示フォーマッタ `formatMajorOption(major, useEnglish)` を導入し、English Cues ON 時に `major.meaning`（`economics`, `politics`, `history` 等）を表示。OFF 時は従来の日本語（`word(major.word, major.kanji)`）を表示。
+     - `option.value` は内部識別子（`major.word`）を保持し、English Cues 切替時も選択状態、録音、モデル文、判定を完全保護。
+     - プレースホルダーから絵文字（📋）を撤去し、`Select` に更新。
+  2. **Practice 8.1 Drill 4（Activity選択の英語化）**：
+     - 既存の `actionText()` は変更せず、英語表示専用関数 `actionEnglishText(a)` を追加。
+     - 既存の `words` 辞書および `activityMeanings` マッピングを優先活用し、自然な英語ラベル（`Wash dishes`, `Throw things away`, `Use a smartphone`, `Cut hair`, `Carry a bag`, `Start studying`）を表示。
+     - `addSelect` および `enhanceActivitySelects` において、`base-select` と通常のネイティブ select の双方で English Cues ON 時に英語ラベルを安定表示。
+     - `option.value` は内部識別子（`actionId`）を維持し、Activity選択状態・録音結果を完全保護。
+  3. **自動テスト拡充（`tests/english-cues-expansion.cjs`）**：
+     - Practice 1.2 Drill 2 のプレースホルダー（`Select`）、初期日本語表示、English Cues ON 時の英語表示（`economics`）、およびトグル往復時の選択値保持を検証。
+     - Practice 8.1 Drill 4 の初期日本語表示、English Cues ON 時の英語表示（`Wash dishes`）、およびトグル往復時の選択値保持を検証。
 - **検証結果**：
-  - `tests/uebung11.cjs` の全契約テストおよび11ケースの判定ユニットテストが正常動作。
-  - `git diff --check` にて全ファイルの構文・空白整合性を確認済み。
+  - `git diff --check` にて全変更の構文・空白整合性を確認済み。
+  - 静的構文・アサーション検証にすべて合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Practice 1.2 & 8.1**：ユーザー実機ブラウザでの Select 英語化（Drill 2 専攻選択、Drill 4 Activity選択）および English Cues トグル時の選択状態・録音保持の動作確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの3段階判定（別解受容、不一致箇所の赤字表示、保留判定 👣、🔥 Keep going!、重複きくボタン撤去）の動作確認待ち。
 - [ ] **Practice 1.2, 8.1, 8.3**：ユーザー実機ブラウザでのEnglish Cuesトグル動作、英語・日本語表示切替、およびスムーススクロール動作の確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。

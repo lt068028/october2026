@@ -1106,6 +1106,9 @@ function practice2ShowNotice(resultSpan, message) {
     const word = (hira, kanji) =>
         scriptMode === "kanji" ? kanji : hira;
 
+    const formatMajorOption = (major, useEnglish) =>
+        useEnglish ? major.meaning : word(major.word, major.kanji);
+
     const node = (tag, className = "", text = "") => {
         const element = document.createElement(tag);
         element.className = className;
@@ -1964,7 +1967,7 @@ function practice2ShowNotice(resultSpan, message) {
             const placeholder = node(
                 "option",
                 "",
-                "📋Select"
+                "Select"
             );
 
             placeholder.value = "";
@@ -1975,7 +1978,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const option = node(
                     "option",
                     "",
-                    word(major.word, major.kanji)
+                    formatMajorOption(major, practice2State.englishCues)
                 );
 
                 option.value = major.word;

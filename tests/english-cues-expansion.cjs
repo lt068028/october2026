@@ -91,6 +91,27 @@ const root = path.resolve(__dirname, '..');
             assert.equal(title, target.panelTitle, `${target.name} panel title match`);
             checks++;
 
+            // Check Select English cues in Practice 1.2 Drill 2 and Practice 8.1 Drill 4 before toggle
+            if (target.name === 'practice1.2') {
+                const majorSelect = page.locator('#drill2Container select.custom-select').first();
+                if (await majorSelect.count() > 0) {
+                    const placeholder = await majorSelect.locator('option[value=""]').textContent();
+                    assert.equal(placeholder, 'Select', 'Practice 1.2 Drill 2 placeholder must be "Select"');
+                    const jaText = await majorSelect.locator('option[value="けいざい"]').textContent();
+                    assert.ok(jaText.includes('経済') || jaText.includes('けいざい'), 'Option must be Japanese when English cues OFF');
+                    await majorSelect.selectOption('けいざい');
+                    checks += 2;
+                }
+            } else if (target.name === 'practice8.1') {
+                const actSelect = page.locator('#drill4 select.p81-activity-select').first();
+                if (await actSelect.count() > 0) {
+                    const jaAct = await actSelect.locator('option[value="washDish"]').textContent();
+                    assert.ok(jaAct.includes('洗う') || jaAct.includes('皿'), 'Drill 4 activity option must be Japanese when OFF');
+                    await actSelect.selectOption('washDish');
+                    checks++;
+                }
+            }
+
             // 2. Click to toggle English cues ON
             await button.click();
             await page.waitForTimeout(300);
@@ -99,6 +120,27 @@ const root = path.resolve(__dirname, '..');
             assert.ok((await button.textContent()).includes('Display Japanese Cues'), `${target.name} active text`);
             assert.ok(await button.evaluate(el => el.classList.contains('is-english')), `${target.name} active class`);
             checks += 3;
+
+            // Verify Select English cues when ON
+            if (target.name === 'practice1.2') {
+                const majorSelect = page.locator('#drill2Container select.custom-select').first();
+                if (await majorSelect.count() > 0) {
+                    const enText = await majorSelect.locator('option[value="けいざい"]').textContent();
+                    assert.equal(enText, 'economics', 'Option must be English (economics) when English cues ON');
+                    const val = await majorSelect.inputValue();
+                    assert.equal(val, 'けいざい', 'Selected value must be preserved across English cues ON toggle');
+                    checks += 2;
+                }
+            } else if (target.name === 'practice8.1') {
+                const actSelect = page.locator('#drill4 select.p81-activity-select').first();
+                if (await actSelect.count() > 0) {
+                    const enAct = await actSelect.locator('option[value="washDish"]').textContent();
+                    assert.ok(enAct.includes('Wash dishes'), 'Drill 4 activity option must be English (Wash dishes) when ON');
+                    const val = await actSelect.inputValue();
+                    assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues ON toggle');
+                    checks += 2;
+                }
+            }
 
             // 3. Verify English cue content is present in drill
             const firstDrillCue = await page.locator(target.drillCueSelector).first().textContent();
@@ -115,6 +157,27 @@ const root = path.resolve(__dirname, '..');
             assert.equal(await button.getAttribute('aria-pressed'), 'false', `${target.name} restored aria-pressed must be false`);
             assert.ok((await button.textContent()).includes('Display English Cues'), `${target.name} restored text`);
             checks += 2;
+
+            // Verify Select English cues restored to Japanese when OFF
+            if (target.name === 'practice1.2') {
+                const majorSelect = page.locator('#drill2Container select.custom-select').first();
+                if (await majorSelect.count() > 0) {
+                    const jaText = await majorSelect.locator('option[value="けいざい"]').textContent();
+                    assert.ok(jaText.includes('経済') || jaText.includes('けいざい'), 'Option must be Japanese when English cues restored');
+                    const val = await majorSelect.inputValue();
+                    assert.equal(val, 'けいざい', 'Selected value must be preserved across English cues OFF toggle');
+                    checks += 2;
+                }
+            } else if (target.name === 'practice8.1') {
+                const actSelect = page.locator('#drill4 select.p81-activity-select').first();
+                if (await actSelect.count() > 0) {
+                    const jaAct = await actSelect.locator('option[value="washDish"]').textContent();
+                    assert.ok(jaAct.includes('洗う') || jaAct.includes('皿'), 'Drill 4 activity option must be Japanese when restored');
+                    const val = await actSelect.inputValue();
+                    assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues OFF toggle');
+                    checks += 2;
+                }
+            }
 
             // 5. Check no horizontal overflow at this viewport
             const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 5);

@@ -151,6 +151,14 @@ const degreeActions=[
     {actionId:'carryBag',...action('bag','carry')},
     {actionId:'beginStudy',...action('study','begin')}
 ];
+const activityMeanings={
+    washDish:'Wash dishes',
+    discardThing:'Throw things away',
+    useSmartphone:'Use a smartphone',
+    cutHair:'Cut hair',
+    carryBag:'Carry a bag',
+    beginStudy:'Start studying'
+};
 const degreeLevels=[
     {adjective:'like',degree:'like',tone:'positive'},
     {adjective:'dislike',adverb:'zenzen',degree:'zenzen',tone:'negative'},
@@ -296,6 +304,13 @@ function word(id,model=false,compound=false) {
 function actionText(a,mode=scriptMode) {
     const get=id=>cueText(id,mode);
     return get(a.object)+(a.particle||'を')+get(a.verb);
+}
+function actionEnglishText(a) {
+    if(!a)return '';
+    if(activityMeanings[a.actionId])return activityMeanings[a.actionId];
+    const objEng = words[a.object]?.english || words[a.object]?.meaning || a.object;
+    const verbEng = (words[a.verb]?.english || words[a.verb]?.meaning || a.verb).replace(/^to\s+/, '');
+    return `${verbEng} ${objEng}`;
 }
 function degreePhraseHTML(level) {
     return level.adverb?word(level.adverb):word(level.adjective);
@@ -811,14 +826,6 @@ function node(tag,className='',text=''){const e=document.createElement(tag);e.cl
 // Approved 91ba544 customizable-select interaction, scoped to Drill 4 activities.
 const activityPickerSupported = CSS.supports('appearance', 'base-select') &&
     CSS.supports('selector(::picker(select))');
-const activityMeanings = {
-    washDish: 'Wash dishes',
-    discardThing: 'Throw things away',
-    useSmartphone: 'Use a smartphone',
-    cutHair: 'Cut hair',
-    carryBag: 'Carry a bag',
-    beginStudy: 'Start studying'
-};
 function fitActivityPicker(select) {
     const rect=select.getBoundingClientRect();
     const available=Math.max(rect.top-12,innerHeight-rect.bottom-12);
@@ -837,12 +844,18 @@ function enhanceActivitySelects() {
         const button=node('button');button.type='button';
         button.append(document.createElement('selectedcontent'));select.prepend(button);
         for(const option of select.options){
-            const japanese=node('span','p81-option-japanese',option.textContent);
-            option.replaceChildren(japanese);
-            if(activityMeanings[option.value]){
-                const english=node('span','p81-option-english',activityMeanings[option.value]);
-                option.append(english);
-                if(hintMode!=='off')option.setAttribute('aria-label',japanese.textContent+' — '+english.textContent);
+            if(englishCues){
+                const english=node('span','p81-option-japanese',option.textContent);
+                option.replaceChildren(english);
+                if(hintMode!=='off')option.setAttribute('aria-label',english.textContent);
+            }else{
+                const japanese=node('span','p81-option-japanese',option.textContent);
+                option.replaceChildren(japanese);
+                if(activityMeanings[option.value]){
+                    const english=node('span','p81-option-english',activityMeanings[option.value]);
+                    option.append(english);
+                    if(hintMode!=='off')option.setAttribute('aria-label',japanese.textContent+' — '+english.textContent);
+                }
             }
         }
         select.classList.add('p81-base-select');select.dataset.vocab=hintMode;
@@ -867,7 +880,14 @@ function addSelect(cue,r,key) {
     select.setAttribute('aria-label',isActivity?'Select':r.selectKind==='adverb'?'Degree adverb':r.selectKind==='preference'?'Like or dislike':r.selectKind==='ability'?'Skill or difficulty':'Choice of words');
     select.dataset.choice=r.id;
     if(r.selectKind==='comparison'||isActivity){const empty=node('option','',isActivity?'— Select —':'Adj');empty.value='';select.append(empty);}
-    for(const id of ids){const opt=node('option','',isActivity?actionText(degreeActions.find(a=>a.actionId===id)):cueText(id));opt.value=id;if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));select.append(opt);}
+    for(const id of ids){
+        const action=degreeActions.find(a=>a.actionId===id);
+        const labelText=isActivity?(englishCues?actionEnglishText(action):actionText(action)):cueText(id);
+        const opt=node('option','',labelText);
+        opt.value=id;
+        if(r.selectKind==='adverb')opt.classList.add('degree-'+(['amari','zenzen'].includes(id)?'negative':'positive'));
+        select.append(opt);
+    }
     // Native auto sizing includes both candidate labels, so each pair fits its longest word.
     if(r.selectKind==='comparison'){select.style.width='auto';select.style.minWidth='0';}
     select.value=isActivity?activity:r.selectKind==='comparison'?(r.quizChoice||''):r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
