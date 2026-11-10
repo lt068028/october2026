@@ -632,6 +632,9 @@ async function setupPage(browser, pageName, width = 1440) {
                 await major.selectOption('けいざい');
                 check((await d2.locator('tr:nth-child(2) .recording-result').innerText()).includes('P12-ECONOMICS-SAVED'), 'Practice 1.2 Drill 2 economics result restored');
                 await unchanged('Drill 2 economics again');
+                // Leave Drill 1 on No so the existing Yes selection test below
+                // continues to exercise a transition to Yes (not deselection).
+                await no.click();
             }
 
             if (config.name === 'practice1.2') {
