@@ -719,7 +719,7 @@ function initGermanDrill() {
     // -------------------------------------------------------------
     // 4. Audio & Speech Synthesis
     // -------------------------------------------------------------
-    function stopPlayback() {
+    function stopPlayback(isNaturalFinish = false) {
         if (currentUtterance) {
             currentUtterance.onend = null;
             currentUtterance.onerror = null;
