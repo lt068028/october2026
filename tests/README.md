@@ -254,3 +254,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 ## Deutsche Übung 1.1: nach / in / zum / zur
 
 `node tests/uebung11.cjs`：Deutsche Übung 1.1 の静的構造、4 Drills（各Ex 1問＋練習3問）、German variety設定（DE / AT / CH）、地域別モデル文・許容回答、Copy my sentences、DrillAudioセッション管理、HTML・JS・CSS設計契約を検証する。
+
+## Practice 7.1 Drill 2 Yes/No回答選択の局所描画
+
+`node tests/practice71-answer-selection.cjs`：Practice 7.1 Drill 2 の Yes/No 選択操作において、対象行の回答セルのみを局所更新し、Drill 1 や他の設問を再描画しないこと、`aria-pressed` および `.is-selected` が即時同期すること、Yes/No 切替や同一ボタン連続クリックで不具合がないこと、回答別録音結果の復元、モデル音声TTS排他制御、および With漢字／Hiragana Only 切替や 375/600/1440px での状態維持を検証する。

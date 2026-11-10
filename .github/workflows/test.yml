@@ -78,6 +78,7 @@ jobs:
               tests/content-layout-states.cjs
               tests/css-regression.cjs
               tests/question-indicator.cjs
+              tests/practice71-answer-selection.cjs
               tests/practice81.cjs
               tests/practice81-activity-select.cjs
               tests/practice81-cue-fit.cjs

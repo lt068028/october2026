@@ -6,31 +6,35 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T09:38:00+01:00
+- **最終更新日時**：2026-11-10T10:05:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Practice 1.2 スラッシュ半角・スペースなし先行テスト
+- **課題**：Practice 7.1 Drill 2 Yes/No選択遅延の局所修正
 - **変更内容**：
-  1. **キュー区切りスラッシュの半角化・スペースなし統一**：
-     - Practice 1.2 限定で、日本語キューおよび英語キュー（English Cues）の区切り記号を半角スラッシュ `/`・前後スペースなしに統一。
-     - 日本語キュー例：`父/母`、`あなた/専攻/何`、`あなた/専攻/政治`
-     - 英語キュー例：`father/mother`、`older brother/student`、`friend/major`
-     - 複数語の英語語句内部のスペース（`older brother` や `office worker` 等）は完全に保持し、区切りスラッシュの前後のみスペースを除去。
-     - 適用箇所：Example 1（Qキュー）、Example 2（Qキュー・Aキュー・何追加部）、Drill 1（Qキュー）、Drill 2（Qキュー・Aキュー選択前部）の計7箇所。
-  2. **表示モード・状態の維持**：
-     - With漢字／Hiragana Only、Vocab OFF／Hover／Display（Display時の区切り非表示仕様）、English Cues ON／OFFトグル、録音・正誤判定・選択状態の完全維持。
-  3. **仕様書・テスト更新**：
-     - `docs/UI_LAYOUT_SPEC.md`（F8）および `docs/PROJECT_SPEC.md` に先行試験として記録（他ページへの展開は保留、既存の全ページ共通規則は未変更）。
-     - `tests/english-cues-expansion.cjs` の Practice 1.2 期待値を `older brother/student` に更新し、日本語時・英語時ともに半角スラッシュかつ前後スペースなしを検証するアサーションを追加。
+  1. **Yes/No選択処理の局所化**：
+     - `practice7.1.js` において、Drill 2 の Yes/No 選択クリック時にページ全体の `renderAll()` を呼び出す従来の構造を排除。
+     - 選択行の `answerCell`（回答操作セル）のみを `populateRecordingCell` で局所更新する方式に置き換え。
+     - `aria-pressed` および `.is-selected` クラスを選択されたボタンへ即時同期反映し、反対側のボタンの選択を即時解除。
+     - 同一ボタンの連続クリック時はDOM再構築をスキップして即座にリターン。
+  2. **影響範囲の極小化と安全性確保**：
+     - Drill 1（14問）、Example 2、Drill 2 の他設問（4問）、Copy エリアの DOM を一切破棄・再生成しない。
+     - 17回以上実行されていた同期レイアウト測定（`getBoundingClientRect()`）および `ConversationDisplay.format()` の多重呼び出しを完全排除。
+     - YesとNoの回答別録音データ（`savedResults`, `audioUrls`）の分離・保持、切替時の結果・再生ボタン復元を完全維持。
+     - `DrillAudio` による既存の音声排他制御および録音中の操作ロック（`blocked()` ガード）を維持。
+  3. **回帰テスト・CIワークフロー追加**：
+     - `tests/practice71-answer-selection.cjs` を新規作成（Yes/No切替、不変性検証、録音保持、スクリプト切替、レスポンシブ検証）。
+     - `.github/workflows/test.yml`（Group 4）にテストを登録。
+     - `tests/README.md` にテスト説明を追加。
 - **検証結果**：
   - `git diff --check` にて空白・構文不備なし。
-  - 静的コード検証およびテストアサーション定義完了。
+  - 静的コード検証および bracket balance 確認完了。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Practice 7.1**：Drill 2 の Yes/No 選択時の即時色反映（遅延解消）、モデル文・録音ボタンの即時切替、および回答別録音結果の保持のユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 1.2**：先行試験である半角スラッシュ・スペースなしキュー表示（日本語 `父/母`、英語 `father/mother` 等）および 375px／600px／1440px での折り返し・視認性のユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の English Cues ON 時における程度副詞の意味色（青/赤）・太字表示、および `not very` / `not at all` に不要な括弧説明がないことのユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の `Select` プレースホルダー・左揃え・小文字英語選択肢・チェックマーク撤去、および Drill 5 の `clean` / `cook` 表示のユーザー実機ブラウザ確認待ち。
