@@ -50,7 +50,7 @@ const root = path.resolve(__dirname, '..');
             name: 'practice1.2',
             buttonSelector: '#drill3Container .drill-cue-button',
             drillCueSelector: '#drill1Container .drill-cue-cell',
-            englishSample: 'older brother / student',
+            englishSample: 'older brother/student',
             panelTitle: 'Drill 3: Practice with English cues'
         },
         {
@@ -102,6 +102,12 @@ const root = path.resolve(__dirname, '..');
                     await majorSelect.selectOption('けいざい');
                     checks += 2;
                 }
+                // Verify Practice 1.2 Japanese cue uses halfwidth slash with no space
+                const jaCue = await page.locator('#drill1Container .drill-cue-cell').first().textContent();
+                assert.ok(jaCue.includes('/'), 'Practice 1.2 Japanese cue must use halfwidth slash');
+                assert.ok(!jaCue.includes('／'), 'Practice 1.2 Japanese cue must not use fullwidth slash');
+                assert.ok(!/\s\/|\/\s/.test(jaCue), 'Practice 1.2 Japanese cue must not have spaces around slash');
+                checks += 3;
             } else if (target.name === 'practice8.1') {
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
                 if (await actSelect.count() > 0) {
@@ -133,6 +139,11 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'けいざい', 'Selected value must be preserved across English cues ON toggle');
                     checks += 2;
                 }
+                // Verify Practice 1.2 English cue slash is halfwidth with no space
+                const p12Cue = await page.locator('#drill1Container .drill-cue-cell').first().textContent();
+                assert.ok(p12Cue.includes('older brother/student'), 'Drill 1 cue must use compact slash without spaces: older brother/student');
+                assert.ok(!p12Cue.includes('older brother / student'), 'Drill 1 cue must not have spaces around slash');
+                checks += 2;
             } else if (target.name === 'practice8.1') {
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
                 if (await actSelect.count() > 0) {
@@ -228,6 +239,12 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'けいざい', 'Selected value must be preserved across English cues OFF toggle');
                     checks += 2;
                 }
+                // Verify Practice 1.2 restored Japanese cue uses halfwidth slash with no space
+                const jaCueRestored = await page.locator('#drill1Container .drill-cue-cell').first().textContent();
+                assert.ok(jaCueRestored.includes('/'), 'Practice 1.2 restored Japanese cue must use halfwidth slash');
+                assert.ok(!jaCueRestored.includes('／'), 'Practice 1.2 restored Japanese cue must not use fullwidth slash');
+                assert.ok(!/\s\/|\/\s/.test(jaCueRestored), 'Practice 1.2 restored Japanese cue must not have spaces around slash');
+                checks += 3;
             } else if (target.name === 'practice8.1') {
                 const actSelect = page.locator('#drill4 select.p81-activity-select').first();
                 if (await actSelect.count() > 0) {

@@ -1011,7 +1011,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             cue.append(
-                document.createTextNode(hintMode === "paren" ? "" : "／"),
+                document.createTextNode(hintMode === "paren" ? "" : "/"),
                 what
             );
 
@@ -1714,7 +1714,7 @@ function practice2ShowNotice(resultSpan, message) {
         example(first.container, [
             [
                 "Q:",
-                father + (hintMode === "paren" ? "" : "／") + nurse,
+                father + (hintMode === "paren" ? "" : "/") + nurse,
                 () => question(
                     word("おとうさん", "お父さん"),
                     word("かんごし", "看護師")
@@ -1758,14 +1758,14 @@ function practice2ShowNotice(resultSpan, message) {
             const y = () => word(item.y, item.yKanji);
 
             const cue = practice2State.englishCues
-                ? `<span class="target-word">${escape(item.xMeaning)}</span> / <span class="target-word">${escape(item.yMeaning)}</span>`
+                ? `<span class="target-word">${escape(item.xMeaning)}</span>/<span class="target-word">${escape(item.yMeaning)}</span>`
                 : formatWord(
                     item.x,
                     item.xKanji,
                     item.xRomaji,
                     item.xMeaning
                 )
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord(
                     item.y,
                     item.yKanji,
@@ -1870,14 +1870,14 @@ function practice2ShowNotice(resultSpan, message) {
                     "anata",
                     "you"
                 )
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord(
                     "せんこう",
                     "専攻",
                     "senkō",
                     "major"
                 )
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord("なに", "何", "nani", "what"),
                 () => question(
                     word(
@@ -1890,9 +1890,9 @@ function practice2ShowNotice(resultSpan, message) {
             [
                 "A:",
                 formatWord("あなた", "あなた", "anata", "you")
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord("せんこう", "専攻", "senkō", "major")
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord(
                     "せいじ",
                     "政治",
@@ -1926,14 +1926,14 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const cue = practice2State.englishCues
-                ? `<span class="target-word">${escape(target.labelMeaning)}</span> / <span class="target-word">major</span>`
+                ? `<span class="target-word">${escape(target.labelMeaning)}</span>/<span class="target-word">major</span>`
                 : formatWord(
                     target.label,
                     target.labelKanji,
                     target.labelRomaji,
                     target.labelMeaning
                 )
-                + (hintMode === "paren" ? "" : "／")
+                + (hintMode === "paren" ? "" : "/")
                 + formatWord(
                     "せんこう",
                     "専攻",
@@ -1957,7 +1957,7 @@ function practice2ShowNotice(resultSpan, message) {
             );
 
             const choices = node("span");
-            choices.innerHTML = cue + (practice2State.englishCues ? " / " : (hintMode === "paren" ? "" : "／"));
+            choices.innerHTML = cue + (practice2State.englishCues ? "/" : (hintMode === "paren" ? "" : "/"));
 
             const select = node(
                 "select",

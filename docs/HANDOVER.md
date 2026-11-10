@@ -6,32 +6,32 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T09:20:00+01:00
+- **最終更新日時**：2026-11-10T09:38:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Practice 8.1 Drill 4 英語キュー意味色継承・仕様書更新
+- **課題**：Practice 1.2 スラッシュ半角・スペースなし先行テスト
 - **変更内容**：
-  1. **英語説明の短縮**：
-     - Practice 8.1 の語彙定義にて、`amari` を `not very`、`zenzen` を `not at all` に短縮し、不要な括弧補足 `(with a negative ending)` を撤去。
-     - 他ページの語彙定義や Example 4・日本語キューの表示は不変。
-  2. **Drill 4 英語キューの意味色・太字継承**：
-     - English Cues ON 時の Drill 4 において、程度副詞キューに肯定色（`degree-positive`、`very`, `very; really`, `So-so`, `a little`）および否定色（`degree-negative`、`not very`, `not at all`）と太字（`degree-adverb`、`font-weight: 700`）を継承適用。
-     - 既存の共通変数 `--semantic-positive-color` / `--semantic-negative-color`（およびエイリアス `--degree-positive-color` / `--degree-negative-color`）を使用し、新規固定色・専用配色は追加せず。
-     - 区切り記号 `/`、Select、形容詞（`dislike`）、本文、他ドリルには色を広げず、English Cues OFF 時の日本語副詞色・Example 4 も完全維持。
-  3. **共通仕様書の更新**：
-     - `docs/PROJECT_SPEC.md` の English Cues 共通実装原則に「English Cuesの意味色継承（2026-11-10確定）」を追加記録。
-     - `docs/UI_LAYOUT_SPEC.md` の程度副詞規定に Practice 8.1 Drill 4 の English Cues 意味色継承・括弧説明撤去の規則を追加記録。
-  4. **テスト更新**：
-     - `tests/english-cues-expansion.cjs` に Drill 4 の程度副詞英語キューに対する意味色・太字・括弧なしテキストのアサーション、および OFF 復元時の日本語副詞色維持アサーションを追加。
+  1. **キュー区切りスラッシュの半角化・スペースなし統一**：
+     - Practice 1.2 限定で、日本語キューおよび英語キュー（English Cues）の区切り記号を半角スラッシュ `/`・前後スペースなしに統一。
+     - 日本語キュー例：`父/母`、`あなた/専攻/何`、`あなた/専攻/政治`
+     - 英語キュー例：`father/mother`、`older brother/student`、`friend/major`
+     - 複数語の英語語句内部のスペース（`older brother` や `office worker` 等）は完全に保持し、区切りスラッシュの前後のみスペースを除去。
+     - 適用箇所：Example 1（Qキュー）、Example 2（Qキュー・Aキュー・何追加部）、Drill 1（Qキュー）、Drill 2（Qキュー・Aキュー選択前部）の計7箇所。
+  2. **表示モード・状態の維持**：
+     - With漢字／Hiragana Only、Vocab OFF／Hover／Display（Display時の区切り非表示仕様）、English Cues ON／OFFトグル、録音・正誤判定・選択状態の完全維持。
+  3. **仕様書・テスト更新**：
+     - `docs/UI_LAYOUT_SPEC.md`（F8）および `docs/PROJECT_SPEC.md` に先行試験として記録（他ページへの展開は保留、既存の全ページ共通規則は未変更）。
+     - `tests/english-cues-expansion.cjs` の Practice 1.2 期待値を `older brother/student` に更新し、日本語時・英語時ともに半角スラッシュかつ前後スペースなしを検証するアサーションを追加。
 - **検証結果**：
-  - `git diff --check` にて構文・空白不備なし。
-  - 静的アサーション・CSS適合検証合格。
+  - `git diff --check` にて空白・構文不備なし。
+  - 静的コード検証およびテストアサーション定義完了。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Practice 1.2**：先行試験である半角スラッシュ・スペースなしキュー表示（日本語 `父/母`、英語 `father/mother` 等）および 375px／600px／1440px での折り返し・視認性のユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の English Cues ON 時における程度副詞の意味色（青/赤）・太字表示、および `not very` / `not at all` に不要な括弧説明がないことのユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の `Select` プレースホルダー・左揃え・小文字英語選択肢・チェックマーク撤去、および Drill 5 の `clean` / `cook` 表示のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのボタンドイツ語表記（`🔊 Anhören`, `⏺️ Aufnehmen`, `↩️ Zurück`）および Autoplay OFF ホバー（`Choose what and when to play.`）の確認待ち。
@@ -70,6 +70,7 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-10: Practice 8.1 Drill 4 英語キュー意味色継承・仕様書更新（Commit `8a08160`）
 - 2026-11-10: Practice 8.1 Drill 4・Drill 5 表示統一（Commit `31c70d4`）
 - 2026-11-10: Deutsch Übung 1.1 3段階判定（別解許容・不一致赤字・保留👣・重複ボタン撤去）試験実装
 - 2026-11-10: English Cues未対応ページ（Practice 1.2, 8.1, 8.3）一括実装・統合テストPASS（Commit `ae60a87`）

@@ -124,6 +124,8 @@
 
 > **8.1 D4英語キュー意味色継承と英語説明短縮（2026-11-10確定）**：Drill 4のEnglish Cues ON時、程度副詞キューに肯定色（very, very; really, So-so, a little: `degree-positive`）および否定色（not very, not at all: `degree-negative`）と太字（`degree-adverb`）を継承。英語語彙定義の不要な括弧補足を撤去（`not very`, `not at all`）。区切り記号・Select・形容詞・本文等へは色を広げず、日本語キューおよびExample 4の既存色・表示を維持。
 
+> **Practice 1.2 スラッシュ半角化試験（2026-11-10試験）**：Practice 1.2限定でキュー区切りを半角スラッシュ `/`・前後スペースなしに統一（日本語 `父/母`、英語 `father/mother`、複数語 `older brother/student`）。他ページ展開はせず先行試験として検証。既存の全ページ共通規則は未変更。
+
 > **Practice 8.2現行構成（2026-11-04）**：Example 4件・Drill 4件。E1/D1は何か質問、E2/D2は何を vs 何かの4組、E3/D3は何か／何もを使う5組のYes/No会話、E4/D4は何でもを使う習慣・種類の3組。D4は[Sneak Peek] 何でも — Unlimited Choice（当該Lessonの教科書範囲外の補足練習で、L15の正式導入を意味しない）。モデル文とTTSに文節単位の読点を適用。共通設定・共通Q/A役割表示・Y/N選択・録音／0秒リレー／STT原文保持を継承。詳細・許容回答は[PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)。
 
 > **8.1 D5刷新（2026-10-31）**：前半Meaning（Skill assessment／Personal perception等）、後半Speaker & listener（Boastful／Confident、Praise／Direct、Patronizing／Rude等）の７組14行。左のオレンジ指定に合わせて日本語Adjを２択で選ぶ。未選択・不一致時はきく/とるをロックし、合致で解除、選択だけで再生しない。Ex5も母の上手／得意を上記意味指定で紹介。第三者への得意を禁止しない。行・選択ごとの録音保持、文法判定と意味/印象クイズの分離、共通レイアウトを維持。詳細はPRACTICE8_SPEC。
