@@ -6,31 +6,25 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-09T16:30:00+01:00
+- **最終更新日時**：2026-11-10T05:20:00+01:00
 - **担当環境**：Codex / Antigravity
-- **対象ブランチ / 最新コミット**：`main` (`97b8d2d`)
+- **対象ブランチ / 最新コミット**：`main` (`ae60a87`)
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：W7: Practice 7.2 音声排他制御の回帰テスト追加（`tests/practice72-audio-interruption.cjs`）
+- **課題**：English Cues（英語キュー）未対応ページへの一括実装（Practice 1.2, 8.1, 8.3）
 - **変更内容**：
-  1. Practice 7.2専用の音声排他制御回帰テスト `tests/practice72-audio-interruption.cjs` を新規作成。
-  2. 検証ケースB1（モデル音声中の中断）、B2（録音音声中の中断）、B3（遅延コールバックによる旧録音再生の抑止）、B4（中断後の再録音と他行データ保持）を実装。
-  3. テストランナー内のモック（AudioContext、SpeechRecognition、MediaRecorder、speechSynthesis）を整備し、セッション遷移・非同期終了の待機条件を精密化。
-  4. `.github/workflows/test.yml` に新規テストを追加（Group 2）。あわせてGroup 3のタイムアウトを解消するため、4グループの負荷を再均衡化（16/17/13/15、計61件）。
-  5. 本体HTML/CSS/JSおよび共通音声制御モジュールは一切変更せず、既存仕様・コードの保持を徹底。
+  1. **Practice 1.2**：`#drill3Container` に `renderEnglishCuePanel()`（`Drill 3: Practice with English cues`、`💡Use English cues for Drills 1–2.`）を追加。Drills 1–2 のプロンプトを English cues / Japanese cues 切替対応。アクティブな `renderAll()` ループおよび録音UI排他ロックに接続。
+  2. **Practice 8.1**：`#drill6Container` に `renderEnglishCuePanel()`（`Drill 6: Practice with English cues`、`💡Use English cues for Drills 1–5.`）を追加。Drills 1–5 のプロンプトを `cues(r, null, true)` で辞書英語切替対応。録音ビジーロックに接続。
+  3. **Practice 8.3**：`#drill5Container` に `renderEnglishCuePanel()`（`Drill 5: Practice with English cues`、`💡Use English cues for Drills 1–4.`）を追加。Drills 1–4 のプロンプトを `cues(r, true)` で辞書英語切替対応（Exampleは完全除外・独立性維持）。録音ビジーロックに接続。
+  4. **統合自動テスト**：`tests/english-cues-expansion.cjs` を新規作成し `.github/workflows/test.yml` Group 1（Layout & Spacing）に登録。初期状態OFF、トグルON、Drill内英語キュー表示、トグルOFF、375px/600px/1440pxレスポンシブ・オーバーフローなし、コンソールエラー0を検証。
 - **検証結果**：
-  - GitHub Actions（Run ID: 42642127235）にて全61テストがタイムアウト中断なく100%完走。
-  - `tests/practice72-audio-interruption.cjs` の全ケース（B1, B2, B3, B4）がすべて **PASS**（所要時間: 3秒）。
-  - 各ケース結果：
-    - [B1] PASS: モデル音声（TTS）再生中に次行録音開始時、モデル音声が即時中断され次行の録音準備が開始される。
-    - [B2] PASS: 録音音声再生中に次行録音開始時、録音音声が即時停止され次行の録音準備が開始される。
-    - [B3] PASS: 中断後に旧モデル音声の `onend` コールバックが遅延発火しても、旧録音音声が再生されない。
-    - [B4] PASS: 中断後に再録音した行が新しいテキストで正常保存され、別行の保存済みデータ・音声URLが保持される。
+  - GitHub Actions CI（Run ID: 42753302616）にて `tests/english-cues-expansion.cjs` が **PASS**（所要時間: 35秒、108チェック全合格）。
+  - 音声回帰テスト `tests/practice72-audio-interruption.cjs` も **PASS**（所要時間: 2秒、B1〜B4全合格）。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
-- [ ] **GitHub Actions CI確認**：`practice72-audio-interruption.cjs`（B1〜B4）の実行結果および全61テストの完走確認。
+- [ ] **Practice 1.2, 8.1, 8.3**：ユーザー実機ブラウザでのEnglish Cuesトグル動作、英語・日本語表示切替、およびスムーススクロール動作の確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのドイツ語TTS診断・再生失敗通知・ヘッダー直下専用バナー動作確認（FWC W9）。
 - [ ] **Practice 8.1**：ユーザー実機ブラウザでのDrill 4活動選択高速化・相互排他・表示動作の確認待ち。
 - [ ] **Practice 8.3**：ユーザー実機ブラウザでのバッジ表示統一（Verb・だれ・何）の確認待ち（Vercel本番Ready確認済み）。
@@ -61,11 +55,11 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-10: English Cues未対応ページ（Practice 1.2, 8.1, 8.3）一括実装・統合テストPASS（Commit `ae60a87`）
+- 2026-11-09: W7 Practice 7.2 音声排他制御の回帰テスト追加・全件PASS（Commit `97b8d2d`）
 - 2026-11-09: Vercel ignoreCommand 256文字制限解消・スクリプト分離（Commit `338cbd2`）
 - 2026-11-09: Deutsche Übung 1.1 ドイツ語TTS診断・通知バナー実装（Commit `041944b`）
 - 2026-11-09: Practice 8.1 Drill 4活動選択の根本的高速化（Commit `8955bcf`）
-- 2026-11-09: 不要プレビュー15件削除およびテスト・クレジット整合（Commit `5d233a1`）
-- 2026-11-09: HANDOVER軽量化・過去ログアーカイブ分割（Commit `a45f304`）
 
 ## 8. 過去履歴アーカイブ（History Index）
 過去の詳細な作業ログ・リレー記録は以下のアーカイブファイルに保管されています。
