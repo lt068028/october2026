@@ -573,7 +573,8 @@ function initGermanDrill() {
         listen: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/>',
         mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
         stop: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
-        play: '<path d="m8 5 11 7-11 7V5Z"/>'
+        play: '<path d="m8 5 11 7-11 7V5Z"/>',
+        forward: '<path d="m4 4 8 8-8 8V4Z"/><path d="m12 4 8 8-8 8V4Z"/>'
     };
     function audioIcon(kind) {
         const template = document.createElement("template");
@@ -1551,7 +1552,8 @@ function initGermanDrill() {
             exCueTd.append(exCueSpan);
 
             // Arrow
-            const exArrowTd = node("td", "example-arrow-cell", "👉️");
+            const exArrowTd = node("td", "example-arrow-cell");
+            exArrowTd.append(audioIcon("forward"));
             exArrowTd.style.width = "28px";
             exArrowTd.style.textAlign = "center";
 
