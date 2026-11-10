@@ -142,6 +142,35 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues ON toggle');
                     checks += 2;
                 }
+                // Verify Drill 4 degree adverbs inherit semantic colors and clean text when English Cues ON
+                const d4Adverbs = await page.locator('#drill4 .p81-degree-target .degree-adverb').evaluateAll(els =>
+                    els.map(el => ({
+                        text: el.textContent.trim(),
+                        isPositive: el.classList.contains('degree-positive'),
+                        isNegative: el.classList.contains('degree-negative'),
+                        weight: getComputedStyle(el).fontWeight
+                    }))
+                );
+                assert.ok(d4Adverbs.length >= 5, 'Drill 4 must have at least 5 degree adverb elements');
+                // zenzen
+                assert.equal(d4Adverbs[0].text, 'not at all', 'Item 1 adverb must be "not at all" without parentheses');
+                assert.ok(d4Adverbs[0].isNegative, 'Item 1 adverb must have degree-negative class');
+                // amari
+                assert.equal(d4Adverbs[1].text, 'not very', 'Item 2 adverb must be "not very" without parentheses');
+                assert.ok(d4Adverbs[1].isNegative, 'Item 2 adverb must have degree-negative class');
+                // chotto
+                assert.equal(d4Adverbs[2].text, 'a little', 'Item 3 adverb must be "a little"');
+                assert.ok(d4Adverbs[2].isPositive, 'Item 3 adverb must have degree-positive class');
+                // maamaa
+                assert.equal(d4Adverbs[3].text, 'So-so', 'Item 4 adverb must be "So-so"');
+                assert.ok(d4Adverbs[3].isPositive, 'Item 4 adverb must have degree-positive class');
+                // sugoku
+                assert.equal(d4Adverbs[4].text, 'very; really', 'Item 5 adverb must be "very; really"');
+                assert.ok(d4Adverbs[4].isPositive, 'Item 5 adverb must have degree-positive class');
+                for (const adv of d4Adverbs) {
+                    assert.equal(adv.weight, '700', 'Degree adverbs must be bold (700)');
+                }
+                checks += 12;
                 const d5Cards = page.locator('#drill5 .p81-comparison-card');
                 const d5Count = await d5Cards.count();
                 assert.ok(d5Count >= 7, 'Drill 5 must have 7 comparison cards');
@@ -208,6 +237,19 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues OFF toggle');
                     checks += 2;
                 }
+                // Verify Drill 4 Japanese degree adverbs preserved when OFF
+                const d4JaAdverbs = await page.locator('#drill4 .p81-degree-target .degree-adverb').evaluateAll(els =>
+                    els.map(el => ({
+                        text: el.textContent.trim(),
+                        isPositive: el.classList.contains('degree-positive'),
+                        isNegative: el.classList.contains('degree-negative')
+                    }))
+                );
+                assert.ok(d4JaAdverbs.length >= 5, 'Drill 4 must retain degree adverbs when OFF');
+                assert.ok(d4JaAdverbs[0].isNegative, 'Drill 4 zenzen must be negative when OFF');
+                assert.ok(d4JaAdverbs[1].isNegative, 'Drill 4 amari must be negative when OFF');
+                assert.ok(d4JaAdverbs[2].isPositive, 'Drill 4 chotto must be positive when OFF');
+                checks += 4;
                 const d5LayoutOff = await page.locator('#drill5').evaluate(group => {
                     return [...group.querySelectorAll('.p81-comparison-card')].map(card => {
                         const spacer = card.querySelector('.p81-drill-repeat-spacer');

@@ -112,8 +112,8 @@ W("totemo","とても","とても","totemo","very");
 W("sugoku","すごく","すごく","sugoku","very; really");
 W("maamaa","まぁまぁ","まぁまぁ","māmā","So-so");
 W("chotto","ちょっと","ちょっと","chotto","a little");
-W("amari","あまり","あまり","amari","not very (with a negative ending)");
-W("zenzen","ぜんぜん","ぜんぜん","zenzen","not at all (with a negative ending)");
+W("amari","あまり","あまり","amari","not very");
+W("zenzen","ぜんぜん","ぜんぜん","zenzen","not at all");
 W('japaneseTeacher','日本語の先生','にほんごのせんせい','nihongo no sensei','Japanese teacher');
 W('japanese','日本語','にほんご','nihongo','Japanese');
 const adjectives=['good','bad','strong','difficult'];
@@ -1017,7 +1017,20 @@ function buildCard(rows,index,si) {
             addSelect(cueBody,r,key);
             cueBody.append(document.createTextNode(englishCues?' / ':'／'));
             const target=node('span','p81-degree-target');
-            target.innerHTML=englishCues?`<span class="target-word">${escape(r.degreeLevel.adverb ? (words[r.degreeLevel.adverb]?.english||words[r.degreeLevel.adverb]?.meaning) : (words[r.degreeLevel.adjective]?.english||words[r.degreeLevel.adjective]?.meaning))}</span>`:degreePhraseHTML(r.degreeLevel);
+            if(englishCues){
+                if(r.degreeLevel.adverb){
+                    const adv=r.degreeLevel.adverb;
+                    const eng=escape(words[adv]?.english||words[adv]?.meaning||adv);
+                    const tone=['amari','zenzen'].includes(adv)?'negative':'positive';
+                    target.innerHTML=`<span class="target-word"><strong class="degree-adverb degree-${tone}">${eng}</strong></span>`;
+                }else{
+                    const adj=r.degreeLevel.adjective;
+                    const eng=escape(words[adj]?.english||words[adj]?.meaning||adj);
+                    target.innerHTML=`<span class="target-word">${eng}</span>`;
+                }
+            }else{
+                target.innerHTML=degreePhraseHTML(r.degreeLevel);
+            }
             cueBody.append(target);
             if(r.adverb){
                 cueBody.append(document.createTextNode(englishCues?' / ':'／'));

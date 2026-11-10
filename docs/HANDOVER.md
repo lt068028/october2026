@@ -6,33 +6,33 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T09:15:00+01:00
+- **最終更新日時**：2026-11-10T09:20:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Practice 8.1 Drill 4・Drill 5 表示統一
+- **課題**：Practice 8.1 Drill 4 英語キュー意味色継承・仕様書更新
 - **変更内容**：
-  1. **Drill 4 Select 表示統一**：
-     - 未選択プレースホルダーを `Select` に統一（`— Select —` から変更、装飾アイコン・記号なし）。
-     - ネイティブ `select` および `base-select` の表示テキスト・選択肢一覧の文字を左揃え（`text-align: left; text-align-last: left;`）に統一（未選択時の中央揃えを撤去）。
-     - 英語選択肢および英語ホバー説明（ツールチップ）をすべて小文字開始に統一（`wash dishes`, `throw things away`, `use a smartphone`, `cut hair`, `carry a bag`, `start studying`）。
-     - `base-select` のアプリ独自チェックマーク（`option::checkmark`）を撤去（`display: none;`）し、選択肢文字を左端から整列。
-     - 内部値（`option.value`）、活動排他、録音、正誤判定は完全維持。
-  2. **Drill 5 英語キューの修正**：
-     - English Cues ON 時の Drill 5 表示キューから `to` を撤去（設問3: `clean`、設問4: `cook`）。
-     - 他Drill（Drill 1〜4）、共通語彙辞書、日本語表示、解答判定、課題固有プレースホルダー `Adj` は完全維持。
-     - Commit `9949c4a` の `Adj`・`〃` 整列修正が正常に保持されることを確認。
-  3. **共通ルール記録・テスト更新**：
-     - `docs/UI_LAYOUT_SPEC.md`（Section F7）および `docs/PROJECT_SPEC.md` に今後の共通表示ルールを記録（全ページへの一括適用は行わず今回対象のみ適用）。
-     - `tests/english-cues-expansion.cjs` および `tests/practice81-activity-select.cjs` のテスト期待値を小文字表記・`Select` プレースホルダー・`clean`/`cook` に更新。
+  1. **英語説明の短縮**：
+     - Practice 8.1 の語彙定義にて、`amari` を `not very`、`zenzen` を `not at all` に短縮し、不要な括弧補足 `(with a negative ending)` を撤去。
+     - 他ページの語彙定義や Example 4・日本語キューの表示は不変。
+  2. **Drill 4 英語キューの意味色・太字継承**：
+     - English Cues ON 時の Drill 4 において、程度副詞キューに肯定色（`degree-positive`、`very`, `very; really`, `So-so`, `a little`）および否定色（`degree-negative`、`not very`, `not at all`）と太字（`degree-adverb`、`font-weight: 700`）を継承適用。
+     - 既存の共通変数 `--semantic-positive-color` / `--semantic-negative-color`（およびエイリアス `--degree-positive-color` / `--degree-negative-color`）を使用し、新規固定色・専用配色は追加せず。
+     - 区切り記号 `/`、Select、形容詞（`dislike`）、本文、他ドリルには色を広げず、English Cues OFF 時の日本語副詞色・Example 4 も完全維持。
+  3. **共通仕様書の更新**：
+     - `docs/PROJECT_SPEC.md` の English Cues 共通実装原則に「English Cuesの意味色継承（2026-11-10確定）」を追加記録。
+     - `docs/UI_LAYOUT_SPEC.md` の程度副詞規定に Practice 8.1 Drill 4 の English Cues 意味色継承・括弧説明撤去の規則を追加記録。
+  4. **テスト更新**：
+     - `tests/english-cues-expansion.cjs` に Drill 4 の程度副詞英語キューに対する意味色・太字・括弧なしテキストのアサーション、および OFF 復元時の日本語副詞色維持アサーションを追加。
 - **検証結果**：
-  - `git diff --check` にて全変更の構文・空白整合性を確認済み。
-  - 静的構文・アサーション検証にすべて合格。
+  - `git diff --check` にて構文・空白不備なし。
+  - 静的アサーション・CSS適合検証合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Practice 8.1**：Drill 4 の English Cues ON 時における程度副詞の意味色（青/赤）・太字表示、および `not very` / `not at all` に不要な括弧説明がないことのユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の `Select` プレースホルダー・左揃え・小文字英語選択肢・チェックマーク撤去、および Drill 5 の `clean` / `cook` 表示のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのボタンドイツ語表記（`🔊 Anhören`, `⏺️ Aufnehmen`, `↩️ Zurück`）および Autoplay OFF ホバー（`Choose what and when to play.`）の確認待ち。
 - [ ] **Practice 8.1**：Drill 5 の English Cues ON／OFF 時における `Adj`（形容詞セレクト）と `〃`（同上符）の水平整列・表示位置のユーザー実機ブラウザ確認待ち。
@@ -70,6 +70,7 @@
 - **HANDOVER更新ルール**：各リレー完了時は「直近の完了作業」を更新し、直近履歴（最大3〜5件）へスライドさせる。目標サイズ（100〜150行程度）を維持し、過去ログは定期的にアーカイブへ退避する。
 
 ## 7. 直近の完了履歴
+- 2026-11-10: Practice 8.1 Drill 4・Drill 5 表示統一（Commit `31c70d4`）
 - 2026-11-10: Deutsch Übung 1.1 3段階判定（別解許容・不一致赤字・保留👣・重複ボタン撤去）試験実装
 - 2026-11-10: English Cues未対応ページ（Practice 1.2, 8.1, 8.3）一括実装・統合テストPASS（Commit `ae60a87`）
 - 2026-11-09: W7 Practice 7.2 音声排他制御の回帰テスト追加・全件PASS（Commit `97b8d2d`）
