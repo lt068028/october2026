@@ -1542,12 +1542,12 @@ function practice2ShowNotice(resultSpan, message) {
         // The phone is introduced in Example 2; the two Drill sets cover dictionary and wallet.
         const targets=[[1,2],[2,0]][s3];
         targets.forEach((target,i)=>{
-            const o=choices[target],current=card(d3,String(i+1)),asking=s3===0?'A':i===0?'A':'B',answering=s3===0?'B':i===0?'B':'A';
+            const o=choices[target],current=card(d3,String(i+1)),asking=i===0?'A':'B',answering=i===0?'B':'A';
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
             const owner=s3===0?(i===0?'B':'A'):answering;
             const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
             const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}/どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'),true,true);
-            const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
+            const cue=node('span','p21-d3-answer-cue');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
             const color=node('span','p21-color-cue',({red:'🔴',blue:'🔵',green:'🟢'})[o.colorName]);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];

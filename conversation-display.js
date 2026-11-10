@@ -14,7 +14,7 @@ window.ConversationDisplay = (() => {
             if(!e.dataset.person)e.dataset.person=({A:'A',B:'B',far:'C'})[e.closest('[data-zone]')?.dataset.zone];
             e.classList.add('conversation-person');e.dataset.conversationImage='true';
         });
-        const selectors='.p21-speaker-practice .drill-number-cell,.p2x-dialogue-example > p > strong,.example-label-title,.drill-cue-cell > strong,.prompt-label > strong,.p21-model-line > strong,.p21-which-model-line > strong,.p23-model-speaker,.p2x-speaker-group > h3';
+        const selectors='.p21-speaker-practice .drill-number-cell,.p2x-dialogue-example > p > strong,.example-label-title,.drill-cue-cell > strong,.p21-d3-answer-cue > strong,.prompt-label > strong,.p21-model-line > strong,.p21-which-model-line > strong,.p23-model-speaker,.p2x-speaker-group > h3';
         document.querySelectorAll(selectors).forEach(label=>{
             if(label.dataset.conversationLabel||label.classList.contains('conversation-role')||label.classList.contains('conversation-person')||label.closest('[data-conversation-image]'))return;
             const text=label.textContent.trim();
