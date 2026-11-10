@@ -1670,8 +1670,15 @@ function practice2ShowNotice(resultSpan, message) {
         const detached = { body: document.createElement("tbody"), number: "" };
         recordingRow(detached, "a", "", key, getText, enabled, false);
         const replacement = detached.body.lastElementChild.lastElementChild;
+        // The old recording view is no longer attached. Preserve its saved
+        // result/audio URL, but do not keep references to detached controls.
+        for (const [viewKey, view] of Object.entries(practice2State.views || {})) {
+            if (view.recordBtn && previousCell.contains(view.recordBtn)) {
+                delete practice2State.views[viewKey];
+            }
+        }
         previousCell.replaceWith(replacement);
-        // Remove stale view references; recordings and saved results remain keyed.
+        practice2SyncRecordingUI();
         return replacement;
     }
 
