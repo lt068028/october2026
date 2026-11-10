@@ -6,32 +6,36 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T08:20:00+01:00
+- **最終更新日時**：2026-11-10T08:35:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：English Cues — Select英語化2件の実装・検証
+- **課題**：German Übung 1.1 ホバー説明（基本操作・設定・判定保留の英語ホバー設置・整理）
 - **変更内容**：
-  1. **Practice 1.2 Drill 2（専攻選択の英語化）**：
-     - 表示フォーマッタ `formatMajorOption(major, useEnglish)` を導入し、English Cues ON 時に `major.meaning`（`economics`, `politics`, `history` 等）を表示。OFF 時は従来の日本語（`word(major.word, major.kanji)`）を表示。
-     - `option.value` は内部識別子（`major.word`）を保持し、English Cues 切替時も選択状態、録音、モデル文、判定を完全保護。
-     - プレースホルダーから絵文字（📋）を撤去し、`Select` に更新。
-  2. **Practice 8.1 Drill 4（Activity選択の英語化）**：
-     - 既存の `actionText()` は変更せず、英語表示専用関数 `actionEnglishText(a)` を追加。
-     - 既存の `words` 辞書および `activityMeanings` マッピングを優先活用し、自然な英語ラベル（`Wash dishes`, `Throw things away`, `Use a smartphone`, `Cut hair`, `Carry a bag`, `Start studying`）を表示。
-     - `addSelect` および `enhanceActivitySelects` において、`base-select` と通常のネイティブ select の双方で English Cues ON 時に英語ラベルを安定表示。
-     - `option.value` は内部識別子（`actionId`）を維持し、Activity選択状態・録音結果を完全保護。
-  3. **自動テスト拡充（`tests/english-cues-expansion.cjs`）**：
-     - Practice 1.2 Drill 2 のプレースホルダー（`Select`）、初期日本語表示、English Cues ON 時の英語表示（`economics`）、およびトグル往復時の選択値保持を検証。
-     - Practice 8.1 Drill 4 の初期日本語表示、English Cues ON 時の英語表示（`Wash dishes`）、およびトグル往復時の選択値保持を検証。
+  1. **基本操作ボタンホバーの限定設置（Example 1 & Drill 1 設問1 のみ）**：
+     - Example 1 の 🔊 に `Listen to the example.` を設置（Example 2〜4 には非配置）。
+     - Drill 1 設問1 の 🔊 に `Listen to the model answer.`、🎙️ に `Record your answer.` を設置。
+     - Drill 1 設問1 の ⏹️ に、現在の Autostop 設定に応じて異なる説明（ON: `No need to press. Autostop is ON.` / OFF: `Stop recording.`）を動的表示（設定切替時に追従）。
+     - Drill 1 設問2以降および Drill 2〜4 には基本操作ホバーを配置しない（全設問への展開禁止を厳格に順守）。
+  2. **設定ホバーの整理・別行表示（Autostop & Autoplay）**：
+     - Autostop：`ON: Recording stops automatically.` と `OFF: Stop recording manually.` を `<span class="tip-line">` によりブラウザ実画面で確実に別行表示。
+     - Autoplay：`ON: After recording, the model audio and your recording play automatically.` と `OFF: Play them manually.` を `<span class="tip-line">` により確実に別行表示。
+  3. **判定保留（👣）のホバー設置**：
+     - `undetermined` 判定時に表示される 👣 に `Could not be evaluated reliably.` を表示する `.custom-tip-wrap` を設置。判定条件・フィードバックUIは不変。
+  4. **共通ツールチップ制御（`tooltip-layout.js`）の保護**：
+     - `applyListenPolicy()` において `.uebung11-page` を除外対象として保護し、初学者用の4ホバーが削除されないよう適正化。
+  5. **仕様書および回帰テスト**：
+     - `docs/GERMAN_DRILL_SPEC.md`（Section 2.3, 3.2, 3.3）を改定。
+     - `tests/uebung11.cjs` に Section 8（ホバー・ツールチップ契約テスト）を追加。
 - **検証結果**：
   - `git diff --check` にて全変更の構文・空白整合性を確認済み。
   - 静的構文・アサーション検証にすべて合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの英語ホバー表示（Example 1 / Drill 1 設問1、Autostop動的切替、設定の別行表示、👣ホバー）の確認待ち。
 - [ ] **Practice 1.2 & 8.1**：ユーザー実機ブラウザでの Select 英語化（Drill 2 専攻選択、Drill 4 Activity選択）および English Cues トグル時の選択状態・録音保持の動作確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの3段階判定（別解受容、不一致箇所の赤字表示、保留判定 👣、🔥 Keep going!、重複きくボタン撤去）の動作確認待ち。
 - [ ] **Practice 1.2, 8.1, 8.3**：ユーザー実機ブラウザでのEnglish Cuesトグル動作、英語・日本語表示切替、およびスムーススクロール動作の確認待ち。

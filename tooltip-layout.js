@@ -5,6 +5,7 @@
     function applyListenPolicy() {
         observer.disconnect();
         document.querySelectorAll('button .custom-tip-box').forEach(tip => {
+            if (tip.closest('.uebung11-page')) return;
             if (/^(Listen\b|Record\b|Stop\b|Play your recorded voice|Affirmative response|Negative response)/i.test(tip.textContent.trim())) {
                 const button = tip.closest('button');
                 tip.remove();

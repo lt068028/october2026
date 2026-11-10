@@ -4979,6 +4979,24 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     }
 }
 
+/* Deutsche Übung 1.1: Settings and status tooltips */
+.uebung11-page .settings-onoff .custom-tip-box {
+    text-align: left;
+    white-space: normal;
+    line-height: 1.4;
+    min-width: 220px;
+}
+.uebung11-page .settings-onoff .custom-tip-box .tip-line {
+    display: block;
+}
+.uebung11-page .settings-onoff .custom-tip-box .tip-line + .tip-line {
+    margin-top: 3px;
+}
+.uebung11-page .undetermined-footprint {
+    cursor: help;
+    display: inline-block;
+}
+
 /* =========================================================
    Practice 7.3 & Practice 8.1: Copy my sentences
    ========================================================= */

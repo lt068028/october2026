@@ -50,7 +50,13 @@
   - **Vocabulary Display**（`#hintModeControl`）：語彙ヒント切替（`off` / `hover` / `paren`）
 - **Row 2**（`.settings-auto-row`）：
   - **Autostop Switch**（`#toggleRecordMode`, `#labelAutoRecord`）：自動録音停止（既定: ON）
+    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
+      - `ON:` Recording stops automatically.
+      - `OFF:` Stop recording manually.
   - **Autoplay Switch**（`#togglePlaybackMode`, `#labelAutoPlay`）：モデル・録音リレー再生（既定: ON）
+    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
+      - `ON:` After recording, the model audio and your recording play automatically.
+      - `OFF:` Play them manually.
 
 ### 2.4 メインコンテナとフッター 【実装済み】
 - **メイン領域**: `<main id="drillsContainer"></main>`（JavaScriptにより動的レンダリング）
@@ -82,7 +88,7 @@
   - テーブル（`table.drill-example-table`、`recording-table` とは分離して4列Gridでレイアウト）。
   - **Col 1 (Cue)**: `span.cue-content`（`formatCue()` によるヒント展開。ユーザー未指定の「Ex: 」項目名は配置せず、ホバー時は `.tooltip-wrap` / `.target-word` / `.tooltip-tip` により日本語Practiceと同様の点線下線を表示）。
   - **Col 2 (Arrow)**: `td.example-arrow-cell` ("👉️", 幅 28px, 中央寄せ)
-  - **Col 3 (Audio)**: `button("🔊きく", "Listen to the model sentence.", ...)`（幅に余裕がある場合は 👉️ と同列に配置）
+  - **Col 3 (Audio)**: `button("🔊きく", ...)`（Example 1 のみホバー説明 `Listen to the example.` を配置。Example 2以降には配置しない）
   - **Col 4 (Model)**: `span.model-text`（`highlightGrammar()` による文法強調。音声ボタンとの重なりを防止）
 - **レスポンシブ契約**:
   - 広幅時: [キュー] [👉️] [🔊きく] [モデル文] を同一行・8px列間隔で整列。
@@ -96,15 +102,18 @@
   - **Col 2 (Cue)**: `td.drill-cue-cell` ＋ `span.cue-content`（ホバー時は `.tooltip-wrap` / `.target-word` により点線下線を表示。Drills 1〜4では実測自然幅に基づく `--drill-cue-width` により不要な余白を排除）
   - **Col 3 (Controls & Result)**:
     - 操作ボタン群（`.recording-actions`）:
-      - モデル聴取ボタン：`🔊きく`（推奨モデルを発話）
-      - 録音ボタン：`🎙️とる`（録音開始）
-      - 停止ボタン：`⏹️`（録音中のみ活性化）
+      - 基本操作ホバー（初学者案内）：**Example 1 と Drill 1 の設問 1 だけに限定設置**（Drill 1 設問2以降および Drill 2〜4 には基本操作ホバーを配置しない）。
+        - モデル聴取ボタン：`🔊きく`（Drill 1 設問1のみホバー `Listen to the model answer.`）
+        - 録音ボタン：`🎙️とる`（Drill 1 設問1のみホバー `Record your answer.`）
+        - 停止ボタン：`⏹️`（Drill 1 設問1のみ現在のAutostop設定に応じて動的切替）
+          - Autostop ON: `No need to press. Autostop is ON.`
+          - Autostop OFF (Manual Stop): `Stop recording.`
     - 結果表示（`.recording-result`）:
       - 未録音時：`span.result-text.not-recorded-yet` ("… Not yet")
       - 録音後（3段階判定）：
         - `accepted`: 生テキスト ＋ ` ✅`（選択外地域の許容文発話時は補足バッジを付与）
         - `mismatch`: 生テキストのうち不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示（❌マークは付与しない）
-        - `undetermined`: 生テキスト ＋ ` 👣`（✅も❌も🔥 Keep going!も赤字も表示しない）
+        - `undetermined`: 生テキスト ＋ ` 👣`（ホバー時に `Could not be evaluated reliably.` を表示。✅も❌も🔥 Keep going!も赤字も表示しない）
         - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
     - 訂正ガイダンス（`.correction-box`、`mismatch` 時のみ表示）:
       - 文言：`🔥 Keep going!` のみを表示する（重複する `🔊きく` ボタン、`Try once more!`、モデル文の自動開示 `→ [モデル文]` は表示しない。モデル音声の確認は操作ボタン群の `🔊きく` を使用する）。

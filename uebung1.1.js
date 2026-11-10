@@ -532,6 +532,14 @@ function initGermanDrill() {
     const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
     let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
 
+    let drill1FirstStopTipBox = null;
+    function updateFirstStopTip() {
+        if (!drill1FirstStopTipBox) return;
+        drill1FirstStopTipBox.textContent = manual
+            ? "Stop recording."
+            : "No need to press. Autostop is ON.";
+    }
+
     // -------------------------------------------------------------
     // 3. Helper Functions
     // -------------------------------------------------------------
@@ -547,14 +555,15 @@ function initGermanDrill() {
     }
 
     function button(label, tip, click) {
-        const b = node("button", "example-button custom-tip-wrap");
+        const hasTip = Boolean(tip);
+        const b = node("button", "example-button" + (hasTip ? " custom-tip-wrap" : ""));
         b.type = "button";
         if (typeof label === "string") {
             b.append(document.createTextNode(label));
         } else if (label instanceof Node) {
             b.append(label);
         }
-        if (tip) {
+        if (hasTip) {
             b.append(node("span", "custom-tip-box", tip));
         }
         b.onclick = () => {
@@ -1347,7 +1356,9 @@ function initGermanDrill() {
                 const corrText = node("span", "", "🔥 Keep going!");
                 v.correction.append(corrText);
             } else if (judgment === "undetermined") {
-                v.result.append(document.createTextNode(val.raw + " 👣"));
+                const footWrap = node("span", "custom-tip-wrap undetermined-footprint", " 👣");
+                footWrap.append(node("span", "custom-tip-box", "Could not be evaluated reliably."));
+                v.result.append(document.createTextNode(val.raw), footWrap);
                 v.correction.hidden = true;
             }
         } else {
@@ -1519,7 +1530,8 @@ function initGermanDrill() {
             // Listen button
             const exAudioTd = node("td", "example-audio-cell");
             const exModelSentence = getModel(drill.example, currentVariety);
-            const exListenBtn = button("🔊きく", "Listen to the model sentence.", () => {
+            const exListenTip = drill.number === 1 ? "Listen to the example." : "";
+            const exListenBtn = button("🔊きく", exListenTip, () => {
                 speakModel(getModel(drill.example, currentVariety), exListenBtn);
             });
             exAudioTd.append(exListenBtn);
@@ -1563,19 +1575,30 @@ function initGermanDrill() {
                 const layout = node("div", "recording-controls");
                 const actions = node("div", "recording-actions");
 
-                const listenBtn = button("🔊きく", "Listen to the recommended model.", () => {
+                const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
+
+                const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
+                const listenBtn = button("🔊きく", listenTip, () => {
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
 
-                const recBtn = button("🎙️とる", "Record your sentence.", () => {
+                const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
+                const recBtn = button("🎙️とる", recTip, () => {
                     record(item.id, item);
                 });
 
-                const stopBtn = button("⏹️", "Stop active recording.", () => {
+                let stopTip = "";
+                if (isFirstItemOfDrill1) {
+                    stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
+                }
+                const stopBtn = button("⏹️", stopTip, () => {
                     if (session?.key === item.id) session.stop();
                 });
                 stopBtn.dataset.stop = "true";
                 stopBtn.disabled = true;
+                if (isFirstItemOfDrill1) {
+                    drill1FirstStopTipBox = stopBtn.querySelector(".custom-tip-box");
+                }
 
                 actions.append(listenBtn, recBtn, stopBtn);
 
@@ -1661,6 +1684,7 @@ function initGermanDrill() {
         autoRecInput.addEventListener("change", () => {
             manual = !autoRecInput.checked;
             autoRecLabel?.classList.toggle("active-mode", autoRecInput.checked);
+            updateFirstStopTip();
         });
     }
 

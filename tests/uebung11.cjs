@@ -235,4 +235,42 @@ assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(css.includes('.result-incorrect'), 'CSS must style .result-incorrect');
 
-console.log('PASS: All structural, contract, and 3-stage evaluation tests passed successfully.');
+// 8. Introductory Hover & Status Tooltip Contracts
+console.log('Testing Deutsche Übung 1.1 hover and tooltip contracts...');
+
+// 8.1 Autostop & Autoplay multi-line setting tooltips in HTML
+assert.ok(html.includes('Recording stops automatically.'), 'Autostop must have Recording stops automatically.');
+assert.ok(html.includes('Stop recording manually.'), 'Autostop must have Stop recording manually.');
+assert.ok(html.includes('tip-line"><strong>ON:</strong> Recording stops automatically.</span>'), 'Autostop ON must be wrapped in separate line');
+assert.ok(html.includes('tip-line"><strong>OFF:</strong> Stop recording manually.</span>'), 'Autostop OFF must be wrapped in separate line');
+
+assert.ok(html.includes('After recording, the model audio and your recording play automatically.'), 'Autoplay must have model + recording play automatically copy');
+assert.ok(html.includes('Play them manually.'), 'Autoplay must have Play them manually copy');
+assert.ok(html.includes('tip-line"><strong>ON:</strong> After recording, the model audio and your recording play automatically.</span>'), 'Autoplay ON must be wrapped in separate line');
+assert.ok(html.includes('tip-line"><strong>OFF:</strong> Play them manually.</span>'), 'Autoplay OFF must be wrapped in separate line');
+
+// 8.2 Basic operation button hovers restricted to Example 1 and Drill 1 Item 1 only
+assert.ok(js.includes('Listen to the example.'), 'Must include Listen to the example. for Example 1');
+assert.ok(js.includes('drill.number === 1 ? "Listen to the example." : ""'), 'Example tooltip must be restricted to Example 1 only');
+
+assert.ok(js.includes('Listen to the model answer.'), 'Must include Listen to the model answer. for Drill 1 Item 1');
+assert.ok(js.includes('Record your answer.'), 'Must include Record your answer. for Drill 1 Item 1');
+assert.ok(js.includes('No need to press. Autostop is ON.'), 'Must include No need to press. Autostop is ON.');
+assert.ok(js.includes('Stop recording.'), 'Must include Stop recording.');
+assert.ok(js.includes('isFirstItemOfDrill1'), 'Must conditionally check first item of Drill 1');
+assert.ok(js.includes('updateFirstStopTip'), 'Must dynamically update stop tooltip on Autostop toggle');
+
+// 8.3 Undetermined (👣) tooltip
+assert.ok(js.includes('Could not be evaluated reliably.'), 'Must include Could not be evaluated reliably. tooltip on 👣');
+assert.ok(js.includes('undetermined-footprint'), 'Must wrap 👣 in undetermined-footprint');
+
+// 8.4 CSS styling for multi-line and status tooltips
+assert.ok(css.includes('.uebung11-page .settings-onoff .custom-tip-box'), 'CSS must format settings tooltips');
+assert.ok(css.includes('.uebung11-page .settings-onoff .custom-tip-box .tip-line'), 'CSS must format tip-line blocks');
+assert.ok(css.includes('.uebung11-page .undetermined-footprint'), 'CSS must format undetermined-footprint');
+
+// 8.5 tooltip-layout.js preserves .uebung11-page introductory tooltips
+const tooltipLayoutJs = fs.readFileSync(path.join(root, 'tooltip-layout.js'), 'utf8');
+assert.ok(tooltipLayoutJs.includes('.uebung11-page'), 'tooltip-layout.js must preserve .uebung11-page tooltips');
+
+console.log('PASS: All structural, contract, 3-stage evaluation, and hover tooltip tests passed successfully.');
