@@ -6,36 +6,34 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T10:05:00+01:00
+- **最終更新日時**：2026-11-10T10:20:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Practice 7.1 Drill 2 Yes/No選択遅延の局所修正
+- **課題**：全11ページのスラッシュ表示仕様統一（Phase 1〜4 完了）
 - **変更内容**：
-  1. **Yes/No選択処理の局所化**：
-     - `practice7.1.js` において、Drill 2 の Yes/No 選択クリック時にページ全体の `renderAll()` を呼び出す従来の構造を排除。
-     - 選択行の `answerCell`（回答操作セル）のみを `populateRecordingCell` で局所更新する方式に置き換え。
-     - `aria-pressed` および `.is-selected` クラスを選択されたボタンへ即時同期反映し、反対側のボタンの選択を即時解除。
-     - 同一ボタンの連続クリック時はDOM再構築をスキップして即座にリターン。
-  2. **影響範囲の極小化と安全性確保**：
-     - Drill 1（14問）、Example 2、Drill 2 の他設問（4問）、Copy エリアの DOM を一切破棄・再生成しない。
-     - 17回以上実行されていた同期レイアウト測定（`getBoundingClientRect()`）および `ConversationDisplay.format()` の多重呼び出しを完全排除。
-     - YesとNoの回答別録音データ（`savedResults`, `audioUrls`）の分離・保持、切替時の結果・再生ボタン復元を完全維持。
-     - `DrillAudio` による既存の音声排他制御および録音中の操作ロック（`blocked()` ガード）を維持。
-  3. **回帰テスト・CIワークフロー追加**：
-     - `tests/practice71-answer-selection.cjs` を新規作成（Yes/No切替、不変性検証、録音保持、スクリプト切替、レスポンシブ検証）。
-     - `.github/workflows/test.yml`（Group 4）にテストを登録。
-     - `tests/README.md` にテスト説明を追加。
+  1. **スラッシュキュー区切りの共通規則確定と全11ページ適用**：
+     - **半角スラッシュ統一**：全11ページで全角 `／` を半角 `/` に統一。
+     - **日本語キュー**：各ページ・各セクションの既存スペース規則を維持（スペースなし `父/母`、スペースあり `父 / 母` をそのまま保持し、追加・削除しない）。
+     - **英語キュー**：必ず半角スペース付き `" / "`（`word / word`）に統一。複数語の語句内スペース（`older brother / student` 等）を完全保持。
+     - **Vocab Display**：既存のスラッシュ非表示動作（`display-cue-unit`）を完全維持。
+     - **タイトル・説明文・除算・語彙訳の保護**：教材タイトル、解説文、数式・除算（`sum / length`）、語彙定義英訳（`near / close`）等は変更から除外。
+  2. **段階的適用（Phase 1〜4）**：
+     - **Phase 1**（Commit `d7ed145`）：Practice 1.2（先行試験仕様を改定し、英語 `" / "` へ統一、テスト期待値更新）。
+     - **Phase 2**（Commit `6e3f83a`）：低リスク4ページ（Practice 1.1, 7.3, 8.2, 8.3）。
+     - **Phase 3**（Commit `e1dc82a`）：中リスク4ページ（Practice 2.1, 2.2, 7.1, 7.2、`display-cue-lines.cjs` および `practice22-qa.cjs` のテスト期待値更新）。
+     - **Phase 4**（Commit `145087d`）：高リスク2ページ（Practice 2.3, 8.1、`practice8.1.js` の `indexOf('／')` 測定処理の半角対応、`tests/practice23-cities.cjs` および `tests/practice81.cjs` のテスト期待値更新）。
+  3. **仕様書更新**：
+     - `docs/UI_LAYOUT_SPEC.md`（F8）および `docs/PROJECT_SPEC.md` に全11ページの標準仕様として正式登録。
 - **検証結果**：
   - `git diff --check` にて空白・構文不備なし。
-  - 静的コード検証および bracket balance 確認完了。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **全11ページ**：新仕様である半角スラッシュキュー表示（日本語 `父/母` または `父 / 母`、英語 `word / word`）および 375px／600px／1440px での表示・視認性・折り返しのユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 7.1**：Drill 2 の Yes/No 選択時の即時色反映（遅延解消）、モデル文・録音ボタンの即時切替、および回答別録音結果の保持のユーザー実機ブラウザ確認待ち。
-- [ ] **Practice 1.2**：先行試験である半角スラッシュ・スペースなしキュー表示（日本語 `父/母`、英語 `father/mother` 等）および 375px／600px／1440px での折り返し・視認性のユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の English Cues ON 時における程度副詞の意味色（青/赤）・太字表示、および `not very` / `not at all` に不要な括弧説明がないことのユーザー実機ブラウザ確認待ち。
 - [ ] **Practice 8.1**：Drill 4 の `Select` プレースホルダー・左揃え・小文字英語選択肢・チェックマーク撤去、および Drill 5 の `clean` / `cook` 表示のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのボタンドイツ語表記（`🔊 Anhören`, `⏺️ Aufnehmen`, `↩️ Zurück`）および Autoplay OFF ホバー（`Choose what and when to play.`）の確認待ち。

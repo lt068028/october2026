@@ -124,7 +124,7 @@
 
 > **8.1 D4英語キュー意味色継承と英語説明短縮（2026-11-10確定）**：Drill 4のEnglish Cues ON時、程度副詞キューに肯定色（very, very; really, So-so, a little: `degree-positive`）および否定色（not very, not at all: `degree-negative`）と太字（`degree-adverb`）を継承。英語語彙定義の不要な括弧補足を撤去（`not very`, `not at all`）。区切り記号・Select・形容詞・本文等へは色を広げず、日本語キューおよびExample 4の既存色・表示を維持。
 
-> **Practice 1.2 スラッシュ半角化試験（2026-11-10試験）**：Practice 1.2限定でキュー区切りを半角スラッシュ `/`・前後スペースなしに統一（日本語 `父/母`、英語 `father/mother`、複数語 `older brother/student`）。他ページ展開はせず先行試験として検証。既存の全ページ共通規則は未変更。
+> **全11ページ スラッシュキュー区切り表示統一（2026-11-10確定）**：全11ページ（Practice 1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）でキュー区切りを半角スラッシュ `/` に統一。日本語は従来のスペース規則を維持（`父/母` または `父 / 母`）、英語は前後半角スペースあり（`older brother / student`）に統一。Vocab Display時の非表示動作および語句内スペースは保持。1.2先行試験仕様（日英ともスペースなし）は本仕様に改定。
 
 > **Practice 8.2現行構成（2026-11-04）**：Example 4件・Drill 4件。E1/D1は何か質問、E2/D2は何を vs 何かの4組、E3/D3は何か／何もを使う5組のYes/No会話、E4/D4は何でもを使う習慣・種類の3組。D4は[Sneak Peek] 何でも — Unlimited Choice（当該Lessonの教科書範囲外の補足練習で、L15の正式導入を意味しない）。モデル文とTTSに文節単位の読点を適用。共通設定・共通Q/A役割表示・Y/N選択・録音／0秒リレー／STT原文保持を継承。詳細・許容回答は[PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)。
 
