@@ -286,7 +286,7 @@ function cues(r,isDrill=false){
   if(!found)return escape(scriptMode==='kanji'?id:displayKana(id));
   const value=word(found,scriptMode==='kanji'?id:displayKana(id));
   return hintMode==='paren'?'<span class="display-cue-unit">'+value+'</span>':value;
- }).join(hintMode==='paren'?'':'／');
+ }).join(hintMode==='paren'?'':'/');
 }
 function modelHTML(r){
  const text=scriptMode==='kanji'?r.text:r.hira;

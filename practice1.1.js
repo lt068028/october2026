@@ -711,7 +711,7 @@ function renderExampleSection() {
                 <span class="example-label-title p11-concept-badge">
                     🟢 Affirmative
                 </span>
-                ${x}${hintMode === "paren" ? "" : " ／ "}${student}
+                ${x}${hintMode === "paren" ? "" : " / "}${student}
                 <span>👉</span>
                 <button
                     type="button"
@@ -728,7 +728,7 @@ function renderExampleSection() {
                 <span class="example-label-title p11-concept-badge">
                     🔴 Negative
                 </span>
-                ${x}${hintMode === "paren" ? "" : " ／ "}${teacher}
+                ${x}${hintMode === "paren" ? "" : " / "}${teacher}
                 <span>👉</span>
                 <button
                     type="button"
@@ -1560,7 +1560,7 @@ function renderTask1() {
             );
 
             view.prompts.innerHTML =
-                formattedX + (hintMode === "paren" ? "" : " ／ ") + formattedY;
+                formattedX + (hintMode === "paren" ? "" : " / ") + formattedY;
         }
 
         refreshRow(view);

@@ -602,7 +602,8 @@ function word(key) {
 
 // Display trial: keep each Japanese cue and its vocabulary hint together on a line.
 function cueWords(keys) {
-    if (hintMode !== 'paren' || englishCues) return keys.map(word).join('／');
+    if (englishCues) return keys.map(word).join(' / ');
+    if (hintMode !== 'paren') return keys.map(word).join('/');
     return keys.map(key => `<span class="p73-display-cue-unit">${word(key)}</span>`).join('');
 }
 
