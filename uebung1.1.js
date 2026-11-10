@@ -548,6 +548,27 @@ function initGermanDrill() {
         return el;
     }
 
+    // Preview-only audio diagnostics: visible without developer tools.
+    function audioDiagnostic(message, error = false) {
+        let panel = document.getElementById("uebung11AudioDiagnostic");
+        if (!panel) {
+            panel = document.createElement("div");
+            panel.id = "uebung11AudioDiagnostic";
+            panel.setAttribute("role", "status");
+            panel.setAttribute("aria-live", "polite");
+            panel.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;max-width:650px;margin:auto;padding:12px 16px;border:2px solid #64748b;border-radius:8px;background:#fff;color:#111827;font:14px/1.5 Lato,sans-serif;box-shadow:0 4px 16px #0003;white-space:pre-wrap;";
+            document.body.append(panel);
+        }
+        panel.style.borderColor = error ? "#dc2626" : "#64748b";
+        panel.textContent = "Audio diagnosis (Preview): " + message;
+    }
+    window.addEventListener("error", event => {
+        audioDiagnostic("JavaScript error: " + (event.message || "unknown"), true);
+    });
+    window.addEventListener("unhandledrejection", event => {
+        audioDiagnostic("Async error: " + String(event.reason?.message || event.reason || "unknown"), true);
+    });
+
     function button(label, tip, click) {
         const hasTip = Boolean(tip);
         const b = node("button", "example-button" + (hasTip ? " custom-tip-wrap" : ""));
@@ -561,8 +582,22 @@ function initGermanDrill() {
             b.append(node("span", "custom-tip-box", tip));
         }
         b.onclick = () => {
-            if (DrillAudio.leaving) return;
-            click?.();
+            if (b.classList.contains("uebung-icon-button")) {
+                audioDiagnostic("Click received: " + (b.getAttribute("aria-label") || tip || "audio") + "; disabled=" + b.disabled);
+            }
+            if (DrillAudio.leaving) {
+                audioDiagnostic("Blocked: navigation in progress", true);
+                return;
+            }
+            try {
+                const result = click?.();
+                if (result && typeof result.catch === "function") {
+                    result.catch(error => audioDiagnostic("Handler rejected: " + String(error?.message || error), true));
+                }
+            } catch (error) {
+                audioDiagnostic("Handler failed: " + String(error?.message || error), true);
+                throw error;
+            }
         };
         return b;
     }
@@ -978,7 +1013,7 @@ function initGermanDrill() {
         activePlaybackToken = token;
         currentUtterance = u;
 
-        if (btn) markPlaying(btn);
+        if (btn) { markPlaying(btn); audioDiagnostic("Playback requested; waiting for browser audio"); }
 
         const handlePlaybackError = (errorEvent) => {
             if (token.startTimeoutTimer) {
@@ -1135,6 +1170,7 @@ function initGermanDrill() {
 
         stopAllPlayback();
         preparing = true;
+        audioDiagnostic("Microphone permission requested");
         sync();
 
         const v = views.get(key);
@@ -1146,6 +1182,7 @@ function initGermanDrill() {
         } catch (e) {
             preparing = false;
             sync();
+            audioDiagnostic("Microphone failed: " + String(e.name || "") + " " + String(e.message || ""), true);
             if (e.name === "AbortError") return;
             showResult(key, DrillAudio.microphoneError(e));
             return;
