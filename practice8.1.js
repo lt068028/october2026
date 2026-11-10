@@ -334,12 +334,12 @@ function cues(r,visibleIds,isDrill=false) {
     }
     if(r.joinedActionCue&&!visibleIds){
         const phrase=word(r.object)+escape(r.particle)+word(r.verb);
-        return word(r.subject)+(hintMode==='paren'?'':'／')+phrase;
+        return word(r.subject)+(hintMode==='paren'?'':'/')+phrase;
     }
     const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
     const wrap=html=>hintMode==='paren'?`<span class="display-cue-unit">${html}</span>`:html;
     const compound=!visibleIds&&r.compoundCue&&r.verb==='do'&&!r.noun&&compoundCueMeanings[r.object];
-    return ids.filter(id=>!compound||id!==r.verb).map(id=>wrap(word(id,false,Boolean(compound&&id===r.object)))).join(hintMode==='paren'?'':'／');
+    return ids.filter(id=>!compound||id!==r.verb).map(id=>wrap(word(id,false,Boolean(compound&&id===r.object)))).join(hintMode==='paren'?'':'/');
 }
 
 function modelHTML(r,repeatPrefix=false) {
@@ -893,7 +893,7 @@ function addSelect(cue,r,key) {
     if(r.selectKind==='comparison'){select.style.width='auto';select.style.minWidth='0';}
     select.value=isActivity?activity:r.selectKind==='comparison'?(r.quizChoice||''):r.pending?'':r.selectKind==='adverb'?r.adverb:r.adjective;
     if(r.selectKind==='adverb')select.classList.add('degree-adverb','degree-'+(['amari','zenzen'].includes(r.adverb)?'negative':'positive'));
-    if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('／'));
+    if(!isActivity&&['adverb','ability','comparison'].includes(r.selectKind)&&hintMode!=='paren')cue.append(document.createTextNode('/'));
     const hint=node('span','p81-selection-hint');
     const selectedActivity=isActivity?degreeActions.find(a=>a.actionId===activity):null;
     hint.textContent=hintMode==='off'?'':selectedActivity?[words[selectedActivity.object].romaji,words[selectedActivity.verb].romaji].join(' + ')+'; '+(activityMeanings[selectedActivity.actionId]||words[selectedActivity.verb].meaning):select.value?words[select.value].romaji+', '+words[select.value].meaning:isActivity?'':'Choose an expression first.';
@@ -935,14 +935,14 @@ function addExample(root,si) {
                 prefix.dataset.repeatAnchor='3';prefix.dataset.repeatStart=r.object;prefix.dataset.repeatEnd=r.verb;
                 prefix.innerHTML=cues(r,[r.object,r.verb]);
             }
-            if(hintMode!=='paren'&&!repeatPrefix)prefix.append(document.createTextNode('／'));
+            if(hintMode!=='paren'&&!repeatPrefix)prefix.append(document.createTextNode('/'));
             cue.append(prefix);
-            const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'／'+word('like'):'');cue.append(tail);
+            const tail=node('span','p81-degree-cue-tail');tail.innerHTML=degreePhraseHTML(r.degreeLevel)+(r.adverb?'/'+word('like'):'');cue.append(tail);
         }else if((si===2||si===4)&&index===1){
             cue.dataset.repeatCue=String(si);
             const spacer=node('span','p81-repeat-spacer');
             cue.append(spacer,node('span','p81-repeat-mark','〃'));
-            cue.append(node('span','p81-repeat-separator-spacer'));if(hintMode!=='paren')cue.append(document.createTextNode('／'));
+            cue.append(node('span','p81-repeat-separator-spacer'));if(hintMode!=='paren')cue.append(document.createTextNode('/'));
             const adjective=node('span','p81-repeat-adjective');adjective.innerHTML=word(r.adjective);cue.append(adjective);
         }else {
             cue.innerHTML=cues(r);
@@ -968,7 +968,7 @@ function addScale(root) {
         const point=node('div','p81-degree-point degree-'+sign);
         const mark=node('span','p81-degree-marks',marks);mark.setAttribute('aria-hidden','true');
         const label=node('span','p81-degree-label');
-        label.innerHTML=id==='totemo'?word('totemo')+'<span class="semantic-punctuation">／</span>'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<strong class="degree-negative">〜ない</strong>':'');
+        label.innerHTML=id==='totemo'?word('totemo')+'<span class="semantic-punctuation">/</span>'+word('sugoku'):word(id)+(['zenzen','amari'].includes(id)?'<strong class="degree-negative">〜ない</strong>':'');
         point.append(mark,label);scale.append(point);
     });
     root.append(scale);
@@ -1015,7 +1015,7 @@ function buildCard(rows,index,si) {
         const content=node('span','p81-cue-words');
         if(r.selectKind==='activity'){
             addSelect(cueBody,r,key);
-            cueBody.append(document.createTextNode(englishCues?' / ':'／'));
+            cueBody.append(document.createTextNode(englishCues?' / ':'/'));
             const target=node('span','p81-degree-target');
             if(englishCues){
                 if(r.degreeLevel.adverb){
@@ -1033,7 +1033,7 @@ function buildCard(rows,index,si) {
             }
             cueBody.append(target);
             if(r.adverb){
-                cueBody.append(document.createTextNode(englishCues?' / ':'／'));
+                cueBody.append(document.createTextNode(englishCues?' / ':'/'));
                 const adjective=node('span','p81-degree-target');
                 adjective.innerHTML=englishCues?`<span class="target-word">${escape(words.dislike.english||words.dislike.meaning)}</span>`:word('dislike');
                 cueBody.append(adjective);
@@ -1045,7 +1045,7 @@ function buildCard(rows,index,si) {
         }
         if(r.comparison)listen.classList.add('p81-cue-listen');
         if(r.selectKind==='adverb'){
-            cueBody.append(document.createTextNode(englishCues?' / ':(hintMode==='paren'?'':'／')));
+            cueBody.append(document.createTextNode(englishCues?' / ':(hintMode==='paren'?'':'/')));
             const tail=node('span',hintMode==='paren'?'display-cue-unit':'p81-adjective');
             tail.innerHTML=englishCues?`<span class="target-word">${escape(words[r.adjective]?.english||words[r.adjective]?.meaning||r.adjective)}</span>`:word(r.adjective);
             cueBody.append(tail);
@@ -1171,7 +1171,7 @@ function measureExampleCues() {
         while(adjectiveUnit&&adjectiveUnit.parentElement!==anchor)adjectiveUnit=adjectiveUnit.parentElement;
         const slash=adjectiveUnit?.previousSibling;
         if(slash?.nodeType!==Node.TEXT_NODE)return;
-        const slashIndex=slash.textContent.indexOf('／');if(slashIndex<0)return;
+        let slashIndex=slash.textContent.indexOf('/');if(slashIndex<0)slashIndex=slash.textContent.indexOf('／');if(slashIndex<0)return;
         const slashRange=document.createRange();slashRange.setStart(slash,slashIndex);slashRange.setEnd(slash,slashIndex+1);
         const slashX=slashRange.getBoundingClientRect().left,markRect=mark.getBoundingClientRect();
         separator.style.width=Math.max(0,slashX-markRect.right)+'px';

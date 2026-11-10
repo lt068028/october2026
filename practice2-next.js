@@ -1519,13 +1519,13 @@ function practice2ShowNotice(resultSpan, message) {
         list.classList.add('p23-conversation-models');
         const periodCue=o=>formatWord(o.periodHira,o.periodKanji,...{あさ:['asa','morning'],よる:['yoru','night'],ゆうがた:['yūgata','evening']}[o.periodHira]);
         const sentences=[
-            {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ／${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
-            {who:'A',role:'question',object:countries[1],cue:()=>'Yさん／どこ',text:()=>question('Yさん','どこ')},
+            {who:'A',object:countries[0],intro:()=>statement(word('わたし','私'),noun(countries[0])),cue:()=>`ここ/${periodCue(countries[0])}`,text:()=>statement('ここ',period(countries[0]))},
+            {who:'A',role:'question',object:countries[1],cue:()=>'Yさん/どこ',text:()=>question('Yさん','どこ')},
             {who:'B',role:'answer',object:countries[1],intro:()=>statement(word('わたし','私'),noun(countries[1]))},
-            {who:'B',label:'',object:countries[1],cue:()=>`ここ／${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
-            {who:'A',role:'question',object:countries[2],cue:()=>'Zさん／どこ',text:()=>question('Zさん','どこ')},
+            {who:'B',label:'',object:countries[1],cue:()=>`ここ/${periodCue(countries[1])}`,text:()=>statement('ここ',period(countries[1]))},
+            {who:'A',role:'question',object:countries[2],cue:()=>'Zさん/どこ',text:()=>question('Zさん','どこ')},
             {who:'B',role:'answer',object:countries[2],intro:()=>statement('Zさん',noun(countries[2]))},
-            {who:'B',label:'',object:countries[2],cue:()=>`あそこ／${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
+            {who:'B',label:'',object:countries[2],cue:()=>`あそこ/${periodCue(countries[2])}`,text:()=>statement('あそこ',period(countries[2]))}
         ];
         function exampleCueAudio({who,object:o,text}) {
             const audio=node('span','p23-example-audio'),b=listen(()=>{selectEx(who,o.zone);return text();},'🔊きく',()=>selectEx.announce(who));
@@ -1632,9 +1632,9 @@ function practice2ShowNotice(resultSpan, message) {
             const answer=()=>whereSet===2?response(wrongReply,false)+short(loc):whereSet===1&&i===2?correct().replace(replySubject()+'は、',replySubject()+'も、'):correct();
             practice2State.replyReferences[prefix+'_r']=()=>whereSet===2?[correct(),short(loc),...(i===2?[correct().replace(replySubject()+'は、',replySubject()+'も、'),response(wrongReply,false)+correct().replace(replySubject()+'は、',replySubject()+'も、')]:[]),response(wrongReply,false)+short(loc),...[...(negativeForms.slice(0,speechStyle==='formal'?4:6)),...(speechStyle==='casual'?['じゃないよ','ではないよ']:[])].flatMap(negative=>[wrongReply+negative+'。'+correct(),wrongReply+negative+'。'+short(loc)]).flatMap(text=>[text,(speechStyle==='casual'?'ううん、':'いいえ、')+text]),(speechStyle==='casual'?'ううん、':'いいえ、')+correct(),(speechStyle==='casual'?'ううん、':'いいえ、')+short(loc)]:whereSet===0?[short(noun(o)),statement(loc,noun(o)),statement(subject()==='Zさん'?'Zさん':word('わたし','私'),noun(o)),...(o.hira==='きっさてん'?[short('カフェ'),statement(loc,'カフェ'),statement(word('わたし','私'),'カフェ')]:[])]:[short(loc),statement(noun(o),loc)];
             const cue=whereSet===0?subject():vocabulary(o);
-            const q=recordingRow(c,'q',`<strong>${speakerName(ask)} · Q:</strong> ${cue}／${whereSet===2?wrongQuestion:'どこ'}`,prefix+'_q',()=>question(subject(),whereSet===2?wrongQuestion:'どこ'),true,true);
+            const q=recordingRow(c,'q',`<strong>${speakerName(ask)} · Q:</strong> ${cue}/${whereSet===2?wrongQuestion:'どこ'}`,prefix+'_q',()=>question(subject(),whereSet===2?wrongQuestion:'どこ'),true,true);
             const replyCue=whereSet===0?replySubject():vocabulary(o);
-            const r=recordingRow(c,'a',`<strong>${speakerName(reply)} · A:</strong> ${whereSet===2?wrongReply+'／'+loc:replyCue+(whereSet===0?'／'+vocabulary(o):i===3?'／'+loc:'')}`,prefix+'_r',answer,true,false);
+            const r=recordingRow(c,'a',`<strong>${speakerName(reply)} · A:</strong> ${whereSet===2?wrongReply+'/'+loc:replyCue+(whereSet===0?'/'+vocabulary(o):i===3?'/'+loc:'')}`,prefix+'_r',answer,true,false);
             identifySpeaker(q,prefix+'_q');identifySpeaker(r,prefix+'_r');
             englishCue(q,[whereSet===0?englishPlace(subject()):o.meaning,whereSet===2?englishPlace(wrongQuestion):'where']);
             englishCue(r,whereSet===2?[englishPlace(wrongReply),englishPlace(loc)]:whereSet===0?[replySubject()==='Zさん'?'Z':'here',o.meaning]:[o.meaning,...(i===3?[englishPlace(loc)]:[])]);
@@ -1687,9 +1687,9 @@ function practice2ShowNotice(resultSpan, message) {
             const whereCue=()=>formatWord(o.country.hira+'のどこ',o.country.kanji+'のどこ',o.country.romaji+' no doko','where in '+o.country.meaning);
             const qcue=dialogueMode===3?formatWord('なんようび','何曜日',"nan'yōbi",'what day of the week'):dialogueMode===0?'どこ':dialogueMode===1?whereCue():word('なんじ','何時');
             const rcue=dialogueMode===3?vocabulary(days[index]):dialogueMode===0?vocabulary(o.country):dialogueMode===1?vocabulary(o):formatWord(o.timeHira,o.timeKanji,...timeHints[index]);
-            const q=recordingRow(c,'q',`<strong>${speakerName(ask)} · Q:</strong> ${qsubject}／${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()),true,true);
+            const q=recordingRow(c,'q',`<strong>${speakerName(ask)} · Q:</strong> ${qsubject}/${qcue}`,prefix+'_q',()=>question(qsubject,qpredicate()),true,true);
             const responseSubject=dialogueMode===1?(index===2?'あそこ':'ここ'):rsubject;
-            const r=recordingRow(c,'a',`<strong>${speakerName(reply)} · A:</strong> ${responseSubject}／${rcue}`,prefix+'_r',()=>{const text=statement(responseSubject,dialogueMode===1?noun(o):rpredicate());return dialogueMode===3&&i===2?text.replace(responseSubject+'は、',responseSubject+'も、'):text;},true,false);
+            const r=recordingRow(c,'a',`<strong>${speakerName(reply)} · A:</strong> ${responseSubject}/${rcue}`,prefix+'_r',()=>{const text=statement(responseSubject,dialogueMode===1?noun(o):rpredicate());return dialogueMode===3&&i===2?text.replace(responseSubject+'は、',responseSubject+'も、'):text;},true,false);
             practice2State.replyReferences[prefix+'_r']=()=>{
                 const alternatives=[short(rpredicate())];
                 if(dialogueMode===0)alternatives.push(statement(index===2?'あそこ':word('わたし','私'),rpredicate()));
