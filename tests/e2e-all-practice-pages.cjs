@@ -453,15 +453,71 @@ async function setupPage(browser, pageName, width = 1440) {
             }
 
             if (config.name === 'practice7.2') {
-                // Practice 7.2 Drill 2 Selection & Audio Interruption Test
-                const yesBtn = page.locator('.answer-choice[data-answer="yes"]').first();
-                if (await yesBtn.count() > 0) {
-                    await yesBtn.click();
-                    await page.waitForTimeout(100);
-                    // Query current DOM element (handles Practice 7.2's renderAll re-render churn)
-                    const updatedYes = page.locator('.answer-choice[data-answer="yes"]').first();
-                    check(await updatedYes.getAttribute('aria-pressed') === 'true', 'Practice 7.2 Drill 2 Yes choice selected');
-                }
+                // Practice 7.2 Drill 2: scoped Yes -> No -> Yes updates, preservation of
+                // unrelated rows and the persistent answer-specific recording state.
+                const section = page.locator('#practice72QuestionSection');
+                const cards = section.locator('.drill-row');
+                check(await cards.count() === 5, 'Practice 7.2 Drill 2 renders five cards');
+
+                await page.evaluate(() => {
+                    const section = document.querySelector('#practice72QuestionSection');
+                    const cards = section.querySelectorAll('.drill-row');
+                    const rows = cards[0].querySelectorAll('tr');
+                    window.__p72Dom = {
+                        section,
+                        questionRow: rows[0],
+                        answerRow: rows[1],
+                        answerCell: rows[1].lastElementChild,
+                        siblingCard: cards[1],
+                        yesButton: cards[0].querySelector('.answer-choice[data-answer="yes"]')
+                    };
+                });
+
+                const untouched = async label => {
+                    const same = await page.evaluate(() => {
+                        const saved = window.__p72Dom;
+                        const section = document.querySelector('#practice72QuestionSection');
+                        const cards = section.querySelectorAll('.drill-row');
+                        const rows = cards[0].querySelectorAll('tr');
+                        return saved.section === section
+                            && saved.questionRow === rows[0]
+                            && saved.answerRow === rows[1]
+                            && saved.answerCell === rows[1].lastElementChild
+                            && saved.siblingCard === cards[1]
+                            && saved.yesButton === cards[0].querySelector('.answer-choice[data-answer="yes"]');
+                    });
+                    check(same, `Practice 7.2 unrelated DOM stays identical after ${label}`);
+                };
+
+                const row0 = cards.first();
+                const yes = row0.locator('.answer-choice[data-answer="yes"]');
+                const no = row0.locator('.answer-choice[data-answer="no"]');
+
+                await yes.click();
+                await page.waitForTimeout(50);
+                check(await yes.getAttribute('aria-pressed') === 'true', 'Practice 7.2 Yes active');
+                check(await no.getAttribute('aria-pressed') === 'false', 'Practice 7.2 No inactive');
+                check(await yes.evaluate(el => el.classList.contains('is-selected')), 'Practice 7.2 Yes selected class');
+                await untouched('Yes');
+
+                // Seed the existing persisted result store, then verify a switch
+                // away and back restores the result from its original answer key.
+                await page.evaluate(() => {
+                    practice7State.savedResults['p72_d2_0_yes'] = { text: 'P72-SAVED-YES' };
+                });
+                await no.click();
+                await page.waitForTimeout(50);
+                check(await no.getAttribute('aria-pressed') === 'true', 'Practice 7.2 No active');
+                check(await yes.getAttribute('aria-pressed') === 'false', 'Practice 7.2 Yes inactive');
+                check(await no.evaluate(el => el.classList.contains('is-selected')), 'Practice 7.2 No selected class');
+                await untouched('No');
+                check(!(await row0.locator('tr:nth-child(2) .recording-result').innerText()).includes('P72-SAVED-YES'), 'Practice 7.2 No does not show Yes result');
+
+                await yes.click();
+                await page.waitForTimeout(50);
+                check(await yes.getAttribute('aria-pressed') === 'true', 'Practice 7.2 Yes restored');
+                check((await row0.locator('tr:nth-child(2) .recording-result').innerText()).includes('P72-SAVED-YES'), 'Practice 7.2 Yes saved result restored');
+                await untouched('Yes again');
 
                 if (config.testInterruption) {
                     await page.evaluate(() => {
