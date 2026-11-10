@@ -245,9 +245,9 @@ assert.ok(html.includes('tip-line"><strong>ON:</strong> Recording stops automati
 assert.ok(html.includes('tip-line"><strong>OFF:</strong> Stop recording manually.</span>'), 'Autostop OFF must be wrapped in separate line');
 
 assert.ok(html.includes('After recording, the model audio and your recording play automatically.'), 'Autoplay must have model + recording play automatically copy');
-assert.ok(html.includes('Play them manually.'), 'Autoplay must have Play them manually copy');
+assert.ok(html.includes('Choose what and when to play.'), 'Autoplay must have Choose what and when to play copy');
 assert.ok(html.includes('tip-line"><strong>ON:</strong> After recording, the model audio and your recording play automatically.</span>'), 'Autoplay ON must be wrapped in separate line');
-assert.ok(html.includes('tip-line"><strong>OFF:</strong> Play them manually.</span>'), 'Autoplay OFF must be wrapped in separate line');
+assert.ok(html.includes('tip-line"><strong>OFF:</strong> Choose what and when to play.</span>'), 'Autoplay OFF must be wrapped in separate line');
 
 // 8.2 Basic operation button hovers restricted to Example 1 and Drill 1 Item 1 only
 assert.ok(js.includes('Listen to the example.'), 'Must include Listen to the example. for Example 1');
@@ -272,5 +272,13 @@ assert.ok(css.includes('.uebung11-page .undetermined-footprint'), 'CSS must form
 // 8.5 tooltip-layout.js preserves .uebung11-page introductory tooltips
 const tooltipLayoutJs = fs.readFileSync(path.join(root, 'tooltip-layout.js'), 'utf8');
 assert.ok(tooltipLayoutJs.includes('.uebung11-page'), 'tooltip-layout.js must preserve .uebung11-page tooltips');
+
+// 8.6 Germanized basic operation button labels
+assert.ok(html.includes('↩️ Zurück'), 'HTML must have ↩️ Zurück back link');
+assert.ok(!html.includes('もどる'), 'HTML must not have もどる');
+assert.ok(js.includes('🔊 Anhören'), 'JS must use 🔊 Anhören for listen buttons');
+assert.ok(js.includes('⏺️ Aufnehmen'), 'JS must use ⏺️ Aufnehmen for record button');
+assert.ok(!js.includes('🔊きく'), 'JS must not contain 🔊きく');
+assert.ok(!js.includes('とる'), 'JS must not contain とる');
 
 console.log('PASS: All structural, contract, 3-stage evaluation, and hover tooltip tests passed successfully.');

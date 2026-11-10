@@ -6,30 +6,32 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T08:50:00+01:00
+- **最終更新日時**：2026-11-10T09:05:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：Practice 8.1 Drill 5「Adj」「〃」整列修正（English Cues ON時の整列ズレ解消）
+- **課題**：Deutsch Übung 1.1 ボタンのドイツ語化・Autoplayホバー修正
 - **変更内容**：
-  1. **原因特定**：
-     - `measureSectionCues(group)` 内で `firstText` / `lastText` を `cueText(id)`（日本語テキスト）で取得し、`anchor.querySelectorAll('.target-word')` と照合していたため、English Cues ON 時に英語テキストと一致せず `first` / `last` が `undefined` となり測定処理が早期リターン（abort）していた。
-     - このため、`spacer` (0px)・`afterSpacer` (0px)・`delta` 補正計算が一切実行されず、2行目の `Adj` セレクトが1行目の `Adj` と揃わず左に約130〜150pxズレて `〃` の直後に詰まり、`〃` も左端に寄っていた。
-  2. **`practice8.1.js` の修正**：
-     - `englishCues === true` 時は `targets[0]` を `first`、`targets[targets.length - 1]` を `last` として直接取得（フォールバック完備）。
-     - Item 0（`Uncomfortable`）の `centerX` 計算について、English Cues ON 時は `last`（`speak`）の中央を基準に `(lastRect.left + lastRect.right) / 2` で算出。
-     - English Cues OFF（日本語表示）時は既存の検索・文字位置特定ロジックを完全維持。
-     - `afterSpacer` による `delta = selects[0].left - selects[1].left` 補正が English Cues ON 時も正常に実行され、上下行の `Adj` セレクトの水平位置（`left`）が完全一致。
-  3. **自動テスト追加**：
-     - `tests/english-cues-expansion.cjs` に Practice 8.1 Drill 5 の全7カードについて、English Cues ON / OFF 両方で `spacer` 正幅・`Adj` 水平位置一致（誤差 1px 未満）の自動検証を追加。
+  1. **基本操作ボタン3種類のドイツ語化**：
+     - `🔊きく` → `🔊 Anhören`（Example 1〜4 および Drill 1〜4 の全モデル聴取ボタン）
+     - `🎙️とる` → `⏺️ Aufnehmen`（Drill 1〜4 の全録音ボタン）
+     - `↩️もどる` → `↩️ Zurück`（メインヘッダー戻るリンク）
+     - 既存の内部ID、イベントハンドラ、有効・無効状態、初学者英語ホバー説明（`Listen to the example.` / `Listen to the model answer.` / `Record your answer.`）、戻る先（`index.html`）は完全維持。
+  2. **Autoplay OFF ホバー英文の修正**：
+     - `uebung1.1.html` 内の Autoplay スイッチの OFF 説明文を `Play them manually.` から `Choose what and when to play.` に更新。
+     - ON（`After recording, the model audio and your recording play automatically.`）および `<span class="tip-line">` による別行表示スタイルを完全維持。
+  3. **仕様書およびテストの更新**：
+     - `docs/GERMAN_DRILL_SPEC.md`（Section 2.2, 2.3, 3.2, 3.3）の確定表記・ホバー文を更新。
+     - `tests/uebung11.cjs` に Section 8.6（ドイツ語ボタン表記契約）を追加し、Autoplay ホバー文の更新を反映。
 - **検証結果**：
   - `git diff --check` にて全変更の構文・空白整合性を確認済み。
   - 静的構文・アサーション検証にすべて合格。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
+- [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでのボタンドイツ語表記（`🔊 Anhören`, `⏺️ Aufnehmen`, `↩️ Zurück`）および Autoplay OFF ホバー（`Choose what and when to play.`）の確認待ち。
 - [ ] **Practice 8.1**：Drill 5 の English Cues ON／OFF 時における `Adj`（形容詞セレクト）と `〃`（同上符）の水平整列・表示位置のユーザー実機ブラウザ確認待ち。
 - [ ] **Deutsche Übung 1.1**：ユーザー実機ブラウザでの英語ホバー表示（Example 1 / Drill 1 設問1、Autostop動的切替、設定の別行表示、👣ホバー）の確認待ち。
 - [ ] **Practice 1.2 & 8.1**：ユーザー実機ブラウザでの Select 英語化（Drill 2 専攻選択、Drill 4 Activity選択）および English Cues トグル時の選択状態・録音保持の動作確認待ち。

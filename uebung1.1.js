@@ -1531,7 +1531,7 @@ function initGermanDrill() {
             const exAudioTd = node("td", "example-audio-cell");
             const exModelSentence = getModel(drill.example, currentVariety);
             const exListenTip = drill.number === 1 ? "Listen to the example." : "";
-            const exListenBtn = button("🔊きく", exListenTip, () => {
+            const exListenBtn = button("🔊 Anhören", exListenTip, () => {
                 speakModel(getModel(drill.example, currentVariety), exListenBtn);
             });
             exAudioTd.append(exListenBtn);
@@ -1578,12 +1578,12 @@ function initGermanDrill() {
                 const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
 
                 const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
-                const listenBtn = button("🔊きく", listenTip, () => {
+                const listenBtn = button("🔊 Anhören", listenTip, () => {
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
 
                 const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
-                const recBtn = button("🎙️とる", recTip, () => {
+                const recBtn = button("⏺️ Aufnehmen", recTip, () => {
                     record(item.id, item);
                 });
 
