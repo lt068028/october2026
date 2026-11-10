@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formatWord('いま', '今', 'ima', 'now'),
         formatWord(...item.slice(0, 4)),
         formatWord(...item.slice(4, 8))
-    ], '／');
+    ], '/');
 
     const listen = (getText, label = '🔊きく') => {
         let b;
@@ -1335,7 +1335,7 @@ function createPractice71TableCard(container, indexLabel, item, rowIndex, playRa
             )
         ];
 
-    tdPrompt.innerHTML = joinDisplayCues(cueParts, " ／ ");    tdPrompt.style.verticalAlign = "middle";
+    tdPrompt.innerHTML = joinDisplayCues(cueParts, " / ");    tdPrompt.style.verticalAlign = "middle";
     tdPrompt.style.width = "220px";
     tdPrompt.style.paddingRight = "10px";
 
@@ -2701,7 +2701,11 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
         return `<span class="p71-cues">${
             words.join(
-                hintMode === 'paren' && !english ? '' : '<span class="p71-cue-separator">／</span><wbr>'
+                hintMode === 'paren' && !english
+                    ? ''
+                    : (english
+                        ? ' <span class="p71-cue-separator">/</span><wbr> '
+                        : '<span class="p71-cue-separator">/</span><wbr>')
             )
         }</span>`;
     }

@@ -340,17 +340,19 @@ document.addEventListener('DOMContentLoaded', () => {
         ? practice7ToHiragana(text)
         : text;
 
-    const cue = item => joinDisplayCues(item.words.map(word => {
+    const cue = item => {
         const english = document.getElementById(
             'practice7EnglishCueButton'
         )?.getAttribute('aria-pressed') === 'true';
 
-        if (english) {
-            return node('span', '', word[3]).innerHTML;
-        }
+        return joinDisplayCues(item.words.map(word => {
+            if (english) {
+                return node('span', '', word[3]).innerHTML;
+            }
 
-        return formatWord(...word);
-    }), '／');
+            return formatWord(...word);
+        }), english ? ' / ' : '/');
+    };
 
     const listen = (getText, label = '🔊きく') => {
         let b;
@@ -1392,7 +1394,7 @@ function renderDrill1Section() {
     example.innerHTML = `
         <div class="example-line">
             <strong class="example-label-title">Past:</strong>
-            ${time}${hintMode === "paren" ? "" : "／"}${verb}
+            ${time}${hintMode === "paren" ? "" : "/"}${verb}
             <span>👉</span>
             <button
                 id="exPastListen"
@@ -1405,7 +1407,7 @@ function renderDrill1Section() {
 
         <div class="example-line">
             <strong class="example-label-title">Present State:</strong>
-            ${time}${hintMode === "paren" ? "" : "／"}${verb}
+            ${time}${hintMode === "paren" ? "" : "/"}${verb}
             <span>👉</span>
             <button
                 id="exPerfListen"
@@ -1515,7 +1517,7 @@ function createPractice7TableCard(
         )
     );
 
-    cue.innerHTML = joinDisplayCues(parts, '／');
+    cue.innerHTML = joinDisplayCues(parts, '/');
 
     const makeButton = (label, tip) => {
         const button = document.createElement('button');
@@ -2826,7 +2828,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 
             const cue = document.createElement("strong");
             cue.className = "p7-english-cue";
-            cue.textContent = parts.join(" ／ ");
+            cue.textContent = parts.join(" / ");
             prompt.replaceChildren(cue);
         });
     }

@@ -1215,13 +1215,13 @@ function practice2ShowNotice(resultSpan, message) {
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
         const source=view.cueCell.querySelector('strong'),role=source&&(/^(?:[XYZ] · )?[QA]:$|^[XYZ][:：]?$/.test(source.textContent.trim())||source.classList.contains('conversation-role')||source.classList.contains('conversation-person'))?source.cloneNode(true):null;
-        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join('/')));
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
     };
     const nameQuestion=(speaker,o)=>question(pro(speaker,o),word(speechStyle==='formal'?'なん':'なに','何'));
     const shortAnswer=(speaker,o)=>pro(speaker,o)+({formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle]);
     const whichQuestion=o=>question('あなたの'+noun(o),'どれ');
     function prompt(speaker,o,extra='') {
-        return `<span class="p21-cue"><span class="p21-role">[Speaker] ${speakerName(speaker)}</span>／<span>[Object] ${o.id}</span>${extra?'／'+extra:''}</span>`;
+        return `<span class="p21-cue"><span class="p21-role">[Speaker] ${speakerName(speaker)}</span>/<span>[Object] ${o.id}</span>${extra?'/'+extra:''}</span>`;
     }
     function tag(view,speaker,o) {view.row.dataset.speaker=speaker;view.row.dataset.object=o.id;return view;}
     function diagram(container,objects,speaker,target) {
@@ -1399,10 +1399,10 @@ function practice2ShowNotice(resultSpan, message) {
             objects.forEach((o,i)=>{
                 const current=card(drill,String(i+1));
                 current.body.closest('.drill-row').classList.add('p21-dialogue-practice');
-                const questionCue=`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
+                const questionCue=`<strong>X · Q:</strong> ${pro('A',o)}/${formatWord(wrong[i].hira,wrong[i].kanji,wrong[i].romaji,wrong[i].meaning)}`;
                 const prefix=speechStyle==='casual'?'ううん':'いいえ';
                 const ending={formal:'です',informal:'だ',casual:'だよ'}[speechStyle];
-                const answerCue=`<strong>Y · A:</strong> ${prefix}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
+                const answerCue=`<strong>Y · A:</strong> ${prefix}/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`;
                 const q=recordingRow(current,'q',questionCue,`p21_d1_s1_q_${i}`,()=>question(pro('A',o),noun(wrong[i])),true,true);
                 const key=`p21_d1_s1_r_${i}`;
                 const answer=()=>`${prefix}、${noun(o)}${ending}。`;
@@ -1497,11 +1497,11 @@ function practice2ShowNotice(resultSpan, message) {
         objects.forEach((o,i)=>{
             const current=card(d2,String(i+1));
             current.body.closest('.drill-row').classList.add('p21-naming-practice');
-            const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${pro('A',o)}／${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'),true,true);
+            const q=recordingRow(current,'q',`<strong>X · Q:</strong> ${pro('A',o)}/${formatWord('なに','何','nani','what')}`,`p21_d2_s${s2}_q_${i}`,()=>question(pro('A',o),speechStyle==='formal'?'なん':'なに'),true,true);
             const key=`p21_d2_s${s2}_r_${i}`;
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o)),noun(o)+ending];
-            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)),true,false);
+            const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)),true,false);
             englishCue(q,[englishObject(pro('A',o)),'what']);
             englishCue(r,[englishObject(pro('B',o)),o.meaning]);
             for(const view of [q,r]){view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';}
@@ -1523,8 +1523,8 @@ function practice2ShowNotice(resultSpan, message) {
         }
         const models=node('div','p21-which-models');
         for(const [speaker,text,cue,part]of [
-            ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'／これ','intro'],
-            ['A',ask,formatWord('Yさんのスマホ','Yさんのスマホ','Y-san no sumaho','Y’s smartphone')+'／どれ','question'],
+            ['A',intro,formatWord('わたしのスマホ','私のスマホ','watashi no sumaho','my smartphone')+'/これ','intro'],
+            ['A',ask,formatWord('Yさんのスマホ','Yさんのスマホ','Y-san no sumaho','Y’s smartphone')+'/どれ','question'],
             ['B',reply,formatWord('あれ','あれ','are','that one over there'),'response']]){
             const line=node('p','p21-which-model-line');line.dataset.part=part;line.dataset.modelSpeaker=speaker;
             line.append(node('strong','',speakerName(speaker)+'：'));
@@ -1546,7 +1546,7 @@ function practice2ShowNotice(resultSpan, message) {
             current.body.closest('.drill-row').classList.add('p21-choosing-practice');
             const owner=s3===0?(i===0?'B':'A'):answering;
             const possessive=()=>owner===answering?word('わたしの','私の'):speakerName(owner)+'さんの';
-            const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん／${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}／どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'),true,true);
+            const q=recordingRow(current,'q',`<strong>${speakerName(asking)} · Q:</strong> ${speakerName(owner)}さん/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}/どれ`,`p21_d3_s${s3}_q_${i}`,()=>question(speakerName(owner)+'さんの'+noun(o),'どれ'),true,true);
             const cue=node('span');cue.innerHTML=`<strong>${speakerName(answering)} · A:</strong> `;
             const color=node('span','p21-color-cue',({red:'🔴',blue:'🔵',green:'🟢'})[o.colorName]);color.dataset.color=o.colorName;cue.append(color);
             const key=`p21_d3_s${s3}_r_${i}`;

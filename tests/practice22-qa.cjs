@@ -50,7 +50,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
   const switcher=p.locator('#drill'+drill+'Container .p21-set-switcher button');
   if(await switcher.count()>1){await switcher.nth(1).click();await auditAudio();}
  }
- check(await p.locator('[data-speaker-recording-key="p22_people_classmate_q_2"] .drill-cue-cell').evaluate(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());c.querySelectorAll('.conversation-role-circle').forEach(x=>x.textContent=x.getAttribute('aria-label')==='Question'?'Q':'A');return c.textContent.replace(/\s/g,'')}),'QXYさんのクラスメート／どのひと');
+ check(await p.locator('[data-speaker-recording-key="p22_people_classmate_q_2"] .drill-cue-cell').evaluate(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());c.querySelectorAll('.conversation-role-circle').forEach(x=>x.textContent=x.getAttribute('aria-label')==='Question'?'Q':'A');return c.textContent.replace(/\s/g,'')}),'QXYさんのクラスメート/どのひと');
  const button=p.locator('.p2x-price-example > .p22-conversation-line button').first();await button.click();
  check(await p.locator('.p2x-price-example > p .p22-person-badge.is-speaking').allTextContents(),['X']);
  check(await p.locator('.p22-role-circle.is-speaking').count(),0);

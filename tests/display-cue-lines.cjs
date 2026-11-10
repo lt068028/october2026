@@ -39,7 +39,7 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
   }
   if(name==='practice7.2') {
    await page.locator('#practice7EnglishCueButton').click();
-   check(await page.locator('#drill1List .p7-english-cue').first().textContent().then(t=>t.includes('／')),true,'7.2 English separators retained');
+   check(await page.locator('#drill1List .p7-english-cue').first().textContent().then(t=>t.includes('/')),true,'7.2 English separators retained');
   }
   check(page.errors,[],name+' no runtime errors');await page.close();
  }
