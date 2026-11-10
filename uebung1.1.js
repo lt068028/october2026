@@ -574,7 +574,7 @@ function initGermanDrill() {
         mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
         stop: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
         play: '<path d="m8 5 11 7-11 7V5Z"/>',
-        forward: '<path d="m15 4 9 8-9 8V4Z"/><path d="m5 4 9 8-9 8V4Z"/>'
+        forward: '<path d="m13 4 8 8-8 8V4Z"/><path d="m3 4 8 8-8 8V4Z"/>'
     };
     function audioIcon(kind) {
         const template = document.createElement("template");
@@ -745,7 +745,11 @@ function initGermanDrill() {
         b._contents = Array.from(b.childNodes);
         b.disabled = true;
         b.classList.add("is-playing");
-        b.textContent = "Playing...";
+        // Keep icon-only controls usable and visually consistent during playback.
+        // A text replacement would turn the 36px icon button into a "Playing..." label.
+        if (!b.classList.contains("uebung-icon-button")) {
+            b.textContent = "Playing...";
+        }
     }
 
     // -------------------------------------------------------------
