@@ -91,6 +91,10 @@ jobs:
               tests/global-display.cjs
               tests/semantic-colors.cjs
               tests/settings-availability.cjs
+          - group: 5
+            name: "End-to-End Suite (11 Pages)"
+            tests: >-
+              tests/e2e-all-practice-pages.cjs
 
     steps:
       - name: Checkout repository

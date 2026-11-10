@@ -6,30 +6,31 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T10:20:00+01:00
+- **最終更新日時**：2026-11-10T12:15:00+01:00
 - **担当環境**：Codex / Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：全11ページのスラッシュ表示仕様統一（Phase 1〜4 完了）
+- **課題**：全11ページのブラウザE2Eテスト基盤構築・スラッシュ仕様回帰検証
 - **変更内容**：
-  1. **スラッシュキュー区切りの共通規則確定と全11ページ適用**：
-     - **半角スラッシュ統一**：全11ページで全角 `／` を半角 `/` に統一。
-     - **日本語キュー**：各ページ・各セクションの既存スペース規則を維持（スペースなし `父/母`、スペースあり `父 / 母` をそのまま保持し、追加・削除しない）。
-     - **英語キュー**：必ず半角スペース付き `" / "`（`word / word`）に統一。複数語の語句内スペース（`older brother / student` 等）を完全保持。
-     - **Vocab Display**：既存のスラッシュ非表示動作（`display-cue-unit`）を完全維持。
-     - **タイトル・説明文・除算・語彙訳の保護**：教材タイトル、解説文、数式・除算（`sum / length`）、語彙定義英訳（`near / close`）等は変更から除外。
-  2. **段階的適用（Phase 1〜4）**：
-     - **Phase 1**（Commit `d7ed145`）：Practice 1.2（先行試験仕様を改定し、英語 `" / "` へ統一、テスト期待値更新）。
-     - **Phase 2**（Commit `6e3f83a`）：低リスク4ページ（Practice 1.1, 7.3, 8.2, 8.3）。
-     - **Phase 3**（Commit `e1dc82a`）：中リスク4ページ（Practice 2.1, 2.2, 7.1, 7.2、`display-cue-lines.cjs` および `practice22-qa.cjs` のテスト期待値更新）。
-     - **Phase 4**（Commit `145087d`）：高リスク2ページ（Practice 2.3, 8.1、`practice8.1.js` の `indexOf('／')` 測定処理の半角対応、`tests/practice23-cities.cjs` および `tests/practice81.cjs` のテスト期待値更新）。
-  3. **仕様書更新**：
-     - `docs/UI_LAYOUT_SPEC.md`（F8）および `docs/PROJECT_SPEC.md` に全11ページの標準仕様として正式登録。
+  1. **実ブラウザE2E基盤（Playwright Chromium）の構築**:
+     - `tests/e2e-all-practice-pages.cjs` を新規作成。全11 Practiceページ（1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）を網羅。
+     - 正常読み込み、JS未処理例外なし、日本語半角スラッシュ（ページ別スペース規則維持：1.1は `父 / 母`、他は `父/母`）、English Cues（`" / "`）、Vocab Display非表示、Script切替、Yes/No・Select選択、音声排他制御（モデルTTSと録音の中断連携）、レスポンシブ375/600/1440px横スクロールなし、8.1の `〃` スペーサー位置合わせを自動検証。
+     - **960項目全件PASS**（11/11ページ）。
+  2. **テストコードの不備是正（テスト期待値・セレクタ）**:
+     - `tests/practice71-answer-selection.cjs`: 102行目・158行目・178行目のセレクタを `.recording-actions button` に修正（第1セルのYes選択ボタンとの誤一致を解消）。PASS（23 checks）。
+     - `tests/english-cues-expansion.cjs`: Practice 1.2 の改行・インデントによる不備を修正、Practice 8.1 の Hiragana表記（`おさらをあらう`）および `totemo`（`very`）、375px幅での折り返し時のスペーサークランプ許容に対応。PASS（234 checks across 3 pages）。
+  3. **npm scripts & CI統合**:
+     - `package.json` を新設（`npm run test:e2e` 等）。
+     - `.github/workflows/test.yml` に Group 5 として `tests/e2e-all-practice-pages.cjs` を登録。
+     - `tests/README.md` にテスト仕様・実行手順を追記。
 - **検証結果**：
-  - `git diff --check` にて空白・構文不備なし。
+  - `tests/e2e-all-practice-pages.cjs`: PASS（11/11ページ、960 checks）。
+  - `tests/practice71-answer-selection.cjs`: PASS（23 checks）。
+  - `tests/english-cues-expansion.cjs`: PASS（234 checks）。
+  - `git diff --check` にて空白・構文不備なし。プロダクションコード（HTML/CSS/JS）は一切変更なし。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
 - [ ] **全11ページ**：新仕様である半角スラッシュキュー表示（日本語 `父/母` または `父 / 母`、英語 `word / word`）および 375px／600px／1440px での表示・視認性・折り返しのユーザー実機ブラウザ確認待ち。

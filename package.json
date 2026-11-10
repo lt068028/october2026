@@ -1,0 +1,15 @@
+{
+  "name": "october2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Japanese practice drills site with automated regression testing",
+  "scripts": {
+    "test": "node tests/e2e-all-practice-pages.cjs",
+    "test:e2e": "node tests/e2e-all-practice-pages.cjs",
+    "test:p71": "node tests/practice71-answer-selection.cjs",
+    "test:english-cues": "node tests/english-cues-expansion.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}

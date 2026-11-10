@@ -258,3 +258,15 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 ## Practice 7.1 Drill 2 Yes/No回答選択の局所描画
 
 `node tests/practice71-answer-selection.cjs`：Practice 7.1 Drill 2 の Yes/No 選択操作において、対象行の回答セルのみを局所更新し、Drill 1 や他の設問を再描画しないこと、`aria-pressed` および `.is-selected` が即時同期すること、Yes/No 切替や同一ボタン連続クリックで不具合がないこと、回答別録音結果の復元、モデル音声TTS排他制御、および With漢字／Hiragana Only 切替や 375/600/1440px での状態維持を検証する。
+
+## 全11ページ E2E総合回帰テスト
+
+`node tests/e2e-all-practice-pages.cjs`（または `npm run test:e2e`）：
+全11 Practiceページ（1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3）を実ブラウザ（Playwright Chromium）で自動横断検証する包括的E2Eテスト。
+- **正常読み込みとJS例外なし**: 全11ページで未処理例外（uncaught runtime errors）0件を確認。
+- **スラッシュキュー仕様検証**: 全角 `／` の完全排除、日本語キューのページ別スペース規則維持（1.1は `父 / 母`、他は `父/母`）、English Cues ON時の前後半角スペース付き半角スラッシュ（`word / word`）の自動検証（語彙訳内のスラッシュ等は除外）。
+- **Vocab / Script切替**: Vocab OFF/Hover/Display時の表示破綻なし、With漢字／Hiragana Only切替時の状態維持。
+- **回答選択と局所更新**: Yes/NoおよびSelect選択の動作と属性同期。
+- **音声・録音排他制御**: モデル音声再生、録音開始時の先行音声中断、操作ロックの解放。
+- **レスポンシブ検証**: 375px（モバイル）、600px（タブレット）、1440px（PC）の3画面幅で横スクロールはみ出し（horizontal overflow）がないことを実測検証。
+- **Practice 8.1 〃 位置合わせ**: 比較設問におけるDitto Mark（`〃`）およびスペーサー要素の整合性。

@@ -99,7 +99,7 @@ function mock() {
         ], 'Question 1 initially unselected');
 
         // Unready buttons should be disabled with selectionHelp before answer is chosen
-        const initialSound = rows.nth(0).locator('tr:nth-child(2) button').first();
+        const initialSound = rows.nth(0).locator('tr:nth-child(2) .recording-actions button').first();
         eq(await initialSound.getAttribute('data-selection-help'), 'Choose 🙆 or 🙅 first.', 'Help hint before choice');
 
         // Snapshot DOM references to verify immutability
@@ -155,7 +155,7 @@ function mock() {
         eq(immutabilityCheck.d2Row2Identical, true, 'Drill 2 row 2 was not destroyed or re-rendered');
 
         // Check model playback for affirmative choice
-        await rows.nth(0).locator('tr:nth-child(2) button').first().click();
+        await rows.nth(0).locator('tr:nth-child(2) .recording-actions button').first().click();
         const spokenAffirmative = await page.evaluate(() => window.t.spoken.at(-1)?.text);
         eq(/はい.*読/.test(spokenAffirmative), true, 'Model TTS produces affirmative sentence');
 
@@ -175,7 +175,7 @@ function mock() {
         ], 'Question 1 No selected and synced');
 
         // Model playback should now produce negative sentence
-        await rows.nth(0).locator('tr:nth-child(2) button').first().click();
+        await rows.nth(0).locator('tr:nth-child(2) .recording-actions button').first().click();
         const spokenNegative = await page.evaluate(() => window.t.spoken.at(-1)?.text);
         eq(/いいえ.*読/.test(spokenNegative), true, 'Model TTS produces negative sentence');
 
