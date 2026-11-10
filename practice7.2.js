@@ -462,39 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const answerControls = [];
 
-    function recordingRow(
-        body,
-        item,
-        index,
-        kind,
-        cueCell,
-        state
-    ) {
+    function populateRecordingCell(cell, item, index, kind, state) {
         const question = kind === 'q';
         const ready = question || Boolean(state.answer);
         const selected = question ? 'q' : state.answer;
+        const key = `p72_d2_${index}_${selected || 'answer'}`;
+        const getText = () => ready ? model(item, selected) : '';
 
-        const key =
-            `p72_d2_${index}_${selected || 'answer'}`;
-
-        const getText = () => ready
-            ? model(item, selected)
-            : '';
-
-        const row = node('tr');
-
-        if (question) {
-            const number = node(
-                'td',
-                'drill-number-cell',
-                `${index + 1}.`
-            );
-
-            number.rowSpan = 2;
-            row.append(number);
-        }
-
-        const cell = node('td');
+        cell.replaceChildren();
         const layout = node('div', 'recording-controls');
         const actions = node('div', 'recording-actions');
 
@@ -553,9 +528,6 @@ document.addEventListener('DOMContentLoaded', () => {
         );
 
         cell.append(layout, correction);
-        row.append(cueCell, cell);
-        body.append(row);
-
         if (ready) {
             bindRecorderEvents(
                 record,
@@ -575,6 +547,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
             answerControls.push(sound, record);
         }
+        return cell;
+    }
+
+    function recordingRow(
+        body,
+        item,
+        index,
+        kind,
+        cueCell,
+        state
+    ) {
+        const question = kind === 'q';
+        const row = node('tr');
+
+        if (question) {
+            const number = node(
+                'td',
+                'drill-number-cell',
+                `${index + 1}.`
+            );
+
+            number.rowSpan = 2;
+            row.append(number);
+        }
+
+        const cell = node('td');
+        populateRecordingCell(cell, item, index, kind, state);
+        row.append(cueCell, cell);
+        body.append(row);
+        return cell;
     }
 
     const baseSync = practice7SyncRecordingUI;
@@ -682,6 +684,35 @@ document.addEventListener('DOMContentLoaded', () => {
             );
 
             const choices = node('td', 'drill-cue-cell');
+            let answerCell;
+
+            const selectAnswer = kind => {
+                if (blocked()) return;
+                stopAllPlayback();
+
+                const previous = state.answer;
+                if (previous === kind) return;
+
+                state.answer = kind;
+                choices.querySelectorAll('.answer-choice').forEach(choice => {
+                    const selected = choice.dataset.answer === kind;
+                    choice.setAttribute('aria-pressed', String(selected));
+                    choice.classList.toggle('is-selected', selected);
+                });
+
+                if (previous && practice7State.views) {
+                    delete practice7State.views[`p72_d2_${index}_${previous}`];
+                }
+
+                if (answerCell) {
+                    answerCell.querySelectorAll('button').forEach(btn => {
+                        const pos = answerControls.indexOf(btn);
+                        if (pos !== -1) answerControls.splice(pos, 1);
+                    });
+                    populateRecordingCell(answerCell, item, index, 'a', state);
+                }
+            };
+
 
             ['yes', 'no'].forEach((kind, i) => {
                 const choice = button(
@@ -689,11 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     i
                         ? 'Negative response'
                         : 'Affirmative response',
-                    () => {
-                        state.answer = kind;
-                        stopAllPlayback();
-                        renderAll();
-                    }
+                    () => selectAnswer(kind)
                 );
 
                 choice.classList.add('answer-choice');
@@ -707,11 +734,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     'aria-pressed',
                     String(state.answer === kind)
                 );
+                if (state.answer === kind) {
+                    choice.classList.add('is-selected');
+                }
 
                 choices.append(choice);
             });
 
-            recordingRow(
+            answerCell = recordingRow(
                 body,
                 item,
                 index,
