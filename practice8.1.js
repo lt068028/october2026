@@ -1205,29 +1205,42 @@ function measureSectionCues(group) {
         });
         const anchor=card.querySelector('.p81-cue-words[data-repeat-anchor]'),target=card.querySelector('.p81-cue-words[data-repeat-cue]');
         const spacer=target?.querySelector('.p81-drill-repeat-spacer'),mark=target?.querySelector('.p81-repeat-mark'),afterSpacer=target?.querySelector('.p81-drill-repeat-after-spacer');
-        const display=id=>cueText(id);
-        const firstText=display(anchor?.dataset.repeatStart),lastText=display(anchor?.dataset.repeatEnd);
         const targets=[...(anchor?.querySelectorAll('.target-word')||[])];
-        const first=targets.find(e=>e.textContent.includes(firstText||'\u0000')),last=[...targets].reverse().find(e=>e.textContent.includes(lastText||'\u0000'));
+        let first=null,last=null;
+        if(englishCues){
+            first=targets[0]||null;
+            last=targets[targets.length-1]||null;
+        }else{
+            const display=id=>cueText(id);
+            const firstText=display(anchor?.dataset.repeatStart),lastText=display(anchor?.dataset.repeatEnd);
+            first=targets.find(e=>e.textContent.includes(firstText||'\u0000'));
+            last=[...targets].reverse().find(e=>e.textContent.includes(lastText||'\u0000'));
+            if(!first&&targets.length>0)first=targets[0];
+            if(!last&&targets.length>0)last=targets[targets.length-1];
+        }
         if(!anchor||!target||!spacer||!mark||!first||!last)return;
         promptCells[0].style.setProperty('--p81-kind-width',labelWidths[0]+'px');
         promptCells[1].style.setProperty('--p81-kind-width',labelWidths[1]+'px');
         const firstRect=first.getBoundingClientRect(),lastRect=last.getBoundingClientRect(),targetRect=target.getBoundingClientRect(),markWidth=mark.getBoundingClientRect().width;
         let centerX=(firstRect.left+lastRect.right)/2;
         if(labels.some(l=>l.textContent.includes('Uncomfortable'))){
-            const text=last.textContent;
-            const idx=text.indexOf('話')!==-1?text.indexOf('話'):text.indexOf('は');
-            let found=false;
-            if(idx!==-1&&last.firstChild){
-                try{
-                    const range=document.createRange();
-                    range.setStart(last.firstChild,idx);
-                    range.setEnd(last.firstChild,idx+1);
-                    const r=range.getBoundingClientRect();
-                    if(r.width>0){centerX=(r.left+r.right)/2;found=true;}
-                }catch(_){}
+            if(englishCues){
+                centerX=(lastRect.left+lastRect.right)/2;
+            }else{
+                const text=last.textContent;
+                const idx=text.indexOf('話')!==-1?text.indexOf('話'):text.indexOf('は');
+                let found=false;
+                if(idx!==-1&&last.firstChild){
+                    try{
+                        const range=document.createRange();
+                        range.setStart(last.firstChild,idx);
+                        range.setEnd(last.firstChild,idx+1);
+                        const r=range.getBoundingClientRect();
+                        if(r.width>0){centerX=(r.left+r.right)/2;found=true;}
+                    }catch(_){}
+                }
+                if(!found)centerX=lastRect.left+markWidth/2;
             }
-            if(!found)centerX=lastRect.left+markWidth/2;
         }
         spacer.style.width=Math.max(0,centerX-markWidth/2-targetRect.left)+'px';
         if(afterSpacer){

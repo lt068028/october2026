@@ -140,6 +140,31 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues ON toggle');
                     checks += 2;
                 }
+                const d5Cards = page.locator('#drill5 .p81-comparison-card');
+                const d5Count = await d5Cards.count();
+                assert.ok(d5Count >= 7, 'Drill 5 must have 7 comparison cards');
+                const d5Layout = await page.locator('#drill5').evaluate(group => {
+                    return [...group.querySelectorAll('.p81-comparison-card')].map(card => {
+                        const spacer = card.querySelector('.p81-drill-repeat-spacer');
+                        const spacerWidth = spacer ? parseFloat(spacer.style.width) || 0 : 0;
+                        const selects = [...card.querySelectorAll('select.p81-select')];
+                        const sRects = selects.map(s => {
+                            const r = s.getBoundingClientRect();
+                            return { left: r.left, top: r.top };
+                        });
+                        const firstWord = card.querySelector('.p81-cue-words[data-repeat-anchor] .target-word');
+                        const sameLine = selects.length === 2 && firstWord && Math.abs(selects[0].getBoundingClientRect().top - firstWord.getBoundingClientRect().top) < 8;
+                        return { spacerWidth, sRects, sameLine };
+                    });
+                });
+                for (let i = 0; i < d5Layout.length; i++) {
+                    const item = d5Layout[i];
+                    assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues ON`);
+                    if (width >= 1440 || item.sameLine) {
+                        assert.ok(Math.abs(item.sRects[0].left - item.sRects[1].left) < 1, `Drill 5 card ${i} selects must align horizontally when English Cues ON (width=${width})`);
+                    }
+                }
+                checks += 2;
             }
 
             // 3. Verify English cue content is present in drill
@@ -177,6 +202,28 @@ const root = path.resolve(__dirname, '..');
                     assert.equal(val, 'washDish', 'Selected activity must be preserved across English cues OFF toggle');
                     checks += 2;
                 }
+                const d5LayoutOff = await page.locator('#drill5').evaluate(group => {
+                    return [...group.querySelectorAll('.p81-comparison-card')].map(card => {
+                        const spacer = card.querySelector('.p81-drill-repeat-spacer');
+                        const spacerWidth = spacer ? parseFloat(spacer.style.width) || 0 : 0;
+                        const selects = [...card.querySelectorAll('select.p81-select')];
+                        const sRects = selects.map(s => {
+                            const r = s.getBoundingClientRect();
+                            return { left: r.left, top: r.top };
+                        });
+                        const firstWord = card.querySelector('.p81-cue-words[data-repeat-anchor] .target-word');
+                        const sameLine = selects.length === 2 && firstWord && Math.abs(selects[0].getBoundingClientRect().top - firstWord.getBoundingClientRect().top) < 8;
+                        return { spacerWidth, sRects, sameLine };
+                    });
+                });
+                for (let i = 0; i < d5LayoutOff.length; i++) {
+                    const item = d5LayoutOff[i];
+                    assert.ok(item.spacerWidth > 0, `Drill 5 card ${i} spacer must have positive width when English Cues OFF`);
+                    if (width >= 1440 || item.sameLine) {
+                        assert.ok(Math.abs(item.sRects[0].left - item.sRects[1].left) < 1, `Drill 5 card ${i} selects must align horizontally when English Cues OFF (width=${width})`);
+                    }
+                }
+                checks += 2;
             }
 
             // 5. Check no horizontal overflow at this viewport
