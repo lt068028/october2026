@@ -1,14 +1,14 @@
 /* Preview only — Practice 2.1, Q/A roles and question indicators.
  * Candidate C: previously approved Google Material-style comparison drawing.
  * This is a custom comparison SVG, NOT an official Google Material icon.
- * Stroke: 2.05 at 24x24 viewBox. Other pages remain unchanged.
+ * Stroke: 1.8 at 24x24 viewBox. Other pages remain unchanged.
  */
 (() => {
   'use strict';
 
   const ICONS = [
-    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-5.7 15.96L3 21l1.2-4.4A9 9 0 0 1 12 3Z"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2.4-3 4"/><circle cx="12" cy="16.5" r=".6" fill="currentColor" stroke="none"/></svg>',
-    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-5.7 15.96L3 21l1.2-4.4A9 9 0 0 1 12 3Z"/><path d="M8 9h8M8 12h8M8 15h5"/></svg>'
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-5.7 15.96L3 21l1.2-4.4A9 9 0 0 1 12 3Z"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2.4-3 4"/><circle cx="12" cy="16.5" r=".6" fill="currentColor" stroke="none"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 1-5.7 15.96L3 21l1.2-4.4A9 9 0 0 1 12 3Z"/><path d="M8 9h8M8 12h8M8 15h5"/></svg>'
   ];
 
   const parseSvg = (source, extraClass) => {
