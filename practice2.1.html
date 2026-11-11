@@ -178,7 +178,14 @@
     </div>
 
     <style>
-      /* Practice 2.1 Microsoft Fluent Q/A preview; inherits light/dark text color. */
+      /* Practice 2.1 Microsoft Fluent Q/A preview; regular paths with a subtle 0.45px outline boost. */
+      .practice21-page .qa-compare-svg path,
+      .practice21-page .qa-compare-question-indicator path {
+        stroke:currentColor;
+        stroke-width:0.45px;
+        stroke-linejoin:round;
+        paint-order:stroke fill;
+      }
       .practice21-page .conversation-role-icon > .qa-compare-svg {
         position:absolute; inset:0; display:block; width:100%; height:100%; color:inherit;
       }
@@ -207,7 +214,7 @@
     <script src="stt-display.js"></script>
     <script src="question-indicator.js?v=20261108"></script>
     <script src="practice2.1.js?v=20261110-drill3-speakers"></script>
-    <script src="practice2.1-qa-compare-preview.js?v=20261111-ms-fluent-chat"></script>
+    <script src="practice2.1-qa-compare-preview.js?v=20261111-ms-fluent-chat-bold1"></script>
     <script src="settings-appearance.js"></script>
     <script src="tooltip-layout.js"></script>
     <script src="content-layout.js?v=20261108-icons8-mono"></script>
