@@ -609,7 +609,7 @@ function initGermanDrill() {
         mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
         stop: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
         play: '<path d="m8 5 11 7-11 7V5Z"/>',
-        forward: '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m9 7 5 5-5 5"/><path d="M14 12H6"/>'
+        forward: '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m12 8 4 4-4 4"/><path d="M8 12h8"/>'
     };
     function audioIcon(kind) {
         const template = document.createElement("template");
