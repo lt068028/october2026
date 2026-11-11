@@ -1,0 +1,112 @@
+name: PR9 Width Diagnostic
+
+on:
+  push:
+    branches:
+      - diagnostic/pr9-qa-width-ci-20261111
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: Same-runner main vs PR #9 width diagnostics
+    runs-on: ubuntu-26.04
+    timeout-minutes: 50
+    env:
+      TZ: UTC
+      CHROMIUM_PATH: /usr/bin/chromium
+      NODE_PATH: ${{ github.workspace }}/node_modules
+      DIAG_OUTPUT: ${{ github.workspace }}/diagnostic-artifacts
+    steps:
+      - name: Checkout diagnostic harness
+        uses: actions/checkout@v4
+        with:
+          ref: diagnostic/pr9-qa-width-ci-20261111
+          fetch-depth: 0
+
+      - name: Initialize artifact directory
+        run: mkdir -p "$DIAG_OUTPUT"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.20.2
+
+      - name: Install the same browser dependencies as Run #91
+        run: |
+          npm install --no-save playwright pngjs
+          npx playwright install --with-deps chromium
+          CHROMIUM_BIN=$(find ~/.cache/ms-playwright -name "chrome" -type f -perm /111 | head -n 1)
+          if [ -z "$CHROMIUM_BIN" ]; then echo "Chrome binary not found"; exit 1; fi
+          sudo ln -sf "$CHROMIUM_BIN" /usr/bin/chromium
+          mkdir -p "$DIAG_OUTPUT"
+          {
+            echo "node=$(node --version)"
+            echo "npm=$(npm --version)"
+            echo "playwright=$(npx playwright --version)"
+            echo "chrome=$(/usr/bin/chromium --version)"
+            echo "os=$(grep PRETTY_NAME /etc/os-release | cut -d= -f2-)"
+            echo "runner_image=${ImageOS:-unknown}/${ImageVersion:-unknown}"
+            echo "font_sans=$(fc-match sans-serif | head -n 1)"
+            echo "font_ja=$(fc-match 'sans-serif:lang=ja' | head -n 1)"
+            echo "font_lato=$(fc-match Lato | head -n 1)"
+          } | tee "$DIAG_OUTPUT/environment.txt"
+
+      - name: Extract pinned comparison commits
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin \
+            74817eb3e5dc3ff30ad6769df673450354910d29 \
+            01e5e49d5a006a7b29602791fa8e606f121dd706
+          mkdir -p "$RUNNER_TEMP/pr9-width/main" "$RUNNER_TEMP/pr9-width/filled"
+          git archive 74817eb3e5dc3ff30ad6769df673450354910d29 | tar -x -C "$RUNNER_TEMP/pr9-width/main"
+          git archive 01e5e49d5a006a7b29602791fa8e606f121dd706 | tar -x -C "$RUNNER_TEMP/pr9-width/filled"
+          printf '%s\n' \
+            'main=74817eb3e5dc3ff30ad6769df673450354910d29' \
+            'filled=01e5e49d5a006a7b29602791fa8e606f121dd706' \
+            > "$DIAG_OUTPUT/commits.txt"
+
+      - name: Run existing tests unchanged and collect results
+        run: |
+          set +e
+          for variant in main filled; do
+            root="$RUNNER_TEMP/pr9-width/$variant"
+            mkdir -p "$DIAG_OUTPUT/$variant/existing-qa-icons" "$DIAG_OUTPUT/$variant/existing-fluid-width"
+            (cd "$root" && QA_PAGES=practice8.2 QA_OUTPUT="$DIAG_OUTPUT/$variant/existing-qa-icons" node tests/qa-icons.cjs) \
+              > "$DIAG_OUTPUT/$variant/existing-qa-icons.log" 2>&1
+            echo $? > "$DIAG_OUTPUT/$variant/existing-qa-icons.exit"
+            (cd "$root" && node tests/fluid-width.cjs) \
+              > "$DIAG_OUTPUT/$variant/existing-fluid-width.log" 2>&1
+            echo $? > "$DIAG_OUTPUT/$variant/existing-fluid-width.exit"
+          done
+          exit 0
+
+      - name: Run same-condition diagnostics (A-D × 3, P1.1 off/paren)
+        run: |
+          set +e
+          node tools/pr9-width-diagnostic.cjs \
+            "$RUNNER_TEMP/pr9-width/main" \
+            "$RUNNER_TEMP/pr9-width/filled" \
+            > "$DIAG_OUTPUT/diagnostic.log" 2>&1
+          echo $? > "$DIAG_OUTPUT/diagnostic.exit"
+          cat "$DIAG_OUTPUT/diagnostic.log"
+          exit 0
+
+      - name: Build readable result summary
+        if: always()
+        run: node tools/pr9-width-summary.cjs "$DIAG_OUTPUT"
+
+      - name: Add diagnostic summary
+        if: always()
+        run: cat "$DIAG_OUTPUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostic logs and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr9-width-diagnostic-${{ github.run_id }}
+          path: diagnostic-artifacts/
+          if-no-files-found: error
+          retention-days: 30
