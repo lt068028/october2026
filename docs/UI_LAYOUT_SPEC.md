@@ -33,14 +33,13 @@
 
 ## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
-- **Filled共通実装の限定適用（2026-11-11）**：`preview/qa-filled-common-practice22-20261111` のPractice 2.2（Example／Drill）では、承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` の **Q：Chat Help 24 Filled／A：Chat 24 Filled** のパスをそのまま共通ヘルパーに採用する。追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。
-- `FluentIcons.create`／`markup` の第4引数 `filled` と、共通CSSの `--conversation-role-filled-color` を使用する。共通レンダラーはbodyの `data-conversation-icon-style="filled"` で選択し、今回の有効化はPractice 2.2だけとする。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
-- **未展開ページの既定Q/A**：Microsoft Fluent UI System Icons **Q：Chat Help 24 Regular／A：Chat 24 Regular** ＋ `currentColor`輪郭`0.45px`を維持する。全ページ展開、PR #8への反映、main／Production統合は別途承認まで行わない。
-- 停止ボタン右の**疑問文マーク**は`Chat Help 24 Regular`＋輪郭0.45pxを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。
+- **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。
+- `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。今回のPreviewでは対象Practice全体に有効化する。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
+- 停止ボタン右の**疑問文マーク**はChat Help Filledを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。Compositionを含め、共通ヘルパーを使用する対象ページで既存の表示条件を維持する。
 - `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
 - 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
 - Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
-- Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。
+- Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。これはPreviewブランチ上の検証仕様であり、main／Productionへの統合は行わない。
 - Yes/NoはFluent `Emoji Smile Slight 24 Regular`／`Emoji Sad 24 Regular`を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
 - SVGの出典はMicrosoft Fluent UI System Icons（MIT）。旧Icons8画像・帰属表示リンクとLucideの旧SVG素材はこのPreviewでは除去対象。旧記録は履歴として別文書に残せるが、現行UI仕様ではない。
 - 375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持の検証後に本番統合を判断する。Previewへの適用は本番採用完了を意味しない。

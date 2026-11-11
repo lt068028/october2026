@@ -1,7 +1,7 @@
 // Minimal reusable question-sentence indicator helper.
 // Displays the noninteractive Microsoft Fluent message-circle-question icon beside the stop button for interrogative rows.
 window.QuestionIndicator = Object.freeze({
-    SVG_MARKUP: window.FluentIcons.markup('question', 16, 'question-indicator-icon'),
+    SVG_MARKUP: window.FluentIcons.markup('question', 16, 'question-indicator-icon', 'filled'),
 
     create() {
         const span = document.createElement('span');

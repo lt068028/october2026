@@ -1,6 +1,6 @@
 /* Microsoft Fluent UI System Icons — local reusable Regular / Filled SVGs (MIT license).
  * Source: https://github.com/microsoft/fluentui-system-icons
- * Default Q/A and interrogative: 24 Regular paths with the approved 0.45px outline boost.
+ * Shared Q/A and interrogative callers select the approved 24 Filled paths; Regular remains available for other callers.
  * Other utility icons retain the official Regular shapes; no network requests.
  */
 window.FluentIcons = (() => {

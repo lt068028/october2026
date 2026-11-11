@@ -1,4 +1,5 @@
 // Structural regression tests for Question Indicator in Practice 1.1 and Practice 1.2.
+const {createHash} = require('node:crypto');
 const {chromium} = require('playwright'), fs = require('fs'), path = require('path'), assert = require('assert/strict');
 const root = path.resolve(__dirname, '..');
 
@@ -63,6 +64,12 @@ const root = path.resolve(__dirname, '..');
     check(attrs.pointerEvents, 'none', 'Indicator has pointer-events=none');
     check(attrs.svgWidth, '16', 'Indicator SVG width is 16');
     check(attrs.svgHeight, '16', 'Indicator SVG height is 16');
+    const filledQuestionHash = '45ed9a94cd9ec310a0854c13cda744cb8e1e1b7e0a9a05878f3acc33f4c8943c';
+    const filledAttrs = await page.locator('.question-indicator').first().evaluate(el => {
+        const path = el.querySelector('svg path');
+        return {stroke:path?.getAttribute('stroke'), fill:path?.getAttribute('fill'), d:path?.getAttribute('d')};
+    });
+    check({stroke:filledAttrs.stroke,fill:filledAttrs.fill,hash:createHash('sha256').update(filledAttrs.d||'').digest('hex')}, {stroke:null,fill:'currentColor',hash:filledQuestionHash}, 'Indicator uses approved Chat Help Filled path without outline');
 
     // 3. Rerendering & settings switching: no duplicates
     for (const script of ['hiragana', 'kanji']) {

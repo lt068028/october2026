@@ -1102,7 +1102,6 @@ body {
     display: block;
     width: 16px;
     height: 16px;
-    stroke: currentColor;
     pointer-events: none;
     flex-shrink: 0;
 }

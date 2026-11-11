@@ -1,13 +1,11 @@
 # October2026 現在のリレー状態（HANDOVER）
 
-## Filled Q/A共通実装・Practice 2.2限定Preview（2026-11-11）
+## Filled Q/A・停止横疑問符 全対象Preview（2026-11-11）
 
-- 専用ブランチ `preview/qa-filled-common-practice22-20261111`。基準PR #8 HEAD：`ead952604b8a6b868c91171ee8a56d15c6740ae4`。承認パスの出典：比較ブランチ最終コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee`。
-- Filled Q/Aを共通ヘルパー・レンダラー・CSSに実装し、Practice 2.2のEx／Drだけで有効化。正本はUI_LAYOUT_SPECの会話役割仕様。その他9ページの共通レンダラー利用はRegularのまま。疑問文マーク・音声ロジックは変更しない。
-- 自動検証：Practice 2.2 Q/A 3,676、共通Q/A限定 13,207、内容幅719、Filled比較897チェックでPASS。375／600／1440pxのLight／Darkで承認比較とのパス・色・位置・寸法一致、既定APIと代表3ページの不変を確認。音声はモック検証。
-- `question-indicator.cjs` はPractice 8.2の期待20／実測0で停止し、基準PR #8でも同一失敗を再現。既存の別作業領域の修正を取り込まず保留。
-- PR #8、比較ブランチ、main、既存workおよびPractice 8.2の未コミット修正には反映しない。Previewでのユーザー実機確認と、全ページ展開は別途承認待ち。
-
+- 専用ブランチ `preview/qa-filled-common-allpages-20261111`。起点：Practice 2.2承認Preview `5e7f88f4a93179ab729f9f60b502a9f7383b4460`。パス出典：比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee`。
+- 対象Practice全ページのQ/AとCompositionの疑問符に、共通Fluent Filledヘルパーを適用。Light `#71839A`／Dark `#D9DDE3`、疑問符はChat Help Filled 16px。Regularの輪郭は付けない。
+- Practice 8.2のQuestionIndicator attach順序も、再描画でアイコンが外れる問題を直すためPreview内で最小変更。録音・停止・判定条件は不変。
+- main／PR #8／Production、Practice 8.2の独立作業領域は変更しない。全対象Previewの検証・ユーザー確認待ち。
 > [!IMPORTANT]
 > 本書は「現在の作業状態・直前作業の成果・継続確認事項」を記録する運用文書です。
 > 正式な仕様は各正本仕様書（`PROJECT_SPEC.md`, `UI_LAYOUT_SPEC.md`, `GERMAN_DRILL_SPEC.md` 等）を参照してください。
