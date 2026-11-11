@@ -970,7 +970,7 @@ function initGermanDrill() {
 
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
         if ((session || preparing) && !isRelay) return;
-        if (!isRelay && playingButton === btn && btn?.classList.contains("is-playing")) {
+        if (!isRelay && btn && (activePlaybackToken?.btn === btn || playingButton === btn && btn.classList.contains("is-playing"))) {
             stopAllPlayback();
             audioDiagnostic("Speaker playback stopped");
             return;
@@ -1160,12 +1160,20 @@ function initGermanDrill() {
         const audio = new Audio(entry.url);
         if (btn) markPlaying(btn);
         activeAudio = audio;
-        audioDiagnostic("Recorded audio playback requested");
+        const recordedBlob = entry.url.startsWith("blob:") ? "blob recording" : "other recording";
+        audioDiagnostic("Recorded audio playback requested (" + recordedBlob + ")");
+        audio.onloadedmetadata = () => audioDiagnostic("Recorded audio loaded: duration=" + audio.duration.toFixed(2) + "s");
+        audio.ontimeupdate = () => {
+            if (audio.currentTime > 0.25 && !audio.datasetReported) {
+                audio.datasetReported = true;
+                audioDiagnostic("Recorded audio progress: " + audio.currentTime.toFixed(2) + "s / " + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
+            }
+        };
         const cleanup = (error) => {
-            audioDiagnostic(error ? "Recorded audio failed: " + String(error?.message || error?.type || error) : "Recorded audio finished");
+            audioDiagnostic(error ? "Recorded audio failed: " + String(error?.message || error?.type || error) : "Recorded audio finished; position=" + audio.currentTime.toFixed(2) + "s; duration=" + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
             stopPlayback();
         };
-        audio.onplaying = () => audioDiagnostic("Recorded audio is playing");
+        audio.onplaying = () => audioDiagnostic("Recorded audio is playing; duration=" + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
         audio.onended = () => cleanup(null);
         audio.onerror = (event) => cleanup(event);
         DrillAudio.play(audio, cleanup);
@@ -1260,9 +1268,9 @@ function initGermanDrill() {
             let url = previous.url;
 
             if (!s.discard && s.heard && s.chunks.length) {
-                url = URL.createObjectURL(
-                    new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" })
-                );
+                const recordingBlob = new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" });
+                audioDiagnostic("Recording saved: " + recordingBlob.size + " bytes; type=" + recordingBlob.type);
+                url = URL.createObjectURL(recordingBlob);
                 if (previous.url) {
                     URL.revokeObjectURL(previous.url);
                 }
