@@ -9,6 +9,11 @@ window.ConversationDisplay = (() => {
         if(document.body.dataset.practice==='2.2')e.classList.add('p22-person-badge');
         e.dataset.person=names[name];e.textContent=name;return e;
     }
+    function roleLabel(letter) {
+        const label=document.createElement('strong');
+        label.className='example-label-title';label.textContent=letter+':';
+        return label;
+    }
     function format() {
         document.querySelectorAll(imageSelector).forEach(e=>{
             if(!e.dataset.person)e.dataset.person=({A:'A',B:'B',far:'C'})[e.closest('[data-zone]')?.dataset.zone];
@@ -16,6 +21,12 @@ window.ConversationDisplay = (() => {
         });
         const selectors='.p21-speaker-practice .drill-number-cell,.p2x-dialogue-example > p > strong,.example-label-title,.drill-cue-cell > strong,.p21-d3-answer-cue > strong,.prompt-label > strong,.p21-model-line > strong,.p21-which-model-line > strong,.p23-model-speaker,.p2x-speaker-group > h3';
         document.querySelectorAll(selectors).forEach(label=>{
+            const scope=label.closest('tr,.p81-example-row');
+            const answer=label.textContent.trim().match(/^A:?$/)||label.querySelector('.conversation-role-circle[aria-label="Answer"]');
+            if(answer&&scope?.querySelector('.yn-answer-icon')) {
+                label.replaceChildren();label.classList.remove('conversation-role');
+                label.dataset.conversationLabel='true';label.setAttribute('aria-hidden','true');return;
+            }
             if(label.dataset.conversationLabel||label.classList.contains('conversation-role')||label.classList.contains('conversation-person')||label.closest('[data-conversation-image]'))return;
             const text=label.textContent.trim();
             let pair=text.match(/^([XYZ]) · ([QA]):$/);const role=text.match(/^([QA]):?$/),name=text.match(/^([XYZ])[:：]?$/);
@@ -82,5 +93,5 @@ window.ConversationDisplay = (() => {
     observer=new MutationObserver(()=>format());
     function install(){format();observer.observe(document.body,{childList:true,subtree:true});}
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
-    return Object.freeze({format,syncSpeaker});
+    return Object.freeze({format,syncSpeaker,roleLabel});
 })();

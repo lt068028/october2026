@@ -1314,6 +1314,7 @@ function render() {
                 const cue = document.createElement('td');
                 cue.className = 'prompt-label';
                 cue.innerHTML = cueWords(r.cues);
+                if (/^[QA]:$/.test(r.label)) cue.prepend(ConversationDisplay.roleLabel(r.label[0]), document.createTextNode(' '));
 
                 const cell = document.createElement('td');
                 cell.className = 'p73-controls';
@@ -2522,6 +2523,7 @@ render = function () {
 
             if (!ri) {
                 cue.innerHTML = cueWords(cues);
+                cue.prepend(ConversationDisplay.roleLabel('Q'), document.createTextNode(' '));
             } else {
                 ['yes', 'no'].forEach(answer => {
                     const choice = button(

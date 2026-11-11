@@ -1569,6 +1569,8 @@ function practice2ShowNotice(resultSpan, message) {
             cueCell.append(cue);
         }
 
+        cueCell.prepend(ConversationDisplay.roleLabel(part === 'q' ? 'Q' : 'A'), document.createTextNode(' '));
+
         const cell = node("td");
         const controls = node("div", "recording-controls");
         const actions = node("div", "recording-actions");

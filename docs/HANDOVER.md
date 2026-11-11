@@ -1,5 +1,12 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Q/A表示条件統一Preview（2026-11-11）
+
+- `preview/qa-role-rules-allpages-20261111`、基準PR #9 `01e5e49d5a006a7b29602791fa8e606f121dd706`。正式条件はUI_LAYOUT_SPEC「Q/A表示条件の正本」を参照。
+- 全11Practiceを監査し、Q/A補完、Smile/Frown回答のA省略、8.3のQ→Q→なしを実施・検証する。main・PR #8/#9・Keep going!・Productionは変更しない。ユーザー実機承認待ち。
+- 自動検証：`qa-role-policy.cjs` 7,641件、`qa-icons.cjs` 96,690件、`question-indicator.cjs` 121件PASS。375/600/1440px・Light/Dark、選択・全Set・再描画・Script/English Cuesを確認。
+- `audio-relay.cjs` の対象1.2/7.1/7.2/7.3では `practice1.2 stop timeout never starts microphone` が失敗。基準PR #9でも同一コマンド・同一失敗を確認。音声処理は変更せず、別件として保持。実機マイク未検証。
+
 ## Filled Q/A・停止横疑問符 全対象Preview（2026-11-11）
 
 - 専用ブランチ `preview/qa-filled-common-allpages-20261111`。起点：Practice 2.2承認Preview `5e7f88f4a93179ab729f9f60b502a9f7383b4460`。パス出典：比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee`。

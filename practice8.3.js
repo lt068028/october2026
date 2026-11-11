@@ -215,6 +215,8 @@ function makeRow(id,spec,extra={}){
  STTDisplay.register(r.text,r.hira);return r;
 }
 function makeKindBadge(kind){
+ // Display policy only: keep source kind for arrows, models and audio.
+ kind=kind==='A'?'':'Q';
  const span=node('span','example-label-title p81-kind');
  if(kind==='Q'||kind==='A'){span.textContent=kind;}
  else{span.classList.add('conversation-role','conversation-role-blank');const circle=node('span','conversation-role-circle');circle.textContent='Q';circle.style.visibility='hidden';circle.setAttribute('aria-hidden','true');span.append(circle);}

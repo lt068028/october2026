@@ -606,6 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cell = node('td');
         populateRecordingCell(cell, item, index, kind, state);
+        cueCell.prepend(ConversationDisplay.roleLabel(question ? 'Q' : 'A'), document.createTextNode(' '));
 
         row.append(cueCell, cell);
         body.append(row);

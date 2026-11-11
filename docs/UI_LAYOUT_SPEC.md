@@ -33,6 +33,16 @@
 
 ## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
+### Q/A表示条件の正本（2026-11-11ユーザー確定）
+
+- Q/Aは文法形式ではなく質問・回答という発話の役割を示す。通常の質問→回答はQ→A。単独の疑問文作成、回答のない質問形式比較には付けない。疑問文であることだけからQを自動推定しない。
+- Smile/Frown付きの回答行・回答群ではAを省略し、質問のQは維持する。Smile/Frownの仕様・選択状態は変更しない。Y/N文法だけを理由にAを省略しない。
+- Practice 8.3 Ex1〜4・Dr1〜4は全SetでQ→Q→なし。2行目は範囲を絞るWh疑問文でありY/N疑問文ではない。この返答のA省略は8.3限定である。
+- A省略はSmile/Frown付き回答と8.3限定構造だけ。通常の返答のAは維持する。既存の「空の継続役割欄」規定は、この表示条件に従う配置保持に限る。
+- 停止横の疑問文マークは録音対象の文の種類を示す別条件であり、既存の条件・SVG・16px・色・位置・4px間隔を維持する。
+- 新規Practiceも本節を適用し、Ex/Dr・選択前後・Set切替・再描画で同じ条件を維持する。人物を独自に新設しない。下記の既存仕様中の「会話役割」「Q/A」は本節の表示条件に従う。
+
+
 - **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。CompositionにはQ/A役割表示がないため、今回のQ/A適用対象外。
 - `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。今回のPreviewでは対象Practice全体に有効化する。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
 - 停止ボタン右の**疑問文マーク**はChat Help Filledを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。Compositionを含め、共通ヘルパーを使用する対象ページで既存の表示条件を維持する。
