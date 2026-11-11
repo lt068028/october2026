@@ -1,6 +1,11 @@
 // Limited Example display regression. Audio uses the existing controlled mock.
 const fs=require('fs'),path=require('path'),{chromium}=require('playwright');
-const root=process.env.NEGATIVE_ROOT||path.resolve(__dirname,'..'),baseline=process.env.NEGATIVE_BASELINE_ROOT||root;
+const root=path.resolve(process.env.NEGATIVE_ROOT||path.resolve(__dirname,'..'));
+const baselineEnv=process.env.NEGATIVE_BASELINE_ROOT;
+if(!baselineEnv)throw new Error('NEGATIVE_BASELINE_ROOT is required: supply a separate, reviewed baseline checkout (CI sets it from NEGATIVE_BASELINE_REF).');
+const baseline=path.resolve(baselineEnv);
+if(!fs.existsSync(baseline)||!fs.statSync(baseline).isDirectory())throw new Error('NEGATIVE_BASELINE_ROOT must point to an existing checkout directory: '+baseline);
+if(baseline===root)throw new Error('NEGATIVE_BASELINE_ROOT cannot equal NEGATIVE_ROOT/current checkout.');
 const names=['practice1.1','practice1.2','practice2.1','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','practice8.3'];
 const changed=new Set(['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1']);
 const audio=fs.readFileSync(path.join(__dirname,'audio-relay.cjs'),'utf8'),mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=>'));
