@@ -778,8 +778,11 @@ function initGermanDrill() {
         stopPlayback();
         playingButton = b;
         b._contents = Array.from(b.childNodes);
-        b.disabled = true;
+        b.disabled = false;
         b.classList.add("is-playing");
+        if (b.classList.contains("uebung-icon-button")) {
+            setAudioIcon(b, "stop", "Stoppen");
+        }
         // Keep icon-only controls usable and visually consistent during playback.
         // A text replacement would turn the 36px icon button into a "Playing..." label.
         if (!b.classList.contains("uebung-icon-button")) {
@@ -967,6 +970,11 @@ function initGermanDrill() {
 
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
         if ((session || preparing) && !isRelay) return;
+        if (!isRelay && playingButton === btn && btn?.classList.contains("is-playing")) {
+            stopAllPlayback();
+            audioDiagnostic("Speaker playback stopped");
+            return;
+        }
         if (!isRelay) {
             cancelActivePlaybackToken(true);
             stopAllPlayback();
@@ -1104,16 +1112,14 @@ function initGermanDrill() {
             token.handled = true;
 
             if (currentUtterance !== u) return;
-            currentUtterance = null;
-            if (activePlaybackToken === token) {
-                activePlaybackToken = null;
-            }
-
             if (isRelay) {
-                // Relay owns restoring buttons
+                currentUtterance = null;
+                if (activePlaybackToken === token) activePlaybackToken = null;
             } else {
                 stopPlayback(true);
+                if (activePlaybackToken === token) activePlaybackToken = null;
             }
+            audioDiagnostic(errorEvent ? "Speaker playback ended with error" : "Speaker playback finished; button restored", Boolean(errorEvent));
 
             if (errorEvent) {
                 handlePlaybackError(errorEvent);
@@ -1136,23 +1142,32 @@ function initGermanDrill() {
     }
 
     function playRecording(key, btn) {
-        if (session || preparing) return;
+        if (session || preparing) {
+            audioDiagnostic("Recording playback blocked: microphone busy", true);
+            return;
+        }
+        if (playingButton === btn && btn?.classList.contains("is-playing")) {
+            stopAllPlayback();
+            audioDiagnostic("Recorded audio stopped");
+            return;
+        }
         stopAllPlayback();
-
         const entry = saved.get(key);
-        if (!entry?.url) return;
-
+        if (!entry?.url) {
+            audioDiagnostic("No recorded audio URL available", true);
+            return;
+        }
         const audio = new Audio(entry.url);
         activeAudio = audio;
         if (btn) markPlaying(btn);
-
-        const cleanup = () => {
+        audioDiagnostic("Recorded audio playback requested");
+        const cleanup = (error) => {
+            audioDiagnostic(error ? "Recorded audio failed: " + String(error?.message || error?.type || error) : "Recorded audio finished");
             stopPlayback();
         };
-
-        audio.onended = cleanup;
-        audio.onerror = cleanup;
-
+        audio.onplaying = () => audioDiagnostic("Recorded audio is playing");
+        audio.onended = () => cleanup(null);
+        audio.onerror = (event) => cleanup(event);
         DrillAudio.play(audio, cleanup);
     }
 
