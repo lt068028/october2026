@@ -920,6 +920,7 @@ function practice2ShowNotice(resultSpan, message) {
             saved.isCorrect ? "none" : "inline";
 
         practice21SetRetryMessage(view.corrTextSpan, saved);
+    requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     };
 
     function listen(getText, label = "🔊きく", onPlay) {
@@ -2082,6 +2083,29 @@ function practice2FindDiff(actual, reference) {
     };
 }
 
+// Put the transcript on its own line only if that avoids an unnecessary wrap.
+function practice21UpdateRetryWrap(view) {
+    const result = view.resultSpan.parentElement;
+    if (!result || !result.classList.contains('recording-result')) return;
+    result.classList.remove('p21-transcript-own-line');
+    const feedback = view.correctionBox;
+    if (feedback.style.display === 'none' || !view.corrTextSpan.textContent.trim()) return;
+    const available = result.parentElement?.clientWidth || result.clientWidth;
+    if (!available) return;
+    const probe = document.createElement('span');
+    probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;display:inline-block;pointer-events:none;';
+    const transcript = view.resultSpan.cloneNode(true);
+    transcript.style.cssText = 'display:inline;white-space:nowrap;width:max-content;max-width:none;';
+    probe.appendChild(transcript);
+    document.body.appendChild(probe);
+    const transcriptWidth = transcript.getBoundingClientRect().width;
+    const labelWidth = feedback.getBoundingClientRect().width;
+    probe.remove();
+    if (transcriptWidth <= available && transcriptWidth + labelWidth + 4 > available) {
+        result.classList.add('p21-transcript-own-line');
+    }
+}
+
 function practice2ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.classList.remove("not-recorded-yet");
     const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
@@ -2179,6 +2203,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "inline";
 
     practice21SetRetryMessage(view.corrTextSpan, saved);
+    requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     if (!saved.isCorrect) {
 
         view.corrListenBtn.style.display =
@@ -2266,6 +2291,10 @@ function bindRecorderEvents(
     };
 
     practice2State.views[rowKey] = view;
+    if (typeof ResizeObserver !== 'undefined') {
+        const controls = resultSpan.closest('.recording-controls');
+        if (controls) new ResizeObserver(() => requestAnimationFrame(() => practice21UpdateRetryWrap(view))).observe(controls);
+    }
 
     const currentView = () =>
         practice2State.views[rowKey] || view;
