@@ -1,9 +1,18 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## 判定結果アイコン：デザイン承認・仕様登録（2026-11-11）
+
+- 正本：UI_LAYOUT_SPEC「判定結果アイコン共通仕様 — Feedback Status Icons」。ユーザー提出仕様を登録。動作接続は未承認。
+- 正解：Fluent `Checkmark 24 Filled`（丸囲みなし）、22px、Light `#16A34A`／Dark `#4ADE80`。静的比較で使用したCheckmark Circle Regularは不採用。
+- 保留：Lucide `Footprints`（ISC・例外採用）、22px、Light `#8064B0`／Dark `#B9A2E5`。説明`Could not be evaluated reliably.`はHover・キーボード双方に対応する。
+- Fire＋Keep going!、Q/A、目なしSmile/Frown、疑問文マークは変更しない。今回の変更は仕様書2件だけで、静的比較ページも実ページも変更しない。
+- 未決定：Practice 2.1の保留状態の生成・保存条件。認識失敗、結果なし、unrecognized/audioOnly、通信エラー、録音キャンセルを保留へ自動分類しない。
+- 次工程：保留条件を調査・設計しユーザー承認を受ける。その後Practice 2.1動作実装・実機承認、全ページ監査と統合Preview承認へ進む。今回の登録だけで実装・main／Production反映を開始しない。
+
 ## Practice 2.1 判定SVG静的比較Preview（2026-11-11）
 
-- `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f…`。正式な候補・確定／未確定の区別はUI_LAYOUT_SPEC「判定SVG静的比較」を参照。
-- 比較ページのみ。Practice本体、判定、録音、コピー、他ページは変更しない。ユーザーがチェックの緑・Footprints形状・サイズを実機承認するまで接続しない。
+- `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f…`。当時の候補記録はUI_LAYOUT_SPEC「判定SVG静的比較」を参照。現在の正式仕様は同書冒頭「判定結果アイコン共通仕様」を優先。
+- 比較ページのみ。Practice本体、判定、録音、コピー、他ページは変更しない。デザインは下記承認記録により確定したが、判定条件と動作接続は未承認。
 - 自動検証：静的比較606件、Keep going! 574件、目なしSmile/Frown・Q/A共存8,024件、疑問文マーク121件成功・失敗0。375/600/1440px・Light/Darkの比較スクリーンショット取得済み。音声は既存テストのモックであり実機マイク未確認。
 - 次工程：デザイン承認後、保留状態の保存・生成条件を別途確定する。Practice 2.1の実保存経路は主にisCorrectで、表示ガードにあるundetermined/unrecognized/audioOnlyの存在だけでは保留生成条件は確定できない。既存の不正解を保留へ変更しない。
 

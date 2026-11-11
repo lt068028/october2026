@@ -1,5 +1,59 @@
-## Practice 2.1 判定SVG静的比較（2026-11-11・デザイン承認待ち）
+## 判定結果アイコン共通仕様 — Feedback Status Icons（2026-11-11）
 
+**デザイン承認済み／判定処理への接続は未承認。** 本節を判定結果アイコンの正本とする。登録のみであり、Practice 2.1の実際の判定表示、既存の✅、判定ロジックは変更しない。
+
+### 基本方針・承認済みSVG
+
+Q/Aは会話の役割、Smile/Frownは肯定・否定を示し、本節の判定結果アイコンとは別機能である。
+
+| 判定状態 | SVG・ライブラリ | サイズ | Light | Dark | ライセンス |
+| --- | --- | --- | --- | --- | --- |
+| 正解 | Microsoft Fluent UI System Icons `Checkmark 24 Filled` | 22×22px | `#16A34A` | `#4ADE80` | MIT |
+| 判定保留 | Lucide `Footprints` | 22×22px | `#8064B0` | `#B9A2E5` | ISC |
+| 不正解 | Microsoft Fluent `Fire 24 Regular` ＋ `Keep going!` | 20×20px | `#B47732` | `#E4AD69` | MIT |
+| 未回答・録音中 | 新しい判定アイコンなし | — | — | — | — |
+
+- 正解は**丸囲みのないチェック**。`Checkmark Circle`は使用しない。
+- 正解・保留は正式SVG原本のインラインSVG、原則`currentColor`。背景・枠・影なし。
+- Fluentに適切なFootprintsが見つからなかったため、Lucideを例外採用する。共通アイコンセットをLucideへ変更するものではない。
+- Fireは既存の正式仕様を優先する。SVGと文言の間隔4px、抽出テキストとの間隔4px、右寄せ、赤い不一致強調を維持する。本登録で既存のKeep going!仕様を上書きしない。
+
+### 表示条件・排他性
+
+- 正解：既存の判定処理が正解と確定した場合だけ表示する。Practice 2.1では既存の`isCorrect: true`に対応する。既存✅からSVGへの置換は別途承認された表示実装時に行う。
+- 保留：判定処理が正解・不正解のいずれにも確定できない状態を**明示的に返した場合**に表示する。ただし現行Practice 2.1では、その状態を保存・生成する処理は確認されていない。
+- 音声認識失敗、認識結果なし、`unrecognized`、`audioOnly`、通信エラー、録音キャンセルを自動的に保留へ分類しない。これらの扱いは別途判定仕様として確定する。Footprints表示のために既存判定ロジックを変更しない。
+- 同じ回答に正解チェック・Footprints・Keep going!を同時に表示しない。判定更新時に古い表示を残さない。
+- 未回答・録音中は、判定確定済みの結果を保持する既存仕様がある場合を除き、新しい判定アイコンを生成しない。
+- 保留の説明は正確に`Could not be evaluated reliably.`とする。マウスHoverとキーボード操作の双方で確認可能にする。
+
+### コピー・配置・共通実装
+
+- 画面はSVG、コピー機能のあるページのコピー文字列は判定データから正解`✅`／保留`👣`を生成する。SVGのHTML・画像データを混入させず、既存のコピー形式や回答文保持を変更しない。
+- Practice 2.1には既存のCopy my sentences機能がないため、この仕様のためだけに新設しない。
+- 既存の判定結果表示領域を利用する。375／600／1440px・Light／Darkで、録音・再生・停止、Q/A、Smile/Frown、疑問文マークとの重なりがないことを検証する。不要な空列・固定幅を追加しない。
+- 正確な余白・基線・折返しはPractice 2.1の動作Previewで確認してから確定する。
+- SVGは共通部品で一元管理し、ページごとに複製しない。Fluent Checkmark Filled／Lucide Footprintsの正式原本とライセンス通知を保持し、外部CDNに依存しない。
+- 既存のQ/A共通ヘルパー、目なしSmile/Frown、疑問文マーク、Keep going!は変更しない。
+
+### 実装・承認状況と次工程
+
+| 工程 | 状態 |
+| --- | --- |
+| チェック・Footprintsの形状、両22px、Light／Dark色 | デザイン承認済み |
+| 静的SVG比較Preview | 作成済み。ただし当時のCheckmark Circleは不採用。今回の登録では比較ページ・SVGを変更しない |
+| 正式仕様書への登録 | 本節に登録済み |
+| 判定保留の生成条件 | 未確定 |
+| Practice 2.1への動作接続・全ページ展開 | 未実装・未承認 |
+| main／Production反映 | 未実施 |
+
+次工程は、保留条件の調査・設計 → ユーザーによる判定条件承認 → Practice 2.1動作実装 → 実機承認 → 全ページ適用範囲監査 → 全ページ統合Preview承認 → main反映の順とする。今回の仕様登録を動作実装や統合の許可と扱わない。
+
+本登録作業では正誤判定、音声認識・録音・再生、Q/A表示条件、目なしSmile/Frown、疑問文マーク、Keep going!、Practice 2.1の判定表示、他ページ表示、main／Productionを変更しない。
+
+## Practice 2.1 判定SVG静的比較（2026-11-11・過去の候補記録）
+
+- 以下は承認前の比較履歴。現在の採用仕様は冒頭「判定結果アイコン共通仕様」を正本とする。比較ページのCheckmark Circleは採用しない。
 - 独立Preview `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f2ae8bad098f0b2438fe35df742be7cc2`。比較ページ `preview/practice21-feedback-icons.html` のみ。判定処理・Practice本体には接続しない。
 - 正解候補：Microsoft Fluent Checkmark Circle 24 Regular（MIT）。緑 Light `#16A34A`／Dark `#4ADE80` は候補であり、正式決定ではない。
 - 保留候補：Lucide Footprints（ISC、同梱MIT noticesも保持）。FluentカタログにFootprintsは見当たらず、代替セットの原本を比較専用SVGとして利用。正式採用・ライブラリ再導入ではない。
