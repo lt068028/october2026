@@ -743,7 +743,8 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            v.correction.textContent='🔥Keep going! Try once more!';v.correction.hidden=false;
+            v.correction.classList.add('p83-keep-going');
+            v.correction.textContent='🔥 Keep going!';v.correction.hidden=false;
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
