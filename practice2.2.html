@@ -183,6 +183,9 @@
     <!-- Practice 2.2 ONLY: temporary Filled / light-gray Q&A visual comparison. -->
     <style>
       body[data-practice="2.2"] .conversation-role-icon > svg { color: #64748B; }
+      @media (prefers-color-scheme: dark) {
+        body[data-practice="2.2"] .conversation-role-icon > svg { color: #FFFFFF; }
+      }
     </style>
     <script>
       (() => {
