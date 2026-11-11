@@ -5044,6 +5044,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
+/* Practice 2.1 Preview: warm yellow feedback with error-colored Fluent fire and label. */
 .p21-keep-going-preview .recording-result > .p21-inline-feedback {
     margin: 0 4px 0 0;
     padding: 0;
@@ -5063,24 +5064,26 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     display: block;
     text-align: right;
 }
-.p21-keep-going-preview .p21-retry-fire {
-    color: var(--error-text);
-}
 .p21-keep-going-preview .p21-inline-feedback > .p21-retry-label {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 0;
+    padding: 3px 8px;
     border: 0;
-    border-radius: 0;
-    background: transparent;
+    border-radius: 8px;
+    background: #fff2bf;
     box-shadow: none;
-    color: var(--text-primary);
+    color: var(--error-text);
     font-family: var(--font-latin);
     font-size: inherit;
     font-weight: 400;
     white-space: nowrap;
     vertical-align: baseline;
+}
+@media (prefers-color-scheme: dark) {
+    .p21-keep-going-preview .p21-inline-feedback > .p21-retry-label {
+        background: #50441f;
+    }
 }
 .p21-keep-going-preview .p21-retry-fire {
     display: block;
