@@ -100,7 +100,9 @@ jobs:
 
       - name: Add diagnostic summary
         if: always()
-        run: cat "$DIAG_OUTPUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          cat "$DIAG_OUTPUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          cat "$DIAG_OUTPUT/summary.md"
 
       - name: Upload diagnostic logs and screenshots
         if: always()
