@@ -201,15 +201,19 @@
 
     <script>
     (() => {
+      const cutout = 'var(--bg-panel, #ffffff)';
       const icons = {
-        "Forward": '<path d="m13 4 8 8-8 8V4Z"/><path d="m3 4 8 8-8 8V4Z"/>',
-        "Square Arrow Right": '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m12 8 4 4-4 4"/><path d="M8 12h8"/>',
-        "Circle Arrow Right": '<circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/>',
+        "Forward · Outline": '<path d="m13 4 8 8-8 8V4Z"/><path d="m3 4 8 8-8 8V4Z"/>',
+        "Forward · Filled": '<path d="m13 4 8 8-8 8V4Z" fill="currentColor"/><path d="m3 4 8 8-8 8V4Z" fill="currentColor"/>',
         "Move Right": '<path d="M18 8l4 4-4 4"/><path d="M2 12h20"/>',
-        "Chevrons Right": '<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>'
+        "Chevrons Right": '<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>',
+        "Square Arrow · Outline": '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m12 8 4 4-4 4"/><path d="M8 12h8"/>',
+        "Square Arrow · Inverted": '<rect x="2" y="2" width="20" height="20" rx="2" fill="currentColor"/><path d="m12 8 4 4-4 4M8 12h8" stroke="' + cutout + '"/>',
+        "Circle Arrow · Outline": '<circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/>',
+        "Circle Arrow · Inverted": '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="m12 16 4-4-4-4M8 12h8" stroke="' + cutout + '"/>'
       };
       const bar = document.getElementById("arrowPreviewBar");
-      let selected = "Square Arrow Right";
+      let selected = "Forward · Outline";
       const svg = (path) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + path + '</svg>';
       function apply() {
         document.querySelectorAll(".example-arrow-cell > svg.uebung-audio-icon").forEach(el => {
