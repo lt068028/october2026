@@ -1,8 +1,8 @@
-## 2026-11-11 Microsoft Fluentアイコン統一（専用Preview）
+## 2026-11-11 Microsoft Fluent Filledアイコン統一（全対象Preview）
 
-- 現行の新仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」。Q＝Chat Help、A＝Chat、疑問文＝Chat Help（16px）。Regularパスに輪郭＋0.45px。Copy／Yes・No／Beyondの旧Lucide SVGもFluentへ統一する。
-- 作業先は`preview/fluent-icons-sitewide-20261111`。本番`main`とは別。Run #87の未コミットP1/P2修正は含まない。ブラウザ・CI・Vercelの検証は別途結果を確認する。
-- 下記2026-11-08のIcons8採用記録は**過去の履歴**であり、現行アイコン仕様ではない。
+- 現行の採用仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
+- 全対象Previewは`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一する。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含むため、Q/Aだけの差分ではない。`main`／Productionには未反映。
+- 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）とは別のDraft PRとして検証する。PR #8は変更・クローズ・マージしない。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
 
 ## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
 
