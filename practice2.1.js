@@ -805,6 +805,7 @@ function practice2ShowNotice(resultSpan, message) {
                 acceptedTexts.some(text=>matches(rawTranscript,text,speechStyle))
         };
 
+        saved.judgment = FeedbackStatus.resolve(saved);
         practice2State.savedResults[key] = saved;
 
         practice2ShowResult(
@@ -836,10 +837,9 @@ function practice2ShowNotice(resultSpan, message) {
         view.resultSpan.replaceChildren();
         view.resultSpan.style.color = "var(--text-primary)";
 
-        if (saved.isCorrect) {
-            view.resultSpan.append(
-                document.createTextNode(displayed + " ✅ ")
-            );
+        const status = FeedbackStatus.resolve(saved);
+        if (status === 'accepted' || status === 'undetermined') {
+            view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
         } else {
             const candidates = [
                 saved.expectedText,
@@ -917,7 +917,7 @@ function practice2ShowNotice(resultSpan, message) {
         view.corrListenBtn.style.display = "none";
 
         view.correctionBox.style.display =
-            saved.isCorrect ? "none" : "inline";
+            status === 'mismatch' ? "inline" : "none";
 
         practice21SetRetryMessage(view.corrTextSpan, saved);
     requestAnimationFrame(() => practice21UpdateRetryWrap(view));
@@ -2113,11 +2113,9 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.textContent = "";
     view.resultSpan.style.color = "var(--text-primary)";
 
-    if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
-
+    const status = FeedbackStatus.resolve(saved);
+    if (status === 'accepted' || status === 'undetermined') {
+        view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]
@@ -2200,7 +2198,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
     }
 
     view.correctionBox.style.display =
-        saved.isCorrect ? "none" : "inline";
+        status === 'mismatch' ? "inline" : "none";
 
     practice21SetRetryMessage(view.corrTextSpan, saved);
     requestAnimationFrame(() => practice21UpdateRetryWrap(view));
@@ -2843,6 +2841,7 @@ function processResult(
         modelText,
         isCorrect
     };
+    saved.judgment = FeedbackStatus.resolve(saved);
     practice2State.savedResults[rowKey] = saved;
 
     practice2ShowResult(

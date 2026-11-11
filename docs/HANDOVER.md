@@ -1,5 +1,14 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Practice 2.1 判定表示A案Preview（2026-11-11）
+
+- `preview/p21-feedback-status-a-20261111`、基準 `e9c6fe2d8a95467ba250ddbdf6c0fe23ad683f85`。正本はUI_LAYOUT_SPEC「Practice 2.1：A案」。
+- 正誤照合とisCorrectは維持し、accepted/mismatchを付加。旧データ互換。緑Checkmark Filled 22pxを接続し、明示保留には紫Footprints 22pxとHover／キーボード説明を表示する。
+- 客観的なUndetermined生成経路は現行に存在しないため追加しない。短文・部分一致等は既存Mismatchを維持。認識エラー・音声のみ保存を保留にしない。保留テストは表示fixtureのみ。
+- 自動検証：状態・旧データ比較／認識エラー・音声のみ保持405件、Keep going!574件、Practice 2.1 Q/A7,495件、目なしSmile/Frown・Q/A共存8,024件、疑問文マーク121件成功。375/600/1440px・Light/Dark、Hover／実際のTab操作、Set・Script再描画を検証。実機マイク未検証。
+- `audio-relay.cjs`（対象Practice 2.1）は`stop timeout never starts microphone`で失敗。基準e9c6fe2でも同じ条件・同じ失敗を再現した既存問題として分離し、音声処理は修正しない。Keep going!テスト内のモデル再生・録音・停止・録音再生は成功。
+- 実装対象はPractice 2.1のみ。他ページ・Deutsch・Q/A・Smile/Frown・疑問文マーク・Keep going!本体は変更しない。次工程は独立Previewの実機確認。全ページ展開・main／Production統合は未承認。
+
 ## 判定結果アイコン：デザイン承認・仕様登録（2026-11-11）
 
 - 正本：UI_LAYOUT_SPEC「判定結果アイコン共通仕様 — Feedback Status Icons」。ユーザー提出仕様を登録。動作接続は未承認。
