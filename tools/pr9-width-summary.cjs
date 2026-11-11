@@ -19,4 +19,9 @@ for(const v of ['main','filled']) for(const t of ['existing-qa-icons','existing-
  const p=path.join(root,v,`${t}.exit`);let code='not recorded';try{code=fs.readFileSync(p,'utf8').trim();}catch{}
  text+='- '+v+' '+t+': process exit '+code+'; full log: `'+v+'/'+t+'.log`.\n';
 }
+text+='\n## Existing test log excerpts\n\n';
+for(const v of ['main','filled']) for(const t of ['existing-qa-icons','existing-fluid-width']) {
+ const p=path.join(root,v,`${t}.log`);let log='';try{log=fs.readFileSync(p,'utf8');}catch{}
+ text+='### '+v+' '+t+'\n\n```text\n'+log.split('\n').slice(-80).join('\n')+'\n```\n\n';
+}
 fs.writeFileSync(out,text);
