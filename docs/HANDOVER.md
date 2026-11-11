@@ -1,11 +1,23 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Keep going!／Filled Q/A 統合準備Preview（2026-11-11）
+
+- `preview/p21-keep-going-qa-integration-20261111`。PR #9 HEAD `01e5e49d5a006a7b29602791fa8e606f121dd706` を基準に、承認済みKeep going!表示差分のみ採用。main・PR #9・Productionは未統合。Keep going!表示テスト574件PASS（PR #9基準比較を含む）。375/600/1440px・Light/Dark、音声APIモックで検証。関連Filled Q/AテストはPractice 1.2/2.1/2.2/7.1/8.1で34,339件PASS。実機マイク未検証。独立Previewのユーザー最終確認待ち。
+
 ## Filled Q/A・停止横疑問符 全対象Preview（2026-11-11）
 
 - 専用ブランチ `preview/qa-filled-common-allpages-20261111`。起点：Practice 2.2承認Preview `5e7f88f4a93179ab729f9f60b502a9f7383b4460`。パス出典：比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee`。
 - 対象Practice全ページのQ/AとCompositionの疑問符に、共通Fluent Filledヘルパーを適用。Light `#71839A`／Dark `#D9DDE3`、疑問符はChat Help Filled 16px。Regularの輪郭は付けない。
 - Practice 8.2のQuestionIndicator attach順序も、再描画でアイコンが外れる問題を直すためPreview内で最小変更。録音・停止・判定条件は不変。
 - main／PR #8／Production、Practice 8.2の独立作業領域は変更しない。全対象Previewの検証・ユーザー確認待ち。
+
+## Practice 2.1 Keep going! 限定Preview（2026-11-11、Codex Cloud）
+
+- 独立ブランチ：`preview/p21-keep-going-approved-e-20261111`。基準実装：`preview/keep-going-practice21-20261111`。起点main：`74817eb3e5dc3ff30ad6769df673450354910d29`。
+- 対象はPractice 2.1のみ。承認済みFluent Fire 24 Regularと短文 `Keep going!` をLight `#B47732`／Dark `#E4AD69`で、抽出テキストと同じ右寄せ領域へ配置する。詳細はUI_LAYOUT_SPEC冒頭を参照。
+- 既存のPR #8・Practice 8.2の未コミット修正は取り込まない。main／Productionへの反映・全ページ展開・既存PRのマージは行わない。
+- 検証結果は終了報告とGit履歴を参照。承認Commit `644fff834355c9716cf258aa25cef9fd259131c7` はユーザー実機承認済み。今回の独立統合Previewは再確認待ち。全ページ展開は行わない。
+
 > [!IMPORTANT]
 > 本書は「現在の作業状態・直前作業の成果・継続確認事項」を記録する運用文書です。
 > 正式な仕様は各正本仕様書（`PROJECT_SPEC.md`, `UI_LAYOUT_SPEC.md`, `GERMAN_DRILL_SPEC.md` 等）を参照してください。
