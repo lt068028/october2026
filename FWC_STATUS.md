@@ -1,63 +1,38 @@
-# FWC — outstanding work register
+# FWC — current working register
 
-Updated: 2026-11-11
-Scope: consolidated ChatGPT working register, saved to GitHub at a checkpoint.
-Branch: `preview/deutsch11-lucide-audio-20261110` (preview only; not merged into `main`).
+Updated: 2026-11-11. Source of truth for status: latest user confirmation, not older investigation proposals.
+Branch: `preview/deutsch11-lucide-audio-20261110`. **This is a tracking-only update; no app code was changed.**
 
-## Color-coded action/status legend
+## Status legend (fixed)
+- 🔴 **変更指示** — implement or fix after instruction is prepared in chat.
+- 🔵 **調査指示** — investigate; instruction text is generated in ChatGPT, **not saved as a GitHub file**.
+- ⚪ **実機確認待ち** — implemented, awaiting device check.
+- ⚫ **仕様決定待ち** — decision pending; no implementation until selected.
 
-- 🔵 **調査指示** — investigate only, no code edits. Linked instructions are ready for Codex.
-- 🟠 **変更指示** — approved implementation or repair, separate from investigation.
-- 🟣 **仕様決定待ち** — design/behavior decision pending; do not implement yet.
-- 🟢 **実機確認待ち** — implementation exists; verify in real browser/device before closing.
+## Active FWC — one line per item
 
-## Quick action links
+| Type | Target / issue | Next status | Current decision |
+| --- | --- | --- | --- |
+| F | Deutsch 1.1 Speaker/Abspielen playback stop restarts instead of stopping | 🔵 調査指示 | Still unresolved. Investigate before changing behavior; fallback is disable during playback if reliable stop is impossible. |
+| F | Deutsch 1.1 recognized/extracted text appears too small compared with Keep going | 🔴 変更指示 | **Not verified/fixed**; user confirmed still small on device. Recheck CSS and state transitions; do not mark as device-verification-only. |
+| W | Deutsch 1.1 choose one of 8 arrow icons | ⚫ 仕様決定待ち | [Open 8-option Preview](https://october2026-git-preview-deutsch11-lucide-audio-20261110-az-c884.vercel.app/uebung1.1.html). |
+| F | Deutsch 1.1 no-speech error and Not yet alignment | 🔴 変更指示 | Error text immediately to left of right-aligned Not yet; the pair stays right aligned. Keep extracted text right alignment and existing behavior unchanged. |
+| W | Deutsch 1.1 Keep going occupies a new row even when horizontal space is available | ⚫ 仕様決定待ち | Consider placing Keep going left or right of extracted text in the same row when it fits; avoid unnecessary row height, allow narrow-screen wrapping. Confirm precise placement before changing. |
+| F/C | Practice 7.2 recording begins while model/recorded audio plays; interruption behavior | 🔵 調査指示 | Previously reported; do not assume fixed or still broken without current verification. |
+| W | Question/answer/question-mark icon rollout across pages | ⚫ 仕様決定待ち | Check existing per-page implementation and confirm scope before changes. |
+| W | TTS-unavailable environment guidance across pages | 🔵 調査指示 | Audit existing implementation before considering rollout. |
+| C | Practice 8.1 Drill 4/5 real-device verification (other than accepted display speed) | ⚪ 実機確認待ち | Only checks still genuinely outstanding; do not reopen display delay. |
 
-| Label | Item | Ready-to-open action |
-| --- | --- | --- |
-| 🔵 調査指示 | Practice 7.1 Y/N display delay | [調査指示書を開く](FWC_INSTRUCTIONS/investigate-practice71-yn-delay.md) |
-| 🔵 調査指示 | Practice 8.1 Drill 4 display delay | [調査指示書を開く](FWC_INSTRUCTIONS/investigate-practice81-drill4-delay.md) |
-| 🟣 仕様決定待ち | Deutsch 1.1 arrow — eight variants | [比較Previewを開く](https://october2026-git-preview-deutsch11-lucide-audio-20261110-az-c884.vercel.app/uebung1.1.html) |
-| 🟢 実機確認待ち | Deutsch 1.1 transcription sizes | [実機Previewを開く](https://october2026-git-preview-deutsch11-lucide-audio-20261110-az-c884.vercel.app/uebung1.1.html) |
-| 🟢 実機確認待ち | Practice 8.1 Drill 4/5 | Verify in browser; investigate if a defect reproduces |
+## Closed / accepted — do not re-add to active FWC
+- **Practice 7.1 Y/N display delay:** user confirmed speed is now acceptable on 2026-11-11. No further investigation or optimization requested.
+- **Practice 8.1 Drill 4 display delay:** user confirmed the current speed is acceptable on 2026-11-11. No further investigation or optimization requested.
+- Example speech-line gray dotted separator removal, Lato standardization, Practice 2.3 6px alignment, Practice 8.3 question-mark display: previously implemented; reopen only with new evidence.
 
-## Definitions
-- F = Fix / defect
-- W = Wish / enhancement or design decision
-- C = Concern / investigation
-- Status is not "done" until the change has been verified in the browser/device when applicable.
-- Estimates are rough and do not represent measured implementation times.
-
-## Deutsch 1.1 — confirmed current three items
-
-| Type | Priority | Item | Status | Next action |
-| --- | --- | --- | --- | --- |
-| F | High | Playback stop: Speaker (TTS) and Abspielen (recording playback) show stop but pressing the same button may restart playback instead of stopping it | Unresolved; user reported no improvement on Nov 11 | Investigate click handling and audio session state; try true stop as a new feature; if not reliably achievable, disable the playback button during playback and show not-allowed cursor instead of a misleading stop affordance. Preserve recording, Autostop and Autoplay. |
-| F | Medium | Transcription text size: 1.2em during recognition and after recording, while "Not yet" remains 0.75em | 🟢 実機確認待ち — Preview code pushed; actual display not yet verified | Test both recording states and placeholder, confirm font size stays consistent across state transition. |
-| W | Medium | Finalize Example arrow icon | 🟣 仕様決定待ち — Eight-option switcher on Preview; choice pending | Compare Forward outline/filled, Square Arrow Right outline/inverted, Circle Arrow Right outline/inverted, Move Right, Chevrons Right. Consider Move Right stroke-width and size. Remove comparison UI after choosing final icon. |
-
-Preview URL: https://october2026-git-preview-deutsch11-lucide-audio-20261110-az-c884.vercel.app/uebung1.1.html
-
-## Other outstanding / verify-before-action items
-
-| Type | Item | Status / caution |
-| --- | --- | --- |
-| C | Practice 7.1: Yes/No rendering delay | 🔵 調査指示 — [open instructions](FWC_INSTRUCTIONS/investigate-practice71-yn-delay.md); confirm it still reproduces. |
-| C | Practice 8.1 Drill 4: rendering delay | 🔵 調査指示 — [open instructions](FWC_INSTRUCTIONS/investigate-practice81-drill4-delay.md); verify cause. |
-| C | Practice 8.1 Drill 4/5: real-device checks | 🟢 実機確認待ち — Verify prior implementation before classifying as a defect. |
-| F / C | Practice 7.2: audio interruption when recording starts during playback | Previously reported; verify current behavior and expected interruption policy. |
-| W | Cross-page Lucide question/answer or question-mark icon rollout | Scope and existing implementation need verification before changing all pages. |
-| W | TTS-unavailable environment guidance | Check which pages already have guidance and whether a common behavior is needed. |
-
-## Previously implemented — do not reopen without fresh evidence
-- Example speech-line gray dotted separator removal.
-- Latin UI font standardization to Lato.
-- Practice 2.3 speaker alignment (6px).
-- Practice 8.3 question-mark display.
-- Other previously deployed visual/layout corrections.
-
-## Workflow
-- Keep day-to-day FWC updates in chat.
-- Save a checkpoint to GitHub at meaningful milestones or before changing development environments, not on every message.
-- Distinguish code committed, deployment succeeded, and actual device verification.
-- Do not merge this Preview branch into `main` without explicit approval.
+## Working rules
+1. One compact line per active FWC item. Separate active, accepted/closed, and deferred items.
+2. User's latest acceptance closes an issue; never resurrect from an old list without fresh evidence.
+3. Keep FWC updates in chat; save occasional checkpoints to GitHub.
+4. **Do not create GitHub investigation instruction files.** For 🔵 or 🔴 actions, generate a copyable Codex instruction in the chat on request.
+5. GitHub instruction files for Practice 7.1 and 8.1 created earlier were deleted from this Preview branch on 2026-11-11.
+6. Keep implementation, deployment, and real-device verification statuses distinct.
+7. Do not modify `main` or merge without explicit approval.
