@@ -5051,3 +5051,52 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     opacity: .45;
     cursor: not-allowed;
 }
+
+/* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
+/* Practice 2.1 approved E feedback: Fluent fire and label use the same orange, without a badge. */
+.p21-keep-going-preview { --p21-keep-color: #B47732; }
+@media (prefers-color-scheme: dark) {
+    .p21-keep-going-preview { --p21-keep-color: #E4AD69; }
+}
+.p21-keep-going-preview .recording-result > .p21-inline-feedback {
+    margin: 0 4px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    white-space: nowrap;
+    color: var(--p21-keep-color);
+    pointer-events: none;
+}
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .p21-inline-feedback {
+    display: block !important;
+    margin-right: 0;
+}
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .result-text {
+    display: block;
+    text-align: right;
+}
+.p21-keep-going-preview .p21-inline-feedback > .p21-retry-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--p21-keep-color);
+    font-family: var(--font-latin);
+    font-size: inherit;
+    font-weight: 400;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+.p21-keep-going-preview .p21-retry-fire {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: inherit;
+}

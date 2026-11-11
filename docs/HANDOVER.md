@@ -1,5 +1,12 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Q/A確定仕様＋Keep going! 最終統合Preview（2026-11-11）
+
+- 専用ブランチ `preview/qa-keep-going-final-20261111`。基準Q/A `0fdc881c2d80d54778861c5a741313238d389191` にKeep going!承認Commit `644fff834355c9716cf258aa25cef9fd259131c7` の表示差分だけを適用。旧統合ブランチはマージしていない。
+- 正本はUI_LAYOUT_SPECのQ/A表示条件とKeep going!節。main・PR #8/#9・元ブランチ・Productionは変更しない。最終統合Previewのユーザー承認待ち。
+- 統合後の検証：Keep going! 574件、Q/A表示条件28,856件、既存Q/Aアイコン96,690件、疑問文マーク121件成功・失敗0。375/600/1440px・Light/Dark、全Set・選択・再描画・Script/English Cuesを確認。音声はAPIモックであり実機マイク未検証。
+- 既知の1.2音声モック失敗、8.2 Tooltip幅、1.1 CI不安定性は修正していない。
+
 ## Q/A表示条件統一Preview（2026-11-11）
 
 - `preview/qa-role-rules-allpages-20261111`、基準PR #9 `01e5e49d5a006a7b29602791fa8e606f121dd706`。正式条件はUI_LAYOUT_SPEC「Q/A表示条件の正本」を参照。
@@ -13,6 +20,14 @@
 - 対象Practice全ページのQ/AとCompositionの疑問符に、共通Fluent Filledヘルパーを適用。Light `#71839A`／Dark `#D9DDE3`、疑問符はChat Help Filled 16px。Regularの輪郭は付けない。
 - Practice 8.2のQuestionIndicator attach順序も、再描画でアイコンが外れる問題を直すためPreview内で最小変更。録音・停止・判定条件は不変。
 - main／PR #8／Production、Practice 8.2の独立作業領域は変更しない。全対象Previewの検証・ユーザー確認待ち。
+
+## Practice 2.1 Keep going! 限定Preview（2026-11-11、Codex Cloud）
+
+- 独立ブランチ：`preview/p21-keep-going-approved-e-20261111`。基準実装：`preview/keep-going-practice21-20261111`。起点main：`74817eb3e5dc3ff30ad6769df673450354910d29`。
+- 対象はPractice 2.1のみ。承認済みFluent Fire 24 Regularと短文 `Keep going!` をLight `#B47732`／Dark `#E4AD69`で、抽出テキストと同じ右寄せ領域へ配置する。詳細はUI_LAYOUT_SPEC冒頭を参照。
+- 既存のPR #8・Practice 8.2の未コミット修正は取り込まない。main／Productionへの反映・全ページ展開・既存PRのマージは行わない。
+- 検証結果は終了報告とGit履歴を参照。元のKeep going!表示はユーザー実機承認済み。今回の最終統合Previewは確認待ち。別途承認まで全ページ展開しない。
+
 > [!IMPORTANT]
 > 本書は「現在の作業状態・直前作業の成果・継続確認事項」を記録する運用文書です。
 > 正式な仕様は各正本仕様書（`PROJECT_SPEC.md`, `UI_LAYOUT_SPEC.md`, `GERMAN_DRILL_SPEC.md` 等）を参照してください。
