@@ -301,7 +301,7 @@ hints: ["Switzerland (fem.)", "to travel/drive"]
 
 ### 9.1 仕様と配置 【実装済み】
 - 各ドリルのCard 3（設問群）直下に右寄せ配置（`.uebung-copy-area`）。
-- Lucide標準 `clipboard` SVGアイコン、ボタン文言 `Copy my sentences`、説明文 `Copy your drill results to review or share.`（`.uebung-copy-help`）。
+- Microsoft Fluent `Clipboard 24 Regular` SVGアイコン、ボタン文言 `Copy my sentences`、説明文 `Copy your drill results to review or share.`（`.uebung-copy-help`）。
 - クリック時、当該ドリルで学習者が発話した生認識テキスト（STTトランスクリプト）をローカル日時ヘッダー付きテキストとしてクリップボードへコピー。
 - コピー成功時、ボタン右横に `Copied!`（`.uebung-copy-status`）を一時表示（2秒後にフェードアウト）。
 
