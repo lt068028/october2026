@@ -68,46 +68,8 @@ jobs:
             'filled=01e5e49d5a006a7b29602791fa8e606f121dd706' \
             > "$DIAG_OUTPUT/commits.txt"
 
-      - name: Run existing tests unchanged and collect results
-        run: |
-          set +e
-          for variant in main filled; do
-            root="$RUNNER_TEMP/pr9-width/$variant"
-            mkdir -p "$DIAG_OUTPUT/$variant/existing-qa-icons" "$DIAG_OUTPUT/$variant/existing-fluid-width"
-            (cd "$root" && QA_PAGES=practice8.2 QA_OUTPUT="$DIAG_OUTPUT/$variant/existing-qa-icons" node tests/qa-icons.cjs) \
-              > "$DIAG_OUTPUT/$variant/existing-qa-icons.log" 2>&1
-            echo $? > "$DIAG_OUTPUT/$variant/existing-qa-icons.exit"
-            (cd "$root" && node tests/fluid-width.cjs) \
-              > "$DIAG_OUTPUT/$variant/existing-fluid-width.log" 2>&1
-            echo $? > "$DIAG_OUTPUT/$variant/existing-fluid-width.exit"
-          done
-          exit 0
-
-      - name: Run same-condition diagnostics (A-D × 3, P1.1 off/paren)
-        run: |
-          set +e
-          node tools/pr9-width-diagnostic.cjs \
-            "$RUNNER_TEMP/pr9-width/main" \
-            "$RUNNER_TEMP/pr9-width/filled" \
-            > "$DIAG_OUTPUT/diagnostic.log" 2>&1
-          echo $? > "$DIAG_OUTPUT/diagnostic.exit"
-          cat "$DIAG_OUTPUT/diagnostic.log"
-          exit 0
-
-      - name: Replay the same PR test scripts with overflow diagnostics
-        run: |
-          set +e
-          node tools/pr9-width-replay.cjs \
-            "$RUNNER_TEMP/pr9-width/main" \
-            "$RUNNER_TEMP/pr9-width/filled" \
-            > "$DIAG_OUTPUT/same-test-replay.log" 2>&1
-          echo $? > "$DIAG_OUTPUT/same-test-replay.exit"
-          cat "$DIAG_OUTPUT/same-test-replay.log"
-          exit 0
-
-      - name: Build readable result summary
-        if: always()
-        run: node tools/pr9-width-summary.cjs "$DIAG_OUTPUT"
+      - name: Practice 1.1 fixed-condition 10 repetitions
+        run: node tools/pr9-p11-final.cjs "$RUNNER_TEMP/pr9-width/main" "$RUNNER_TEMP/pr9-width/filled" | tee "$DIAG_OUTPUT/p11.log"
 
       - name: Add diagnostic summary
         if: always()
