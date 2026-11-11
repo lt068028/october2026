@@ -1,3 +1,13 @@
+## Practice 2.1 判定SVG静的比較（2026-11-11・デザイン承認待ち）
+
+- 独立Preview `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f2ae8bad098f0b2438fe35df742be7cc2`。比較ページ `preview/practice21-feedback-icons.html` のみ。判定処理・Practice本体には接続しない。
+- 正解候補：Microsoft Fluent Checkmark Circle 24 Regular（MIT）。緑 Light `#16A34A`／Dark `#4ADE80` は候補であり、正式決定ではない。
+- 保留候補：Lucide Footprints（ISC、同梱MIT noticesも保持）。FluentカタログにFootprintsは見当たらず、代替セットの原本を比較専用SVGとして利用。正式採用・ライブラリ再導入ではない。
+- 確定済み：保留色 Light `#8064B0`／Dark `#B9A2E5`、説明 `Could not be evaluated reliably.`。Hoverとキーボードフォーカスで表示する。
+- 未確定：チェックの緑、Footprintsの形状、両アイコンのサイズ。20px基本、18/22px比較。背景・外枠・影なし。短文／長文と右寄せ4px間隔を比較。Fireは承認済み原本・色を参照し、本番の20px仕様は変更しない。
+- 将来のコピー表示：画面SVGとデータ由来Emoji（正解✅／保留👣／不一致🔥）を分離する。今回はコピー機能を追加しない。
+- 原本・ライセンスは比較ページのリンクと `preview/feedback-icons/*LICENSE.txt` を参照。Q/A・Keep going!・目なしSmile/Frownの正式仕様は変更しない。
+
 ## Practice 2.1 Keep going! 限定Preview（2026-11-11）
 
 - 承認済み実装は `preview/p21-keep-going-approved-e-20261111` のCommit `644fff834355c9716cf258aa25cef9fd259131c7`。最終統合Preview `preview/qa-keep-going-final-20261111` でもPractice 2.1に限り同じ表示を使用する。Q/A表示条件の正本と併用し、Fire RegularとQ/A Filledを用途別に維持する。main・Production・他ページへの展開は未承認。

@@ -1,5 +1,12 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Practice 2.1 判定SVG静的比較Preview（2026-11-11）
+
+- `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f…`。正式な候補・確定／未確定の区別はUI_LAYOUT_SPEC「判定SVG静的比較」を参照。
+- 比較ページのみ。Practice本体、判定、録音、コピー、他ページは変更しない。ユーザーがチェックの緑・Footprints形状・サイズを実機承認するまで接続しない。
+- 自動検証：静的比較606件、Keep going! 574件、目なしSmile/Frown・Q/A共存8,024件、疑問文マーク121件成功・失敗0。375/600/1440px・Light/Darkの比較スクリーンショット取得済み。音声は既存テストのモックであり実機マイク未確認。
+- 次工程：デザイン承認後、保留状態の保存・生成条件を別途確定する。Practice 2.1の実保存経路は主にisCorrectで、表示ガードにあるundetermined/unrecognized/audioOnlyの存在だけでは保留生成条件は確定できない。既存の不正解を保留へ変更しない。
+
 ## Smile/Frown承認済み外観の復元Preview（2026-11-11）
 
 - `preview/restore-eyeless-smile-frown-20261111`、基準統合 `709de6eec2a2f596324f795966ed938738e9301a`。
