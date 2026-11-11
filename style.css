@@ -5055,6 +5055,17 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: var(--error-text);
     pointer-events: none;
 }
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .p21-inline-feedback {
+    display: block !important;
+    margin-right: 0;
+}
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .result-text {
+    display: block;
+    text-align: right;
+}
+.p21-keep-going-preview .p21-retry-fire {
+    color: var(--error-text);
+}
 .p21-keep-going-preview .p21-inline-feedback > .p21-retry-label {
     display: inline-flex;
     align-items: center;
@@ -5064,7 +5075,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    color: var(--error-text);
+    color: var(--text-primary);
     font-family: var(--font-latin);
     font-size: inherit;
     font-weight: 400;
