@@ -3599,6 +3599,12 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 .site-scale .conversation-role-icon { position:relative; box-sizing:border-box; width:calc(1.35em + 2px); height:calc(1.35em + 2px); padding:0; border:0; border-radius:0; background:transparent; }
 .site-scale .conversation-role-icon::before { content:'\200b'; }
 .site-scale .conversation-role-icon > svg { position:absolute; inset:0; display:block; width:100%; height:100%; color:inherit; }
+/* Shared Filled Q/A theme; only SVGs explicitly created as Filled opt in. */
+:root { --conversation-role-filled-color: #71839A; }
+@media (prefers-color-scheme: dark) {
+    :root { --conversation-role-filled-color: #D9DDE3; }
+}
+.site-scale .conversation-role-icon > .fluent-icon-filled { color:var(--conversation-role-filled-color); }
 .site-scale .conversation-person { display: inline-block; padding: 0 5px; border-radius: 4px; font-weight: 700; }
 .site-scale .conversation-person[data-person="A"] { --person-bg: #6d28d9; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }
 .site-scale .conversation-person[data-person="B"] { --person-bg: #7dd3fc; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }

@@ -32,7 +32,9 @@ window.ConversationDisplay = (() => {
                 if(document.documentElement.hasAttribute('data-qa-preview')||document.documentElement.hasAttribute('data-role-preview'))circle.textContent=letter;
                 else{
                     circle.classList.add('conversation-role-icon');circle.setAttribute('role','img');
-                    circle.append(window.FluentIcons.create(letter==='Q'?'question':'answer', 24, 'conversation-role-svg'));
+                    // Page opt-in limits rollout without duplicating the shared renderer.
+                    const variant=document.body.dataset.conversationIconStyle==='filled'?'filled':'regular';
+                    circle.append(window.FluentIcons.create(letter==='Q'?'question':'answer', 24, 'conversation-role-svg', variant));
                 }
                 label.replaceChildren(circle);if(pair)label.append(person(pair[1]));
             }else if(name){

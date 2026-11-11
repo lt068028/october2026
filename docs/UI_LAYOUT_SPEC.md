@@ -33,8 +33,10 @@
 
 ## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
-- **Q**: Microsoft Fluent UI System Icons `Chat Help 24 Regular`。**A**: `Chat 24 Regular`。いずれも公式RegularのSVGパスに`currentColor`の輪郭`0.45px`を追加する（Filledへの変更ではない）。
-- 停止ボタン右の**疑問文マーク**はQと同じ`Chat Help 24 Regular`＋輪郭0.45pxを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。
+- **Filled共通実装の限定適用（2026-11-11）**：`preview/qa-filled-common-practice22-20261111` のPractice 2.2（Example／Drill）では、承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` の **Q：Chat Help 24 Filled／A：Chat 24 Filled** のパスをそのまま共通ヘルパーに採用する。追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。
+- `FluentIcons.create`／`markup` の第4引数 `filled` と、共通CSSの `--conversation-role-filled-color` を使用する。共通レンダラーはbodyの `data-conversation-icon-style="filled"` で選択し、今回の有効化はPractice 2.2だけとする。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
+- **未展開ページの既定Q/A**：Microsoft Fluent UI System Icons **Q：Chat Help 24 Regular／A：Chat 24 Regular** ＋ `currentColor`輪郭`0.45px`を維持する。全ページ展開、PR #8への反映、main／Production統合は別途承認まで行わない。
+- 停止ボタン右の**疑問文マーク**は`Chat Help 24 Regular`＋輪郭0.45pxを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。
 - `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
 - 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
 - Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
