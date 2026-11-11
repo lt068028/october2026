@@ -1,3 +1,12 @@
+## Practice 2.1 Keep going! 限定Preview（2026-11-11）
+
+- 適用は `preview/keep-going-practice21-20261111` のPractice 2.1のみ。main・Production・他ページへの展開は未承認。全ページ展開はこのPreviewのユーザー確認後に別途指示する。
+- 回答不一致の案内は `Keep going!` とし、`Try once more!` と炎の絵文字を除去する。承認済みMicrosoft Fluent UI System Icons `Fire 24 Regular`（MIT）を20×20px・`currentColor`で添える。SVGと文字は `--error-text`、英語は既存のLato標準。囲み・背景・外枠・角丸・影は付けない。
+- 既存の右寄せ結果領域内で、案内を抽出テキストの直前に置く。両者を一緒に右寄せし、案内を左端へ固定しない。間隔は4px。案内内のSVGと文字も4pxとし、両者は途中で分離しない。
+- 抽出テキストは既存の表示・保存データを維持して自然に折り返す。インラインの流れを使い、折り返し後に案内用の空列を残さない。短文は同じ行、長い単語は必要に応じて次行へ送る。
+- 正答・未回答・評価保留・音声のみの結果では案内を表示しない。Example／Drill終了による表示、移動ボタン、クリック・スクロール・フォーカス移動を追加しない。判定・録音・再生・回答保持・セット・English Cues・Backの処理は変更しない。
+- CSSは `p21-keep-going-preview` に限定し、他ページの `.correction-box` を変更しない。炎SVGの出典・MIT通知は `assets/licenses/MICROSOFT-FLUENT-FIRE-LICENSE.txt` に保持する。
+
 ## 録音付きDrillのCopyボタンアイコン表示（2026-11-08確定）
 
 - コピー操作領域のボタンは、左に **Lucide `clipboard` SVG（20×20px、stroke-width 2、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。

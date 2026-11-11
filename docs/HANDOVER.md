@@ -1,5 +1,12 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Practice 2.1 Keep going! 限定Preview（2026-11-11、Codex Cloud）
+
+- 独立ブランチ：`preview/keep-going-practice21-20261111`。起点main：`74817eb3e5dc3ff30ad6769df673450354910d29`。
+- 対象はPractice 2.1のみ。承認済みFluent Fire 24 Regularと短文 `Keep going!` を、抽出テキストと同じ右寄せ領域へ配置する。詳細はUI_LAYOUT_SPEC冒頭を参照。
+- 既存のPR #8・Practice 8.2の未コミット修正は取り込まない。main／Productionへの反映・全ページ展開・既存PRのマージは行わない。
+- 検証結果は終了報告とGit履歴を参照。専用Vercel Previewでのユーザー確認待ち。別途承認まで全ページ展開しない。
+
 > [!IMPORTANT]
 > 本書は「現在の作業状態・直前作業の成果・継続確認事項」を記録する運用文書です。
 > 正式な仕様は各正本仕様書（`PROJECT_SPEC.md`, `UI_LAYOUT_SPEC.md`, `GERMAN_DRILL_SPEC.md` 等）を参照してください。
