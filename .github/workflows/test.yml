@@ -138,11 +138,11 @@ jobs:
 
       # example-negative compares two distinct checkouts. Do not silently compare HEAD with itself.
       # Configure repository variable NEGATIVE_BASELINE_REF with a reviewed fixed commit SHA,
-      # or supply workflow_dispatch input negative_baseline_ref.
+      # or supply workflow_dispatch input negative_baseline_ref. Default is the documented\n      # pre-change commit for Example negative emphasis (aa5eda6 parent).
       - name: Prepare negative Example baseline (Group 3)
         if: matrix.group == 3
         env:
-          BASELINE_REF: ${{ inputs.negative_baseline_ref || vars.NEGATIVE_BASELINE_REF }}
+          BASELINE_REF: ${{ inputs.negative_baseline_ref || vars.NEGATIVE_BASELINE_REF || 'd19932d2ad583c4354735217dfefac27760e84b3' }}
         shell: bash
         run: |
           if [ -z "$BASELINE_REF" ]; then
