@@ -403,6 +403,10 @@ window.DrillAudio = (() => {
                 old.buttons.forEach(({ button, nodes, disabled }) => {
                     button.replaceChildren(...nodes);
                     button.disabled = disabled;
+                    button.classList.remove('is-playing');
+                    if (button.classList.contains('uebung-icon-button')) {
+                        button.setAttribute('aria-label', 'Abspielen');
+                    }
                 });
             }
             cancelSpeech();
@@ -424,7 +428,13 @@ window.DrillAudio = (() => {
             })) };
             relay = current;
             current.buttons.forEach(({ button }) => {
-                button.textContent = 'Playing...';
+                // Keep icon controls compact during automatic playback.
+                if (button.classList.contains('uebung-icon-button')) {
+                    button.classList.add('is-playing');
+                    button.setAttribute('aria-label', 'Wiedergabe läuft');
+                } else {
+                    button.textContent = 'Playing...';
+                }
                 button.disabled = true;
             });
             const finish = () => { if (relay === current) adapter.stop(); };

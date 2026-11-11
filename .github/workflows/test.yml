@@ -154,13 +154,14 @@ jobs:
           echo "| # | Test File | Result | Duration |" >> "$GITHUB_STEP_SUMMARY"
           echo "|---|---|:---:|---:|" >> "$GITHUB_STEP_SUMMARY"
 
-          TOTAL_COUNT=0
           PASSED_COUNT=0
           FAILED_COUNT=0
+          SKIPPED_COUNT=0
           FAILED_TESTS=()
           RESULTS=()
 
           GROUP_START=$(date +%s)
+          TOTAL_COUNT=0
 
           for test_file in "${TESTS_ARRAY[@]}"; do
             TOTAL_COUNT=$((TOTAL_COUNT + 1))
@@ -190,17 +191,23 @@ jobs:
 
           GROUP_END=$(date +%s)
           GROUP_DURATION=$((GROUP_END - GROUP_START))
+          EXECUTED_COUNT=$((PASSED_COUNT + FAILED_COUNT))
+          if [ $((EXECUTED_COUNT + SKIPPED_COUNT)) -ne "$TOTAL_SCHEDULED" ]; then
+            echo "::error::Test accounting mismatch: scheduled=$TOTAL_SCHEDULED executed=$EXECUTED_COUNT skipped=$SKIPPED_COUNT"
+            exit 1
+          fi
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Group $GROUP_ID Summary**: Total: $TOTAL_COUNT | Passed: $PASSED_COUNT | Failed: $FAILED_COUNT | Duration: ${GROUP_DURATION}s" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Group $GROUP_ID Summary**: Scheduled: $TOTAL_SCHEDULED | Executed: $EXECUTED_COUNT | Passed: $PASSED_COUNT | Failed: $FAILED_COUNT | Skipped: $SKIPPED_COUNT | Duration: ${GROUP_DURATION}s" >> "$GITHUB_STEP_SUMMARY"
 
           echo ""
           echo "===================================================="
           echo "Group $GROUP_ID Summary: $GROUP_NAME (${GROUP_DURATION}s)"
           echo "Scheduled: $TOTAL_SCHEDULED"
-          echo "Executed:  $TOTAL_COUNT"
+          echo "Executed:  $EXECUTED_COUNT"
           echo "Passed:    $PASSED_COUNT"
           echo "Failed:    $FAILED_COUNT"
+          echo "Skipped:   $SKIPPED_COUNT"
           echo "----------------------------------------------------"
           echo "Detailed Results:"
           for res in "${RESULTS[@]}"; do
@@ -216,5 +223,9 @@ jobs:
             exit 1
           fi
 
-          echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
+          if [ "$SKIPPED_COUNT" -gt 0 ]; then
+            echo "Group $GROUP_ID completed with $SKIPPED_COUNT skipped test(s); no all-passed claim."
+          else
+            echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
+          fi
           exit 0

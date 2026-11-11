@@ -4692,6 +4692,10 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* =========================================================
    Deutsche Übung 1.1: nach / in / zum / zur
    ========================================================= */
+/* Recognition and extracted speech are primary learner content; Not yet stays secondary. */
+.uebung11-page .result-text:not(.not-recorded-yet) { font-size: 1.2em; }
+.uebung11-page .result-text.not-recorded-yet { font-size: 0.75em; }
+
 .uebung11-page .uebung-copy-area {
     display: flex;
     flex-direction: column;

@@ -7,7 +7,44 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261109-tts-notice">
+    <link rel="stylesheet" href="style.css?v=20261111-extracted-text-120">
+
+    <style>
+        /* Deutsch 1.1 preview: icon-only audio controls. */
+        .uebung11-page .uebung-icon-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            min-width: 36px;
+            height: 36px;
+            padding: 6px;
+            vertical-align: middle;
+        }
+        .uebung11-page .uebung-icon-button .uebung-audio-icon {
+            width: 20px;
+            height: 20px;
+            flex: 0 0 20px;
+        }
+        /* Optical alignment: Forward sits slightly high beside the speaker. */
+        .uebung11-page .example-arrow-cell > .uebung-audio-icon {
+            position: relative;
+            top: 2px;
+        }
+        .uebung11-page .uebung-icon-button .custom-tip-box { pointer-events: none; }
+        .uebung11-page .uebung-icon-button:focus-visible {
+            outline: 2px solid currentColor;
+            outline-offset: 2px;
+        }
+
+        /* Preview-only selector: compare arrow icons in their actual example rows. */
+        .uebung11-page .arrow-preview-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:10px 12px; margin:10px 0 14px; border:1px dashed #9aa3ad; border-radius:8px; }
+        .uebung11-page .arrow-preview-bar > strong { font-size:14px; margin-right:4px; }
+        .uebung11-page .arrow-preview-bar button { display:inline-flex; align-items:center; gap:5px; border:1px solid #a6a6a6; border-radius:6px; background:transparent; color:inherit; padding:6px 9px; font:inherit; font-size:13px; cursor:pointer; }
+        .uebung11-page .arrow-preview-bar button[aria-pressed="true"] { border-color:#3975c6; outline:2px solid #3975c6; outline-offset:0; }
+        .uebung11-page .arrow-preview-bar svg { width:19px; height:19px; flex:none; }
+        .uebung11-page .arrow-preview-note { font-size:12px; opacity:.75; width:100%; }
+    </style>
 </head>
 <body class="site-scale uebung11-page">
 
@@ -128,6 +165,11 @@
         </div>
     </div>
 
+
+    <section class="arrow-preview-bar" id="arrowPreviewBar" aria-label="Example arrow icon comparison">
+        <strong>Arrow Preview</strong>
+        <span class="arrow-preview-note">Choose an icon to update the arrows in all Example rows. Preview only.</span>
+    </section>
     <!-- Dedicated German TTS Notice Banner -->
     <aside id="germanTtsNotice" class="german-tts-notice" aria-live="polite" hidden>
         <div class="german-tts-notice-body">
@@ -153,8 +195,57 @@
         <span id="voiceRegionNotice" class="voice-region-notice" hidden></span>
     </footer>
 
-    <script src="drill-audio-session.js"></script>
-    <script src="uebung1.1.js?v=20261109-tts-notice"></script>
+    <script src="drill-audio-session.js?v=20261111-relay-icons"></script>
+    <script src="uebung1.1.js?v=20261111-square-arrow-right"></script>
     <script src="tooltip-layout.js"></script>
+
+    <script>
+    (() => {
+      const cutout = 'var(--bg-panel, #ffffff)';
+      const icons = {
+        "Forward · Outline": '<path d="m13 4 8 8-8 8V4Z"/><path d="m3 4 8 8-8 8V4Z"/>',
+        "Forward · Filled": '<path d="m13 4 8 8-8 8V4Z" fill="currentColor"/><path d="m3 4 8 8-8 8V4Z" fill="currentColor"/>',
+        "Move Right": '<path d="M18 8l4 4-4 4"/><path d="M2 12h20"/>',
+        "Chevrons Right": '<path d="m6 17 5-5-5-5"/><path d="m13 17 5-5-5-5"/>',
+        "Square Arrow · Outline": '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m12 8 4 4-4 4"/><path d="M8 12h8"/>',
+        "Square Arrow · Inverted": '<rect x="2" y="2" width="20" height="20" rx="2" fill="currentColor"/><path d="m12 8 4 4-4 4 M8 12h8" stroke="' + cutout + '"/>',
+        "Circle Arrow · Outline": '<circle cx="12" cy="12" r="10"/><path d="m12 16 4-4-4-4"/><path d="M8 12h8"/>',
+        "Circle Arrow · Inverted": '<circle cx="12" cy="12" r="10" fill="currentColor"/><path d="m12 16 4-4-4-4 M8 12h8" stroke="' + cutout + '"/>'
+      };
+      const bar = document.getElementById("arrowPreviewBar");
+      let selected = "Forward · Outline";
+      const svg = (path) => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + path + '</svg>';
+      function apply() {
+        document.querySelectorAll(".example-arrow-cell > svg.uebung-audio-icon").forEach(el => {
+          const desired = icons[selected];
+          if (el.innerHTML !== desired) el.innerHTML = desired;
+        });
+      }
+      Object.entries(icons).forEach(([name, path]) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.innerHTML = svg(path) + '<span>' + name + '</span>';
+        btn.setAttribute("aria-pressed", String(name === selected));
+        btn.addEventListener("click", () => {
+          selected = name;
+          bar.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+          apply();
+        });
+        bar.append(btn);
+      });
+      const target = document.getElementById("drillsContainer");
+      if (target) {
+        let queued = false;
+        const observer = new MutationObserver(() => {
+          if (queued) return;
+          queued = true;
+          requestAnimationFrame(() => { queued = false; apply(); });
+        });
+        observer.observe(target, {childList:true,subtree:true});
+      }
+      apply();
+    })();
+    </script>
+
 </body>
 </html>

@@ -532,13 +532,7 @@ function initGermanDrill() {
     const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
     let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
 
-    let drill1FirstStopTipBox = null;
-    function updateFirstStopTip() {
-        if (!drill1FirstStopTipBox) return;
-        drill1FirstStopTipBox.textContent = manual
-            ? "Stop recording."
-            : "No need to press. Autostop is ON.";
-    }
+    function updateFirstStopTip() {} // Tooltip follows the recording button state.
 
     // -------------------------------------------------------------
     // 3. Helper Functions
@@ -554,6 +548,27 @@ function initGermanDrill() {
         return el;
     }
 
+    // Preview-only audio diagnostics: visible without developer tools.
+    function audioDiagnostic(message, error = false) {
+        let panel = document.getElementById("uebung11AudioDiagnostic");
+        if (!panel) {
+            panel = document.createElement("div");
+            panel.id = "uebung11AudioDiagnostic";
+            panel.setAttribute("role", "status");
+            panel.setAttribute("aria-live", "polite");
+            panel.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;z-index:99999;max-width:650px;margin:auto;padding:12px 16px;border:2px solid #64748b;border-radius:8px;background:#fff;color:#111827;font:14px/1.5 Lato,sans-serif;box-shadow:0 4px 16px #0003;white-space:pre-wrap;";
+            document.body.append(panel);
+        }
+        panel.style.borderColor = error ? "#dc2626" : "#64748b";
+        panel.textContent = "Audio diagnosis (Preview): " + message;
+    }
+    window.addEventListener("error", event => {
+        audioDiagnostic("JavaScript error: " + (event.message || "unknown"), true);
+    });
+    window.addEventListener("unhandledrejection", event => {
+        audioDiagnostic("Async error: " + String(event.reason?.message || event.reason || "unknown"), true);
+    });
+
     function button(label, tip, click) {
         const hasTip = Boolean(tip);
         const b = node("button", "example-button" + (hasTip ? " custom-tip-wrap" : ""));
@@ -567,10 +582,52 @@ function initGermanDrill() {
             b.append(node("span", "custom-tip-box", tip));
         }
         b.onclick = () => {
-            if (DrillAudio.leaving) return;
-            click?.();
+            if (b.classList.contains("uebung-icon-button")) {
+                audioDiagnostic("Click received: " + (b.getAttribute("aria-label") || tip || "audio") + "; disabled=" + b.disabled);
+            }
+            if (DrillAudio.leaving) {
+                audioDiagnostic("Blocked: navigation in progress", true);
+                return;
+            }
+            try {
+                const result = click?.();
+                if (result && typeof result.catch === "function") {
+                    result.catch(error => audioDiagnostic("Handler rejected: " + String(error?.message || error), true));
+                }
+            } catch (error) {
+                audioDiagnostic("Handler failed: " + String(error?.message || error), true);
+                throw error;
+            }
         };
         return b;
+    }
+
+
+    // Lucide-style inline SVGs: no external icon runtime or font dependency.
+    const AUDIO_ICONS = {
+        listen: '<path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/>',
+        mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',
+        stop: '<rect x="5" y="5" width="14" height="14" rx="2"/>',
+        play: '<path d="m8 5 11 7-11 7V5Z"/>',
+        forward: '<rect x="2" y="2" width="20" height="20" rx="2"/><path d="m12 8 4 4-4 4"/><path d="M8 12h8"/>'
+    };
+    function audioIcon(kind) {
+        const template = document.createElement("template");
+        template.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="uebung-audio-icon">' + AUDIO_ICONS[kind] + '</svg>';
+        return template.content.firstElementChild;
+    }
+    function setAudioIcon(btn, kind, label) {
+        const tooltip = btn.querySelector(".custom-tip-box");
+        btn.replaceChildren(audioIcon(kind));
+        if (tooltip) btn.append(tooltip);
+        btn.setAttribute("aria-label", label);
+        btn.setAttribute("title", label);
+    }
+    function audioButton(kind, label, click) {
+        const btn = button(audioIcon(kind), label, click);
+        btn.classList.add("uebung-icon-button");
+        btn.setAttribute("aria-label", label);
+        return btn;
     }
 
     function highlightRedPart(rawText, redPart) {
@@ -643,10 +700,17 @@ function initGermanDrill() {
         });
 
         views.forEach((v, key) => {
-            const canStop = session?.key === key && session.manual && !session.stopping;
-            v.stop.disabled = !canStop;
-            v.stop.setAttribute("aria-disabled", String(!canStop));
-            v.stop.classList.toggle("stop-btn-active", Boolean(canStop));
+            const isRecording = session?.key === key && !session.stopping;
+            const label = isRecording ? "Stoppen" : "Aufnehmen";
+            const icon = isRecording ? "stop" : "mic";
+            // One button changes from microphone to stop while this item records.
+            v.rec.disabled = Boolean(preparing || (session && !isRecording));
+            v.rec.setAttribute("aria-disabled", String(v.rec.disabled));
+            v.rec.classList.toggle("stop-btn-active", Boolean(isRecording));
+            if (v.rec.dataset.audioState !== icon) {
+                setAudioIcon(v.rec, icon, label);
+                v.rec.dataset.audioState = icon;
+            }
         });
 
         updateCopyButtons();
@@ -655,7 +719,7 @@ function initGermanDrill() {
     // -------------------------------------------------------------
     // 4. Audio & Speech Synthesis
     // -------------------------------------------------------------
-    function stopPlayback() {
+    function stopPlayback(isNaturalFinish = false) {
         if (currentUtterance) {
             currentUtterance.onend = null;
             currentUtterance.onerror = null;
@@ -711,12 +775,19 @@ function initGermanDrill() {
 
     function markPlaying(b) {
         if (!b) return;
-        stopPlayback();
+        // Callers have already stopped previous playback. Do not cancel the new TTS token.
         playingButton = b;
         b._contents = Array.from(b.childNodes);
-        b.disabled = true;
+        b.disabled = false;
         b.classList.add("is-playing");
-        b.textContent = "Playing...";
+        if (b.classList.contains("uebung-icon-button")) {
+            setAudioIcon(b, "stop", "Stoppen");
+        }
+        // Keep icon-only controls usable and visually consistent during playback.
+        // A text replacement would turn the 36px icon button into a "Playing..." label.
+        if (!b.classList.contains("uebung-icon-button")) {
+            b.textContent = "Playing...";
+        }
     }
 
     // -------------------------------------------------------------
@@ -899,6 +970,11 @@ function initGermanDrill() {
 
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
         if ((session || preparing) && !isRelay) return;
+        if (!isRelay && btn && (activePlaybackToken?.btn === btn || playingButton === btn && btn.classList.contains("is-playing"))) {
+            stopAllPlayback();
+            audioDiagnostic("Speaker playback stopped");
+            return;
+        }
         if (!isRelay) {
             cancelActivePlaybackToken(true);
             stopAllPlayback();
@@ -945,7 +1021,7 @@ function initGermanDrill() {
         activePlaybackToken = token;
         currentUtterance = u;
 
-        if (btn) markPlaying(btn);
+        if (btn) { markPlaying(btn); audioDiagnostic("Playback requested; waiting for browser audio"); }
 
         const handlePlaybackError = (errorEvent) => {
             if (token.startTimeoutTimer) {
@@ -1036,16 +1112,14 @@ function initGermanDrill() {
             token.handled = true;
 
             if (currentUtterance !== u) return;
-            currentUtterance = null;
-            if (activePlaybackToken === token) {
-                activePlaybackToken = null;
-            }
-
             if (isRelay) {
-                // Relay owns restoring buttons
+                currentUtterance = null;
+                if (activePlaybackToken === token) activePlaybackToken = null;
             } else {
                 stopPlayback(true);
+                if (activePlaybackToken === token) activePlaybackToken = null;
             }
+            audioDiagnostic(errorEvent ? "Speaker playback ended with error" : "Speaker playback finished; button restored", Boolean(errorEvent));
 
             if (errorEvent) {
                 handlePlaybackError(errorEvent);
@@ -1068,23 +1142,40 @@ function initGermanDrill() {
     }
 
     function playRecording(key, btn) {
-        if (session || preparing) return;
+        if (session || preparing) {
+            audioDiagnostic("Recording playback blocked: microphone busy", true);
+            return;
+        }
+        if (playingButton === btn && btn?.classList.contains("is-playing")) {
+            stopAllPlayback();
+            audioDiagnostic("Recorded audio stopped");
+            return;
+        }
         stopAllPlayback();
-
         const entry = saved.get(key);
-        if (!entry?.url) return;
-
+        if (!entry?.url) {
+            audioDiagnostic("No recorded audio URL available", true);
+            return;
+        }
         const audio = new Audio(entry.url);
-        activeAudio = audio;
         if (btn) markPlaying(btn);
-
-        const cleanup = () => {
+        activeAudio = audio;
+        const recordedBlob = entry.url.startsWith("blob:") ? "blob recording" : "other recording";
+        audioDiagnostic("Recorded audio playback requested (" + recordedBlob + ")");
+        audio.onloadedmetadata = () => audioDiagnostic("Recorded audio loaded: duration=" + audio.duration.toFixed(2) + "s");
+        audio.ontimeupdate = () => {
+            if (audio.currentTime > 0.25 && !audio.datasetReported) {
+                audio.datasetReported = true;
+                audioDiagnostic("Recorded audio progress: " + audio.currentTime.toFixed(2) + "s / " + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
+            }
+        };
+        const cleanup = (error) => {
+            audioDiagnostic(error ? "Recorded audio failed: " + String(error?.message || error?.type || error) : "Recorded audio finished; position=" + audio.currentTime.toFixed(2) + "s; duration=" + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
             stopPlayback();
         };
-
-        audio.onended = cleanup;
-        audio.onerror = cleanup;
-
+        audio.onplaying = () => audioDiagnostic("Recorded audio is playing; duration=" + (Number.isFinite(audio.duration) ? audio.duration.toFixed(2) : "unknown") + "s");
+        audio.onended = () => cleanup(null);
+        audio.onerror = (event) => cleanup(event);
         DrillAudio.play(audio, cleanup);
     }
 
@@ -1102,6 +1193,7 @@ function initGermanDrill() {
 
         stopAllPlayback();
         preparing = true;
+        audioDiagnostic("Microphone permission requested");
         sync();
 
         const v = views.get(key);
@@ -1113,6 +1205,7 @@ function initGermanDrill() {
         } catch (e) {
             preparing = false;
             sync();
+            audioDiagnostic("Microphone failed: " + String(e.name || "") + " " + String(e.message || ""), true);
             if (e.name === "AbortError") return;
             showResult(key, DrillAudio.microphoneError(e));
             return;
@@ -1175,9 +1268,9 @@ function initGermanDrill() {
             let url = previous.url;
 
             if (!s.discard && s.heard && s.chunks.length) {
-                url = URL.createObjectURL(
-                    new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" })
-                );
+                const recordingBlob = new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" });
+                audioDiagnostic("Recording saved: " + recordingBlob.size + " bytes; type=" + recordingBlob.type);
+                url = URL.createObjectURL(recordingBlob);
                 if (previous.url) {
                     URL.revokeObjectURL(previous.url);
                 }
@@ -1366,7 +1459,7 @@ function initGermanDrill() {
         }
 
         if (val?.url) {
-            const play = button("▶️", "Play your recorded voice.", () => {
+            const play = audioButton("play", "Abspielen", () => {
                 playRecording(key, play);
             });
             play.classList.add("play-recording-btn");
@@ -1523,7 +1616,8 @@ function initGermanDrill() {
             exCueTd.append(exCueSpan);
 
             // Arrow
-            const exArrowTd = node("td", "example-arrow-cell", "👉️");
+            const exArrowTd = node("td", "example-arrow-cell");
+            exArrowTd.append(audioIcon("forward"));
             exArrowTd.style.width = "28px";
             exArrowTd.style.textAlign = "center";
 
@@ -1531,7 +1625,7 @@ function initGermanDrill() {
             const exAudioTd = node("td", "example-audio-cell");
             const exModelSentence = getModel(drill.example, currentVariety);
             const exListenTip = drill.number === 1 ? "Listen to the example." : "";
-            const exListenBtn = button("🔊 Anhören", exListenTip, () => {
+            const exListenBtn = audioButton("listen", "Anhören", () => {
                 speakModel(getModel(drill.example, currentVariety), exListenBtn);
             });
             exAudioTd.append(exListenBtn);
@@ -1577,30 +1671,20 @@ function initGermanDrill() {
 
                 const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
 
-                const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
-                const listenBtn = button("🔊 Anhören", listenTip, () => {
+                const listenBtn = audioButton("listen", "Anhören", () => {
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
 
-                const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
-                const recBtn = button("⏺️ Aufnehmen", recTip, () => {
-                    record(item.id, item);
+                const recBtn = audioButton("mic", "Aufnehmen", () => {
+                    if (session?.key === item.id) {
+                        if (!session.stopping) session.stop();
+                    } else if (!session && !preparing) {
+                        record(item.id, item);
+                    }
                 });
-
-                let stopTip = "";
-                if (isFirstItemOfDrill1) {
-                    stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
-                }
-                const stopBtn = button("⏹️", stopTip, () => {
-                    if (session?.key === item.id) session.stop();
-                });
-                stopBtn.dataset.stop = "true";
-                stopBtn.disabled = true;
-                if (isFirstItemOfDrill1) {
-                    drill1FirstStopTipBox = stopBtn.querySelector(".custom-tip-box");
-                }
-
-                actions.append(listenBtn, recBtn, stopBtn);
+                recBtn.dataset.stop = "true"; // Managed explicitly by sync().
+                recBtn.dataset.audioState = "mic";
+                actions.append(listenBtn, recBtn);
 
                 const wrap = node("span", "recording-result");
                 const result = node("span", "result-text not-recorded-yet", "… Not yet");
@@ -1621,7 +1705,6 @@ function initGermanDrill() {
                     item,
                     rec: recBtn,
                     listen: listenBtn,
-                    stop: stopBtn,
                     result,
                     correction
                 });
