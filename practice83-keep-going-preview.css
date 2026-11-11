@@ -1,0 +1,141 @@
+/* Practice 8.3 Keep going color comparison Preview. Scoped to this branch/page only. */
+body.p83-keep-going-preview .p83-kg-preview-panel {
+    box-sizing: border-box;
+    max-width: 1100px;
+    margin: 10px auto 16px;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-panel);
+}
+body.p83-keep-going-preview .p83-kg-preview-title {
+    margin: 0 0 4px;
+    font-family: var(--font-latin, 'Lato', sans-serif);
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+body.p83-keep-going-preview .p83-kg-preview-intro {
+    margin: 0 0 10px;
+    color: var(--text-secondary);
+    font-size: .85rem;
+    line-height: 1.4;
+}
+body.p83-keep-going-preview .p83-kg-preview-choices {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+body.p83-keep-going-preview .p83-kg-preview-choice {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--button-bg);
+    color: var(--text-primary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+body.p83-keep-going-preview .p83-kg-preview-choice[aria-pressed="true"] {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+}
+body.p83-keep-going-preview .p83-kg-choice-title {
+    font-family: var(--font-latin, 'Lato', sans-serif);
+    font-size: .85rem;
+    font-weight: 700;
+}
+body.p83-keep-going-preview .p83-kg-sample {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+body.p83-keep-going-preview .p83-kg-sample-transcript {
+    max-width: 100%;
+    color: var(--text-primary);
+    font-size: .9rem;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+body.p83-keep-going-preview .p83-keep-going-label {
+    display: inline-flex;
+    box-sizing: border-box;
+    max-width: 100%;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-latin, 'Lato', sans-serif);
+    font-size: .9rem;
+    font-weight: 400;
+    line-height: 1.35;
+    text-align: left;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+body.p83-keep-going-preview .p83-keep-going-fire {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: var(--error-text);
+}
+body.p83-keep-going-preview[data-keep-going-palette="gray"] .p83-keep-going-label {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+}
+body.p83-keep-going-preview[data-keep-going-palette="warm"] .p83-keep-going-label {
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: #fff2bf;
+}
+@media (prefers-color-scheme: dark) {
+    body.p83-keep-going-preview[data-keep-going-palette="gray"] .p83-keep-going-label {
+        background: #293548;
+    }
+    body.p83-keep-going-preview[data-keep-going-palette="warm"] .p83-keep-going-label {
+        background: #50441f;
+    }
+}
+body.p83-keep-going-preview .correction-box:not([hidden]) {
+    display: block;
+    color: var(--text-primary);
+    text-align: right;
+}
+body.p83-keep-going-preview .correction-box > .p83-keep-going-label {
+    vertical-align: top;
+}
+@media (max-width: 600px) {
+    body.p83-keep-going-preview .p83-kg-preview-panel {
+        margin: 8px 10px 14px;
+        padding: 10px;
+    }
+    body.p83-keep-going-preview .p83-kg-preview-choices {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+    body.p83-keep-going-preview .p83-kg-preview-choice {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px;
+    }
+    body.p83-keep-going-preview .p83-kg-choice-title {
+        flex: 0 0 auto;
+    }
+    body.p83-keep-going-preview .p83-kg-sample {
+        align-items: flex-end;
+        text-align: right;
+    }
+}
