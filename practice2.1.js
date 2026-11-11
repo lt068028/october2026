@@ -2093,17 +2093,24 @@ function practice2FindDiff(actual, reference) {
     };
 }
 
-// Put the transcript on its own line only if that avoids an unnecessary wrap.
+// Long mismatch text flows beside the unchanged actions, then across the full controls width.
 function practice21UpdateRetryWrap(view) {
     const result = view.resultSpan.parentElement;
     if (!result || !result.classList.contains('recording-result')) return;
     result.classList.remove('p21-transcript-own-line');
+    const controls = result.parentElement;
     const feedback = view.correctionBox;
-    if (feedback.style.display === 'none' || !view.corrTextSpan.textContent.trim()) return;
+    if (feedback.style.display === 'none' || !view.corrTextSpan.textContent.trim()) {
+        controls?.classList.remove('p21-flowing-feedback');
+        return;
+    }
     const available = result.parentElement?.clientWidth || result.clientWidth;
     if (!available) return;
     const probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;display:inline-block;pointer-events:none;';
+    const presentation = getComputedStyle(view.resultSpan);
+    probe.style.font = presentation.font;
+    probe.style.letterSpacing = presentation.letterSpacing;
     const transcript = view.resultSpan.cloneNode(true);
     transcript.style.cssText = 'display:inline;white-space:nowrap;width:max-content;max-width:none;';
     probe.appendChild(transcript);
@@ -2111,8 +2118,21 @@ function practice21UpdateRetryWrap(view) {
     const transcriptWidth = transcript.getBoundingClientRect().width;
     const labelWidth = feedback.getBoundingClientRect().width;
     probe.remove();
-    if (transcriptWidth <= available && transcriptWidth + labelWidth + 4 > available) {
-        result.classList.add('p21-transcript-own-line');
+    // Keep the previous one-line layout when it already fits. Compare actual
+    // heights so flowing beside actions never adds a needless visual row.
+    controls.classList.remove('p21-flowing-feedback');
+    const ownLine = transcriptWidth <= available && transcriptWidth + labelWidth + 4 > available;
+    result.classList.toggle('p21-transcript-own-line', ownLine);
+    if (transcriptWidth + labelWidth + 4 <= available) return;
+    const baselineHeight = controls.getBoundingClientRect().height;
+    const actions = controls.querySelector('.recording-actions');
+    if (!actions) return;
+    controls.style.setProperty('--p21-feedback-action-line', (actions.getBoundingClientRect().height + 6) + 'px');
+    result.classList.remove('p21-transcript-own-line');
+    controls.classList.add('p21-flowing-feedback');
+    if (controls.getBoundingClientRect().height >= baselineHeight - 0.5) {
+        controls.classList.remove('p21-flowing-feedback');
+        result.classList.toggle('p21-transcript-own-line', ownLine);
     }
 }
 
