@@ -1,12 +1,12 @@
 ## 録音付きDrillのCopyボタンアイコン表示（2026-11-08確定）
 
-- コピー操作領域のボタンは、左に **Lucide `clipboard` SVG（20×20px、stroke-width 2、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。
+- コピー操作領域のボタンは、左に **Microsoft Fluent `Clipboard 24 Regular` SVG（20×20px、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。
 - ボタンの下の補助説明は `Copy your drill results to review or share.` とする。旧文言 `Copy to review or share.` および `Copy your sentences to review or share.` は使用しない。
 - SVGとラベルを中央揃えにし、既存のボタンの色・背景・枠・角丸・余白を原則維持する。375px幅でもラベルの縦折れや横はみ出しを起こさない。
 
 ## 録音付きDrillのCopyボタン配置（2026-11-08確定）
 
-- `Copy my sentences`（Lucide `clipboard` SVG付き）は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
+- `Copy my sentences`（Microsoft Fluent `Clipboard 24 Regular` SVG付き）は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
 - ボタン・短い補助説明・成功／失敗ステータスをひとまとまりのコピー操作領域とし、Drill内の右端に揃える。既存のボタン外観・ラベル・余白感を保ち、375px幅で横はみ出しや文字の縦折れが生じないようにする。
 - 操作領域は1つのDrillにつき1つとし、再描画や設定変更で重複生成しない。録音中の無効状態と結果更新を正しく反映する。
 - Practice 7.1は先行実装の修正対象。Drill 1とDrill 2の両方でカード外へ移動する。実装は共通仕様の登録とは別作業とし、既存ページへ無条件に横展開しない。
@@ -16,7 +16,7 @@
 - Latin-script UI text in the Japanese-learning drill website uses Lato as its standard font family. Japanese text retains its established Japanese font configuration. New drill pages and UI components must follow this rule from initial implementation.
 - 対象範囲：英語Cue文・英語ラベル・セット切替ボタン・ドリル切替／操作案内・セグメント制御オプション・ドロップダウン項目・英語見出し／説明文・ツールチップ。
 - 日本語テキストの維持：日本語テキストをLatoへ強制しない。日英混在テキストではCSSフォントフォールバック（`Lato, sans-serif`）または言語別セレクタにより、日本語グリフは従来の日本語フォント（sans-serif / Noto Sans CJK JP等）で描画する。フォント適用のために既存コンテンツを不必要にDOM分割・再構成しない。
-- アイコン・記号の維持：Lucideアイコン、絵文字、録音／再生アイコン等の記号はフォント変更の対象外とし、既存の表示を維持する。
+- アイコン・記号の維持：Microsoft Fluentアイコン、絵文字、録音／再生アイコン等の記号はフォント変更の対象外とし、既存の表示を維持する。
 - 既存視覚設計の保持：フォントサイズ、ウェイト、行高、字間、色彩、パディング、マージン、ボタン寸法、配置、テキスト折り返し、レスポンシブ配置を維持する。
 - 実装原則：`style.css` の `:root` に `--font-latin: 'Lato', sans-serif;` を定義し、共通セレクタを通じて一元管理する。個別ページへの競合する重複指定を避け、全14ドリルページのHTML `<head>` でLatoフォント（wght@400;500;700）を確実に読み込む。
 
@@ -31,15 +31,17 @@
 - 適用対象の現行棚卸し：2.1 Drill 1・2（Set 1／Set 2）、2.2 Drill 4（Set 1／Set 2）・Drill 5（Adjectives／Pronouns）、2.3 Drill 1（Country／Cities／Time）・Drill 2（People／Item1／Item2）・Drill 3（Country／Cities／Time／Day）、8.3 Drill 1〜4（Who／What／Which one／Where／Whenの英字部分）。
 - 実装時は全対象のフォント読込・計算フォント・選択状態・再描画後の保持と、狭幅でのボタンの収まりを限定検証する。仕様登録・実装・検証は別々に記録する。
 
-## 会話役割アイコン（2026-11-08採用決定）
+## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
-質問はIcons8 iOS OutlinedのAsk Question、応答はSpeech Bubble。承認済みの本番画像（`assets/qa-icons/icons8-mono-question.png`／`icons8-mono-answer.png`）から配信する。Colorの白黒化やMicrosoft等の別素材に置き換えない。
-
-`conversation-display.js`の会話役割生成で適用し、互換クラス`conversation-role-circle`と既存の位置・基線・間隔・外寸を保持する。追加の囲み・背景・バッジは付けない。通常は元の黒線、ダークでは画像を反転して明るい線とする。空の継続役割欄は非表示のまま幅を保持し、画像を生成しない。Question／Answerのアクセシブル名を役割コンテナへ残し、画像は装飾用の空altとする。
-
-適用はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3の会話役割だけ。説明中のQ/A、疑問符、人物・場所・語彙・文法ラベルは対象外。設定・セット切替等の再描画にも共通生成を適用する。
-
-使用ページには小さな可視のIcons8リンクを置く。出典・Icons8ライセンス／帰属先は`assets/qa-icons/ICONS8-CREDITS.txt`で管理する。Microsoft素材のMITライセンスをIcons8へ適用しない。人物色・Lato・8.3の括弧なし二段目英語は維持する。
+- **Q**: Microsoft Fluent UI System Icons `Chat Help 24 Regular`。**A**: `Chat 24 Regular`。いずれも公式RegularのSVGパスに`currentColor`の輪郭`0.45px`を追加する（Filledへの変更ではない）。
+- 停止ボタン右の**疑問文マーク**はQと同じ`Chat Help 24 Regular`＋輪郭0.45pxを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。
+- `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
+- 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
+- Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
+- Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。
+- Yes/NoはFluent `Emoji Smile Slight 24 Regular`／`Emoji Sad 24 Regular`を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
+- SVGの出典はMicrosoft Fluent UI System Icons（MIT）。旧Icons8画像・帰属表示リンクとLucideの旧SVG素材はこのPreviewでは除去対象。旧記録は履歴として別文書に残せるが、現行UI仕様ではない。
+- 375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持の検証後に本番統合を判断する。Previewへの適用は本番採用完了を意味しない。
 
 ## 8.1 Drill 5への英語区分バッジ適用（2026-11-07）
 
@@ -596,7 +598,7 @@ PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承�
 
 全サイトにおけるYes/No選択ボタン、Example音声ボタン、およびDrill説明文のインラインアイコンは、Practice 7.1の承認済み実装を唯一の正本として全ページに標準化する。
 
-- **承認済みアイコン**: 目なしのLucide smile（肯定）およびfrown（否定）SVG（20×20px、stroke-width 2）。emoji（🙆/🙅）はUI表示から全面撤去。
+- **承認済みアイコン**: Microsoft Fluent Emoji Smile Slight（肯定）およびEmoji Sad（否定）のRegular SVG（20×20px）。emoji（🙆/🙅）はUI表示から全面撤去。
 - **共通JSヘルパー**: `answer-icons.js`（`window.AnswerIcons`）
   - `AnswerIcons.create('yes' | 'no', inline = false)`
   - `AnswerIcons.createExampleLabel('yes' | 'no')`（DocumentFragment: `🔊` + インラインSVG）
@@ -668,7 +670,7 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 ## 2026-11-08 / F-2: 8.3品詞ラベルの統一
 
 - ユーザー承認：Example 1〜4のVerb／Adjectiveだけを、8.1のNoun／Verb＋のと共通のLato 700・0.9em・padding 6px 10px・1px枠・8px角丸へ統一。ダークは文字#ffffff・背景#304663・枠#7998c3。既存のヘッダー位置・日本語キュー・音声・判定を維持。
-- Q／AアイコンはIcons8色なし線画を採用決定。実装・検証状態はUI_ROLLOUT_REVIEWとHANDOVER参照。Previewの4選択肢は比較履歴として維持。
+- Q／Aアイコンは2026-11-11にMicrosoft FluentのChat Help／Chatへ改定。以前の比較案・Icons8採用時の検証は履歴としてUI_ROLLOUT_REVIEW参照。
 - 7.3の時制ラベルはPreviewで判断し、本番には未適用。
 
 ## 2026-11-09 / Practice 8.3 バッジ表示統一（Verb・だれ・何）
@@ -682,7 +684,7 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 ## 2026-11-08 / 7.3 Lato採用と8.3 Ex1装飾漏れ是正
 
 - ユーザー決定：7.3の時制・アスペクトラベルはLatoへ。フォントのみ変更し、意味色・枠・余白・文字サイズ・時制区分配置を維持。Q/Aのフォント選定とは別。7.1/7.2には未適用。
-- 8.3 Ex1のQ/Aと空の役割欄の不要な囲みは、8.1用CSSがpractice81-pageを継承する8.3にも一致していたことが原因。ライト／ダークの8.1用セレクタをdata-practice="8.1"に限定し、8.3の役割ラベルへ流出させない。この時点では共通の丸囲みQ/Aを維持（後続のIcons8採用で置換）。8.3 Verb/Adjectiveの承認済み装飾は維持。
+- 8.3 Ex1のQ/Aと空の役割欄の不要な囲みは、8.1用CSSがpractice81-pageを継承する8.3にも一致していたことが原因。ライト／ダークの8.1用セレクタをdata-practice="8.1"に限定し、8.3の役割ラベルへ流出させない。この時点では共通の丸囲みQ/Aを維持（後続のアイコン改定で置換）。8.3 Verb/Adjectiveの承認済み装飾は維持。
 - Who/What/Which/Where/Whenの括弧は省略が妥当との提案段階。ユーザーは意見を求めているため未変更。人物・場所・語彙のW項目は継続保留。
 
 ## 2026-11-08 / Lato読込と8.3二段目英字
