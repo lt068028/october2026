@@ -33,7 +33,7 @@
 
 ## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
-- **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。
+- **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。CompositionにはQ/A役割表示がないため、今回のQ/A適用対象外。
 - `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。今回のPreviewでは対象Practice全体に有効化する。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
 - 停止ボタン右の**疑問文マーク**はChat Help Filledを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。Compositionを含め、共通ヘルパーを使用する対象ページで既存の表示条件を維持する。
 - `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
