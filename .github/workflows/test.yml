@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+    inputs:
+      negative_baseline_ref:
+        description: 'Optional fixed baseline commit SHA for example-negative comparison'
+        required: false
+        type: string
 
 jobs:
   test:
@@ -131,6 +136,35 @@ jobs:
           fi
           /usr/bin/chromium --version || true
 
+      # example-negative compares two distinct checkouts. Do not silently compare HEAD with itself.
+      # Configure repository variable NEGATIVE_BASELINE_REF with a reviewed fixed commit SHA,
+      # or supply workflow_dispatch input negative_baseline_ref.
+      - name: Prepare negative Example baseline (Group 3)
+        if: matrix.group == 3
+        env:
+          BASELINE_REF: ${{ inputs.negative_baseline_ref || vars.NEGATIVE_BASELINE_REF }}
+        shell: bash
+        run: |
+          if [ -z "$BASELINE_REF" ]; then
+            echo "NEGATIVE_BASELINE_REF not configured; comparison test will be SKIPPED, not passed."
+            echo "NEGATIVE_BASELINE_READY=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          if ! BASELINE_SHA=$(git rev-parse --verify "${BASELINE_REF}^{commit}"); then
+            echo "::error::Invalid negative baseline ref: $BASELINE_REF"
+            exit 1
+          fi
+          CURRENT_SHA=$(git rev-parse HEAD)
+          if [ "$BASELINE_SHA" = "$CURRENT_SHA" ]; then
+            echo "::error::Negative baseline must differ from current checkout."
+            exit 1
+          fi
+          BASELINE_DIR="$RUNNER_TEMP/negative-example-baseline"
+          git worktree add --detach "$BASELINE_DIR" "$BASELINE_SHA"
+          echo "NEGATIVE_BASELINE_ROOT=$BASELINE_DIR" >> "$GITHUB_ENV"
+          echo "NEGATIVE_BASELINE_READY=true" >> "$GITHUB_ENV"
+          echo "Negative Example baseline: $BASELINE_SHA"
+
       - name: Run test suite (${{ matrix.name }})
         env:
           CHROMIUM_PATH: /usr/bin/chromium
@@ -168,6 +202,13 @@ jobs:
             echo "----------------------------------------------------"
             echo "Running [$TOTAL_COUNT/$TOTAL_SCHEDULED]: $test_file"
             echo "----------------------------------------------------"
+
+            if [ "$test_file" = "tests/example-negative.cjs" ] && [ "${NEGATIVE_BASELINE_READY:-false}" != "true" ]; then
+              echo "::notice::SKIP tests/example-negative.cjs: set NEGATIVE_BASELINE_REF to a reviewed baseline commit SHA."
+              echo "| $TOTAL_COUNT | \`$test_file\` | :warning: SKIP (baseline not configured) | 0s |" >> "$GITHUB_STEP_SUMMARY"
+              RESULTS+=("SKIP | 0s | $test_file (baseline not configured)")
+              continue
+            fi
 
             START_TIME=$(date +%s)
             if node "$test_file"; then
