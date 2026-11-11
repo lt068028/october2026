@@ -2735,7 +2735,7 @@ function mountCopyAreas73() {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'example-button p73-copy-button';
-            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p73-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+            button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p73-copy-icon') + '<span>Copy my sentences</span>';
 
             const help = document.createElement('span');
             help.className = 'p73-copy-help';
