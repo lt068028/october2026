@@ -1,0 +1,21 @@
+/* C/E/F color-only comparison on the existing Practice 2.1 SVG + wrap layout. */
+.p21-keep-going-preview { --p21-keep-color: #B47732; }
+.p21-keep-going-preview[data-keep-color="C"] { --p21-keep-color: #3978B5; }
+.p21-keep-going-preview[data-keep-color="E"] { --p21-keep-color: #B47732; }
+.p21-keep-going-preview[data-keep-color="F"] { --p21-keep-color: #159C92; }
+.p21-keep-going-preview .recording-result > .p21-inline-feedback,
+.p21-keep-going-preview .p21-inline-feedback > .p21-retry-label { color: var(--p21-keep-color); }
+.p21-keep-going-preview .p21-inline-feedback > .p21-retry-label { background: transparent; border: 0; box-shadow: none; }
+@media (prefers-color-scheme: dark) {
+ .p21-keep-going-preview[data-keep-color="C"] { --p21-keep-color: #8CBCE9; }
+ .p21-keep-going-preview[data-keep-color="E"] { --p21-keep-color: #E4AD69; }
+ .p21-keep-going-preview[data-keep-color="F"] { --p21-keep-color: #65D8CD; }
+ .p21-keep-going-preview .p21-inline-feedback > .p21-retry-label { background: transparent; }
+}
+.p21-keep-color-picker { margin: 12px 0 20px; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-panel); font-family: var(--font-latin); }
+.p21-keep-color-picker > strong { display: block; margin-bottom: 9px; }
+.p21-keep-color-picker .p21-color-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.p21-keep-color-picker button { border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-row); color: var(--text-primary); padding: 8px 10px; cursor: pointer; font-family: inherit; }
+.p21-keep-color-picker button[aria-pressed="true"] { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+.p21-keep-color-picker .p21-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; background: var(--swatch); vertical-align: -1px; }
+.p21-keep-color-picker .p21-note { display: block; margin-top: 8px; color: var(--text-secondary); font-size: 13px; }
