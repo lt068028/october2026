@@ -94,6 +94,17 @@ jobs:
           cat "$DIAG_OUTPUT/diagnostic.log"
           exit 0
 
+      - name: Replay the same PR test scripts with overflow diagnostics
+        run: |
+          set +e
+          node tools/pr9-width-replay.cjs \
+            "$RUNNER_TEMP/pr9-width/main" \
+            "$RUNNER_TEMP/pr9-width/filled" \
+            > "$DIAG_OUTPUT/same-test-replay.log" 2>&1
+          echo $? > "$DIAG_OUTPUT/same-test-replay.exit"
+          cat "$DIAG_OUTPUT/same-test-replay.log"
+          exit 0
+
       - name: Build readable result summary
         if: always()
         run: node tools/pr9-width-summary.cjs "$DIAG_OUTPUT"
