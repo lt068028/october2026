@@ -32,10 +32,7 @@ window.ConversationDisplay = (() => {
                 if(document.documentElement.hasAttribute('data-qa-preview')||document.documentElement.hasAttribute('data-role-preview'))circle.textContent=letter;
                 else{
                     circle.classList.add('conversation-role-icon');circle.setAttribute('role','img');
-                    const image=document.createElement('img');
-                    image.src='assets/qa-icons/icons8-mono-'+(letter==='Q'?'question':'answer')+'.png?v=20261108-icons8-mono';
-                    image.alt='';image.setAttribute('aria-hidden','true');image.width=50;image.height=50;
-                    circle.append(image);
+                    circle.append(window.FluentIcons.create(letter==='Q'?'question':'answer', 24, 'conversation-role-svg'));
                 }
                 label.replaceChildren(circle);if(pair)label.append(person(pair[1]));
             }else if(name){
