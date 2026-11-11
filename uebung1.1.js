@@ -1158,8 +1158,8 @@ function initGermanDrill() {
             return;
         }
         const audio = new Audio(entry.url);
-        activeAudio = audio;
         if (btn) markPlaying(btn);
+        activeAudio = audio;
         audioDiagnostic("Recorded audio playback requested");
         const cleanup = (error) => {
             audioDiagnostic(error ? "Recorded audio failed: " + String(error?.message || error?.type || error) : "Recorded audio finished");
