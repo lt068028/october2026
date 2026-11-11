@@ -1,5 +1,14 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Practice 2.1 Checkmark Filled太さ・左配置Preview（2026-11-11）
+
+- `preview/p21-checkmark-filled-stroke-20261111`、基準は3状態表示の最新実装 `30bb0a59191bfc687b372d79b952760883c4588c`。仕様登録のみのe9c6fe2を実装基準には使用しない。
+- 正式Filled path・24×24 viewBoxを維持し、同色stroke 1.5（round join）を追加。外寸22px・緑の両テーマ色は維持。対応テキストの左、4px、縦中央、縮小なし。長文は既存領域内で折り返す。
+- Fire・Footprints・判定／許容解答・録音／再生／停止・Q/A・目なしSmile/Frown・疑問文マーク・コピー・他ページは変更しない。正本はUI_LAYOUT_SPECの正解アイコン節。
+- 自動検証：太さ・左配置・原本path比較・viewBox内の外形／22pxラスタ外周切れ201件、3状態／旧データ／認識エラー保持405件、Keep going!574件、Practice 2.1 Q/A7,495件、疑問文マーク121件成功・今回実行テストの失敗0。375/600/1440px×Light/Dark、短文・長文・改行しにくい文字列を確認。実測間隔4px・中心差0px。録音・モデル再生・停止・録音再生はモックで検証、実機マイクは未確認。
+- 既知のaudio-relay停止タイムアウト問題は前工程で基準にも再現済み。今回は音声処理を変更せず、同テスト全体は再実行していない。Smile/Frown・他ページの実装／読み込み先は差分なし。
+- 独立Previewでユーザー実機承認待ち。main・Production・PR #8/#9・元Preview・Practice 8.2の未コミット変更は維持する。
+
 ## Practice 2.1 判定表示A案Preview（2026-11-11）
 
 - `preview/p21-feedback-status-a-20261111`、基準 `e9c6fe2d8a95467ba250ddbdf6c0fe23ad683f85`。正本はUI_LAYOUT_SPEC「Practice 2.1：A案」。

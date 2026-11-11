@@ -1,3 +1,4 @@
 Checkmark 24 Filled (MIT): https://github.com/microsoft/fluentui-system-icons/blob/4bf6b786b16f120595efcee8911c74392fa29c14/assets/Checkmark/SVG/ic_fluent_checkmark_24_filled.svg
 Footprints (ISC with retained MIT notices): https://github.com/lucide-icons/lucide/blob/03eae6069edfc373673bd05d723491f05ba936e3/icons/footprints.svg
 Original path data retained. Color uses currentColor, display size 22px. Notices in adjacent FEEDBACK-STATUS-*-LICENSE.txt.
+Practice 2.1 approved display adjustment: Checkmark Filled adds currentColor stroke-width 1.5 with round joins, preserving its original path/viewBox and 22px size. Footprints unchanged.

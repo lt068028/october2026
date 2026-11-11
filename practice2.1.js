@@ -839,7 +839,17 @@ function practice2ShowNotice(resultSpan, message) {
 
         const status = FeedbackStatus.resolve(saved);
         if (status === 'accepted' || status === 'undetermined') {
-            view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
+            if (status === 'accepted') {
+                const group = document.createElement('span');
+                group.className = 'p21-accepted-result';
+                const text = document.createElement('span');
+                text.className = 'p21-accepted-text';
+                text.textContent = displayed;
+                group.append(FeedbackStatus.create(status), text);
+                view.resultSpan.append(group, document.createTextNode(' '));
+            } else {
+                view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
+            }
         } else {
             const candidates = [
                 saved.expectedText,
@@ -2115,7 +2125,17 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
 
     const status = FeedbackStatus.resolve(saved);
     if (status === 'accepted' || status === 'undetermined') {
-        view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
+        if (status === 'accepted') {
+            const group = document.createElement('span');
+            group.className = 'p21-accepted-result';
+            const text = document.createElement('span');
+            text.className = 'p21-accepted-text';
+            text.textContent = displayed;
+            group.append(FeedbackStatus.create(status), text);
+            view.resultSpan.append(group, document.createTextNode(' '));
+        } else {
+            view.resultSpan.append(document.createTextNode(displayed), FeedbackStatus.create(status), document.createTextNode(' '));
+        }
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]

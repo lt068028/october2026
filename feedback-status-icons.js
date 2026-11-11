@@ -30,7 +30,12 @@ window.FeedbackStatus = (() => {
             tip.setAttribute('role', 'tooltip');
             tip.textContent = label;
             badge.append(tip);
-        } else svg.setAttribute('fill','currentColor');
+        } else {
+            svg.setAttribute('fill','currentColor');
+            svg.setAttribute('stroke','currentColor');
+            svg.setAttribute('stroke-width','1.5');
+            svg.setAttribute('stroke-linejoin','round');
+        }
         for (const data of paths[status]) {
             const path = document.createElementNS('http://www.w3.org/2000/svg','path');
             path.setAttribute('d',data); svg.append(path);
