@@ -775,7 +775,7 @@ function initGermanDrill() {
 
     function markPlaying(b) {
         if (!b) return;
-        stopPlayback();
+        // Callers have already stopped previous playback. Do not cancel the new TTS token.
         playingButton = b;
         b._contents = Array.from(b.childNodes);
         b.disabled = false;
