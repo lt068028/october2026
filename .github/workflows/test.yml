@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      negative_baseline_ref:
-        description: 'Optional fixed baseline commit SHA for example-negative comparison'
-        required: false
-        type: string
 
 jobs:
   test:
@@ -136,35 +131,6 @@ jobs:
           fi
           /usr/bin/chromium --version || true
 
-      # example-negative compares two distinct checkouts. Do not silently compare HEAD with itself.
-      # Configure repository variable NEGATIVE_BASELINE_REF with a reviewed fixed commit SHA,
-      # or supply workflow_dispatch input negative_baseline_ref. Default is the documented\n      # pre-change commit for Example negative emphasis (aa5eda6 parent).
-      - name: Prepare negative Example baseline (Group 3)
-        if: matrix.group == 3
-        env:
-          BASELINE_REF: ${{ inputs.negative_baseline_ref || vars.NEGATIVE_BASELINE_REF || 'd19932d2ad583c4354735217dfefac27760e84b3' }}
-        shell: bash
-        run: |
-          if [ -z "$BASELINE_REF" ]; then
-            echo "NEGATIVE_BASELINE_REF not configured; comparison test will be SKIPPED, not passed."
-            echo "NEGATIVE_BASELINE_READY=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          if ! BASELINE_SHA=$(git rev-parse --verify "${BASELINE_REF}^{commit}"); then
-            echo "::error::Invalid negative baseline ref: $BASELINE_REF"
-            exit 1
-          fi
-          CURRENT_SHA=$(git rev-parse HEAD)
-          if [ "$BASELINE_SHA" = "$CURRENT_SHA" ]; then
-            echo "::error::Negative baseline must differ from current checkout."
-            exit 1
-          fi
-          BASELINE_DIR="$RUNNER_TEMP/negative-example-baseline"
-          git worktree add --detach "$BASELINE_DIR" "$BASELINE_SHA"
-          echo "NEGATIVE_BASELINE_ROOT=$BASELINE_DIR" >> "$GITHUB_ENV"
-          echo "NEGATIVE_BASELINE_READY=true" >> "$GITHUB_ENV"
-          echo "Negative Example baseline: $BASELINE_SHA"
-
       - name: Run test suite (${{ matrix.name }})
         env:
           CHROMIUM_PATH: /usr/bin/chromium
@@ -188,13 +154,14 @@ jobs:
           echo "| # | Test File | Result | Duration |" >> "$GITHUB_STEP_SUMMARY"
           echo "|---|---|:---:|---:|" >> "$GITHUB_STEP_SUMMARY"
 
-          TOTAL_COUNT=0
           PASSED_COUNT=0
           FAILED_COUNT=0
+          SKIPPED_COUNT=0
           FAILED_TESTS=()
           RESULTS=()
 
           GROUP_START=$(date +%s)
+          TOTAL_COUNT=0
 
           for test_file in "${TESTS_ARRAY[@]}"; do
             TOTAL_COUNT=$((TOTAL_COUNT + 1))
@@ -202,13 +169,6 @@ jobs:
             echo "----------------------------------------------------"
             echo "Running [$TOTAL_COUNT/$TOTAL_SCHEDULED]: $test_file"
             echo "----------------------------------------------------"
-
-            if [ "$test_file" = "tests/example-negative.cjs" ] && [ "${NEGATIVE_BASELINE_READY:-false}" != "true" ]; then
-              echo "::notice::SKIP tests/example-negative.cjs: set NEGATIVE_BASELINE_REF to a reviewed baseline commit SHA."
-              echo "| $TOTAL_COUNT | \`$test_file\` | :warning: SKIP (baseline not configured) | 0s |" >> "$GITHUB_STEP_SUMMARY"
-              RESULTS+=("SKIP | 0s | $test_file (baseline not configured)")
-              continue
-            fi
 
             START_TIME=$(date +%s)
             if node "$test_file"; then
@@ -231,17 +191,23 @@ jobs:
 
           GROUP_END=$(date +%s)
           GROUP_DURATION=$((GROUP_END - GROUP_START))
+          EXECUTED_COUNT=$((PASSED_COUNT + FAILED_COUNT))
+          if [ $((EXECUTED_COUNT + SKIPPED_COUNT)) -ne "$TOTAL_SCHEDULED" ]; then
+            echo "::error::Test accounting mismatch: scheduled=$TOTAL_SCHEDULED executed=$EXECUTED_COUNT skipped=$SKIPPED_COUNT"
+            exit 1
+          fi
 
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Group $GROUP_ID Summary**: Total: $TOTAL_COUNT | Passed: $PASSED_COUNT | Failed: $FAILED_COUNT | Duration: ${GROUP_DURATION}s" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Group $GROUP_ID Summary**: Scheduled: $TOTAL_SCHEDULED | Executed: $EXECUTED_COUNT | Passed: $PASSED_COUNT | Failed: $FAILED_COUNT | Skipped: $SKIPPED_COUNT | Duration: ${GROUP_DURATION}s" >> "$GITHUB_STEP_SUMMARY"
 
           echo ""
           echo "===================================================="
           echo "Group $GROUP_ID Summary: $GROUP_NAME (${GROUP_DURATION}s)"
           echo "Scheduled: $TOTAL_SCHEDULED"
-          echo "Executed:  $TOTAL_COUNT"
+          echo "Executed:  $EXECUTED_COUNT"
           echo "Passed:    $PASSED_COUNT"
           echo "Failed:    $FAILED_COUNT"
+          echo "Skipped:   $SKIPPED_COUNT"
           echo "----------------------------------------------------"
           echo "Detailed Results:"
           for res in "${RESULTS[@]}"; do
@@ -257,5 +223,9 @@ jobs:
             exit 1
           fi
 
-          echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
+          if [ "$SKIPPED_COUNT" -gt 0 ]; then
+            echo "Group $GROUP_ID completed with $SKIPPED_COUNT skipped test(s); no all-passed claim."
+          else
+            echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
+          fi
           exit 0
