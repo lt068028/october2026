@@ -124,9 +124,7 @@ async function measure(page, meta, screenshotPath = null) {
     all.push(entry);
     if (screenshotPath) {
         fs.mkdirSync(path.dirname(screenshotPath), {recursive: true});
-        const row = page.locator('tr:has([data-pr9-diagnostic-record])').first();
-        if (await row.count()) await row.screenshot({path: screenshotPath});
-        else await page.screenshot({path: screenshotPath});
+        await page.screenshot({path: screenshotPath, fullPage: false});
         entry.screenshot = path.relative(output, screenshotPath);
     }
     return entry;
