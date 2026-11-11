@@ -59,7 +59,7 @@
 - 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
 - Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
 - Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。これはPreviewブランチ上の検証仕様であり、main／Productionへの統合は行わない。
-- Yes/NoはFluent `Emoji Smile Slight 24 Regular`／`Emoji Sad 24 Regular`を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
+- Yes/Noは承認済みの目なしSmile/Frown（`f8b06d8f…`のSVG原文）を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
 - SVGの出典はMicrosoft Fluent UI System Icons（MIT）。旧Icons8画像・帰属表示リンクとLucideの旧SVG素材はこのPreviewでは除去対象。旧記録は履歴として別文書に残せるが、現行UI仕様ではない。
 - 375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持の検証後に本番統合を判断する。Previewへの適用は本番採用完了を意味しない。
 
@@ -618,7 +618,7 @@ PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承�
 
 全サイトにおけるYes/No選択ボタン、Example音声ボタン、およびDrill説明文のインラインアイコンは、Practice 7.1の承認済み実装を唯一の正本として全ページに標準化する。
 
-- **承認済みアイコン**: Microsoft Fluent Emoji Smile Slight（肯定）およびEmoji Sad（否定）のRegular SVG（20×20px）。emoji（🙆/🙅）はUI表示から全面撤去。
+- **承認済みアイコン**: 目なしSmile/Frown。比較Preview `af3e5d7d…`と共通実装 `f8b06d8f…`の円＋口のSVGをそのまま使用する（20×20px、viewBox `0 0 24 24`、fill none、currentColorのstroke 2、round cap/join）。Fluentへの置換で追加された目は採用しない。Q/A Filled、停止横疑問文マーク、Fire Regularは変更しない。emoji（🙆/🙅）はUI表示から全面撤去。
 - **共通JSヘルパー**: `answer-icons.js`（`window.AnswerIcons`）
   - `AnswerIcons.create('yes' | 'no', inline = false)`
   - `AnswerIcons.createExampleLabel('yes' | 'no')`（DocumentFragment: `🔊` + インラインSVG）

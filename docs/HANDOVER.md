@@ -1,5 +1,12 @@
 # October2026 現在のリレー状態（HANDOVER）
 
+## Smile/Frown承認済み外観の復元Preview（2026-11-11）
+
+- `preview/restore-eyeless-smile-frown-20261111`、基準統合 `709de6eec2a2f596324f795966ed938738e9301a`。
+- 原因は `b9b033da85a617833eb44642030d92936ed2b763` のAnswerIcons置換。目なし承認部品 `f8b06d8f…` を正確に復元。正式外観はUI_LAYOUT_SPECのY/N節。
+- Q/A役割ルール、疑問文マーク、Keep going!、音声・判定処理は変更しない。独立Previewのユーザー確認待ち。
+- 自動検証：目なしSVG・色・位置のBefore/After比較8,024件、Q/Aルール28,856件、Keep going! 574件、疑問文マーク121件成功・失敗0。375/600/1440px・Light/Dark、選択・全Set・再描画を確認。音声はモックであり実機マイク未検証。
+
 ## Q/A確定仕様＋Keep going! 最終統合Preview（2026-11-11）
 
 - 専用ブランチ `preview/qa-keep-going-final-20261111`。基準Q/A `0fdc881c2d80d54778861c5a741313238d389191` にKeep going!承認Commit `644fff834355c9716cf258aa25cef9fd259131c7` の表示差分だけを適用。旧統合ブランチはマージしていない。

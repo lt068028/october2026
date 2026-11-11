@@ -1,9 +1,12 @@
 // Minimal reusable Yes/No answer icon helper.
-// Provides standardized Microsoft Fluent smile/sad icons matching Practice 7.1 approved reference.
+// Exact approved eyeless component: f8b06d8f9f65c514488da423a18545b454d45e6b.
+// Eyeless preview: af3e5d7d9e5192353d658f1bb021299ea97b0b80.
+// Lucide/Feather license notices: assets/licenses/APPROVED-EYELESS-SMILE-FROWN-LICENSE.txt
+// Provides standardized Lucide smile/frown icons matching Practice 7.1 approved reference.
 window.AnswerIcons = Object.freeze({
     SVGS: Object.freeze({
-        yes: window.FluentIcons.markup('yes', 20, 'yn-answer-icon p71-answer-icon'),
-        no: window.FluentIcons.markup('no', 20, 'yn-answer-icon p71-answer-icon')
+        yes: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="yn-answer-icon p71-answer-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>',
+        no: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="yn-answer-icon p71-answer-icon" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 16s1.5-2 4-2 4 2 4 2"/></svg>'
     }),
 
     create(kind, inline = false) {
