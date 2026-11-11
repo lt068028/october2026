@@ -49,7 +49,7 @@ async function inspect(p) {
             message:label.textContent, sameGroup:v.correctionBox.parentElement===group, messageFirst:group.firstElementChild===v.correctionBox,
             label:rect(label), group:rect(group), glyphs, gap:glyphs[0]?.x-label.getBoundingClientRect().right,
             internalGap:text.x-(sg?.right||0), svg:svg?{w:sg.width,h:sg.height,hidden:svg.getAttribute('aria-hidden'),path:svg.querySelector('path')?.getAttribute('d'),fill:getComputedStyle(svg.querySelector('path')).fill}:null,
-            color:style.color,font:style.fontFamily,nowrap:style.whiteSpace,decorations:[style.borderWidth,style.backgroundColor,style.boxShadow,box.borderWidth,box.backgroundColor,box.boxShadow],
+            color:style.color,font:style.fontFamily,nowrap:style.whiteSpace,decorations:[style.borderWidth,style.backgroundColor,style.boxShadow,box.borderWidth,box.backgroundColor,box.boxShadow,style.padding,style.borderRadius],
             focusable:label.querySelectorAll('a,button,input,[tabindex]').length, pointerEvents:box.pointerEvents,
             scrollWidth:document.documentElement.scrollWidth,width:innerWidth};
     });
@@ -65,12 +65,13 @@ async function inspect(p) {
             for(const [kind,raw]of [['short','あ'],['long','あいうえおかきくけこ、これは長い抽出テキストです。'.repeat(5)],['unbroken','LongUnbrokenExtractedText'.repeat(15)],['whitespace','Ａ　３，０００？\n  なにですか']]) {
                 await fixture(p,raw); if(before)await fixture(before,raw); const d=await inspect(p), key=`${width}/${theme}/${kind}`;
                 check(d.raw,raw,key+' raw STT unchanged');check(d.message,'Keep going!',key+' exact short message');
+                check(d.message.includes('Try once more!'),false,key+' removes old retry wording');
                 check(d.sameGroup&&d.messageFirst,true,key+' message precedes extracted text in the same result region');
                 check(d.svg?.hidden,'true',key+' decorative SVG');check([d.svg?.w,d.svg?.h],[20,20],key+' approved 20px icon');
                 check(createHash('sha256').update(d.svg?.path||'').digest('hex'),fireHash,key+' approved Fluent Fire Regular path');
-                check(d.color,theme==='light'?'rgb(190, 18, 60)':'rgb(254, 205, 211)',key+' existing error text color');check(d.svg?.fill,d.color,key+' icon shares message color');
+                check(d.color,theme==='light'?'rgb(180, 119, 50)':'rgb(228, 173, 105)',key+' approved E orange');check(d.svg?.fill,d.color,key+' icon shares message color');
                 check(d.font.includes('Lato'),true,key+' Lato declared');check(d.nowrap,'nowrap',key+' message is atomic');
-                check(d.decorations,['0px','rgba(0, 0, 0, 0)','none','0px','rgba(0, 0, 0, 0)','none'],key+' no enclosing decoration');
+                check(d.decorations,['0px','rgba(0, 0, 0, 0)','none','0px','rgba(0, 0, 0, 0)','none','0px','0px'],key+' no enclosing decoration or padding');
                 check(d.focusable===0&&d.pointerEvents==='none',true,key+' no interaction added');
                 const sameLine = Math.min(d.glyphs[0].bottom,d.label.bottom) > Math.max(d.glyphs[0].y,d.label.y);
                 if(sameLine) check(Math.abs(d.gap-4)<.6,true,key+' minimal 4px gap');
@@ -91,6 +92,12 @@ async function inspect(p) {
         for(const extra of [{isCorrect:true},{isCorrect:false,judgment:'undetermined'},{isCorrect:false,audioOnly:true},{isCorrect:false,unrecognized:true}]) {
             await fixture(p,'あ',extra);check(await p.locator('.p21-retry-label:visible').count(),0,'accepted/undetermined/audio-only result has no retry message '+JSON.stringify(extra));
         }
+        await fixture(p,'ちがうこたえ');
+        const redHighlights=await p.locator('.result-text').first().evaluate(el=>{
+            const probe=document.createElement('span');probe.style.color='var(--error-text)';document.body.append(probe);const expected=getComputedStyle(probe).color;probe.remove();
+            return [...el.querySelectorAll('span')].filter(span=>getComputedStyle(span).color===expected).length;
+        });
+        check(redHighlights>0,true,'mismatch retains red-highlighted characters');
         await fixture(p,'あ');const saved=await p.evaluate(()=>JSON.stringify(practice2State.savedResults[keepGoingTestKey]));
         for(const [id,value]of [['scriptModeControl','kanji'],['hintModeControl','paren'],['speechStyleControl','casual']]) {await p.locator(`#${id} [data-value="${value}"]`).click();check(await p.evaluate(()=>JSON.stringify(practice2State.savedResults[keepGoingTestKey])),saved,id+' preserves raw result');check(await p.locator('.p21-retry-label:visible').count(),1,id+' paints retry once');}
         for(let i=0;i<2;i++){await p.locator('.drill-cue-button').click();check(await p.evaluate(()=>JSON.stringify(practice2State.savedResults[keepGoingTestKey])),saved,'English Cues preserves result');check(await p.locator('.p21-retry-label:visible').count(),1,'English Cues paints retry once');}

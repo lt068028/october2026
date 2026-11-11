@@ -2,8 +2,8 @@
 
 ## Practice 2.1 Keep going! 限定Preview（2026-11-11、Codex Cloud）
 
-- 独立ブランチ：`preview/keep-going-practice21-20261111`。起点main：`74817eb3e5dc3ff30ad6769df673450354910d29`。
-- 対象はPractice 2.1のみ。承認済みFluent Fire 24 Regularと短文 `Keep going!` を、抽出テキストと同じ右寄せ領域へ配置する。詳細はUI_LAYOUT_SPEC冒頭を参照。
+- 独立ブランチ：`preview/p21-keep-going-approved-e-20261111`。基準実装：`preview/keep-going-practice21-20261111`。起点main：`74817eb3e5dc3ff30ad6769df673450354910d29`。
+- 対象はPractice 2.1のみ。承認済みFluent Fire 24 Regularと短文 `Keep going!` をLight `#B47732`／Dark `#E4AD69`で、抽出テキストと同じ右寄せ領域へ配置する。詳細はUI_LAYOUT_SPEC冒頭を参照。
 - 既存のPR #8・Practice 8.2の未コミット修正は取り込まない。main／Productionへの反映・全ページ展開・既存PRのマージは行わない。
 - 検証結果は終了報告とGit履歴を参照。専用Vercel Previewでのユーザー確認待ち。別途承認まで全ページ展開しない。
 
