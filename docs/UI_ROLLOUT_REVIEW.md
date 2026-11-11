@@ -1,4 +1,10 @@
-## 2026-11-08 Q/Aアイコン採用追跡
+## 2026-11-11 Microsoft Fluentアイコン統一（専用Preview）
+
+- 現行の新仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」。Q＝Chat Help、A＝Chat、疑問文＝Chat Help（16px）。Regularパスに輪郭＋0.45px。Copy／Yes・No／Beyondの旧Lucide SVGもFluentへ統一する。
+- 作業先は`preview/fluent-icons-sitewide-20261111`。本番`main`とは別。Run #87の未コミットP1/P2修正は含まない。ブラウザ・CI・Vercelの検証は別途結果を確認する。
+- 下記2026-11-08のIcons8採用記録は**過去の履歴**であり、現行アイコン仕様ではない。
+
+## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
 
 - 状態：実装済み・検証済み（アイコン適用範囲）。採用決定・実装中を経て最新main ab69d6fとの313ブラウザ条件の比較を完了。最終efb8014のCopy補助文言変更後も7.1の28条件を再比較済み。Icons8 monochrome outlinedを採用。仕様の正本はUI_LAYOUT_SPEC「会話役割アイコン」。
 - 対象：Practice 1.2、2.1、2.2、2.3、7.1、7.2、7.3、8.1、8.2、8.3。Example／Drillの実在する役割のみ。1.1・発音1/2・作文1・Indexは対象なし。
