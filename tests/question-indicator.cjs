@@ -202,7 +202,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 7.1 answer rows have 0 question indicators');
     check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 5, 'All 5 indicators in Practice 7.1 are wrapped with stop buttons');
     // Verify Y/N icons are preserved
-    check(await page.locator('.answer-choice svg').count(), 10, 'Practice 7.1 Y/N answer buttons preserve Lucide SVGs');
+    check(await page.locator('.answer-choice svg').count(), 10, 'Practice 7.1 Y/N answer buttons preserve Fluent SVGs');
 
     // 9. Practice 7.2
     await page.goto('http://qi.test/practice7.2.html');
