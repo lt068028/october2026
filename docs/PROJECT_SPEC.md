@@ -1,13 +1,13 @@
 ## 録音付きDrillのCopyボタンアイコン（2026-11-08確定）
 
-- 共通コピー操作のアイコンは **Lucide `clipboard` SVG** とする。絵文字 `📋` や `copy`（重なる四角）アイコンではない。
-- SVGは20×20px、`stroke-width: 2`、`stroke: currentColor` とし、文字ラベル `Copy my sentences` を必ず併記する。アイコン単体のボタンにはしない。
+- 共通コピー操作のアイコンは **Microsoft Fluent `Clipboard 24 Regular` SVG** とする。絵文字 `📋` や `copy`（重なる四角）アイコンではない。
+- SVGは20×20px、公式Regularパスの`fill: currentColor` とし、文字ラベル `Copy my sentences` を必ず併記する。アイコン単体のボタンにはしない。
 - プロジェクトの既存アイコン方式またはアクセス可能なインラインSVGで実装し、不要な外部依存を追加しない。SVGは装飾扱い（`aria-hidden=\"true\"`）とし、ボタン名は文字ラベルで提供する。
-- Practice 7.1を最初の適用対象とし、新規録音付きDrillでは標準採用する。既存全ページの一括置換はしない。
+- Practice 7.1を最初の適用対象とし、新規録音付きDrillでは標準採用する。今回のアイコン移行では既存のCopyボタンも対象とする。
 
 ## 録音付きDrillの発話コピー機能（2026-11-08確定）
 
-- 新規作成する**録音付きDrill**は、Drill単位で学習者本人の音声認識結果をコピーできる `Copy my sentences` ボタン（Lucide `clipboard` SVG付き）を標準搭載する。録音対象のないDrill・Exampleには機械的に追加しない。Practice 7.1での先行実装・ユーザー実機確認（2026-11-08）を経て、録音による発話記録を持つ全Drillへの段階的展開を対象とする。Pronunciation 1・2とCompositionは対象外。展開前に対象ページ・DrillのRead-only調査を行い、結果確認後に共通化・ページ別実装する。
+- 新規作成する**録音付きDrill**は、Drill単位で学習者本人の音声認識結果をコピーできる `Copy my sentences` ボタン（Microsoft Fluent `Clipboard 24 Regular` SVG付き）を標準搭載する。録音対象のないDrill・Exampleには機械的に追加しない。Practice 7.1での先行実装・ユーザー実機確認（2026-11-08）を経て、録音による発話記録を持つ全Drillへの段階的展開を対象とする。Pronunciation 1・2とCompositionは対象外。展開前に対象ページ・DrillのRead-only調査を行い、結果確認後に共通化・ページ別実装する。
 - 対象は、そのDrill内で録音・認識された**学習者の発話原文（raw STT transcript）**のみ。モデル解答、設問、音声再生内容、未録音行、別のDrillの記録を混ぜず、学習者の誤りをコピー時に自動修正しない。既に存在する正誤マーカーやQ/A等の出力区分は保持する。
 - コピー先頭の見出しは `Practice {page} — Drill {number}: {drill name} — {learning focus} — YYYY-MM-DD` の形式を標準とする。英語見出しと学習テーマはページ固有の明示的な定義から生成し、画面表示タイトルの表記揺れやステージ切替に依存させない。日付は**コピー操作時の利用者ローカル日付**で生成し、見出しに一度だけ付与する。学習テーマの重複は避ける。
 - 表示文言はボタン `Copy my sentences`、その下の補助説明 `Copy your drill results to review or share.` に統一する。補助説明はコピー対象がDrillの結果であることと、復習・共有という用途を示す。Practice 7.1の実装済み文言を全対象Drillの共通仕様とする。
@@ -1362,5 +1362,5 @@ Voice変更時の旧モデル曲線消去は実装済み。モデル文変更時
 
 ### 「Copy my sentences」機能
 - 各ドリルのカード3直下に右寄せ配置。
-- Lucide標準 `clipboard` SVGアイコン、ボタンテキスト `Copy my sentences`、説明文 `Copy your drill results to review or share.`。
+- Microsoft Fluent `Clipboard 24 Regular` SVGアイコン、ボタンテキスト `Copy my sentences`、説明文 `Copy your drill results to review or share.`。
 - クリック時、該当ドリルの学習者発話結果（STT生認識テキスト）をローカル日時ヘッダー付きでクリップボードへコピーし、成功時は `Copied!` を一時表示。
