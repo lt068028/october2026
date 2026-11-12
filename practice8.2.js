@@ -1348,7 +1348,7 @@ function init() {
 
 /* Practice 8.2: Copy my sentences */
 const COPY82_HEADERS = [
-    'Practice 8.2 — Drill 1: 何か questions — Unspecified item',
+    'Practice 8.2 — Drill 1: 何か — Questions — Unspecified item',
     'Practice 8.2 — Drill 2: 何を vs 何か — Specific / Unspecified',
     'Practice 8.2 — Drill 3: 何か／何も — Yes/No questions',
     'Practice 8.2 — Drill 4: 何でも — Unlimited Choice'
