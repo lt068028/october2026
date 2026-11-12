@@ -156,7 +156,9 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
                     const range = document.createRange();
                     range.selectNodeContents(cue);
                     const lineRects = [...range.getClientRects()];
-                    const lineYs = [...new Set(lineRects.map(r => Math.round(r.y)))];
+                    const lineYs = [...new Set(lineRects
+                        .filter(line => line.y >= rect.y - 1 && line.y <= rect.bottom + 1)
+                        .map(line => Math.round(line.y)))];
                     const normalized = cue.innerText.replace(/\\s+/g, '');
                     return {
                         text: cue.innerText,
