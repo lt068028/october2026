@@ -46,36 +46,17 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         await page.goto('http://copy83.test/practice8.3.html');
         await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
         eq(await page.evaluate(() => [FeedbackStatus.clipboardMarker({correct:true}), FeedbackStatus.clipboardMarker({correct:false}), FeedbackStatus.clipboardMarker({judgment:'undetermined'})]), ['✅','🔥','👣'], 'shared clipboard marker mapping');
-        console.log('P83_F1_RUNTIME ' + JSON.stringify(await page.evaluate(() => {
-            const s = window.practice83State;
-            const row = s.rowsFor(0)[0][2];
-            const inputs = [
-                '山田さんが、手伝います。',
-                '山田さんが手伝います',
-                '山田さんが、てつだいます。',
-                '山田さんがてつだいます',
-                'やまださんが、てつだいます。',
-                '田中さんが手伝います',
-                '山田さんが料理します'
-            ];
-            return {
-                text: row.text,
-                hira: row.hira,
-                refs: row.refs,
-                refsJson: row.refs.map(text => JSON.stringify(text)),
-                matches: Object.fromEntries(inputs.map(input => [input, s.matchesAnswer(input, row)]))
-            };
-        })));
         eq(await page.evaluate(() => {
             const s = window.practice83State;
             const row = s.rowsFor(0)[0][2];
             return {
                 canonical: row.text,
                 hasKanjiRef: row.refs.includes('山田さんが、手伝います。'),
-                hasKanaRef: row.refs.includes('山田さんが、てつだいます。'),
+                hasKanaRef: row.refs.includes('やまださんが、てつだいます。'),
                 noPunctuation: s.matchesAnswer('山田さんが手伝います', row),
                 withPunctuation: s.matchesAnswer('山田さんが、手伝います。', row),
                 kana: s.matchesAnswer('山田さんが、てつだいます。', row),
+                fullKana: s.matchesAnswer('やまださんが、てつだいます。', row),
                 wrongSubject: s.matchesAnswer('田中さんが手伝います', row),
                 wrongVerb: s.matchesAnswer('山田さんが料理します', row)
             };
@@ -86,6 +67,7 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
             noPunctuation: true,
             withPunctuation: true,
             kana: true,
+            fullKana: true,
             wrongSubject: false,
             wrongVerb: false
         }, 'Drill 1 Item 1 accepts canonical kanji/kana forms and rejects wrong answers');
