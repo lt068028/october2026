@@ -906,7 +906,8 @@ function compositionShow(view, message = "") {
             );
         }
 
-        append(saved.isCorrect ? " ✅ " : " ");
+        if (saved.isCorrect) FeedbackStatus.prependAccepted(resultSpan);
+        else append(" ");
 
         if (saved.isCorrect && diff.blue.size) {
             resultSpan.append(
@@ -921,8 +922,7 @@ function compositionShow(view, message = "") {
 
         if (!saved.isCorrect) {
             correctionBox.style.display = "block";
-            corrText.textContent =
-                "🔥Keep going! Try once more!";
+            FeedbackStatus.setMismatch(corrText);
         }
     } else if (!item && saved?.rawTranscript) {
         // 音声専用モードへ切り替えても、以前の抽出文は残す。

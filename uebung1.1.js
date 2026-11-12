@@ -1338,7 +1338,7 @@ function initGermanDrill() {
             const judgment = val.judgment || (val.correct ? "accepted" : "mismatch");
 
             if (judgment === "accepted") {
-                v.result.append(document.createTextNode(val.raw + " ✅ "));
+                FeedbackStatus.appendAccepted(v.result, val.raw);
                 if (val.supplement) {
                     const supp = node("span", "uebung-supplement-badge", val.supplement);
                     v.result.append(supp);
@@ -1353,12 +1353,9 @@ function initGermanDrill() {
                 }
 
                 v.correction.hidden = false;
-                const corrText = node("span", "", "🔥 Keep going!");
-                v.correction.append(corrText);
+                FeedbackStatus.setMismatch(v.correction);
             } else if (judgment === "undetermined") {
-                const footWrap = node("span", "custom-tip-wrap undetermined-footprint", " 👣");
-                footWrap.append(node("span", "custom-tip-box", "Could not be evaluated reliably."));
-                v.result.append(document.createTextNode(val.raw), footWrap);
+                FeedbackStatus.appendUndetermined(v.result, val.raw);
                 v.correction.hidden = true;
             }
         } else {
