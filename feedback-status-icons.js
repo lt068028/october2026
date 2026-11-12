@@ -78,5 +78,9 @@ window.FeedbackStatus = (() => {
     function setMismatch(element) {
         element.replaceChildren(createRetry());
     }
-    return Object.freeze({resolve, create, appendAccepted, prependAccepted, appendUndetermined, createRetry, setMismatch});
+    function clipboardMarker(saved) {
+        const status = resolve(saved);
+        return status === 'accepted' ? '✅' : status === 'undetermined' ? '👣' : '🔥';
+    }
+    return Object.freeze({resolve, create, appendAccepted, prependAccepted, appendUndetermined, createRetry, setMismatch, clipboardMarker});
 })();

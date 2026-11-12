@@ -98,6 +98,8 @@ jobs:
               tests/semantic-colors.cjs
               tests/settings-availability.cjs
               tests/feedback-rendering-contract.cjs
+              tests/copy82.cjs
+              tests/copy83.cjs
           - group: 5
             name: "End-to-End Suite (11 Pages)"
             tests: >-

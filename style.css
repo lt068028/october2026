@@ -5052,6 +5052,88 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     cursor: not-allowed;
 }
 
+
+/* Practice 8.3 Copy controls */
+.practice83-page .p83-copy-area {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+    margin: 12px 0 20px;
+    text-align: right;
+}
+ .practice83-page .p83-copy-button {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 8px 12px;
+}
+.practice83-page .p83-copy-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+}
+ .practice83-page .p83-copy-help {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    margin-top: 4px;
+    color: var(--muted-text, #666);
+    font-size: .85rem;
+    line-height: 1.35;
+}
+.practice83-page .p83-copy-status {
+    min-height: 1.35em;
+    margin-top: 4px;
+    color: var(--muted-text, #666);
+    font-size: .85rem;
+}
+@media (max-width: 600px) {
+    .practice83-page .p83-copy-button { max-width: 100%; }
+    .practice83-page .p83-copy-help { max-width: 100%; }
+}
+
+
+/* Practice 8.2 Copy my sentences */
+.practice82-page .p82-copy-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+.practice82-page .p82-copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Lato', sans-serif;
+    max-width: 100%;
+    white-space: normal;
+}
+.practice82-page .p82-copy-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+.practice82-page .p82-copy-help,
+.practice82-page .p82-copy-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.practice82-page .p82-copy-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
 /* Practice 2.1 approved E feedback: Fluent fire and label use the same orange, without a badge. */
 .p21-keep-going-preview { --p21-keep-color: #B47732; }
