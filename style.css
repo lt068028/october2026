@@ -5046,6 +5046,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 /* Practice 8.3 Copy controls */
 .practice83-page .p83-copy-area {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
@@ -5053,7 +5054,10 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     margin: 12px 0 20px;
     text-align: right;
 }
-.practice83-page .p83-copy-button {
+ .practice83-page .p83-copy-button {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -5066,7 +5070,10 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     height: 20px;
     flex: 0 0 20px;
 }
-.practice83-page .p83-copy-help {
+ .practice83-page .p83-copy-help {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
     margin-top: 4px;
     color: var(--muted-text, #666);
     font-size: .85rem;
