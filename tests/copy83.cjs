@@ -148,6 +148,26 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
                 };
             }));
             console.log('P83_CUE_DIAGNOSTICS ' + width + ' ' + JSON.stringify(cueDiagnostics));
+            const allCues = await page.locator('#drill1 .p81-cue-words, #drill2 .p81-cue-words').evaluateAll(nodes => nodes.map((cue, index) => {
+                const rect = cue.getBoundingClientRect();
+                const style = getComputedStyle(cue);
+                const range = document.createRange();
+                range.selectNodeContents(cue);
+                const lineRects = [...range.getClientRects()];
+                return {
+                    index,
+                    text: cue.innerText,
+                    normalized: cue.innerText.replace(/\\s+/g, ''),
+                    width: rect.width,
+                    height: rect.height,
+                    scrollWidth: cue.scrollWidth,
+                    clientWidth: cue.clientWidth,
+                    lineRects: lineRects.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })),
+                    fontSize: style.fontSize,
+                    lineHeight: style.lineHeight
+                };
+            }));
+            console.log('P83_ALL_CUES ' + width + ' ' + JSON.stringify(allCues));
             if (width === 1440) {
                 for (const item of cueDiagnostics) {
                     if (item.text === 'どの/学生/りょうりする' || item.text === 'どのクラスメート/ピアノをひく/じょうず') {
