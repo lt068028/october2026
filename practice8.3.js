@@ -1198,3 +1198,393 @@ async function record(key, r) {
             s.recognitionDone = true;
             s.stop("Recognition error.", true);
         };
+
+        recognition.onend = () => {
+            s.recognitionDone = true;
+
+            if (s.stopping) {
+                finish();
+                return;
+            }
+
+            try {
+                recognition.start();
+                s.recognitionDone = false;
+            } catch (e) {
+                s.stop(
+                    "Could not restart recognition.",
+                    true
+                );
+            }
+        };
+
+        const recorder = new MediaRecorder(stream);
+        s.recorder = recorder;
+
+        recorder.ondataavailable = e => {
+            if (!s.finished && e.data.size) {
+                s.chunks.push(e.data);
+            }
+        };
+
+        recorder.onstop = () => {
+            s.recorderDone = true;
+
+            if (!s.stopping) {
+                s.stop("Recording stopped.");
+            }
+
+            finish();
+        };
+
+        recorder.onerror = () => {
+            s.stop("Recording error.", true);
+        };
+
+        showResult(key);
+        sync();
+
+        recorder.start();
+        recognition.start();
+
+        try {
+            const Context =
+                window.AudioContext ||
+                window.webkitAudioContext;
+
+            const context = new Context();
+            s.context = context;
+
+            context.resume().catch(() => {});
+
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 1024;
+
+            context
+                .createMediaStreamSource(stream)
+                .connect(analyser);
+
+            const samples = new Float32Array(
+                analyser.fftSize
+            );
+
+            let frames = 0;
+
+            s.timers.push(
+                setInterval(() => {
+                    if (s.stopping) return;
+
+                    analyser.getFloatTimeDomainData(samples);
+
+                    let sum = 0;
+
+                    for (const n of samples) {
+                        sum += n * n;
+                    }
+
+                    const sound =
+                        Math.sqrt(sum / samples.length) > 0.015;
+
+                    frames = sound ? frames + 1 : 0;
+
+                    if (sound && s.heard) {
+                        lastSound = Date.now();
+                    }
+
+                    if (frames >= 3) heard();
+                }, 100)
+            );
+        } catch (e) {}
+
+        // Autostop：発話後の無音2秒
+        s.timers.push(
+            setInterval(() => {
+                if (
+                    !s.manual &&
+                    s.heard &&
+                    Date.now() - lastSound >= 2000
+                ) {
+                    s.stop();
+                }
+            }, 100)
+        );
+
+        // 発話開始前の無音15秒：新しい録音を保存しない
+        s.timers.push(
+            setTimeout(() => {
+                if (!s.heard) {
+                    s.stop(
+                        "No speech detected within 15 seconds.",
+                        true
+                    );
+                }
+            }, 15000)
+        );
+
+        // Autostop・手動停止の共通上限
+        s.timers.push(
+            setTimeout(() => {
+                s.stop("Auto-stopped after 20 seconds.");
+            }, 20000)
+        );
+    } catch (e) {
+        s.recognitionDone = true;
+        s.stop("Could not start recording.", true);
+    }
+}
+
+// Settings and footer
+function init() {
+    const anchor = $('scriptModeControl')
+        ?.closest('.control-item');
+
+    if (anchor) {
+        const item = document.createElement('div');
+        item.className = 'control-item';
+
+        const control = document.createElement('div');
+        control.id = 'speechStyleControl';
+        control.className = 'segmented-control';
+        control.setAttribute('role', 'group');
+        control.setAttribute('aria-label', 'Speech style');
+
+        [
+            [
+                'formal',
+                '👔Formal',
+                'Polite speech for work or unfamiliar people.'
+            ],
+            [
+                'informal',
+                '✏️Informal',
+                'Plain forms used in writing'
+            ],
+            [
+                'casual',
+                '💬Casual',
+                'Relaxed speech with family and friends.'
+            ]
+        ].forEach(([value, label, tip]) => {
+            const b = button(label, () => {}, tip);
+            b.classList.add('segmented-option');
+            b.dataset.value = value;
+            control.append(b);
+        });
+
+        item.append(control);
+        anchor.after(item);
+    }
+
+    [
+        [
+            'scriptModeControl',
+            () => scriptMode,
+            v => scriptMode = v
+        ],
+        [
+            'speechStyleControl',
+            () => speechStyle,
+            v => speechStyle = v
+        ],
+        [
+            'hintModeControl',
+            () => hintMode,
+            v => hintMode = v
+        ]
+    ].forEach(([id, get, set]) => {
+        const control = $(id);
+        if (!control) return;
+
+        const update = () => {
+            control.querySelectorAll('button[data-value]')
+                .forEach(b => {
+                    const selected = b.dataset.value === get();
+
+                    b.classList.toggle('is-selected', selected);
+                    b.setAttribute(
+                        'aria-pressed',
+                        String(selected)
+                    );
+                });
+        };
+
+        update();
+
+        control.addEventListener('click', e => {
+            const b = e.target.closest('button[data-value]');
+
+            if (
+                session ||
+                preparing ||
+                !b ||
+                !control.contains(b) ||
+                b.dataset.value === get()
+            ) return;
+
+            stopPlayback();
+            set(b.dataset.value);
+            update();
+            render();
+        });
+    });
+
+    [
+        [
+            'toggleRecordMode',
+            'labelAutoRecord',
+            on => manual = !on
+        ],
+        [
+            'togglePlaybackMode',
+            'labelAutoPlay',
+            on => autoplay = on
+        ]
+    ].forEach(([id, label, change]) => {
+        const input = $(id);
+        if (!input) return;
+
+        input.checked = true;
+
+        input.addEventListener('change', () => {
+            change(input.checked);
+
+            $(label)?.classList.toggle(
+                'active-mode',
+                input.checked
+            );
+            $(label)?.classList.toggle(
+                'inactive-mode',
+                !input.checked
+            );
+        });
+    });
+
+    setupPreferredVoice82();
+    initDrawerEvents();
+    setupUnlearnedAccordion();
+
+    rowsFor(0, currentD1Set);
+    render();
+}
+
+
+
+
+/* Practice 8.3: Copy my sentences */
+const COPY83_HEADERS = [
+    'Practice 8.3 — Drill 1: Subject Questions — だれ／何 (Verb)',
+    'Practice 8.3 — Drill 2: Subject Questions — だれ／何 (Adjective)',
+    'Practice 8.3 — Drill 3: Subject Questions — どれ／どこ (Verb)',
+    'Practice 8.3 — Drill 4: Subject Questions — どれ／どこ／いつ (Adjective)'
+];
+const COPY83_CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p83-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
+function getCopy83Date() {
+    const now = new Date();
+    return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+}
+function entriesFor83(si) {
+    const entries = [];
+    rowsFor(si).forEach((rows, index) => {
+        rows.forEach(r => {
+            if (r.pending) return;
+            const entry = saved.get(keyFor(r));
+            const raw = entry?.raw;
+            if (typeof raw !== 'string' || !raw.trim()) return;
+            const mark = FeedbackStatus.clipboardMarker(entry) + ' ';
+            const role = r.kind ? r.kind + ': ' : '';
+            entries.push((index + 1) + '. ' + role + mark + raw);
+        });
+    });
+    return entries;
+}
+function updateCopyButtons83() {
+    document.querySelectorAll('.p83-copy-area').forEach(area => {
+        const button = area.querySelector('.p83-copy-button');
+        if (!button) return;
+        const si = Number(area.dataset.drillIndex);
+        button.disabled = Boolean(session || preparing) || entriesFor83(si).length === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+function mountCopyAreas83() {
+    for (let si = 0; si < 4; si += 1) {
+        const group = document.getElementById('drill' + (si + 1));
+        if (!group) continue;
+        const cards = group.querySelectorAll(':scope > .p81-card');
+        const lastCard = [...cards].at(-1);
+        if (!lastCard) continue;
+        let area = group.querySelector(':scope > .p83-copy-area[data-drill-index="' + si + '"]');
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p83-copy-area';
+            area.style.display = 'flex';
+            area.style.flexDirection = 'column';
+            area.style.alignItems = 'flex-end';
+            area.style.textAlign = 'right';
+            area.dataset.drillIndex = String(si);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p83-copy-button';
+            button.innerHTML = COPY83_CLIPBOARD_SVG + '<span>Copy my sentences</span>';
+            const help = document.createElement('span');
+            help.className = 'p83-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+            const status = document.createElement('span');
+            status.className = 'p83-copy-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.hidden = true;
+            let timer = null;
+            button.addEventListener('click', async () => {
+                if (session || preparing) return;
+                const entries = entriesFor83(si);
+                if (!entries.length) return;
+                try {
+                    await navigator.clipboard.writeText(COPY83_HEADERS[si] + ' — ' + getCopy83Date() + '\n' + entries.join('\n'));
+                    status.textContent = 'Copied!';
+                } catch (error) {
+                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                }
+                status.hidden = false;
+                clearTimeout(timer);
+                timer = setTimeout(() => { status.hidden = true; }, 2000);
+            });
+            area.append(button, help, status);
+        }
+        group.querySelectorAll(':scope > .p83-copy-area[data-drill-index="' + si + '"]').forEach(other => {
+            if (other !== area) other.remove();
+        });
+        if (lastCard.nextElementSibling !== area) lastCard.after(area);
+    }
+    updateCopyButtons83();
+}
+const copy83BaseRender = render;
+render = function(...args) {
+    const result = copy83BaseRender.apply(this, args);
+    mountCopyAreas83();
+    return result;
+};
+const copy83BaseSync = sync;
+sync = function(...args) {
+    const result = copy83BaseSync.apply(this, args);
+    updateCopyButtons83();
+    return result;
+};
+const copy83BaseShowResult = showResult;
+showResult = function(...args) {
+    const result = copy83BaseShowResult.apply(this, args);
+    updateCopyButtons83();
+    return result;
+};
+window.practice83State = {
+    saved, choices, rowsFor, keyFor, entriesFor83, sync, render,
+    busy: () => Boolean(session || preparing)
+};
+
+
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
+window.practice83State={saved,choices,rowsFor,keyFor,entriesFor83,matchesAnswer,sync,render,showResult};
+window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();});
+document.fonts.ready.then(measureCues);
+})();
