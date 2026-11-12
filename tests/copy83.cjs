@@ -108,6 +108,8 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
             await page.setViewportSize({ width, height: 1100 });
             for (const theme of ['light', 'dark']) {
                 await page.emulateMedia({ colorScheme: theme });
+                await page.evaluate(() => document.fonts?.ready);
+                await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
                 eq(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, width + 'px ' + theme + ' has no horizontal overflow');
             }
         }
