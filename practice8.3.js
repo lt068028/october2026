@@ -1577,14 +1577,15 @@ showResult = function(...args) {
     return result;
 };
 window.practice83State = {
-    saved, choices, rowsFor, keyFor, entriesFor83, sync, render,
+    saved, choices, rowsFor, keyFor, entriesFor83, matchesAnswer, sync, render,
+    showResult,
     busy: () => Boolean(session || preparing)
 };
 
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
-window.practice83State={saved,choices,rowsFor,keyFor,entriesFor83,matchesAnswer,sync,render,showResult};
+
 window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();});
 document.fonts.ready.then(measureCues);
 })();
