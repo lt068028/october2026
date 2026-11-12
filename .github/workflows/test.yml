@@ -218,3 +218,27 @@ jobs:
 
           echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
           exit 0
+
+
+  copy82:
+    name: "Practice 8.2 Copy"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright pngjs
+          npx playwright install --with-deps chromium
+          CHROMIUM_BIN=$(find ~/.cache/ms-playwright -name "chrome" -type f -perm /111 | head -n 1)
+          if [ -n "$CHROMIUM_BIN" ]; then sudo ln -sf "$CHROMIUM_BIN" /usr/bin/chromium; fi
+          /usr/bin/chromium --version
+      - name: Run Practice 8.2 Copy browser test
+        env:
+          CHROMIUM_PATH: /usr/bin/chromium
+        run: node tests/copy82.cjs
