@@ -129,6 +129,30 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
 
         for (const width of [375, 600, 1440]) {
             await page.setViewportSize({ width, height: 1100 });
+            await page.evaluate(() => document.fonts?.ready);
+            const cueDiagnostics = await page.locator('#drill1 .p81-card, #drill2 .p81-card').evaluateAll(cards => cards.map((card, index) => {
+                const cue = card.querySelector('.p81-cue-words');
+                const cell = card.querySelector('.drill-cue-cell');
+                const style = getComputedStyle(cue);
+                return {
+                    index,
+                    text: cue?.innerText || '',
+                    cueWidth: cue?.getBoundingClientRect().width || 0,
+                    cueHeight: cue?.getBoundingClientRect().height || 0,
+                    lineHeight: parseFloat(style.lineHeight) || 0,
+                    cellWidth: cell?.getBoundingClientRect().width || 0,
+                    cellHeight: cell?.getBoundingClientRect().height || 0,
+                    p81CueWidth: getComputedStyle(card).getPropertyValue('--p81-cue-width').trim()
+                };
+            }));
+            console.log('P83_CUE_DIAGNOSTICS ' + width + ' ' + JSON.stringify(cueDiagnostics));
+            if (width === 1440) {
+                for (const item of cueDiagnostics) {
+                    if (item.text === 'どの/学生/りょうりする' || item.text === 'どのクラスメート/ピアノをひく/じょうず') {
+                        ok(item.cueHeight <= item.lineHeight * 1.15, '1440px cue remains on one line: ' + item.text);
+                    }
+                }
+            }
             for (const theme of ['light', 'dark']) {
                 await page.emulateMedia({ colorScheme: theme });
                 await page.evaluate(() => document.fonts?.ready);
