@@ -88,7 +88,7 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         eq(await page.locator('#drill1 .p82-copy-button').isEnabled(), true, 'valid raw STT enables Drill 1');
         eq(await page.locator('#drill2 .p82-copy-button').isDisabled(), true, 'other Drills remain disabled');
         await page.locator('#drill1 .p82-copy-button').click();
-        eq(await page.evaluate(() => window.copied.at(-1)), 'Practice 8.2 — Drill 1: 何か — Questions — Unspecified item — 2026-11-12\n1. — 授業で、何か、話しますか。', 'exact raw clipboard output');
+        eq(await page.evaluate(() => window.copied.at(-1)), 'Practice 8.2 — Drill 1: 何か — Questions — Unspecified item — 2026-11-12\n1. ✅ 授業で、何か、話しますか。', 'exact raw clipboard output');
         ok(!(await page.evaluate(() => window.copied.at(-1))).includes('飲みます'), 'model sentence is excluded');
 
         await page.evaluate(() => {
