@@ -65,13 +65,18 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         eq(await page.locator('.p82-copy-area').evaluateAll(areas => areas.map(area => ({
             afterLast: area.previousElementSibling?.classList.contains('p81-card'),
             outsideCard: !area.parentElement?.classList.contains('p81-card'),
-            rightAligned: getComputedStyle(area).alignItems === 'flex-end'
+            buttonRightAligned: (() => {
+                const button = area.querySelector('.p82-copy-button');
+                const areaRect = area.getBoundingClientRect();
+                const buttonRect = button.getBoundingClientRect();
+                return Math.abs(areaRect.right - buttonRect.right) <= 1;
+            })()
         }))), [
-            { afterLast: true, outsideCard: true, rightAligned: true },
-            { afterLast: true, outsideCard: true, rightAligned: true },
-            { afterLast: true, outsideCard: true, rightAligned: true },
-            { afterLast: true, outsideCard: true, rightAligned: true }
-        ], 'Copy areas are outside and after each final card');
+            { afterLast: true, outsideCard: true, buttonRightAligned: true },
+            { afterLast: true, outsideCard: true, buttonRightAligned: true },
+            { afterLast: true, outsideCard: true, buttonRightAligned: true },
+            { afterLast: true, outsideCard: true, buttonRightAligned: true }
+        ], 'Copy areas are outside, after each final card, and right-aligned');
         eq(await page.locator('.p82-copy-button').evaluateAll(buttons => buttons.every(button => button.disabled)), true, 'all buttons initially disabled');
 
         await page.evaluate(() => {
