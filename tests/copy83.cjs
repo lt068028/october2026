@@ -46,6 +46,11 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         await page.goto('http://copy83.test/practice8.3.html');
         await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
         eq(await page.evaluate(() => [FeedbackStatus.clipboardMarker({correct:true}), FeedbackStatus.clipboardMarker({correct:false}), FeedbackStatus.clipboardMarker({judgment:'undetermined'})]), ['✅','🔥','👣'], 'shared clipboard marker mapping');
+        console.log('P83_F1_ROW ' + JSON.stringify(await page.evaluate(() => {
+            const s = window.practice83State;
+            const row = s.rowsFor(0)[0][2];
+            return { hira: row.hira, refs: row.refs };
+        })));
         eq(await page.evaluate(() => {
             const s = window.practice83State;
             const row = s.rowsFor(0)[0][2];
