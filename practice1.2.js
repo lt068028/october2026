@@ -1310,9 +1310,7 @@ function practice2ShowNotice(resultSpan, message) {
         view.resultSpan.style.color = "var(--text-primary)";
 
         if (saved.isCorrect) {
-            view.resultSpan.append(
-                document.createTextNode(displayed + " ✅ ")
-            );
+            FeedbackStatus.appendAccepted(view.resultSpan, displayed);
         } else {
             const candidates = (saved.acceptedTexts || [saved.expectedText, saved.modelText])
                 .filter(Boolean)
@@ -1388,9 +1386,8 @@ function practice2ShowNotice(resultSpan, message) {
         view.correctionBox.style.display =
             saved.isCorrect ? "none" : "block";
 
-        view.corrTextSpan.textContent = saved.isCorrect
-            ? ""
-            : "🔥Keep going! Try once more!";
+        if (saved.isCorrect) view.corrTextSpan.replaceChildren();
+        else FeedbackStatus.setMismatch(view.corrTextSpan);
     };
 
     function listen(getText, label = "🔊きく") {
@@ -2532,9 +2529,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.style.color = "var(--text-primary)";
 
     if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
+        FeedbackStatus.appendAccepted(view.resultSpan, displayed);
 
     } else {
         const references = [...new Set(
@@ -2621,8 +2616,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "block";
 
     if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
+        FeedbackStatus.setMismatch(view.corrTextSpan);
 
         view.corrListenBtn.style.display =
             "inline-block";
