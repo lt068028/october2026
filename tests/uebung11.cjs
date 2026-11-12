@@ -135,9 +135,9 @@ assert.ok(!js.includes('result-incorrect", " ❌"'), 'Must not render ❌ mark i
 assert.ok(!js.includes('Try once more!'), 'Must not contain Try once more!');
 assert.ok(!js.includes('correction-listen-btn'), 'Must not create duplicate listen button in correction-box');
 assert.ok(!js.includes('→ ${val.modelText}'), 'Must not auto-disclose model sentence in correction-box');
-assert.ok(js.includes('🔥 Keep going!'), 'Must include 🔥 Keep going!');
-assert.ok(js.includes(' 👣'), 'Must include 👣 undetermined marker');
-assert.ok(js.includes(' ✅ '), 'Must include ✅ accepted marker');
+assert.ok(js.includes('FeedbackStatus.setMismatch'), 'Must use the approved Fluent mismatch renderer');
+assert.ok(js.includes('FeedbackStatus.appendUndetermined'), 'Must use the approved undetermined renderer');
+assert.ok(js.includes('FeedbackStatus.appendAccepted'), 'Must use the approved Fluent accepted renderer');
 assert.ok(js.includes('module.exports ='), 'Must export modules for testing');
 
 // 7.2 Functional unit tests on 3-stage evaluation engine

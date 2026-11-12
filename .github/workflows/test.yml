@@ -91,6 +91,7 @@ jobs:
               tests/global-display.cjs
               tests/semantic-colors.cjs
               tests/settings-availability.cjs
+              tests/feedback-rendering-contract.cjs
           - group: 5
             name: "End-to-End Suite (11 Pages)"
             tests: >-
