@@ -200,7 +200,7 @@ function styledSentence(text,style=speechStyle){
 function sentenceFor(s){return styledSentence(s.text||'');}
 function makeRow(id,spec,extra={}){
  const r={id,...spec,...extra};
- r.text=sentenceFor(r);r.hira=displayKana(r.text);
+ r.text=sentenceFor(r);r.hira=hira(r.text);
  const refs=[r.text,r.hira,...(r.accept||[]).flatMap(text=>{
   const styled=styledSentence(text);return [styled,displayKana(styled)];
  })];
