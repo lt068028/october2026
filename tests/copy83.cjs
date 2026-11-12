@@ -46,6 +46,29 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         await page.goto('http://copy83.test/practice8.3.html');
         await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
         eq(await page.evaluate(() => [FeedbackStatus.clipboardMarker({correct:true}), FeedbackStatus.clipboardMarker({correct:false}), FeedbackStatus.clipboardMarker({judgment:'undetermined'})]), ['✅','🔥','👣'], 'shared clipboard marker mapping');
+        eq(await page.evaluate(() => {
+            const s = window.practice83State;
+            const row = s.rowsFor(0)[0][2];
+            return {
+                canonical: row.text,
+                hasKanjiRef: row.refs.includes('山田さんが、手伝います。'),
+                hasKanaRef: row.refs.includes('山田さんが、てつだいます。'),
+                noPunctuation: s.matchesAnswer('山田さんが手伝います', row),
+                withPunctuation: s.matchesAnswer('山田さんが、手伝います。', row),
+                kana: s.matchesAnswer('山田さんが、てつだいます。', row),
+                wrongSubject: s.matchesAnswer('田中さんが手伝います', row),
+                wrongVerb: s.matchesAnswer('山田さんが料理します', row)
+            };
+        }), {
+            canonical: '山田さんが、手伝います。',
+            hasKanjiRef: true,
+            hasKanaRef: true,
+            noPunctuation: true,
+            withPunctuation: true,
+            kana: true,
+            wrongSubject: false,
+            wrongVerb: false
+        }, 'Drill 1 Item 1 accepts canonical kanji/kana forms and rejects wrong answers');
 
         eq(await page.locator('.p83-copy-area').count(), 4, 'exactly four Copy areas');
         eq(await page.locator('.example-box .p83-copy-area').count(), 0, 'Examples have no Copy areas');
