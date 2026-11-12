@@ -148,31 +148,33 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
                 };
             }));
             console.log('P83_CUE_DIAGNOSTICS ' + width + ' ' + JSON.stringify(cueDiagnostics));
-            const allCues = await page.locator('#drill1 .p81-cue-words, #drill2 .p81-cue-words').evaluateAll(nodes => nodes.map((cue, index) => {
-                const rect = cue.getBoundingClientRect();
-                const style = getComputedStyle(cue);
-                const range = document.createRange();
-                range.selectNodeContents(cue);
-                const lineRects = [...range.getClientRects()];
-                return {
-                    index,
-                    text: cue.innerText,
-                    normalized: cue.innerText.replace(/\\s+/g, ''),
-                    width: rect.width,
-                    height: rect.height,
-                    scrollWidth: cue.scrollWidth,
-                    clientWidth: cue.clientWidth,
-                    lineRects: lineRects.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })),
-                    fontSize: style.fontSize,
-                    lineHeight: style.lineHeight
-                };
-            }));
-            console.log('P83_ALL_CUES ' + width + ' ' + JSON.stringify(allCues));
+            const targetCues = await page.locator('#drill1 .p81-cue-words, #drill2 .p81-cue-words').evaluateAll(nodes => nodes
+                .map(cue => {
+                    const rect = cue.getBoundingClientRect();
+                    const cell = cue.closest('.drill-cue-cell');
+                    const cellRect = cell?.getBoundingClientRect();
+                    const range = document.createRange();
+                    range.selectNodeContents(cue);
+                    const lineRects = [...range.getClientRects()];
+                    const lineYs = [...new Set(lineRects.map(r => Math.round(r.y)))];
+                    const normalized = cue.innerText.replace(/\\s+/g, '');
+                    return {
+                        text: cue.innerText,
+                        normalized,
+                        width: rect.width,
+                        height: rect.height,
+                        cellWidth: cellRect?.width || 0,
+                        lineCount: lineYs.length,
+                        overflow: cue.scrollWidth > cue.clientWidth
+                    };
+                })
+                .filter(item => item.normalized === 'どの/学生/りょうりする' || item.normalized === 'どのクラスメート/ピアノをひく/じょうず'));
+            eq(targetCues.length, 2, width + 'px directly finds both F2/F3 target cues');
+            console.log('P83_TARGET_CUES ' + width + ' ' + JSON.stringify(targetCues));
             if (width === 1440) {
-                for (const item of cueDiagnostics) {
-                    if (item.text === 'どの/学生/りょうりする' || item.text === 'どのクラスメート/ピアノをひく/じょうず') {
-                        ok(item.cueHeight <= item.lineHeight * 1.15, '1440px cue remains on one line: ' + item.text);
-                    }
+                for (const item of targetCues) {
+                    eq(item.lineCount, 1, '1440px target cue remains on one line: ' + item.normalized);
+                    eq(item.overflow, false, '1440px target cue has no horizontal overflow: ' + item.normalized);
                 }
             }
             for (const theme of ['light', 'dark']) {
