@@ -1729,9 +1729,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.style.color = "var(--text-primary)";
 
     if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
+        FeedbackStatus.appendAccepted(view.resultSpan, displayed);
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]
@@ -1809,8 +1807,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "block";
 
     if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
+        FeedbackStatus.setMismatch(view.corrTextSpan);
 
         view.corrListenBtn.style.display = "none";
         view.correctionBox.style.textAlign = "right";
@@ -3505,9 +3502,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
         }
 
-        view.resultSpan.append(
-            document.createTextNode(' ✅ ')
-        );
+        FeedbackStatus.prependAccepted(view.resultSpan);
+        view.resultSpan.append(document.createTextNode(' '));
 
 
 

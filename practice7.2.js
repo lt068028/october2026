@@ -2005,9 +2005,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.style.color = "var(--text-primary)";
 
     if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
+        FeedbackStatus.appendAccepted(view.resultSpan, displayed);
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]
@@ -2085,8 +2083,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "block";
 
     if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
+        FeedbackStatus.setMismatch(view.corrTextSpan);
 
         view.corrListenBtn.style.display = "inline-block";
 
@@ -3524,11 +3521,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         view.corrListenBtn.hidden = true;
         view.corrListenBtn.style.display = 'none';
 
-        view.corrTextSpan.textContent =
-            view.corrTextSpan.textContent.replace(
-                /^🔥\s+/,
-                '🔥'
-            );
+        // Retry label is already rendered by the common SVG component.
     };
 
     const originalRender = renderAll;

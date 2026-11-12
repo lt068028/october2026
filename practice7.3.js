@@ -1132,9 +1132,7 @@ function showResult(key, notice = '') {
         const displayed = STTDisplay.format(value.raw, {mode:scriptMode, anchor:v.result, context:v.r.text});
 
         if (value.correct) {
-            v.result.append(
-                document.createTextNode(displayed + ' ✅')
-            );
+            FeedbackStatus.appendAccepted(v.result, displayed);
         } else {
             const refs = [
                 value.modelText || v.r.text,
@@ -1166,10 +1164,7 @@ function showResult(key, notice = '') {
                 }
             }
 
-            const message = document.createElement('span');
-            message.textContent = '🔥Keep going! Try once more!';
-            
-            v.correction.append(message);
+            FeedbackStatus.setMismatch(v.correction);
             v.correction.hidden = false;
         }
     } else {
