@@ -46,6 +46,26 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         await page.goto('http://copy83.test/practice8.3.html');
         await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
         eq(await page.evaluate(() => [FeedbackStatus.clipboardMarker({correct:true}), FeedbackStatus.clipboardMarker({correct:false}), FeedbackStatus.clipboardMarker({judgment:'undetermined'})]), ['✅','🔥','👣'], 'shared clipboard marker mapping');
+        console.log('P83_F1_RUNTIME ' + JSON.stringify(await page.evaluate(() => {
+            const s = window.practice83State;
+            const row = s.rowsFor(0)[0][2];
+            const inputs = [
+                '山田さんが、手伝います。',
+                '山田さんが手伝います',
+                '山田さんが、てつだいます。',
+                '山田さんがてつだいます',
+                'やまださんが、てつだいます。',
+                '田中さんが手伝います',
+                '山田さんが料理します'
+            ];
+            return {
+                text: row.text,
+                hira: row.hira,
+                refs: row.refs,
+                refsJson: row.refs.map(text => JSON.stringify(text)),
+                matches: Object.fromEntries(inputs.map(input => [input, s.matchesAnswer(input, row)]))
+            };
+        })));
         eq(await page.evaluate(() => {
             const s = window.practice83State;
             const row = s.rowsFor(0)[0][2];
