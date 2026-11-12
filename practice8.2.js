@@ -1393,6 +1393,10 @@ function mountCopyAreas82() {
         if (!area) {
             area = document.createElement('div');
             area.className = 'p82-copy-area';
+            area.style.display = 'flex';
+            area.style.flexDirection = 'column';
+            area.style.alignItems = 'flex-end';
+            area.style.textAlign = 'right';
             area.dataset.drillIndex = String(si);
             const button = document.createElement('button');
             button.type = 'button';
