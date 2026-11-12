@@ -46,6 +46,31 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         await page.goto('http://copy83.test/practice8.3.html');
         await page.clock.setFixedTime(new Date('2026-11-12T12:00:00Z'));
         eq(await page.evaluate(() => [FeedbackStatus.clipboardMarker({correct:true}), FeedbackStatus.clipboardMarker({correct:false}), FeedbackStatus.clipboardMarker({judgment:'undetermined'})]), ['✅','🔥','👣'], 'shared clipboard marker mapping');
+        eq(await page.evaluate(() => {
+            const s = window.practice83State;
+            const row = s.rowsFor(0)[0][2];
+            return {
+                canonical: row.text,
+                hasKanjiRef: row.refs.includes('山田さんが、手伝います。'),
+                hasKanaRef: row.refs.includes('やまださんが、てつだいます。'),
+                noPunctuation: s.matchesAnswer('山田さんが手伝います', row),
+                withPunctuation: s.matchesAnswer('山田さんが、手伝います。', row),
+                kana: s.matchesAnswer('山田さんが、てつだいます。', row),
+                fullKana: s.matchesAnswer('やまださんが、てつだいます。', row),
+                wrongSubject: s.matchesAnswer('田中さんが手伝います', row),
+                wrongVerb: s.matchesAnswer('山田さんが料理します', row)
+            };
+        }), {
+            canonical: '山田さんが、手伝います。',
+            hasKanjiRef: true,
+            hasKanaRef: true,
+            noPunctuation: true,
+            withPunctuation: true,
+            kana: true,
+            fullKana: true,
+            wrongSubject: false,
+            wrongVerb: false
+        }, 'Drill 1 Item 1 accepts canonical kanji/kana forms and rejects wrong answers');
 
         eq(await page.locator('.p83-copy-area').count(), 4, 'exactly four Copy areas');
         eq(await page.locator('.example-box .p83-copy-area').count(), 0, 'Examples have no Copy areas');
@@ -106,6 +131,54 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
 
         for (const width of [375, 600, 1440]) {
             await page.setViewportSize({ width, height: 1100 });
+            await page.evaluate(() => document.fonts?.ready);
+            const cueDiagnostics = await page.locator('#drill1 .p81-card, #drill2 .p81-card').evaluateAll(cards => cards.map((card, index) => {
+                const cue = card.querySelector('.p81-cue-words');
+                const cell = card.querySelector('.drill-cue-cell');
+                const style = getComputedStyle(cue);
+                return {
+                    index,
+                    text: cue?.innerText || '',
+                    cueWidth: cue?.getBoundingClientRect().width || 0,
+                    cueHeight: cue?.getBoundingClientRect().height || 0,
+                    lineHeight: parseFloat(style.lineHeight) || 0,
+                    cellWidth: cell?.getBoundingClientRect().width || 0,
+                    cellHeight: cell?.getBoundingClientRect().height || 0,
+                    p81CueWidth: getComputedStyle(card).getPropertyValue('--p81-cue-width').trim()
+                };
+            }));
+            console.log('P83_CUE_DIAGNOSTICS ' + width + ' ' + JSON.stringify(cueDiagnostics));
+            const targetCues = await page.locator('#drill1 .p81-cue-words, #drill2 .p81-cue-words').evaluateAll(nodes => nodes
+                .map(cue => {
+                    const rect = cue.getBoundingClientRect();
+                    const cell = cue.closest('.drill-cue-cell');
+                    const cellRect = cell?.getBoundingClientRect();
+                    const range = document.createRange();
+                    range.selectNodeContents(cue);
+                    const lineRects = [...range.getClientRects()];
+                    const lineYs = [...new Set(lineRects
+                        .filter(line => line.y >= rect.y - 1 && line.y <= rect.bottom + 1)
+                        .map(line => Math.round(line.y)))];
+                    const normalized = cue.innerText.replace(/\\s+/g, '');
+                    return {
+                        text: cue.innerText,
+                        normalized,
+                        width: rect.width,
+                        height: rect.height,
+                        cellWidth: cellRect?.width || 0,
+                        lineCount: lineYs.length,
+                        overflow: cue.scrollWidth > cue.clientWidth
+                    };
+                })
+                .filter(item => item.normalized === 'どの/学生/りょうりする' || item.normalized === 'どのクラスメート/ピアノをひく/じょうず'));
+            eq(targetCues.length, 2, width + 'px directly finds both F2/F3 target cues');
+            console.log('P83_TARGET_CUES ' + width + ' ' + JSON.stringify(targetCues));
+            if (width === 1440) {
+                for (const item of targetCues) {
+                    eq(item.lineCount, 1, '1440px target cue remains on one line: ' + item.normalized);
+                    eq(item.overflow, false, '1440px target cue has no horizontal overflow: ' + item.normalized);
+                }
+            }
             for (const theme of ['light', 'dark']) {
                 await page.emulateMedia({ colorScheme: theme });
                 await page.evaluate(() => document.fonts?.ready);
