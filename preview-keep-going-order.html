@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="feedback-status-icons.css?v=20261112-allpages">
 <style>
 *{box-sizing:border-box}
-body{margin:0;padding:16px 0;font-family:var(--font-latin,Lato,Arial,sans-serif);color:var(--text-primary,#333);background:var(--bg-main,#fff)}
+body{margin:0;padding:16px 0;font-family:var(--font-latin,Lato,Arial,sans-serif);color:var(--text-primary,#333);background:var(--bg-main,#fff);--practice12-scale:1.3}
 main{width:100%;max-width:none;margin:0}
 h1{margin:0 16px 6px;font-size:1.35rem}
 .lead,.sample-note{margin:0 16px 14px;color:var(--text-secondary,#64748b)}
@@ -23,11 +23,11 @@ h1{margin:0 16px 6px;font-size:1.35rem}
 .gap-control input{width:150px}
 .gap-value{font-variant-numeric:tabular-nums}
 .stage{width:min(var(--stage-width,100vw),100vw);margin:0 auto;padding:16px;border:1px solid var(--border-color,#ccc);background:var(--bg-main,#fff)}
-.result-flow{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:flex-end;column-gap:var(--result-gap,6px);row-gap:4px;min-width:0;padding:12px;background:var(--bg-row,#f8fafc);font-family:var(--font-japanese,sans-serif);font-size:1rem;line-height:1.5}
+.result-flow{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:flex-end;column-gap:var(--result-gap,6px);row-gap:4px;min-width:0;padding:12px;background:var(--bg-row,#f8fafc);font-family:var(--font-japanese,sans-serif);font-size:calc(16px * var(--practice12-scale));line-height:1.5}
 .transcript-group{display:inline-flex;align-items:center;column-gap:4px;flex:0 1 auto;min-width:0;max-width:100%}
 .fire-icon{display:block;flex:0 0 20px;width:20px;height:20px;color:#B47732}
 .transcript-text{min-width:0;overflow-wrap:break-word;word-break:normal}
-.keep-label{flex:0 0 auto;white-space:nowrap;color:#B47732;font-family:var(--font-latin,Lato,Arial,sans-serif);font-size:1rem;line-height:1.5}
+.keep-label{flex:0 0 auto;white-space:nowrap;color:#B47732;font-family:var(--font-latin,Lato,Arial,sans-serif);font-size:calc(14px * var(--practice12-scale));font-weight:400;line-height:inherit}
 .empty-state{margin:0;text-align:right;color:var(--text-secondary,#64748b);font-family:var(--font-japanese,sans-serif);font-size:1rem}
 .measure{margin:10px 0 0;color:var(--text-secondary,#64748b);font: .82rem/1.4 var(--font-latin,Lato,Arial,sans-serif)}
 body[data-theme=dark]{color-scheme:dark;--text-primary:#f8fafc;--text-secondary:#cbd5e1;--bg-main:#0f172a;--bg-panel:#1e293b;--bg-row:#1e293b;--border-color:#475569}

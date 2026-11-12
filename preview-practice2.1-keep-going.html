@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice 2.1 — Keep going! Full-page Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=20261112-p21-wrap">
+    <link rel="stylesheet" href="feedback-status-icons.css?v=20261111-check-stroke">
+    <link rel="stylesheet" href="preview-practice2.1-keep-going.css?v=20261112-full-keep">
+</head>
+<body class="site-scale practice12-page practice21-page p21-keep-going-preview p21-full-keep-preview">
+
+    <!-- =========================================================
+         Header & Settings
+         ========================================================= -->
+    <div class="main-header page-header">
+
+        <!-- Title + Independent Back Link -->
+        <div class="page-heading">
+            <h1>Practice 2.1: これ・それ・あれ・どれ — Demonstrative Pronouns</h1>
+
+            <a
+                href="#"
+                class="back-link custom-tip-wrap"
+                onclick="window.history.back(); return false;"
+            >↩️もどる<span class="custom-tip-box">Return to Practice Menu.</span></a>
+        </div>
+
+        <!-- Settings -->
+        <div class="compact-settings">
+
+            <!-- Row 1: Script Mode + Vocabulary -->
+            <div class="settings-row settings-segments-row">
+
+                <!-- Script Mode -->
+                <div class="control-item">
+                    <div
+                        id="scriptModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Script Mode"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hiragana"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🐣</span>Hiragana Only
+                            <span class="custom-tip-box">Displays sentences in Hiragana only.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="kanji"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🐤</span>With漢字
+                            <span class="custom-tip-box">Displays sentences with Kanji and Kana.</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vocabulary -->
+                <div class="control-item">
+                    <div
+                        id="hintModeControl"
+                        class="segmented-control"
+                        role="group"
+                        aria-label="Vocabulary Display"
+                    >
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="off"
+                            aria-pressed="false"
+                        >
+                            OFF
+                            <span class="custom-tip-box">Hides vocabulary pronunciation and meaning hints.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap is-selected"
+                            data-value="hover"
+                            aria-pressed="true"
+                        >
+                            <span class="icon-emoji">🔎</span>Vocab Hover
+                            <span class="custom-tip-box">Shows word pronunciation and meaning when you hover over them.</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="segmented-option custom-tip-wrap"
+                            data-value="paren"
+                            aria-pressed="false"
+                        >
+                            <span class="icon-emoji">🔡</span>Vocab Display
+                            <span class="custom-tip-box">Always shows word pronunciation and meaning in parentheses.</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Row 2: Autostop + Autoplay -->
+            <div class="settings-row settings-auto-row">
+
+                <!-- Autostop -->
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoRecord"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">⏹️</span>Autostop
+                        <span class="custom-tip-box">ON: Automatically stops recording when you stop speaking. OFF: Records until you click the stop button.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="toggleRecordMode"
+                            aria-label="Autostop"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- Autoplay -->
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoPlay"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <span class="icon-emoji">▶️</span>Autoplay
+                        <span class="custom-tip-box">ON: Plays the model and your voice automatically after recording. OFF: Disables automatic playback.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="togglePlaybackMode"
+                            aria-label="Autoplay"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         Drill 1 Section Container
+         ========================================================= -->
+    <div id="drill1Container"></div>
+
+    <!-- =========================================================
+         Drill 2 Section Container
+         ========================================================= -->
+    <div id="drill2Container"></div>
+    <div id="drill3Container" class="practice-section"></div>
+    <div id="drill4Container" class="practice-section"></div>
+
+    <!-- =========================================================
+         Footer
+         ========================================================= -->
+    <div class="voice-guide-footer">
+        <label for="voiceSelect" class="voice-select-label">🔊Voice:</label>
+        <select id="voiceSelect" class="voice-select" aria-label="Voice"></select>
+        <span class="voice-help-icon custom-tip-wrap" tabindex="0" aria-label="Voice help">?
+            <span class="custom-tip-box">If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.</span>
+        </span>
+    </div>
+
+    <style>
+      /* Preserve approved Drill 3 answer role and name layout. */
+      .practice21-page #drill3Container .p21-d3-answer-cue {
+        display:inline-flex; align-items:center; flex-wrap:wrap; gap:4px;
+      }
+      .practice21-page #drill3Container .p21-d3-answer-cue > strong {
+        display:inline-flex; align-items:center; gap:4px; white-space:nowrap;
+      }
+    </style>
+    <script src="semantic-display.js?v=20261106-semantic-colors"></script>
+    <script src="fluent-icons.js?v=20261111-qa-allpages"></script>
+    <script src="conversation-display.js?v=20261111-qa-role-rules"></script>
+    <script src="drill-audio-session.js"></script>
+    <script src="drill-answer-rules.js"></script>
+    <script src="practice2.1-scenes.js?v=20261030-labels"></script>
+    <script src="speaker-guide.js?v=20261030-labels"></script>
+    <script src="stt-display.js"></script>
+    <script src="question-indicator.js?v=20261111-qa-allpages"></script>
+    <script src="feedback-status-icons.js?v=20261111-check-stroke"></script>
+    <script src="preview-practice2.1-keep-going.js?v=20261112-full-keep"></script>
+    <script src="settings-appearance.js"></script>
+    <script src="tooltip-layout.js"></script>
+    <script src="content-layout.js?v=20261111-ms-fluent"></script>
+</body>
+</html>

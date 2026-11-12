@@ -1,0 +1,59 @@
+/* Practice 2.1 full-page Keep going! Preview only. */
+body.p21-full-keep-preview {
+    --p21-keep-color: #B47732;
+}
+@media (prefers-color-scheme: dark) {
+    body.p21-full-keep-preview {
+        --p21-keep-color: #E4AD69;
+    }
+}
+
+/* The recognized transcript and Fluent fire are a single centered group. */
+body.p21-full-keep-preview .recording-result > .p21-preview-transcript-group {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: middle;
+}
+body.p21-full-keep-preview .p21-preview-transcript-group > .p21-retry-fire {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--p21-keep-color);
+}
+body.p21-full-keep-preview .p21-preview-transcript-group > .result-text {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* Match the approved label: Lato, 14px design size at the page scale, regular weight and inherited line height. */
+body.p21-full-keep-preview .recording-result > .p21-retry-label {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--p21-keep-color);
+    font-family: var(--font-latin);
+    font-size: calc(14px * var(--practice12-scale));
+    font-weight: 400;
+    line-height: inherit;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+
+/* Preserve right alignment when the text group needs its own result line. */
+body.p21-full-keep-preview .recording-result.p21-transcript-own-line > .p21-preview-transcript-group {
+    display: flex;
+    width: max-content;
+    margin-left: auto;
+}
