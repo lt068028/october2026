@@ -5203,3 +5203,54 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"])::first-line {
     line-height: var(--p21-feedback-action-line);
 }
+
+
+/* Practice 2.1 approved order update: Fire + transcript, Keep going!, then the existing 🔊 model-play control. */
+.p21-feedback-after-transcript .recording-result > .p21-inline-feedback {
+    margin: 0 !important;
+    padding: 0;
+}
+.p21-feedback-after-transcript .recording-result > .result-text > .p21-feedback-transcript-group {
+    display: inline-flex;
+    align-items: center;
+    column-gap: 4px;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: middle;
+}
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-retry-fire {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    color: var(--p21-keep-color);
+}
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-recognized-text {
+    display: inline;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: var(--text-primary);
+}
+.p21-feedback-after-transcript .recording-result > .result-text > .p21-retry-label {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--p21-keep-color);
+    font-family: var(--font-latin);
+    font-size: calc(14px * var(--practice12-scale));
+    font-weight: 400;
+    line-height: inherit;
+    white-space: nowrap;
+    vertical-align: baseline;
+    pointer-events: none;
+}
+.p21-feedback-after-transcript .recording-result > .result-text > [data-p21-model-playback] {
+    margin-inline-start: 4px;
+}

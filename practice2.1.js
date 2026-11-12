@@ -929,8 +929,9 @@ function practice2ShowNotice(resultSpan, message) {
         view.correctionBox.style.display =
             status === 'mismatch' ? "inline" : "none";
 
-        practice21SetRetryMessage(view.corrTextSpan, saved);
-    requestAnimationFrame(() => practice21UpdateRetryWrap(view));
+            practice21SetRetryMessage(view.corrTextSpan, saved);
+            practice21UpdateRetryWrap(view);
+            requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     };
 
     function listen(getText, label = "🔊きく", onPlay) {
@@ -1139,6 +1140,7 @@ function practice2ShowNotice(resultSpan, message) {
         const actions = node("div", "recording-actions");
 
         const listenBtn = listen(getText);
+        listenBtn.dataset.p21ModelPlayback = "true";
 
         const recordBtn = button(
             "🎙️とる",
@@ -1159,6 +1161,7 @@ function practice2ShowNotice(resultSpan, message) {
             "result-text not-recorded-yet",
             "… Not yet"
         );
+        resultSpan.p21ModelListenButton = listenBtn;
 
         const result = node("span", "recording-result");
         result.append(resultSpan);
@@ -2093,46 +2096,105 @@ function practice2FindDiff(actual, reference) {
     };
 }
 
-// Long mismatch text flows beside the unchanged actions, then across the full controls width.
+// Practice 2.1 mismatch flow: fire, transcript, Keep going!, then the existing model-play button.
 function practice21UpdateRetryWrap(view) {
-    const result = view.resultSpan.parentElement;
+    const resultSpan = view.resultSpan;
+    const result = resultSpan.parentElement;
     if (!result || !result.classList.contains('recording-result')) return;
-    result.classList.remove('p21-transcript-own-line');
     const controls = result.parentElement;
+    const actions = controls?.querySelector('.recording-actions');
+    const modelButton = resultSpan.p21ModelListenButton;
     const feedback = view.correctionBox;
-    if (feedback.style.display === 'none' || !view.corrTextSpan.textContent.trim()) {
+    const label = view.corrTextSpan;
+    const hasFire =
+        Boolean(label.querySelector('.p21-retry-fire'))
+        || Boolean(resultSpan.querySelector('.p21-feedback-transcript-group > .p21-retry-fire'));
+    const showingMismatch =
+        feedback.style.display !== 'none'
+        && label.textContent.trim() === 'Keep going!'
+        && label.classList.contains('p21-retry-label')
+        && hasFire;
+
+    result.classList.remove('p21-transcript-own-line');
+
+    if (!showingMismatch) {
         controls?.classList.remove('p21-flowing-feedback');
+        if (modelButton && actions && modelButton.parentElement !== actions) {
+            actions.insertBefore(modelButton, view.recordBtn || actions.firstChild);
+        }
         return;
     }
-    const available = result.parentElement?.clientWidth || result.clientWidth;
+
+    const existingGroup = resultSpan.querySelector('.p21-feedback-transcript-group');
+    if (!existingGroup) {
+        const fire = label.querySelector('.p21-retry-fire');
+        const transcript = document.createElement('span');
+        transcript.className = 'p21-recognized-text';
+        const group = document.createElement('span');
+        group.className = 'p21-feedback-transcript-group';
+
+        let nodes = Array.from(resultSpan.childNodes).filter(
+            child => child !== modelButton && !child.matches?.('.play-recording-btn')
+        );
+        const last = nodes.at(-1);
+        if (last?.nodeType === Node.TEXT_NODE && last.textContent === ' ') {
+            last.remove();
+            nodes = nodes.slice(0, -1);
+        }
+        nodes.forEach(child => transcript.appendChild(child));
+
+        fire.remove();
+        group.append(fire, transcript);
+
+        const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
+        resultSpan.replaceChildren(group, label);
+        if (modelButton) resultSpan.appendChild(modelButton);
+        if (recordedPlayback) resultSpan.appendChild(recordedPlayback);
+    } else {
+        const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
+        const ordered = [existingGroup, label, modelButton, recordedPlayback].filter(Boolean);
+        const current = Array.from(resultSpan.children);
+        if (current.length !== ordered.length || current.some((el, i) => el !== ordered[i])) {
+            resultSpan.replaceChildren(...ordered);
+        }
+    }
+
+    if (!modelButton || !actions) return;
+
+    const available = controls.clientWidth || result.clientWidth;
     if (!available) return;
+
     const probe = document.createElement('span');
     probe.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;display:inline-block;pointer-events:none;';
-    const presentation = getComputedStyle(view.resultSpan);
-    probe.style.font = presentation.font;
-    probe.style.letterSpacing = presentation.letterSpacing;
-    const transcript = view.resultSpan.cloneNode(true);
-    transcript.style.cssText = 'display:inline;white-space:nowrap;width:max-content;max-width:none;';
-    probe.appendChild(transcript);
+    const clone = resultSpan.cloneNode(true);
+    clone.style.cssText = 'display:inline-block;white-space:nowrap;width:max-content;max-width:none;';
+    const cloneGroup = clone.querySelector('.p21-feedback-transcript-group');
+    const cloneText = clone.querySelector('.p21-recognized-text');
+    if (cloneGroup) {
+        cloneGroup.style.maxWidth = 'none';
+        cloneGroup.style.width = 'max-content';
+    }
+    if (cloneText) {
+        cloneText.style.maxWidth = 'none';
+        cloneText.style.whiteSpace = 'nowrap';
+        cloneText.style.overflowWrap = 'normal';
+    }
+    probe.appendChild(clone);
     document.body.appendChild(probe);
-    const transcriptWidth = transcript.getBoundingClientRect().width;
-    const labelWidth = feedback.getBoundingClientRect().width;
+    const totalWidth = clone.getBoundingClientRect().width;
     probe.remove();
-    // Keep the previous one-line layout when it already fits. Compare actual
-    // heights so flowing beside actions never adds a needless visual row.
+
     controls.classList.remove('p21-flowing-feedback');
-    const ownLine = transcriptWidth <= available && transcriptWidth + labelWidth + 4 > available;
-    result.classList.toggle('p21-transcript-own-line', ownLine);
-    if (transcriptWidth + labelWidth + 4 <= available) return;
+    if (totalWidth <= available) return;
+
     const baselineHeight = controls.getBoundingClientRect().height;
-    const actions = controls.querySelector('.recording-actions');
-    if (!actions) return;
-    controls.style.setProperty('--p21-feedback-action-line', (actions.getBoundingClientRect().height + 6) + 'px');
-    result.classList.remove('p21-transcript-own-line');
+    controls.style.setProperty(
+        '--p21-feedback-action-line',
+        (actions.getBoundingClientRect().height + 6) + 'px'
+    );
     controls.classList.add('p21-flowing-feedback');
     if (controls.getBoundingClientRect().height >= baselineHeight - 0.5) {
         controls.classList.remove('p21-flowing-feedback');
-        result.classList.toggle('p21-transcript-own-line', ownLine);
     }
 }
 
@@ -2241,6 +2303,7 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
         status === 'mismatch' ? "inline" : "none";
 
     practice21SetRetryMessage(view.corrTextSpan, saved);
+    practice21UpdateRetryWrap(view);
     requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     if (!saved.isCorrect) {
 
@@ -2367,9 +2430,11 @@ function bindRecorderEvents(
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
+        practice21UpdateRetryWrap({ resultSpan, correctionBox, corrTextSpan, recordBtn });
     } else if (practice2State.startingRow === rowKey) {
         resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
+        practice21UpdateRetryWrap({ resultSpan, correctionBox, corrTextSpan, recordBtn });
     }
 
     recordBtn.addEventListener("click", async () => {
@@ -2560,6 +2625,7 @@ function bindRecorderEvents(
                         "var(--text-secondary)";
 
                     v.correctionBox.style.display = "none";
+                    practice21UpdateRetryWrap(v);
 
                     if (practice2State.audioUrls[rowKey]) {
                         appendPersistedPlayButton(
@@ -2755,6 +2821,7 @@ function bindRecorderEvents(
             v.resultSpan.textContent = "Recording...";
             v.resultSpan.style.color = "var(--accent-color)";
             v.correctionBox.style.display = "none";
+            practice21UpdateRetryWrap(v);
 
             practice2SyncRecordingUI();
 
