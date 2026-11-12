@@ -137,7 +137,7 @@ async function inspect(p) {
             }
         }
         for(const extra of [{isCorrect:true},{isCorrect:false,judgment:'undetermined'},{isCorrect:false,audioOnly:true},{isCorrect:false,unrecognized:true}]) {
-            await fixture(p,'あ',extra);check(await p.locator('.p21-retry-label:visible').count(),0,'accepted/undetermined/audio-only result has no retry message '+JSON.stringify(extra));
+            await fixture(p,'あ',extra);check(await p.locator('.p21-retry-label:visible').count(),0,'accepted/undetermined/audio-only result has no retry message '+JSON.stringify(extra));check(await p.locator('[data-p21-model-playback]').evaluate(el=>el.closest('.recording-actions')!==null),true,'speaker remains in controls without Keep going '+JSON.stringify(extra));
         }
         await fixture(p,'ちがうこたえ');
         const redHighlights=await p.locator('.result-text').first().evaluate(el=>{
@@ -155,6 +155,7 @@ async function inspect(p) {
         check(await p.locator('[data-p21-model-playback]').evaluate(el=>el.closest('.recording-actions')!==null),true,'speaker button returns to controls while recording');
         await p.evaluate(()=>{const result=[{transcript:'ちがうこたえ'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});t.recognitions.at(-1).onspeechstart?.();});await p.locator('[data-keep-going-stop]').click();await p.waitForFunction(()=>t.recorders[0].state==='inactive'&&Object.values(practice2State.audioUrls).length>0);await settle(p);
         check(await p.evaluate(()=>t.tracks.every(t=>t.readyState==='ended')),true,'stop releases microphone');check(await p.locator('.p21-retry-label:visible').count(),1,'mismatch recording shows retry once');check(await p.evaluate(()=>practice2State.savedResults[keepGoingTestKey].rawTranscript),'ちがうこたえ','recorded raw STT preserved');
+        check(await row.locator('.result-text').evaluate(el=>Array.from(el.children).map(child=>child.matches('[data-p21-model-playback]')?'model-playback':child.classList.contains('play-recording-btn')?'recorded-playback':child.classList.contains('p21-retry-label')?'keep-label':child.classList.contains('p21-feedback-transcript-group')?'transcript':'other')),['transcript','keep-label','model-playback','recorded-playback'],'recorded result keeps the requested order and preserves the learner recording button');
         await row.locator('.play-recording-btn').click();check(await p.evaluate(()=>t.audios.at(-1)?.paused),false,'saved recording playback works');await p.evaluate(()=>t.audios.at(-1).onended?.());
         check(p.errors,[],'no page runtime errors');await p.close();await before?.close();
         if(baseline){const a=await open(browser,root,'practice2.2'),b=await open(browser,baseline,'practice2.2');check(await a.locator('body').getAttribute('class'),await b.locator('body').getAttribute('class'),'Practice 2.2 does not opt into Preview');check(await a.locator('.recording-result').evaluateAll(es=>es.map(e=>e.outerHTML)),await b.locator('.recording-result').evaluateAll(es=>es.map(e=>e.outerHTML)),'Practice 2.2 result markup unchanged');await a.close();await b.close();}

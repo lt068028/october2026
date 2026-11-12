@@ -929,9 +929,9 @@ function practice2ShowNotice(resultSpan, message) {
         view.correctionBox.style.display =
             status === 'mismatch' ? "inline" : "none";
 
-            practice21SetRetryMessage(view.corrTextSpan, saved);
-            practice21UpdateRetryWrap(view);
-            requestAnimationFrame(() => practice21UpdateRetryWrap(view));
+        practice21SetRetryMessage(view.corrTextSpan, saved);
+        practice21UpdateRetryWrap(view);
+        requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     };
 
     function listen(getText, label = "🔊きく", onPlay) {
