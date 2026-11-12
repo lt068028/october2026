@@ -1352,9 +1352,7 @@ function displayResult(view, message = "") {
         view.result.style.color = "var(--text-primary)";
 
         if (saved.isCorrect) {
-            view.result.appendChild(
-                document.createTextNode(displayed + " ✅")
-            );
+            FeedbackStatus.appendAccepted(view.result, displayed);
 
         } else {
             let diff = practice1ResultDiff(
@@ -1405,8 +1403,7 @@ function displayResult(view, message = "") {
 
             view.correction.style.display = "block";
 
-            view.correctionText.textContent =
-                "🔥 Keep going! Try once more!";
+            FeedbackStatus.setMismatch(view.correctionText);
 
             view.correctionListen.style.display =
                 "inline-block";

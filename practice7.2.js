@@ -574,6 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cell = node('td');
         populateRecordingCell(cell, item, index, kind, state);
+        cueCell.prepend(ConversationDisplay.roleLabel(question ? 'Q' : 'A'), document.createTextNode(' '));
         row.append(cueCell, cell);
         body.append(row);
         return cell;
@@ -2004,9 +2005,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.style.color = "var(--text-primary)";
 
     if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
+        FeedbackStatus.appendAccepted(view.resultSpan, displayed);
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]
@@ -2084,8 +2083,7 @@ function practice7ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "block";
 
     if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
+        FeedbackStatus.setMismatch(view.corrTextSpan);
 
         view.corrListenBtn.style.display = "inline-block";
 
@@ -3523,11 +3521,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         view.corrListenBtn.hidden = true;
         view.corrListenBtn.style.display = 'none';
 
-        view.corrTextSpan.textContent =
-            view.corrTextSpan.textContent.replace(
-                /^🔥\s+/,
-                '🔥'
-            );
+        // Retry label is already rendered by the common SVG component.
     };
 
     const originalRender = renderAll;
@@ -3630,7 +3624,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'example-button p72-copy-button';
-                button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p72-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+                button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p72-copy-icon') + '<span>Copy my sentences</span>';
                 const help = document.createElement('span');
                 help.className = 'p72-copy-help';
                 help.textContent = 'Copy your drill results to review or share.';

@@ -951,11 +951,11 @@ function p2Show(view, notice = "") {
             );
         }
 
-        append(saved.isCorrect ? " ✅ " : " ");
+        if (saved.isCorrect) FeedbackStatus.prependAccepted(view.result);
+        else append(" ");
 
         if (!saved.isCorrect) {
-            view.correctionText.textContent =
-                "🔥Keep going! Try once more!";
+            FeedbackStatus.setMismatch(view.correctionText);
 
             view.correction.style.display = "block";
         }

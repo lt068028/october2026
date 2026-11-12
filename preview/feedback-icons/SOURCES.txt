@@ -1,0 +1,15 @@
+Static design candidates; not adopted production icons.
+
+Microsoft Fluent catalog inspected at 4bf6b786b16f120595efcee8911c74392fa29c14.
+No assets/Footprints directory was found in the full tracked-path catalog.
+Checkmark Circle 24 Regular: https://github.com/microsoft/fluentui-system-icons/blob/4bf6b786b16f120595efcee8911c74392fa29c14/assets/Checkmark%20Circle/SVG/ic_fluent_checkmark_circle_24_regular.svg
+MIT: FLUENT-LICENSE.txt. Original path unchanged; fill uses currentColor.
+
+Lucide Footprints: https://github.com/lucide-icons/lucide/blob/03eae6069edfc373673bd05d723491f05ba936e3/icons/footprints.svg
+ISC and retained MIT notices: LUCIDE-LICENSE.txt. Original paths/viewBox/stroke unchanged.
+Standalone SVG only; no icon library dependency added.
+
+Fire: practice21SetRetryMessage in practice2.1.js at c995832f2ae8bad098f0b2438fe35df742be7cc2.
+https://github.com/microsoft/fluentui-system-icons/blob/main/assets/Fire/SVG/ic_fluent_fire_24_regular.svg
+MIT: ../../assets/licenses/MICROSOFT-FLUENT-FIRE-LICENSE.txt (repository path).
+Production remains 20px; 18/22 are static comparison-only sizes.

@@ -40,7 +40,7 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 - 表示サイズ試験には1440／1280px・Vocab Hover／Displayで、Example 1の質問と最初の問題操作が収まるときに同じ行を使う確認も含む。横はみ出し防止だけでなく、不必要な強制改行の再発も確認する。
 
-- 列揃えの検証：144配置それぞれでDrill内の全質問／応答の「きく」X座標と、Exampleの各行の最初の「きく」X座標を照合。Yes／Noの音声が折り返す場合も左端を照合。Yes/No（Lucideアイコン）Textの並び、Text／Hide時の本文表示ときくの位置不変、専攻選択後のText有効化、幅上限1280pxと最低外側余白32pxも確認する。
+- 列揃えの検証：144配置それぞれでDrill内の全質問／応答の「きく」X座標と、Exampleの各行の最初の「きく」X座標を照合。Yes／Noの音声が折り返す場合も左端を照合。Yes/No（Fluentアイコン）Textの並び、Text／Hide時の本文表示ときくの位置不変、専攻選択後のText有効化、幅上限1280pxと最低外側余白32pxも確認する。
 
 
 `node tests/preview73.cjs`：7.3の130%試験を4幅×2配色×3文体×3Vocab設定×2表記で確認し、1.2の「の」2箇所と「なんですか／何ですか」全体の強調を検証する。
@@ -247,9 +247,9 @@ Playwrightはテスト実行環境に用意する。サイト自体にビルド�
 
 - `CONTENT_BASELINE=/path/to/baseline node tests/content-price-cues.cjs`：2.2の価格が語中で改行されず、狭い共有列に収まり、全表示文字・フォーム・書体が変わらないことを確認する。
 
-## 承認済みIcons8会話役割
+## Microsoft Fluent会話役割・疑問文アイコン
 
-`node tests/qa-icons.cjs`：該当する10Practiceの画像読込・役割対応・空欄・帰属リンク・両テーマ・1440/375px・両表記/3ヒント/3文体・セット/English cues切替・入力/録音結果のリサイズ保持をChromiumで検査する。音声APIは既存モックであり実音響検証ではない。`QA_BASELINE`に変更前ツリーを指定すると役割の実外寸・位置・フォーム状態も比較する。`QA_OUTPUT`に測定JSONと代表画像を保存できる。`QA_PAGES`で変更影響を受けるページだけに限定できる。
+`node tests/qa-icons.cjs`：該当する10PracticeのSVGパス・役割対応・空欄・旧帰属リンク非表示・両テーマ・1440/600/375px・両表記/3ヒント/3文体・セット/English cues切替・入力/録音結果のリサイズ保持をChromiumで検査する。音声APIは既存モックであり実音響検証ではない。`QA_BASELINE`に変更前ツリーを指定すると役割の実外寸・位置・フォーム状態も比較する。`QA_OUTPUT`に測定JSONと代表画像を保存できる。`QA_PAGES`で変更影響を受けるページだけに限定できる。
 
 ## Deutsche Übung 1.1: nach / in / zum / zur
 

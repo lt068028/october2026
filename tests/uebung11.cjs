@@ -7,6 +7,8 @@ const root = path.resolve(__dirname, '..');
 const htmlPath = path.join(root, 'uebung1.1.html');
 const jsPath = path.join(root, 'uebung1.1.js');
 const cssPath = path.join(root, 'style.css');
+const feedbackCssPath = path.join(root, 'feedback-status-icons.css');
+const feedbackJsPath = path.join(root, 'feedback-status-icons.js');
 const indexPath = path.join(root, 'index.html');
 
 console.log('Testing Deutsche Übung 1.1 static and structural contracts...');
@@ -32,6 +34,8 @@ assert.ok(html.includes('uebung1.1.js'), 'HTML must load uebung1.1.js');
 
 // 4. Check CSS additions in style.css
 const css = fs.readFileSync(cssPath, 'utf8');
+const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
+const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
 assert.ok(css.includes('.uebung-supplement-badge'), 'style.css must have supplement badge rules');
 
@@ -135,9 +139,9 @@ assert.ok(!js.includes('result-incorrect", " ❌"'), 'Must not render ❌ mark i
 assert.ok(!js.includes('Try once more!'), 'Must not contain Try once more!');
 assert.ok(!js.includes('correction-listen-btn'), 'Must not create duplicate listen button in correction-box');
 assert.ok(!js.includes('→ ${val.modelText}'), 'Must not auto-disclose model sentence in correction-box');
-assert.ok(js.includes('🔥 Keep going!'), 'Must include 🔥 Keep going!');
-assert.ok(js.includes(' 👣'), 'Must include 👣 undetermined marker');
-assert.ok(js.includes(' ✅ '), 'Must include ✅ accepted marker');
+assert.ok(js.includes('FeedbackStatus.setMismatch'), 'Must use the approved Fluent mismatch renderer');
+assert.ok(js.includes('FeedbackStatus.appendUndetermined'), 'Must use the approved undetermined renderer');
+assert.ok(js.includes('FeedbackStatus.appendAccepted'), 'Must use the approved Fluent accepted renderer');
 assert.ok(js.includes('module.exports ='), 'Must export modules for testing');
 
 // 7.2 Functional unit tests on 3-stage evaluation engine
@@ -233,7 +237,9 @@ assert.equal(resCase11c.judgment, "undetermined", "Single preposition must be un
 // 7.3 Responsive style contract verification
 assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
-assert.ok(css.includes('.result-incorrect'), 'CSS must style .result-incorrect');
+assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
+assert.ok(feedbackCss.includes('.feedback-retry-label'), 'Feedback CSS must style the Fluent retry renderer');
+assert.ok(feedbackCss.includes('.feedback-status-undetermined'), 'Feedback CSS must style supported undetermined status');
 
 // 8. Introductory Hover & Status Tooltip Contracts
 console.log('Testing Deutsche Übung 1.1 hover and tooltip contracts...');
@@ -261,13 +267,13 @@ assert.ok(js.includes('isFirstItemOfDrill1'), 'Must conditionally check first it
 assert.ok(js.includes('updateFirstStopTip'), 'Must dynamically update stop tooltip on Autostop toggle');
 
 // 8.3 Undetermined (👣) tooltip
-assert.ok(js.includes('Could not be evaluated reliably.'), 'Must include Could not be evaluated reliably. tooltip on 👣');
-assert.ok(js.includes('undetermined-footprint'), 'Must wrap 👣 in undetermined-footprint');
+assert.ok(feedbackJs.includes('Could not be evaluated reliably.'), 'Shared renderer must provide the undetermined tooltip');
+assert.ok(feedbackJs.includes("badge.className = 'feedback-status feedback-status-'"), 'Shared renderer must create the undetermined status class');
 
 // 8.4 CSS styling for multi-line and status tooltips
 assert.ok(css.includes('.uebung11-page .settings-onoff .custom-tip-box'), 'CSS must format settings tooltips');
 assert.ok(css.includes('.uebung11-page .settings-onoff .custom-tip-box .tip-line'), 'CSS must format tip-line blocks');
-assert.ok(css.includes('.uebung11-page .undetermined-footprint'), 'CSS must format undetermined-footprint');
+assert.ok(feedbackCss.includes('.feedback-status-undetermined:hover'), 'Feedback CSS must support the undetermined tooltip interaction');
 
 // 8.5 tooltip-layout.js preserves .uebung11-page introductory tooltips
 const tooltipLayoutJs = fs.readFileSync(path.join(root, 'tooltip-layout.js'), 'utf8');

@@ -1,4 +1,7 @@
 // Minimal reusable Yes/No answer icon helper.
+// Exact approved eyeless component: f8b06d8f9f65c514488da423a18545b454d45e6b.
+// Eyeless preview: af3e5d7d9e5192353d658f1bb021299ea97b0b80.
+// Lucide/Feather license notices: assets/licenses/APPROVED-EYELESS-SMILE-FROWN-LICENSE.txt
 // Provides standardized Lucide smile/frown icons matching Practice 7.1 approved reference.
 window.AnswerIcons = Object.freeze({
     SVGS: Object.freeze({

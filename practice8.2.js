@@ -676,7 +676,7 @@ function showResult(key,notice='') {
     if(session?.key===key){v.result.textContent='Recording...';return;}
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.2'});
-        if(value.correct)v.result.append(document.createTextNode(displayed+' ✅ '));
+        if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
@@ -685,7 +685,7 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            v.correction.textContent='🔥Keep going! Try once more!';v.correction.hidden=false;
+            FeedbackStatus.setMismatch(v.correction);v.correction.hidden=false;
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
@@ -756,7 +756,7 @@ function render(){
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
- const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(stop,r.mode==='question'||r.mode==='contrast'||r.mode==='wh');}actions.append(listen,rec,stop);const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
+ const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions'),listen=button('🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);}),rec=button('🎙️とる',()=>record(key,r)),stop=button('⏹️',()=>{if(session?.key===key)session.stop();});stop.disabled=true;actions.append(listen,rec,stop);if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(stop,r.mode==='question'||r.mode==='contrast'||r.mode==='wh');}const wrap=node('span','recording-result'),result=node('span','result-text');wrap.append(result);line.append(actions,wrap);const correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;cell.append(line,correction,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,stop,result,correction,feedback:feeling});showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
 }
 function renderEnglishCuePanel(){
@@ -1344,6 +1344,115 @@ function init() {
 
     render();
 }
+
+
+/* Practice 8.2: Copy my sentences */
+const COPY82_HEADERS = [
+    'Practice 8.2 — Drill 1: 何か — Questions — Unspecified item',
+    'Practice 8.2 — Drill 2: 何を vs 何か — Specific / Unspecified',
+    'Practice 8.2 — Drill 3: 何か／何も — Yes/No questions',
+    'Practice 8.2 — Drill 4: 何でも — Unlimited Choice'
+];
+const COPY82_CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p82-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
+function getCopy82Date() {
+    const now = new Date();
+    return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+}
+function entriesFor82(si) {
+    const entries = [];
+    rowsFor(si).forEach((rows, index) => {
+        rows.forEach(r => {
+            if (r.pending) return;
+            const entry = saved.get(keyFor(r));
+            const raw = entry?.raw;
+            if (typeof raw !== 'string' || !raw.trim()) return;
+            const mark = FeedbackStatus.clipboardMarker(entry) + ' ';
+            const role = r.kind ? r.kind + ': ' : '';
+            entries.push((index + 1) + '. ' + role + mark + raw);
+        });
+    });
+    return entries;
+}
+function updateCopyButtons82() {
+    document.querySelectorAll('.p82-copy-area').forEach(area => {
+        const button = area.querySelector('.p82-copy-button');
+        if (!button) return;
+        const si = Number(area.dataset.drillIndex);
+        button.disabled = Boolean(session || preparing) || entriesFor82(si).length === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+function mountCopyAreas82() {
+    for (let si = 0; si < 4; si += 1) {
+        const group = document.getElementById('drill' + (si + 1));
+        if (!group) continue;
+        const cards = group.querySelectorAll(':scope > .drill-row');
+        const lastCard = [...cards].at(-1);
+        if (!lastCard) continue;
+        let area = group.querySelector(':scope > .p82-copy-area[data-drill-index="' + si + '"]');
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p82-copy-area';
+            area.style.display = 'flex';
+            area.style.flexDirection = 'column';
+            area.style.alignItems = 'flex-end';
+            area.style.textAlign = 'right';
+            area.dataset.drillIndex = String(si);
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p82-copy-button';
+            button.innerHTML = COPY82_CLIPBOARD_SVG + '<span>Copy my sentences</span>';
+            const help = document.createElement('span');
+            help.className = 'p82-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+            const status = document.createElement('span');
+            status.className = 'p82-copy-status';
+            status.setAttribute('role', 'status');
+            status.setAttribute('aria-live', 'polite');
+            status.hidden = true;
+            let timer = null;
+            button.addEventListener('click', async () => {
+                if (session || preparing) return;
+                const entries = entriesFor82(si);
+                if (!entries.length) return;
+                try {
+                    await navigator.clipboard.writeText(COPY82_HEADERS[si] + ' — ' + getCopy82Date() + '\n' + entries.join('\n'));
+                    status.textContent = 'Copied!';
+                } catch (error) {
+                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                }
+                status.hidden = false;
+                clearTimeout(timer);
+                timer = setTimeout(() => { status.hidden = true; }, 2000);
+            });
+            area.append(button, help, status);
+        }
+        group.querySelectorAll(':scope > .p82-copy-area[data-drill-index="' + si + '"]').forEach(other => {
+            if (other !== area) other.remove();
+        });
+        if (lastCard.nextElementSibling !== area) lastCard.after(area);
+    }
+    updateCopyButtons82();
+}
+const copy82BaseRender = render;
+render = function(...args) {
+    const result = copy82BaseRender.apply(this, args);
+    mountCopyAreas82();
+    return result;
+};
+const copy82BaseSync = sync;
+sync = function(...args) {
+    const result = copy82BaseSync.apply(this, args);
+    updateCopyButtons82();
+    return result;
+};
+const copy82BaseShowResult = showResult;
+showResult = function(...args) {
+    const result = copy82BaseShowResult.apply(this, args);
+    updateCopyButtons82();
+    return result;
+};
+window.practice82State = { saved, choices, rowsFor, keyFor, entriesFor82, sync, render };
 
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

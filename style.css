@@ -14,7 +14,7 @@
     margin-top: var(--practice-section-gap);
 }
 
-/* Yes／No選択 (F6 standardized Lucide Y/N buttons and icons) */
+/* Yes／No選択 (F6 standardized Microsoft Fluent Y/N buttons and icons) */
 .example-button.answer-choice {
     display: inline-flex;
     align-items: center;
@@ -1068,7 +1068,7 @@ body {
     flex-shrink: 0;
 }
 
-/* Question sentence indicator: noninteractive Lucide message-circle-question immediately right of stop button */
+/* Question sentence indicator: noninteractive Microsoft Fluent Chat Help immediately right of stop button */
 .stop-indicator-wrap {
     display: inline-flex;
     align-items: center;
@@ -1089,13 +1089,19 @@ body {
     pointer-events: none;
     user-select: none;
     flex-shrink: 0;
+    width:16px;
+    height:16px;
+    min-width:16px;
+    min-height:16px;
+    max-width:16px;
+    max-height:16px;
+    flex:0 0 16px;
 }
 
 .question-indicator .question-indicator-icon {
     display: block;
     width: 16px;
     height: 16px;
-    stroke: currentColor;
     pointer-events: none;
     flex-shrink: 0;
 }
@@ -3591,10 +3597,13 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
 /* Keep the former outer size and text baseline; only the visible role art changes. */
 .site-scale .conversation-role-icon { position:relative; box-sizing:border-box; width:calc(1.35em + 2px); height:calc(1.35em + 2px); padding:0; border:0; border-radius:0; background:transparent; }
 .site-scale .conversation-role-icon::before { content:'\200b'; }
-.site-scale .conversation-role-icon > img { position:absolute; inset:0; display:block; width:100%; height:100%; object-fit:contain; }
-.qa-icons-credit { font-size:.8em; color:var(--text-secondary); text-align:center; margin:16px 0; }
-.qa-icons-credit a { color:inherit; }
-@media (prefers-color-scheme:dark) { .site-scale .conversation-role-icon > img { filter:invert(1); } }
+.site-scale .conversation-role-icon > svg { position:absolute; inset:0; display:block; width:100%; height:100%; color:inherit; }
+/* Shared Filled Q/A theme; only SVGs explicitly created as Filled opt in. */
+:root { --conversation-role-filled-color: #71839A; }
+@media (prefers-color-scheme: dark) {
+    :root { --conversation-role-filled-color: #D9DDE3; }
+}
+.site-scale .conversation-role-icon > .fluent-icon-filled { color:var(--conversation-role-filled-color); }
 .site-scale .conversation-person { display: inline-block; padding: 0 5px; border-radius: 4px; font-weight: 700; }
 .site-scale .conversation-person[data-person="A"] { --person-bg: #6d28d9; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }
 .site-scale .conversation-person[data-person="B"] { --person-bg: #7dd3fc; --person-fg: #fff; background: var(--person-bg); color: var(--person-fg); }
@@ -5041,4 +5050,156 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .practice81-page .p81-copy-button:disabled {
     opacity: .45;
     cursor: not-allowed;
+}
+
+
+/* Practice 8.3 Copy controls */
+.practice83-page .p83-copy-area {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    width: 100%;
+    margin: 12px 0 20px;
+    text-align: right;
+}
+ .practice83-page .p83-copy-button {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 8px 12px;
+}
+.practice83-page .p83-copy-icon {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+}
+ .practice83-page .p83-copy-help {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    margin-top: 4px;
+    color: var(--muted-text, #666);
+    font-size: .85rem;
+    line-height: 1.35;
+}
+.practice83-page .p83-copy-status {
+    min-height: 1.35em;
+    margin-top: 4px;
+    color: var(--muted-text, #666);
+    font-size: .85rem;
+}
+@media (max-width: 600px) {
+    .practice83-page .p83-copy-button { max-width: 100%; }
+    .practice83-page .p83-copy-help { max-width: 100%; }
+}
+
+
+/* Practice 8.2 Copy my sentences */
+.practice82-page .p82-copy-area {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+.practice82-page .p82-copy-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Lato', sans-serif;
+    max-width: 100%;
+    white-space: normal;
+}
+.practice82-page .p82-copy-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+.practice82-page .p82-copy-help,
+.practice82-page .p82-copy-status {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+.practice82-page .p82-copy-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
+/* Practice 2.1 approved E feedback: Fluent fire and label use the same orange, without a badge. */
+.p21-keep-going-preview { --p21-keep-color: #B47732; }
+@media (prefers-color-scheme: dark) {
+    .p21-keep-going-preview { --p21-keep-color: #E4AD69; }
+}
+.p21-keep-going-preview .recording-result > .p21-inline-feedback {
+    margin: 0 4px 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    white-space: nowrap;
+    color: var(--p21-keep-color);
+    pointer-events: none;
+}
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .p21-inline-feedback {
+    display: block !important;
+    margin-right: 0;
+}
+.p21-keep-going-preview .recording-result.p21-transcript-own-line > .result-text {
+    display: block;
+    text-align: right;
+}
+.p21-keep-going-preview .p21-inline-feedback > .p21-retry-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--p21-keep-color);
+    font-family: var(--font-latin);
+    font-size: inherit;
+    font-weight: 400;
+    white-space: nowrap;
+    vertical-align: baseline;
+}
+.p21-keep-going-preview .p21-retry-fire {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    color: inherit;
+}
+
+/* Practice 2.1 only: long mismatch feedback uses the space beside fixed actions,
+   then the full controls width. Short/accepted/undetermined layouts stay intact. */
+.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) {
+    display: flow-root;
+    text-align: right;
+}
+.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-actions {
+    float: left;
+    margin: 0 8px 6px 0;
+}
+.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-result {
+    display: inline !important;
+    width: auto;
+    max-width: none;
+    margin: 0;
+}
+
+.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"])::first-line {
+    line-height: var(--p21-feedback-action-line);
 }

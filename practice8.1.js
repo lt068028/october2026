@@ -802,7 +802,7 @@ function showResult(key,notice='') {
     if(session?.key===key){if(v.notYet)v.notYet.hidden=true;v.result.textContent='Recording...';return;}
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.1'});
-        if(value.correct)v.result.append(document.createTextNode(displayed+' ✅ '));
+        if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
@@ -811,7 +811,7 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            v.correction.textContent='🔥Keep going! Try once more!';v.correction.hidden=false;
+            FeedbackStatus.setMismatch(v.correction);v.correction.hidden=false;
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
@@ -1878,7 +1878,7 @@ function mountCopyAreas81() {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'example-button p81-copy-button';
-            button.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p81-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg><span>Copy my sentences</span>';
+            button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p81-copy-icon') + '<span>Copy my sentences</span>';
 
             const help = document.createElement('span');
             help.className = 'p81-copy-help';

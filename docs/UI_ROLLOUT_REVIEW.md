@@ -1,4 +1,10 @@
-## 2026-11-08 Q/Aアイコン採用追跡
+## 2026-11-11 Microsoft Fluent Filledアイコン統一（全対象Preview）
+
+- 現行の採用仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
+- 全対象Previewは`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一する。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含むため、Q/Aだけの差分ではない。`main`／Productionには未反映。
+- 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）とは別のDraft PRとして検証する。PR #8は変更・クローズ・マージしない。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
+
+## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
 
 - 状態：実装済み・検証済み（アイコン適用範囲）。採用決定・実装中を経て最新main ab69d6fとの313ブラウザ条件の比較を完了。最終efb8014のCopy補助文言変更後も7.1の28条件を再比較済み。Icons8 monochrome outlinedを採用。仕様の正本はUI_LAYOUT_SPEC「会話役割アイコン」。
 - 対象：Practice 1.2、2.1、2.2、2.3、7.1、7.2、7.3、8.1、8.2、8.3。Example／Drillの実在する役割のみ。1.1・発音1/2・作文1・Indexは対象なし。

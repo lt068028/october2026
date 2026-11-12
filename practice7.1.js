@@ -302,24 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return element;
     };
 
-    const ANSWER_ICONS = {
-        yes: '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/>',
-        no: '<circle cx="12" cy="12" r="10"/><path d="M8 16s1.5-2 4-2 4 2 4 2"/>'
-    };
-
-    const createAnswerIcon = (kind, inline = false) => {
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-answer-icon" aria-hidden="true">${ANSWER_ICONS[kind]}</svg>`;
-        if (!inline) {
-            const span = document.createElement('span');
-            span.innerHTML = svg;
-            return span.firstElementChild;
-        }
-        const span = document.createElement('span');
-        span.className = 'p71-inline-icon';
-        span.dataset.answer = kind;
-        span.innerHTML = svg;
-        return span;
-    };
+    const createAnswerIcon = (kind, inline = false) => window.AnswerIcons.create(kind, inline);
 
     const button = (label, tip, click) => {
         const b = node(
@@ -623,6 +606,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const cell = node('td');
         populateRecordingCell(cell, item, index, kind, state);
+        cueCell.prepend(ConversationDisplay.roleLabel(question ? 'Q' : 'A'), document.createTextNode(' '));
 
         row.append(cueCell, cell);
         body.append(row);
@@ -1745,9 +1729,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.style.color = "var(--text-primary)";
 
     if (saved.isCorrect) {
-        view.resultSpan.appendChild(
-            document.createTextNode(displayed + " ✅ ")
-        );
+        FeedbackStatus.appendAccepted(view.resultSpan, displayed);
     } else {
         const references = [...new Set(
             [saved.expectedText, saved.modelText]
@@ -1825,8 +1807,7 @@ function practice71ShowResult(view, saved, rowKey, playRate) {
         saved.isCorrect ? "none" : "block";
 
     if (!saved.isCorrect) {
-        view.corrTextSpan.textContent =
-            "🔥 Keep going! Try once more!";
+        FeedbackStatus.setMismatch(view.corrTextSpan);
 
         view.corrListenBtn.style.display = "none";
         view.correctionBox.style.textAlign = "right";
@@ -3521,9 +3502,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             );
         }
 
-        view.resultSpan.append(
-            document.createTextNode(' ✅ ')
-        );
+        FeedbackStatus.prependAccepted(view.resultSpan);
+        view.resultSpan.append(document.createTextNode(' '));
 
 
 
@@ -3720,7 +3700,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 // Practice 7.1 copy pilot: use recorded STT, never model answers or regraded results.
 (() => {
     const explanation = 'Copy your drill results to review or share.';
-    const CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p71-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
+    const CLIPBOARD_SVG = window.FluentIcons.markup('clipboard', 20, 'p71-copy-icon');
 
     function getLocalDateString() {
         const d = new Date();

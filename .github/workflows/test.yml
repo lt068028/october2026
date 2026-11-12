@@ -56,8 +56,8 @@ jobs:
               tests/uebung11.cjs
               tests/content-layout-boundaries.cjs
               tests/practice72-audio-interruption.cjs
-          - group: 3
-            name: "Practice 1-2, QA & Order"
+          - group: 3A
+            name: "Practice 1-2, QA & Order (core)"
             tests: >-
               tests/practice21.cjs
               tests/practice2-next.cjs
@@ -65,6 +65,9 @@ jobs:
               tests/practice22-umbrellas.cjs
               tests/practice23-cities.cjs
               tests/common-yn-examples.cjs
+          - group: 3B
+            name: "Practice 1-2, QA & Order (long)"
+            tests: >-
               tests/example-negative.cjs
               tests/example-order.cjs
               tests/qa-icons.cjs
@@ -72,8 +75,8 @@ jobs:
               tests/english-cue-navigation.cjs
               tests/copy72.cjs
               tests/preview73.cjs
-          - group: 4
-            name: "Content States & Practice 7-8"
+          - group: 4A
+            name: "Content States & Practice 7-8 (core)"
             tests: >-
               tests/content-layout-states.cjs
               tests/css-regression.cjs
@@ -84,6 +87,9 @@ jobs:
               tests/practice81-cue-fit.cjs
               tests/practice81-final.cjs
               tests/practice81-timing.cjs
+          - group: 4B
+            name: "Content States & Practice 7-8 (long and feedback)"
+            tests: >-
               tests/practice82.cjs
               tests/practice82-example-layout.cjs
               tests/practice83-speech-style.cjs
@@ -91,6 +97,9 @@ jobs:
               tests/global-display.cjs
               tests/semantic-colors.cjs
               tests/settings-availability.cjs
+              tests/feedback-rendering-contract.cjs
+              tests/copy82.cjs
+              tests/copy83.cjs
           - group: 5
             name: "End-to-End Suite (11 Pages)"
             tests: >-

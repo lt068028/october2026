@@ -1,12 +1,104 @@
+## 判定結果アイコン共通仕様 — Feedback Status Icons（2026-11-11）
+
+**デザイン承認済み／Practice 2.1限定のA案表示接続を承認。** 本節を判定結果アイコンの正本とする。登録時点では表示未接続だったが、以下のA案でPractice 2.1だけに接続する。全ページ展開・Production反映は未承認。
+
+### 基本方針・承認済みSVG
+
+Q/Aは会話の役割、Smile/Frownは肯定・否定を示し、本節の判定結果アイコンとは別機能である。
+
+| 判定状態 | SVG・ライブラリ | サイズ | Light | Dark | ライセンス |
+| --- | --- | --- | --- | --- | --- |
+| 正解 | Microsoft Fluent UI System Icons `Checkmark 24 Filled` | 22×22px | `#16A34A` | `#4ADE80` | MIT |
+| 判定保留 | Lucide `Footprints` | 22×22px | `#8064B0` | `#B9A2E5` | ISC |
+| 不正解 | Microsoft Fluent `Fire 24 Regular` ＋ `Keep going!` | 20×20px | `#B47732` | `#E4AD69` | MIT |
+| 未回答・録音中 | 新しい判定アイコンなし | — | — | — | — |
+
+- 正解は**丸囲みのないチェック**。`Checkmark Circle`は使用しない。
+- **Fluent Checkmark 24 Filledは、元のFilled形状に同色の1.5pxストロークを追加して表示する。表示サイズは22×22pxとし、Lightは#16A34A、Darkは#4ADE80を使用する。丸囲みは付けない。** `fill="currentColor"`、`stroke="currentColor"`、`stroke-width="1.5"`。正式なpathと24×24のviewBoxは維持し、拡大やOutlineへの置換は行わない。外周の結合はroundとし、ストロークが表示領域内に収まるようにする。
+- 正解チェックは対応する抽出テキストの左側、間隔4px、縦中央揃え。22pxを縮めず、長いテキストは既存領域内で自然に折り返す。空列・固定幅を追加しない。この配置変更をFootprints・Fire・他ページへ適用しない。
+- 正解・保留は正式SVG原本のインラインSVG、原則`currentColor`。背景・枠・影なし。
+- Fluentに適切なFootprintsが見つからなかったため、Lucideを例外採用する。共通アイコンセットをLucideへ変更するものではない。
+- Fireは既存の正式仕様を優先する。SVGと文言の間隔4px、抽出テキストとの間隔4px、右寄せ、赤い不一致強調を維持する。本登録で既存のKeep going!仕様を上書きしない。
+
+### 表示条件・排他性
+
+- 正解：既存の判定処理が正解と確定した場合だけ表示する。Practice 2.1では既存の`isCorrect: true`に対応する。既存✅からSVGへの置換は別途承認された表示実装時に行う。
+- 保留：判定処理が正解・不正解のいずれにも確定できない状態を**明示的に返した場合**に表示する。ただし現行Practice 2.1では、その状態を保存・生成する処理は確認されていない。
+- 音声認識失敗、認識結果なし、`unrecognized`、`audioOnly`、通信エラー、録音キャンセルを自動的に保留へ分類しない。これらの扱いは別途判定仕様として確定する。Footprints表示のために既存判定ロジックを変更しない。
+- 同じ回答に正解チェック・Footprints・Keep going!を同時に表示しない。判定更新時に古い表示を残さない。
+- 未回答・録音中は、判定確定済みの結果を保持する既存仕様がある場合を除き、新しい判定アイコンを生成しない。
+- 保留の説明は正確に`Could not be evaluated reliably.`とする。マウスHoverとキーボード操作の双方で確認可能にする。
+
+### コピー・配置・共通実装
+
+- 画面はSVG、コピー機能のあるページのコピー文字列は判定データから正解`✅`／保留`👣`を生成する。SVGのHTML・画像データを混入させず、既存のコピー形式や回答文保持を変更しない。
+- Practice 2.1には既存のCopy my sentences機能がないため、この仕様のためだけに新設しない。
+- 既存の判定結果表示領域を利用する。375／600／1440px・Light／Darkで、録音・再生・停止、Q/A、Smile/Frown、疑問文マークとの重なりがないことを検証する。不要な空列・固定幅を追加しない。
+- 正解チェックの左側4px・中央揃えは上記の正式仕様に従う。その他の未確定の余白・基線・折返しはPractice 2.1の動作Previewで確認してから確定する。
+- SVGは共通部品で一元管理し、ページごとに複製しない。Fluent Checkmark Filled／Lucide Footprintsの正式原本とライセンス通知を保持し、外部CDNに依存しない。
+- 既存のQ/A共通ヘルパー、目なしSmile/Frown、疑問文マーク、Keep going!は変更しない。
+
+### Practice 2.1：A案・確実な判定不能のみ保留（2026-11-11）
+
+- 既存の許容解答・正規化・照合式と`isCorrect`を保持する。新規保存では`isCorrect: true`に`judgment: accepted`、`false`に`judgment: mismatch`を付加する。旧データは同じ真偽値から表示状態を復元し、再採点・書換えしない。
+- `judgment: undetermined`が明示されている場合だけ保留表示に対応する。現行の実回答経路に確実な保留生成根拠は確認されていないため、実回答からの生成経路は追加しない。発生0件は正常。保留表示テストは表示用fixtureのみ。
+- 短さ、部分一致、未知語、許容解答との不一致、複雑な日本語、推測した信頼度から保留を生成しない。既存Mismatchを再分類しない。
+- 無音、結果なし、マイク失敗、SpeechRecognitionエラー、キャンセル、音声のみ保存は既存処理を維持する。`unrecognized`／`audioOnly`は現在のPractice 2.1の実保存経路では生成されず、外部・旧状態に存在しても保留へ変換しない。録音URL保持と判定結果保持は独立した既存処理に従う。
+- Acceptedは緑チェックのみ、Mismatchは既存の赤字・Fire＋Keep going!、明示保留は生テキストと紫Footprintsのみ（赤字なし）。表示を再生成し古いアイコンを残さない。再回答・Set／Script／Cues変更・再描画でも保存結果から復元する。未回答・録音開始では新しい判定を作らない。
+- 共通部品`feedback-status-icons.js`をPractice 2.1のみで読み込む。色・22px・Hover／Tab説明は同ページに限定した`feedback-status-icons.css`で適用。元SVGとライセンスは`assets/licenses/FEEDBACK-STATUS-*`に記録する。他ページ・Deutsch 1.1の文法判定・Q/A・目なしSmile/Frown・疑問文マーク・Fire仕様は変更しない。
+- 共通化するのは3状態の定義・エラーとの区別・既存許容解答の保持・排他的表示と保存復元の原則である。Deutsch固有の単語数・助動詞・活用・前置詞判定は日本語へ移植しない。
+- 次工程はPractice 2.1 Previewの実機承認。保留生成条件の追加や他ページ展開は別途承認が必要。コピー機能は追加しない。
+
+### 実装・承認状況と次工程
+
+| 工程 | 状態 |
+| --- | --- |
+| チェック・Footprintsの形状、両22px、Light／Dark色 | デザイン承認済み |
+| 静的SVG比較Preview | 作成済み。ただし当時のCheckmark Circleは不採用。今回の登録では比較ページ・SVGを変更しない |
+| 正式仕様書への登録 | 本節に登録済み |
+| 判定保留の生成条件 | A案確定。現行に該当経路なし。将来の追加条件は未承認 |
+| Practice 2.1へのA案表示接続 | 独立Previewに実装・ユーザー実機確認待ち |
+| 全ページ展開 | 未実装・未承認 |
+| main／Production反映 | 未実施 |
+
+将来、保留生成条件を追加する場合は、保留条件の調査・設計 → ユーザーによる判定条件承認 → Practice 2.1動作実装 → 実機承認 → 全ページ適用範囲監査 → 全ページ統合Preview承認 → main反映の順とする。今回の仕様登録を動作実装や統合の許可と扱わない。
+
+当初の仕様登録作業では正誤判定、音声認識・録音・再生、Q/A表示条件、目なしSmile/Frown、疑問文マーク、Keep going!、Practice 2.1の判定表示、他ページ表示、main／Productionを変更しない。
+
+## Practice 2.1 判定SVG静的比較（2026-11-11・過去の候補記録）
+
+- 以下は承認前の比較履歴。現在の採用仕様は冒頭「判定結果アイコン共通仕様」を正本とする。比較ページのCheckmark Circleは採用しない。
+- 独立Preview `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f2ae8bad098f0b2438fe35df742be7cc2`。比較ページ `preview/practice21-feedback-icons.html` のみ。判定処理・Practice本体には接続しない。
+- 正解候補：Microsoft Fluent Checkmark Circle 24 Regular（MIT）。緑 Light `#16A34A`／Dark `#4ADE80` は候補であり、正式決定ではない。
+- 保留候補：Lucide Footprints（ISC、同梱MIT noticesも保持）。FluentカタログにFootprintsは見当たらず、代替セットの原本を比較専用SVGとして利用。正式採用・ライブラリ再導入ではない。
+- 確定済み：保留色 Light `#8064B0`／Dark `#B9A2E5`、説明 `Could not be evaluated reliably.`。Hoverとキーボードフォーカスで表示する。
+- 未確定：チェックの緑、Footprintsの形状、両アイコンのサイズ。20px基本、18/22px比較。背景・外枠・影なし。短文／長文と右寄せ4px間隔を比較。Fireは承認済み原本・色を参照し、本番の20px仕様は変更しない。
+- 将来のコピー表示：画面SVGとデータ由来Emoji（正解✅／保留👣／不一致🔥）を分離する。今回はコピー機能を追加しない。
+- 原本・ライセンスは比較ページのリンクと `preview/feedback-icons/*LICENSE.txt` を参照。Q/A・Keep going!・目なしSmile/Frownの正式仕様は変更しない。
+
+## Practice 2.1 Keep going! 限定Preview（2026-11-11）
+
+- 承認済み実装は `preview/p21-keep-going-approved-e-20261111` のCommit `644fff834355c9716cf258aa25cef9fd259131c7`。最終統合Preview `preview/qa-keep-going-final-20261111` でもPractice 2.1に限り同じ表示を使用する。Q/A表示条件の正本と併用し、Fire RegularとQ/A Filledを用途別に維持する。main・Production・他ページへの展開は未承認。
+- 回答不一致の案内は `Keep going!` とし、`Try once more!` と炎の絵文字を除去する。承認済みMicrosoft Fluent UI System Icons `Fire 24 Regular`（MIT）を20×20px・`currentColor`で添える。SVGと文字はLight `#B47732`／Dark `#E4AD69`。英語は既存のLato標準。囲み・背景・外枠・角丸・影は付けない。
+- 既存の右寄せ結果領域内で、案内を抽出テキストの直前に置く。両者を一緒に右寄せし、案内を左端へ固定しない。間隔は4px。案内内のSVGと文字も4pxとし、両者は途中で分離しない。
+- 抽出テキストは既存の表示・保存データを維持して自然に折り返す。インラインの流れを使い、折り返し後に案内用の空列を残さない。短文は同じ行、長い単語は必要に応じて次行へ送る。
+- **判定結果の抽出テキストは、利用可能な親コンテナ幅を最大限活用し、不要な折返しを避ける。録音操作ボタンの列幅によって、判定結果行の表示幅を不必要に制限しない。**
+- Practice 2.1の長い不一致結果に限り、操作ボタンの右側から流し、ボタンの下では操作領域の全幅を使用する。操作と結果を別Flex項目として固定的に行送りする制約を、スコープ付きのflow-root／float／inlineで解消する。ボタン位置・寸法・親Gridの列幅は変更しない。
+- 初行の高さは実測した操作領域の高さ＋既存の縦間隔6pxに合わせ、次行がボタンと重ならないようにする。従来配置と実際の高さを比較し、余分な行が減る場合だけ流し込みを適用する。短文・余白が足りない狭幅は従来配置を維持する。フォントサイズ・全文・赤字・4px間隔は変更しない。
+- Accepted／Undetermined・録音中にはこの長文用配置を適用しない。緑チェック22px＋1.5pxストロークの左配置、Footprints、Q/A、Smile/Frown、疑問文マーク、判定・音声・Set／Script処理は変更しない。
+
+- 正答・未回答・評価保留・音声のみの結果では案内を表示しない。Example／Drill終了による表示、移動ボタン、クリック・スクロール・フォーカス移動を追加しない。判定・録音・再生・回答保持・セット・English Cues・Backの処理は変更しない。
+- CSSは `p21-keep-going-preview` に限定し、他ページの `.correction-box` を変更しない。炎SVGの出典・MIT通知は `assets/licenses/MICROSOFT-FLUENT-FIRE-LICENSE.txt` に保持する。
+
 ## 録音付きDrillのCopyボタンアイコン表示（2026-11-08確定）
 
-- コピー操作領域のボタンは、左に **Lucide `clipboard` SVG（20×20px、stroke-width 2、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。
+- コピー操作領域のボタンは、左に **Microsoft Fluent `Clipboard 24 Regular` SVG（20×20px、currentColor）**、右に `Copy my sentences` を並べる。絵文字 `📋` は使用しない。
 - ボタンの下の補助説明は `Copy your drill results to review or share.` とする。旧文言 `Copy to review or share.` および `Copy your sentences to review or share.` は使用しない。
 - SVGとラベルを中央揃えにし、既存のボタンの色・背景・枠・角丸・余白を原則維持する。375px幅でもラベルの縦折れや横はみ出しを起こさない。
 
 ## 録音付きDrillのCopyボタン配置（2026-11-08確定）
 
-- `Copy my sentences`（Lucide `clipboard` SVG付き）は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
+- `Copy my sentences`（Microsoft Fluent `Clipboard 24 Regular` SVG付き）は各録音付きDrillの**最終問題カードの直後・カードの枠外**、同じDrillセクション内に置く。問題カード内へappendしない。次のDrillやExampleのコンテナに含めない。
 - ボタン・短い補助説明・成功／失敗ステータスをひとまとまりのコピー操作領域とし、Drill内の右端に揃える。既存のボタン外観・ラベル・余白感を保ち、375px幅で横はみ出しや文字の縦折れが生じないようにする。
 - 操作領域は1つのDrillにつき1つとし、再描画や設定変更で重複生成しない。録音中の無効状態と結果更新を正しく反映する。
 - Practice 7.1は先行実装の修正対象。Drill 1とDrill 2の両方でカード外へ移動する。実装は共通仕様の登録とは別作業とし、既存ページへ無条件に横展開しない。
@@ -16,7 +108,7 @@
 - Latin-script UI text in the Japanese-learning drill website uses Lato as its standard font family. Japanese text retains its established Japanese font configuration. New drill pages and UI components must follow this rule from initial implementation.
 - 対象範囲：英語Cue文・英語ラベル・セット切替ボタン・ドリル切替／操作案内・セグメント制御オプション・ドロップダウン項目・英語見出し／説明文・ツールチップ。
 - 日本語テキストの維持：日本語テキストをLatoへ強制しない。日英混在テキストではCSSフォントフォールバック（`Lato, sans-serif`）または言語別セレクタにより、日本語グリフは従来の日本語フォント（sans-serif / Noto Sans CJK JP等）で描画する。フォント適用のために既存コンテンツを不必要にDOM分割・再構成しない。
-- アイコン・記号の維持：Lucideアイコン、絵文字、録音／再生アイコン等の記号はフォント変更の対象外とし、既存の表示を維持する。
+- アイコン・記号の維持：Microsoft Fluentアイコン、絵文字、録音／再生アイコン等の記号はフォント変更の対象外とし、既存の表示を維持する。
 - 既存視覚設計の保持：フォントサイズ、ウェイト、行高、字間、色彩、パディング、マージン、ボタン寸法、配置、テキスト折り返し、レスポンシブ配置を維持する。
 - 実装原則：`style.css` の `:root` に `--font-latin: 'Lato', sans-serif;` を定義し、共通セレクタを通じて一元管理する。個別ページへの競合する重複指定を避け、全14ドリルページのHTML `<head>` でLatoフォント（wght@400;500;700）を確実に読み込む。
 
@@ -31,15 +123,28 @@
 - 適用対象の現行棚卸し：2.1 Drill 1・2（Set 1／Set 2）、2.2 Drill 4（Set 1／Set 2）・Drill 5（Adjectives／Pronouns）、2.3 Drill 1（Country／Cities／Time）・Drill 2（People／Item1／Item2）・Drill 3（Country／Cities／Time／Day）、8.3 Drill 1〜4（Who／What／Which one／Where／Whenの英字部分）。
 - 実装時は全対象のフォント読込・計算フォント・選択状態・再描画後の保持と、狭幅でのボタンの収まりを限定検証する。仕様登録・実装・検証は別々に記録する。
 
-## 会話役割アイコン（2026-11-08採用決定）
+## 会話役割・疑問文アイコン（2026-11-11共通仕様／Preview適用）
 
-質問はIcons8 iOS OutlinedのAsk Question、応答はSpeech Bubble。承認済みの本番画像（`assets/qa-icons/icons8-mono-question.png`／`icons8-mono-answer.png`）から配信する。Colorの白黒化やMicrosoft等の別素材に置き換えない。
+### Q/A表示条件の正本（2026-11-11ユーザー確定）
 
-`conversation-display.js`の会話役割生成で適用し、互換クラス`conversation-role-circle`と既存の位置・基線・間隔・外寸を保持する。追加の囲み・背景・バッジは付けない。通常は元の黒線、ダークでは画像を反転して明るい線とする。空の継続役割欄は非表示のまま幅を保持し、画像を生成しない。Question／Answerのアクセシブル名を役割コンテナへ残し、画像は装飾用の空altとする。
+- Q/Aは文法形式ではなく質問・回答という発話の役割を示す。通常の質問→回答はQ→A。単独の疑問文作成、回答のない質問形式比較には付けない。疑問文であることだけからQを自動推定しない。
+- Smile/Frown付きの回答行・回答群ではAを省略し、質問のQは維持する。Smile/Frownの仕様・選択状態は変更しない。Y/N文法だけを理由にAを省略しない。
+- Practice 8.3 Ex1〜4・Dr1〜4は全SetでQ→Q→なし。2行目は範囲を絞るWh疑問文でありY/N疑問文ではない。この返答のA省略は8.3限定である。
+- A省略はSmile/Frown付き回答と8.3限定構造だけ。通常の返答のAは維持する。既存の「空の継続役割欄」規定は、この表示条件に従う配置保持に限る。
+- 停止横の疑問文マークは録音対象の文の種類を示す別条件であり、既存の条件・SVG・16px・色・位置・4px間隔を維持する。
+- 新規Practiceも本節を適用し、Ex/Dr・選択前後・Set切替・再描画で同じ条件を維持する。人物を独自に新設しない。下記の既存仕様中の「会話役割」「Q/A」は本節の表示条件に従う。
 
-適用はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3の会話役割だけ。説明中のQ/A、疑問符、人物・場所・語彙・文法ラベルは対象外。設定・セット切替等の再描画にも共通生成を適用する。
 
-使用ページには小さな可視のIcons8リンクを置く。出典・Icons8ライセンス／帰属先は`assets/qa-icons/ICONS8-CREDITS.txt`で管理する。Microsoft素材のMITライセンスをIcons8へ適用しない。人物色・Lato・8.3の括弧なし二段目英語は維持する。
+- **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。CompositionにはQ/A役割表示がないため、今回のQ/A適用対象外。
+- `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。今回のPreviewでは対象Practice全体に有効化する。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
+- 停止ボタン右の**疑問文マーク**はChat Help Filledを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。Compositionを含め、共通ヘルパーを使用する対象ページで既存の表示条件を維持する。
+- `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
+- 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
+- Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
+- Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。これはPreviewブランチ上の検証仕様であり、main／Productionへの統合は行わない。
+- Yes/Noは承認済みの目なしSmile/Frown（`f8b06d8f…`のSVG原文）を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
+- SVGの出典はMicrosoft Fluent UI System Icons（MIT）。旧Icons8画像・帰属表示リンクとLucideの旧SVG素材はこのPreviewでは除去対象。旧記録は履歴として別文書に残せるが、現行UI仕様ではない。
+- 375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持の検証後に本番統合を判断する。Previewへの適用は本番採用完了を意味しない。
 
 ## 8.1 Drill 5への英語区分バッジ適用（2026-11-07）
 
@@ -596,7 +701,7 @@ PRACTICE8_SPECを参照。共通130%・24px/40px・語句単位Displayを継承�
 
 全サイトにおけるYes/No選択ボタン、Example音声ボタン、およびDrill説明文のインラインアイコンは、Practice 7.1の承認済み実装を唯一の正本として全ページに標準化する。
 
-- **承認済みアイコン**: 目なしのLucide smile（肯定）およびfrown（否定）SVG（20×20px、stroke-width 2）。emoji（🙆/🙅）はUI表示から全面撤去。
+- **承認済みアイコン**: 目なしSmile/Frown。比較Preview `af3e5d7d…`と共通実装 `f8b06d8f…`の円＋口のSVGをそのまま使用する（20×20px、viewBox `0 0 24 24`、fill none、currentColorのstroke 2、round cap/join）。Fluentへの置換で追加された目は採用しない。Q/A Filled、停止横疑問文マーク、Fire Regularは変更しない。emoji（🙆/🙅）はUI表示から全面撤去。
 - **共通JSヘルパー**: `answer-icons.js`（`window.AnswerIcons`）
   - `AnswerIcons.create('yes' | 'no', inline = false)`
   - `AnswerIcons.createExampleLabel('yes' | 'no')`（DocumentFragment: `🔊` + インラインSVG）
@@ -668,7 +773,7 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 ## 2026-11-08 / F-2: 8.3品詞ラベルの統一
 
 - ユーザー承認：Example 1〜4のVerb／Adjectiveだけを、8.1のNoun／Verb＋のと共通のLato 700・0.9em・padding 6px 10px・1px枠・8px角丸へ統一。ダークは文字#ffffff・背景#304663・枠#7998c3。既存のヘッダー位置・日本語キュー・音声・判定を維持。
-- Q／AアイコンはIcons8色なし線画を採用決定。実装・検証状態はUI_ROLLOUT_REVIEWとHANDOVER参照。Previewの4選択肢は比較履歴として維持。
+- Q／Aアイコンは2026-11-11にMicrosoft FluentのChat Help／Chatへ改定。以前の比較案・Icons8採用時の検証は履歴としてUI_ROLLOUT_REVIEW参照。
 - 7.3の時制ラベルはPreviewで判断し、本番には未適用。
 
 ## 2026-11-09 / Practice 8.3 バッジ表示統一（Verb・だれ・何）
@@ -682,7 +787,7 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 ## 2026-11-08 / 7.3 Lato採用と8.3 Ex1装飾漏れ是正
 
 - ユーザー決定：7.3の時制・アスペクトラベルはLatoへ。フォントのみ変更し、意味色・枠・余白・文字サイズ・時制区分配置を維持。Q/Aのフォント選定とは別。7.1/7.2には未適用。
-- 8.3 Ex1のQ/Aと空の役割欄の不要な囲みは、8.1用CSSがpractice81-pageを継承する8.3にも一致していたことが原因。ライト／ダークの8.1用セレクタをdata-practice="8.1"に限定し、8.3の役割ラベルへ流出させない。この時点では共通の丸囲みQ/Aを維持（後続のIcons8採用で置換）。8.3 Verb/Adjectiveの承認済み装飾は維持。
+- 8.3 Ex1のQ/Aと空の役割欄の不要な囲みは、8.1用CSSがpractice81-pageを継承する8.3にも一致していたことが原因。ライト／ダークの8.1用セレクタをdata-practice="8.1"に限定し、8.3の役割ラベルへ流出させない。この時点では共通の丸囲みQ/Aを維持（後続のアイコン改定で置換）。8.3 Verb/Adjectiveの承認済み装飾は維持。
 - Who/What/Which/Where/Whenの括弧は省略が妥当との提案段階。ユーザーは意見を求めているため未変更。人物・場所・語彙のW項目は継続保留。
 
 ## 2026-11-08 / Lato読込と8.3二段目英字
