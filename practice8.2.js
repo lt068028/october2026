@@ -676,7 +676,7 @@ function showResult(key,notice='') {
     if(session?.key===key){v.result.textContent='Recording...';return;}
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.2'});
-        if(value.correct)v.result.append(document.createTextNode(displayed+' ✅ '));
+        if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
@@ -685,7 +685,7 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            v.correction.textContent='🔥Keep going! Try once more!';v.correction.hidden=false;
+            FeedbackStatus.setMismatch(v.correction);v.correction.hidden=false;
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
