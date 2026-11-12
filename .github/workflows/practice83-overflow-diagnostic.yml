@@ -1,0 +1,33 @@
+name: Practice 8.3 Overflow Diagnostic
+
+on:
+  push:
+    branches: [diagnostic/practice83-375-overflow-20261112]
+  workflow_dispatch:
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install browser dependencies
+        run: |
+          npm install --no-save playwright pngjs
+          npx playwright install --with-deps chromium
+          CHROMIUM_BIN=$(find ~/.cache/ms-playwright -name "chrome" -type f -perm /111 | head -n 1)
+          sudo ln -sf "$CHROMIUM_BIN" /usr/bin/chromium
+      - name: Run Practice 8.3 diagnostic
+        env:
+          CHROMIUM_PATH: /usr/bin/chromium
+        run: node tests/copy83.cjs
+      - name: Upload diagnostic artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: practice83-375-overflow-diagnostic
+          path: practice83-375-light-overflow.png
+          if-no-files-found: warn

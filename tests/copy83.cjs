@@ -108,6 +108,27 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
             await page.setViewportSize({ width, height: 1100 });
             for (const theme of ['light', 'dark']) {
                 await page.emulateMedia({ colorScheme: theme });
+                await page.evaluate(() => document.fonts?.ready);
+                const diagnostics = await page.evaluate(() => {
+                    const viewport = { innerWidth: window.innerWidth, clientWidth: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, bodyScrollWidth: document.body.scrollWidth };
+                    const nodes = [...document.querySelectorAll('*')].map(element => {
+                        const rect = element.getBoundingClientRect();
+                        const style = getComputedStyle(element);
+                        return {
+                            tag: element.tagName, id: element.id, className: String(element.className || ''),
+                            left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+                            width: rect.width, height: rect.height,
+                            overflowX: style.overflowX, display: style.display, flex: style.flex,
+                            gridTemplateColumns: style.gridTemplateColumns, minWidth: style.minWidth,
+                            maxWidth: style.maxWidth, whiteSpace: style.whiteSpace
+                        };
+                    }).filter(node => node.right > window.innerWidth + 0.5 || node.left < -0.5);
+                    return { viewport, nodes: nodes.slice(0, 40) };
+                });
+                if (width === 375 && theme === 'light') {
+                    console.log('OVERFLOW_DIAGNOSTICS ' + JSON.stringify(diagnostics));
+                    await page.screenshot({ path: 'practice83-375-light-overflow.png', fullPage: true });
+                }
                 eq(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true, width + 'px ' + theme + ' has no horizontal overflow');
             }
         }
