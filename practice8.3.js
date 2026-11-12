@@ -76,7 +76,7 @@ const d1Sets=[
   name:'だれ',
   label:'だれ (Who)',
   items:[
-   {q1:'だれが、てつだいますか。',q2:'どの学生が、てつだいますか。',a:'山田さんが、てつだいます。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['山田さん']},
+   {q1:'だれが、てつだいますか。',q2:'どの学生が、てつだいますか。',a:'山田さんが、手伝います。',c1:['だれ','てつだう'],c2:['どの','学生','てつだう'],ca:['山田さん']},
    {q1:'だれが、りょうりしますか。',q2:'どの学生が、りょうりしますか。',a:'田中さんが、りょうりします。',accept:['田中さんが、りょうりをします。'],c1:['だれ','りょうりする'],c2:['どの','学生','りょうりする'],ca:['田中さん']}
   ]
  },
@@ -1577,7 +1577,7 @@ showResult = function(...args) {
     return result;
 };
 window.practice83State = {
-    saved, choices, rowsFor, keyFor, entriesFor83, sync, render,
+    saved, choices, rowsFor, keyFor, entriesFor83, matchesAnswer, sync, render,
     busy: () => Boolean(session || preparing)
 };
 
