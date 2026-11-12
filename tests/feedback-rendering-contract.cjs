@@ -104,7 +104,7 @@ async function renderContract(page, name, width, theme) {
       const html = targetSource(`${name}.html`);
       const js = targetSource(script);
       ok(html.includes('feedback-status-icons.js?v=20261112-feedback-status') || html.includes('feedback-status-icons.js?v=20261112-allpages'), `${name}: shared helper loaded`);
-      ok(js.includes('FeedbackStatus.appendAccepted') && js.includes('FeedbackStatus.setMismatch'), `${name}: accepted/mismatch helper calls present`);
+      ok((js.includes('FeedbackStatus.appendAccepted') || js.includes('FeedbackStatus.prependAccepted')) && js.includes('FeedbackStatus.setMismatch'), `${name}: accepted/mismatch helper calls present`);
       ok(!js.includes('Try once more!'), `${name}: primary JS has no obsolete retry text`);
       const page = await open(browser, name);
       for (const width of widths) for (const theme of ['light', 'dark']) await renderContract(page, name, width, theme);
