@@ -2560,8 +2560,17 @@ function practice21UpdateRetryWrap(view) {
     probe.remove();
 
     controls.classList.remove('p21-flowing-feedback');
-    if (totalWidth <= available) return;
 
+    // Practice 2.2 only: use the approved 2.1 hanging-column layout.
+    // Practice 2.3 retains its current behavior until separately approved.
+    if (document.body.dataset.practice === '2.2') {
+        const actionWidth = actions.getBoundingClientRect().width;
+        if (actionWidth + 8 + totalWidth <= available) return;
+        controls.classList.add('p21-flowing-feedback');
+        return;
+    }
+
+    if (totalWidth <= available) return;
     const baselineHeight = controls.getBoundingClientRect().height;
     controls.style.setProperty(
         '--p21-feedback-action-line',
