@@ -2561,8 +2561,8 @@ function practice21UpdateRetryWrap(view) {
 
     controls.classList.remove('p21-flowing-feedback');
 
-    // Practice 2.2 only: use the approved 2.1 hanging-column layout.
-    // Practice 2.3 retains its current behavior until separately approved.
+    // Practice 2.2 only: move feedback to a full-width row when needed.
+    // Practice 2.3 retains its existing behavior.
     if (document.body.dataset.practice === '2.2') {
         const actionWidth = actions.getBoundingClientRect().width;
         if (actionWidth + 8 + totalWidth <= available) return;
