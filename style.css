@@ -5351,6 +5351,8 @@ body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inlin
 }
 body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap .p21-recognized-text {
     overflow-wrap: anywhere;
+    /* Allow long uninterrupted STT text to start immediately after Fire. */
+    word-break: break-all;
 }
 body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
     grid-template-columns: minmax(0, 1fr);

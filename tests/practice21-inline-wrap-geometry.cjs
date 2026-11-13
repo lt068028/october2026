@@ -130,6 +130,8 @@ function validate(data, width, kind) {
     check(data.glyphs.length > 0, name + ': rendered transcript glyphs', data);
     check(Math.abs(data.label.right - data.result.right) < 2.5,
         name + ': final phrase ends at right edge', data);
+    check(data.label.y >= data.actions.bottom - 1 || data.label.x >= data.actions.right - 0.5,
+        name + ': Keep going! does not overlap the action row', data);
     check(data.glyphs.every(g => g.x >= data.result.x - 1 && g.right <= data.result.right + 1),
         name + ': all glyphs inside result region', data);
     const lastActionRight = Math.max(data.stop.right, data.question?.right || 0, data.extra?.right || 0, data.actions.right);
@@ -148,6 +150,8 @@ function validate(data, width, kind) {
         check(data.fire.x >= data.result.x - 1,
             name + ': fallback result remains inside its own right-aligned row', data);
     }
+    check(data.first.y <= data.fire.bottom + 5,
+        name + ': Fire is not stranded without the first transcript glyph', data);
     if (kind === 'long' || kind === 'unbroken') {
         check(data.lines.length > 1, name + ': long transcript wraps into multiple lines', data);
         // Every transcript line is right-aligned, except a line completed by the

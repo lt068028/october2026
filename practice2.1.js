@@ -2118,6 +2118,8 @@ function practice21UpdateRetryWrap(view) {
     if (!showingMismatch) {
         controls?.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback');
         controls?.style.removeProperty('--p21-feedback-start');
+        result.style.removeProperty('padding-bottom');
+        label.style.removeProperty('transform');
         return;
     }
 
@@ -2159,6 +2161,8 @@ function practice21UpdateRetryWrap(view) {
     controls.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line');
     controls.style.removeProperty('--p21-feedback-start');
     controls.classList.add('p21-feedback-inline-wrap');
+    result.style.removeProperty('padding-bottom');
+    label.style.removeProperty('transform');
 
     // The full transcript width is irrelevant: the result column can wrap.
     // Reserve a separate right-aligned row only when Fire + the first two
@@ -2179,6 +2183,18 @@ function practice21UpdateRetryWrap(view) {
     const rightPadding = parseFloat(controlsStyle.paddingRight) || 0;
     const availableWidth = Math.max(0, controlsRect.right - rightPadding - actionsRect.right - 8);
     controls.classList.toggle('p21-feedback-fallback', availableWidth + 0.5 < minimumWidth);
+
+    // A short transcript can fit beside Stop even when the atomic Keep going!
+    // is wider than the remaining column. Keep the transcript on the first row;
+    // put only the label below the actions, aligned with the result's right edge.
+    const resultRect = result.getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    const excess = labelRect.right - resultRect.right;
+    if (excess > 0.5) {
+        const clearActions = Math.max(0, actionsRect.bottom + 6 - labelRect.top);
+        label.style.transform = `translate(${-excess}px, ${clearActions}px)`;
+        if (clearActions > 0) result.style.paddingBottom = `${clearActions}px`;
+    }
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
