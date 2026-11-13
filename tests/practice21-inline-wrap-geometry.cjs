@@ -93,6 +93,7 @@ async function geometry(page) {
         const stopRowEnd = Math.max(stopRect.right, ...[...actions.children].map(rect)
             .filter(item => item.width && item.height && item.y <= stopCenterY && item.bottom >= stopCenterY)
             .map(item => item.right));
+        const actionItems = [...actions.children].map(rect).filter(item => item.width && item.height);
         const stopInLastActionRow = stopRect.y > act.y + 2 && act.bottom <= stopRect.bottom + 1.5;
         const wholeActionsWidth = Math.max(0, ctrl.right - rightPadding - act.right - 8);
         const lastStopRowWidth = Math.max(0, ctrl.right - rightPadding - stopRowEnd - 8);
@@ -107,7 +108,7 @@ async function geometry(page) {
         const minimumWidth = f.width + 4 + context.measureText(firstTwo).width;
         return {
             viewport: innerWidth, key: window.inlineWrapKey, controls: ctrl,
-            actions: act, stop: rect(stop), question: rect(question), extra: rect(extra),
+            actions: act, actionItems, stop: rect(stop), question: rect(question), extra: rect(extra),
             result: r, fire: f, transcript: t, label: l,
             first: glyphs[0] || null, last: glyphs.at(-1) || null,
             glyphs, lines: [...lines].map(([y,right])=>({y,right})),
@@ -140,8 +141,10 @@ function validate(data, width, kind) {
     check(data.glyphs.length > 0, name + ': rendered transcript glyphs', data);
     check(Math.abs(data.label.right - data.result.right) < 2.5,
         name + ': final phrase ends at right edge', data);
-    check(data.label.y >= data.actions.bottom - 1 || data.label.x >= data.actions.right - 0.5,
-        name + ': Keep going! does not overlap the action row', data);
+    const intersects = (a, b) => a.x < b.right - 0.5 && a.right > b.x + 0.5
+        && a.y < b.bottom - 0.5 && a.bottom > b.y + 0.5;
+    check(data.actionItems.every(item => !intersects(data.label, item)),
+        name + ': Keep going! does not overlap any actual button or indicator', data);
     check(data.glyphs.every(g => g.x >= data.result.x - 1 && g.right <= data.result.right + 1),
         name + ': all glyphs inside result region', data);
     const lastActionRight = Math.max(data.stop.right, data.question?.right || 0, data.extra?.right || 0, data.actions.right);
