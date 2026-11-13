@@ -2499,10 +2499,12 @@ function practice21UpdateRetryWrap(view) {
 
     if (!showingMismatch) {
         if (isPractice23) {
-            controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line');
+            controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line', 'p21-feedback-next-line');
             controls?.style.removeProperty('--p23-feedback-start');
+            controls?.style.removeProperty('--p21-feedback-start');
         } else {
-            controls?.classList.remove('p21-flowing-feedback');
+            controls?.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line');
+            controls?.style.removeProperty('--p21-feedback-start');
         }
         return;
     }
@@ -2605,24 +2607,43 @@ function practice21UpdateRetryWrap(view) {
         return;
     }
 
-    // Practice 2.2 only: move feedback to a full-width row when needed.
-    if (document.body.dataset.practice === '2.2') {
-        const actionWidth = actions.getBoundingClientRect().width;
-        if (actionWidth + 8 + totalWidth <= available) return;
-        controls.classList.add('p21-flowing-feedback');
+    controls.classList.remove('p21-feedback-next-line');
+    controls.style.removeProperty('--p21-feedback-start');
+
+    const stopButton = actions.querySelector('.stop-indicator-wrap > button');
+    if (!stopButton) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
         return;
     }
 
-    if (totalWidth <= available) return;
-    const baselineHeight = controls.getBoundingClientRect().height;
-    controls.style.setProperty(
-        '--p21-feedback-action-line',
-        (actions.getBoundingClientRect().height + 6) + 'px'
-    );
-    controls.classList.add('p21-flowing-feedback');
-    if (controls.getBoundingClientRect().height >= baselineHeight - 0.5) {
-        controls.classList.remove('p21-flowing-feedback');
+    const controlsRect = controls.getBoundingClientRect();
+    const controlsStyle = getComputedStyle(controls);
+    const paddingLeft = parseFloat(controlsStyle.paddingLeft) || 0;
+    const paddingRight = parseFloat(controlsStyle.paddingRight) || 0;
+    const contentLeft = controlsRect.left + controls.clientLeft + paddingLeft;
+    const contentWidth = Math.max(0, controls.clientWidth - paddingLeft - paddingRight);
+    const contentRight = contentLeft + contentWidth;
+    const actionsRect = actions.getBoundingClientRect();
+    const stopRect = stopButton.getBoundingClientRect();
+    const columnGap = parseFloat(controlsStyle.columnGap) || 0;
+    const sameRowSpace = Math.max(0, contentRight - actionsRect.right - columnGap);
+
+    if (totalWidth <= sameRowSpace + 0.5) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
+        return;
     }
+
+    const feedbackStart = stopRect.right - contentLeft;
+    if (feedbackStart < 0 || feedbackStart >= contentWidth) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
+        return;
+    }
+
+    controls.style.setProperty('--p21-feedback-start', feedbackStart + 'px');
+    controls.classList.add('p21-feedback-next-line');
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
