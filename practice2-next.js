@@ -2497,9 +2497,11 @@ function practice21UpdateRetryWrap(view) {
     result.classList.remove('p21-transcript-own-line');
 
     if (!showingMismatch) {
-        controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback');
+        controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback', 'p21-feedback-after-wrapped-stop');
         controls?.style.removeProperty('--p23-feedback-start');
         controls?.style.removeProperty('--p21-feedback-start');
+        controls?.style.removeProperty('--p21-wrapped-stop-left');
+        controls?.style.removeProperty('--p21-wrapped-stop-overlap');
         result.style.removeProperty('padding-bottom');
         label.style.removeProperty('transform');
         return;
@@ -2543,6 +2545,9 @@ function practice21UpdateRetryWrap(view) {
     controls.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line', 'p23-feedback-next-line');
     controls.style.removeProperty('--p21-feedback-start');
     controls.style.removeProperty('--p23-feedback-start');
+    controls.classList.remove('p21-feedback-after-wrapped-stop', 'p21-feedback-fallback');
+    controls.style.removeProperty('--p21-wrapped-stop-left');
+    controls.style.removeProperty('--p21-wrapped-stop-overlap');
     controls.classList.add('p21-feedback-inline-wrap');
     result.style.removeProperty('padding-bottom');
     label.style.removeProperty('transform');
@@ -2560,16 +2565,38 @@ function practice21UpdateRetryWrap(view) {
     context.font = getComputedStyle(transcript).font;
     const minimumWidth = fire.getBoundingClientRect().width + 4 + context.measureText(graphemes).width;
     const controlsRect = controls.getBoundingClientRect();
-    const actionsRect = actions.getBoundingClientRect();
+    const initialActionsRect = actions.getBoundingClientRect();
     const controlsStyle = getComputedStyle(controls);
     const rightPadding = parseFloat(controlsStyle.paddingRight) || 0;
-    const availableWidth = Math.max(0, controlsRect.right - rightPadding - actionsRect.right - 8);
-    controls.classList.toggle('p21-feedback-fallback', availableWidth + 0.5 < minimumWidth);
+    const normalWidth = Math.max(0, controlsRect.right - rightPadding - initialActionsRect.right - 8);
+    let canShareStopRow = false;
+    if (normalWidth + 0.5 < minimumWidth) {
+        // A max-content action row hides space on a subsequent wrapped Stop
+        // line. First measure the physically constrained button layout.
+        controls.classList.add('p21-feedback-fallback');
+        const actionsRect = actions.getBoundingClientRect();
+        const stopRect = view.stopBtn.getBoundingClientRect();
+        const stopCenterY = (stopRect.top + stopRect.bottom) / 2;
+        const itemsOnStopRow = [...actions.children].map(item => item.getBoundingClientRect())
+            .filter(rect => rect.width && rect.height && rect.top <= stopCenterY && rect.bottom >= stopCenterY);
+        const stopRowEnd = Math.max(stopRect.right, ...itemsOnStopRow.map(rect => rect.right));
+        const stopRowWidth = Math.max(0, controlsRect.right - rightPadding - stopRowEnd - 8);
+        if (stopRect.top > actionsRect.top + 2
+            && actionsRect.bottom <= stopRect.bottom + 1.5
+            && stopRowWidth + 0.5 >= minimumWidth) {
+            canShareStopRow = true;
+            controls.style.setProperty('--p21-wrapped-stop-left', `${stopRowEnd - controlsRect.left + 8}px`);
+            controls.style.setProperty('--p21-wrapped-stop-overlap', `${actionsRect.bottom - stopRect.top + 6}px`);
+        }
+    }
+    controls.classList.toggle('p21-feedback-after-wrapped-stop', canShareStopRow);
+    controls.classList.toggle('p21-feedback-fallback', normalWidth + 0.5 < minimumWidth && !canShareStopRow);
 
     // The atomic retry phrase may need more room than the fragment beside
     // Stop. Keep Fire+transcript on that first line, but align the phrase
     // with the far right edge below the action row if it cannot fit there.
     const resultRect = result.getBoundingClientRect();
+    const actionsRect = actions.getBoundingClientRect();
     const labelRect = label.getBoundingClientRect();
     const excess = labelRect.right - resultRect.right;
     if (excess > 0.5) {
