@@ -60,6 +60,7 @@ jobs:
             name: "Practice 1-2, QA & Order (core)"
             tests: >-
               tests/practice21.cjs
+              tests/practice21-inline-wrap-geometry.cjs
               tests/practice2-next.cjs
               tests/practice22-qa.cjs
               tests/practice22-umbrellas.cjs
@@ -227,3 +228,11 @@ jobs:
 
           echo "All $TOTAL_SCHEDULED tests in Group $GROUP_ID passed successfully!"
           exit 0
+
+      - name: Upload Practice 2.1 DOM geometry evidence
+        if: always() && matrix.group == '3A'
+        uses: actions/upload-artifact@v4
+        with:
+          name: practice21-inline-wrap-dom-${{ github.sha }}
+          path: /tmp/practice21-inline-wrap/
+          if-no-files-found: ignore

@@ -5321,3 +5321,42 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     margin: 0 0 0 var(--p23-feedback-start);
     text-align: left;
 }
+
+/* Practice 2.1 mismatch only: allow the transcript to begin beside Stop and
+   wrap inside a shrinking, right-aligned result column. Unlike the legacy
+   next-line mode, full transcript width does not determine row placement. */
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px 8px;
+    align-items: start;
+}
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap > .recording-actions {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+}
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap > .recording-result {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    text-align: right;
+}
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap .p21-recognized-text {
+    overflow-wrap: anywhere;
+}
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
+    grid-template-columns: minmax(0, 1fr);
+}
+body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback > .recording-result {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: right;
+}
