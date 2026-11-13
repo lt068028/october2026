@@ -875,6 +875,6 @@ Example内の発話行を区切るグレーの点線は使用しない。発話�
 - この展開は同一Previewブランチ内で2.2・2.3のみ対象。1.1・1.2・7.x・8.xへの展開とmain／Production統合は別承認後に行う。
 
 
-## Practice 2.3 — narrow mismatch feedback alignment (2026-11-13)
+## Practice 2.1–2.3 — narrow mismatch feedback alignment (2026-11-13)
 
-When a Practice 2.3 mismatch transcript no longer fits on the same line as the recording actions, the feedback moves to a second row. Its start is anchored to the measured right edge of the Stop button, not a fixed pixel offset. The measurement is recalculated from the live controls, action, and Stop button rectangles. Practice 2.1 and 2.2 retain their separate layout rules. The Fire/transcript/Keep going! rendering and recording behavior are unchanged.
+When mismatch feedback no longer fits after the recording actions, it moves to a second row starting at the measured right edge of the Stop button. The start position is recalculated from the live controls, action, and Stop button rectangles. Practice 2.1, 2.2, and 2.3 use page-specific layout hooks while keeping the Fire → recognized transcript → Keep going! sequence intact. The transcript wraps naturally; Keep going! stays together. Recording behavior is unchanged.
