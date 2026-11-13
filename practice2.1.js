@@ -2182,7 +2182,7 @@ function practice21UpdateRetryWrap(view) {
     const actionWidth = actions.getBoundingClientRect().width;
     if (actionWidth + 8 + totalWidth <= available) return;
 
-    // Keep every wrapped feedback line in the column to the right of Stop.
+    // The feedback cannot fit beside actions: move it to a full-width row.
     controls.classList.add('p21-flowing-feedback');
 }
 
