@@ -2483,6 +2483,7 @@ function practice21UpdateRetryWrap(view) {
     if (!result || !result.classList.contains('recording-result')) return;
     const controls = result.parentElement;
     const actions = controls?.querySelector('.recording-actions');
+    const isPractice23 = document.body.dataset.practice === '2.3';
     const feedback = view.correctionBox;
     const label = view.corrTextSpan;
     const hasFire =
@@ -2497,7 +2498,12 @@ function practice21UpdateRetryWrap(view) {
     result.classList.remove('p21-transcript-own-line');
 
     if (!showingMismatch) {
-        controls?.classList.remove('p21-flowing-feedback');
+        if (isPractice23) {
+            controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line');
+            controls?.style.removeProperty('--p23-feedback-start');
+        } else {
+            controls?.classList.remove('p21-flowing-feedback');
+        }
         return;
     }
 
@@ -2561,8 +2567,45 @@ function practice21UpdateRetryWrap(view) {
 
     controls.classList.remove('p21-flowing-feedback');
 
+    if (isPractice23) {
+        const stopButton = view.stopBtn || actions.querySelector('.stop-indicator-wrap > button');
+        if (!stopButton) {
+            controls.classList.remove('p23-feedback-next-line');
+            controls.style.removeProperty('--p23-feedback-start');
+            return;
+        }
+
+        const controlsRect = controls.getBoundingClientRect();
+        const controlsStyle = getComputedStyle(controls);
+        const paddingLeft = parseFloat(controlsStyle.paddingLeft) || 0;
+        const paddingRight = parseFloat(controlsStyle.paddingRight) || 0;
+        const contentLeft = controlsRect.left + controls.clientLeft + paddingLeft;
+        const contentWidth = Math.max(0, controls.clientWidth - paddingLeft - paddingRight);
+        const contentRight = contentLeft + contentWidth;
+        const actionsRect = actions.getBoundingClientRect();
+        const stopRect = stopButton.getBoundingClientRect();
+        const columnGap = parseFloat(controlsStyle.columnGap) || 0;
+        const sameRowSpace = Math.max(0, contentRight - actionsRect.right - columnGap);
+
+        if (totalWidth <= sameRowSpace + 0.5) {
+            controls.classList.remove('p23-feedback-next-line');
+            controls.style.removeProperty('--p23-feedback-start');
+            return;
+        }
+
+        const feedbackStart = stopRect.right - contentLeft;
+        if (feedbackStart < 0 || feedbackStart >= contentWidth) {
+            controls.classList.remove('p23-feedback-next-line');
+            controls.style.removeProperty('--p23-feedback-start');
+            return;
+        }
+
+        controls.style.setProperty('--p23-feedback-start', feedbackStart + 'px');
+        controls.classList.add('p23-feedback-next-line');
+        return;
+    }
+
     // Practice 2.2 only: move feedback to a full-width row when needed.
-    // Practice 2.3 retains its existing behavior.
     if (document.body.dataset.practice === '2.2') {
         const actionWidth = actions.getBoundingClientRect().width;
         if (actionWidth + 8 + totalWidth <= available) return;

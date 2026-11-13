@@ -873,3 +873,8 @@ Example内の発話行を区切るグレーの点線は使用しない。発話�
 - Practice 2.1の実機承認済み表示順序（上記）をPractice 2.2と2.3へ展開する。両ページ共通の `practice2-next.js` で表示処理を共有し、各ページの既存Drillの内容・録音・停止・モデル再生・正誤判定ロジックは維持する。
 - 不一致では結果領域にFire 20px → 生の認識テキスト（既存の文字単位エラー色・不足記号を保持）→ Keep going! を表示する。Fire・認識テキスト間4px、認識テキスト・文言間6px。モデルの「🔊きく」は「🎙️とる」「⏹️」と同じ操作領域に残す。
 - この展開は同一Previewブランチ内で2.2・2.3のみ対象。1.1・1.2・7.x・8.xへの展開とmain／Production統合は別承認後に行う。
+
+
+## Practice 2.3 — narrow mismatch feedback alignment (2026-11-13)
+
+When a Practice 2.3 mismatch transcript no longer fits on the same line as the recording actions, the feedback moves to a second row. Its start is anchored to the measured right edge of the Stop button, not a fixed pixel offset. The measurement is recalculated from the live controls, action, and Stop button rectangles. Practice 2.1 and 2.2 retain their separate layout rules. The Fire/transcript/Keep going! rendering and recording behavior are unchanged.

@@ -126,7 +126,82 @@ function mock(){
   const results=await p.evaluate(samples=>{isAutoPlay=false;return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return[practice2State.savedResults[key].isCorrect,want,text];});},samples);
   for(const [actual,want,text]of results)check(actual,want,text);
  }
+
+ // Practice 2.3: the wrapped mismatch feedback starts exactly at the Stop button's right edge.
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
+ const geometryKey='p23_where_d1_s0_0_r';
+ await p.waitForFunction(key=>Boolean(window.practice2State?.views?.[key]),geometryKey);
+ const originalGeometryState=await p.evaluate(key=>{
+  const v=practice2State.views[key],c=v.resultSpan.closest('.recording-controls');
+  const saved=practice2State.savedResults?.[key];
+  return {
+   html:v.resultSpan.innerHTML,resultClass:v.resultSpan.className,resultStyle:v.resultSpan.getAttribute('style'),
+   correctionStyle:v.correctionBox.getAttribute('style'),correctionHtml:v.corrTextSpan.innerHTML,
+   listenHidden:v.corrListenBtn.hidden,listenStyle:v.corrListenBtn.getAttribute('style'),
+   savedPresent:Object.prototype.hasOwnProperty.call(practice2State.savedResults||{},key),saved,
+   controlsClass:c.className,controlsStyle:c.getAttribute('style')
+  };
+ },geometryKey);
+ for(const width of [375,600,1440])for(const theme of ['light','dark'])for(const raw of ['銀行です。','田中さんが昨日友だちと一緒にレストランで料理を作りました。']){
+  await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
+  await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const before=await p.evaluate(key=>{
+   const v=practice2State.views[key],a=v.resultSpan.closest('.recording-controls').querySelector('.recording-actions');
+   return Array.from(a.querySelectorAll('button')).map(b=>{const r=b.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}});
+  },geometryKey);
+  await p.evaluate(({key,raw})=>{
+   const v=practice2State.views[key],model='ここは喫茶店です。';
+   processResult(raw,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+  },{key:geometryKey,raw});
+  await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const m=await p.evaluate(key=>{
+   const v=practice2State.views[key],controls=v.resultSpan.closest('.recording-controls');
+   const actions=controls.querySelector('.recording-actions'),stop=v.stopBtn;
+   const result=controls.querySelector('.recording-result'),fire=v.resultSpan.querySelector('.p21-retry-fire');
+   const transcript=v.resultSpan.querySelector('.p21-recognized-text'),label=v.resultSpan.querySelector('.p21-retry-label');
+   const range=document.createRange();if(transcript)range.selectNodeContents(transcript);
+   const uniqueTops=[...new Set(Array.from(range.getClientRects()).map(r=>Math.round(r.top)))];
+   const sr=stop.getBoundingClientRect(),fr=fire?.getBoundingClientRect(),ar=actions.getBoundingClientRect(),rr=result.getBoundingClientRect();
+   return {
+    viewport:innerWidth,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',
+    transcript:v.resultSpan.textContent.replace(/\s+/g,' ').trim(),available:controls.clientWidth,
+    actionWidth:ar.width,stopRight:sr.right,fireLeft:fr?.left,alignmentDelta:fr?fr.left-sr.right:null,
+    resultTop:rr.top,actionsBottom:ar.bottom,wrapClass:controls.classList.contains('p23-feedback-next-line'),
+    lines:uniqueTops.length,scrollDelta:controls.scrollWidth-controls.clientWidth,
+    documentOverflow:document.documentElement.scrollWidth-innerWidth,
+    hasFire:Boolean(fire),hasLabel:Boolean(label)
+   };
+  },geometryKey);
+  console.log('P2.3 feedback geometry '+JSON.stringify(m));
+  check(m.hasFire&&m.hasLabel,true,'mismatch retains Fire and Keep going! '+width+theme+(raw.length>20?' long':' short'));
+  check(m.documentOverflow<=1&&m.scrollDelta<=1,true,'feedback causes no horizontal overflow '+width+theme+(raw.length>20?' long':' short'));
+  const after=await p.evaluate(key=>{
+   const v=practice2State.views[key],a=v.resultSpan.closest('.recording-controls').querySelector('.recording-actions');
+   return Array.from(a.querySelectorAll('button')).map(b=>{const r=b.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}});
+  },geometryKey);
+  check(after.length,before.length,'action button count unchanged '+width+theme);
+  check(after.every((r,i)=>Math.abs(r.left-before[i].left)<0.75&&Math.abs(r.top-before[i].top)<0.75&&Math.abs(r.right-before[i].right)<0.75&&Math.abs(r.bottom-before[i].bottom)<0.75),true,'action button positions unchanged '+width+theme+(raw.length>20?' long':' short'));
+  if(width===375&&raw.length>20){
+   check(m.wrapClass,true,'long feedback moves to anchored next line at 375px '+theme);
+   check(Math.abs(m.alignmentDelta)<=1,true,'feedback start aligns with Stop right edge within 1px at 375px '+theme);
+   check(m.resultTop>=m.actionsBottom-0.5,true,'feedback row follows the controls '+theme);
+  }
+  if(width===1440){
+   check(m.wrapClass,false,'long feedback remains in natural same-row layout at 1440px '+theme);
+  }
+ }
+ await p.evaluate(({key,s})=>{
+  const v=practice2State.views[key],c=v.resultSpan.closest('.recording-controls');
+  v.resultSpan.innerHTML=s.html;v.resultSpan.className=s.resultClass;
+  if(s.resultStyle===null)v.resultSpan.removeAttribute('style');else v.resultSpan.setAttribute('style',s.resultStyle);
+  if(s.correctionStyle===null)v.correctionBox.removeAttribute('style');else v.correctionBox.setAttribute('style',s.correctionStyle);
+  v.corrTextSpan.innerHTML=s.correctionHtml;if(!v.correctionBox.contains(v.corrTextSpan))v.correctionBox.appendChild(v.corrTextSpan);v.corrListenBtn.hidden=s.listenHidden;
+  if(s.listenStyle===null)v.corrListenBtn.removeAttribute('style');else v.corrListenBtn.setAttribute('style',s.listenStyle);
+  if(s.savedPresent)practice2State.savedResults[key]=s.saved;else delete practice2State.savedResults[key];
+  c.className=s.controlsClass;if(s.controlsStyle===null)c.removeAttribute('style');else c.setAttribute('style',s.controlsStyle);
+ },{key:geometryKey,s:originalGeometryState});
+ await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+
  await judge([['p23_where_d1_s0_0_r','カフェです','ここは喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','ここは喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Zさんは図書館です',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','ノートもあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ノートはあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','あそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートもあそこです',false]]);

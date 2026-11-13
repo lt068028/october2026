@@ -5257,3 +5257,34 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     vertical-align: baseline;
     pointer-events: none;
 }
+
+
+/* Practice 2.3 only: when mismatch feedback cannot fit beside the controls,
+   start its next row at the measured right edge of the Stop button. */
+.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 6px;
+    column-gap: 8px;
+    align-items: start;
+}
+.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line > .recording-actions {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    float: none;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+}
+.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line > .recording-result {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: stretch;
+    display: block !important;
+    min-width: 0;
+    width: calc(100% - var(--p23-feedback-start));
+    max-width: calc(100% - var(--p23-feedback-start));
+    margin: 0 0 0 var(--p23-feedback-start);
+    text-align: left;
+}
