@@ -5183,34 +5183,6 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: inherit;
 }
 
-/* Practice 2.1/2.2: when the full feedback does not fit beside the
-   action row, use a full-width second row instead of a narrow text column. */
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-flowing-feedback {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 6px;
-    align-items: start;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-flowing-feedback > .recording-actions {
-    grid-column: 1;
-    grid-row: 1;
-    float: none;
-    margin: 0;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-flowing-feedback > .recording-result {
-    grid-column: 1;
-    grid-row: 2;
-    display: block !important;
-    min-width: 0;
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    text-align: left;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-flowing-feedback .p21-recognized-text {
-    overflow-wrap: normal;
-}
-
 /* Practice 2.1: Fire, transcript, and Keep going! stay in the result region; model audio stays in the action row. */
 .p21-feedback-after-transcript .recording-result > .p21-inline-feedback {
     margin: 0 !important;
@@ -5259,79 +5231,16 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 
-/* Practice 2.1/2.2: when feedback cannot fit after the action row,
-   place it on the next line starting at the Stop button's right edge. */
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-feedback-next-line {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 6px;
-    column-gap: 8px;
-    align-items: start;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-feedback-next-line > .recording-actions {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    float: none;
-    width: max-content;
-    max-width: 100%;
-    margin: 0;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-feedback-next-line > .recording-result {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: stretch;
-    display: block !important;
-    min-width: 0;
-    width: calc(100% - var(--p21-feedback-start));
-    max-width: calc(100% - var(--p21-feedback-start));
-    margin: 0 0 0 var(--p21-feedback-start);
-    text-align: left;
-}
-.practice21-page:not([data-practice="2.3"]) .recording-controls.p21-feedback-next-line .p21-recognized-text {
-    overflow-wrap: normal;
-}
-
-/* Practice 2.3 only: when mismatch feedback cannot fit beside the controls,
-   start its next row at the measured right edge of the Stop button. */
-.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 6px;
-    column-gap: 8px;
-    align-items: start;
-}
-.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line > .recording-actions {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    float: none;
-    width: max-content;
-    max-width: 100%;
-    margin: 0;
-}
-.practice21-page[data-practice="2.3"] .recording-controls.p23-feedback-next-line > .recording-result {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: stretch;
-    display: block !important;
-    min-width: 0;
-    width: calc(100% - var(--p23-feedback-start));
-    max-width: calc(100% - var(--p23-feedback-start));
-    margin: 0 0 0 var(--p23-feedback-start);
-    text-align: left;
-}
-
-/* Practice 2.1 mismatch only: allow the transcript to begin beside Stop and
+/* Practice 2.1/2.2/2.3 mismatch only: start the transcript beside Stop and
    wrap inside a shrinking, right-aligned result column. Unlike the legacy
    next-line mode, full transcript width does not determine row placement. */
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
     gap: 6px 8px;
     align-items: start;
 }
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap > .recording-actions {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap > .recording-actions {
     grid-column: 1;
     grid-row: 1;
     align-self: start;
@@ -5339,7 +5248,7 @@ body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inlin
     max-width: 100%;
     margin: 0;
 }
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap > .recording-result {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap > .recording-result {
     grid-column: 2;
     grid-row: 1;
     align-self: start;
@@ -5349,15 +5258,15 @@ body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inlin
     margin: 0;
     text-align: right;
 }
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap .p21-recognized-text {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap .p21-recognized-text {
     overflow-wrap: anywhere;
     /* Allow long uninterrupted STT text to start immediately after Fire. */
     word-break: break-all;
 }
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
     grid-template-columns: minmax(0, 1fr);
 }
-body.practice21-page:not([data-practice]) .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback > .recording-result {
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback > .recording-result {
     grid-column: 1;
     grid-row: 2;
     text-align: right;

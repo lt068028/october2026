@@ -127,7 +127,7 @@ function mock(){
   for(const [actual,want,text]of results)check(actual,want,text);
  }
 
- // Practice 2.3: the wrapped mismatch feedback starts exactly at the Stop button's right edge.
+ // Practice 2.3: mismatch feedback flows beside Stop whenever the real width permits.
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
  const geometryKey='p23_where_d1_s0_0_r';
  await p.waitForFunction(key=>Boolean(window.practice2State?.views?.[key]),geometryKey);
@@ -166,7 +166,8 @@ function mock(){
     viewport:innerWidth,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',
     transcript:v.resultSpan.textContent.replace(/\s+/g,' ').trim(),available:controls.clientWidth,
     actionWidth:ar.width,stopRight:sr.right,fireLeft:fr?.left,alignmentDelta:fr?fr.left-sr.right:null,
-    resultTop:rr.top,actionsBottom:ar.bottom,wrapClass:controls.classList.contains('p23-feedback-next-line'),
+    resultTop:rr.top,actionsBottom:ar.bottom,inlineClass:controls.classList.contains('p21-feedback-inline-wrap'),
+    fallback:controls.classList.contains('p21-feedback-fallback'),actionsRight:ar.right,
     lines:uniqueTops.length,scrollDelta:controls.scrollWidth-controls.clientWidth,
     documentOverflow:document.documentElement.scrollWidth-innerWidth,
     hasFire:Boolean(fire),hasLabel:Boolean(label)
@@ -174,6 +175,7 @@ function mock(){
   },geometryKey);
   console.log('P2.3 feedback geometry '+JSON.stringify(m));
   check(m.hasFire&&m.hasLabel,true,'mismatch retains Fire and Keep going! '+width+theme+(raw.length>20?' long':' short'));
+  check(m.inlineClass,true,'mismatch uses the common shrinking result column '+width+theme);
   check(m.documentOverflow<=1&&m.scrollDelta<=1,true,'feedback causes no horizontal overflow '+width+theme+(raw.length>20?' long':' short'));
   const after=await p.evaluate(key=>{
    const v=practice2State.views[key],a=v.resultSpan.closest('.recording-controls').querySelector('.recording-actions');
@@ -182,12 +184,11 @@ function mock(){
   check(after.length,before.length,'action button count unchanged '+width+theme);
   check(after.every((r,i)=>Math.abs(r.left-before[i].left)<0.75&&Math.abs(r.top-before[i].top)<0.75&&Math.abs(r.right-before[i].right)<0.75&&Math.abs(r.bottom-before[i].bottom)<0.75),true,'action button positions unchanged '+width+theme+(raw.length>20?' long':' short'));
   if(width===375&&raw.length>20){
-   check(m.wrapClass,true,'long feedback moves to anchored next line at 375px '+theme);
-   check(Math.abs(m.alignmentDelta)<=1,true,'feedback start aligns with Stop right edge within 1px at 375px '+theme);
-   check(m.resultTop>=m.actionsBottom-0.5,true,'feedback row follows the controls '+theme);
+   if(m.fallback) check(m.resultTop>=m.actionsBottom-0.5,true,'unusable remainder moves feedback to right-aligned row '+theme);
+   else check(m.fireLeft>=m.actionsRight+0.5,true,'usable remainder starts feedback beside all actions '+theme);
   }
   if(width===1440){
-   check(m.wrapClass,false,'long feedback remains in natural same-row layout at 1440px '+theme);
+   check(m.fallback,false,'long feedback remains beside Stop at 1440px '+theme);
   }
  }
  await p.evaluate(({key,s})=>{

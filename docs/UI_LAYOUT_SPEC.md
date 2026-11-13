@@ -875,6 +875,10 @@ Example内の発話行を区切るグレーの点線は使用しない。発話�
 - この展開は同一Previewブランチ内で2.2・2.3のみ対象。1.1・1.2・7.x・8.xへの展開とmain／Production統合は別承認後に行う。
 
 
-## Practice 2.1–2.3 — narrow mismatch feedback alignment (2026-11-13)
+## Practice 2.1–2.3 — responsive mismatch feedback (2026-11-13)
 
-When mismatch feedback no longer fits after the recording actions, it moves to a second row starting at the measured right edge of the Stop button. The start position is recalculated from the live controls, action, and Stop button rectangles. Practice 2.1, 2.2, and 2.3 use page-specific layout hooks while keeping the Fire → recognized transcript → Keep going! sequence intact. The transcript wraps naturally; Keep going! stays together. Recording behavior is unchanged.
+- 不一致の表示順は **Microsoft Fluent Fire Regular（20px）→認識テキスト→Keep going!**。間隔は順に4px／6px。`Keep going!` は一つの非分割単位。認識テキストの赤字差分・不足マーク・元の文字列は保存する。
+- 結果全体は基本右詰め。操作ボタンと停止ボタン右の疑問マーク・追加操作要素の実際の占有幅を確保し、残余領域で認識テキストを**1行目から**表示する。認識テキスト全文の長さを理由に結果全体を次行へ送らない。
+- 結果欄は可変幅・縮小可能な列。長い日本語・スペースのない英字も自然に折り返し、行ごとに右寄せする。🔥のみが孤立しないようにする。
+- Fire＋先頭2文字相当の最小表示幅が実測残余幅に足りない場合のみ、結果を右詰めの独立行へ移す。280px等の固定画面幅による切替は禁止。`Keep going!` が結果列より広い場合も、🔥と認識テキストは可能なら操作列の横で開始し、文言のみ後続行で結果全体の右端に揃える。操作ボタンに重ねない。
+- 2.1はGitHub Actions Run #127 のブラウザDOM実測で7画面幅、30ケース、1,176アサーション合格（2026-11-13）。2.2／2.3へは同じルールを適用し、CI／実機承認を個別に確認する。録音、停止、再生、判定、保存は表示規則の対象外。
