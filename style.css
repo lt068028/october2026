@@ -5183,27 +5183,30 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: inherit;
 }
 
-/* Practice 2.1 only: long mismatch feedback uses the space beside fixed actions,
-   then the full controls width. Short/accepted/undetermined layouts stay intact. */
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) {
-    display: flow-root;
-    text-align: right;
+/* Practice 2.1: hanging feedback column begins beside the actual Stop button. */
+.practice21-page .recording-controls.p21-flowing-feedback {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: start;
 }
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-actions {
-    float: left;
-    margin: 0 8px 6px 0;
-}
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-result {
-    display: inline !important;
-    width: auto;
-    max-width: none;
+.practice21-page .recording-controls.p21-flowing-feedback > .recording-actions {
+    grid-column: 1;
+    float: none;
     margin: 0;
 }
-
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"])::first-line {
-    line-height: var(--p21-feedback-action-line);
+.practice21-page .recording-controls.p21-flowing-feedback > .recording-result {
+    grid-column: 2;
+    display: block !important;
+    min-width: 0;
+    width: auto;
+    max-width: 100%;
+    margin: 0;
+    text-align: left;
 }
-
+.practice21-page .recording-controls.p21-flowing-feedback .p21-recognized-text {
+    overflow-wrap: anywhere;
+}
 
 /* Practice 2.1: Fire, transcript, and Keep going! stay in the result region; model audio stays in the action row. */
 .p21-feedback-after-transcript .recording-result > .p21-inline-feedback {
