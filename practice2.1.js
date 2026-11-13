@@ -2179,17 +2179,11 @@ function practice21UpdateRetryWrap(view) {
     probe.remove();
 
     controls.classList.remove('p21-flowing-feedback');
-    if (totalWidth <= available) return;
+    const actionWidth = actions.getBoundingClientRect().width;
+    if (actionWidth + 8 + totalWidth <= available) return;
 
-    const baselineHeight = controls.getBoundingClientRect().height;
-    controls.style.setProperty(
-        '--p21-feedback-action-line',
-        (actions.getBoundingClientRect().height + 6) + 'px'
-    );
+    // Keep every wrapped feedback line in the column to the right of Stop.
     controls.classList.add('p21-flowing-feedback');
-    if (controls.getBoundingClientRect().height >= baselineHeight - 0.5) {
-        controls.classList.remove('p21-flowing-feedback');
-    }
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
