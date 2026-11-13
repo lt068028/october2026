@@ -2116,7 +2116,8 @@ function practice21UpdateRetryWrap(view) {
     result.classList.remove('p21-transcript-own-line');
 
     if (!showingMismatch) {
-        controls?.classList.remove('p21-flowing-feedback');
+        controls?.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line');
+        controls?.style.removeProperty('--p21-feedback-start');
         return;
     }
 
@@ -2178,12 +2179,43 @@ function practice21UpdateRetryWrap(view) {
     const totalWidth = clone.getBoundingClientRect().width;
     probe.remove();
 
-    controls.classList.remove('p21-flowing-feedback');
-    const actionWidth = actions.getBoundingClientRect().width;
-    if (actionWidth + 8 + totalWidth <= available) return;
+    controls.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line');
+    controls.style.removeProperty('--p21-feedback-start');
 
-    // The feedback cannot fit beside actions: move it to a full-width row.
-    controls.classList.add('p21-flowing-feedback');
+    const stopButton = actions.querySelector('.stop-indicator-wrap > button');
+    if (!stopButton) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
+        return;
+    }
+
+    const controlsRect = controls.getBoundingClientRect();
+    const controlsStyle = getComputedStyle(controls);
+    const paddingLeft = parseFloat(controlsStyle.paddingLeft) || 0;
+    const paddingRight = parseFloat(controlsStyle.paddingRight) || 0;
+    const contentLeft = controlsRect.left + controls.clientLeft + paddingLeft;
+    const contentWidth = Math.max(0, controls.clientWidth - paddingLeft - paddingRight);
+    const contentRight = contentLeft + contentWidth;
+    const actionsRect = actions.getBoundingClientRect();
+    const stopRect = stopButton.getBoundingClientRect();
+    const columnGap = parseFloat(controlsStyle.columnGap) || 0;
+    const sameRowSpace = Math.max(0, contentRight - actionsRect.right - columnGap);
+
+    if (totalWidth <= sameRowSpace + 0.5) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
+        return;
+    }
+
+    const feedbackStart = stopRect.right - contentLeft;
+    if (feedbackStart < 0 || feedbackStart >= contentWidth) {
+        controls.classList.remove('p21-feedback-next-line');
+        controls.style.removeProperty('--p21-feedback-start');
+        return;
+    }
+
+    controls.style.setProperty('--p21-feedback-start', feedbackStart + 'px');
+    controls.classList.add('p21-feedback-next-line');
 }
 
 function practice2ShowResult(view, saved, rowKey, playRate) {
