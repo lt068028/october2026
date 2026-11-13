@@ -5216,14 +5216,14 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     margin: 0 !important;
     padding: 0;
 }
-.p21-feedback-after-transcript:not([data-practice="2.3"]) .recording-result > .result-text > .p21-feedback-transcript-group {
+.p21-feedback-after-transcript .recording-result > .result-text > .p21-feedback-transcript-group {
     display: inline;
     column-gap: normal;
     min-width: 0;
     max-width: 100%;
     vertical-align: middle;
 }
-.p21-feedback-after-transcript:not([data-practice="2.3"]) .p21-feedback-transcript-group > .p21-retry-fire {
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-retry-fire {
     display: inline-block;
     margin-inline-end: 4px;
     vertical-align: middle;
@@ -5231,7 +5231,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     height: 20px;
     color: var(--p21-keep-color);
 }
-.p21-feedback-after-transcript:not([data-practice="2.3"]) .p21-feedback-transcript-group > .p21-recognized-text {
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-recognized-text {
     display: inline;
     min-width: 0;
     max-width: 100%;
