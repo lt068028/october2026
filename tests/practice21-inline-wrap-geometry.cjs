@@ -88,7 +88,16 @@ async function geometry(page) {
         const controlStyle = getComputedStyle(controls);
         const rightPadding = parseFloat(controlStyle.paddingRight) || 0;
         const ctrl = rect(controls), act = rect(actions), t = rect(transcript), f = rect(fire), l = rect(label), r = rect(result);
-        const availableWidth = Math.max(0, ctrl.right - rightPadding - act.right - 8);
+        const stopRect = rect(stop);
+        const stopCenterY = (stopRect.y + stopRect.bottom) / 2;
+        const stopRowEnd = Math.max(stopRect.right, ...[...actions.children].map(rect)
+            .filter(item => item.width && item.height && item.y <= stopCenterY && item.bottom >= stopCenterY)
+            .map(item => item.right));
+        const stopInLastActionRow = stopRect.y > act.y + 2 && act.bottom <= stopRect.bottom + 1.5;
+        const wholeActionsWidth = Math.max(0, ctrl.right - rightPadding - act.right - 8);
+        const lastStopRowWidth = Math.max(0, ctrl.right - rightPadding - stopRowEnd - 8);
+        const afterWrappedStop = controls.classList.contains('p21-feedback-after-wrapped-stop');
+        const availableWidth = afterWrappedStop ? lastStopRowWidth : wholeActionsWidth;
         const context = document.createElement('canvas').getContext('2d');
         context.font = getComputedStyle(transcript).font;
         const text = transcript.textContent.trimStart();
@@ -103,6 +112,7 @@ async function geometry(page) {
             first: glyphs[0] || null, last: glyphs.at(-1) || null,
             glyphs, lines: [...lines].map(([y,right])=>({y,right})),
             availableWidth, minimumWidth,
+            wholeActionsWidth, lastStopRowWidth, stopRowEnd, stopInLastActionRow, afterWrappedStop,
             fallback: controls.classList.contains('p21-feedback-fallback'),
             inline: controls.classList.contains('p21-feedback-inline-wrap'),
             oldNextLine: controls.classList.contains('p21-feedback-next-line'),
@@ -138,15 +148,22 @@ function validate(data, width, kind) {
     if (!data.fallback) {
         check(data.availableWidth + 0.6 >= data.minimumWidth,
             name + ': same-row space is usable', data);
-        check(data.fire.x >= lastActionRight + 0.5,
-            name + ': Fire starts to right of the entire action group', data);
+        check(data.fire.x >= (data.afterWrappedStop ? data.stopRowEnd : lastActionRight) + 0.5,
+            name + ': Fire starts after all controls on the actual Stop row', data);
         check(data.fire.y < data.stop.bottom + 6 && data.fire.bottom > data.stop.y - 6,
             name + ': Fire starts on Stop row', data);
         check(data.first.y < data.fire.bottom + 5 && data.first.bottom > data.fire.y - 5,
             name + ': first transcript glyph shares the Fire row', data);
+        if (data.afterWrappedStop) {
+            check(data.stopInLastActionRow && data.wholeActionsWidth < data.minimumWidth + 1,
+                name + ': wrapped-Stop alignment is used only when full actions row cannot fit', data);
+            check(data.result.x >= data.stopRowEnd + 6,
+                name + ': result occupies residual width after Stop on the last action row', data);
+        }
     } else {
-        check(data.availableWidth < data.minimumWidth + 1,
-            name + ': fallback is justified by actual minimum width', data);
+        check(data.wholeActionsWidth < data.minimumWidth + 1
+            && (!data.stopInLastActionRow || data.lastStopRowWidth < data.minimumWidth + 1),
+            name + ': fallback is justified on EVERY usable action line', data);
         check(data.fire.x >= data.result.x - 1,
             name + ': fallback result remains inside its own right-aligned row', data);
     }
@@ -182,7 +199,7 @@ function validate(data, width, kind) {
                     availableWidth:data.availableWidth, minimumWidth:data.minimumWidth,
                     stop:data.stop, fire:data.fire, first:data.first,
                     result:data.result, label:data.label, lines:data.lines}));
-                if ([375,600,1440].includes(width) && kind === 'long') {
+                if ([280,320,375,600,1440].includes(width) && kind === 'long') {
                     await page.screenshot({path:path.join(output, `practice21-${width}.png`), fullPage:true});
                 }
             }

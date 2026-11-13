@@ -2116,8 +2116,10 @@ function practice21UpdateRetryWrap(view) {
     result.classList.remove('p21-transcript-own-line');
 
     if (!showingMismatch) {
-        controls?.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback');
+        controls?.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback', 'p21-feedback-after-wrapped-stop');
         controls?.style.removeProperty('--p21-feedback-start');
+        controls?.style.removeProperty('--p21-wrapped-stop-left');
+        controls?.style.removeProperty('--p21-wrapped-stop-overlap');
         result.style.removeProperty('padding-bottom');
         label.style.removeProperty('transform');
         return;
@@ -2160,6 +2162,9 @@ function practice21UpdateRetryWrap(view) {
 
     controls.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line');
     controls.style.removeProperty('--p21-feedback-start');
+    controls.classList.remove('p21-feedback-after-wrapped-stop', 'p21-feedback-fallback');
+    controls.style.removeProperty('--p21-wrapped-stop-left');
+    controls.style.removeProperty('--p21-wrapped-stop-overlap');
     controls.classList.add('p21-feedback-inline-wrap');
     result.style.removeProperty('padding-bottom');
     label.style.removeProperty('transform');
@@ -2181,8 +2186,28 @@ function practice21UpdateRetryWrap(view) {
     const actionsRect = actions.getBoundingClientRect();
     const controlsStyle = getComputedStyle(controls);
     const rightPadding = parseFloat(controlsStyle.paddingRight) || 0;
-    const availableWidth = Math.max(0, controlsRect.right - rightPadding - actionsRect.right - 8);
-    controls.classList.toggle('p21-feedback-fallback', availableWidth + 0.5 < minimumWidth);
+    const normalWidth = Math.max(0, controlsRect.right - rightPadding - actionsRect.right - 8);
+    let canShareStopRow = false;
+    if (normalWidth + 0.5 < minimumWidth) {
+        // The actions may wrap: their bounding rectangle reaches the right edge
+        // of an EARLIER row, while Stop is alone on the last row. Measure the
+        // actual siblings sharing Stop's line, not the union of all action rows.
+        const stopRect = view.stopBtn.getBoundingClientRect();
+        const stopCenterY = (stopRect.top + stopRect.bottom) / 2;
+        const itemsOnStopRow = [...actions.children].map(item => item.getBoundingClientRect())
+            .filter(rect => rect.width && rect.height && rect.top <= stopCenterY && rect.bottom >= stopCenterY);
+        const stopRowEnd = Math.max(stopRect.right, ...itemsOnStopRow.map(rect => rect.right));
+        const stopRowWidth = Math.max(0, controlsRect.right - rightPadding - stopRowEnd - 8);
+        if (stopRect.top > actionsRect.top + 2
+            && actionsRect.bottom <= stopRect.bottom + 1.5
+            && stopRowWidth + 0.5 >= minimumWidth) {
+            canShareStopRow = true;
+            controls.style.setProperty('--p21-wrapped-stop-left', `${stopRowEnd - controlsRect.left + 8}px`);
+            controls.style.setProperty('--p21-wrapped-stop-overlap', `${actionsRect.bottom - stopRect.top + 6}px`);
+        }
+    }
+    controls.classList.toggle('p21-feedback-after-wrapped-stop', canShareStopRow);
+    controls.classList.toggle('p21-feedback-fallback', normalWidth + 0.5 < minimumWidth && !canShareStopRow);
 
     // A short transcript can fit beside Stop even when the atomic Keep going!
     // is wider than the remaining column. Keep the transcript on the first row;

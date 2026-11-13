@@ -5263,6 +5263,18 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap .p21-recognize
     /* Allow long uninterrupted STT text to start immediately after Fire. */
     word-break: break-all;
 }
+/* When Stop alone wraps to the final action line, use the free space alongside
+   that actual line. The offsets are measured from live DOM rectangles. */
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-after-wrapped-stop {
+    grid-template-columns: minmax(0, 1fr);
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-after-wrapped-stop > .recording-result {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: calc(-1 * var(--p21-wrapped-stop-overlap));
+    margin-left: var(--p21-wrapped-stop-left);
+    width: calc(100% - var(--p21-wrapped-stop-left));
+}
 body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
     grid-template-columns: minmax(0, 1fr);
 }
