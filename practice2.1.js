@@ -2183,12 +2183,17 @@ function practice21UpdateRetryWrap(view) {
     context.font = getComputedStyle(transcript).font;
     const minimumWidth = fire.getBoundingClientRect().width + 4 + context.measureText(graphemes).width;
     const controlsRect = controls.getBoundingClientRect();
-    const actionsRect = actions.getBoundingClientRect();
+    const initialActionsRect = actions.getBoundingClientRect();
     const controlsStyle = getComputedStyle(controls);
     const rightPadding = parseFloat(controlsStyle.paddingRight) || 0;
-    const normalWidth = Math.max(0, controlsRect.right - rightPadding - actionsRect.right - 8);
+    const normalWidth = Math.max(0, controlsRect.right - rightPadding - initialActionsRect.right - 8);
     let canShareStopRow = false;
     if (normalWidth + 0.5 < minimumWidth) {
+        // First constrain the actions to the available page width. Before this
+        // provisional layout, max-content keeps Stop on one over-wide line,
+        // hiding the free space that appears after Stop wraps to the last row.
+        controls.classList.add('p21-feedback-fallback');
+        const actionsRect = actions.getBoundingClientRect();
         // The actions may wrap: their bounding rectangle reaches the right edge
         // of an EARLIER row, while Stop is alone on the last row. Measure the
         // actual siblings sharing Stop's line, not the union of all action rows.
@@ -2213,6 +2218,7 @@ function practice21UpdateRetryWrap(view) {
     // is wider than the remaining column. Keep the transcript on the first row;
     // put only the label below the actions, aligned with the result's right edge.
     const resultRect = result.getBoundingClientRect();
+    const actionsRect = actions.getBoundingClientRect();
     const labelRect = label.getBoundingClientRect();
     const excess = labelRect.right - resultRect.right;
     if (excess > 0.5) {
