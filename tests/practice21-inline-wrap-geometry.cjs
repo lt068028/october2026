@@ -190,6 +190,11 @@ function validate(data, width, kind) {
         // Question indicators and any post-Stop answer cue use the actual action edge.
         for (const kind of ['question','extra']) {
             await page.setViewportSize({width:375,height:1100});
+            if (kind === 'extra') {
+                // The post-Stop response lead exists only in Drill 1, Set 2.
+                await page.locator('.p21-drill1 .p21-set-switcher button').nth(1).click();
+                await settle(page);
+            }
             await showMismatch(page, samples.long, kind);
             const data = await geometry(page);
             validate(data, 375, kind);
