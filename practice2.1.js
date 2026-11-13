@@ -1161,7 +1161,6 @@ function practice2ShowNotice(resultSpan, message) {
             "result-text not-recorded-yet",
             "… Not yet"
         );
-        resultSpan.p21ModelListenButton = listenBtn;
 
         const result = node("span", "recording-result");
         result.append(resultSpan);
@@ -2096,14 +2095,13 @@ function practice2FindDiff(actual, reference) {
     };
 }
 
-// Practice 2.1 mismatch flow: fire, transcript, Keep going!, then the existing model-play button.
+// Keep feedback in the result region; the model-play control stays in recording actions.
 function practice21UpdateRetryWrap(view) {
     const resultSpan = view.resultSpan;
     const result = resultSpan.parentElement;
     if (!result || !result.classList.contains('recording-result')) return;
     const controls = result.parentElement;
     const actions = controls?.querySelector('.recording-actions');
-    const modelButton = resultSpan.p21ModelListenButton;
     const feedback = view.correctionBox;
     const label = view.corrTextSpan;
     const hasFire =
@@ -2119,9 +2117,6 @@ function practice21UpdateRetryWrap(view) {
 
     if (!showingMismatch) {
         controls?.classList.remove('p21-flowing-feedback');
-        if (modelButton && actions && modelButton.parentElement !== actions) {
-            actions.insertBefore(modelButton, view.recordBtn || actions.firstChild);
-        }
         return;
     }
 
@@ -2134,7 +2129,7 @@ function practice21UpdateRetryWrap(view) {
         group.className = 'p21-feedback-transcript-group';
 
         let nodes = Array.from(resultSpan.childNodes).filter(
-            child => child !== modelButton && !child.matches?.('.play-recording-btn')
+            child => !child.matches?.('.play-recording-btn')
         );
         const last = nodes.at(-1);
         if (last?.nodeType === Node.TEXT_NODE && last.textContent === ' ') {
@@ -2148,18 +2143,17 @@ function practice21UpdateRetryWrap(view) {
 
         const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
         resultSpan.replaceChildren(group, label);
-        if (modelButton) resultSpan.appendChild(modelButton);
         if (recordedPlayback) resultSpan.appendChild(recordedPlayback);
     } else {
         const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
-        const ordered = [existingGroup, label, modelButton, recordedPlayback].filter(Boolean);
+        const ordered = [existingGroup, label, recordedPlayback].filter(Boolean);
         const current = Array.from(resultSpan.children);
         if (current.length !== ordered.length || current.some((el, i) => el !== ordered[i])) {
             resultSpan.replaceChildren(...ordered);
         }
     }
 
-    if (!modelButton || !actions) return;
+    if (!actions) return;
 
     const available = controls.clientWidth || result.clientWidth;
     if (!available) return;

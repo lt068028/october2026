@@ -42,7 +42,7 @@ async function inspect(p) {
         const group = result.querySelector('.p21-feedback-transcript-group');
         const transcript = group?.querySelector('.p21-recognized-text');
         const svg = group?.querySelector('.p21-retry-fire');
-        const modelButton = result.querySelector('[data-p21-model-playback]');
+        const modelButton = v.recordBtn.closest('tr')?.querySelector('[data-p21-model-playback]');
         const recordedButton = result.querySelector('.play-recording-btn');
         const rect = e => {
             const r = e.getBoundingClientRect();
@@ -86,11 +86,9 @@ async function inspect(p) {
             focusable:label.querySelectorAll('a,button,input,[tabindex]').length,
             pointerEvents:box.pointerEvents,
             scrollWidth:document.documentElement.scrollWidth,width:innerWidth,
-            modelInResult:modelButton?.parentElement===result,
+            modelInActions:Boolean(modelButton && modelButton.closest('.recording-actions')),
             recordedButton:recordedButton?rect(recordedButton):null,
             modelButton:modelButton?rect(modelButton):null,
-            speakerGap:modelButton?rect(modelButton).x-rect(label).right:null,
-            speakerSameLine:modelButton?Math.min(rect(modelButton).bottom,rect(label).bottom)>Math.max(rect(modelButton).y,rect(label).y):false,
             transcriptMarkup:transcript?.innerHTML
         };
     });
@@ -107,9 +105,8 @@ async function inspect(p) {
                 await fixture(p,raw); if(before)await fixture(before,raw); const d=await inspect(p), key=`${width}/${theme}/${kind}`;
                 check(d.raw,raw,key+' raw STT unchanged');check(d.message,'Keep going!',key+' exact short message');
                 check(d.message.includes('Try once more!'),false,key+' removes old retry wording');
-                check(d.order.slice(0,3),['transcript','label','model-playback'],key+' DOM order is transcript, Keep going!, existing speaker button');
-                check(d.modelInResult,true,key+' existing speaker control follows feedback in the result flow');
-                if(d.speakerSameLine)check(Math.abs(d.speakerGap-4)<.6,true,key+' standard 4px gap before speaker control');
+                check(d.order.slice(0,2),['transcript','label'],key+' result DOM order is transcript then Keep going!');
+                check(d.modelInActions,true,key+' existing speaker control remains in the action row');
                 check(d.svg?.hidden,'true',key+' decorative SVG');check([d.svg?.w,d.svg?.h],[20,20],key+' approved 20px icon');
                 check(createHash('sha256').update(d.svg?.path||'').digest('hex'),fireHash,key+' approved Fluent Fire Regular path');
                 check(d.color,theme==='light'?'rgb(180, 119, 50)':'rgb(228, 173, 105)',key+' approved E orange');check(d.svg?.fill,d.color,key+' icon shares message color');
@@ -128,7 +125,7 @@ async function inspect(p) {
                 check(d.label.x>=d.result.x-.5&&d.label.right<=d.result.right+.5,true,key+' message fits result region');
                 check(d.scrollWidth<=width+1,true,key+' no page overflow');
                 check(d.glyphs.every(g=>Math.min(g.right,d.label.right)-Math.max(g.x,d.label.x)<.5||Math.min(g.bottom,d.label.bottom)-Math.max(g.y,d.label.y)<.5),true,key+' message never overlaps extracted text');
-                const maxRight=Math.max(d.label.right,d.modelButton?.right||0,d.recordedButton?.right||0,...d.glyphs.map(g=>g.right));check(Math.abs(maxRight-d.result.right)<1,true,key+' whole content is right aligned');
+                const maxRight=Math.max(d.label.right,d.recordedButton?.right||0,...d.glyphs.map(g=>g.right));check(Math.abs(maxRight-d.result.right)<1,true,key+' whole content is right aligned');
                 if(kind==='short') {check(d.label.x>d.group.x+1,true,key+' message is not pinned to left edge');check(Math.abs(d.label.y-d.glyphs[0].y)<10,true,key+' short text shares message line');}
                 if(kind==='long') check(new Set(d.glyphs.map(g=>Math.round(g.y))).size>1,true,key+' long transcript wraps naturally when needed');
                 if(before){const old=await before.evaluate(()=>{const s=practice2State.views[keepGoingTestKey].resultSpan.cloneNode(true);s.querySelectorAll('.play-recording-btn').forEach(e=>e.remove());return s.innerHTML});check(d.transcriptMarkup,old,key+' extracted display markup unchanged');check(await roleMarkup(p),await roleMarkup(before),key+' Q/A icons unchanged');}
@@ -155,7 +152,8 @@ async function inspect(p) {
         check(await p.locator('[data-p21-model-playback]').evaluate(el=>el.closest('.recording-actions')!==null),true,'speaker button returns to controls while recording');
         await p.evaluate(()=>{const result=[{transcript:'ちがうこたえ'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});t.recognitions.at(-1).onspeechstart?.();});await p.locator('[data-keep-going-stop]').click();await p.waitForFunction(()=>t.recorders[0].state==='inactive'&&Object.values(practice2State.audioUrls).length>0);await settle(p);
         check(await p.evaluate(()=>t.tracks.every(t=>t.readyState==='ended')),true,'stop releases microphone');check(await p.locator('.p21-retry-label:visible').count(),1,'mismatch recording shows retry once');check(await p.evaluate(()=>practice2State.savedResults[keepGoingTestKey].rawTranscript),'ちがうこたえ','recorded raw STT preserved');
-        check(await row.locator('.result-text').evaluate(el=>Array.from(el.children).map(child=>child.matches('[data-p21-model-playback]')?'model-playback':child.classList.contains('play-recording-btn')?'recorded-playback':child.classList.contains('p21-retry-label')?'keep-label':child.classList.contains('p21-feedback-transcript-group')?'transcript':'other')),['transcript','keep-label','model-playback','recorded-playback'],'recorded result keeps the requested order and preserves the learner recording button');
+        check(await row.locator('.result-text').evaluate(el=>Array.from(el.children).map(child=>child.classList.contains('play-recording-btn')?'recorded-playback':child.classList.contains('p21-retry-label')?'keep-label':child.classList.contains('p21-feedback-transcript-group')?'transcript':'other')),['transcript','keep-label','recorded-playback'],'result region contains feedback and the learner recording button in order');
+        check(await row.locator('[data-p21-model-playback]').evaluate(el=>el.closest('.recording-actions')!==null),true,'model speaker remains in the action row after mismatch recording');
         await row.locator('.play-recording-btn').click();check(await p.evaluate(()=>t.audios.at(-1)?.paused),false,'saved recording playback works');await p.evaluate(()=>t.audios.at(-1).onended?.());
         check(p.errors,[],'no page runtime errors');await p.close();await before?.close();
         if(baseline){const a=await open(browser,root,'practice2.2'),b=await open(browser,baseline,'practice2.2');check(await a.locator('body').getAttribute('class'),await b.locator('body').getAttribute('class'),'Practice 2.2 does not opt into Preview');check(await a.locator('.recording-result').evaluateAll(es=>es.map(e=>e.outerHTML)),await b.locator('.recording-result').evaluateAll(es=>es.map(e=>e.outerHTML)),'Practice 2.2 result markup unchanged');await a.close();await b.close();}

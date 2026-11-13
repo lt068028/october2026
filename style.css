@@ -5205,7 +5205,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 
-/* Practice 2.1 approved order update: Fire + transcript, Keep going!, then the existing 🔊 model-play control. */
+/* Practice 2.1: Fire, transcript, and Keep going! stay in the result region; model audio stays in the action row. */
 .p21-feedback-after-transcript .recording-result > .p21-inline-feedback {
     margin: 0 !important;
     padding: 0;
@@ -5250,7 +5250,4 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     white-space: nowrap;
     vertical-align: baseline;
     pointer-events: none;
-}
-.p21-feedback-after-transcript .recording-result > .result-text > [data-p21-model-playback] {
-    margin-inline-start: 4px;
 }
