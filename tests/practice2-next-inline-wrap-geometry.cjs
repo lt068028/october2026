@@ -6,7 +6,11 @@ const assert = require('node:assert/strict');
 const {chromium} = require('playwright');
 
 const source = fs.readFileSync(path.join(__dirname, 'practice21-inline-wrap-geometry.cjs'), 'utf8');
-const prelude = source.split('(async () => {')[0];
+// The same marker also appears as a quoted string inside the nested harness;
+// locate the *last* top-level runner instead of splitting at the first quote.
+const entryPoint = source.lastIndexOf('\n(async () => {');
+assert.ok(entryPoint > 0, 'Practice 2.1 geometry runner boundary available');
+const prelude = source.slice(0, entryPoint);
 assert.ok(prelude.includes('function validate(data, width, kind)'), 'Practice 2.1 geometry contract available');
 const helpers = new Function('require', '__dirname', prelude +
     ';return {open,settle,showMismatch,geometry,validate,samples,checks:()=>checks};')(require,__dirname);
