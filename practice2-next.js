@@ -847,6 +847,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         practice2ShowResult(
             {
+                stopBtn: practice2State.views[key].stopBtn,
                 resultSpan,
                 correctionBox,
                 corrListenBtn,
@@ -3324,6 +3325,7 @@ function processResult(
 
     practice2ShowResult(
         {
+            stopBtn: practice2State.views[rowKey].stopBtn,
             resultSpan, correctionBox,
             corrListenBtn, corrTextSpan
         },

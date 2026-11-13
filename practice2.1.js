@@ -810,6 +810,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         practice2ShowResult(
             {
+                stopBtn: practice2State.views[key].stopBtn,
                 resultSpan,
                 correctionBox,
                 corrListenBtn,
@@ -2460,11 +2461,11 @@ function bindRecorderEvents(
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
-        practice21UpdateRetryWrap({ resultSpan, correctionBox, corrTextSpan, recordBtn });
+        practice21UpdateRetryWrap(view);
     } else if (practice2State.startingRow === rowKey) {
         resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
-        practice21UpdateRetryWrap({ resultSpan, correctionBox, corrTextSpan, recordBtn });
+        practice21UpdateRetryWrap(view);
     }
 
     recordBtn.addEventListener("click", async () => {
@@ -2983,6 +2984,7 @@ function processResult(
 
     practice2ShowResult(
         {
+            stopBtn: practice2State.views[rowKey].stopBtn,
             resultSpan, correctionBox,
             corrListenBtn, corrTextSpan
         },
