@@ -5183,29 +5183,32 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: inherit;
 }
 
-/* Practice 2.1: hanging feedback column begins beside the actual Stop button. */
+/* Practice 2.1/2.2: when the full feedback does not fit beside the
+   action row, use a full-width second row instead of a narrow text column. */
 .practice21-page .recording-controls.p21-flowing-feedback {
     display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    column-gap: 8px;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 6px;
     align-items: start;
 }
 .practice21-page .recording-controls.p21-flowing-feedback > .recording-actions {
     grid-column: 1;
+    grid-row: 1;
     float: none;
     margin: 0;
 }
 .practice21-page .recording-controls.p21-flowing-feedback > .recording-result {
-    grid-column: 2;
+    grid-column: 1;
+    grid-row: 2;
     display: block !important;
     min-width: 0;
-    width: auto;
+    width: 100%;
     max-width: 100%;
     margin: 0;
     text-align: left;
 }
 .practice21-page .recording-controls.p21-flowing-feedback .p21-recognized-text {
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
 }
 
 /* Practice 2.1: Fire, transcript, and Keep going! stay in the result region; model audio stays in the action row. */
@@ -5214,16 +5217,16 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     padding: 0;
 }
 .p21-feedback-after-transcript .recording-result > .result-text > .p21-feedback-transcript-group {
-    display: inline-flex;
-    align-items: center;
-    column-gap: 4px;
+    display: inline;
+    column-gap: normal;
     min-width: 0;
     max-width: 100%;
     vertical-align: middle;
 }
 .p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-retry-fire {
-    display: block;
-    flex: 0 0 20px;
+    display: inline-block;
+    margin-inline-end: 4px;
+    vertical-align: middle;
     width: 20px;
     height: 20px;
     color: var(--p21-keep-color);
@@ -5233,7 +5236,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     min-width: 0;
     max-width: 100%;
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
     color: var(--text-primary);
 }
 .p21-feedback-after-transcript .recording-result > .result-text > .p21-retry-label {
