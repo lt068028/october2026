@@ -144,7 +144,7 @@
   - 会話役割アイコン（Q/A）表示
 
 ## 5. 有効な設計制約・直近の合意事項（Active Decisions and Constraints）
-- **FWC管理の原則**：FWC（Framework/Feedback/Feature Work Checklist）はChatGPT側で正本管理する。GitHub側のHANDOVERには、必要な実機確認事項のみを番号なしで記録し、全管理表をGitHub側で推測・同期しない。
+- **FWC管理の原則**：日常運用上の最新版・意思決定の正本はOctober2026 Project内のChatGPTチャットで維持する。GitHubの `docs/FWC.md` は、ユーザーが確定した一覧と確認済みの追加情報を記録する補助スナップショットとする。GitHub側の記録だけで分類・優先順位・正式ステータス・卒業を自動変更せず、チャット側の合意を優先する。
 - **共通UI仕様の遵守**：セット切替英字Lato、発話行間グレー点線撤去、会話役割（Q/A）表示等は `docs/UI_LAYOUT_SPEC.md` を正とする。
 - **ドイツ語ドリル専用仕様**：ドイツ語ドリル（`uebung1.1.*` 以降）の改修・参照は `docs/GERMAN_DRILL_SPEC.md` および `docs/GERMAN_DEVELOPMENT_GUIDE.md` を第一正本とし、日本語ファイルを無条件に横断参照しない。
 - **ExとDrの独立性**：Example（Ex）とDrill（Dr）は独立した変更対象であり、一方の修正指示で他方を「ついでに変更」しない。
