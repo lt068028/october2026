@@ -282,8 +282,10 @@ assert.ok(tooltipLayoutJs.includes('.uebung11-page'), 'tooltip-layout.js must pr
 // 8.6 Germanized basic operation button labels
 assert.ok(html.includes('↩️ Zurück'), 'HTML must have ↩️ Zurück back link');
 assert.ok(!html.includes('もどる'), 'HTML must not have もどる');
-assert.ok(js.includes('🔊 Anhören'), 'JS must use 🔊 Anhören for listen buttons');
-assert.ok(js.includes('⏺️ Aufnehmen'), 'JS must use ⏺️ Aufnehmen for record button');
+assert.ok(js.includes('🔊 Hören'), 'JS must use 🔊 Hören for listen buttons');
+assert.ok(js.includes('🎙️ Sprechen'), 'JS must use 🎙️ Sprechen for record button');
+assert.ok(!js.includes('⏺️ Aufnehmen'), 'Legacy recording label must not remain');
+assert.ok(!js.includes('🔊 Anhören'), 'Legacy listening label must not remain');
 assert.ok(!js.includes('🔊きく'), 'JS must not contain 🔊きく');
 assert.ok(!js.includes('とる'), 'JS must not contain とる');
 

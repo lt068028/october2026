@@ -88,11 +88,11 @@
   - テーブル（`table.drill-example-table`、`recording-table` とは分離して4列Gridでレイアウト）。
   - **Col 1 (Cue)**: `span.cue-content`（`formatCue()` によるヒント展開。ユーザー未指定の「Ex: 」項目名は配置せず、ホバー時は `.tooltip-wrap` / `.target-word` / `.tooltip-tip` により日本語Practiceと同様の点線下線を表示）。
   - **Col 2 (Arrow)**: `td.example-arrow-cell` ("👉️", 幅 28px, 中央寄せ)
-  - **Col 3 (Audio)**: `button("🔊 Anhören", ...)`（Example 1 のみホバー説明 `Listen to the example.` を配置。Example 2以降には配置しない）
+  - **Col 3 (Audio)**: `button("🔊 Hören", ...)`（Example 1 のみホバー説明 `Listen to the example.` を配置。Example 2以降には配置しない）
   - **Col 4 (Model)**: `span.model-text`（`highlightGrammar()` による文法強調。音声ボタンとの重なりを防止）
 - **レスポンシブ契約**:
-  - 広幅時: [キュー] [👉️] [🔊 Anhören] [モデル文] を同一行・8px列間隔で整列。
-  - 狭幅時（<= 520px / 375px）: キューを上段（行1）、[👉️] [🔊 Anhören] [モデル文] を下段（行2）にまとめて配置し、矢印と音声ボタンを不自然に改行分断させず、モデル文の表示領域を確保。
+  - 広幅時: [キュー] [👉️] [🔊 Hören] [モデル文] を同一行・8px列間隔で整列。
+  - 狭幅時（<= 520px / 375px）: キューを上段（行1）、[👉️] [🔊 Hören] [モデル文] を下段（行2）にまとめて配置し、矢印と音声ボタンを不自然に改行分断させず、モデル文の表示領域を確保。
 - **責務分離原則**: Example は独立した変更対象であり、Exampleの修正がDrill設問に波及したり、Drillの修正がExampleに波及してはならない。
 
 ### 3.3 Card 3: Drill 設問群（`.drill-row`） 【実装済み】
@@ -103,8 +103,8 @@
   - **Col 3 (Controls & Result)**:
     - 操作ボタン群（`.recording-actions`）:
       - 基本操作ホバー（初学者案内）：**Example 1 と Drill 1 の設問 1 だけに限定設置**（Drill 1 設問2以降および Drill 2〜4 には基本操作ホバーを配置しない）。
-        - モデル聴取ボタン：`🔊 Anhören`（Drill 1 設問1のみホバー `Listen to the model answer.`）
-        - 録音ボタン：`⏺️ Aufnehmen`（Drill 1 設問1のみホバー `Record your answer.`）
+        - モデル聴取ボタン：`🔊 Hören`（確定名称。旧 `🔊 Anhören` は使用しない）（Drill 1 設問1のみホバー `Listen to the model answer.`）
+        - 録音ボタン：`🎙️ Sprechen`（確定名称・アイコン。旧録音アイコンは使用しない）（Drill 1 設問1のみホバー `Record your answer.`）
         - 停止ボタン：`⏹️`（Drill 1 設問1のみ現在のAutostop設定に応じて動的切替）
           - Autostop ON: `No need to press. Autostop is ON.`
           - Autostop OFF (Manual Stop): `Stop recording.`
@@ -113,10 +113,10 @@
       - 録音後（3段階判定）：
         - `accepted`: 生テキスト ＋ ` ✅`（選択外地域の許容文発話時は補足バッジを付与）
         - `mismatch`: 生テキストのうち不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示（❌マークは付与しない）
-        - `undetermined`: 生テキスト ＋ ` 👣`（ホバー時に `Could not be evaluated reliably.` を表示。✅も❌も🔥 Keep going!も赤字も表示しない）
+        - `undetermined`: 生テキスト ＋ ` 👣`（**確定仕様**：ホバー時に `Could not be evaluated reliably.` を表示。✅も❌も🔥 Keep going!も赤字も表示しない）
         - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
     - 訂正ガイダンス（`.correction-box`、`mismatch` 時のみ表示）:
-      - 文言：`🔥 Keep going!` のみを表示する（重複する `🔊 Anhören` ボタン、`Try once more!`、モデル文の自動開示 `→ [モデル文]` は表示しない。モデル音声の確認は操作ボタン群の `🔊 Anhören` を使用する）。
+      - 文言：`🔥 Keep going!` のみを表示する（重複する `🔊 Hören` ボタン、`Try once more!`、モデル文の自動開示 `→ [モデル文]` は表示しない。モデル音声の確認は操作ボタン群の `🔊 Hören` を使用する）。
   - **レスポンシブ契約**: 通常幅では番号・キュー・操作を1行で整列し、狭幅時（<= 480px / 375px）は操作群を次段へ折り返す。
 
 ### 3.4 キューの非折り返し・自然幅計測契約 【実装済み】
@@ -168,7 +168,7 @@
   - `stopAllPlayback()`：外部クリックや中断時に呼ばれ、`DrillAudio.invalidatePlayback()` と `stopPlayback()` の両方を実行する。
   - Autoplayリレー中（`isRelay === true`）は `stopAllPlayback()` をスキップし、リレーの破壊を防止する。
 
-### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー（FWC W9） 【実装済み】
+### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー（FWC W9） 【実装済み・実機確認完了】
 - **専用通知バナー（`#germanTtsNotice`）**:
   - ヘッダー直下に配置された専用のインラインバナー。既存の `#audioRecoveryStatus` および `#voiceRegionNotice` とは完全に分離・独立。
   - 閉じるボタン（`#germanTtsNoticeClose`）を備え、キーボード操作および375px幅のレスポンシブ表示に対応。
@@ -222,7 +222,7 @@
      - 目的地に対する前置詞の誤り（例: `Ich fahre zu Graz.` → `zu` が不一致）。
      - キューと異なる目的地・名詞の発話（例: `Ich fahre nach Berlin.` → `berlin` が不一致）。
      - キューと異なる移動動詞語幹の使用（例: `Ich gehe nach Graz.` → `gehe` が不一致）。
-     - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。❌マークは付与しない。訂正ボックスには `🔥 Keep going!` のみを表示し、モデル文の自動開示（`→ ...`）や重複 `🔊 Anhören` ボタンは配置しない。
+     - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。❌マークは付与しない。訂正ボックスには `🔥 Keep going!` のみを表示し、モデル文の自動開示（`→ ...`）や重複 `🔊 Hören` ボタンは配置しない。
   3. **`undetermined`（判定不能・保留）**:
      - 認識音声が短小または不完全（3単語未満、例: `fahre nach`, `Graz`, `nach`）。
      - 未対応の助動詞・話法の助動詞（`möchte`, `will`, `kann` 等）や副文構文。
