@@ -5183,23 +5183,103 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: inherit;
 }
 
-/* Practice 2.1 only: long mismatch feedback uses the space beside fixed actions,
-   then the full controls width. Short/accepted/undetermined layouts stay intact. */
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) {
-    display: flow-root;
-    text-align: right;
+/* Practice 2.1: Fire, transcript, and Keep going! stay in the result region; model audio stays in the action row. */
+.p21-feedback-after-transcript .recording-result > .p21-inline-feedback {
+    margin: 0 !important;
+    padding: 0;
 }
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-actions {
-    float: left;
-    margin: 0 8px 6px 0;
+.p21-feedback-after-transcript .recording-result > .result-text > .p21-feedback-transcript-group {
+    display: inline;
+    column-gap: normal;
+    min-width: 0;
+    max-width: 100%;
+    vertical-align: middle;
 }
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"]) > .recording-result {
-    display: inline !important;
-    width: auto;
-    max-width: none;
-    margin: 0;
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-retry-fire {
+    display: inline-block;
+    margin-inline-end: 4px;
+    vertical-align: middle;
+    width: 20px;
+    height: 20px;
+    color: var(--p21-keep-color);
+}
+.p21-feedback-after-transcript .p21-feedback-transcript-group > .p21-recognized-text {
+    display: inline;
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: normal;
+    color: var(--text-primary);
+}
+.p21-feedback-after-transcript .recording-result > .result-text > .p21-retry-label {
+    display: inline-flex;
+    align-items: center;
+    margin-inline-start: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--p21-keep-color);
+    font-family: var(--font-latin);
+    font-size: calc(14px * var(--practice12-scale));
+    font-weight: 400;
+    line-height: inherit;
+    white-space: nowrap;
+    vertical-align: baseline;
+    pointer-events: none;
 }
 
-.practice21-page .recording-controls.p21-flowing-feedback:has(> .recording-result > .p21-inline-feedback[style*="display: inline"])::first-line {
-    line-height: var(--p21-feedback-action-line);
+
+/* Practice 2.1/2.2/2.3 mismatch only: start the transcript beside Stop and
+   wrap inside a shrinking, right-aligned result column. Unlike the legacy
+   next-line mode, full transcript width does not determine row placement. */
+body.practice21-page .recording-controls.p21-feedback-inline-wrap {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px 8px;
+    align-items: start;
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap > .recording-actions {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    width: max-content;
+    max-width: 100%;
+    margin: 0;
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap > .recording-result {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    text-align: right;
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap .p21-recognized-text {
+    overflow-wrap: anywhere;
+    /* Allow long uninterrupted STT text to start immediately after Fire. */
+    word-break: break-all;
+}
+/* When Stop alone wraps to the final action line, use the free space alongside
+   that actual line. The offsets are measured from live DOM rectangles. */
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-after-wrapped-stop {
+    grid-template-columns: minmax(0, 1fr);
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-after-wrapped-stop > .recording-result {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: calc(-1 * var(--p21-wrapped-stop-overlap));
+    margin-left: var(--p21-wrapped-stop-left);
+    width: calc(100% - var(--p21-wrapped-stop-left));
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback {
+    grid-template-columns: minmax(0, 1fr);
+}
+body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-fallback > .recording-result {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: right;
 }

@@ -828,6 +828,7 @@ function practice2ShowNotice(resultSpan, message) {
 
         practice2ShowResult(
             {
+                stopBtn: practice2State.views[key].stopBtn,
                 resultSpan,
                 correctionBox,
                 corrListenBtn,
@@ -933,11 +934,13 @@ function practice2ShowNotice(resultSpan, message) {
         view.corrListenBtn.hidden = true;
         view.corrListenBtn.style.display = "none";
 
+        const status = FeedbackStatus.resolve(saved);
         view.correctionBox.style.display =
-            saved.isCorrect ? "none" : "block";
+            status === 'mismatch' ? "inline" : "none";
 
-        if (saved.isCorrect) view.corrTextSpan.replaceChildren();
-        else FeedbackStatus.setMismatch(view.corrTextSpan);
+        FeedbackStatus.setMismatch(view.corrTextSpan, {layout: 'inline', status});
+        practice21UpdateRetryWrap(view);
+        requestAnimationFrame(() => practice21UpdateRetryWrap(view));
     };
 
     function listen(getText, label = "🔊きく", onPlay) {
@@ -1187,8 +1190,8 @@ function practice2ShowNotice(resultSpan, message) {
         controls.append(actions, result);
 
         const correctionBox = node(
-            "div",
-            "correction-box"
+            "span",
+            "correction-box p21-inline-feedback"
         );
 
         const corrListenBtn = node("button");
@@ -1201,7 +1204,8 @@ function practice2ShowNotice(resultSpan, message) {
             corrTextSpan
         );
 
-        cell.append(controls, correctionBox);
+        result.prepend(correctionBox);
+        cell.append(controls);
 
         row.append(
             numberCell,
@@ -2456,6 +2460,135 @@ function practice2FindDiff(actual, reference) {
     };
 }
 
+function practice21UpdateRetryWrap(view) {
+    const resultSpan = view.resultSpan;
+    const result = resultSpan.parentElement;
+    if (!result || !result.classList.contains('recording-result')) return;
+    const controls = result.parentElement;
+    const actions = controls?.querySelector('.recording-actions');
+    const feedback = view.correctionBox;
+    const label = view.corrTextSpan;
+    const hasFire =
+        Boolean(label.querySelector('.p21-retry-fire'))
+        || Boolean(resultSpan.querySelector('.p21-feedback-transcript-group > .p21-retry-fire'));
+    const showingMismatch =
+        feedback.style.display !== 'none'
+        && label.textContent.trim() === 'Keep going!'
+        && label.classList.contains('p21-retry-label')
+        && hasFire;
+
+    result.classList.remove('p21-transcript-own-line');
+
+    if (!showingMismatch) {
+        controls?.classList.remove('p21-flowing-feedback', 'p23-feedback-next-line', 'p21-feedback-next-line', 'p21-feedback-inline-wrap', 'p21-feedback-fallback', 'p21-feedback-after-wrapped-stop');
+        controls?.style.removeProperty('--p23-feedback-start');
+        controls?.style.removeProperty('--p21-feedback-start');
+        controls?.style.removeProperty('--p21-wrapped-stop-left');
+        controls?.style.removeProperty('--p21-wrapped-stop-overlap');
+        result.style.removeProperty('padding-bottom');
+        label.style.removeProperty('transform');
+        return;
+    }
+
+    const existingGroup = resultSpan.querySelector('.p21-feedback-transcript-group');
+    if (!existingGroup) {
+        const fire = label.querySelector('.p21-retry-fire');
+        const transcript = document.createElement('span');
+        transcript.className = 'p21-recognized-text';
+        const group = document.createElement('span');
+        group.className = 'p21-feedback-transcript-group';
+
+        let nodes = Array.from(resultSpan.childNodes).filter(
+            child => !child.matches?.('.play-recording-btn')
+        );
+        const last = nodes.at(-1);
+        if (last?.nodeType === Node.TEXT_NODE && last.textContent === ' ') {
+            last.remove();
+            nodes = nodes.slice(0, -1);
+        }
+        nodes.forEach(child => transcript.appendChild(child));
+
+        fire.remove();
+        group.append(fire, transcript);
+
+        const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
+        resultSpan.replaceChildren(group, label);
+        if (recordedPlayback) resultSpan.appendChild(recordedPlayback);
+    } else {
+        const recordedPlayback = resultSpan.querySelector('.play-recording-btn');
+        const ordered = [existingGroup, label, recordedPlayback].filter(Boolean);
+        const current = Array.from(resultSpan.children);
+        if (current.length !== ordered.length || current.some((el, i) => el !== ordered[i])) {
+            resultSpan.replaceChildren(...ordered);
+        }
+    }
+
+    if (!actions) return;
+
+    controls.classList.remove('p21-flowing-feedback', 'p21-feedback-next-line', 'p23-feedback-next-line');
+    controls.style.removeProperty('--p21-feedback-start');
+    controls.style.removeProperty('--p23-feedback-start');
+    controls.classList.remove('p21-feedback-after-wrapped-stop', 'p21-feedback-fallback');
+    controls.style.removeProperty('--p21-wrapped-stop-left');
+    controls.style.removeProperty('--p21-wrapped-stop-overlap');
+    controls.classList.add('p21-feedback-inline-wrap');
+    result.style.removeProperty('padding-bottom');
+    label.style.removeProperty('transform');
+
+    // Match Practice 2.1: the complete transcript must never force a new row.
+    // Only an unusably narrow first fragment triggers a right-aligned fallback.
+    const transcript = resultSpan.querySelector('.p21-recognized-text');
+    const fire = resultSpan.querySelector('.p21-retry-fire');
+    if (!transcript || !fire) return;
+    const text = transcript.textContent.trimStart();
+    const graphemes = typeof Intl.Segmenter === 'function'
+        ? [...new Intl.Segmenter('ja', {granularity:'grapheme'}).segment(text)].slice(0, 2).map(part => part.segment).join('')
+        : Array.from(text).slice(0, 2).join('');
+    const context = document.createElement('canvas').getContext('2d');
+    context.font = getComputedStyle(transcript).font;
+    const minimumWidth = fire.getBoundingClientRect().width + 4 + context.measureText(graphemes).width;
+    const controlsRect = controls.getBoundingClientRect();
+    const initialActionsRect = actions.getBoundingClientRect();
+    const controlsStyle = getComputedStyle(controls);
+    const rightPadding = parseFloat(controlsStyle.paddingRight) || 0;
+    const normalWidth = Math.max(0, controlsRect.right - rightPadding - initialActionsRect.right - 8);
+    let canShareStopRow = false;
+    if (normalWidth + 0.5 < minimumWidth) {
+        // A max-content action row hides space on a subsequent wrapped Stop
+        // line. First measure the physically constrained button layout.
+        controls.classList.add('p21-feedback-fallback');
+        const actionsRect = actions.getBoundingClientRect();
+        const stopRect = view.stopBtn.getBoundingClientRect();
+        const stopCenterY = (stopRect.top + stopRect.bottom) / 2;
+        const itemsOnStopRow = [...actions.children].map(item => item.getBoundingClientRect())
+            .filter(rect => rect.width && rect.height && rect.top <= stopCenterY && rect.bottom >= stopCenterY);
+        const stopRowEnd = Math.max(stopRect.right, ...itemsOnStopRow.map(rect => rect.right));
+        const stopRowWidth = Math.max(0, controlsRect.right - rightPadding - stopRowEnd - 8);
+        if (stopRect.top > actionsRect.top + 2
+            && actionsRect.bottom <= stopRect.bottom + 1.5
+            && stopRowWidth + 0.5 >= minimumWidth) {
+            canShareStopRow = true;
+            controls.style.setProperty('--p21-wrapped-stop-left', `${stopRowEnd - controlsRect.left + 8}px`);
+            controls.style.setProperty('--p21-wrapped-stop-overlap', `${actionsRect.bottom - stopRect.top + 6}px`);
+        }
+    }
+    controls.classList.toggle('p21-feedback-after-wrapped-stop', canShareStopRow);
+    controls.classList.toggle('p21-feedback-fallback', normalWidth + 0.5 < minimumWidth && !canShareStopRow);
+
+    // The atomic retry phrase may need more room than the fragment beside
+    // Stop. Keep Fire+transcript on that first line, but align the phrase
+    // with the far right edge below the action row if it cannot fit there.
+    const resultRect = result.getBoundingClientRect();
+    const actionsRect = actions.getBoundingClientRect();
+    const labelRect = label.getBoundingClientRect();
+    const excess = labelRect.right - resultRect.right;
+    if (excess > 0.5) {
+        const clearActions = Math.max(0, actionsRect.bottom + 6 - labelRect.top);
+        label.style.transform = `translate(${-excess}px, ${clearActions}px)`;
+        if (clearActions > 0) result.style.paddingBottom = `${clearActions}px`;
+    }
+}
+
 function practice2ShowResult(view, saved, rowKey, playRate) {
     view.resultSpan.classList.remove("not-recorded-yet");
     const displayed = STTDisplay.format(saved.rawTranscript, {mode:scriptMode, anchor:view.resultSpan, context:[saved.expectedText,saved.modelText].filter(Boolean).join(' ')});
@@ -2547,35 +2680,15 @@ function practice2ShowResult(view, saved, rowKey, playRate) {
         );
     }
 
+    view.corrListenBtn.hidden = true;
+    view.corrListenBtn.style.display = "none";
+    const status = FeedbackStatus.resolve(saved);
     view.correctionBox.style.display =
-        saved.isCorrect ? "none" : "block";
+        status === 'mismatch' ? "inline" : "none";
 
-    if (!saved.isCorrect) {
-        FeedbackStatus.setMismatch(view.corrTextSpan);
-
-        view.corrListenBtn.style.display =
-            "inline-block";
-
-        view.corrListenBtn.onclick = () => {
-            if (
-                activeRecognitionSession
-                || practice2State.startingRow
-            ) {
-                return;
-            }
-
-            setPlayingStateMultiple(
-                [view.corrListenBtn],
-                "Playing..."
-            );
-
-            speakText(
-                practice2SpeechText(saved.modelText),
-                0.75,
-                () => stopAllPlayback()
-            );
-        };
-    }
+    FeedbackStatus.setMismatch(view.corrTextSpan, {layout: 'inline', status});
+    practice21UpdateRetryWrap(view);
+    requestAnimationFrame(() => practice21UpdateRetryWrap(view));
 }
 
 function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
@@ -2638,6 +2751,10 @@ function bindRecorderEvents(
     };
 
     practice2State.views[rowKey] = view;
+    if (typeof ResizeObserver !== 'undefined') {
+        const controls = resultSpan.closest('.recording-controls');
+        if (controls) new ResizeObserver(() => requestAnimationFrame(() => practice21UpdateRetryWrap(view))).observe(controls);
+    }
 
     const currentView = () =>
         practice2State.views[rowKey] || view;
@@ -2672,6 +2789,7 @@ function bindRecorderEvents(
         resultSpan.textContent = "Recording...";
         resultSpan.style.color = "var(--accent-color)";
         correctionBox.style.display = "none";
+        practice21UpdateRetryWrap(view);
     } else if (practice2State.startingRow === rowKey) {
         resultSpan.classList.remove("not-recorded-yet");
         resultSpan.textContent = "Preparing microphone...";
@@ -3190,6 +3308,7 @@ function processResult(
 
     practice2ShowResult(
         {
+            stopBtn: practice2State.views[rowKey].stopBtn,
             resultSpan, correctionBox,
             corrListenBtn, corrTextSpan
         },

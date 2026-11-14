@@ -1,6 +1,46 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..');
+
+function readFeedback(key) {
+ const {resultSpan, correctionBox, corrTextSpan} = practice2State.views[key];
+ const saved = practice2State.savedResults[key];
+ const row = resultSpan.closest('tr');
+ const accepted = [...row.querySelectorAll('.feedback-status-accepted')];
+ const fires = [...row.querySelectorAll('.p21-retry-fire')];
+ const labels = [...row.querySelectorAll('.p21-retry-label')];
+ const hasVisibleBox = getComputedStyle(correctionBox).display !== 'none';
+ const hasRedText = [...resultSpan.querySelectorAll('span')].some(span =>
+  span.style.getPropertyValue('color').trim() === 'var(--error-text)' && span.textContent.trim());
+ return {
+  rawTranscript: saved?.rawTranscript,
+  isCorrect: saved?.isCorrect,
+  acceptedCount: accepted.length,
+  acceptedInResult: accepted.length === 1 && resultSpan.contains(accepted[0]) && accepted[0].getClientRects().length > 0,
+  hasVisibleBox,
+  fireCount: fires.length,
+  labelCount: labels.length,
+  hasRetry: fires.length === 1 && fires[0].matches('svg') && resultSpan.contains(fires[0])
+   && fires[0].getClientRects().length > 0 && labels.length === 1 && labels[0] === corrTextSpan
+   && resultSpan.contains(corrTextSpan) && corrTextSpan.lang === 'en'
+   && corrTextSpan.textContent === 'Keep going!' && corrTextSpan.getClientRects().length > 0,
+  hasStaleRetry: row.textContent.includes('Keep going!') || corrTextSpan.hasAttribute('lang')
+   || corrTextSpan.classList.contains('p21-retry-label') || corrTextSpan.hasChildNodes(),
+  hasRedText
+ };
+}
+
+function checkFeedback(check, feedback, rawTranscript, isCorrect, label) {
+ check([feedback.rawTranscript, feedback.isCorrect], [rawTranscript, isCorrect], label + ' saved answer');
+ check(feedback.acceptedCount, isCorrect ? 1 : 0, label + ' accepted badge count');
+ check(feedback.acceptedInResult, isCorrect, label + ' accepted badge in this result');
+ check(feedback.hasVisibleBox, !isCorrect, label + ' correction box visibility');
+ check([feedback.fireCount, feedback.labelCount], isCorrect ? [0, 0] : [1, 1], label + ' retry element counts');
+ check(feedback.hasRetry, !isCorrect, label + ' inline Fire and English retry label');
+ check(feedback.hasRedText, !isCorrect, label + ' highlighted recognition differences');
+ if (isCorrect) check(feedback.hasStaleRetry, false, label + ' no stale retry content or attributes');
+}
+
 function mock(){
  window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
@@ -176,7 +216,22 @@ function mock(){
    return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return [practice2State.savedResults[key].isCorrect,want,text];});
   },number);
   for(const [actual,want,text]of judgments)check(actual,want,number+' answer '+text);
-  const peopleResults=await p.evaluate(()=>{const key='p22_people_mixed_r_1',v=practice2State.views[key];return ['メアリーさんです','その人はメアリーさんです','この人はメアリーさんです','ロバートさんです'].map(text=>{processResult(text,'メアリーさんです',()=> 'メアリーさんです',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect})});check(peopleResults,[true,false,true,false],'people name and responder perspective');
+  const peopleKey = 'p22_people_mixed_r_1';
+  const peopleTransition = [
+   ['ロバートさんです', false],
+   ['メアリーさんです', true],
+   ['その人はメアリーさんです', false],
+   ['この人はメアリーさんです', true]
+  ];
+  for (const [text, correct] of peopleTransition) {
+   await p.evaluate(({key, text}) => {
+    const view = practice2State.views[key];
+    const model = 'メアリーさんです';
+    processResult(text, model, () => model, view.resultSpan, view.correctionBox,
+     view.corrListenBtn, view.corrTextSpan, () => null, .75, key);
+   }, {key: peopleKey, text});
+   checkFeedback(check, await p.evaluate(readFeedback, peopleKey), text, correct, 'D4 responder: ' + text);
+  }
   await p.locator('#speechStyleControl [data-value="formal"]').click();
   await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
   const classmateAnswers=await p.evaluate(()=>{const key='p22_people_classmate_r_2',v=practice2State.views[key],model='私のクラスメートはあの人です';return ['私のクラスメートはあの人です','あの人です','私のクラスメートはこの人です','いいえ、あの人です','あの人は私の先生です'].map(text=>{processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return practice2State.savedResults[key].isCorrect;});});check(classmateAnswers,[true,true,false,false,false],'classmate selection uses far person without no');
@@ -185,8 +240,9 @@ function mock(){
   await p.locator('[data-set-state="peopleConversationSet"] button').nth(1).click();
   check(await p.evaluate(()=>practice2State.savedResults.p22_people_relations_r_0.rawTranscript),'いいえ、この人は私の先生です','Set2 result survives switching');
   await p.locator('[data-set-state="peopleConversationSet"] button').first().click();
+  checkFeedback(check, await p.evaluate(readFeedback, peopleKey), 'この人はメアリーさんです', true, 'D4 Set 1 restored');
   for(const width of [375,600,1440]){await p.setViewportSize({width,height:1000});check(await p.locator('.p2x-people-picture .p2x-stage').evaluateAll(es=>es.every(e=>{const a=e.getBoundingClientRect();return Math.abs(a.width/a.height-2)<.02&&[...e.querySelectorAll('.p2x-person-name,.p2x-person')].every(n=>{const r=n.getBoundingClientRect();return r.left>=a.left&&r.right<=a.right&&r.top>=a.top&&r.bottom<=a.bottom})})),true,'wide people picture and labels fit '+width);}
-  await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();check(await p.evaluate(()=>practice2State.savedResults.p22_people_mixed_r_1.rawTranscript),'ロバートさんです','people results survive food-topic switching');
+  await p.locator('[data-set-state="choosingSet"] button').nth(1).click();await p.locator('[data-set-state="choosingSet"] button').first().click();checkFeedback(check, await p.evaluate(readFeedback, peopleKey), 'この人はメアリーさんです', true, 'people results survive food-topic switching');
   await p.locator('[data-set-state="choosingSet"] button').first().click();
   // Exercise the microphone path, set locking and result restoration with real callbacks.
   await p.locator('#drill1Container .p21-set-switcher button').first().click();
@@ -199,9 +255,12 @@ function mock(){
   check(await p.locator('#drill1Container > .p2x-picture .p2x-person.is-speaking').allTextContents(),['Y'],'picture speaker pulses with outside badge');
   await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);
   await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
-  check(await first.textContent().then(s=>s.includes('✅')),true,number+' actual record and recognition');
-  await p.locator('#drill1Container .p21-set-switcher button').nth(1).click();check(await p.locator('#drill1Container .recording-table tr').first().textContent().then(s=>s.includes('✅')),false,number+' distinct set results');
-  await p.locator('#drill1Container .p21-set-switcher button').first().click();check(await p.locator('#drill1Container .recording-table tr').first().textContent().then(s=>s.includes('✅')),true,number+' result restored');
+  const recordingKey = 'p22_statements_s0_B_0';
+  checkFeedback(check, await p.evaluate(readFeedback, recordingKey), transcript, true, '2.2 actual record and recognition');
+  await p.locator('#drill1Container .p21-set-switcher button').nth(1).click();
+  check(await p.locator('#drill1Container .recording-table tr').first().locator('.feedback-status-accepted').count(), 0, '2.2 distinct set results');
+  await p.locator('#drill1Container .p21-set-switcher button').first().click();
+  checkFeedback(check, await p.evaluate(readFeedback, recordingKey), transcript, true, '2.2 recording result restored');
   for(const width of [600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
    await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
    const overflow=await p.locator('.example-box,.drill-row,.p2x-picture,.settings-row').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className));check(overflow,[],number+' layout '+width+theme+hint);

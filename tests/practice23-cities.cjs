@@ -1,6 +1,46 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..');
+
+function readFeedback(key) {
+ const {resultSpan, correctionBox, corrTextSpan} = practice2State.views[key];
+ const saved = practice2State.savedResults[key];
+ const row = resultSpan.closest('tr');
+ const accepted = [...row.querySelectorAll('.feedback-status-accepted')];
+ const fires = [...row.querySelectorAll('.p21-retry-fire')];
+ const labels = [...row.querySelectorAll('.p21-retry-label')];
+ const hasVisibleBox = getComputedStyle(correctionBox).display !== 'none';
+ const hasRedText = [...resultSpan.querySelectorAll('span')].some(span =>
+  span.style.getPropertyValue('color').trim() === 'var(--error-text)' && span.textContent.trim());
+ return {
+  rawTranscript: saved?.rawTranscript,
+  isCorrect: saved?.isCorrect,
+  acceptedCount: accepted.length,
+  acceptedInResult: accepted.length === 1 && resultSpan.contains(accepted[0]) && accepted[0].getClientRects().length > 0,
+  hasVisibleBox,
+  fireCount: fires.length,
+  labelCount: labels.length,
+  hasRetry: fires.length === 1 && fires[0].matches('svg') && resultSpan.contains(fires[0])
+   && fires[0].getClientRects().length > 0 && labels.length === 1 && labels[0] === corrTextSpan
+   && resultSpan.contains(corrTextSpan) && corrTextSpan.lang === 'en'
+   && corrTextSpan.textContent === 'Keep going!' && corrTextSpan.getClientRects().length > 0,
+  hasStaleRetry: row.textContent.includes('Keep going!') || corrTextSpan.hasAttribute('lang')
+   || corrTextSpan.classList.contains('p21-retry-label') || corrTextSpan.hasChildNodes(),
+  hasRedText
+ };
+}
+
+function checkFeedback(check, feedback, rawTranscript, isCorrect, label) {
+ check([feedback.rawTranscript, feedback.isCorrect], [rawTranscript, isCorrect], label + ' saved answer');
+ check(feedback.acceptedCount, isCorrect ? 1 : 0, label + ' accepted badge count');
+ check(feedback.acceptedInResult, isCorrect, label + ' accepted badge in this result');
+ check(feedback.hasVisibleBox, !isCorrect, label + ' correction box visibility');
+ check([feedback.fireCount, feedback.labelCount], isCorrect ? [0, 0] : [1, 1], label + ' retry element counts');
+ check(feedback.hasRetry, !isCorrect, label + ' inline Fire and English retry label');
+ check(feedback.hasRedText, !isCorrect, label + ' highlighted recognition differences');
+ if (isCorrect) check(feedback.hasStaleRetry, false, label + ' no stale retry content or attributes');
+}
+
 function mock(){
  window.t={spoken:[],audios:[],tracks:[],recorders:[],recognitions:[],requests:[],defer:false,deny:false,decodeDefer:false,decodes:[],speaking:false};
  Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[{name:'Google A',voiceURI:'a',lang:'ja-JP'},{name:'Google B',voiceURI:'b',lang:'ja-JP'}],addEventListener(){},onvoiceschanged:null,speak(u){t.spoken.push(u);this.current=u},cancel(){const u=this.current;this.current=null;u?.onerror?.({error:'canceled'})}}});
@@ -122,12 +162,114 @@ function mock(){
   }
  }
  await p.locator('#speechStyleControl [data-value="formal"]').click();
- async function judge(samples){
-  const results=await p.evaluate(samples=>{isAutoPlay=false;return samples.map(([key,text,model,want])=>{const v=practice2State.views[key];processResult(text,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);return[practice2State.savedResults[key].isCorrect,want,text];});},samples);
-  for(const [actual,want,text]of results)check(actual,want,text);
+ async function judge(samples, feedbackKey) {
+  for (const [key, text, model, want] of samples) {
+   const actual = await p.evaluate(({key, text, model}) => {
+    isAutoPlay = false;
+    const view = practice2State.views[key];
+    processResult(text, model, () => model, view.resultSpan, view.correctionBox,
+     view.corrListenBtn, view.corrTextSpan, () => null, .75, key);
+    return practice2State.savedResults[key].isCorrect;
+   }, {key, text, model});
+   if (key === feedbackKey) {
+    checkFeedback(check, await p.evaluate(readFeedback, key), text, want, 'D1 People: ' + text);
+   } else {
+    check(actual, want, text);
+   }
+  }
  }
+
+ // Practice 2.3: mismatch feedback flows beside Stop whenever the real width permits.
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();
- await judge([['p23_where_d1_s0_0_r','カフェです','ここは喫茶店です',true],['p23_where_d1_s0_0_r','喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','ここは喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','私は喫茶店です','ここは喫茶店です',true],['p23_where_d1_s0_0_r','銀行です','ここは喫茶店です',false],['p23_where_d1_s0_2_r','図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','あそこは図書館です','Zさんは図書館です',true],['p23_where_d1_s0_2_r','ここは図書館です','Zさんは図書館です',false]]);
+ const geometryKey='p23_where_d1_s0_0_r';
+ await p.waitForFunction(key=>typeof practice2State !== 'undefined' && Boolean(practice2State.views?.[key]),geometryKey);
+ const originalGeometryState=await p.evaluate(key=>{
+  const v=practice2State.views[key],c=v.resultSpan.closest('.recording-controls');
+  const saved=practice2State.savedResults?.[key];
+  return {
+   html:v.resultSpan.innerHTML,resultClass:v.resultSpan.className,resultStyle:v.resultSpan.getAttribute('style'),
+   correctionStyle:v.correctionBox.getAttribute('style'),correctionHtml:v.corrTextSpan.innerHTML,
+   listenHidden:v.corrListenBtn.hidden,listenStyle:v.corrListenBtn.getAttribute('style'),
+   savedPresent:Object.prototype.hasOwnProperty.call(practice2State.savedResults||{},key),saved,
+   controlsClass:c.className,controlsStyle:c.getAttribute('style')
+  };
+ },geometryKey);
+ for(const width of [375,600,1440])for(const theme of ['light','dark'])for(const raw of ['銀行です。','田中さんが昨日友だちと一緒にレストランで料理を作りました。']){
+  await p.setViewportSize({width,height:900});await p.emulateMedia({colorScheme:theme});
+  await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const before=await p.evaluate(key=>{
+   const v=practice2State.views[key],a=v.resultSpan.closest('.recording-controls').querySelector('.recording-actions');
+   return Array.from(a.querySelectorAll('button')).map(b=>{const r=b.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}});
+  },geometryKey);
+  await p.evaluate(({key,raw})=>{
+   const v=practice2State.views[key],model='ここは喫茶店です。';
+   isAutoPlay = false;
+   processResult(raw,model,()=>model,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
+  },{key:geometryKey,raw});
+  await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const m=await p.evaluate(key=>{
+   const v=practice2State.views[key],controls=v.resultSpan.closest('.recording-controls');
+   const actions=controls.querySelector('.recording-actions'),stop=v.stopBtn;
+   const result=controls.querySelector('.recording-result'),fire=v.resultSpan.querySelector('.p21-retry-fire');
+   const transcript=v.resultSpan.querySelector('.p21-recognized-text'),label=v.resultSpan.querySelector('.p21-retry-label');
+   const range=document.createRange();if(transcript)range.selectNodeContents(transcript);
+   const uniqueTops=[...new Set(Array.from(range.getClientRects()).map(r=>Math.round(r.top)))];
+   const sr=stop.getBoundingClientRect(),fr=fire?.getBoundingClientRect(),ar=actions.getBoundingClientRect(),rr=result.getBoundingClientRect();
+   return {
+    viewport:innerWidth,theme:matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light',
+    transcript:v.resultSpan.textContent.replace(/\s+/g,' ').trim(),available:controls.clientWidth,
+    actionWidth:ar.width,stopRight:sr.right,fireLeft:fr?.left,alignmentDelta:fr?fr.left-sr.right:null,
+    resultTop:rr.top,actionsBottom:ar.bottom,inlineClass:controls.classList.contains('p21-feedback-inline-wrap'),
+    fallback:controls.classList.contains('p21-feedback-fallback'),actionsRight:ar.right,
+    lines:uniqueTops.length,scrollDelta:controls.scrollWidth-controls.clientWidth,
+    documentOverflow:document.documentElement.scrollWidth-innerWidth,
+    hasFire:Boolean(fire),hasLabel:Boolean(label)
+   };
+  },geometryKey);
+  console.log('P2.3 feedback geometry '+JSON.stringify(m));
+  check(m.hasFire&&m.hasLabel,true,'mismatch retains Fire and Keep going! '+width+theme+(raw.length>20?' long':' short'));
+  check(m.inlineClass,true,'mismatch uses the common shrinking result column '+width+theme);
+  check(m.documentOverflow<=1&&m.scrollDelta<=1,true,'feedback causes no horizontal overflow '+width+theme+(raw.length>20?' long':' short'));
+  const after=await p.evaluate(key=>{
+   const v=practice2State.views[key],a=v.resultSpan.closest('.recording-controls').querySelector('.recording-actions');
+   return Array.from(a.querySelectorAll('button')).map(b=>{const r=b.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom}});
+  },geometryKey);
+  check(after.length,before.length,'action button count unchanged '+width+theme);
+  check(after.every((r,i)=>Math.abs(r.left-before[i].left)<0.75&&Math.abs(r.top-before[i].top)<0.75&&Math.abs(r.right-before[i].right)<0.75&&Math.abs(r.bottom-before[i].bottom)<0.75),true,'action button positions unchanged '+width+theme+(raw.length>20?' long':' short'));
+  if(width===375&&raw.length>20){
+   if(m.fallback) check(m.resultTop>=m.actionsBottom-0.5,true,'unusable remainder moves feedback to right-aligned row '+theme);
+   else check(m.fireLeft>=m.actionsRight+0.5,true,'usable remainder starts feedback beside all actions '+theme);
+  }
+  if(width===1440){
+   check(m.fallback,false,'long feedback remains beside Stop at 1440px '+theme);
+  }
+ }
+ await p.evaluate(({key,s})=>{
+  const v=practice2State.views[key],c=v.resultSpan.closest('.recording-controls');
+  v.resultSpan.innerHTML=s.html;v.resultSpan.className=s.resultClass;
+  if(s.resultStyle===null)v.resultSpan.removeAttribute('style');else v.resultSpan.setAttribute('style',s.resultStyle);
+  if(s.correctionStyle===null)v.correctionBox.removeAttribute('style');else v.correctionBox.setAttribute('style',s.correctionStyle);
+  v.corrTextSpan.innerHTML=s.correctionHtml;if(!v.correctionBox.contains(v.corrTextSpan))v.correctionBox.appendChild(v.corrTextSpan);v.corrListenBtn.hidden=s.listenHidden;
+  if(s.listenStyle===null)v.corrListenBtn.removeAttribute('style');else v.corrListenBtn.setAttribute('style',s.listenStyle);
+  if(s.savedPresent)practice2State.savedResults[key]=s.saved;else delete practice2State.savedResults[key];
+  c.className=s.controlsClass;if(s.controlsStyle===null)c.removeAttribute('style');else c.setAttribute('style',s.controlsStyle);
+ },{key:geometryKey,s:originalGeometryState});
+ await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+
+ const peopleModel = 'ここは喫茶店です';
+ await judge([
+  [geometryKey, 'カフェです', peopleModel, true],
+  [geometryKey, '喫茶店です', peopleModel, true],
+  [geometryKey, '私は喫茶店です', peopleModel, true],
+  [geometryKey, '銀行です', peopleModel, false],
+  [geometryKey, peopleModel, peopleModel, true],
+  ['p23_where_d1_s0_2_r', '図書館です', 'Zさんは図書館です', true],
+  ['p23_where_d1_s0_2_r', 'あそこは図書館です', 'Zさんは図書館です', true],
+  ['p23_where_d1_s0_2_r', 'ここは図書館です', 'Zさんは図書館です', false]
+ ], geometryKey);
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
+ await p.locator('[data-set-state="whereDrillSet"] button').first().click();
+ checkFeedback(check, await p.evaluate(readFeedback, geometryKey), peopleModel, true, 'D1 People restored');
  await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();
  await judge([['p23_where_d1_s1_3_r','ペンはここです','ペンはここです',true],['p23_where_d1_s1_3_r','そこです','ペンはここです',false],['p23_where_d1_s1_0_r','ここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはここです','カバンはここです',true],['p23_where_d1_s1_0_r','カバンはそこです','カバンはここです',false],['p23_where_d1_s1_1_r','あそこです','本はあそこです',true],['p23_where_d1_s1_1_r','本はここです','本はあそこです',false],['p23_where_d1_s1_2_r','ノートもあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ノートはあそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','あそこです','ノートもあそこです',true],['p23_where_d1_s1_2_r','ここです','ノートもあそこです',false]]);
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
@@ -143,22 +285,27 @@ function mock(){
   ]);
  }
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(3).click();check(await p.evaluate(()=>practice2State.savedResults.p23_dialogue_s3_2_r.isCorrect),false,'Day results survive switching');
- await p.locator('[data-set-state="cityDialogueSet"] button').first().click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),true,'D3 Country results survive topic switching');
- await p.locator('[data-set-state="cityDialogueSet"] button').nth(1).click();check(await p.locator('#drill3Container .recording-table tr').nth(5).textContent().then(t=>t.includes('✅')),false,'D3 topic results stay separate');
+ await p.locator('[data-set-state="cityDialogueSet"] button').first().click();check(await p.locator('#drill3Container .recording-table tr').nth(5).locator('.feedback-status-accepted').count(),1,'D3 Country results survive topic switching');
+ await p.locator('[data-set-state="cityDialogueSet"] button').nth(1).click();check(await p.locator('#drill3Container .recording-table tr').nth(5).locator('.feedback-status-accepted').count(),0,'D3 topic results stay separate');
  await p.locator('[data-set-state="cityDialogueSet"] button').nth(2).click();
  const questionButton=p.locator('#drill2Container .recording-table tr').first().locator('.recording-actions button').first();const responseButton=p.locator('#drill2Container .recording-table tr').nth(1).locator('.recording-actions button').first();
  await questionButton.click();await p.evaluate(()=>window.oldCityEnd=t.spoken.at(-1).onend);await responseButton.click();await p.evaluate(()=>oldCityEnd?.());check(await p.locator('.p23-city-person.is-speaking').allTextContents(),['X'],'interrupted question does not clear the responder marker');await p.evaluate(()=>t.spoken.at(-1).onend?.());
  await p.evaluate(()=>{isAutoPlay=false;const toggle=document.getElementById('toggleRecordMode');if(toggle.checked)toggle.click();t.speaking=true;});
- for(const rowIndex of [0,1]){
+ const responseRecordingKey = 'p23_where_d1_s2_0_r';
+ let responseTranscript;
+ for(const [rowIndex, role] of ['q', 'r'].entries()){
   const row=p.locator('#drill2Container .recording-table tr').nth(rowIndex);await row.locator('.recording-actions button').first().click();const transcript=await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return u.text;});await row.locator('.recording-actions button').nth(1).click();await p.waitForTimeout(400);
   check(await p.locator('.p23-city-person.is-speaking').allTextContents(),[rowIndex===0?'Y':'X'],'both questioner and responder flash during recording');
   check(await p.locator('[data-set-state] button, .drill-cue-button').evaluateAll(es=>es.every(e=>e.disabled)),true,'recording locks all task switching');
-  await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);check(await row.textContent().then(s=>s.includes('✅')),true,'question and full response recordings are judged');
+  await p.evaluate(text=>{const r=t.recognitions.at(-1),result=[{transcript:text}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();},transcript);await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
+  const key = `p23_where_d1_s2_0_${role}`;
+  checkFeedback(check, await p.evaluate(readFeedback, key), transcript, true, 'Item 2 recording ' + role);
+  if (role === 'r') responseTranscript = transcript;
   check(await p.locator('.p23-city-person.is-speaking').count(),0,'recording completion clears the marker');
  }
  await p.locator('[data-set-state="whereDrillSet"] button').first().click();await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
- check(await p.locator('#drill2Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'Item 2 full response results survive switching');
- await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();check(await p.locator('#drill2Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),false,'Item 1 and Item 2 results stay separate');
+ checkFeedback(check, await p.evaluate(readFeedback, responseRecordingKey), responseTranscript, true, 'Item 2 full response results survive switching');
+ await p.locator('[data-set-state="whereDrillSet"] button').nth(1).click();check(await p.locator('#drill2Container .recording-table tr').nth(1).locator('.feedback-status-accepted').count(),0,'Item 1 and Item 2 results stay separate');
  await p.locator('[data-set-state="whereDrillSet"] button').nth(2).click();
  await p.locator('#scriptModeControl [data-value="hiragana"]').click();
  const cueToggle=p.locator('#drill4Container .drill-cue-button');check(await cueToggle.getAttribute('aria-pressed'),'false','D4 starts with Japanese cues');
@@ -169,7 +316,7 @@ function mock(){
  for(const set of [0,1,2]){await p.locator('[data-set-state="whereDrillSet"] button').nth(set).click();check(await p.locator('#drill2Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D2 English cues for each set');}
  await p.locator('[data-set-state="cityDrillSet"] button').nth(1).click();check((await p.locator('#drill1Container .drill-cue-cell').nth(0).textContent()).includes('Osaka'),true,'D1 English cue');
  await compare(p.locator('#drill3Container .recording-table tr').nth(5).locator('.recording-actions button').first(),'あそこも、土曜日です。');
- check(await p.locator('#drill2Container .recording-table tr').nth(1).textContent().then(s=>s.includes('✅')),true,'English toggle preserves Item2 recording result');
+ checkFeedback(check, await p.evaluate(readFeedback, responseRecordingKey), responseTranscript, true, 'English toggle preserves Item2 recording result');
  await p.locator('.drill-cue-button').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'false','Japanese cues restored');check((await p.locator('#drill3Container .recording-table tr').nth(1).locator('.drill-cue-cell').textContent()).includes('どようび'),true,'Japanese weekday cue restored');
  await p.locator('[data-set-state="cityDrillSet"] button').nth(1).click();
  for(const width of [375,600,900,1440])for(const theme of ['light','dark'])for(const hint of ['off','hover','paren']){
