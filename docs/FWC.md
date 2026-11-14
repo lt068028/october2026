@@ -13,6 +13,7 @@
 | F1 | PR #15 — Keep going!互換性・Fluid Width診断 | Fluid Widthの原因特定と診断証拠の取得が未完了。過去のRun #138は1,932 assertions PASSだが、原因解決の証明ではない。Run #143では54 PASS / 16 FAIL / 70 tests。Group 1は `writeManifest is not defined` により測定前に停止し、Fluid Width診断JSON 0/36、Manifest 0、Fluid Artifact 0。Matrixの全Group展開には静的 `include` が関係していた。後続の修正準備では14,126 bytes・238行の `fluid-width.cjs` 原本候補をProject Libraryで確認したがSHA-256未照合。GitHub上の対象ファイルは修正版ではなく確認済み元ファイルと一致。独立レビュー用の完全差分案を取得できず、提出差分の独立レビューはBLOCKED。現時点で修正版のGitHub登録・実装完了を確認できていない。PR #15はDraft維持。 |
 | F2 | Practice 2.2 — Dr5 English Cues実装漏れ | Dr5のみのEnglish Cues実装漏れを修正対象として登録。自動テストの完成・一本化も必要。2026-11-14時点の確認情報では未実装・未テスト・未Pushで、PR #15完了後に着手する予定。Practice 1.2 / 8.1 / 8.2の実機確認は完了とのユーザー情報あり。 |
 | F3 | Practice 8.3 — Dr1 namesキュー | English Cue内の日本語人名「山田さん」「田中さん」をそれぞれ `Yamada` / `Tanaka` にする表示上の修正1件。学習内容への影響はなく、見栄えのみ。2026-11-14時点の確認情報では未実装・未テスト・未Pushで、PR #15完了後に着手する予定。 |
+| F4 | 日本語学習ページ — 共通録音制限・Autostopの統一 | 共通基準を、録音開始後5秒以内に発話開始を検知できなければ停止、録音全体20秒で停止、Autostop ONでは発話後2.0秒の無音で停止、とする。発話開始前の5秒制限は「録音開始から5秒間発話がない場合」の意味であり、発話の5秒前を意味しない。現行コードは発話開始前15秒のページがあるため5秒へ変更する。20秒の全体上限は維持する。Autostopは現行のページ・課題別の1.5秒／2.0秒および音声認識イベント依存の停止処理を、2.0秒の共通音声レベル検知へ統一する。日本語Practice・Composition・Pronunciationが対象。Deutsche Übung 1.1は対象外とし、GERMAN_DRILL_SPECに従う。Pronunciation 2の初期Manual設定は維持する。実装変更・関連確認は別作業であり、本登録をもって実装完了とはしない。 |
 
 ### F1 関連の追加経過
 
