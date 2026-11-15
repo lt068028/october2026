@@ -23,7 +23,7 @@
 | **2** | **ドイツ語専用仕様書** (`docs/GERMAN_DRILL_SPEC.md`) | ドイツ語ドリルの標準仕様、UI契約、音声制御、判定規則 |
 | **3** | **ドイツ語専用テスト** (`tests/uebung*.cjs`) | 対象ページの契約検証コード、テスト期待値 |
 | **4** | **必要な共通モジュール** (`drill-audio-session.js`, `style.css`, `tooltip-layout.js`) | 実際にドイツ語ページが直接利用している共通資産 |
-| **5** | **関連する共通仕様書** (`docs/UI_LAYOUT_SPEC.md`, `docs/PROJECT_SPEC.md`, `docs/RELAY_WORKFLOW.md`) | サイト全体の幅配分契約、リレー手順、仕様書管理方針 |
+| **5** | **関連する共通仕様書** (`docs/UI_LAYOUT_SPEC.md`, `docs/PROJECT_SPEC.md`, `docs/RELAY_WORKFLOW.md`) | サイト全体の幅配分契約、AI作業・GitHub運用、仕様書管理方針 |
 
 ---
 
