@@ -168,7 +168,7 @@
   - `stopAllPlayback()`：外部クリックや中断時に呼ばれ、`DrillAudio.invalidatePlayback()` と `stopPlayback()` の両方を実行する。
   - Autoplayリレー中（`isRelay === true`）は `stopAllPlayback()` をスキップし、リレーの破壊を防止する。
 
-### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー（FWC W9） 【実装済み】
+### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー 【実装済み】
 - **専用通知バナー（`#germanTtsNotice`）**:
   - ヘッダー直下に配置された専用のインラインバナー。既存の `#audioRecoveryStatus` および `#voiceRegionNotice` とは完全に分離・独立。
   - 閉じるボタン（`#germanTtsNoticeClose`）を備え、キーボード操作および375px幅のレスポンシブ表示に対応。
