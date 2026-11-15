@@ -5,9 +5,9 @@
 > - ユーザー承認状態：承認済み
 > - 承認日：2026-11-14
 
-## 判定結果アイコン設計履歴 — Feedback Status Icons（2026-11-11）
+## 判定結果アイコン共通仕様 — Feedback Status Icons（2026-11-11）
 
-**2026-11-11当時の設計履歴（2026-11-15現行機能から廃止）** 本節は当時の候補デザイン・検討・検証経緯を保存する履歴であり、現行UIの要件・正本ではない。2026-11-15の決定により、Practice 2.1の通常回答経路でUndeterminedを生成せず、Footprintsおよび`Could not be evaluated reliably.`を現行画面に表示する要件を廃止した。Accepted／Mismatchの既存判定・表示は維持する。実回答からUndeterminedを生成しないこと、過去の表示fixtureや休眠コードが残っていても現行機能として扱わないことを、現行仕様とする。詳細は`PRACTICE2_SPEC.md`を参照。
+**2026-11-11設計登録／適用範囲を2026-11-15更新** 本節は共有`FeedbackStatus`部品を使用するページの判定アイコン外観・表示規則を定める。現行コードと`GERMAN_DRILL_SPEC.md`ではDeutsche Übung 1.1がAccepted／Mismatch／Undeterminedの3段階判定を実装し、Footprints表示を使用しているため、Deutsche Übung 1.1には本節の共有SVG・視覚仕様が引き続き適用される。一方、2026-11-15の決定により、Practice 2.1ではUndeterminedを実回答から生成せず、Footprintsおよび`Could not be evaluated reliably.`を現行画面に表示する機能を廃止した。Practice 2.1ではAccepted／Mismatchのみを現行機能とし、Undeterminedに関する以下の記述は同ページには適用しない。ドイツ語ページへの廃止適用は、作成者による対象範囲の確認が済むまで行わない。
 
 ### 基本方針・承認済みSVG
 
