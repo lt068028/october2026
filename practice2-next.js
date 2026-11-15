@@ -1278,7 +1278,7 @@ function practice2ShowNotice(resultSpan, message) {
         return {...PracticeNext.items.find(o=>o.kind===kind),zone:['A','B','far'][i],priceHira,priceKanji,priceNumber};
     });
     const merchandise=(kind)=>{
-        const base={fruit:['くだもの','果物','kudamono','fruit'],bag:['かばん','カバン','kaban','bag'],clock:['とけい','時計','tokei','clock / watch'],onigiri:['おにぎり','おにぎり','onigiri','rice ball'],bento:['おべんとう','お弁当','obentō','boxed lunch']}[kind];
+        const base={fruit:['くだもの','果物','kudamono','fruit'],bag:['かばん','カバン','kaban','bag'],clock:['とけい','時計','tokei','clock'],onigiri:['おにぎり','おにぎり','onigiri','rice ball'],bento:['おべんとう','お弁当','obentō','bento']}[kind];
         const values=kind==='fruit'?[300,100,200]:kind==='onigiri'?[300,600,900]:kind==='bento'?[1000,2000,3000]:kind==='clock'?[6000,9000,10000]:[2000,5000,8000];
         const names={100:['ひゃくえん','百円'],200:['にひゃくえん','二百円'],5000:['ごせんえん','五千円'],6000:['ろくせんえん','六千円'],8000:['はっせんえん','八千円'],9000:['きゅうせんえん','九千円'],10000:['いちまんえん','一万円'],300:['さんびゃくえん','三百円'],600:['ろっぴゃくえん','六百円'],900:['きゅうひゃくえん','九百円'],1000:['せんえん','千円'],2000:['にせんえん','二千円'],3000:['さんぜんえん','三千円'],4000:['よんせんえん','四千円']};
         return values.map((priceNumber,i)=>({kind,hira:base[0],kanji:base[1],romaji:base[2],meaning:base[3],zone:['A','B','far'][i],photoKind:kind,priceNumber,priceHira:names[priceNumber][0],priceKanji:names[priceNumber][1]}));
