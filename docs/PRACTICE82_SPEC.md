@@ -9,7 +9,7 @@ Practice 8.2 Example 1（Unspecified／None／All-inclusive）およびExample 2
 
 # Practice 8.2: 何か・何も・何でも
 
-更新日：2026-11-06。Practice 8.2の現在の確定構成はExample 4件・Drill 4件。旧版の3 Example・3 Drill仕様から拡張されている。ページ実装と最新の `docs/HANDOVER.md` を基準とし、未記載の仕様変更は行わない。
+更新日：2026-11-15（運用参照を整理）。Practice 8.2の現在の確定構成はExample 4件・Drill 4件。旧版の3 Example・3 Drill仕様から拡張されている。現在のページ実装と関連する確定仕様書を基準とし、未記載の仕様変更はユーザーの最新の明確な指示・承認を確認せずに追加しない。
 
 ## 構成とモデル
 
