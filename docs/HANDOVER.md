@@ -7,7 +7,7 @@
 - **主題**：October2026のProject Instructions、AI作業指針、GitHub内仕様書の刷新と整合性監査。
 - **今回の範囲**：文書・指針の確認と改定。教材コンテンツ拡張、機能実装、コード／CSS整理、テストコード修正は依頼範囲に含めない。
 - **現在段階**：第5段階「残存文書の整合性監査」。
-- **確認基準**：GitHub `main`。今回の整理開始時の基準コミットは `00ab90d564d70a25d10e053ab7cb69f65bde7f55`。
+- **確認基準**：GitHub `main`。この引き継ぎ更新直前のHEADは `281dc971114770cc83cc96c0c5a886402c56b18c`。
 
 ## 2. 全体ロードマップ
 
@@ -29,9 +29,9 @@
 
 ## 4. 第5段階：残っている作業
 
-1. **`tests/README.md` の説明整合**：判定レンダリング契約に「保留（Footprints）」が現行状態として記載されている箇所、Practice 2.1のテスト説明に「明示保留Undetermined」が現行判定状態に見える箇所を見直す。テストコード内のfixture／互換ケースと、ユーザー向け現行機能を区別する。コード・テスト自体は変更しない。
-2. **現行Markdownの残存記述監査**：廃止済み判定状態・古い承認待ち・Preview限定仕様が、現行ルールとして誤読されないか確認する。日付付き監査・比較記録は履歴資料として扱い、根拠なく削除しない。
-3. **参照・承認状態の整合**：正本へのリンク、重複記載、承認済み／提案／Preview限定の区別を確認する。
+1. **`tests/README.md` の説明整合：完了**。判定レンダリング契約をAccepted／Mismatchに整理し、Practice 2.1のUndeterminedは旧fixtureの互換確認であり現行機能ではないと明記した。テストコードは変更していない。
+2. **現行Markdownの残存記述監査：進行中**。`PRACTICE_FEEDBACK_AUDIT_20261112.md` に歴史資料の注意書きを追加。`UI_LAYOUT_SPEC.md` のスマートフォン対応保留、電話アイコン未採用案、旧W項目表現を整理した。その他の仕様・監査文書は引き続き確認する。
+3. **参照・承認状態の整合：未着手**。正本へのリンク、重複記載、承認済み／提案／Preview限定の区別を確認する。
 
 ## 5. 旧HANDOVER記録の扱い
 
@@ -49,6 +49,9 @@
 
 ## 7. 直近の文書変更
 
-- `docs/RELAY_WORKFLOW.md`：HANDOVERの更新タイミング、更新方法、整理基準、再確認手順を明文化。
-- `docs/archive/HANDOVER_20261115_PRE_REFRESH.md`：旧HANDOVERの内容を状態スナップショットとして保存し、現行状態と区別。
-- `docs/HANDOVER.md`：本書へ再構成。旧状態の追記はせず、現行のロードマップと次作業を維持する。
+- `docs/RELAY_WORKFLOW.md`：HANDOVERの更新タイミング、更新方法、整理基準、再確認手順を明文化（Commit `5e41726`）。
+- `docs/archive/HANDOVER_20261115_PRE_REFRESH.md`：旧HANDOVERを履歴スナップショットとして保存（Commit `00ab90d`）。
+- `docs/HANDOVER.md`：本書へ再構成し、現在のロードマップと次作業を反映（Commit `707a360`）。
+- `tests/README.md`：旧Footprints／Undeterminedのテスト説明を現行機能とfixtureに分離（Commit `32b5735`）。
+- `docs/PRACTICE_FEEDBACK_AUDIT_20261112.md`：旧監査資料として明示（Commit `88b4584`）。
+- `docs/UI_LAYOUT_SPEC.md`：サポート範囲と古い提案記録を現行状態に整合（Commit `281dc97`）。
