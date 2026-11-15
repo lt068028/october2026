@@ -1,5 +1,9 @@
 # Practice Feedback Status — Read-only Audit (2026-11-12)
 
+> **Historical audit — not the current specification.**
+> This document records the source-level audit and decisions as of 2026-11-12. Later user decisions and current specifications supersede any conflicting statement here. In particular, the former `undetermined` / Footprints state is retired from current Japanese and German feedback specifications; references below preserve the historical audit context only.
+> Current rules are maintained in `docs/PROJECT_SPEC.md`, `docs/UI_LAYOUT_SPEC.md`, and `docs/GERMAN_DRILL_SPEC.md`.
+
 ## Scope and provenance
 - Repository: `lt068028/october2026`
 - Audited baseline: `075bd5bb724963a1bc98c42a9f926460f836b986` (approved Practice 2.1 Preview).
