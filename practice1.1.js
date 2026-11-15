@@ -999,6 +999,10 @@ function syncRecordingButtons() {
                 "important"
             );
         });
+
+    if (typeof updateCopyButtons11 === "function") {
+        updateCopyButtons11();
+    }
 }
 
 function refreshRow(view) {
@@ -2965,9 +2969,125 @@ window.addEventListener("pagehide", () => {
         originalRender();
         installSpeechStyle();
         updateExample();
+        mountCopyAreas11();
         syncRecordingButtons();
     };
 })();
+
+// ============================================================================
+// Practice 1.1: Copy my sentences
+// ============================================================================
+
+const headers11 = {
+    1: 'Practice 1.1 — Task 1: Basic Sentences — N₁はN₂です',
+    2: 'Practice 1.1 — Task 2: Selectable Practice — N₁はN₂です',
+    3: 'Practice 1.1 — Task 3: Free Practice — N₁はN₂です'
+};
+
+function entriesFor11(taskNum) {
+    const entries = [];
+    if (taskNum === 1) {
+        taskData.forEach((_, index) => {
+            const key = `task1_${index}`;
+            const res = practice1State.savedResults[key];
+            if (!res || res.audioOnly) return;
+            const text = (res.rawTranscript || res.userTranscript || '').trim();
+            if (!text) return;
+            const mark = res.isCorrect ? '✅ ' : '❌ ';
+            entries.push(`${index + 1}. ${mark}${text}`);
+        });
+    } else if (taskNum === 2) {
+        for (let i = 1; i <= 3; i++) {
+            const key = `task2_${i}`;
+            const res = practice1State.savedResults[key];
+            if (!res || res.audioOnly) continue;
+            const text = (res.rawTranscript || res.userTranscript || '').trim();
+            if (!text) continue;
+            const mark = res.isCorrect ? '✅ ' : '❌ ';
+            entries.push(`${i}. ${mark}${text}`);
+        }
+    } else if (taskNum === 3) {
+        for (let i = 1; i <= 3; i++) {
+            const key = `task3_${i}`;
+            const res = practice1State.savedResults[key];
+            if (!res || res.audioOnly) continue;
+            const text = (res.rawTranscript || res.userTranscript || '').trim();
+            if (!text) continue;
+            const mark = res.isCorrect ? '✅ ' : '❌ ';
+            entries.push(`${i}. ${mark}${text}`);
+        }
+    }
+    return entries;
+}
+
+function updateCopyButtons11() {
+    document.querySelectorAll('.p11-copy-area').forEach(area => {
+        const button = area.querySelector('.p11-copy-button');
+        if (!button) return;
+        const taskNum = Number(area.dataset.drillIndex);
+        const count = entriesFor11(taskNum).length;
+        const isBusy = Boolean(typeof busy === 'function' ? busy() : false);
+        button.disabled = isBusy || count === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+
+function mountCopyAreas11() {
+    if (!window.FluentIcons?.markup) return;
+    [1, 2, 3].forEach(taskNum => {
+        const container = document.getElementById(`task${taskNum}Container`);
+        if (!container) return;
+
+        let area = container.querySelector(`.p11-copy-area[data-drill-index="${taskNum}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p11-copy-area';
+            area.dataset.drillIndex = String(taskNum);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p11-copy-button';
+            button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p11-copy-icon') + '<span>Copy my sentences</span>';
+
+            const help = document.createElement('span');
+            help.className = 'p11-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+
+            let timer = null;
+            button.addEventListener('click', async () => {
+                if (typeof busy === 'function' && busy()) return;
+                const entries = entriesFor11(taskNum);
+                if (!entries.length) return;
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const labelSpan = button.querySelector('span');
+                try {
+                    await navigator.clipboard.writeText(headers11[taskNum] + ' — ' + date + '\n' + entries.join('\n'));
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
+                } catch (error) {
+                    // Do not change label on failure
+                }
+            });
+
+            area.append(button, help);
+            container.appendChild(area);
+        } else if (container.lastElementChild !== area) {
+            container.appendChild(area);
+        }
+    });
+
+    updateCopyButtons11();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountCopyAreas11);
+} else {
+    mountCopyAreas11();
+}
 
 
 // Keep lifecycle and Voice locks aligned with this page's existing recorder.

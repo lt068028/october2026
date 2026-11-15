@@ -879,6 +879,10 @@ function practice2SyncRecordingUI() {
             "important"
         );
     });
+
+    if (typeof updateCopyButtons12 === "function") {
+        updateCopyButtons12();
+    }
 }
 
 function practice2ShowNotice(resultSpan, message) {
@@ -3361,4 +3365,142 @@ function renderEnglishCuePanel() {
 
     panel.append(copy, toggle);
     container.append(panel);
+}
+
+// ============================================================================
+// Practice 1.2: Copy my sentences
+// ============================================================================
+
+const headers12 = {
+    1: 'Practice 1.2 — Drill 1: Yes/No Questions — N₁はN₂ですか',
+    2: 'Practice 1.2 — Drill 2: Wh-Questions — N₁はN₂ですか'
+};
+
+function entriesFor12(drillNum) {
+    const entries = [];
+    if (drillNum === 1) {
+        practice2Data.forEach((_, index) => {
+            const qKey = `p2_drill1_q_${index}`;
+            const aKey = `p2_drill1_a_${index}`;
+            const qRes = practice2State.savedResults[qKey];
+            const aRes = practice2State.savedResults[aKey];
+
+            if (qRes && !qRes.audioOnly) {
+                const text = (qRes.rawTranscript || qRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = qRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${index + 1}. Q: ${mark}${text}`);
+                }
+            }
+            if (aRes && !aRes.audioOnly) {
+                const text = (aRes.rawTranscript || aRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = aRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${index + 1}. A: ${mark}${text}`);
+                }
+            }
+        });
+    } else if (drillNum === 2) {
+        drill2Targets.forEach((target, index) => {
+            const key = `p2_drill2_${target.label}`;
+            const qKey = `${key}_q`;
+            const aKey = `${key}_a`;
+            const qRes = practice2State.savedResults[qKey];
+            const aRes = practice2State.savedResults[aKey];
+
+            if (qRes && !qRes.audioOnly) {
+                const text = (qRes.rawTranscript || qRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = qRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${index + 1}. Q: ${mark}${text}`);
+                }
+            }
+            if (aRes && !aRes.audioOnly) {
+                const text = (aRes.rawTranscript || aRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = aRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${index + 1}. A: ${mark}${text}`);
+                }
+            }
+        });
+    }
+    return entries;
+}
+
+function updateCopyButtons12() {
+    document.querySelectorAll('.p12-copy-area').forEach(area => {
+        const button = area.querySelector('.p12-copy-button');
+        if (!button) return;
+        const drillNum = Number(area.dataset.drillIndex);
+        const count = entriesFor12(drillNum).length;
+        const isBusy = Boolean(typeof busy === 'function' ? busy() : (activeRecognitionSession || practice2State.startingRow));
+        button.disabled = isBusy || count === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+
+function mountCopyAreas12() {
+    if (!window.FluentIcons?.markup) return;
+    [1, 2].forEach(drillNum => {
+        const container = document.getElementById(`drill${drillNum}Container`);
+        if (!container) return;
+
+        let area = container.querySelector(`.p12-copy-area[data-drill-index="${drillNum}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p12-copy-area';
+            area.dataset.drillIndex = String(drillNum);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p12-copy-button';
+            button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p12-copy-icon') + '<span>Copy my sentences</span>';
+
+            const help = document.createElement('span');
+            help.className = 'p12-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+
+            let timer = null;
+            button.addEventListener('click', async () => {
+                const isBusy = Boolean(typeof busy === 'function' ? busy() : (activeRecognitionSession || practice2State.startingRow));
+                if (isBusy) return;
+                const entries = entriesFor12(drillNum);
+                if (!entries.length) return;
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const labelSpan = button.querySelector('span');
+                try {
+                    await navigator.clipboard.writeText(headers12[drillNum] + ' — ' + date + '\n' + entries.join('\n'));
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
+                } catch (error) {
+                    // Do not change label on failure
+                }
+            });
+
+            area.append(button, help);
+            container.appendChild(area);
+        } else if (container.lastElementChild !== area) {
+            container.appendChild(area);
+        }
+    });
+
+    updateCopyButtons12();
+}
+
+const p12OriginalRender = renderAll;
+renderAll = function() {
+    if (typeof p12OriginalRender === 'function') {
+        p12OriginalRender();
+    }
+    mountCopyAreas12();
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountCopyAreas12);
+} else {
+    mountCopyAreas12();
 }

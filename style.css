@@ -753,6 +753,7 @@ h1 {
 :is(.tense-badge, .p73-tense),
 .practice7-page :is(.p71-copy-button, .p72-copy-button, .p73-copy-button),
 .practice81-page .p81-copy-button,
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-button, .p12-copy-button, .p21-copy-button, .p22-copy-button, .p23-copy-button),
 .behind-the-cues-btn,
 .cues-drawer-title,
 .cues-drawer-lead,
@@ -5053,6 +5054,43 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 .practice73-page .p73-copy-button:disabled,
 .practice81-page .p81-copy-button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* Practice 1.1, 1.2, 2.1, 2.2, 2.3: Copy my sentences */
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-area, .p12-copy-area, .p21-copy-area, .p22-copy-area, .p23-copy-area) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    margin-top: 4px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-button, .p12-copy-button, .p21-copy-button, .p22-copy-button, .p23-copy-button) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Lato', sans-serif;
+    max-width: 100%;
+    white-space: normal;
+}
+
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-icon, .p12-copy-icon, .p21-copy-icon, .p22-copy-icon, .p23-copy-icon) {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-help, .p12-copy-help, .p21-copy-help, .p22-copy-help, .p23-copy-help) {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+:is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-button, .p12-copy-button, .p21-copy-button, .p22-copy-button, .p23-copy-button):disabled {
     opacity: .45;
     cursor: not-allowed;
 }

@@ -1782,6 +1782,10 @@ function practice2ShowNotice(resultSpan, message) {
         ).forEach(control => {
             control.disabled = busy();
         });
+
+        if (typeof updateCopyButtons21 === "function") {
+            updateCopyButtons21();
+        }
     };
 
     document.addEventListener("click", event => {
@@ -1809,6 +1813,9 @@ function practice2ShowNotice(resultSpan, message) {
         renderSections();
         ConversationDisplay.format();
         alignColumns();
+        if (typeof mountCopyAreas21 === "function") {
+            mountCopyAreas21();
+        }
         practice2SyncRecordingUI();
         Practice21.refreshTargets();
     };
@@ -3011,3 +3018,172 @@ DrillAudio.configure({
         }
     }
 });
+
+// ============================================================================
+// Practice 2.1: Copy my sentences
+// ============================================================================
+
+const headers21 = {
+    1: 'Practice 2.1 — Drill 1: Describe the objects — これ・それ・あれ・どれ',
+    2: 'Practice 2.1 — Drill 2: What is it? — これ・それ・あれ・どれ',
+    3: 'Practice 2.1 — Drill 3: Which one? — これ・それ・あれ・どれ'
+};
+
+function entriesFor21(drillNum) {
+    const entries = [];
+    if (drillNum === 1) {
+        const setIndex = practice2State.activeSet || 0;
+        if (setIndex === 0) {
+            ['A', 'B'].forEach(speaker => {
+                [0, 1, 2].forEach(i => {
+                    const key = `p21_d1_s0_${speaker}_${i}`;
+                    const res = practice2State.savedResults[key];
+                    if (!res || res.audioOnly) return;
+                    const text = (res.rawTranscript || res.userTranscript || '').trim();
+                    if (!text) return;
+                    const mark = res.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${i + 1}. ${speaker}: ${mark}${text}`);
+                });
+            });
+        } else {
+            [0, 1, 2].forEach(i => {
+                const qKey = `p21_d1_s1_q_${i}`;
+                const aKey = `p21_d1_s1_r_${i}`;
+                const qRes = practice2State.savedResults[qKey];
+                const aRes = practice2State.savedResults[aKey];
+
+                if (qRes && !qRes.audioOnly) {
+                    const text = (qRes.rawTranscript || qRes.userTranscript || '').trim();
+                    if (text) {
+                        const mark = qRes.isCorrect ? '✅ ' : '❌ ';
+                        entries.push(`${i + 1}. Q: ${mark}${text}`);
+                    }
+                }
+                if (aRes && !aRes.audioOnly) {
+                    const text = (aRes.rawTranscript || aRes.userTranscript || '').trim();
+                    if (text) {
+                        const mark = aRes.isCorrect ? '✅ ' : '❌ ';
+                        entries.push(`${i + 1}. A: ${mark}${text}`);
+                    }
+                }
+            });
+        }
+    } else if (drillNum === 2) {
+        const s2 = practice2State.namingSet || 0;
+        [0, 1, 2].forEach(i => {
+            const qKey = `p21_d2_s${s2}_q_${i}`;
+            const aKey = `p21_d2_s${s2}_r_${i}`;
+            const qRes = practice2State.savedResults[qKey];
+            const aRes = practice2State.savedResults[aKey];
+
+            if (qRes && !qRes.audioOnly) {
+                const text = (qRes.rawTranscript || qRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = qRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${i + 1}. Q: ${mark}${text}`);
+                }
+            }
+            if (aRes && !aRes.audioOnly) {
+                const text = (aRes.rawTranscript || aRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = aRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${i + 1}. A: ${mark}${text}`);
+                }
+            }
+        });
+    } else if (drillNum === 3) {
+        const s3 = practice2State.choosingSet || 0;
+        [0, 1].forEach(i => {
+            const qKey = `p21_d3_s${s3}_q_${i}`;
+            const aKey = `p21_d3_s${s3}_r_${i}`;
+            const qRes = practice2State.savedResults[qKey];
+            const aRes = practice2State.savedResults[aKey];
+
+            if (qRes && !qRes.audioOnly) {
+                const text = (qRes.rawTranscript || qRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = qRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${i + 1}. Q: ${mark}${text}`);
+                }
+            }
+            if (aRes && !aRes.audioOnly) {
+                const text = (aRes.rawTranscript || aRes.userTranscript || '').trim();
+                if (text) {
+                    const mark = aRes.isCorrect ? '✅ ' : '❌ ';
+                    entries.push(`${i + 1}. A: ${mark}${text}`);
+                }
+            }
+        });
+    }
+    return entries;
+}
+
+function updateCopyButtons21() {
+    document.querySelectorAll('.p21-copy-area').forEach(area => {
+        const button = area.querySelector('.p21-copy-button');
+        if (!button) return;
+        const drillNum = Number(area.dataset.drillIndex);
+        const count = entriesFor21(drillNum).length;
+        const isBusy = Boolean(typeof busy === 'function' ? busy() : (activeRecognitionSession || practice2State.startingRow));
+        button.disabled = isBusy || count === 0;
+        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+    });
+}
+
+function mountCopyAreas21() {
+    if (!window.FluentIcons?.markup) return;
+    [1, 2, 3].forEach(drillNum => {
+        const container = document.getElementById(`drill${drillNum}Container`);
+        if (!container) return;
+
+        let area = container.querySelector(`.p21-copy-area[data-drill-index="${drillNum}"]`);
+        if (!area) {
+            area = document.createElement('div');
+            area.className = 'p21-copy-area';
+            area.dataset.drillIndex = String(drillNum);
+
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'example-button p21-copy-button';
+            button.innerHTML = window.FluentIcons.markup('clipboard', 20, 'p21-copy-icon') + '<span>Copy my sentences</span>';
+
+            const help = document.createElement('span');
+            help.className = 'p21-copy-help';
+            help.textContent = 'Copy your drill results to review or share.';
+
+            let timer = null;
+            button.addEventListener('click', async () => {
+                const isBusy = Boolean(typeof busy === 'function' ? busy() : (activeRecognitionSession || practice2State.startingRow));
+                if (isBusy) return;
+                const entries = entriesFor21(drillNum);
+                if (!entries.length) return;
+                const now = new Date();
+                const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const labelSpan = button.querySelector('span');
+                try {
+                    await navigator.clipboard.writeText(headers21[drillNum] + ' — ' + date + '\n' + entries.join('\n'));
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
+                } catch (error) {
+                    // Do not change label on failure
+                }
+            });
+
+            area.append(button, help);
+            container.appendChild(area);
+        } else if (container.lastElementChild !== area) {
+            container.appendChild(area);
+        }
+    });
+
+    updateCopyButtons21();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountCopyAreas21);
+} else {
+    mountCopyAreas21();
+}
