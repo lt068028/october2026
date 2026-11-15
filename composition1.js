@@ -1737,9 +1737,9 @@ async function compositionRecord(rowIndex) {
 
         session.timers.push(setTimeout(() => {
             if (!session.speech) {
-                stop("No speech detected within 15 seconds.", true);
+                stop("No speech detected within 5 seconds.", true);
             }
-        }, 15000));
+        }, 5000));
 
         session.timers.push(setTimeout(() => {
             stop("Auto-stopped after 20 seconds.");

@@ -3024,10 +3024,11 @@ function bindRecorderEvents(
 
             recognition.lang = "ja-JP";
             recognition.interimResults = true;
-            recognition.continuous = manual;
+            recognition.continuous = true;
 
             recognition.onspeechstart = () => {
                 session.speechStarted = true;
+                session.lastSoundAt = Date.now();
             };
 
             recognition.onresult = event => {
@@ -3047,6 +3048,7 @@ function bindRecorderEvents(
 
                     if (result[0].transcript.trim()) {
                         session.speechStarted = true;
+                        session.lastSoundAt = Date.now();
                     }
 
                     if (result.isFinal) {
@@ -3079,24 +3081,20 @@ function bindRecorderEvents(
                     return;
                 }
 
-                if (manual || !session.speechStarted) {
-                    try {
-                        recognition.start();
-                        session.recognitionDone = false;
-                        return;
-                    } catch (error) {
-                        // Manualでは録音を継続する。
-                        if (manual) return;
+                try {
+                    recognition.start();
+                    session.recognitionDone = false;
+                    return;
+                } catch (error) {
+                    // Manualでは録音を継続する。
+                    if (manual) return;
 
-                        stop(
-                            "Could not restart recognition.",
-                            true
-                        );
-                        return;
-                    }
+                    stop(
+                        "Could not restart recognition.",
+                        true
+                    );
+                    return;
                 }
-
-                stop();
             };
 
             const recorder = new MediaRecorder(stream);
@@ -3167,7 +3165,7 @@ function bindRecorderEvents(
                     setInterval(() => {
                         if (
                             session.stopRequested
-                            || session.speechStarted
+                            || session.finished
                         ) {
                             return;
                         }
@@ -3184,12 +3182,29 @@ function bindRecorderEvents(
                             sum / samples.length
                         );
 
-                        soundFrames = volume > 0.015
+                        const sound = volume > 0.015;
+
+                        soundFrames = sound
                             ? soundFrames + 1
                             : 0;
 
+                        if (sound && session.speechStarted) {
+                            session.lastSoundAt = Date.now();
+                        }
+
                         if (soundFrames >= 3) {
                             session.speechStarted = true;
+                            session.lastSoundAt = Date.now();
+                        }
+
+                        // Autostop: 発話後2.0秒の無音で自動停止
+                        if (
+                            !manual
+                            && session.speechStarted
+                            && session.lastSoundAt
+                            && Date.now() - session.lastSoundAt >= 2000
+                        ) {
+                            stop();
                         }
                     }, 100)
                 );
@@ -3200,11 +3215,11 @@ function bindRecorderEvents(
                 setTimeout(() => {
                     if (!session.speechStarted) {
                         stop(
-                            "No speech detected within 15 seconds.",
+                            "No speech detected within 5 seconds.",
                             true
                         );
                     }
-                }, 15000)
+                }, 5000)
             );
 
             session.timers.push(

@@ -2651,11 +2651,11 @@ function bindRecorderEvents(
             session.timers.push(setTimeout(() => {
                 if (!session.speechStarted) {
                     stop(
-                        "No speech detected within 15 seconds.",
+                        "No speech detected within 5 seconds.",
                         true
                     );
                 }
-            }, 15000));
+            }, 5000));
 
             session.timers.push(setTimeout(() => {
                 stop("Auto-stopped after 20 seconds.");

@@ -1227,11 +1227,11 @@ async function pronunciationCaptureStart(key, state) {
         session.timers.push(setTimeout(() => {
             if (!session.speech) {
                 session.stop(
-                    "No speech detected within 15 seconds.",
+                    "No speech detected within 5 seconds.",
                     true
                 );
             }
-        }, 15000));
+        }, 5000));
 
         session.timers.push(setTimeout(() => {
             session.stop("Auto-stopped after 20 seconds.");

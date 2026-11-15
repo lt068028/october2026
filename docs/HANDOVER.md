@@ -86,33 +86,27 @@
 > 過去の詳細履歴は [8. 過去履歴アーカイブ](#8-過去履歴アーカイブ) を参照してください。
 
 ## 1. 基本情報（Current State）
-- **最終更新日時**：2026-11-10T15:10:00+01:00
-- **担当環境**：Codex / Antigravity
+- **最終更新日時**：2026-11-15T01:55:00+01:00
+- **担当環境**：Antigravity
 - **対象ブランチ / 最新コミット**：`main`
 - **リポジトリ状態**：Clean（未コミット・未Pushなし）
 - **Vercel本番状態**：Ready / Stable
 
 ## 2. 直近の完了作業
-- **課題**：全11ページE2Eテストの品質監査・不足項目補強・CI安定化
+- **課題**：F4 日本語学習ページの共通録音制限・Autostop統一（PROJECT_SPEC.md §5.2）
 - **変更内容**：
-  1. **E2E総合回帰テストの品質監査・大幅補強** (`tests/e2e-all-practice-pages.cjs`):
-     - **960件から1,071件へ検証項目拡大**（全11 Practiceページ、100% PASS）。
-     - **スラッシュ仕様のページ別実体検証**: 日本語キュー（1.1の `わたし / がくせい`、他10ページの `これ/なに`、`その/かばん` 等のコンパクト表記）および英語キュー（`I / student`, `older brother / student`, `this / …`, `that / bag` 等の `" / "` 表記）の代表語句実描画を自動照合。
-     - **DOM Churn・局所更新の機械的立証**: Practice 7.1 Drill 2 の Yes/No 選択時に第2行（Row 1）のDOMノード同一性（`__domRow1 === rows[1]`）を検証し、全体再描画が発生せず局所更新が行われていることを実証。
-     - **選択状態・回答保持の検証**: Practice 1.2（Drill 1 Yes/No、Drill 2 専攻Select）、Practice 7.1、Practice 7.2 の状態維持を検証。
-     - **音声ライフサイクル & モデルTTS検証**: モデル音声再生時の `window.speechSynthesis.speak` 発火および発話テキストが空でないこと、録音中の排他制御・操作ロック状態を検証。
-     - **レスポンシブ実測検証の厳格化**: 375px/600px/1440px での横スクロールはみ出し防止に加え、キュー要素の画面外クリップ、およびキュー文字列の1文字縦落ち（single-character vertical collapse）の不在をバウンディングボックスで実測検証。
-  2. **CI安定化・既存テストの仕様同期是正**:
-     - `tests/english-cues-expansion.cjs`: 375pxモバイル幅でシステムフォント環境に依存せずスペーサークランプ（`>= 0`）を許容。PASS（234 checks）。
-     - `tests/lesson2-cue-spacing.cjs`: 全11ページ統一英語キュー仕様（`" / "`）との不整合を是正。日本語キュー（スペース禁止）と英語キュー（前後スペース必須）をモード・行種別（Drill / Example）に応じて厳密に判定。PASS（2,568 checks）。
-  3. **プロダクションコード不変の堅持**:
-     - プロダクションコード（HTML/CSS/JS）は一切変更なし。テストスイートおよびドキュメントのみを更新。
+  1. **録音停止3条件の全日本語録音ページ（14ページ）統一**:
+     - ① 発話開始前：5.0秒（Autostop ON/OFF共通、発話検知で解除）。旧15秒を5秒へ統一。
+     - ② 発話後無音：2.0秒連続無音（Autostop ON時、Web Audio API `AudioContext`/`AnalyserNode` による音量監視）。2秒未満で復帰時はリセット。Manual時は発話後無音停止なし。
+     - ③ 絶対上限：20.0秒（全モード共通、発話有無問わず必ず停止）。
+  2. **対象ファイル修正**:
+     - JS 13本: `practice1.1.js`, `practice1.2.js`, `practice2.1.js`, `practice2-next.js` (2.2/2.3), `practice7.1.js`, `practice7.2.js`, `practice7.3.js`, `practice8.1.js`, `practice8.2.js`, `practice8.3.js`, `composition1.js`, `pronunciation1.js`, `pronunciation2.js`
+     - HTML 5本（旧15秒説明のツールチップ文言を5秒に更新）: `practice7.1.html`, `practice7.3.html`, `practice8.1.html`, `practice8.2.html`, `practice8.3.html`
+  3. **F4専用回帰テスト新設** (`tests/f4-recording-limits.cjs`):
+     - 全14ページ×13シナリオ（計325アサーション）を網羅し、全件PASS。
 - **検証結果**：
-  - `tests/e2e-all-practice-pages.cjs`: **PASS（11/11ページ、1,071 checks）**。
-  - `tests/lesson2-cue-spacing.cjs`: **PASS（2,568 cue rows）**。
-  - `tests/english-cues-expansion.cjs`: **PASS（234 checks across 3 pages）**。
-  - `tests/practice71-answer-selection.cjs`: **PASS（23 checks）**。
-  - `git diff --check` にて空白・構文不備なし。
+  - `tests/f4-recording-limits.cjs`: **PASS（325 assertions across 14 pages）**。
+  - `git diff --check`: エラー・余分な空白なし。
 
 ## 3. 継続確認・未解決事項（Pending Actions）
 - [ ] **全11ページ**：新仕様である半角スラッシュキュー表示（日本語 `父/母` または `父 / 母`、英語 `word / word`）および 375px／600px／1440px での表示・視認性・折り返しのユーザー実機ブラウザ確認待ち。

@@ -1189,16 +1189,16 @@ async function record(key, r) {
             }, 100)
         );
 
-        // 発話開始前の無音15秒：新しい録音を保存しない
+        // 発話開始前の無音5秒：新しい録音を保存しない
         s.timers.push(
             setTimeout(() => {
                 if (!s.heard) {
                     s.stop(
-                        "No speech detected within 15 seconds.",
+                        "No speech detected within 5 seconds.",
                         true
                     );
                 }
-            }, 15000)
+            }, 5000)
         );
 
         // Autostop・手動停止の共通上限

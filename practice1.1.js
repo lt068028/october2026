@@ -1867,7 +1867,7 @@ function renderEnglishCuePanel() {
 //
 // Drill 1・2：両方の表示モードでテキスト抽出・判定
 // Drill 3：Hiragana OnlyではAudio only
-// 発話開始前の無音：15秒
+// 発話開始前の無音：5秒
 // 録音全体：20秒（Autostop・Manual共通）
 // ============================================================================
 
@@ -2207,10 +2207,11 @@ async function startRecording(initialView) {
 
             recognition.lang = "ja-JP";
             recognition.interimResults = true;
-            recognition.continuous = manual;
+            recognition.continuous = true;
 
             recognition.onspeechstart = () => {
                 session.speechStarted = true;
+                session.lastSoundAt = Date.now();
             };
 
             recognition.onresult = event => {
@@ -2230,6 +2231,7 @@ async function startRecording(initialView) {
 
                     if (result[0].transcript.trim()) {
                         session.speechStarted = true;
+                        session.lastSoundAt = Date.now();
                     }
 
                     if (result.isFinal) {
@@ -2255,34 +2257,30 @@ async function startRecording(initialView) {
             recognition.onend = () => {
                 if (session.finished) return;
 
-                session.recognitionDone = true;
-
                 if (session.stopRequested) {
+                    session.recognitionDone = true;
                     finish();
                     return;
                 }
 
-                if (manual || !session.speechStarted) {
-                    try {
-                        recognition.start();
-                        session.recognitionDone = false;
-                        return;
+                try {
+                    recognition.start();
+                    session.recognitionDone = false;
+                    return;
 
-                    } catch (error) {
-                        // Manualでは録音を続ける。
-                        // 停止ボタンまたは20秒制限で終了する。
-                        if (manual) return;
+                } catch (error) {
+                    // Manualでは録音を続ける。
+                    // 停止ボタンまたは20秒制限で終了する。
+                    if (manual) return;
 
-                        stop(
-                            "Could not restart recognition.",
-                            true
-                        );
+                    session.recognitionDone = true;
+                    stop(
+                        "Could not restart recognition.",
+                        true
+                    );
 
-                        return;
-                    }
+                    return;
                 }
-
-                stop();
             };
         }
 
@@ -2337,21 +2335,26 @@ async function startRecording(initialView) {
                         sum / samples.length
                     );
 
-                    soundFrames = volume > 0.025
+                    const sound = volume > 0.025;
+                    soundFrames = sound
                         ? soundFrames + 1
                         : 0;
+
+                    if (sound && session.speechStarted) {
+                        session.lastSoundAt = Date.now();
+                    }
 
                     if (soundFrames >= 3) {
                         session.speechStarted = true;
                         session.lastSoundAt = Date.now();
                     }
 
-                    // Audio onlyの発話後無音は従来どおり1.5秒。
+                    // Autostop: 発話後2.0秒の無音で自動停止
                     if (
-                        audioOnly
-                        && !manual
+                        !manual
+                        && session.speechStarted
                         && session.lastSoundAt
-                        && Date.now() - session.lastSoundAt >= 1500
+                        && Date.now() - session.lastSoundAt >= 2000
                     ) {
                         stop();
                     }
@@ -2373,11 +2376,11 @@ async function startRecording(initialView) {
             setTimeout(() => {
                 if (!session.speechStarted) {
                     stop(
-                        "No speech detected within 15 seconds.",
+                        "No speech detected within 5 seconds.",
                         true
                     );
                 }
-            }, 15000)
+            }, 5000)
         );
 
         session.timers.push(
