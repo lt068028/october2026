@@ -1003,15 +1003,17 @@ function practice2ShowNotice(resultSpan, message) {
 
             const what = document.createElement("span");
 
-            what.innerHTML = formatWord(
-                "なに",
-                "何",
-                "nani",
-                "what"
-            );
+            what.innerHTML = practice2State.englishCues
+                ? `<span class="target-word">what</span>`
+                : formatWord(
+                    "なに",
+                    "何",
+                    "nani",
+                    "what"
+                );
 
             cue.append(
-                document.createTextNode(hintMode === "paren" ? "" : "/"),
+                document.createTextNode(practice2State.englishCues ? " / " : (hintMode === "paren" ? "" : "/")),
                 what
             );
 
