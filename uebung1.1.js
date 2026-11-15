@@ -655,7 +655,7 @@ function initGermanDrill() {
     // -------------------------------------------------------------
     // 4. Audio & Speech Synthesis
     // -------------------------------------------------------------
-    function stopPlayback() {
+    function stopPlayback(isNaturalFinish = false) {
         if (currentUtterance) {
             currentUtterance.onend = null;
             currentUtterance.onerror = null;
@@ -1095,8 +1095,16 @@ function initGermanDrill() {
         if (session || preparing) return;
 
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition || !window.MediaRecorder) {
-            showResult(key, "Speech recognition or recording is not supported in this browser.");
+        if (!Recognition && !window.MediaRecorder) {
+            showResult(key, "Speech recognition and recording are not supported in this browser.");
+            return;
+        }
+        if (!Recognition) {
+            showResult(key, "Speech recognition is not supported in this browser.");
+            return;
+        }
+        if (!window.MediaRecorder) {
+            showResult(key, "Recording is not supported in this browser.");
             return;
         }
 
@@ -1125,7 +1133,8 @@ function initGermanDrill() {
             manual,
             stopping: false,
             finished: false,
-            heard: false,
+            speechStarted: false,
+            lastSoundAt: null,
             raw: "",
             interim: "",
             chunks: [],
@@ -1133,7 +1142,10 @@ function initGermanDrill() {
             recognitionDone: false,
             recorderDone: false,
             discard: false,
-            notice: ""
+            notice: "",
+            context: null,
+            recorder: null,
+            recognition: null
         };
         session = s;
 
@@ -1152,10 +1164,16 @@ function initGermanDrill() {
 
             stream.getTracks().forEach(t => t.stop());
 
+            if (s.context) {
+                try { s.context.close().catch(() => {}); } catch (_) {}
+                s.context = null;
+            }
+
             if (s.recognition) {
                 s.recognition.onend = null;
                 s.recognition.onresult = null;
                 s.recognition.onerror = null;
+                s.recognition.onspeechstart = null;
                 try { s.recognition.abort(); } catch (_) {}
             }
 
@@ -1167,23 +1185,25 @@ function initGermanDrill() {
 
             const raw = s.raw.trim();
             const recModel = getModel(item, currentVariety);
-            const evalResult = evaluateGermanAnswer(raw, item, currentVariety);
-            const isCorrect = evalResult.judgment === "accepted";
-            const supplement = evalResult.supplement;
 
             const previous = saved.get(key) || {};
             let url = previous.url;
 
-            if (!s.discard && s.heard && s.chunks.length) {
-                url = URL.createObjectURL(
-                    new Blob(s.chunks, { type: s.recorder.mimeType || "audio/webm" })
-                );
-                if (previous.url) {
-                    URL.revokeObjectURL(previous.url);
-                }
+            const hasValidAudio = !s.discard && s.speechStarted && s.chunks.length > 0;
+            if (hasValidAudio) {
+                try {
+                    url = URL.createObjectURL(
+                        new Blob(s.chunks, { type: s.recorder?.mimeType || "audio/webm" })
+                    );
+                    if (previous.url) {
+                        URL.revokeObjectURL(previous.url);
+                    }
+                } catch (_) {}
             }
 
-            if (!s.discard && raw) {
+            if (raw) {
+                const evalResult = evaluateGermanAnswer(raw, item, currentVariety);
+                const isCorrect = evalResult.judgment === "accepted";
                 saved.set(key, {
                     url,
                     raw: s.raw,
@@ -1191,14 +1211,31 @@ function initGermanDrill() {
                     judgment: evalResult.judgment,
                     redPart: evalResult.redPart,
                     modelText: recModel,
-                    supplement,
+                    supplement: evalResult.supplement,
+                    variety: currentVariety
+                });
+            } else if (hasValidAudio) {
+                saved.set(key, {
+                    url,
+                    raw: "",
+                    unrecognized: true,
+                    modelText: recModel,
                     variety: currentVariety
                 });
             }
 
             s.chunks = [];
 
-            showResult(key, s.notice || (!raw ? "No speech recognized." : ""));
+            let noticeMessage = s.notice;
+            if (!noticeMessage && !raw) {
+                if (s.speechStarted) {
+                    noticeMessage = "No transcription available.";
+                } else {
+                    noticeMessage = "No speech detected within 5 seconds.";
+                }
+            }
+
+            showResult(key, noticeMessage);
             sync();
 
             if (autoplay && !s.discard && raw) {
@@ -1216,15 +1253,17 @@ function initGermanDrill() {
             if (s.stopping || s.finished) return;
             s.stopping = true;
             s.notice = notice;
-            s.discard = discard || !s.heard;
+            s.discard = discard || !s.speechStarted;
 
             clear();
             sync();
 
-            try {
-                s.recognition.stop();
-            } catch (_) {
-                s.recognitionDone = true;
+            if (s.recognition && !s.recognitionDone) {
+                try {
+                    s.recognition.stop();
+                } catch (_) {
+                    s.recognitionDone = true;
+                }
             }
 
             if (!s.recorder || s.recorder.state === "inactive") {
@@ -1240,9 +1279,14 @@ function initGermanDrill() {
 
             s.timers.push(setTimeout(() => {
                 s.recognitionDone = true;
-                s.recorderDone = true;
+                if (!s.recorderDone) {
+                    s.discard = true;
+                    s.recorderDone = true;
+                }
                 finish();
-            }, 500));
+            }, 2500));
+
+            finish();
         };
 
         // Initialize SpeechRecognition
@@ -1250,7 +1294,13 @@ function initGermanDrill() {
             s.recognition = new Recognition();
             s.recognition.lang = targetLocaleForVariety(currentVariety);
             s.recognition.interimResults = true;
+            s.recognition.continuous = true;
             s.recognition.maxAlternatives = 1;
+
+            s.recognition.onspeechstart = () => {
+                s.speechStarted = true;
+                s.lastSoundAt = Date.now();
+            };
 
             s.recognition.onresult = event => {
                 let finalStr = "";
@@ -1260,7 +1310,10 @@ function initGermanDrill() {
                     if (event.results[i].isFinal) finalStr += trans;
                     else interimStr += trans;
                 }
-                if (finalStr || interimStr) s.heard = true;
+                if (finalStr || interimStr) {
+                    s.speechStarted = true;
+                    s.lastSoundAt = Date.now();
+                }
                 if (finalStr) s.raw += finalStr;
                 s.interim = interimStr;
 
@@ -1269,18 +1322,12 @@ function initGermanDrill() {
                 if (view && display) {
                     view.result.textContent = display;
                 }
-
-                if (!s.manual && s.heard) {
-                    clear();
-                    s.timers.push(setTimeout(() => {
-                        s.stop();
-                    }, 2000));
-                }
             };
 
-            s.recognition.onerror = () => {
+            s.recognition.onerror = event => {
+                if (s.finished || s.stopping || event?.error === "no-speech") return;
                 s.recognitionDone = true;
-                finish();
+                s.stop("Recognition error.", true);
             };
 
             s.recognition.onend = () => {
@@ -1303,18 +1350,78 @@ function initGermanDrill() {
                 s.recorderDone = true;
                 finish();
             };
+            s.recorder.onerror = () => {
+                s.stop("Recording error.", true);
+            };
             s.recorder.start();
         } catch (_) {
             s.recorderDone = true;
+            s.stop("Could not start recording.", true);
+            return;
         }
 
-        // Watchdog timers
-        s.timers.push(setTimeout(() => {
-            if (!s.heard) s.stop("Recording stopped: no speech detected.", true);
-        }, 15000));
+        // Audio monitoring via AudioContext
+        try {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                const context = new AudioContextClass();
+                s.context = context;
 
+                const source = context.createMediaStreamSource(stream);
+                const analyser = context.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+                context.resume().catch(() => {});
+
+                const samples = new Float32Array(analyser.fftSize);
+                let soundFrames = 0;
+
+                s.timers.push(setInterval(() => {
+                    if (s.stopping || s.finished) return;
+
+                    analyser.getFloatTimeDomainData(samples);
+                    let sum = 0;
+                    for (const sample of samples) {
+                        sum += sample * sample;
+                    }
+                    const volume = Math.sqrt(sum / samples.length);
+
+                    const sound = volume > 0.025;
+                    soundFrames = sound ? soundFrames + 1 : 0;
+
+                    if (sound && s.speechStarted) {
+                        s.lastSoundAt = Date.now();
+                    }
+
+                    if (soundFrames >= 3) {
+                        s.speechStarted = true;
+                        s.lastSoundAt = Date.now();
+                    }
+
+                    // Autostop: 2.0s continuous silence after speech
+                    if (
+                        !s.manual &&
+                        s.speechStarted &&
+                        s.lastSoundAt &&
+                        Date.now() - s.lastSoundAt >= 2000
+                    ) {
+                        s.stop();
+                    }
+                }, 100));
+            }
+        } catch (_) {}
+
+        // Watchdog timers
+        // 1. 5s limit before speech starts (Autostop ON/OFF common)
         s.timers.push(setTimeout(() => {
-            s.stop("Recording stopped: 20-second limit reached.");
+            if (!s.speechStarted) {
+                s.stop("No speech detected within 5 seconds.", true);
+            }
+        }, 5000));
+
+        // 2. 20s absolute upper limit (Autostop ON/OFF common)
+        s.timers.push(setTimeout(() => {
+            s.stop("Auto-stopped after 20 seconds.");
         }, 20000));
 
         sync();
@@ -1358,6 +1465,10 @@ function initGermanDrill() {
                 FeedbackStatus.appendUndetermined(v.result, val.raw);
                 v.correction.hidden = true;
             }
+        } else if (notice) {
+            const note = node("span", "result-notice", notice);
+            note.style.color = "var(--text-secondary)";
+            v.result.append(note);
         } else {
             v.result.append(node("span", "result-text not-recorded-yet", "… Not yet"));
         }
@@ -1371,7 +1482,7 @@ function initGermanDrill() {
             v.result.append(play);
         }
 
-        if (notice) {
+        if (val?.raw && notice) {
             const note = node("span", "result-notice", ` ${notice}`);
             note.style.color = "var(--text-secondary)";
             v.result.append(note);

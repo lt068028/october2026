@@ -288,3 +288,328 @@ assert.ok(!js.includes('🔊きく'), 'JS must not contain 🔊きく');
 assert.ok(!js.includes('とる'), 'JS must not contain とる');
 
 console.log('PASS: All structural, contract, 3-stage evaluation, and hover tooltip tests passed successfully.');
+
+// ============================================================================
+// 9. Browser E2E: Recording Lifecycle, Limits, Audio Monitoring & Error Handling
+// ============================================================================
+const { chromium } = require('playwright');
+
+const chromiumPath = process.env.CHROMIUM_PATH ||
+    (fs.existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' :
+     path.join(root, '.tools/ms-playwright/chromium-1140/chrome-linux/chrome'));
+
+async function runRecordingLifecycleTests() {
+    console.log('Testing Deutsche Übung 1.1 recording lifecycle and limits in browser...');
+    const browser = await chromium.launch({
+        executablePath: chromiumPath,
+        headless: true,
+        args: ['--no-sandbox']
+    });
+
+    try {
+        const context = await browser.newContext({ viewport: { width: 1440, height: 1100 } });
+        const page = await context.newPage();
+        const errors = [];
+        page.on('pageerror', e => errors.push(e.message));
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+
+        await page.addInitScript(() => {
+            window.t = {
+                tracks: [],
+                recorders: [],
+                recognitions: [],
+                contexts: [],
+                speaking: false,
+                deny: false,
+                recordError: false
+            };
+
+            Object.defineProperty(navigator, 'mediaDevices', {
+                value: {
+                    getUserMedia: () => new Promise((resolve, reject) => {
+                        if (window.t.deny) return reject(new DOMException('Denied', 'NotAllowedError'));
+                        const track = {
+                            readyState: 'live',
+                            stop() { this.readyState = 'ended'; },
+                            addEventListener() {}
+                        };
+                        window.t.tracks.push(track);
+                        resolve({ getTracks: () => [track] });
+                    })
+                }
+            });
+
+            window.MediaRecorder = class {
+                constructor(stream) {
+                    this.stream = stream;
+                    this.state = 'inactive';
+                    this.mimeType = 'audio/webm';
+                    window.t.recorders.push(this);
+                }
+                start() {
+                    this.state = 'recording';
+                    window.recordingStartTime = Date.now();
+                }
+                stop() {
+                    this.state = 'inactive';
+                    setTimeout(() => {
+                        this.ondataavailable?.({ data: new Blob(['recorded-audio'], { type: 'audio/webm' }) });
+                        this.onstop?.();
+                    }, 0);
+                }
+            };
+
+            window.SpeechRecognition = class {
+                constructor() {
+                    window.t.recognitions.push(this);
+                }
+                start() { this.active = true; }
+                stop() {
+                    this.active = false;
+                    setTimeout(() => this.onend?.(), 0);
+                }
+                abort() {
+                    this.active = false;
+                    setTimeout(() => this.onend?.(), 0);
+                }
+            };
+            window.webkitSpeechRecognition = window.SpeechRecognition;
+
+            window.AudioContext = class {
+                constructor() {
+                    this.state = 'running';
+                    window.t.contexts.push(this);
+                }
+                resume() { return Promise.resolve(); }
+                close() { this.state = 'closed'; return Promise.resolve(); }
+                createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
+                createAnalyser() {
+                    return {
+                        fftSize: 2048,
+                        getFloatTimeDomainData(arr) {
+                            arr.fill(window.t.speaking ? 0.08 : 0);
+                        },
+                        disconnect() {}
+                    };
+                }
+            };
+            window.webkitAudioContext = window.AudioContext;
+        });
+
+        await page.route('**/*', route => {
+            const u = new URL(route.request().url());
+            if (u.hostname !== 'uebung11.test') return route.abort();
+            const f = path.join(root, u.pathname);
+            return route.fulfill({
+                status: fs.existsSync(f) ? 200 : 404,
+                body: fs.existsSync(f) ? fs.readFileSync(f) : '',
+                contentType: f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : f.endsWith('.png') ? 'image/png' : 'text/html'
+            });
+        });
+
+        await page.goto('http://uebung11.test/uebung1.1.html');
+        await page.waitForFunction(() => document.readyState === 'complete');
+        await page.clock.install();
+
+        const isRecording = () => page.evaluate(() => {
+            const rec = window.t.recorders.at(-1);
+            return Boolean(rec && rec.state === 'recording');
+        });
+
+        const clickRecord = async (isManual = false) => {
+            await page.evaluate(manual => {
+                const toggle = document.querySelector('#toggleRecordMode');
+                if (toggle) {
+                    if (manual && toggle.checked) toggle.click();
+                    if (!manual && !toggle.checked) toggle.click();
+                }
+                const playToggle = document.querySelector('#togglePlaybackMode');
+                if (playToggle && playToggle.checked) playToggle.click();
+
+                const recBtns = [...document.querySelectorAll('#drillsContainer .recording-actions button')];
+                const recBtn = recBtns.find(b => b.textContent.includes('Aufnehmen'));
+                if (recBtn) recBtn.click();
+            }, isManual);
+            await page.clock.runFor(100);
+        };
+
+        const advanceToElapsed = async (targetElapsed) => {
+            const currentElapsed = await page.evaluate(() => Date.now() - (window.recordingStartTime || Date.now()));
+            const toAdvance = targetElapsed - currentElapsed;
+            if (toAdvance > 0) {
+                await page.clock.runFor(toAdvance);
+            }
+        };
+
+        const getStopBtn = () => page.locator('#drillsContainer .recording-actions button[data-stop]').first();
+        const getResult = () => page.locator('#drillsContainer .recording-result').first();
+
+        const setSpeaking = val => page.evaluate(v => { window.t.speaking = v; }, val);
+        const triggerRecognition = (text) => page.evaluate(t => {
+            const rec = window.t.recognitions.at(-1);
+            if (rec?.onresult) {
+                rec.onresult({
+                    resultIndex: 0,
+                    results: [[{ transcript: t, isFinal: true }]]
+                });
+            }
+        }, text);
+
+        // --- Scenario 1 & 2: 5秒タイムアウト（4.8秒では継続、5.0秒で停止、発話なしのため音声未保存） ---
+        await clickRecord(false);
+        assert.ok(await isRecording(), 'Recording started');
+
+        // 4.8秒経過
+        await advanceToElapsed(4800);
+        assert.ok(await isRecording(), 'Still recording at 4.8s without speech');
+
+        // 5.1秒経過 (合計5.0s以上)
+        await advanceToElapsed(5100);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'Stopped at 5.0s timeout');
+        const resText1 = await getResult().textContent();
+        assert.ok(resText1.includes('No speech detected within 5 seconds.'), 'Shows 5s timeout message');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'No play button saved when no speech');
+
+        // --- Scenario 3: Autostop ON での発話後連続2秒無音停止 ---
+        await clickRecord(false);
+        assert.ok(await isRecording(), 'Recording started for Scenario 3');
+
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400); // 400ms 音声入力（soundFrames >= 3）
+        await setSpeaking(false); // 発話終了、無音開始
+
+        // 1.5秒無音
+        await page.clock.runFor(1500);
+        assert.ok(await isRecording(), 'Still recording at 1.5s silence');
+
+        // 2.2秒無音 (合計無音時間 >= 2000ms)
+        await page.clock.runFor(700);
+        assert.ok(!(await isRecording()), 'Auto-stopped after 2.0s silence');
+
+        // --- Scenario 4: 2秒前の音声再開による無音時間リセット ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+
+        // 1.5秒無音
+        await page.clock.runFor(1500);
+        assert.ok(await isRecording(), 'Still recording at 1.5s silence');
+
+        // 再度音声入力（リセット）
+        await setSpeaking(true);
+        await page.clock.runFor(300);
+        await setSpeaking(false);
+
+        // リセット後 1.5秒無音
+        await page.clock.runFor(1500);
+        assert.ok(await isRecording(), 'Still recording 1.5s after speech resumed');
+
+        // さらに 0.7秒無音（再開後 2.2秒無音）
+        await page.clock.runFor(700);
+        assert.ok(!(await isRecording()), 'Auto-stopped 2.0s after speech resumed');
+
+        // --- Scenario 5: Autostop OFF (Manual) では発話後2秒無音で停止しない ---
+        await clickRecord(true); // Manual
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+
+        // 発話後 4秒無音
+        await page.clock.runFor(4000);
+        assert.ok(await isRecording(), 'Manual mode does NOT auto-stop on silence after speech');
+
+        // 手動停止ボタンで停止
+        await page.evaluate(() => {
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            if (stopBtn) stopBtn.click();
+        });
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'Stopped via stop button in manual mode');
+
+        // --- Scenario 6: 20秒絶対上限（Autostop ON/OFF共通） ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await advanceToElapsed(19700);
+        assert.ok(await isRecording(), 'Still recording at 19.7s');
+
+        await advanceToElapsed(20200);
+        await page.clock.runFor(100);
+        await setSpeaking(false);
+        assert.ok(!(await isRecording()), 'Auto-stopped at 20s limit');
+        const resText6 = await getResult().textContent();
+        assert.ok(resText6.includes('Auto-stopped after 20 seconds.'), 'Shows 20s limit message');
+
+        // --- Scenario 7 & 8: 音声検出あり・STT空 -> No transcription available. かつ 音声保存・再生可能 ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        assert.ok(!(await isRecording()), 'Stopped after 2s silence');
+
+        const resText7 = await getResult().textContent();
+        assert.ok(resText7.includes('No transcription available.'), 'Shows No transcription available.');
+        assert.ok(!resText7.includes('… Not yet'), 'Does not show Not yet');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'Play button exists when audio recorded with empty STT');
+
+        // --- Scenario 9: 録音エラーと文字起こしエラーの区別 ---
+        await clickRecord(false);
+        await page.evaluate(() => {
+            const rec = window.t.recognitions.at(-1);
+            rec?.onerror?.({ error: 'network' });
+        });
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'Stopped on recognition error');
+        const resText9a = await getResult().textContent();
+        assert.ok(resText9a.includes('Recognition error.'), 'Shows Recognition error.');
+
+        // --- Scenario 10: リソース管理（マイクトラック・AudioContext解放） ---
+        const tracksAllEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
+        assert.ok(tracksAllEnded, 'All microphone tracks ended');
+        const contextsClosed = await page.evaluate(() => window.t.contexts.every(c => c.state === 'closed'));
+        assert.ok(contextsClosed, 'All AudioContext instances closed');
+
+        // --- Scenario 11: 重複停止が発生しないこと ---
+        await clickRecord(true);
+        await page.evaluate(() => {
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            if (stopBtn) {
+                stopBtn.click();
+                stopBtn.click();
+            }
+        });
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'Recording stopped cleanly without duplication errors');
+
+        // --- Scenario 12: 既存のドイツ語文字起こし・判定・保存機能の維持 ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Ich fahre nach Graz.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+
+        const resText12 = await getResult().textContent();
+        assert.ok(resText12.includes('Ich fahre nach Graz.'), 'Contains recognized sentence');
+        assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'Contains accepted status badge');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'Play button exists for accepted answer');
+
+        assert.equal(errors.length, 0, 'No uncaught page errors during tests');
+        console.log('PASS: All 12 recording lifecycle scenarios passed successfully.');
+    } finally {
+        await browser.close();
+    }
+}
+
+runRecordingLifecycleTests().catch(err => {
+    console.error('Recording lifecycle test failed:', err);
+    process.exit(1);
+});

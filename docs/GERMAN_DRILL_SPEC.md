@@ -188,15 +188,48 @@
 
 ## 5. 学習者の録音・再生・音声認識（STT）
 
-### 5.1 録音処理 【実装済み】
-- `DrillAudio.getUserMedia({ audio: true })` によりマイクストリームを取得。
-- `MediaRecorder`（mimeType: `audio/webm;codecs=opus` 等を自動選択）で学習者の音声を録音・Blob化。
-- 録音中は `document.body.classList.add('drill-recording-locked')` が付与され、他操作が排他ロックされる。
+### 5.1 録音処理・監視・停止条件 【実装済み】
+- **マイクストリーム取得**: `DrillAudio.getUserMedia({ audio: true })` によりマイクストリームを取得。
+- **録音と状態保持**: `MediaRecorder`（mimeType: `audio/webm;codecs=opus` 等を自動選択）で学習者の音声を録音・Blob化。録音中は `document.body.classList.add('drill-recording-locked')` が付与され、他操作が排他ロックされる。
+- **マイク音量監視（`AudioContext` / `AnalyserNode`）**:
+  - `AudioContext` と `AnalyserNode`（fftSize: 2048）を使用し、100msごとに時間領域サンプルからRMS音量を計算。
+  - 音量閾値（volume > 0.025）を3フレーム連続で満たした場合に発話開始（`speechStarted = true`）を確定。
+  - 発話中に入力を検出するごとに無音タイマーの起算点（`lastSoundAt`）を更新。
+- **3つの正式な録音停止条件（日本語Practice確定仕様と統一）**:
+  1. **発話開始前の上限：5秒（Autostop ON/OFF共通）**:
+     - 録音開始から5秒以内にマイク入力による発話を検出できない場合、録音を自動停止。
+     - 音声は保存せず破棄し、`No speech detected within 5 seconds.` を表示。
+  2. **発話後の無音停止：連続2.0秒（Autostop ON時のみ）**:
+     - SpeechRecognitionの文字起こしイベントではなく、マイク入力音量の監視により無音を判定。
+     - 発話検出後、連続2.0秒間音声入力がなければ自動停止。
+     - 途中で音声入力が再開した場合は、無音時間の計測をリセット。
+     - Autostop OFF（Manual）では2秒無音による自動停止を行わず、手動停止ボタン（⏹️）または20秒上限で停止。
+  3. **絶対上限：20秒（Autostop ON/OFF共通）**:
+     - 録音開始から20秒で必ず自動停止。停止メッセージは `Auto-stopped after 20 seconds.`。
+- **重複停止防止とリソース解放**:
+  - `stopping` フラグにより重複停止処理を抑止。
+  - 停止・破棄時にはマイクトラック、`AudioContext`、監視タイマー群を確実に解放。
 
-### 5.2 音声認識（STT） 【実装済み】
-- `webkitSpeechRecognition` または `SpeechRecognition` を利用。
-- `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定する。
-- 録音終了時、認識結果テキスト（`transcript`）を取得。
+### 5.2 音声認識（STT）と音声検出の分離・メッセージ仕様 【実装済み】
+- **STTエンジン**: `webkitSpeechRecognition` または `SpeechRecognition` を利用。
+- **言語設定**: `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定。
+- **音声検出と文字起こしの分離管理**:
+  - 音声検出フラグ（`speechStarted`）と認識テキスト（`raw`）を独立して管理。
+  - マイク入力による発話が検出され、録音データが取得できている場合は、STT文字起こしが空（認識失敗・未取得）であっても録音音声を保持し、再生ボタン（▶️）を表示する。
+  - 発話検出後にSTT結果が空の場合のメッセージは `No transcription available.` とし、タイムアウトや未録音表示（`… Not yet`）と明確に区別する。
+- **統一された状態・エラーメッセージ体系**:
+  - 準備中：`Preparing microphone...`
+  - 録音中：`Recording...`
+  - 5秒未発話タイムアウト：`No speech detected within 5 seconds.`（音声保存なし）
+  - 20秒絶対上限停止：`Auto-stopped after 20 seconds.`
+  - 発話検知あり・STT空：`No transcription available.`（音声保存あり、▶️表示）
+  - 非対応ブラウザ案内：
+    - STT非対応：`Speech recognition is not supported in this browser.`
+    - 録音非対応：`Recording is not supported in this browser.`
+    - 両方非対応：`Speech recognition and recording are not supported in this browser.`
+  - エラー案内：
+    - 録音エラー：`Recording error.` / `Could not start recording.`
+    - 認識エラー：`Recognition error.`
 
 ### 5.3 回答判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【現行仕様】
 - **正規化関数**:
