@@ -225,4 +225,4 @@ Formalの質問として判定する対象は、ページ仕様に別の明示�
 - Practice 7固有仕様：`PRACTICE7_SPEC.md`
 - Practice 8固有仕様：`PRACTICE8_SPEC.md`等
 - Deutsche Übung 1.1：`GERMAN_DRILL_SPEC.md`
-- 文書の新設・更新・統合・廃止と仕様整合性管理：`docs/RELAY_WORKFLOW.md` §8
+- 文書の新設・更新・統合・廃止と仕様整合性管理：`docs/RELAY_WORKFLOW.md` §5
