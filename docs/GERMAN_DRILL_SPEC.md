@@ -110,11 +110,10 @@
           - Autostop OFF (Manual Stop): `Stop recording.`
     - 結果表示（`.recording-result`）:
       - 未録音時：`span.result-text.not-recorded-yet` ("… Not yet")
-      - 録音後（3段階判定）：
-        - `accepted`: 生テキスト ＋ ` ✅`（選択外地域の許容文発話時は補足バッジを付与）
-        - `mismatch`: 生テキストのうち不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示（❌マークは付与しない）
-        - `undetermined`: 生テキスト ＋ ` 👣`（ホバー時に `Could not be evaluated reliably.` を表示。✅も❌も🔥 Keep going!も赤字も表示しない）
-        - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
+      - 録音後はAccepted／Mismatchの2種類で扱う。
+        - Accepted: 生テキスト ＋ ` ✅`（選択外地域の許容文発話時は補足バッジを付与）
+        - Mismatch: 生テキストのうち不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示（❌マークは付与しない）
+      - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
     - 訂正ガイダンス（`.correction-box`、`mismatch` 時のみ表示）:
       - 文言：`🔥 Keep going!` のみを表示する（重複する `🔊 Anhören` ボタン、`Try once more!`、モデル文の自動開示 `→ [モデル文]` は表示しない。モデル音声の確認は操作ボタン群の `🔊 Anhören` を使用する）。
   - **レスポンシブ契約**: 通常幅では番号・キュー・操作を1行で整列し、狭幅時（<= 480px / 375px）は操作群を次段へ折り返す。
@@ -199,7 +198,7 @@
 - `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定する。
 - 録音終了時、認識結果テキスト（`transcript`）を取得。
 
-### 5.3 3段階判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【実装済み】
+### 5.3 回答判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【現行仕様】
 - **正規化関数**:
   ```javascript
   function normalizeGerman(text) {
@@ -211,7 +210,7 @@
           .trim();
   }
   ```
-- **3段階判定の基準**:
+- **2段階判定の基準**:
   1. **`accepted`（正解受容）**:
      - モデル文との完全一致。
      - 地域変種や別解リスト（`allowedAnswers`）との一致。
@@ -223,11 +222,8 @@
      - キューと異なる目的地・名詞の発話（例: `Ich fahre nach Berlin.` → `berlin` が不一致）。
      - キューと異なる移動動詞語幹の使用（例: `Ich gehe nach Graz.` → `gehe` が不一致）。
      - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。❌マークは付与しない。訂正ボックスには `🔥 Keep going!` のみを表示し、モデル文の自動開示（`→ ...`）や重複 `🔊 Anhören` ボタンは配置しない。
-  3. **`undetermined`（判定不能・保留）**:
-     - 認識音声が短小または不完全（3単語未満、例: `fahre nach`, `Graz`, `nach`）。
-     - 未対応の助動詞・話法の助動詞（`möchte`, `will`, `kann` 等）や副文構文。
-     - 文法誤りと断定できない未解析の構文。音声認識の不確実性を考慮し、誤答と断定せず保留とする。
      - UI表示：生認識テキスト ＋ ` 👣`。✅も❌も🔥 Keep going!も赤字も表示せず、訂正ボックスは非表示。
+- 判定状態はAccepted／Mismatchの2種類のみとする。Undetermined／保留の第3状態は廃止し、短い発話・未対応構文・未解析構文等を理由に保留状態を生成しない。該当する回答は既存のAccepted／Mismatch判定基準に従って扱う。
 
 ---
 
