@@ -5,81 +5,31 @@
 > - ユーザー承認状態：承認済み
 > - 承認日：2026-11-14
 
-## 判定結果アイコン共通仕様 — Feedback Status Icons（2026-11-11）
+## 判定結果アイコン共通仕様 — Feedback Status Icons（2026-11-15更新）
 
-**2026-11-11設計登録／適用範囲を2026-11-15更新** 本節は共有`FeedbackStatus`部品を使用するページの判定アイコン外観・表示規則を定める。現行コードと`GERMAN_DRILL_SPEC.md`ではDeutsche Übung 1.1がAccepted／Mismatch／Undeterminedの3段階判定を実装し、Footprints表示を使用しているため、Deutsche Übung 1.1には本節の共有SVG・視覚仕様が引き続き適用される。一方、2026-11-15の決定により、Practice 2.1ではUndeterminedを実回答から生成せず、Footprintsおよび`Could not be evaluated reliably.`を現行画面に表示する機能を廃止した。Practice 2.1ではAccepted／Mismatchのみを現行機能とし、Undeterminedに関する以下の記述は同ページには適用しない。ドイツ語ページへの廃止適用は、作成者による対象範囲の確認が済むまで行わない。
-
-### 基本方針・承認済みSVG
-
-Q/Aは会話の役割、Smile/Frownは肯定・否定を示し、本節の判定結果アイコンとは別機能である。
+本節は現行の判定表示を定める。判定状態はAccepted／Mismatchの2種類とする。
 
 | 判定状態 | SVG・ライブラリ | サイズ | Light | Dark | ライセンス |
 | --- | --- | --- | --- | --- | --- |
 | 正解 | Microsoft Fluent UI System Icons `Checkmark 24 Filled` | 22×22px | `#16A34A` | `#4ADE80` | MIT |
-| 判定保留 | Lucide `Footprints` | 22×22px | `#8064B0` | `#B9A2E5` | ISC |
 | 不正解 | Microsoft Fluent `Fire 24 Regular` ＋ `Keep going!` | 20×20px | `#B47732` | `#E4AD69` | MIT |
 | 未回答・録音中 | 新しい判定アイコンなし | — | — | — | — |
 
-- 正解は**丸囲みのないチェック**。`Checkmark Circle`は使用しない。
-- **Fluent Checkmark 24 Filledは、元のFilled形状に同色の1.5pxストロークを追加して表示する。表示サイズは22×22pxとし、Lightは#16A34A、Darkは#4ADE80を使用する。丸囲みは付けない。** `fill="currentColor"`、`stroke="currentColor"`、`stroke-width="1.5"`。正式なpathと24×24のviewBoxは維持し、拡大やOutlineへの置換は行わない。外周の結合はroundとし、ストロークが表示領域内に収まるようにする。
-- 正解チェックは対応する抽出テキストの左側、間隔4px、縦中央揃え。22pxを縮めず、長いテキストは既存領域内で自然に折り返す。空列・固定幅を追加しない。この配置変更をFootprints・Fire・他ページへ適用しない。
-- 正解・保留は正式SVG原本のインラインSVG、原則`currentColor`。背景・枠・影なし。
-- Fluentに適切なFootprintsが見つからなかったため、Lucideを例外採用する。共通アイコンセットをLucideへ変更するものではない。
-- Fireは既存の正式仕様を優先する。SVGと文言の間隔4px、抽出テキストとの間隔4px、右寄せ、赤い不一致強調を維持する。本登録で既存のKeep going!仕様を上書きしない。
+- 正解は丸囲みのないチェックとし、`Checkmark Circle`は使用しない。
+- Fluent Checkmark 24 Filledは元のFilled形状に同色の1.5pxストロークを追加し、22×22pxで表示する。Lightは#16A34A、Darkは#4ADE80。正式なpathと24×24のviewBoxを維持する。
+- 正解チェックは対応する抽出テキストの左側、間隔4px、縦中央揃えとする。長いテキストは既存領域内で自然に折り返す。
+- 正解・不正解のSVGはインラインSVG、原則`currentColor`とし、背景・枠・影を付けない。
+- Fireは既存の正式仕様を優先する。SVGと文言の間隔4px、抽出テキストとの間隔4px、右寄せ、赤い不一致強調を維持する。
+- 判定結果はAccepted／Mismatchを排他的に表示し、判定更新時に古い表示を残さない。
+- 未回答・録音中は、新しい判定アイコンを生成しない。
+- 既存の判定結果表示領域を利用し、Q/A、Smile/Frown、疑問文マーク等と重ならないようにする。不要な空列・固定幅を追加しない。
+- SVGは共通部品で一元管理し、ページごとに複製しない。外部CDNに依存しない。
 
-### 表示条件・排他性
+### Practice 2.1
 
-- 正解：既存の判定処理が正解と確定した場合だけ表示する。Practice 2.1では既存の`isCorrect: true`に対応する。既存✅からSVGへの置換は別途承認された表示実装時に行う。
-- 保留：判定処理が正解・不正解のいずれにも確定できない状態を**明示的に返した場合**に表示する。ただし現行Practice 2.1では、その状態を保存・生成する処理は確認されていない。
-- 音声認識失敗、認識結果なし、`unrecognized`、`audioOnly`、通信エラー、録音キャンセルを自動的に保留へ分類しない。これらの扱いは別途判定仕様として確定する。Footprints表示のために既存判定ロジックを変更しない。
-- 同じ回答に正解チェック・Footprints・Keep going!を同時に表示しない。判定更新時に古い表示を残さない。
-- 未回答・録音中は、判定確定済みの結果を保持する既存仕様がある場合を除き、新しい判定アイコンを生成しない。
-- 保留の説明は正確に`Could not be evaluated reliably.`とする。マウスHoverとキーボード操作の双方で確認可能にする。
-
-### コピー・配置・共通実装
-
-- 画面はSVG、コピー機能のあるページのコピー文字列は判定データから正解`✅`／保留`👣`を生成する。SVGのHTML・画像データを混入させず、既存のコピー形式や回答文保持を変更しない。
-- Practice 2.1には既存のCopy my sentences機能がないため、この仕様のためだけに新設しない。
-- 既存の判定結果表示領域を利用する。375／600／1440px・Light／Darkで、録音・再生・停止、Q/A、Smile/Frown、疑問文マークとの重なりがないことを検証する。不要な空列・固定幅を追加しない。
-- 正解チェックの左側4px・中央揃えは上記の正式仕様に従う。その他の未確定の余白・基線・折返しはPractice 2.1の動作Previewで確認してから確定する。
-- SVGは共通部品で一元管理し、ページごとに複製しない。Fluent Checkmark Filled／Lucide Footprintsの正式原本とライセンス通知を保持し、外部CDNに依存しない。
-- 既存のQ/A共通ヘルパー、目なしSmile/Frown、疑問文マーク、Keep going!は変更しない。
-
-### Practice 2.1：A案・確実な判定不能のみ保留（2026-11-11）
-
-- 共通化するのは3状態の定義（Accepted／Mismatch／Undetermined）・エラーとの区別・既存許容解答の保持・排他的表示と保存復元の原則である。共通アイコンの外観・色・サイズ・共通表示ルールは本書（UI_LAYOUT_SPEC）を正本とし、Practice 2.1固有の判定生成・保存・復元・エラー処理・再描画・長文Mismatch表示の処理条件は [PRACTICE2_SPEC.md](PRACTICE2_SPEC.md) を正本とする。
-- **表示状態**：Acceptedは緑チェック（Fluent Checkmark Filled 22px）のみ、Mismatchは既存の赤字・Fire（Fluent Fire 20px）＋Keep going!、明示保留は生テキストと紫Footprints（Lucide Footprints 22px）のみ（赤字なし）。表示を再生成し古いアイコンを残さない排他表示とする。
-- 共通部品`feedback-status-icons.js`をPractice 2.1のみで読み込む。色・22px・Hover／Tab説明は同ページに限定した`feedback-status-icons.css`で適用。元SVGとライセンスは`assets/licenses/FEEDBACK-STATUS-*`に記録する。他ページ・Deutsch 1.1の文法判定・Q/A・目なしSmile/Frown・疑問文マーク・Fire仕様は変更しない。
-- Practice 2.1固有の判定生成経路（A案：accepted/mismatch付加、undeterminedの実回答生成なし）、保存・復元、非未判定エラー処理（無音・マイク失敗・認識エラー・音声のみ保存の維持）、および再描画処理の詳細は、正本である [PRACTICE2_SPEC.md](PRACTICE2_SPEC.md) を参照する。
-- Deutsch固有の単語数・助動詞・活用・前置詞判定は日本語へ移植しない。
-- 次工程はPractice 2.1 Previewの実機承認。保留生成条件の追加や他ページ展開は別途承認が必要。コピー機能は追加しない。
-
-### 実装・承認状況と次工程
-
-| 工程 | 状態 |
-| --- | --- |
-| チェック・Footprintsの形状、両22px、Light／Dark色 | デザイン承認済み |
-| 静的SVG比較Preview | 作成済み。ただし当時のCheckmark Circleは不採用。今回の登録では比較ページ・SVGを変更しない |
-| 正式仕様書への登録 | 本節に登録済み |
-| 判定保留の生成条件 | A案確定。現行に該当経路なし。将来の追加条件は未承認 |
-| Practice 2.1へのA案表示接続 | 独立Previewに実装・ユーザー実機確認待ち |
-| 全ページ展開 | 未実装・未承認 |
-| main／Production反映 | 未実施 |
-
-将来、保留生成条件を追加する場合は、保留条件の調査・設計 → ユーザーによる判定条件承認 → Practice 2.1動作実装 → 実機承認 → 全ページ適用範囲監査 → 全ページ統合Preview承認 → main反映の順とする。今回の仕様登録を動作実装や統合の許可と扱わない。
-
-当初の仕様登録作業では正誤判定、音声認識・録音・再生、Q/A表示条件、目なしSmile/Frown、疑問文マーク、Keep going!、Practice 2.1の判定表示、他ページ表示、main／Productionを変更しない。
-
-## Practice 2.1 判定SVG静的比較（2026-11-11・過去の候補記録）
-
-- 以下は承認前の比較履歴。現在の採用仕様は冒頭「判定結果アイコン共通仕様」を正本とする。比較ページのCheckmark Circleは採用しない。
-- 独立Preview `preview/p21-feedback-svg-comparison-20261111`、基準 `c995832f2ae8bad098f0b2438fe35df742be7cc2`。比較ページ `preview/practice21-feedback-icons.html` のみ。判定処理・Practice本体には接続しない。
-- 正解候補：Microsoft Fluent Checkmark Circle 24 Regular（MIT）。緑 Light `#16A34A`／Dark `#4ADE80` は候補であり、正式決定ではない。
-- 保留候補：Lucide Footprints（ISC、同梱MIT noticesも保持）。FluentカタログにFootprintsは見当たらず、代替セットの原本を比較専用SVGとして利用。正式採用・ライブラリ再導入ではない。
-- 確定済み：保留色 Light `#8064B0`／Dark `#B9A2E5`、説明 `Could not be evaluated reliably.`。Hoverとキーボードフォーカスで表示する。
-- 未確定：チェックの緑、Footprintsの形状、両アイコンのサイズ。20px基本、18/22px比較。背景・外枠・影なし。短文／長文と右寄せ4px間隔を比較。Fireは承認済み原本・色を参照し、本番の20px仕様は変更しない。
-- 将来のコピー表示：画面SVGとデータ由来Emoji（正解✅／保留👣／不一致🔥）を分離する。今回はコピー機能を追加しない。
-- 原本・ライセンスは比較ページのリンクと `preview/feedback-icons/*LICENSE.txt` を参照。Q/A・Keep going!・目なしSmile/Frownの正式仕様は変更しない。
+- Accepted／Mismatchの判定生成、保存・復元、エラー処理、再描画の詳細は [PRACTICE2_SPEC.md](PRACTICE2_SPEC.md) を正本とする。
+- Acceptedは緑チェック、Mismatchは既存の赤字・Fire＋Keep going!を表示する。
+- Practice 2.1ではAccepted／Mismatchのみを現行機能とする。
 
 ## Practice 2.1 Keep going! 限定Preview（2026-11-11）
 
@@ -90,9 +40,9 @@ Q/Aは会話の役割、Smile/Frownは肯定・否定を示し、本節の判定
 - **判定結果の抽出テキストは、利用可能な親コンテナ幅を最大限活用し、不要な折返しを避ける。録音操作ボタンの列幅によって、判定結果行の表示幅を不必要に制限しない。**
 - Practice 2.1の長い不一致結果に限り、操作ボタンの右側から流し、ボタンの下では操作領域の全幅を使用する。操作と結果を別Flex項目として固定的に行送りする制約を、スコープ付きのflow-root／float／inlineで解消する。ボタン位置・寸法・親Gridの列幅は変更しない。
 - 初行の高さは実測した操作領域の高さ＋既存の縦間隔6pxに合わせ、次行がボタンと重ならないようにする。従来配置と実際の高さを比較し、余分な行が減る場合だけ流し込みを適用する。短文・余白が足りない狭幅は従来配置を維持する。フォントサイズ・全文・赤字・4px間隔は変更しない。
-- Accepted／Undetermined・録音中にはこの長文用配置を適用しない。緑チェック22px＋1.5pxストロークの左配置、Footprints、Q/A、Smile/Frown、疑問文マーク、判定・音声・Set／Script処理は変更しない。
+- Accepted・録音中にはこの長文用配置を適用しない。緑チェック22px＋1.5pxストロークの左配置、Q/A、Smile/Frown、疑問文マーク、判定・音声・Set／Script処理は変更しない。
 
-- 正答・未回答・評価保留・音声のみの結果では案内を表示しない。Example／Drill終了による表示、移動ボタン、クリック・スクロール・フォーカス移動を追加しない。判定・録音・再生・回答保持・セット・English Cues・Backの処理は変更しない。
+- 正答・未回答・音声のみの結果では案内を表示しない。Example／Drill終了による表示、移動ボタン、クリック・スクロール・フォーカス移動を追加しない。判定・録音・再生・回答保持・セット・English Cues・Backの処理は変更しない。
 - CSSは `p21-keep-going-preview` に限定し、他ページの `.correction-box` を変更しない。炎SVGの出典・MIT通知は `assets/licenses/MICROSOFT-FLUENT-FIRE-LICENSE.txt` に保持する。
 
 ## 録音付きDrillのCopyボタンアイコン表示（2026-11-08確定）
@@ -780,9 +730,9 @@ Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日�
 
 ## 録音結果・状態メッセージの文字サイズ（2026-11-15承認）
 
-- 録音結果欄に表示するSTT抽出テキストと、録音・音声認識・再生に関する状態／結果メッセージは同じ文字サイズ（親要素に対する`1em`）とする。
-- **小さい文字サイズを使用するのは、未録音結果の`… Not yet`のみ**とし、上記の`0.75em`を維持する。
-- `No transcription available.`、`Preparing microphone...`、`Recording...`、タイムアウト・録音エラー等の結果欄メッセージを、抽出テキストより小さくしない。
+- 録音結果欄のSTT抽出テキストと、録音・音声認識・再生に関する状態／結果メッセージは **1.3rem（標準ルート16px時に20.8px）** とする。
+- **小さい文字サイズを使用するのは、未録音結果の`… Not yet`のみ**とし、**0.975rem（標準ルート16px時に15.6px）** とする。
+- `No transcription available.`、`Preparing microphone...`、`Recording...`、タイムアウト・録音エラー等の結果欄メッセージは、抽出テキストと同じ1.3remとする。
 - Pitch Labの`.pitch-status`に表示する録音・再生状態も同じ文字サイズとする。`Ready`や`Not recorded yet`は操作状態であり、未録音結果の`… Not yet`とは区別して小さくしない。
 - `Keep going!`等の回答フィードバック文言も結果メッセージとして抽出テキストと同じ文字サイズにする。アイコン寸法は文字サイズ規則とは別に扱う。
 - 録音・再生ボタン、ボタン内の`Playing...`表示、ツールチップ、操作説明、Pitch Labのタイトル・説明文・音量補助文などは結果／状態メッセージではないため、本項の文字サイズ統一の対象外とし、それぞれの既存UI仕様に従う。
