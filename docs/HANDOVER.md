@@ -7,7 +7,7 @@
 - **主題**：October2026のProject Instructions、AI作業指針、GitHub内仕様書の刷新と整合性監査。
 - **今回の範囲**：文書・指針の確認と改定。教材コンテンツ拡張、機能実装、コード／CSS整理、テストコード修正は依頼範囲に含めない。
 - **現在段階**：第5段階「残存文書の整合性監査」。
-- **確認基準**：GitHub `main`。この引き継ぎ更新直前のHEADは `281dc971114770cc83cc96c0c5a886402c56b18c`。
+- **確認基準**：GitHub `main`。この引き継ぎ更新直前のHEADは `87e2ae9a5bf96ead9c3ff042e0d1202e0323bdda`。
 
 ## 2. 全体ロードマップ
 
@@ -32,14 +32,21 @@
 1. **`tests/README.md` の説明整合：完了**。判定レンダリング契約をAccepted／Mismatchに整理し、Practice 2.1のUndeterminedは旧fixtureの互換確認であり現行機能ではないと明記した。テストコードは変更していない。
 2. **現行Markdownの残存記述監査：進行中**。`PRACTICE_FEEDBACK_AUDIT_20261112.md` に歴史資料の注意書きを追加。`UI_LAYOUT_SPEC.md` のスマートフォン対応保留、電話アイコン未採用案、旧W項目表現を整理した。その他の仕様・監査文書は引き続き確認する。
 3. **参照・承認状態の整合：未着手**。正本へのリンク、重複記載、承認済み／提案／Preview限定の区別を確認する。
+4. **仕様と実装の残存差分：今回のコード変更対象外**。詳細は§5。文書だけで実装まで廃止されたと誤認しない。
 
-## 5. 旧HANDOVER記録の扱い
+## 5. 既知の実装差分（今回の文書作業対象外）
+
+- 現行仕様はAccepted／Mismatchの2状態だが、`uebung1.1.js`は空発話・短い断片を`undetermined`と返す旧判定経路を保持し、`tests/uebung11.cjs`も旧3状態の期待値を含む。
+- Practice 2.1側も`feedback-status-icons.js`／`.css`と`practice2.1.js`に旧Undetermined表示・保存データ互換のコードが残る。`tests/practice21-feedback-status.cjs`には明示fixtureの確認がある。
+- この作業ではコード・CSS・テスト期待値を変更しない。`tests/README.md`には旧期待値が現行仕様の適合証明にならない旨を記載した。実装是正は別途の明示指示がある場合に扱う。
+
+## 6. 旧HANDOVER記録の扱い
 
 - 改定前の162行のHANDOVERは `docs/archive/HANDOVER_20261115_PRE_REFRESH.md` に保存した。
 - アーカイブ内のPending Actions、Preview承認待ち、担当環境、ブランチ状態は旧スナップショットの記録であり、現行タスクとして自動継承しない。
 - 旧Pendingを再開する必要がある場合は、Think側の管理情報、ユーザーの最新判断、GitHub上の現在状態と照合してから現行HANDOVERへ戻す。状態未確認の項目を完了・未完了と推測しない。
 
-## 6. 正本・作業ルール
+## 7. 正本・作業ルール
 
 - Project／共通機能仕様：`docs/PROJECT_SPEC.md`
 - 共通UI・表示仕様：`docs/UI_LAYOUT_SPEC.md`
@@ -47,11 +54,12 @@
 - 運用・文書管理・HANDOVER更新規則：`docs/RELAY_WORKFLOW.md` §8.5
 - テストの説明：`tests/README.md`。具体的な検証内容は各テストコードを正本とする。
 
-## 7. 直近の文書変更
+## 8. 直近の文書変更
 
 - `docs/RELAY_WORKFLOW.md`：HANDOVERの更新タイミング、更新方法、整理基準、再確認手順を明文化（Commit `5e41726`）。
 - `docs/archive/HANDOVER_20261115_PRE_REFRESH.md`：旧HANDOVERを履歴スナップショットとして保存（Commit `00ab90d`）。
 - `docs/HANDOVER.md`：本書へ再構成し、現在のロードマップと次作業を反映（Commit `707a360`）。
 - `tests/README.md`：旧Footprints／Undeterminedのテスト説明を現行機能とfixtureに分離（Commit `32b5735`）。
 - `docs/PRACTICE_FEEDBACK_AUDIT_20261112.md`：旧監査資料として明示（Commit `88b4584`）。
-- `docs/UI_LAYOUT_SPEC.md`：サポート範囲と古い提案記録を現行状態に整合（Commit `281dc97`）。
+- `docs/UI_LAYOUT_SPEC.md`：サポート範囲と古い提案記録を現行状態に整合（Commit `275306d`）。
+- `tests/README.md`：Deutsche Übungテストに残る旧3状態の期待値を注意書きで区別（Commit `87e2ae9`）。
