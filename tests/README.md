@@ -276,7 +276,8 @@ node tests/relay-zero-gap.cjs
 - **`node tests/uebung11.cjs`**
   - **対象**: Deutsche Übung 1.1（`uebung1.1.html`）
   - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問）、German variety設定（DE / AT / CH）、地域別モデル文・許容回答、Copy my sentences、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。
-  - **実行場面**: ドイツ語ドリルページの新規作成・修正時。
+  - **旧判定期待値の注意**：このテストには空発話・短い断片を`undetermined`とする旧3状態判定の期待値が残る。現行`GERMAN_DRILL_SPEC.md`はAccepted／Mismatchの2状態であり、本テストの成功を現行判定仕様への適合証明として扱わない。テストコード・期待値は今回の文書監査では変更していない。
+  - **実行場面**: ドイツ語ドリルページの新規作成・修正時。ただし判定状態については上記の旧期待値に注意する。
 
 ---
 
