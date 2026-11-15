@@ -4639,6 +4639,11 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     border-radius: 8px;
 }
 
+/* Practice 8.1 Ex5: left-align Skillful / Observed headings only. */
+.practice81-page[data-practice="8.1"] #drill5 .p81-example-row > .p81-kind {
+    justify-self: start;
+}
+
 /* Practice 1.1: English concept badges in Example (Affirmative / Negative) */
 .practice1-page .example-box .example-label-title.p11-concept-badge {
     display: inline-block;
