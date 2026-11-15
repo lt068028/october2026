@@ -204,7 +204,7 @@ node tests/relay-zero-gap.cjs
   - **実行場面**: 対象ページでのEnglish Cues追加・修正時。
 - **`node tests/feedback-rendering-contract.cjs`**
   - **対象**: 判定結果アイコン共通仕様
-  - **検証内容**: 正解（Checkmark）、不正解（Fire＋Keep going!）、保留（Footprints）のレンダリング契約。
+  - **検証内容**: 現行のAccepted／Mismatch（Checkmark、Fire＋Keep going!）のレンダリング契約。Footprints／Undeterminedの現行機能を検証するテストではない。
   - **実行場面**: 判定アイコン描画コンポーネントの変更時。
 - **`node tests/css-regression.cjs`**
   - **注意**: 本テストは整理前の古い特定コミット（`f893dd6`）と現行CSSを画素単位で比較する歴史的テストです。現行の意図された130%基準やレイアウト改訂とは互換性がないため、日常の回帰テストとしては実行しません（現在の表示検証は `global-display.cjs` や `content-layout.cjs` を使用します）。
@@ -236,7 +236,7 @@ node tests/relay-zero-gap.cjs
 #### Practice 2.1 / 2.2 / 2.3
 - **`node tests/practice21.cjs`**: 2.1 Ex1の6音声モデル、話者・領域交代、下部モデル対応、各画面幅での表示検証。
 - **`node tests/practice21-keep-going.cjs`**: 2.1 Mismatch時の「Keep going!」文言およびFireアイコンの表示検証。
-- **`node tests/practice21-feedback-status.cjs`**: 2.1 A案判定結果（Accepted/Mismatch/明示保留Undetermined）の排他表示・保存復元検証。
+- **`node tests/practice21-feedback-status.cjs`**: 2.1の新規回答がAccepted／Mismatchのみを生成し、認識エラー・音声のみ・キャンセル等を保留へ分類しないこと、および旧Undetermined表示fixtureの互換確認を行うテスト。fixtureの保留表示は現行機能・現行仕様を意味しない。
 - **`node tests/practice21-feedback-wrap.cjs`**: 2.1 フィードバック表示の折り返し挙動検証。
 - **`node tests/practice21-inline-wrap-geometry.cjs`**: 2.1 インライン折り返しのDOMジオメトリ実測検証。
 - **`node tests/practice21-checkmark-stroke.cjs`**: 2.1 正解チェックマークの外観・ストローク検証。
