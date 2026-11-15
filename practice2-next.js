@@ -1918,6 +1918,8 @@ function practice2ShowNotice(resultSpan, message) {
                 const replyCue=mode==='adjective'?formatWord(adj+'かさ',adj+'傘',({この:'kono',その:'sono',あの:'ano'}[adj])+' kasa',adj==='この'?'this umbrella':adj==='その'?'that umbrella':'that umbrella over there'):formatWord(pro,pro,{これ:'kore',それ:'sore',あれ:'are'}[pro],pro==='これ'?'this one':pro==='それ'?'that one':'that one over there');
                 practice2State.replyReferences[prefix+'_r']=()=>[short(answer()),statement(subject(),answer())];
                 const r=recordingRow(current,'a',`<strong>${speakerName(answerer)} · A:</strong> ${replyCue}`,prefix+'_r',()=>short(answer()),true,false);
+                englishCue(q,[(o.owner==='teacher'?'the teacher':speakerName(o.owner))+"'s umbrella",mode==='adjective'?'which umbrella':'which one']);
+                englishCue(r,[mode==='adjective'?'adjective':'pronoun','umbrella']);
                 for(const [view,who]of [[q,asker],[r,answerer]]){view.row.dataset.drillSpeaker=who;view.row.dataset.exerciseMode=mode;view.row.dataset.targetPolicy=view===q?'question':'answer';view.row.dataset.targetOwner=o.owner;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(who,view===q?null:o.owner));}
             }
         });
