@@ -1405,27 +1405,24 @@ function mountCopyAreas82() {
             const help = document.createElement('span');
             help.className = 'p82-copy-help';
             help.textContent = 'Copy your drill results to review or share.';
-            const status = document.createElement('span');
-            status.className = 'p82-copy-status';
-            status.setAttribute('role', 'status');
-            status.setAttribute('aria-live', 'polite');
-            status.hidden = true;
             let timer = null;
             button.addEventListener('click', async () => {
                 if (session || preparing) return;
                 const entries = entriesFor82(si);
                 if (!entries.length) return;
+                const labelSpan = button.querySelector('span');
                 try {
                     await navigator.clipboard.writeText(COPY82_HEADERS[si] + ' — ' + getCopy82Date() + '\n' + entries.join('\n'));
-                    status.textContent = 'Copied!';
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
                 } catch (error) {
-                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                    // Do not change label on failure
                 }
-                status.hidden = false;
-                clearTimeout(timer);
-                timer = setTimeout(() => { status.hidden = true; }, 2000);
             });
-            area.append(button, help, status);
+            area.append(button, help);
         }
         group.querySelectorAll(':scope > .p82-copy-area[data-drill-index="' + si + '"]').forEach(other => {
             if (other !== area) other.remove();

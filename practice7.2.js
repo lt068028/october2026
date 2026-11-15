@@ -3628,26 +3628,26 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
                 const help = document.createElement('span');
                 help.className = 'p72-copy-help';
                 help.textContent = 'Copy your drill results to review or share.';
-                const status = document.createElement('span');
-                status.className = 'p72-copy-status';
-                status.setAttribute('role', 'status');
-                status.setAttribute('aria-live', 'polite');
-                status.hidden = true;
+                let timer = null;
                 button.addEventListener('click', async () => {
                     if (busy()) return;
                     const entries = entriesFor(kind);
                     if (!entries.length) return;
                     const now = new Date();
                     const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const labelSpan = button.querySelector('span');
                     try {
                         await navigator.clipboard.writeText(headers[kind] + ' — ' + date + '\n' + entries.join('\n'));
-                        status.textContent = 'Copied!';
+                        if (labelSpan) labelSpan.textContent = 'Copied';
+                        clearTimeout(timer);
+                        timer = setTimeout(() => {
+                            if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                        }, 2000);
                     } catch (error) {
-                        status.textContent = 'Could not copy. Please allow clipboard access.';
+                        // Do not change label on failure
                     }
-                    status.hidden = false;
                 });
-                area.append(button, help, status);
+                area.append(button, help);
             }
             root.querySelectorAll(`.p72-copy-area[data-copy-kind="${kind}"]`).forEach(other => {
                 if (other !== area) other.remove();

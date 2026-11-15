@@ -3775,28 +3775,27 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             help.className = 'p71-copy-help';
             help.textContent = explanation;
 
-            const status = document.createElement('span');
-            status.className = 'p71-copy-status';
-            status.setAttribute('role', 'status');
-            status.setAttribute('aria-live', 'polite');
-            status.hidden = true;
-
+            let timer = null;
             button.addEventListener('click', async () => {
                 if (activeRecognitionSession || practice71State.startingRow) return;
                 const entries = getDrillEntries(kind);
                 if (!entries.length) return;
                 const content = header + ' — ' + getLocalDateString()
                     + '\n' + entries.join('\n');
+                const labelSpan = button.querySelector('span');
                 try {
                     await navigator.clipboard.writeText(content);
-                    status.textContent = 'Copied!';
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
                 } catch (error) {
-                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                    // Do not change label on failure
                 }
-                status.hidden = false;
             });
 
-            area.append(button, help, status);
+            area.append(button, help);
         }
 
         document.querySelectorAll(`.p71-copy-area[data-copy-kind="${kind}"]`).forEach(el => {

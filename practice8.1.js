@@ -1884,12 +1884,6 @@ function mountCopyAreas81() {
             help.className = 'p81-copy-help';
             help.textContent = 'Copy your drill results to review or share.';
 
-            const status = document.createElement('span');
-            status.className = 'p81-copy-status';
-            status.setAttribute('role', 'status');
-            status.setAttribute('aria-live', 'polite');
-            status.hidden = true;
-
             let timer = null;
             button.addEventListener('click', async () => {
                 if (session || preparing) return;
@@ -1897,20 +1891,20 @@ function mountCopyAreas81() {
                 if (!entries.length) return;
                 const now = new Date();
                 const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                const labelSpan = button.querySelector('span');
                 try {
                     await navigator.clipboard.writeText(headers81[si] + ' — ' + date + '\n' + entries.join('\n'));
-                    status.textContent = 'Copied!';
+                    if (labelSpan) labelSpan.textContent = 'Copied';
+                    clearTimeout(timer);
+                    timer = setTimeout(() => {
+                        if (labelSpan) labelSpan.textContent = 'Copy my sentences';
+                    }, 2000);
                 } catch (error) {
-                    status.textContent = 'Could not copy. Please allow clipboard access.';
+                    // Do not change label on failure
                 }
-                status.hidden = false;
-                clearTimeout(timer);
-                timer = setTimeout(() => {
-                    status.hidden = true;
-                }, 2000);
             });
 
-            area.append(button, help, status);
+            area.append(button, help);
         }
 
         group.querySelectorAll(`:scope > .p81-copy-area[data-drill-index="${si}"]`).forEach(other => {

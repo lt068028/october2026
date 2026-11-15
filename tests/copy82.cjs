@@ -136,10 +136,26 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
             eq(await page.locator('#drill1 .p82-copy-button').isEnabled(), true, 'settings changes retain transcript state');
         }
 
+        eq(await page.locator('.p82-copy-status').count(), 0, 'independent status element retired');
         await page.evaluate(() => { window.denyCopy = true; });
         await page.locator('#drill1 .p82-copy-button').click();
-        eq(await page.locator('#drill1 .p82-copy-status').textContent(), 'Could not copy. Please allow clipboard access.', 'clipboard failure feedback');
-        ok(!(await page.locator('#drill1 .p82-copy-status').textContent()).includes('Copied!'), 'clipboard failure is not reported as success');
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copy my sentences', 'clipboard failure keeps button label');
+
+        await page.evaluate(() => { window.denyCopy = false; });
+        await page.locator('#drill1 .p82-copy-button').click();
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copied', 'clicked button becomes Copied');
+        eq(await page.locator('#drill2 .p82-copy-button span').textContent(), 'Copy my sentences', 'other button unaffected');
+        await page.clock.fastForward(2100);
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copy my sentences', 'button label reverts after 2s');
+
+        await page.locator('#drill1 .p82-copy-button').click();
+        await page.clock.fastForward(1000);
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copied', 'still Copied at 1s');
+        await page.locator('#drill1 .p82-copy-button').click();
+        await page.clock.fastForward(1500);
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copied', 'still Copied 1.5s after consecutive click');
+        await page.clock.fastForward(600);
+        eq(await page.locator('#drill1 .p82-copy-button span').textContent(), 'Copy my sentences', 'reverts 2.1s after consecutive click');
 
         for (const width of [375, 600, 1440]) {
             for (const scheme of ['light', 'dark']) {

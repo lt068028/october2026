@@ -117,9 +117,26 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
 
         await page.locator('#drill1 .p21-set-switcher button').first().click();
         eq(await page.locator('.p83-copy-button').count(), 4, 'returning to set preserves one button per Drill');
+        eq(await page.locator('.p83-copy-status').count(), 0, 'independent status element retired');
         await page.evaluate(() => { window.denyCopy = true; });
         await page.locator('#drill1 .p83-copy-button').click();
-        eq(await page.locator('#drill1 .p83-copy-status').innerText(), 'Could not copy. Please allow clipboard access.', 'clipboard failure feedback');
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copy my sentences', 'clipboard failure retains button label');
+
+        await page.evaluate(() => { window.denyCopy = false; });
+        await page.locator('#drill1 .p83-copy-button').click();
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copied', 'clicked button becomes Copied');
+        eq(await page.locator('#drill2 .p83-copy-button span').textContent(), 'Copy my sentences', 'other button unaffected');
+        await page.clock.fastForward(2100);
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copy my sentences', 'button label reverts after 2s');
+
+        await page.locator('#drill1 .p83-copy-button').click();
+        await page.clock.fastForward(1000);
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copied', 'still Copied at 1s');
+        await page.locator('#drill1 .p83-copy-button').click();
+        await page.clock.fastForward(1500);
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copied', 'still Copied 1.5s after consecutive click');
+        await page.clock.fastForward(600);
+        eq(await page.locator('#drill1 .p83-copy-button span').textContent(), 'Copy my sentences', 'reverts 2.1s after consecutive click');
 
         await page.evaluate(() => { window.denyCopy = false; });
         const rec = page.locator('#drill1 .recording-actions button').nth(1);

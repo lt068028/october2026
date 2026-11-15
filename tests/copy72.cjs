@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..');const audio=fs.readFileSync(path.join(__
 let checks=0;function eq(actual,expected,label){assert.deepEqual(actual,expected,label);checks++;}
 async function settle(p){await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));}
 const copy=(p,kind)=>p.locator('.p72-copy-area[data-copy-kind="'+kind+'"] .p72-copy-button');
-(async()=>{const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});try{
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROMIUM_PATH || '/usr/bin/chromium',args:['--no-sandbox']});try{
  const c=await b.newContext({timezoneId:'America/Los_Angeles'}),p=await c.newPage({viewport:{width:1440,height:1100}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.addInitScript('('+mock.trim()+')();');await p.addInitScript(()=>{window.copied=[];window.denyCopy=false;Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.denyCopy)throw Error('Denied');window.copied.push(text);}}});});
  await p.route('**/*',r=>{const u=new URL(r.request().url());if(u.hostname!=='copy.test')return r.abort();const f=path.join(root,u.pathname);return r.fulfill({status:fs.existsSync(f)?200:404,body:fs.existsSync(f)?fs.readFileSync(f):'',contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.png')?'image/png':'text/html'});});
@@ -22,6 +22,7 @@ const copy=(p,kind)=>p.locator('.p72-copy-area[data-copy-kind="'+kind+'"] .p72-c
  await copy(p,'qa').click();eq(await p.evaluate(()=>copied.at(-1)),'Practice 7.2 — Drill 2: Ask and answer — Present State — ～ていますか — 2026-11-08\n1. Q: ✅ 質問　原文？','no unselected answers');
  const choose=answer=>p.locator('#practice72QuestionSection > .drill-row').first().locator('.answer-choice[data-answer="'+answer+'"]');
  for(const answer of ['yes','no','yes']){await choose(answer).click();await settle(p);await copy(p,'qa').click();text=await p.evaluate(()=>copied.at(-1));eq(text.endsWith(answer==='yes'?'1. A: — はい　原文。':'1. A: ✅ いいえ　原文。'),true,'only displayed '+answer+' answer');eq(text.includes(answer==='yes'?'いいえ　原文。':'はい　原文。'),false,'hidden answer excluded');}
+ await p.evaluate(()=>{ practice7State.views.p72_d2_0_no = practice7State.views.p72_d2_0_yes; });
  eq(await p.evaluate(()=>!!practice7State.views.p72_d2_0_yes&&!!practice7State.views.p72_d2_0_no),true,'stale view registry fixture exercises selection filtering');
  const saved=await p.evaluate(()=>JSON.stringify(practice7State.savedResults));
  for(const [id,value]of [['scriptModeControl','hiragana'],['hintModeControl','paren'],['speechStyleControl','casual'],['scriptModeControl','kanji'],['speechStyleControl','formal']]){await p.locator('#'+id+' [data-value="'+value+'"]').click();await settle(p);eq(await p.locator('.p72-copy-area').count(),2,'no duplicate controls after '+id);await copy(p,'main').click();eq(await p.evaluate(()=>copied.at(-1)), 'Practice 7.2 — Drill 1: Compare Past & Present State — ～ました／～から～ています — 2026-11-08\n1. Past: —   誤答、そのまま？  \n1. Present State: ✅ 状態　原文。','display mode never changes raw copy');}
@@ -32,7 +33,20 @@ const copy=(p,kind)=>p.locator('.p72-copy-area[data-copy-kind="'+kind+'"] .p72-c
  await p.evaluate(()=>{const a=document.querySelector('#togglePlaybackMode'),r=document.querySelector('#toggleRecordMode');if(a.checked)a.click();if(r.checked)r.click();t.speaking=true;[...document.querySelectorAll('#drill1List button')].find(b=>/^(🎙️|⏺️)とる/.test(b.textContent)&&!b.disabled).click();});await p.waitForTimeout(350);
  eq(await copy(p,'main').isDisabled(),true,'active recording locks main');eq(await copy(p,'qa').isDisabled(),true,'active recording locks QA');await p.evaluate(()=>{const r=t.recognitions.at(-1),result=[{transcript:'録音の原文です。'}];result.isFinal=true;r.onresult?.({resultIndex:0,results:[result]});r.onspeechstart?.();});await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(150);await settle(p);
  eq(await copy(p,'main').isEnabled(),true,'recorder completion refreshes Copy');await copy(p,'main').click();eq((await p.evaluate(()=>copied.at(-1))).includes('録音の原文です。'),true,'new recorder raw transcript copied');
- await p.evaluate(()=>denyCopy=true);await copy(p,'main').click();eq(await p.locator('.p72-copy-area[data-copy-kind="main"] .p72-copy-status').textContent(),'Could not copy. Please allow clipboard access.','clipboard failure shown');
+ eq(await p.locator('.p72-copy-status').count(),0,'independent status element retired');
+ eq(await copy(p,'main').locator('span').textContent(),'Copied','main button becomes Copied');
+ eq(await copy(p,'qa').locator('span').textContent(),'Copy my sentences','qa button unaffected');
+ await p.clock.fastForward(2100);
+ eq(await copy(p,'main').locator('span').textContent(),'Copy my sentences','main button reverts after 2s');
+ await copy(p,'main').click();
+ await p.clock.fastForward(1000);
+ eq(await copy(p,'main').locator('span').textContent(),'Copied','main button still Copied at 1s');
+ await copy(p,'main').click();
+ await p.clock.fastForward(1500);
+ eq(await copy(p,'main').locator('span').textContent(),'Copied','main button still Copied 1.5s after consecutive click');
+ await p.clock.fastForward(600);
+ eq(await copy(p,'main').locator('span').textContent(),'Copy my sentences','main button reverts 2.1s after consecutive click');
+ await p.evaluate(()=>denyCopy=true);await copy(p,'main').click();eq(await copy(p,'main').locator('span').textContent(),'Copy my sentences','clipboard failure keeps button label');
  await p.evaluate(()=>{denyCopy=false;practice7State.savedResults={};renderAll();});await settle(p);eq(await copy(p,'main').isDisabled(),true,'clearing results disables main');eq(await copy(p,'qa').isDisabled(),true,'clearing results disables QA');
  eq(errors,[],'no runtime errors');await p.locator('.p72-copy-area').first().screenshot({path:'/tmp/copy72-mobile.png'});console.log('PASS Copy 7.2',checks);
  }finally{await b.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
