@@ -254,15 +254,14 @@ Script Modeに応じて本・カバン・時計へ切り替える。Formalはで
 - 準備/録音中は切り替えを禁止する。切り替え時に再生を中断し、Drill 1の見出し上端に本文1行分の余白を残してsmoothスクロールする（2026-10-29共通確定）。
 - D4は独立の録音問題を複製しない。前セクションとの間隔は共通40px。
 
-## 回答判定・Feedback表示仕様（A案履歴／2026-11-15現行整理）
+## 回答判定・Feedback表示仕様（2026-11-15現行）
 
-Practice 2.1固有の回答判定生成、保存・復元、エラー処理、再描画、および不一致表示（Keep going!・長文レイアウト）の現行仕様を定める。CheckmarkとFireの外観・色・サイズ等の視覚仕様は [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) を正本とする。2026-11-11のUndetermined／Footprints設計は履歴であり、2026-11-15に現行機能から廃止した。
+Practice 2.1固有の回答判定生成、保存・復元、エラー処理、再描画、および不一致表示（Keep going!・長文レイアウト）の現行仕様を定める。CheckmarkとFireの外観・色・サイズ等の視覚仕様は [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) を正本とする。
 
 ### 1. 判定ステータスの生成（A案）
 - 既存の許容解答・正規化・照合式と `isCorrect` を保持する。
 - 新規保存では、`isCorrect: true`の場合に`judgment: 'accepted'`、`false`の場合に`judgment: 'mismatch'`を付加する。現行の回答判定状態はAccepted／Mismatchの2種類とする。
-- **Undetermined／Footprintsは現行機能から廃止する。** 実回答からUndeterminedを生成せず、現行UIでFootprintsおよび`Could not be evaluated reliably.`を表示しない。過去の表示fixture・テスト・休眠コードに残る表示分岐は設計履歴／検証資産として扱い、現行機能の要件や将来実装の根拠にしない。
-- 回答の短さ、部分一致、未知語、許容解答との不一致、複雑な日本語、推測した信頼度からUndeterminedを生成しない。既存のMismatchをUndeterminedへ再分類しない。
+- 回答判定状態はAccepted／Mismatchの2種類のみとする。短い回答、部分一致、未知語、許容解答との不一致、複雑な日本語、推測した信頼度を理由に第3の判定状態を生成しない。既存のMismatchを別状態へ再分類しない。
 
 ### 2. 保存・復元
 - 旧データは同じ真偽値から表示状態を復元し、再採点や上書きを行わない。
@@ -270,9 +269,9 @@ Practice 2.1固有の回答判定生成、保存・復元、エラー処理、�
 - 再回答、Set切替、Script Mode切替、English Cues切替、および再描画を行っても、保存された判定結果・ステータスから表示を復元する。
 - 未回答状態や録音開始処理では新しい判定を生成しない。
 
-### 3. 非未判定エラー処理
+### 3. 録音・音声認識エラー処理
 - 無音、結果なし、マイク失敗、SpeechRecognitionエラー、キャンセル、音声のみ保存（Audio only）は既存処理を維持する。
-- `unrecognized` や `audioOnly` は現在のPractice 2.1の実保存経路では生成されず、外部・旧状態に存在しても保留（undetermined）へ変換しない。
+
 
 ### 4. 再描画時の処理
 - 表示を再生成する際は古いアイコンを残さない。
