@@ -322,7 +322,7 @@ function cues(r,visibleIds,isDrill=false) {
             const objEng = words[r.object]?.english || r.object;
             const verbEng = words[r.verb]?.english || r.verb;
             const subjEng = words[r.subject]?.english || r.subject;
-            return `<span class="target-word">${escape(subjEng)}</span> / <span class="target-word">${escape(objEng)}</span> <span class="target-word">${escape(verbEng)}</span>`;
+            return `<span class="target-word">${escape(subjEng)}</span> / <span class="target-word">${escape(verbEng)}</span> / <span class="target-word">${escape(objEng)}</span>`;
         }
         const ids=visibleIds||[r.subject,r.object,...(r.noun?[]:[r.verb]),...(r.adverb&&!r.selectKind?[r.adverb]:[]),...(r.selectKind==='ability'||r.selectKind==='adverb'||r.selectKind==='comparison'?[]:[r.adjective])].filter(Boolean);
         const compound=!visibleIds&&r.compoundCue&&r.verb==='do'&&!r.noun&&compoundCueMeanings[r.object];
