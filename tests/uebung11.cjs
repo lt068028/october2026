@@ -94,7 +94,7 @@ assert.ok(
     'alignDrillCues must measure natural unconstrained width using max-content and nowrap'
 );
 
-// 6. Check German TTS Diagnostic and Notice Banner contracts (FWC W9)
+// 6. Check German TTS Diagnostic and Notice Banner contracts
 // 6.1 HTML dedicated banner
 assert.ok(html.includes('id="germanTtsNotice"'), 'HTML must have dedicated #germanTtsNotice');
 assert.ok(html.includes('german-tts-notice-title'), 'HTML must have german-tts-notice-title');
@@ -133,7 +133,7 @@ assert.ok(js.includes('u.addEventListener("error"'), 'JS must listen to utteranc
 assert.ok(js.includes('u.addEventListener("end"'), 'JS must listen to utterance end');
 assert.ok(js.includes('startTimeoutTimer'), 'JS must have start timeout timer');
 
-// 7. 3-Stage Evaluation & Feedback UI Contracts (FWC / W10)
+// 7. 3-Stage Evaluation & Feedback UI Contracts
 // 7.1 Structural and feedback text contracts
 assert.ok(!js.includes('result-incorrect", " ❌"'), 'Must not render ❌ mark in result');
 assert.ok(!js.includes('Try once more!'), 'Must not contain Try once more!');
