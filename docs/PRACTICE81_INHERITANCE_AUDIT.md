@@ -15,9 +15,9 @@
 ## Yes/No Example
 
 - 1.2 Example1、7.1/7.2/7.3の該当Exampleは、質問・肯定・否定モデルを示し、肯定🔊🙆/否定🔊🙅を独立再生する。
-- UI_LAYOUT_SPECには既にExample再生とDrill選択の分離、練習7の質問/Yes/No縦列が規定されていた。一方、「新設する全Y/N導入Exampleで両返答を常時示す」という適用範囲は明確にまとまっていなかった。
+- 当時のUI_LAYOUT_SPECにはExample再生とDrill選択の分離、練習7の質問／Yes／No縦列が規定されていた。一方、新設するY/N導入Exampleの適用範囲は明確にまとまっていなかった。現在のモデル表示・選択・再生動作の正本は[PROJECT_SPEC §7.3](PROJECT_SPEC.md)、画面上の列・アイコン配置は[UI_LAYOUT_SPEC §4.3・§8](UI_LAYOUT_SPEC.md)とする。
 - 8.1の前回改訂でD2のY/N選択・否定回答モデルは実装したが、Example2の配列には質問と肯定の2つだけを登録した。DrillのNo生成テストはあっても、Exampleの否定表示と専用ボタンを確認していなかった。
-- 今回、UI_LAYOUT_SPECへYes/No Exampleの共通仕様を明文化し、8.1に3モデル・役割見出し・3音声の縦列・独立再生・返答語と語尾の共通強調を反映。Drillの選択・保存とは分離する。
+- 当時はUI_LAYOUT_SPECへYes/No Exampleの共通仕様を明文化し、8.1に3モデル・役割見出し・3音声の縦列・独立再生・返答語と語尾の共通強調を反映した。現在の共通機能規則はPROJECT_SPEC §7.3、共通の表示配置はUI_LAYOUT_SPEC §4.3・§8、8.1固有の語彙・教材上の条件はPRACTICE8_SPECを正本とする。Drillの選択・保存とは分離する。
 - common-yn-examples.cjsで既存4ページ＋8.1を照合し、全文体で肯定/否定の常時表示、再生文の肯定否定、再生でDrill選択が変わらないことを検証する。
 
 ## D5の変更が初期表示で見えなかった構造
