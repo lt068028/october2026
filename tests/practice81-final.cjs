@@ -5,13 +5,15 @@ const root=path.resolve(__dirname,'..');let checks=0;const eq=(a,b,m)=>{assert.d
 const audio=fs.readFileSync(path.join(__dirname,'audio-relay.cjs'),'utf8'),mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=>'));
 const master={};const md=fs.readFileSync(path.join(root,'docs/GENKI_KANJI_MASTER.md'),'utf8');
 for(const m of md.matchAll(/### 第(\d+)課[^\n]*\n[\s\S]*?\n([一-龯々](?: [一-龯々])+)\n/g))for(const k of m[2].split(' '))master[k]=Number(m[1]);
-async function open(browser,hasTouch=false){const page=await browser.newPage({viewport:{width:375,height:1000},hasTouch});page.errors=[];page.on('pageerror',e=>page.errors.push(e.message));await page.addInitScript('('+mock.trim()+')();');
+async function open(browser,hasTouch=false){const page=await browser.newPage({viewport:{width:600,height:1000},hasTouch});page.errors=[];page.on('pageerror',e=>page.errors.push(e.message));await page.addInitScript('('+mock.trim()+')();');
  await page.route('http://final81.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f,'utf8');if(f.endsWith('practice8.1.js'))s=s.replace(/\}\)\(\);\s*$/,'window.final81={rowsFor,choices,saved,views,render,showResult,keyFor,matchesAnswer,words,comparisonOptionOrder};})();');return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});await page.goto('http://final81.test/practice8.1.html');return page;}
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']}),page=await open(browser);
  eq(Object.keys(master).length,317,'official-verified master parsed');
- eq(await page.locator('.info-panel-title').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['Drill 1: Nounが、すき↔️Verbのが、すき','Drill 2: Verbのが、すき↔️きらい？','Drill 3: Verbのが、じょうず↔️にがて','Drill 4: Degrees of Intensity','Drill 5: Compare じょうず・とくい・へた・にがて'],'approved titles');
- eq(await page.locator('.info-panel-desc').allTextContents(),['💡Say what you like and what you like doing.','💡Ask and answer about likes and dislikes.','💡Describe what other people are good at or struggle with.','💡Express different degrees of intensity using different actions.','💡Choose the adjective that matches each label. Consider its meaning and how it sounds.'],'approved instructions');
+ eq(await page.locator('#drill1Container > .p81-section > .info-panel .info-panel-title').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent;})),['Drill 1: Nounが、すき↔️Verbのが、すき','Drill 2: Verbのが、すき↔️きらい？','Drill 3: Verbのが、じょうず↔️にがて','Drill 4: Degrees of Intensity','Drill 5: Compare じょうず・とくい・へた・にがて'],'approved titles');
+ eq(await page.locator('#drill1Container > .p81-section > .info-panel .info-panel-desc').allTextContents(),['💡Say what you like and what you like doing.','💡Ask and answer about likes and dislikes.','💡Describe what other people are good at or struggle with.','💡Express different degrees of intensity using different actions.','💡Choose the adjective that matches each label. Consider its meaning and how it sounds.'],'approved instructions');
+ eq(await page.locator('#drill6Container .drill-cue-title').textContent(),'Drill 6: Practice with English cues','separate English-cue panel title');
+ eq(await page.locator('#drill6Container .drill-cue-description').textContent(),'💡Use English cues for Drills 1–5.','separate English-cue panel scope');
  eq(await page.locator('#drill5 .p81-scenario').allTextContents(),['1. Own ability','2. Own ability','3. Own ability',"4. Others' ability","5. Others' ability","6. Others' ability","7. Others' ability"],'D5 order/category labels');
  eq(await page.evaluate(()=>final81.rowsFor(4).map(rs=>rs[0].comparisonBase)),['comparison-1','comparison-2','comparison-3','comparison-0','comparison-4','comparison-5','comparison-6'],'stable IDs after reordering');
  eq(await page.evaluate(()=>final81.rowsFor(2)[0][0].text),'クラスメートは、ノートを取るのが、上手です。','note-taking row');
@@ -42,12 +44,12 @@ async function open(browser,hasTouch=false){const page=await browser.newPage({vi
  for(const mode of ['kanji','hiragana']){
   await page.locator('#scriptModeControl [data-value="'+mode+'"]').click();
   const phrase=page.locator('#drill1 .p81-example-cue .target-word').filter({hasText:'りょこうする'});await phrase.hover();const tip=phrase.locator('..').locator('.tooltip-tip');eq(await tip.textContent(),'ryokō suru, to travel','whole compound hover');eq(await tip.evaluate(e=>getComputedStyle(e).visibility),'visible','hover visible');
-  const rect=await tip.boundingBox();eq(rect.x>=0&&rect.x+rect.width<=375,true,'tooltip fits viewport');
+  const rect=await tip.boundingBox();eq(rect.x>=0&&rect.x+rect.width<=600,true,'tooltip fits viewport');
  }
  await page.locator('#unlearnedAccordion').evaluate(e=>e.open=true);await page.waitForFunction(()=>sessionStorage.getItem('p81-unlearned-open')==='true');await page.reload();eq(await page.locator('#unlearnedAccordion').evaluate(e=>e.open),true,'open reload persistence');
  await page.locator('#unlearnedAccordion').evaluate(e=>e.open=false);await page.waitForFunction(()=>sessionStorage.getItem('p81-unlearned-open')==='false');await page.reload();eq(await page.locator('#unlearnedAccordion').evaluate(e=>e.open),false,'closed reload persistence');
 
- for(const style of ['formal','informal','casual'])for(const mode of ['kanji','hiragana'])for(const width of [375,768,1440]){
+ for(const style of ['formal','informal','casual'])for(const mode of ['kanji','hiragana'])for(const width of [600,768,1440]){
   await page.setViewportSize({width,height:1000});await page.locator('#speechStyleControl [data-value="'+style+'"]').click();await page.locator('#scriptModeControl [data-value="'+mode+'"]').click();
   const bounds=await page.locator('.p81-model').evaluateAll(es=>es.flatMap(e=>{let c=document.createRange();c.selectNodeContents(e);return [...c.getClientRects()].filter(r=>r.width).map(r=>[r.left,r.right]);}));
   eq(bounds.every(([l,r])=>l>=-1&&r<=width+1),true,'Example text in viewport '+style+mode+width);

@@ -260,11 +260,11 @@ function mock(){
  await p.evaluate(()=>{const r=t.recognitions.at(-1),result=[{transcript:'これはペンです'}];result.isFinal=true;r.onresult({resultIndex:0,results:[result]});r.onspeechstart?.();});
  await p.locator('.stop-btn-active:not(:disabled)').click();await p.waitForTimeout(100);
  check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_A_0?.isCorrect),true,'recording extracted and matched');
- check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),true,'transcript visible in row');
+ check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'transcript visible in row');
  await p.locator('.p21-drill1 .p21-set-switcher button').nth(1).click();
- check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),false,'sets keep distinct results');
+ check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),false,'sets keep distinct results');
  await p.locator('.p21-drill1 .p21-set-switcher button').first().click();
- check(await p.locator('.p21-drill1 tr').first().textContent().then(t=>t.includes('✅')),true,'result restored on return');
+ check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'result restored on return');
  await p.evaluate(()=>{isAutoPlay=false;const key='p21_d1_s0_B_0',v=practice2State.views[key];processResult('それは新聞です','これは、新聞です。',()=> 'これは、新聞です。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);});
  check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_B_0.isCorrect),false,'wrong demonstrative rejected');
 
@@ -280,9 +280,9 @@ function mock(){
  await recordLater('#drill2Container',1,'それはおにぎりです');
  check(await p.evaluate(()=>practice2State.savedResults.p21_d2_s0_r_0?.isCorrect),true,'D2 recording matches model');
  await p.locator('#drill2Container .p21-set-switcher button').nth(1).click();
- check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),false,'D2 sets separated');
+ check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n>0),false,'D2 sets separated');
  await p.locator('#drill2Container .p21-set-switcher button').first().click();
- check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),true,'D2 result restored');
+ check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'D2 result restored');
  await p.locator('#drill3Container .p21-set-switcher button').first().click();
  await recordLater('#drill3Container',1,'これです');
  check(await p.evaluate(()=>practice2State.savedResults.p21_d3_s0_r_0?.isCorrect),true,'D3 color-selected recording matches B perspective');
@@ -295,7 +295,7 @@ function mock(){
  for(const set of [0,1]){await p.locator('.p21-drill1 .p21-set-switcher button').nth(set).click();check(await p.locator('.p21-drill1 .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D1 sets use English cues');}
  for(const set of [0,1]){await p.locator('#drill2Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill2Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D2 sets use English cues');}
  for(const set of [0,1]){await p.locator('#drill3Container .p21-set-switcher button').nth(set).click();check(await p.locator('#drill3Container .drill-cue-cell').evaluateAll(es=>es.every(e=>!/[\u3040-\u30ff\u3400-\u9fff]/.test(e.textContent))),true,'D3 sets use English cues');check(await p.locator('#drill3Container .p21-color-cue').count(),2,'English mode preserves color cues');}
- await p.locator('#drill2Container .p21-set-switcher button').first().click();check(await p.locator('#drill2Container tr').nth(1).textContent().then(t=>t.includes('✅')),true,'English mode preserves recorded result');
+ await p.locator('#drill2Container .p21-set-switcher button').first().click();check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'English mode preserves recorded result');
  await p.locator('#drill2Container tr').nth(1).locator('.recording-actions button').first().click();check(await p.evaluate(()=>{const u=t.spoken.at(-1);u.onend?.();return practice2Normalize(u.text)}),'それはおにぎりです','English cues keep Japanese audio');
  await p.locator('#scriptModeControl [data-value="kanji"]').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'true','script change keeps English selection');
  await p.locator('.drill-cue-button').click();check(await p.locator('.drill-cue-button').getAttribute('aria-pressed'),'false','Japanese cues restored');check((await p.locator('#drill2Container .drill-cue-cell').first().textContent()).includes('これ'),true,'D2 Japanese pronoun restored');check(await p.locator('.drill-cue-button').count(),1,'D4 panel is not duplicated');

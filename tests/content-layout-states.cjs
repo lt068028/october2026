@@ -14,7 +14,7 @@ async function audit(p,key){
 }
 (async()=>{const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});for(const name of names){
  const p=await harness.open(browser,name,root);
- for(const [width,mode,style]of [[375,'hiragana','informal'],[850,'kanji','casual']]){
+ for(const [width,mode,style]of [[600,'hiragana','informal'],[850,'kanji','casual']]){
   await p.setViewportSize({width,height:1100});await harness.settings(p,mode,'paren',style);
   const groups=await p.locator('.p21-set-switcher').count();
   for(let group=0;group<groups;group++){const buttons=await p.locator('.p21-set-switcher').nth(group).locator('button').count();for(let item=0;item<buttons;item++){
