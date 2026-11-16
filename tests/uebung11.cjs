@@ -363,7 +363,13 @@ async function runRecordingLifecycleTests() {
                 constructor() {
                     window.t.recognitions.push(this);
                 }
-                start() { this.active = true; }
+                start() {
+                    this.active = true;
+                    // Real Chrome dispatches onspeechstart shortly after start even in silence
+                    setTimeout(() => {
+                        if (this.active) this.onspeechstart?.();
+                    }, 50);
+                }
                 stop() {
                     this.active = false;
                     setTimeout(() => this.onend?.(), 0);
@@ -430,7 +436,10 @@ async function runRecordingLifecycleTests() {
                 const recBtn = recBtns.find(b => b.textContent.includes('Aufnehmen'));
                 if (recBtn) recBtn.click();
             }, isManual);
-            await page.clock.runFor(100);
+            for (let i = 0; i < 10; i++) {
+                await page.clock.runFor(50);
+                if (await page.evaluate(() => window.t.recorders.at(-1)?.state === 'recording')) break;
+            }
         };
 
         const advanceToElapsed = async (targetElapsed) => {

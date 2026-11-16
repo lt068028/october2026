@@ -1297,10 +1297,9 @@ function initGermanDrill() {
             s.recognition.continuous = true;
             s.recognition.maxAlternatives = 1;
 
-            s.recognition.onspeechstart = () => {
-                s.speechStarted = true;
-                s.lastSoundAt = Date.now();
-            };
+            // SpeechRecognition events (such as Chrome's premature onspeechstart) MUST NOT trigger
+            // speech detection or silence stopping. Speech detection and silence auto-stop are
+            // strictly governed by microphone audio volume monitoring via AudioContext.
 
             s.recognition.onresult = event => {
                 let finalStr = "";
@@ -1310,9 +1309,8 @@ function initGermanDrill() {
                     if (event.results[i].isFinal) finalStr += trans;
                     else interimStr += trans;
                 }
-                if (finalStr || interimStr) {
+                if (finalStr.trim() || interimStr.trim()) {
                     s.speechStarted = true;
-                    s.lastSoundAt = Date.now();
                 }
                 if (finalStr) s.raw += finalStr;
                 s.interim = interimStr;
@@ -1424,6 +1422,7 @@ function initGermanDrill() {
             s.stop("Auto-stopped after 20 seconds.");
         }, 20000));
 
+        showResult(key);
         sync();
     }
 
