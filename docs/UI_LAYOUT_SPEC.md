@@ -81,7 +81,7 @@
 | --- | --- | --- |
 | 通常の項目名・役割名・比較項目名 | `example-label-title`、太字、`--example-label-color`。通常の背景バッジなし | 文法意味色とは別管理。概念区分は原則Example内に置き、通常Drillへ無断展開しない |
 | 時制・アスペクト区分 | Practice 7の比較用区分表示 | 異なる時制・アスペクトを比較するExample／Drillに限る。通常項目名や単一区分のDrillへ追加しない |
-| 文法強調 | `grammar-highlight`／`--grammar-highlight-color` | 指定された文法要素だけを強調する。色値・句読点の扱いはPROJECT_SPECの共通意味色規則を参照 |
+| 文法強調 | `grammar-highlight`／`--grammar-highlight-color` | 指定された文法要素だけを強調する。色トークンは共通`style.css`で管理し、ページ内で独自の色値を再定義しない。句読点の扱いは該当ページ仕様に従う |
 | Example本文・音声文字 | `example-text-layout`の基線配置 | 同じ行の最初の文字の基線差は0.5px未満を目標に確認。固定px移動で合わせない |
 | 程度副詞の肯定・否定 | `degree-positive`／`degree-negative`、`--degree-positive-color`／`--degree-negative-color` | PROJECT_SPECの共通肯定／否定色への参照として使う。課題固有の適用範囲・語句はPractice固有仕様を参照 |
 
