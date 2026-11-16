@@ -3,9 +3,23 @@ name: Test Suite
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - '**/*.md'
+      - 'docs/**'
   workflow_dispatch:
+
+# Keep only the newest relevant run for each branch / PR ref.
+# A newer code or test change supersedes older CI runs for the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
