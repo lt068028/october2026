@@ -1,10 +1,12 @@
-## 2026-11-11 Microsoft Fluent Filledアイコン統一（初回Preview・現行main反映あり）
+## 2026-11-11 Microsoft Fluent Filled Q/Aアイコン統一（Preview用初回実装・PR #13経由でmain統合済み／承認・Production受入未確認）
 
 - 採用した表示仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」を正本とする。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
 - 初回展開は`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一した。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含み、Q/Aだけの差分ではなかった。
-- **main反映の履歴**：Filled実装コミットは `dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #9はPreview／CI用で、Productionへの統合・最終承認を含まないと明記され、2026-11-12にCloseされた。現在のmainには同コミットが祖先として含まれ、マージコミット `d04264364bd0e8aa9fb560e64060ba2a2578a67e`（PR #13のマージ）で統合された履歴を確認できる。
-- **承認経緯の未確認事項**：PR #13はタイトル・本文とも「DO NOT MERGE」「Productionへ反映しない」「ユーザー実機確認が必要」と記載していたが、実際にはmainへマージされている。PR #9／#13のGitHubレビューはなく、取得できたコメントはVercel botの自動投稿のみ。マージされた事実だけではユーザーのFilled仕様への最終承認を証明できないため、承認経緯はユーザー／Thinkの確認待ちとする。
-- **公開・表示確認**：マージコミット `d042643` のVercel commit statusはsuccess。これはチェック成功の根拠であり、Production画面の実表示やユーザー実機確認までを証明しない。現時点でProduction表示・実機確認済みとは記録しない。
+- **統合経路とGitHub上のPR状態**：Filled初回実装は `dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #9（head／GitHub APIの`merge_commit_sha`：`01e5e49d5a006a7b29602791fa8e606f121dd706`）は、GitHub API上 `closed` かつ `merged=true`、`merged_at=2026-11-12T17:48:47Z` と記録されている。したがって、PR #9を「Closeされたが未マージ」とする説明は誤りである。
+- **mainへ入った実際の経路**：PR #13は `d04264364bd0e8aa9fb560e64060ba2a2578a67e`（`merged_at=2026-11-12T17:48:45Z`）でmainへマージされた。コミット比較ではPR #13のマージコミット `d042643` がPR #9のhead／`01e5e49` を祖先として含む。PR #9のMerged記録はPR #13のマージより2秒後であるため、GitHub上のPR状態と実際にmainへ取り込まれた統合経路を分けて記録する。PR #9自身が独立した別のmain統合を行ったと解釈しない。
+- **ユーザー承認の確認**：PR #9本文には「user-approved」なFilled表示仕様との作成者側の記載がある一方、同じ本文は「User's final approval」を含まないとも明記している。PR本文の文言はユーザー本人の明示発言そのものではなく、Thinkが過去の会話記録を照合した結果でも、デザイン採用・Preview実機確認・main統合・Production反映・Production実機確認に関するユーザー本人の明示承認は確認できなかった。2026-11-11にユーザーが確定したQ/A表示条件とFilledアイコンのデザイン採用承認は別事項として扱う。
+- PR #13のタイトル・本文には「DO NOT MERGE」「Productionへ反映しない」「ユーザー実機確認が必要」と記載されていた。両PRのGitHubレビューはなく、取得できた各PRコメントはVercel botのみ。したがってマージされた事実だけでユーザー承認を補完しない。
+- **Preview／Productionの確認範囲**：PR #9／#13に付いたVercel botコメントは、それぞれPreviewデプロイをIgnored／Skippedと記録している。マージコミット `d042643` のGitHub commit statusはcontext `Vercel`／state `success` だが、statusの返却情報から対象環境は特定できない。したがってこのsuccessをProduction公開・画面表示の証拠にしない。Production画面でのFilled表示およびユーザー実機確認は未確認とする。
 - 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）は別の比較案であり、Filled案とは区別する。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
 
 ## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
