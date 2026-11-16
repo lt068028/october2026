@@ -1113,7 +1113,11 @@ function initGermanDrill() {
         sync();
 
         const v = views.get(key);
-        if (v) v.result.textContent = "Preparing microphone...";
+        if (v) {
+            v.result.classList.remove("not-recorded-yet");
+            v.result.classList.add("recording-status");
+            v.result.textContent = "Preparing microphone...";
+        }
 
         let stream;
         try {
@@ -1464,11 +1468,15 @@ function initGermanDrill() {
         if (!v) return;
 
         const val = saved.get(key);
+        v.result.classList.remove("recording-status");
+        v.result.classList.remove("not-recorded-yet");
         v.result.replaceChildren();
         v.correction.replaceChildren();
         v.correction.hidden = true;
 
         if (session?.key === key) {
+            v.result.classList.remove("not-recorded-yet");
+            v.result.classList.add("recording-status");
             v.result.textContent = "Recording...";
             return;
         }
@@ -1739,7 +1747,7 @@ function initGermanDrill() {
                 actions.append(listenBtn, recBtn, stopBtn);
 
                 const wrap = node("span", "recording-result");
-                const result = node("span", "result-text not-recorded-yet", "… Not yet");
+                const result = node("span", "result-text");
                 wrap.append(result);
                 layout.append(actions, wrap);
 

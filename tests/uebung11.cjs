@@ -544,11 +544,11 @@ async function runRecordingLifecycleTests() {
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
-        await page.clock.runFor(400); // 400ms speech (soundFrames >= 3)
+        await page.clock.runFor(500); // 500ms speech (soundFrames >= 3)
         await setSpeaking(false); // Speech ends, silence begins
         await page.clock.runFor(1500); // 1.5s silence
         assert.ok(await isRecording(), 'S5: Still recording at 1.5s silence');
-        await page.clock.runFor(700); // 2.2s total silence
+        await page.clock.runFor(900); // 2.4s total silence
         assert.ok(!(await isRecording()), 'S5: Auto-stopped after 2.0s silence');
 
         // --- Scenario 6: Autostop OFFで発話後2秒無音停止しない ---
@@ -730,6 +730,59 @@ async function runRecordingLifecycleTests() {
         assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
 
+        // --- Scenario 21: Typography & Computed Font Size Verification (18.2px / 20.8px / 15.6px) ---
+        // 1. Normal STT extracted text: 20.8px
+        const normalSttSize = await page.evaluate(() => {
+            const el = document.querySelector('#drillsContainer .recording-result .result-text');
+            return window.getComputedStyle(el).fontSize;
+        });
+        assert.equal(normalSttSize, '20.8px', 'Normal STT extracted text must be 20.8px');
+
+        // 2. Unrecorded "… Not yet": 15.6px
+        const notYetSize = await page.evaluate(() => {
+            const el = document.querySelectorAll('#drillsContainer .recording-result .not-recorded-yet')[1];
+            return window.getComputedStyle(el).fontSize;
+        });
+        assert.equal(notYetSize, '15.6px', 'Unrecorded "... Not yet" must be 15.6px');
+
+        // 3. Preparing microphone...: 18.2px
+        const prepSize = await page.evaluate(() => {
+            const el = document.querySelectorAll('#drillsContainer .recording-result .result-text')[2];
+            el.classList.remove('not-recorded-yet');
+            el.classList.add('recording-status');
+            el.textContent = 'Preparing microphone...';
+            return window.getComputedStyle(el).fontSize;
+        });
+        assert.equal(prepSize, '18.2px', 'Preparing microphone... status text must be 18.2px');
+
+        // 4. Recording...: 18.2px
+        const recSize = await page.evaluate(() => {
+            const el = document.querySelectorAll('#drillsContainer .recording-result .result-text')[2];
+            el.textContent = 'Recording...';
+            return window.getComputedStyle(el).fontSize;
+        });
+        assert.equal(recSize, '18.2px', 'Recording... status text must be 18.2px');
+
+        // 5. Result notice (timeout / recording error / recognition error): 18.2px
+        const noticeSize = await page.evaluate(() => {
+            const el = document.querySelectorAll('#drillsContainer .recording-result .result-text')[2];
+            el.classList.remove('recording-status');
+            el.replaceChildren();
+            const note = document.createElement('span');
+            note.className = 'result-notice';
+            note.textContent = 'No speech detected within 5 seconds.';
+            el.append(note);
+            return window.getComputedStyle(note).fontSize;
+        });
+        assert.equal(noticeSize, '18.2px', 'Result notice (timeout / error) must be 18.2px');
+
+        // 6. Answer feedback (.correction-box): 18.2px
+        const feedbackSize = await page.evaluate(() => {
+            const corr = document.querySelector('#drillsContainer .correction-box');
+            return window.getComputedStyle(corr).fontSize;
+        });
+        assert.equal(feedbackSize, '18.2px', 'Answer feedback (.correction-box) must be 18.2px');
+
         // Resource cleanup check
         const tracksAllEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
         assert.ok(tracksAllEnded, 'All microphone tracks ended');
@@ -737,7 +790,7 @@ async function runRecordingLifecycleTests() {
         assert.ok(contextsClosed, 'All AudioContext instances closed');
 
         assert.equal(errors.length, 0, 'No uncaught page errors during tests');
-        console.log('PASS: All recording lifecycle scenarios (1 to 20) passed successfully.');
+        console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();
     }

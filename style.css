@@ -5012,6 +5012,12 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     display: inline-block;
 }
 
+/* Deutsch 1.1: recording result typography */
+.uebung11-page .result-notice,
+.uebung11-page .result-text.recording-status {
+    font-size: 18.2px;
+}
+
 /* =========================================================
    Practice 7.3 & Practice 8.1: Copy my sentences
    ========================================================= */
@@ -5175,6 +5181,13 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .practice82-page .p82-copy-button:disabled {
     opacity: .45;
     cursor: not-allowed;
+}
+
+/* Practice 8.2: recording result typography (scoped to .practice82-page) */
+.practice82-page .p81-notice,
+.practice82-page .p81-feedback,
+.practice82-page .result-text.recording-status {
+    font-size: 18.2px;
 }
 
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */

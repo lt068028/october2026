@@ -227,7 +227,7 @@ function modelHTML(r){
  tokens.sort((a,b)=>b.text.length-a.text.length);
  let out='',i=0;while(i<text.length){
   const optional=['何か(を)','なにか(を)'].find(t=>text.startsWith(t,i));
-  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after 何か.</span></span>';i+=optional.length;continue;}
+  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after '+(scriptMode==='kanji'?'何か':'なにか')+'.</span></span>';i+=optional.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
   if(mark){out+=indefiniteHTML(mark,true,r.id.startsWith('contrast-'));i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
@@ -671,9 +671,14 @@ function showResult(key,notice='') {
     const v=views.get(key);if(!v)return;
     const value=saved.get(key);
     v.result.classList.remove('not-recorded-yet');
+    v.result.classList.remove('recording-status');
     v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
-    if(session?.key===key){v.result.textContent='Recording...';return;}
+    if(session?.key===key){
+        v.result.classList.add('recording-status');
+        v.result.textContent='Recording...';
+        return;
+    }
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.2'});
         if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
@@ -843,8 +848,12 @@ async function record(key, r) {
     preparing = true;
     sync();
 
-    views.get(key).result.textContent =
-        "Preparing microphone...";
+    const targetResult = views.get(key)?.result;
+    if (targetResult) {
+        targetResult.classList.remove('not-recorded-yet');
+        targetResult.classList.add('recording-status');
+        targetResult.textContent = "Preparing microphone...";
+    }
 
     let stream;
 
