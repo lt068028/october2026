@@ -19,7 +19,7 @@
 - Fluent Checkmark 24 Filledは元のFilled形状に同色の1.5pxストロークを追加し、22×22pxで表示する。Lightは#16A34A、Darkは#4ADE80。正式なpathと24×24のviewBoxを維持する。
 - 正解チェックは対応する抽出テキストの左側、間隔4px、縦中央揃えとする。長いテキストは既存領域内で自然に折り返す。
 - 正解・不正解のSVGはインラインSVG、原則`currentColor`とし、背景・枠・影を付けない。
-- Fireは既存の正式仕様を優先する。SVGと文言の間隔4px、抽出テキストとの間隔4px、右寄せ、赤い不一致強調を維持する。
+- Mismatchは **Fire → 認識テキスト → Keep going!** の順に表示する。Fireと認識テキストの間隔は4px、認識テキストとKeep going!の間隔は6pxとする。結果全体は右寄せとし、赤い不一致強調を維持する。
 - 判定結果はAccepted／Mismatchを排他的に表示し、判定更新時に古い表示を残さない。
 - 未回答・録音中は、新しい判定アイコンを生成しない。
 - 既存の判定結果表示領域を利用し、Q/A、Smile/Frown、疑問文マーク等と重ならないようにする。不要な空列・固定幅を追加しない。
@@ -31,7 +31,11 @@
 - Acceptedは緑チェック、Mismatchは既存の赤字・Fire＋Keep going!を表示する。
 - Practice 2.1ではAccepted／Mismatchのみを現行機能とする。
 
-## Practice 2.1 Keep going! 限定Preview（2026-11-11）
+## Practice 2.1–2.3 初期Previewの履歴（当時の記録）
+
+> 以下は2026-11-11〜13のPreview段階における作業・承認範囲の履歴であり、現在の適用範囲や統合状態を示すものではない。現在のPractice 2.1〜2.3共通の表示・レイアウト仕様は、後述の「Practice 2.1–2.3 — responsive mismatch feedback (2026-11-13)」を正とする。以下の「限定Preview」「段階展開」「main／Production未承認」は、それぞれの記載日当時の状態を表す。
+
+### Practice 2.1 Keep going! 限定Preview（2026-11-11）
 
 - 承認済み実装は `preview/p21-keep-going-approved-e-20261111` のCommit `644fff834355c9716cf258aa25cef9fd259131c7`。最終統合Preview `preview/qa-keep-going-final-20261111` でもPractice 2.1に限り同じ表示を使用する。Q/A表示条件の正本と併用し、Fire RegularとQ/A Filledを用途別に維持する。main・Production・他ページへの展開は未承認。
 - 回答不一致の案内は `Keep going!` とし、`Try once more!` と炎の絵文字を除去する。承認済みMicrosoft Fluent UI System Icons `Fire 24 Regular`（MIT）を20×20px・`currentColor`で添える。SVGと文字はLight `#B47732`／Dark `#E4AD69`。英語は既存のLato標準。囲み・背景・外枠・角丸・影は付けない。
@@ -839,7 +843,7 @@ Example内の発話行を区切るグレーの点線は使用しない。発話�
 - 既存の「🔊きく」「🎙️とる」「⏹️」は操作領域に残し、Keep going!の状態によって移動させない。Keep going!と「🔊きく」の位置・間隔はこの仕様では定めない。
 - 音声再生イベント、録音状態、判定、テキスト、正答・不一致表示は変更しない。表示順の変更はPractice 2.1に限定する。
 
-## Practice 2.2・2.3 Keep going! 段階展開Preview（2026-11-13）
+### Practice 2.2・2.3 Keep going! 段階展開Preview（2026-11-13）
 
 - Practice 2.1のDOM検証済み表示順序（上記）をPractice 2.2と2.3へ展開する。ユーザーの実機承認は別途必要。両ページ共通の `practice2-next.js` で表示処理を共有し、各ページの既存Drillの内容・録音・停止・モデル再生・正誤判定ロジックは維持する。
 - 不一致では結果領域にFire 20px → 生の認識テキスト（既存の文字単位エラー色・不足記号を保持）→ Keep going! を表示する。Fire・認識テキスト間4px、認識テキスト・文言間6px。モデルの「🔊きく」は「🎙️とる」「⏹️」と同じ操作領域に残す。
