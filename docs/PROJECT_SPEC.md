@@ -13,7 +13,7 @@
 
 - 対象は日本語Practiceを中心とする日本語学習ページ、Composition、Pronunciationのうち、各機能が適用されるものとする。
 - 共通機能は、現時点ですべての対象ページに実装されていることを条件としない。ページごとの段階的導入を認める。
-- Deutsche Übung 1.1のドリル固有仕様は対象外とし、`GERMAN_DRILL_SPEC.md`を正本とする。
+- Deutsche Übungシリーズのドリル固有仕様は対象外とし、`GERMAN_DRILL_SPEC.md`を正本とする。
 - ページ固有の設問構成・許容回答・例外は各ページ仕様書を正本とする。本書の共通原則でページ固有の条件を上書きしない。
 
 ## 2. 仕様と実装状況の区別
@@ -127,7 +127,7 @@
 
 ### 5.2 録音停止条件
 
-対象：日本語Practice、Composition、Pronunciation。Deutsche Übung 1.1は対象外とし、`GERMAN_DRILL_SPEC.md`に従う。
+対象：日本語Practice、Composition、Pronunciation。Deutsche Übungシリーズは対象外とし、`GERMAN_DRILL_SPEC.md`に従う。
 
 #### 5.2.1 利用者に対する録音停止条件
 
@@ -269,5 +269,5 @@ Formalの質問として判定する対象は、ページ仕様に別の明示�
 - Practice 2.1のページ固有仕様とPractice 2.1〜2.3共通のMismatch Feedback規定：`PRACTICE2_SPEC.md`。Practice 2.2／2.3のページ固有仕様：`PRACTICE22_23_SPEC.md`
 - Practice 7（7.1〜7.3）のページ固有仕様：`PRACTICE7_SPEC.md`
 - Practice 8のページ固有仕様：8.1／8.3は`PRACTICE8_SPEC.md`、8.2は`PRACTICE82_SPEC.md`
-- Deutsche Übung 1.1の専用仕様：`GERMAN_DRILL_SPEC.md`
+- Deutsche Übungシリーズの専用仕様：`GERMAN_DRILL_SPEC.md`
 - 仕様文書の新設・更新・統合・廃止と仕様整合性管理：`docs/RELAY_WORKFLOW.md` §5
