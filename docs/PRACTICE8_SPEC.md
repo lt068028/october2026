@@ -18,7 +18,7 @@ Practice 8.1のExample 1（Noun／Verb＋の）とExample 5（Skillful／Observe
 | --- | --- |
 | 教材語彙・キュー／Ex／内部音声文の表記分離、Beyondの基本原則 | [PROJECT_SPEC「表示箇所・用途別の表記とBeyondリスト」](PROJECT_SPEC.md#表示箇所用途別の表記とbeyondリスト2026-11-04確定) |
 | 録音・再生・TTS／STT・操作ロック・共通判定 | [PROJECT_SPEC.md](PROJECT_SPEC.md)の音声・録音・回答許容の規定 |
-| 共通部品、語彙ヒント、文法強調、色、文字基線、Yes/No Example | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)の共通UIの既定契約・Yes/No Exampleの共通仕様 |
+| 共通部品、語彙ヒント、文法強調、色、文字基線、Yes/No Example | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)の「共通UIの既定契約」「Yes/Noボタン」「ツールチップ・Vocab表示」 |
 | STT表示 | [STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md) |
 | 制作中の限定検証・ページ全体テストの開始条件 | [PROJECT_SPEC「全Practice共通：ページ作業完了とページ全体テスト」](PROJECT_SPEC.md#全practice共通ページ作業完了とページ全体テスト2026-11-04確定) |
 
@@ -168,6 +168,12 @@ Exampleは各3行の質問セットを2組表示し、左端に3行分結合し�
 - Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日本語キューは隣接する別列から開始する。列間は8pxとする。
 - 狭幅では日本語キューだけをその列内で折り返す。英語指定を均等割付・引き伸ばしせず、文字サイズ・音声列の共通規則を変更しない。
 - Drill 5の英語区分ラベルの装飾は、本書冒頭の「Drill 5の英語区分ラベル装飾」「ダークモードの英語区分ラベル」を正本とする。
+
+### Practice 8.1 Drill 4の程度副詞表示
+
+- English Cues ONでも程度副詞の肯定・否定色と太字を維持する。
+- とても・すごく・まぁまぁ・ちょっとは肯定色（`degree-positive`／`--semantic-positive-color`）、あまり・ぜんぜんは否定色（`degree-negative`／`--semantic-negative-color`）とする。
+- `not very`／`not at all`に`(with a negative ending)`等の括弧付き補足説明を付けない。区切り記号や隣接するSelect・形容詞・本文へ色を広げない。English Cues OFFおよびExampleの既存表示は維持する。
 
 ### Practice 8.2の導入区分
 - 「何も＋Negative, Nothing」を含む導入3区分は1行表示とする。
