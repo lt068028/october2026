@@ -1,8 +1,11 @@
-## 2026-11-11 Microsoft Fluent Filledアイコン統一（全対象Preview）
+## 2026-11-11 Microsoft Fluent Filledアイコン統一（初回Preview・現行main反映あり）
 
-- 現行の採用仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
-- 全対象Previewは`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一する。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含むため、Q/Aだけの差分ではない。`main`／Productionには未反映。
-- 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）とは別のDraft PRとして検証する。PR #8は変更・クローズ・マージしない。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
+- 採用した表示仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」を正本とする。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
+- 初回展開は`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一した。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含み、Q/Aだけの差分ではなかった。
+- **main反映の履歴**：Filled実装コミットは `dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #9はPreview／CI用で、Productionへの統合・最終承認を含まないと明記され、2026-11-12にCloseされた。現在のmainには同コミットが祖先として含まれ、マージコミット `d04264364bd0e8aa9fb560e64060ba2a2578a67e`（PR #13のマージ）で統合された履歴を確認できる。
+- **承認経緯の未確認事項**：PR #13はタイトル・本文とも「DO NOT MERGE」「Productionへ反映しない」「ユーザー実機確認が必要」と記載していたが、実際にはmainへマージされている。PR #9／#13のGitHubレビューはなく、取得できたコメントはVercel botの自動投稿のみ。マージされた事実だけではユーザーのFilled仕様への最終承認を証明できないため、承認経緯はユーザー／Thinkの確認待ちとする。
+- **公開・表示確認**：マージコミット `d042643` のVercel commit statusはsuccess。これはチェック成功の根拠であり、Production画面の実表示やユーザー実機確認までを証明しない。現時点でProduction表示・実機確認済みとは記録しない。
+- 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）は別の比較案であり、Filled案とは区別する。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
 
 ## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
 
