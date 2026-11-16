@@ -82,7 +82,7 @@
 - 適用対象の現行棚卸し：2.1 Drill 1・2（Set 1／Set 2）、2.2 Drill 4（Set 1／Set 2）・Drill 5（Adjectives／Pronouns）、2.3 Drill 1（Country／Cities／Time）・Drill 2（People／Item1／Item2）・Drill 3（Country／Cities／Time／Day）、8.3 Drill 1〜4（Who／What／Which one／Where／Whenの英字部分）。
 - 実装時は全対象のフォント読込・計算フォント・選択状態・再描画後の保持と、狭幅でのボタンの収まりを限定検証する。仕様登録・実装・検証は別々に記録する。
 
-## 会話役割・疑問文アイコン（2026-11-11共通仕様／main反映状態は要確認）
+## 会話役割・疑問文アイコン（2026-11-11共通仕様／main実装あり・承認経緯確認中）
 
 ### Q/A表示条件の正本（2026-11-11ユーザー確定）
 
@@ -94,17 +94,17 @@
 - 新規Practiceも本節を適用し、Ex/Dr・選択前後・Set切替・再描画で同じ条件を維持する。人物を独自に新設しない。下記の既存仕様中の「会話役割」「Q/A」は本節の表示条件に従う。
 
 
-- **Filled共通実装（全対象Preview）**：`preview/qa-filled-common-allpages-20261111` では、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、承認済みPractice 2.2 PreviewのQ：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用する。承認済み比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスをそのまま使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）を使用する。CompositionにはQ/A役割表示がないため、今回のQ/A適用対象外。
-- `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。今回のPreviewでは対象Practice全体に有効化する。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
+- **Filled共通実装**：`preview/qa-filled-common-allpages-20261111` で、Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のExample／Drillに、Q：Chat Help 24 Filled／A：Chat 24 Filledを共通レンダラーから適用した。比較コミット `b7a21d70f0bf3758f97f6a3422a882be556cc5ee` のパスを使用し、追加ストロークは付けず、`currentColor`でQ/AともLight `#71839A`／Dark `#D9DDE3`（`prefers-color-scheme`自動切替）。CompositionにはQ/A役割表示がないため、Q/Aの対象外。
+- `FluentIcons.create`／`markup` のFilled variantと、共通CSSの `--conversation-role-filled-color` を使用する。現行mainの対象Practice全体で有効化されている。ページ固有の色やインラインのヘルパー上書きは残さない。外寸・位置・基線・行間は既存のまま保持する。
 - 停止ボタン右の**疑問文マーク**はChat Help Filledを16×16pxで表示し、既存のグレー色・4px間隔と停止ボタンとの一体配置を維持する。Example・回答行・平叙文には付けない。Compositionを含め、共通ヘルパーを使用する対象ページで既存の表示条件を維持する。
 - `fluent-icons.js`の`window.FluentIcons`を単一SVG定義とし、`conversation-display.js`・`question-indicator.js`から再使用する。画像の外部読込やサードパーティCDNは不要。再描画・表記切替・セット切替・English Cuesにも適用する。
 - 会話役割は互換クラス`conversation-role-circle`／`conversation-role-icon`を保持し、既存の位置・基線・間隔・外寸を変更しない。追加の丸囲み・背景・バッジは設けない。空の継続役割欄は非表示のまま領域を保ち、SVGを生成しない。
 - Question／Answerのアクセシブル名は役割コンテナに残し、内側のSVGは`aria-hidden="true"`。ライト・ダーク両モードで`currentColor`を利用する。
 - Q/A役割表示対象はPractice 1.2、2.1～2.3、7.1～7.3、8.1～8.3。疑問文マークは対象となる全Practice／Compositionで既存の出現条件を維持する。単なる文字としてのQ/A、人物・場所・語彙・文法ラベルには適用しない。
-- **適用状況の監査注記（2026-11-16）**：この節は2026-11-11のPreview時点で「main／Production未統合」と記録していた。一方、現行 `main`（監査基準HEAD `284d844474d80857f6f03b83617a906dfec3d3e2`）では `conversation-display.js` と `question-indicator.js` がFluent Filledを呼び出し、`fluent-icons.js` と `tests/fluent-filled.cjs` も存在する。PR #9は当時「merge・Production反映・最終承認を含まない」と明記して閉じられているため、mainへの反映経路とその承認根拠は本監査だけでは確定できない。**この記録だけでProduction公開・ユーザー実機確認済みとは判断しない。承認・反映経緯を確認後に本節と `UI_ROLLOUT_REVIEW.md` の状態記述を確定する。**
+- **適用状況の監査注記（2026-11-16更新）**：Filledの初回実装はコミット `dace06614d073ee0f252eb4f22bee51e4bdb572c`（2026-11-11）である。現行mainのマージコミット `d04264364bd0e8aa9fb560e64060ba2a2578a67e` はPR #13のマージであり、コミット比較上 `dace066` を祖先として含む。現在の `main` には `conversation-display.js`／`question-indicator.js` のFilled呼出し、`fluent-icons.js`、`tests/fluent-filled.cjs` が存在する。`d042643` のVercel commit statusはsuccess。ただしPR #9は「merge・Production反映・最終承認を含まない」と記して閉じられ、PR #13の本文にも「DO NOT MERGE」「Productionへ反映しない・ユーザー実機確認が必要」と記載されていた。両PRのGitHubレビューは確認できず、コメントはVercel botのみ。したがって**mainへのコード反映は確認済みだが、ユーザーの明示承認・Production画面への公開／表示・実機確認の根拠は未確認**。PR #13のマージを、それだけで当該仕様の最終承認とみなさない。詳しい統合経緯と判断待ちは `UI_ROLLOUT_REVIEW.md` に記載する。
 - Yes/Noは承認済みの目なしSmile/Frown（`f8b06d8f…`のSVG原文）を20pxで使用し、既存の肯定・否定色・選択状態を保つ。CopyはFluent `Clipboard 24 Regular`を20pxで使用し、文字ラベルと動作を維持する。BeyondのBookもFluentを使用する。
 - SVGの出典はMicrosoft Fluent UI System Icons（MIT）。旧Icons8画像・帰属表示リンクとLucideの旧SVG素材はこのPreviewでは除去対象。旧記録は履歴として別文書に残せるが、現行UI仕様ではない。
-- 2026-11-11のPreview時点では375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持を検証対象としていた。375pxは現行の正式サポート対象・必須合格条件ではない。Preview確認・main反映・Production公開・ユーザー実機確認はそれぞれ区別する。
+- 2026-11-11のPreview時点では375px／600px／1440px、通常・ダーク、再描画・音声・録音結果保持を検証対象としていた。375pxは現行の正式サポート対象・必須合格条件ではない。Preview確認・mainへのコード反映・Production画面の確認・ユーザー実機確認はそれぞれ区別する。
 
 ## 8.1 Drill 5への英語区分バッジ適用（2026-11-07）
 
