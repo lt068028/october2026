@@ -266,7 +266,7 @@ Formalの質問として判定する対象は、ページ仕様に別の明示�
 - 共通表示・配置・操作UI：`UI_LAYOUT_SPEC.md`
 - STT表示変換：`STT_DISPLAY_RULES.md`
 - Practice 1（1.1／1.2）のページ固有仕様：`PRACTICE1_SPEC.md`
-- Practice 2（2.1〜2.3）のページ固有仕様：`PRACTICE2_SPEC.md`。2.2／2.3の追加詳細：`PRACTICE22_23_SPEC.md`
+- Practice 2.1のページ固有仕様とPractice 2.1〜2.3共通のMismatch Feedback規定：`PRACTICE2_SPEC.md`。Practice 2.2／2.3のページ固有仕様：`PRACTICE22_23_SPEC.md`
 - Practice 7（7.1〜7.3）のページ固有仕様：`PRACTICE7_SPEC.md`
 - Practice 8のページ固有仕様：8.1／8.3は`PRACTICE8_SPEC.md`、8.2は`PRACTICE82_SPEC.md`
 - Deutsche Übung 1.1の専用仕様：`GERMAN_DRILL_SPEC.md`
