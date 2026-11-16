@@ -258,7 +258,11 @@ function button(text, fn, tip = '') {
     return b;
 }
 
-function stopPlayback() {
+let activeExButton = null;
+let stoppedExButton = null;
+let stoppedExTime = 0;
+
+function stopPlayback(isNaturalFinish = false) {
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (utterance) {
@@ -283,6 +287,24 @@ function stopPlayback() {
         playingAudio = null;
     }
 
+    if (activeExButton) {
+        if (!isNaturalFinish) {
+            stoppedExButton = activeExButton;
+            stoppedExTime = performance.now();
+        }
+        activeExButton.classList.remove('is-playing');
+        const iconWrap = activeExButton.querySelector('.ex-audio-icon');
+        if (iconWrap && window.FluentIcons) {
+            iconWrap.replaceChildren(window.FluentIcons.create('speaker2', 20));
+        }
+        if (activeExButton._originalAriaLabel !== undefined) {
+            if (activeExButton._originalAriaLabel === null) activeExButton.removeAttribute('aria-label');
+            else activeExButton.setAttribute('aria-label', activeExButton._originalAriaLabel);
+            delete activeExButton._originalAriaLabel;
+        }
+        activeExButton = null;
+    }
+
     if (playButton) {
         playButton.disabled = false;
         playButton.replaceChildren(...playButton._contents);
@@ -292,8 +314,31 @@ function stopPlayback() {
     utterance = null;
 }
 
+function markExPlaying(b) {
+    if (!b) return;
+    activeExButton = b;
+    b.classList.add('is-playing');
+    const iconWrap = b.querySelector('.ex-audio-icon');
+    if (iconWrap && window.FluentIcons) {
+        iconWrap.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled'));
+    }
+    b._originalAriaLabel = b.getAttribute('aria-label');
+    if (b.dataset.answer === 'yes') {
+        b.setAttribute('aria-label', '再生を停止（肯定の例）');
+    } else if (b.dataset.answer === 'no') {
+        b.setAttribute('aria-label', '再生を停止（否定の例）');
+    } else {
+        b.setAttribute('aria-label', '再生を停止');
+    }
+    b.disabled = false;
+}
+
 function markPlaying(b) {
     if (!b) return;
+    if (b.dataset?.isExAudio === 'true') {
+        markExPlaying(b);
+        return;
+    }
 
     playButton = b;
     b._contents = Array.from(b.childNodes);
@@ -531,7 +576,7 @@ function speak(text, b, done, relay = false) {
     const finish = () => {
         if (utterance !== u) return;
         if (relay) utterance = null;
-        else stopPlayback();
+        else stopPlayback(true);
         if (done) done();
     };
 
@@ -723,9 +768,63 @@ function addExample(root,si){
   makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Specific',translation:'— What do you see?'}),
   makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Unspecified',translation:'— Do you see anything?'})
  ];
- else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response',listenLabel:window.AnswerIcons.createExampleLabel('yes')}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response',listenLabel:window.AnswerIcons.createExampleLabel('no')})];
+ else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');if(r.kind){const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');kind.innerHTML=conceptHTML(rawKind);if(si===0||si===1){kind.classList.add('p82-concept-label');const ja=node('span','p82-concept-japanese');ja.innerHTML=kind.innerHTML;kind.replaceChildren(ja,exampleTranslation(r.englishLabel,'p82-concept-english'));}}const cue=node('span','p81-example-cue');cue.innerHTML=r.intro?word(r.pronoun)+'/'+word(r.verb):cues(r);const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️'),listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});if(r.answer){listen.dataset.answer=r.answer;listen.setAttribute('aria-label',r.answer==='yes'?'Listen to affirmative model.':'Listen to negative model.');}const text=node('span','p81-model');if(si<2){const japanese=node('span','p82-model-japanese');japanese.innerHTML=modelHTML(r);text.append(japanese);if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));}else text.innerHTML=modelHTML(r);row.append(kind,cue,arrow,listen,text);ex.append(row);});root.append(ex);
+ samples.forEach(r=>{
+  const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');
+  if(r.kind){
+   const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');
+   kind.innerHTML=conceptHTML(rawKind);
+   if(si===0||si===1){
+    kind.classList.add('p82-concept-label');
+    const ja=node('span','p82-concept-japanese');
+    ja.innerHTML=kind.innerHTML;
+    kind.replaceChildren(ja,exampleTranslation(r.englishLabel,'p82-concept-english'));
+   }
+  }
+  const cue=node('span','p81-example-cue');
+  cue.innerHTML=r.intro?word(r.pronoun)+'/'+word(r.verb):cues(r);
+  const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️');
+  const iconSpan=node('span','ex-audio-icon');
+  if(window.FluentIcons){iconSpan.append(window.FluentIcons.create('speaker2',20));}
+  const frag=document.createDocumentFragment();
+  frag.append(iconSpan);
+  if(r.answer&&window.AnswerIcons){
+   frag.append(window.AnswerIcons.create(r.answer,true));
+  }else{
+   frag.append(document.createTextNode('きく'));
+  }
+  const listen=button(frag,()=>{
+   if(session||preparing)return;
+   if(stoppedExButton===listen&&(performance.now()-stoppedExTime)<150){
+    stoppedExButton=null;
+    return;
+   }
+   if(activeExButton===listen){
+    stopPlayback();
+    return;
+   }
+   speak(r.text,listen);
+  });
+  listen.classList.add('ex-audio-btn');
+  listen.dataset.isExAudio='true';
+  if(r.answer){
+   listen.dataset.answer=r.answer;
+   listen.setAttribute('aria-label',r.answer==='yes'?'Listen to affirmative model.':'Listen to negative model.');
+  }else{
+   listen.setAttribute('aria-label','例を聞く');
+  }
+  const text=node('span','p81-model');
+  if(si<2){
+   const japanese=node('span','p82-model-japanese');
+   japanese.innerHTML=modelHTML(r);
+   text.append(japanese);
+   if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));
+  }else text.innerHTML=modelHTML(r);
+  row.append(kind,cue,arrow,listen,text);
+  ex.append(row);
+ });
+ root.append(ex);
 }
 function updateUnlearnedLexicon(){
  const kanjiGroup=$('unlearnedKanjiGroup'),counts=$('unlearnedCounts'),isKanji=scriptMode==='kanji';

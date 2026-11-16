@@ -5190,6 +5190,40 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     font-size: 18.2px;
 }
 
+/* Practice 8.2 and Deutsch 1.1 Ex model audio buttons */
+.practice82-page .example-box button:has(.ex-audio-icon),
+.practice82-page .ex-audio-btn,
+.uebung11-page .example-box button:has(.ex-audio-icon),
+.uebung11-page .ex-audio-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.practice82-page .ex-audio-icon,
+.uebung11-page .ex-audio-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    line-height: 1;
+}
+
+.practice82-page .ex-audio-icon svg,
+.uebung11-page .ex-audio-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+}
+
+.practice82-page .ex-audio-icon .fluent-icon-stop,
+.uebung11-page .ex-audio-icon .fluent-icon-stop {
+    color: var(--error-text, #be123c);
+}
+
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
 /* Practice 2.1 approved E feedback: Fluent fire and label use the same orange, without a badge. */
 .p21-keep-going-preview { --p21-keep-color: #B47732; }

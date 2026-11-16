@@ -655,6 +655,10 @@ function initGermanDrill() {
     // -------------------------------------------------------------
     // 4. Audio & Speech Synthesis
     // -------------------------------------------------------------
+    let activeExButton = null;
+    let stoppedExButton = null;
+    let stoppedExTime = 0;
+
     function stopPlayback(isNaturalFinish = false) {
         if (currentUtterance) {
             currentUtterance.onend = null;
@@ -679,6 +683,23 @@ function initGermanDrill() {
         }
         if (!isNaturalFinish) {
             cancelActivePlaybackToken(true);
+        }
+        if (activeExButton) {
+            if (!isNaturalFinish) {
+                stoppedExButton = activeExButton;
+                stoppedExTime = performance.now();
+            }
+            activeExButton.classList.remove("is-playing");
+            const iconWrap = activeExButton.querySelector(".ex-audio-icon");
+            if (iconWrap && window.FluentIcons) {
+                iconWrap.replaceChildren(window.FluentIcons.create("speaker2", 20));
+            }
+            if (activeExButton._originalAriaLabel !== undefined) {
+                if (activeExButton._originalAriaLabel === null) activeExButton.removeAttribute("aria-label");
+                else activeExButton.setAttribute("aria-label", activeExButton._originalAriaLabel);
+                delete activeExButton._originalAriaLabel;
+            }
+            activeExButton = null;
         }
         if (playingButton) {
             playingButton.disabled = false;
@@ -709,8 +730,25 @@ function initGermanDrill() {
         stopPlayback();
     }
 
+    function markExPlaying(b) {
+        if (!b) return;
+        activeExButton = b;
+        b.classList.add("is-playing");
+        const iconWrap = b.querySelector(".ex-audio-icon");
+        if (iconWrap && window.FluentIcons) {
+            iconWrap.replaceChildren(window.FluentIcons.create("stop", 20, "", "filled"));
+        }
+        b._originalAriaLabel = b.getAttribute("aria-label");
+        b.setAttribute("aria-label", "Wiedergabe stoppen");
+        b.disabled = false;
+    }
+
     function markPlaying(b) {
         if (!b) return;
+        if (b.dataset?.isExAudio === "true") {
+            markExPlaying(b);
+            return;
+        }
         stopPlayback();
         playingButton = b;
         b._contents = Array.from(b.childNodes);
@@ -1675,9 +1713,27 @@ function initGermanDrill() {
             const exAudioTd = node("td", "example-audio-cell");
             const exModelSentence = getModel(drill.example, currentVariety);
             const exListenTip = drill.number === 1 ? "Listen to the example." : "";
-            const exListenBtn = button("🔊 Anhören", exListenTip, () => {
+            const iconSpan = node("span", "ex-audio-icon");
+            if (window.FluentIcons) {
+                iconSpan.append(window.FluentIcons.create("speaker2", 20));
+            }
+            const frag = document.createDocumentFragment();
+            frag.append(iconSpan, document.createTextNode(" Anhören"));
+            const exListenBtn = button(frag, exListenTip, () => {
+                if (session || preparing) return;
+                if (stoppedExButton === exListenBtn && (performance.now() - stoppedExTime) < 150) {
+                    stoppedExButton = null;
+                    return;
+                }
+                if (activeExButton === exListenBtn) {
+                    stopAllPlayback();
+                    return;
+                }
                 speakModel(getModel(drill.example, currentVariety), exListenBtn);
             });
+            exListenBtn.classList.add("ex-audio-btn");
+            exListenBtn.dataset.isExAudio = "true";
+            exListenBtn.setAttribute("aria-label", "Beispiel anhören");
             exAudioTd.append(exListenBtn);
 
             // Model text
