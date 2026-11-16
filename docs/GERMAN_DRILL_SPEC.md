@@ -195,10 +195,13 @@
   - `AudioContext` と `AnalyserNode`（fftSize: 2048）を使用し、100msごとに時間領域サンプルからRMS音量を計算。
   - 音量閾値（volume > 0.025）を3フレーム連続で満たした場合に発話開始（`speechStarted = true`）を確定。
   - 発話中に入力を検出するごとに無音タイマーの起算点（`lastSoundAt`）を更新。
+  - **発話判定の音量監視への一本化**: 発話開始（`speechStarted`）および無音タイマー起算点（`lastSoundAt`）の更新はマイク音量監視のみで行い、SpeechRecognitionの `onspeechstart` や `onresult` は一切使用しない。
+  - **初期化・音量監視失敗時の安全停止**: `AudioContext` / `AnalyserNode` の生成失敗や `context.resume()` の失敗を検知した場合、ゾンビ状態の継続を防止し、`Recording error.` として安全に停止・リソース解放を行う。
 - **3つの正式な録音停止条件（日本語Practice確定仕様と統一）**:
   1. **発話開始前の上限：5秒（Autostop ON/OFF共通）**:
      - 録音開始から5秒以内にマイク入力による発話を検出できない場合、録音を自動停止。
      - 音声は保存せず破棄し、`No speech detected within 5 seconds.` を表示。
+     - 5秒未満で手動停止（⏹️）された場合は、未発話タイムアウトメッセージを表示せず初期状態（`… Not yet`）とする。
   2. **発話後の無音停止：連続2.0秒（Autostop ON時のみ）**:
      - SpeechRecognitionの文字起こしイベントではなく、マイク入力音量の監視により無音を判定。
      - 発話検出後、連続2.0秒間音声入力がなければ自動停止。
@@ -215,21 +218,23 @@
 - **言語設定**: `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定。
 - **音声検出と文字起こしの分離管理**:
   - 音声検出フラグ（`speechStarted`）と認識テキスト（`raw`）を独立して管理。
-  - マイク入力による発話が検出され、録音データが取得できている場合は、STT文字起こしが空（認識失敗・未取得）であっても録音音声を保持し、再生ボタン（▶️）を表示する。
-  - 発話検出後にSTT結果が空の場合のメッセージは `No transcription available.` とし、タイムアウトや未録音表示（`… Not yet`）と明確に区別する。
+  - **STTエラー時の録音音声保持**: STTエラー（`recognition.onerror`）やSTT開始例外（`recognition.start()` 失敗）が発生した場合でも、マイク音量で発話が検出され有効な録音データが取得できていれば音声データを破棄せず保持し、再生ボタン（▶️）を表示する。
+  - **録音データ有無による結果メッセージの厳密な区別**:
+    - `No transcription available.` は、STT文字起こしが空であり、かつ**有効な録音音声が取得できている場合**にのみ表示。
+    - 発話が検出されたものの録音データ取得に失敗した場合は、`Recording error.` として区別。
 - **統一された状態・エラーメッセージ体系**:
   - 準備中：`Preparing microphone...`
   - 録音中：`Recording...`
   - 5秒未発話タイムアウト：`No speech detected within 5 seconds.`（音声保存なし）
   - 20秒絶対上限停止：`Auto-stopped after 20 seconds.`
-  - 発話検知あり・STT空：`No transcription available.`（音声保存あり、▶️表示）
+  - 発話検知あり・STT空（録音あり）：`No transcription available.`（音声保存あり、▶️表示）
   - 非対応ブラウザ案内：
     - STT非対応：`Speech recognition is not supported in this browser.`
     - 録音非対応：`Recording is not supported in this browser.`
     - 両方非対応：`Speech recognition and recording are not supported in this browser.`
   - エラー案内：
     - 録音エラー：`Recording error.` / `Could not start recording.`
-    - 認識エラー：`Recognition error.`
+    - 認識エラー：`Recognition error.`（有効録音音声がある場合は▶️を併記表示）
 
 ### 5.3 回答判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【現行仕様】
 - **正規化関数**:

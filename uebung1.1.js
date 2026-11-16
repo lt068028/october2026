@@ -1135,6 +1135,7 @@ function initGermanDrill() {
             finished: false,
             speechStarted: false,
             lastSoundAt: null,
+            stopReason: "",
             raw: "",
             interim: "",
             chunks: [],
@@ -1198,7 +1199,9 @@ function initGermanDrill() {
                     if (previous.url) {
                         URL.revokeObjectURL(previous.url);
                     }
-                } catch (_) {}
+                } catch (_) {
+                    url = previous.url;
+                }
             }
 
             if (raw) {
@@ -1222,17 +1225,30 @@ function initGermanDrill() {
                     modelText: recModel,
                     variety: currentVariety
                 });
+            } else if (s.speechStarted && !hasValidAudio) {
+                if (previous.url) {
+                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
+                }
+                saved.delete(key);
             }
 
             s.chunks = [];
 
             let noticeMessage = s.notice;
-            if (!noticeMessage && !raw) {
-                if (s.speechStarted) {
-                    noticeMessage = "No transcription available.";
-                } else {
-                    noticeMessage = "No speech detected within 5 seconds.";
+            if (!noticeMessage) {
+                if (!raw) {
+                    if (hasValidAudio) {
+                        noticeMessage = "No transcription available.";
+                    } else if (s.speechStarted) {
+                        noticeMessage = "Recording error.";
+                    } else if (s.stopReason === "timeout-5s") {
+                        noticeMessage = "No speech detected within 5 seconds.";
+                    } else if (s.stopReason === "manual") {
+                        noticeMessage = "";
+                    }
                 }
+            } else if (!raw && !hasValidAudio && s.notice === "No transcription available.") {
+                noticeMessage = "Recording error.";
             }
 
             showResult(key, noticeMessage);
@@ -1249,10 +1265,12 @@ function initGermanDrill() {
             }
         };
 
-        s.stop = (notice = "", discard = false) => {
+        s.stop = (notice = "", discard = false, reason = "") => {
             if (s.stopping || s.finished) return;
             s.stopping = true;
-            s.notice = notice;
+            if (reason) s.stopReason = reason;
+            else if (!s.stopReason) s.stopReason = notice ? "error" : "manual";
+            if (notice) s.notice = notice;
             s.discard = discard || !s.speechStarted;
 
             clear();
@@ -1309,9 +1327,6 @@ function initGermanDrill() {
                     if (event.results[i].isFinal) finalStr += trans;
                     else interimStr += trans;
                 }
-                if (finalStr.trim() || interimStr.trim()) {
-                    s.speechStarted = true;
-                }
                 if (finalStr) s.raw += finalStr;
                 s.interim = interimStr;
 
@@ -1325,7 +1340,7 @@ function initGermanDrill() {
             s.recognition.onerror = event => {
                 if (s.finished || s.stopping || event?.error === "no-speech") return;
                 s.recognitionDone = true;
-                s.stop("Recognition error.", true);
+                s.stop("Recognition error.", false, "stt-error");
             };
 
             s.recognition.onend = () => {
@@ -1333,93 +1348,111 @@ function initGermanDrill() {
                 finish();
             };
 
-            s.recognition.start();
+            try {
+                s.recognition.start();
+            } catch (_) {
+                s.recognitionDone = true;
+                s.stop("Recognition error.", false, "stt-error");
+                return;
+            }
         } catch (_) {
             s.recognitionDone = true;
+            s.stop("Recognition error.", false, "stt-error");
+            return;
         }
 
         // Initialize MediaRecorder
         try {
             s.recorder = new MediaRecorder(stream);
             s.recorder.ondataavailable = e => {
-                if (e.data.size > 0) s.chunks.push(e.data);
+                if (e.data && e.data.size > 0) s.chunks.push(e.data);
             };
             s.recorder.onstop = () => {
                 s.recorderDone = true;
                 finish();
             };
             s.recorder.onerror = () => {
-                s.stop("Recording error.", true);
+                s.stop("Recording error.", true, "rec-error");
             };
             s.recorder.start();
         } catch (_) {
             s.recorderDone = true;
-            s.stop("Could not start recording.", true);
+            s.stop("Could not start recording.", true, "rec-error");
             return;
         }
 
         // Audio monitoring via AudioContext
         try {
             const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (AudioContextClass) {
-                const context = new AudioContextClass();
-                s.context = context;
-
-                const source = context.createMediaStreamSource(stream);
-                const analyser = context.createAnalyser();
-                analyser.fftSize = 2048;
-                source.connect(analyser);
-                context.resume().catch(() => {});
-
-                const samples = new Float32Array(analyser.fftSize);
-                let soundFrames = 0;
-
-                s.timers.push(setInterval(() => {
-                    if (s.stopping || s.finished) return;
-
-                    analyser.getFloatTimeDomainData(samples);
-                    let sum = 0;
-                    for (const sample of samples) {
-                        sum += sample * sample;
-                    }
-                    const volume = Math.sqrt(sum / samples.length);
-
-                    const sound = volume > 0.025;
-                    soundFrames = sound ? soundFrames + 1 : 0;
-
-                    if (sound && s.speechStarted) {
-                        s.lastSoundAt = Date.now();
-                    }
-
-                    if (soundFrames >= 3) {
-                        s.speechStarted = true;
-                        s.lastSoundAt = Date.now();
-                    }
-
-                    // Autostop: 2.0s continuous silence after speech
-                    if (
-                        !s.manual &&
-                        s.speechStarted &&
-                        s.lastSoundAt &&
-                        Date.now() - s.lastSoundAt >= 2000
-                    ) {
-                        s.stop();
-                    }
-                }, 100));
+            if (!AudioContextClass) {
+                throw new Error("AudioContext not supported");
             }
-        } catch (_) {}
+            const context = new AudioContextClass();
+            s.context = context;
+
+            const source = context.createMediaStreamSource(stream);
+            const analyser = context.createAnalyser();
+            analyser.fftSize = 2048;
+            source.connect(analyser);
+
+            const resumePromise = context.resume?.();
+            if (resumePromise && typeof resumePromise.catch === "function") {
+                resumePromise.catch(() => {
+                    s.stop("Recording error.", true, "audio-error");
+                });
+            }
+
+            const samples = new Float32Array(analyser.fftSize);
+            let soundFrames = 0;
+
+            s.timers.push(setInterval(() => {
+                if (s.stopping || s.finished) return;
+
+                analyser.getFloatTimeDomainData(samples);
+                let sum = 0;
+                for (const sample of samples) {
+                    sum += sample * sample;
+                }
+                const volume = Math.sqrt(sum / samples.length);
+
+                const sound = volume > 0.025;
+                soundFrames = sound ? soundFrames + 1 : 0;
+
+                if (sound && s.speechStarted) {
+                    s.lastSoundAt = Date.now();
+                }
+
+                if (soundFrames >= 3) {
+                    s.speechStarted = true;
+                    s.lastSoundAt = Date.now();
+                }
+
+                // Autostop: 2.0s continuous silence after speech
+                if (
+                    !s.manual &&
+                    s.speechStarted &&
+                    s.lastSoundAt &&
+                    Date.now() - s.lastSoundAt >= 2000
+                ) {
+                    s.stop("", false, "silence-2s");
+                }
+            }, 100));
+        } catch (_) {
+            s.stop("Recording error.", true, "audio-error");
+            return;
+        }
 
         // Watchdog timers
         // 1. 5s limit before speech starts (Autostop ON/OFF common)
         s.timers.push(setTimeout(() => {
             if (!s.speechStarted) {
-                s.stop("No speech detected within 5 seconds.", true);
+                s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
             }
         }, 5000));
 
         // 2. 20s absolute upper limit (Autostop ON/OFF common)
         s.timers.push(setTimeout(() => {
-            s.stop("Auto-stopped after 20 seconds.");
+            s.stop("Auto-stopped after 20 seconds.", false, "limit-20s");
         }, 20000));
 
         showResult(key);
@@ -1695,7 +1728,7 @@ function initGermanDrill() {
                     stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
                 }
                 const stopBtn = button("⏹️", stopTip, () => {
-                    if (session?.key === item.id) session.stop();
+                    if (session?.key === item.id) session.stop("", false, "manual");
                 });
                 stopBtn.dataset.stop = "true";
                 stopBtn.disabled = true;

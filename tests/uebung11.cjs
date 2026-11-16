@@ -351,11 +351,19 @@ async function runRecordingLifecycleTests() {
                     window.recordingStartTime = Date.now();
                 }
                 stop() {
+                    if (window.t.failRecorderStop) {
+                        this.state = 'inactive';
+                        throw new Error('recorder stop failed');
+                    }
                     this.state = 'inactive';
-                    setTimeout(() => {
-                        this.ondataavailable?.({ data: new Blob(['recorded-audio'], { type: 'audio/webm' }) });
-                        this.onstop?.();
-                    }, 0);
+                    if (!window.t.noRecorderOnstop) {
+                        setTimeout(() => {
+                            if (!window.t.emptyChunks) {
+                                this.ondataavailable?.({ data: new Blob(['recorded-audio'], { type: 'audio/webm' }) });
+                            }
+                            this.onstop?.();
+                        }, 0);
+                    }
                 }
             };
 
@@ -364,6 +372,9 @@ async function runRecordingLifecycleTests() {
                     window.t.recognitions.push(this);
                 }
                 start() {
+                    if (window.t.failRecognitionStart) {
+                        throw new Error('recognition start failed');
+                    }
                     this.active = true;
                     // Real Chrome dispatches onspeechstart shortly after start even in silence
                     setTimeout(() => {
@@ -383,13 +394,29 @@ async function runRecordingLifecycleTests() {
 
             window.AudioContext = class {
                 constructor() {
+                    if (window.t.failAudioContext) {
+                        throw new Error('AudioContext init failed');
+                    }
                     this.state = 'running';
                     window.t.contexts.push(this);
                 }
-                resume() { return Promise.resolve(); }
+                resume() {
+                    if (window.t.failResume) {
+                        return Promise.reject(new Error('resume failed'));
+                    }
+                    return Promise.resolve();
+                }
                 close() { this.state = 'closed'; return Promise.resolve(); }
-                createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
+                createMediaStreamSource() {
+                    if (window.t.failSource) {
+                        throw new Error('createMediaStreamSource failed');
+                    }
+                    return { connect() {}, disconnect() {} };
+                }
                 createAnalyser() {
+                    if (window.t.failAnalyser) {
+                        throw new Error('createAnalyser failed');
+                    }
                     return {
                         fftSize: 2048,
                         getFloatTimeDomainData(arr) {
@@ -464,128 +491,220 @@ async function runRecordingLifecycleTests() {
             }
         }, text);
 
-        // --- Scenario 1 & 2: 5秒タイムアウト（4.8秒では継続、5.0秒で停止、発話なしのため音声未保存） ---
+        // =========================================================================
+        // 19 Scenarios based on Section 7 Requirements
+        // =========================================================================
+
+        // --- Scenario 1: Autostop ONで未発話5秒停止 ---
         await clickRecord(false);
-        assert.ok(await isRecording(), 'Recording started');
-
-        // 4.8秒経過
+        assert.ok(await isRecording(), 'S1: Recording started in Autostop ON');
         await advanceToElapsed(4800);
-        assert.ok(await isRecording(), 'Still recording at 4.8s without speech');
-
-        // 5.1秒経過 (合計5.0s以上)
+        assert.ok(await isRecording(), 'S1: Still recording at 4.8s without speech');
         await advanceToElapsed(5100);
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'Stopped at 5.0s timeout');
+        assert.ok(!(await isRecording()), 'S1: Stopped at 5.0s timeout');
         const resText1 = await getResult().textContent();
-        assert.ok(resText1.includes('No speech detected within 5 seconds.'), 'Shows 5s timeout message');
-        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'No play button saved when no speech');
+        assert.ok(resText1.includes('No speech detected within 5 seconds.'), 'S1: Shows 5s timeout message');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S1: No play button saved');
 
-        // --- Scenario 3: Autostop ON での発話後連続2秒無音停止 ---
+        // --- Scenario 2: Autostop OFFで未発話5秒停止 ---
+        await clickRecord(true); // Manual
+        assert.ok(await isRecording(), 'S2: Recording started in Autostop OFF');
+        await advanceToElapsed(4800);
+        assert.ok(await isRecording(), 'S2: Still recording at 4.8s in Manual');
+        await advanceToElapsed(5100);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S2: Stopped at 5.0s timeout in Manual');
+        const resText2 = await getResult().textContent();
+        assert.ok(resText2.includes('No speech detected within 5 seconds.'), 'S2: Shows 5s timeout message');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S2: No play button saved');
+
+        // --- Scenario 3: onspeechstart先行でも5秒タイムアウトが成立 ---
+        // (SpeechRecognition mock automatically dispatches onspeechstart at 50ms)
         await clickRecord(false);
-        assert.ok(await isRecording(), 'Recording started for Scenario 3');
+        await page.clock.runFor(2500); // 2.5s elapsed (well past 2.0s from onspeechstart)
+        assert.ok(await isRecording(), 'S3: Premature onspeechstart does NOT trigger 2s silence stop');
+        await advanceToElapsed(5100);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S3: Auto-stopped at 5s timeout despite onspeechstart');
+        assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S3: 5s timeout message');
 
+        // --- Scenario 4: onresult先行でも5秒タイムアウトが成立 ---
+        await clickRecord(false);
+        // Early onresult without microphone volume activity
+        await page.clock.runFor(200);
+        await triggerRecognition('Frühzeitiger Text');
+        await page.clock.runFor(2500); // Past 2s from onresult
+        assert.ok(await isRecording(), 'S4: onresult alone without mic volume does NOT trigger 2s silence stop');
+        await advanceToElapsed(5100);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S4: Stops at 5.0s timeout');
+
+        // --- Scenario 5: Autostop ONで発話後2秒無音停止 ---
+        await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
-        await page.clock.runFor(400); // 400ms 音声入力（soundFrames >= 3）
-        await setSpeaking(false); // 発話終了、無音開始
+        await page.clock.runFor(400); // 400ms speech (soundFrames >= 3)
+        await setSpeaking(false); // Speech ends, silence begins
+        await page.clock.runFor(1500); // 1.5s silence
+        assert.ok(await isRecording(), 'S5: Still recording at 1.5s silence');
+        await page.clock.runFor(700); // 2.2s total silence
+        assert.ok(!(await isRecording()), 'S5: Auto-stopped after 2.0s silence');
 
-        // 1.5秒無音
-        await page.clock.runFor(1500);
-        assert.ok(await isRecording(), 'Still recording at 1.5s silence');
-
-        // 2.2秒無音 (合計無音時間 >= 2000ms)
-        await page.clock.runFor(700);
-        assert.ok(!(await isRecording()), 'Auto-stopped after 2.0s silence');
-
-        // --- Scenario 4: 2秒前の音声再開による無音時間リセット ---
-        await clickRecord(false);
-        await advanceToElapsed(1000);
-        await setSpeaking(true);
-        await page.clock.runFor(400);
-        await setSpeaking(false);
-
-        // 1.5秒無音
-        await page.clock.runFor(1500);
-        assert.ok(await isRecording(), 'Still recording at 1.5s silence');
-
-        // 再度音声入力（リセット）
-        await setSpeaking(true);
-        await page.clock.runFor(300);
-        await setSpeaking(false);
-
-        // リセット後 1.5秒無音
-        await page.clock.runFor(1500);
-        assert.ok(await isRecording(), 'Still recording 1.5s after speech resumed');
-
-        // さらに 0.7秒無音（再開後 2.2秒無音）
-        await page.clock.runFor(700);
-        assert.ok(!(await isRecording()), 'Auto-stopped 2.0s after speech resumed');
-
-        // --- Scenario 5: Autostop OFF (Manual) では発話後2秒無音で停止しない ---
+        // --- Scenario 6: Autostop OFFで発話後2秒無音停止しない ---
         await clickRecord(true); // Manual
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
         await setSpeaking(false);
-
-        // 発話後 4秒無音
-        await page.clock.runFor(4000);
-        assert.ok(await isRecording(), 'Manual mode does NOT auto-stop on silence after speech');
-
-        // 手動停止ボタンで停止
+        await page.clock.runFor(4000); // 4.0s silence
+        assert.ok(await isRecording(), 'S6: Manual mode does NOT auto-stop on silence');
         await page.evaluate(() => {
             const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
             if (stopBtn) stopBtn.click();
         });
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'Stopped via stop button in manual mode');
+        assert.ok(!(await isRecording()), 'S6: Stopped via manual stop button');
 
-        // --- Scenario 6: 20秒絶対上限（Autostop ON/OFF共通） ---
+        // --- Scenario 7: 音声再検出で無音時間がリセット ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+        await page.clock.runFor(1500); // 1.5s silence
+        assert.ok(await isRecording(), 'S7: Still recording at 1.5s silence');
+        await setSpeaking(true); // Resumed speech
+        await page.clock.runFor(300);
+        await setSpeaking(false);
+        await page.clock.runFor(1500); // 1.5s silence after resumption
+        assert.ok(await isRecording(), 'S7: Still recording 1.5s after speech resumed');
+        await page.clock.runFor(700); // 2.2s silence
+        assert.ok(!(await isRecording()), 'S7: Auto-stopped 2.0s after speech resumed');
+
+        // --- Scenario 8: Autostop ONで20秒上限 ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await advanceToElapsed(19700);
-        assert.ok(await isRecording(), 'Still recording at 19.7s');
-
+        assert.ok(await isRecording(), 'S8: Still recording at 19.7s while speaking');
         await advanceToElapsed(20200);
         await page.clock.runFor(100);
         await setSpeaking(false);
-        assert.ok(!(await isRecording()), 'Auto-stopped at 20s limit');
-        const resText6 = await getResult().textContent();
-        assert.ok(resText6.includes('Auto-stopped after 20 seconds.'), 'Shows 20s limit message');
+        assert.ok(!(await isRecording()), 'S8: Stopped at 20s absolute upper limit');
+        assert.ok((await getResult().textContent()).includes('Auto-stopped after 20 seconds.'), 'S8: 20s limit message');
 
-        // --- Scenario 7 & 8: 音声検出あり・STT空 -> No transcription available. かつ 音声保存・再生可能 ---
+        // --- Scenario 9: Autostop OFFで20秒上限 ---
+        await clickRecord(true); // Manual
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400); // Speech confirmed by mic
+        await setSpeaking(false);
+        await advanceToElapsed(19700);
+        assert.ok(await isRecording(), 'S9: Still recording at 19.7s in Manual');
+        await advanceToElapsed(20200);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S9: Stopped at 20s in Manual');
+        assert.ok((await getResult().textContent()).includes('Auto-stopped after 20 seconds.'), 'S9: 20s limit message');
+
+        // --- Scenario 10 & 11: STTエラー時の録音音声保持と再生 ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400); // Speech confirmed by mic
+        await setSpeaking(false);
+        await page.evaluate(() => {
+            const rec = window.t.recognitions.at(-1);
+            rec?.onerror?.({ error: 'network' });
+        });
+        await page.clock.runFor(200);
+        assert.ok(!(await isRecording()), 'S10: Stopped on recognition error');
+        const resText10 = await getResult().textContent();
+        assert.ok(resText10.includes('Recognition error.'), 'S10: Shows Recognition error.');
+        const playBtn10 = getResult().locator('.play-recording-btn');
+        assert.equal(await playBtn10.count(), 1, 'S10: Play button preserved despite STT error');
+        // Scenario 11: Play audio
+        await playBtn10.click();
+        await page.clock.runFor(100);
+        assert.ok(await page.evaluate(() => Boolean(document.querySelector('.play-recording-btn'))), 'S11: Audio playback playable');
+
+        // --- Scenario 12: STT空・録音音声ありの場合の表示と再生 ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
         await setSpeaking(false);
         await page.clock.runFor(2200);
-        assert.ok(!(await isRecording()), 'Stopped after 2s silence');
+        assert.ok(!(await isRecording()), 'S12: Stopped after 2s silence');
+        const resText12 = await getResult().textContent();
+        assert.ok(resText12.includes('No transcription available.'), 'S12: Shows No transcription available.');
+        assert.ok(!resText12.includes('… Not yet'), 'S12: Does not show Not yet');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S12: Play button exists when audio recorded with empty STT');
 
-        const resText7 = await getResult().textContent();
-        assert.ok(resText7.includes('No transcription available.'), 'Shows No transcription available.');
-        assert.ok(!resText7.includes('… Not yet'), 'Does not show Not yet');
-        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'Play button exists when audio recorded with empty STT');
-
-        // --- Scenario 9: 録音エラーと文字起こしエラーの区別 ---
+        // --- Scenario 13: AudioContext初期化失敗 ---
+        await page.evaluate(() => { window.t.failAudioContext = true; });
         await clickRecord(false);
+        await page.clock.runFor(200);
+        assert.ok(!(await isRecording()), 'S13: Stopped immediately on AudioContext init failure');
+        assert.ok((await getResult().textContent()).includes('Recording error.'), 'S13: Shows Recording error.');
+        await page.evaluate(() => { window.t.failAudioContext = false; });
+
+        // --- Scenario 14: 音量監視初期化失敗 (resume failure) ---
+        await page.evaluate(() => { window.t.failResume = true; });
+        await clickRecord(false);
+        await page.clock.runFor(200);
+        assert.ok(!(await isRecording()), 'S14: Stopped on volume monitoring resume failure');
+        assert.ok((await getResult().textContent()).includes('Recording error.'), 'S14: Shows Recording error on volume monitor failure');
+        await page.evaluate(() => { window.t.failResume = false; });
+
+        // --- Scenario 15: recognition.start() の例外 ---
+        await page.evaluate(() => { window.t.failRecognitionStart = true; });
+        await clickRecord(false);
+        await page.clock.runFor(200);
+        assert.ok(!(await isRecording()), 'S15: Stopped on recognition.start() exception');
+        assert.ok((await getResult().textContent()).includes('Recognition error.'), 'S15: Shows Recognition error (distinguished from recording error)');
+        await page.evaluate(() => { window.t.failRecognitionStart = false; });
+
+        // --- Scenario 16: 録音データ取得失敗 ---
+        await page.evaluate(() => { window.t.emptyChunks = true; });
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400); // speech detected
+        await setSpeaking(false);
+        await page.clock.runFor(2200); // silence stop
+        assert.ok(!(await isRecording()), 'S16: Stopped after silence');
+        const resText16 = await getResult().textContent();
+        assert.ok(resText16.includes('Recording error.'), 'S16: Shows Recording error when audio data missing (not No transcription available)');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S16: No play button when audio acquisition failed');
+        await page.evaluate(() => { window.t.emptyChunks = false; });
+
+        // --- Scenario 17: 5秒未満の手動停止 ---
+        await clickRecord(true); // Manual mode allows manual stop button
+        await page.clock.runFor(1500); // 1.5s elapsed without speech
         await page.evaluate(() => {
-            const rec = window.t.recognitions.at(-1);
-            rec?.onerror?.({ error: 'network' });
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            if (stopBtn) stopBtn.click();
         });
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'Stopped on recognition error');
-        const resText9a = await getResult().textContent();
-        assert.ok(resText9a.includes('Recognition error.'), 'Shows Recognition error.');
+        assert.ok(!(await isRecording()), 'S17: Stopped via manual stop at 1.5s');
+        const resText17 = await getResult().textContent();
+        assert.ok(!resText17.includes('No speech detected within 5 seconds.'), 'S17: Does NOT show 5s timeout on early manual stop');
+        assert.ok(resText17.includes('… Not yet'), 'S17: Shows initial Not yet state');
 
-        // --- Scenario 10: リソース管理（マイクトラック・AudioContext解放） ---
-        const tracksAllEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
-        assert.ok(tracksAllEnded, 'All microphone tracks ended');
-        const contextsClosed = await page.evaluate(() => window.t.contexts.every(c => c.state === 'closed'));
-        assert.ok(contextsClosed, 'All AudioContext instances closed');
+        // --- Scenario 18: MediaRecorder異常終了 (stop exception) ---
+        await page.evaluate(() => { window.t.failRecorderStop = true; });
+        await clickRecord(true);
+        await page.clock.runFor(1000);
+        await page.evaluate(() => {
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            if (stopBtn) stopBtn.click();
+        });
+        await page.clock.runFor(2600); // fallback watchdog
+        assert.ok(!(await isRecording()), 'S18: Fallback watchdog stops cleanly even when recorder.stop throws');
+        await page.evaluate(() => { window.t.failRecorderStop = false; });
 
-        // --- Scenario 11: 重複停止が発生しないこと ---
+        // --- Scenario 19: 停止条件の競合・二重停止 ---
         await clickRecord(true);
         await page.evaluate(() => {
             const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
@@ -595,9 +714,9 @@ async function runRecordingLifecycleTests() {
             }
         });
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'Recording stopped cleanly without duplication errors');
+        assert.ok(!(await isRecording()), 'S19: Recording stopped cleanly without duplication errors');
 
-        // --- Scenario 12: 既存のドイツ語文字起こし・判定・保存機能の維持 ---
+        // --- Scenario 20: 既存のドイツ語文字起こし・判定・保存機能の維持 ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
@@ -606,13 +725,19 @@ async function runRecordingLifecycleTests() {
         await setSpeaking(false);
         await page.clock.runFor(2200);
 
-        const resText12 = await getResult().textContent();
-        assert.ok(resText12.includes('Ich fahre nach Graz.'), 'Contains recognized sentence');
-        assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'Contains accepted status badge');
-        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'Play button exists for accepted answer');
+        const resText20 = await getResult().textContent();
+        assert.ok(resText20.includes('Ich fahre nach Graz.'), 'S20: Contains recognized sentence');
+        assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
+
+        // Resource cleanup check
+        const tracksAllEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
+        assert.ok(tracksAllEnded, 'All microphone tracks ended');
+        const contextsClosed = await page.evaluate(() => window.t.contexts.every(c => c.state === 'closed'));
+        assert.ok(contextsClosed, 'All AudioContext instances closed');
 
         assert.equal(errors.length, 0, 'No uncaught page errors during tests');
-        console.log('PASS: All 12 recording lifecycle scenarios passed successfully.');
+        console.log('PASS: All recording lifecycle scenarios (1 to 20) passed successfully.');
     } finally {
         await browser.close();
     }
