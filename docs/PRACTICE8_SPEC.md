@@ -1,6 +1,6 @@
 ## Drill 5の英語区分ラベル装飾（2026-11-07追加承認）
 
-Drill 5の比較行で使う既存の英語区分ラベル（`r.comparison` の `r.kind`）にも、Ex1・Ex5・8.2の英語概念バッジと同じ装飾を適用する。`p81-concept-badge` クラスで比較ラベルだけを対象とし、Lato・700・.9em・padding 6px 10px・1px枠・8px角丸。ダーク時は文字 `#ffffff`、背景 `#304663`、枠 `#7998c3`。ライトは従来の共通ラベル色・背景・枠を踏襲。Dr5のペア単位のラベル幅計測、キュー整列、選択欄、録音・判定、Noticeの意味は維持。実機・375px検証は未完了。
+Drill 5の比較行で使う既存の英語区分ラベル（`r.comparison` の `r.kind`）にも、Ex1・Ex5・8.2の英語概念バッジと同じ装飾を適用する。`p81-concept-badge` クラスで比較ラベルだけを対象とし、Lato・700・.9em・padding 6px 10px・1px枠・8px角丸。ダーク時は文字 `#ffffff`、背景 `#304663`、枠 `#7998c3`。ライトは従来の共通ラベル色・背景・枠を踏襲。Dr5のペア単位のラベル幅計測、キュー整列、選択欄、録音・判定、Noticeの意味は維持。公開環境での実機確認は未完了。375pxは過去の検証幅であり、現在の正式サポート対象・必須合格条件には含めない。
 
 ## ダークモードの英語区分ラベル（2026-11-07承認）
 
@@ -18,7 +18,7 @@ Practice 8.1のExample 1（Noun／Verb＋の）とExample 5（Skillful／Observe
 | --- | --- |
 | 教材語彙・キュー／Ex／内部音声文の表記分離、Beyondの基本原則 | [PROJECT_SPEC.md](PROJECT_SPEC.md) §§3.2〜3.4 |
 | 録音・再生・TTS／STT・操作ロック・共通判定 | [PROJECT_SPEC.md](PROJECT_SPEC.md)の音声・録音・回答許容の規定 |
-| 共通部品、語彙ヒント、文法強調、色、文字基線 | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)。Yes/No Exampleのモデル表示・再生動作 | [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.3。Yes/Noボタンの視覚仕様 | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) §8。 |
+| 共通部品、語彙ヒント、文法強調、色、文字基線 | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)。Yes/No Exampleのモデル表示・再生動作は[PROJECT_SPEC.md](PROJECT_SPEC.md) §7.3、Yes/Noボタンの視覚仕様は[UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) §8。 |
 | STT表示 | [STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md) |
 | 制作中の限定検証・ページ全体テストの開始条件 | [RELAY_WORKFLOW.md「ページ作業完了とページ全体テスト」](RELAY_WORKFLOW.md#ページ作業完了とページ全体テスト2026-11-04確定2026-11-14整理) |
 
@@ -162,7 +162,7 @@ Exampleは各3行の質問セットを2組表示し、左端に3行分結合し�
 ### Beyondボタン
 - Practice 8.1〜8.3のBeyond開閉ボタンは、本のSVGアイコン付きの四角い形状とする。
 - Lightは背景`#e6f0ff`、枠線`#b8d4f5`、文字`#275da8`。Darkは背景`#183451`、枠線`#426b9b`、文字`#b9d9ff`。
-- 開閉・表記切替・教材データの動作は変更しない。掲載対象・強調・件数の規則はPROJECT_SPECのBeyond共通仕様に従う。
+- 開閉・表記切替・教材データの動作は変更しない。掲載対象・強調・件数の規則はPROJECT_SPEC.md §3.4のBeyond共通仕様に従う。
 
 ### Practice 8.1の英語区分・キュー列
 - Drillの英語指定は同じDrill内の最長ラベル実幅を共有し、日本語キューは隣接する別列から開始する。列間は8pxとする。
