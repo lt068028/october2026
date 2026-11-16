@@ -6,9 +6,6 @@
 - **Preview／Productionの証拠範囲**：当時のPR #9／#13に付いたVercel botコメントはPreviewをIgnored／Skippedと記録している。マージコミット`d042643`のGitHub commit statusは`Vercel`／`success`だったが、対象環境は特定できない。この履歴だけではProduction公開・画面表示・ユーザー実機確認を証明しない。2026-11-16のユーザー承認確認も、Production受入確認を意味しない。
 
 
-- 状態：実装済み・検証済み（アイコン適用範囲）。採用決定・実装中を経て最新main ab69d6fとの313ブラウザ条件の比較を完了。最終efb8014のCopy補助文言変更後も7.1の28条件を再比較済み。Icons8 monochrome outlinedを採用。仕様の正本はUI_LAYOUT_SPEC「会話役割アイコン」。
-- 対象：Practice 1.2、2.1、2.2、2.3、7.1、7.2、7.3、8.1、8.2、8.3。Example／Drillの実在する役割のみ。1.1・発音1/2・作文1・Indexは対象なし。
-- 元の役割枠・並び・基線・人物表示と空欄を維持し、共通表示処理へ統合。比較Previewは維持。
 
 # 2.2確定表示の全ページ展開（2026-10-30）
 
