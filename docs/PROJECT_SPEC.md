@@ -265,9 +265,9 @@ Formalの質問として判定する対象は、ページ仕様に別の明示�
 
 - 共通表示・配置・操作UI：`UI_LAYOUT_SPEC.md`
 - STT表示変換：`STT_DISPLAY_RULES.md`
-- Practice 1固有仕様：`PRACTICE1_SPEC.md`
-- Practice 2固有仕様：`PRACTICE2_SPEC.md`、`PRACTICE22_23_SPEC.md`等
-- Practice 7固有仕様：`PRACTICE7_SPEC.md`
-- Practice 8固有仕様：`PRACTICE8_SPEC.md`等
-- Deutsche Übung 1.1：`GERMAN_DRILL_SPEC.md`
-- 文書の新設・更新・統合・廃止と仕様整合性管理：`docs/RELAY_WORKFLOW.md` §5
+- Practice 1（1.1／1.2）のページ固有仕様：`PRACTICE1_SPEC.md`
+- Practice 2（2.1〜2.3）のページ固有仕様：`PRACTICE2_SPEC.md`。2.2／2.3の追加詳細：`PRACTICE22_23_SPEC.md`
+- Practice 7（7.1〜7.3）のページ固有仕様：`PRACTICE7_SPEC.md`
+- Practice 8のページ固有仕様：8.1／8.3は`PRACTICE8_SPEC.md`、8.2は`PRACTICE82_SPEC.md`
+- Deutsche Übung 1.1の専用仕様：`GERMAN_DRILL_SPEC.md`
+- 仕様文書の新設・更新・統合・廃止と仕様整合性管理：`docs/RELAY_WORKFLOW.md` §5
