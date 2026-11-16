@@ -262,7 +262,7 @@ function mock(){
  check(await p.evaluate(()=>practice2State.savedResults.p21_d1_s0_A_0?.isCorrect),true,'recording extracted and matched');
  check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'transcript visible in row');
  await p.locator('.p21-drill1 .p21-set-switcher button').nth(1).click();
- check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),false,'sets keep distinct results');
+ check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n===0),true,'sets keep distinct results');
  await p.locator('.p21-drill1 .p21-set-switcher button').first().click();
  check(await p.locator('.p21-drill1 tr').first().locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'result restored on return');
  await p.evaluate(()=>{isAutoPlay=false;const key='p21_d1_s0_B_0',v=practice2State.views[key];processResult('それは新聞です','これは、新聞です。',()=> 'これは、新聞です。',v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);});
@@ -280,7 +280,7 @@ function mock(){
  await recordLater('#drill2Container',1,'それはおにぎりです');
  check(await p.evaluate(()=>practice2State.savedResults.p21_d2_s0_r_0?.isCorrect),true,'D2 recording matches model');
  await p.locator('#drill2Container .p21-set-switcher button').nth(1).click();
- check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n>0),false,'D2 sets separated');
+ check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n===0),true,'D2 sets separated');
  await p.locator('#drill2Container .p21-set-switcher button').first().click();
  check(await p.locator('#drill2Container tr').nth(1).locator('[data-feedback-status="accepted"]').count().then(n=>n>0),true,'D2 result restored');
  await p.locator('#drill3Container .p21-set-switcher button').first().click();
