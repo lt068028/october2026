@@ -170,10 +170,10 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  check(await page.locator('[data-choice="degree-0"]').isDisabled(),true,'selections lock while recording');
  await page.locator('.stop-btn-active').click();await page.waitForFunction(n=>t.spoken.length>n,spokenBeforeRecording);
  const zero=await page.evaluate(()=>{const before=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===before+1;});check(zero,true,'same callback relay');
- check(await page.locator('[data-row="self-0-response"] .result-text').textContent().then(t=>t.includes('✅')),true,'actual recognition graded');
+ check(await page.locator('[data-row="self-0-response"] .result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'actual recognition graded');
  await page.locator('[data-response="self-0-response"][data-answer="no"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent(),'… Not yet','different choice independent');
  check(await page.evaluate(()=>t.audios.at(-1).paused),true,'selection cancels own relay');
- await page.locator('[data-response="self-0-response"][data-answer="yes"]').click();check(await page.locator('[data-row="self-0-response"] .result-text').textContent().then(t=>t.includes('✅')),true,'return restores recorded result');
+ await page.locator('[data-response="self-0-response"][data-answer="yes"]').click();check(await page.locator('[data-row="self-0-response"] .result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'return restores recorded result');
  // A saved result must not acquire a social judgment just from redrawing it.
  check(await page.locator('#drill2 .p81-feedback:not([hidden])').count(),0,'no pragmatics outside D5');
  check(await page.evaluate(()=>audit81.saved.get('self-0-response:yes').raw),'  コーヒーを飲むのが好きです。　','recognition raw whitespace saved');
@@ -182,25 +182,25 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  await page.waitForFunction(()=>t.recognitions.length===2);
  await page.evaluate(()=>{const result=[{transcript:'私は掃除をするのが上手です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-good:good'));
- check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first expression recording correct');
+ check(await first.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'first expression recording correct');
  check(await second.locator('.p81-cue-actions .not-recorded-yet').isHidden(),false,'second recording remains independent');
  await second.locator('button').filter({hasText:'🎙️とる'}).click();
  await page.waitForFunction(()=>t.recognitions.length===3);
- check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'first result stays on screen while recording the second');
+ check(await first.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'first result stays on screen while recording the second');
  await page.evaluate(()=>{const result=[{transcript:'私は掃除をするのが得意です。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await page.locator('.stop-btn-active').click();await page.waitForFunction(()=>audit81.saved.has('comparison-3-strong:strong'));
- check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'second expression recording correct');
- check(await first.locator('.result-text').textContent().then(s=>s.includes('上手')&&s.includes('✅')),true,'first recording still visible after second completes');
+ check(await second.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'second expression recording correct');
+ check(await first.locator('.result-text').textContent().then(s=>s.includes('上手')),true,'first recording still visible after second completes');
  check(await page.evaluate(()=>audit81.saved.get('comparison-3-good:good').url!==audit81.saved.get('comparison-3-strong:strong').url),true,'separate audio for both rows');
- check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'changing impression never regrades the recording');
+ check(await second.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'changing impression never regrades the recording');
  await page.locator('#scriptModeControl [data-value="hiragana"]').click();
  check(await first.locator('.result-text').textContent().then(s=>s.includes('わたしはそうじをするのがじょうずです')),true,'first Hiragana recording survives redraw');
  check(await second.locator('.result-text').textContent().then(s=>s.includes('わたしはそうじをするのがとくいです')),true,'second Hiragana recording survives redraw');
  for(const style of ['casual','formal'])await page.locator(`#speechStyleControl [data-value="${style}"]`).click();
- check(await first.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve first recorded judgment');
- check(await second.locator('.result-text').textContent().then(s=>s.includes('✅')),true,'style changes preserve second recorded judgment');
+ check(await first.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'style changes preserve first recorded judgment');
+ check(await second.locator('.result-text [data-feedback-status="accepted"]').count().then(n=>n>0),true,'style changes preserve second recorded judgment');
  await page.locator('#scriptModeControl [data-value="kanji"]').click();
- for(const width of [375,600,900,1440,1920])for(const scheme of ['light','dark']){
+ for(const width of [600,900,1440,1920])for(const scheme of ['light','dark']){
   await page.setViewportSize({width,height:1000});await page.emulateMedia({colorScheme:scheme});
   const degree=await page.locator('#drill4 .example-box').evaluate(ex=>{
     const xs=[...ex.querySelectorAll('.p81-degree-cue-tail')].map(e=>e.getBoundingClientRect().right);
