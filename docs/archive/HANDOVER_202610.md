@@ -1,3 +1,5 @@
+> **アーカイブ資料／現行状態として使用しない**：本書は2026-10時点の作業引き継ぎ・進捗記録を保全した履歴資料である。ここに記載された残件、作業状態、承認、ブランチ、Commit／Push、Preview／Productionの状況は保存当時の情報であり、現在の状態を示さない。現在のタスク選択・作業指示はユーザーの最新Project Instructionsと現在の会話、現行ルールは `AGENTS.md` と `docs/RELAY_WORKFLOW.md`、確定成果物はGitHub `main` を基準とする。このアーカイブを現行のHANDOVERや作業再開指示として使わない。
+
 # October2026 作業引き継ぎ・進捗記録（HANDOVER）
 
 ## D5の選択時メッセージ撤去と録音後の短い注記（2026-10-31 / Europe/Vienna / Codex）
