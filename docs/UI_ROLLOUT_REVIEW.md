@@ -1,15 +1,10 @@
-## 2026-11-11 Microsoft Fluent Filled Q/Aアイコン統一（Preview用初回実装・PR #13経由でmain統合済み／承認・Production受入未確認）
+## 2026-11-11 Microsoft Fluent Filled Q/Aアイコン統一（PR #13経由でmain統合済み・ユーザー承認済み）
 
-- **実装対象として記録された表示仕様**はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」を正本とする。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、実装に使われた仕様ではない。ここで記録する実装仕様と、ユーザー本人によるデザイン採用承認の有無は別事項である。
-- 初回展開は`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一した。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含み、Q/Aだけの差分ではなかった。
-- **統合経路とGitHub上のPR状態**：Filled初回実装は `dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #9（head／GitHub APIの`merge_commit_sha`：`01e5e49d5a006a7b29602791fa8e606f121dd706`）は、GitHub API上 `closed` かつ `merged=true`、`merged_at=2026-11-12T17:48:47Z` と記録されている。したがって、PR #9を「Closeされたが未マージ」とする説明は誤りである。
-- **mainへ入った実際の経路**：PR #13は `d04264364bd0e8aa9fb560e64060ba2a2578a67e`（`merged_at=2026-11-12T17:48:45Z`）でmainへマージされた。コミット比較ではPR #13のマージコミット `d042643` がPR #9のhead／`01e5e49` を祖先として含む。PR #9のMerged記録はPR #13のマージより2秒後であるため、GitHub上のPR状態と実際にmainへ取り込まれた統合経路を分けて記録する。PR #9自身が独立した別のmain統合を行ったと解釈しない。
-- **ユーザー承認の確認**：PR #9本文には「user-approved」なFilled表示仕様との作成者側の記載がある一方、同じ本文は「User's final approval」を含まないとも明記している。PR本文の文言はユーザー本人の明示発言そのものではなく、Thinkが過去の会話記録を照合した結果でも、デザイン採用・Preview実機確認・main統合・Production反映・Production実機確認に関するユーザー本人の明示承認は確認できなかった。2026-11-11にユーザーが確定したQ/A表示条件とFilledアイコンのデザイン採用承認は別事項として扱う。
-- PR #13のタイトル・本文には「DO NOT MERGE」「Productionへ反映しない」「ユーザー実機確認が必要」と記載されていた。両PRのGitHubレビューはなく、取得できた各PRコメントはVercel botのみ。したがってマージされた事実だけでユーザー承認を補完しない。
-- **Preview／Productionの確認範囲**：PR #9／#13に付いたVercel botコメントは、それぞれPreviewデプロイをIgnored／Skippedと記録している。マージコミット `d042643` のGitHub commit statusはcontext `Vercel`／state `success` だが、statusの返却情報から対象環境は特定できない。したがってこのsuccessをProduction公開・画面表示の証拠にしない。Production画面でのFilled表示およびユーザー実機確認は未確認とする。
-- 既存PR #8（`preview/fluent-icons-sitewide-20261111`、Regular案）は別の比較案であり、Filled案とは区別する。下記2026-11-08のIcons8採用記録は**過去の履歴**として保持し、現行アイコン仕様には用いない。
+- **ユーザー承認**：2026-11-16、ユーザー本人がQ/A Filledデザインを承認済みと明示確認した。これにより、旧記録にあった「デザイン採用承認を確認できない」という判断は更新する。この承認はデザイン採用の承認であり、Productionでの公開・表示や実機受入確認とは別である。
+- **現行表示**：Q＝Microsoft Fluent `Chat Help 24 Filled`、A＝`Chat 24 Filled`。追加ストロークなし、`currentColor`、Light `#71839A`／Dark `#D9DDE3`。停止ボタン右の疑問文マークは`Chat Help 24 Filled`を16×16pxで表示し、既存のグレー色・4px間隔を維持する。Regular＋0.45pxは過去の比較案であり、現行仕様ではない。
+- **初回実装・統合経路**：初回実装コミットは`dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #13はマージコミット`d04264364bd0e8aa9fb560e64060ba2a2578a67e`でmainへ統合された。PR #13のマージコミットはPR #9のhead／GitHub API上の`merge_commit_sha` `01e5e49d5a006a7b29602791fa8e606f121dd706`を祖先として含む。PR #9のGitHub状態は`closed`かつ`merged=true`であるが、Filled実装のmainへの統合経路はPR #13である。
+- **Preview／Productionの証拠範囲**：当時のPR #9／#13に付いたVercel botコメントはPreviewをIgnored／Skippedと記録している。マージコミット`d042643`のGitHub commit statusは`Vercel`／`success`だったが、対象環境は特定できない。この履歴だけではProduction公開・画面表示・ユーザー実機確認を証明しない。2026-11-16のユーザー承認確認も、Production受入確認を意味しない。
 
-## 2026-11-08 Q/Aアイコン採用追跡（旧仕様・履歴）
 
 - 状態：実装済み・検証済み（アイコン適用範囲）。採用決定・実装中を経て最新main ab69d6fとの313ブラウザ条件の比較を完了。最終efb8014のCopy補助文言変更後も7.1の28条件を再比較済み。Icons8 monochrome outlinedを採用。仕様の正本はUI_LAYOUT_SPEC「会話役割アイコン」。
 - 対象：Practice 1.2、2.1、2.2、2.3、7.1、7.2、7.3、8.1、8.2、8.3。Example／Drillの実在する役割のみ。1.1・発音1/2・作文1・Indexは対象なし。
