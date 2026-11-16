@@ -38,6 +38,8 @@ window.DrillAudio = (() => {
 
     function isAudioButton(el) {
         return el.matches('button') && (
+            el.dataset.audioRole === 'listen' ||
+            el.dataset.audioRole === 'play' ||
             el.textContent.trim().startsWith('🔊きく') ||
             el.textContent.trim().startsWith('▶️') ||
             [...pitchStates].some(state => state.listenBtn === el || state.playBtn === el)
@@ -413,10 +415,10 @@ window.DrillAudio = (() => {
             adapter.stop();
             let row = recordButton.parentElement;
             while (row && ![...row.querySelectorAll('button')].some(
-                button => button.textContent.trim().startsWith('🔊きく')
+                button => button.dataset.audioRole === 'listen' || button.textContent.trim().startsWith('🔊きく')
             )) row = row.parentElement;
             const listen = [...(row?.querySelectorAll('button') || [])].find(
-                button => button.textContent.trim().startsWith('🔊きく')
+                button => button.dataset.audioRole === 'listen' || button.textContent.trim().startsWith('🔊きく')
             );
             const own = result.querySelector('.play-recording-btn, .recorded-play-button');
             const current = { buttons: [listen, own].filter(Boolean).map(button => ({

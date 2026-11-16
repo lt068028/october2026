@@ -5220,8 +5220,19 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 .practice82-page .ex-audio-icon .fluent-icon-stop,
-.uebung11-page .ex-audio-icon .fluent-icon-stop {
+.uebung11-page .ex-audio-icon .fluent-icon-stop,
+.practice82-page .play-recording-btn .fluent-icon-stop,
+.uebung11-page .play-recording-btn .fluent-icon-stop {
     color: var(--error-text, #be123c);
+}
+
+.practice82-page .play-recording-btn svg,
+.uebung11-page .play-recording-btn svg,
+.practice82-page .recording-actions button svg,
+.uebung11-page .recording-actions button svg {
+    display: block;
+    width: 20px;
+    height: 20px;
 }
 
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */

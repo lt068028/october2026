@@ -729,6 +729,11 @@ function initGermanDrill() {
             if (playingButton._contents) {
                 playingButton.replaceChildren(...playingButton._contents);
             }
+            if (playingButton._originalAriaLabel !== undefined) {
+                if (playingButton._originalAriaLabel === null) playingButton.removeAttribute("aria-label");
+                else playingButton.setAttribute("aria-label", playingButton._originalAriaLabel);
+                delete playingButton._originalAriaLabel;
+            }
             playingButton.classList.remove("is-playing");
             playingButton = null;
         }
@@ -775,6 +780,16 @@ function initGermanDrill() {
         stopPlayback();
         playingButton = b;
         b._contents = Array.from(b.childNodes);
+        if (b.classList.contains("play-recording-btn")) {
+            b.classList.add("is-playing");
+            b.disabled = false;
+            b._originalAriaLabel = b.getAttribute("aria-label");
+            b.setAttribute("aria-label", "Wiedergabe stoppen");
+            if (window.FluentIcons) {
+                b.replaceChildren(window.FluentIcons.create("stop", 20, "", "filled"));
+            }
+            return;
+        }
         b.disabled = true;
         b.classList.add("is-playing");
         b.textContent = "Playing...";
@@ -1130,6 +1145,10 @@ function initGermanDrill() {
 
     function playRecording(key, btn) {
         if (session || preparing) return;
+        if (playingButton === btn) {
+            stopAllPlayback();
+            return;
+        }
         stopAllPlayback();
 
         const entry = saved.get(key);
@@ -1575,10 +1594,12 @@ function initGermanDrill() {
         }
 
         if (val?.url) {
-            const play = button("▶️", "Play your recorded voice.", () => {
+            const playIcon = window.FluentIcons ? window.FluentIcons.create("play", 20, "", "filled") : document.createTextNode("▶️");
+            const play = button(playIcon, "Play your recorded voice.", () => {
                 playRecording(key, play);
             });
             play.classList.add("play-recording-btn");
+            play.dataset.audioRole = "play";
             play.style.marginLeft = "8px";
             v.result.append(play);
         }
@@ -1742,7 +1763,7 @@ function initGermanDrill() {
                 iconSpan.append(window.FluentIcons.create("speaker2", 20));
             }
             const frag = document.createDocumentFragment();
-            frag.append(iconSpan, document.createTextNode(" Anhören"));
+            frag.append(iconSpan);
             const exListenBtn = button(frag, exListenTip, () => {
                 if (session || preparing) return;
                 if (stoppedExButton === exListenBtn && (performance.now() - stoppedExTime) < 150) {
@@ -1757,6 +1778,7 @@ function initGermanDrill() {
             });
             exListenBtn.classList.add("ex-audio-btn");
             exListenBtn.dataset.isExAudio = "true";
+            exListenBtn.dataset.audioRole = "listen";
             exListenBtn.setAttribute("aria-label", "Beispiel anhören");
             exAudioTd.append(exListenBtn);
 
@@ -1802,14 +1824,22 @@ function initGermanDrill() {
                 const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
 
                 const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
-                const listenBtn = button("🔊 Anhören", listenTip, () => {
+                const listenIcon = window.FluentIcons ? window.FluentIcons.create("speaker2", 20) : document.createTextNode("🔊");
+                const listenBtn = button(listenIcon, listenTip, () => {
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
+                listenBtn.classList.add("drill-listen-btn");
+                listenBtn.dataset.audioRole = "listen";
+                listenBtn.setAttribute("aria-label", "Modellantwort anhören");
 
                 const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
-                const recBtn = button("⏺️ Aufnehmen", recTip, () => {
+                const recIcon = window.FluentIcons ? window.FluentIcons.create("mic", 20) : document.createTextNode("🎙️");
+                const recBtn = button(recIcon, recTip, () => {
                     record(item.id, item);
                 });
+                recBtn.classList.add("drill-record-btn");
+                recBtn.dataset.audioRole = "record";
+                recBtn.setAttribute("aria-label", "Antwort aufnehmen");
 
                 let stopTip = "";
                 if (isFirstItemOfDrill1) {

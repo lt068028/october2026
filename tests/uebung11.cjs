@@ -282,8 +282,8 @@ assert.ok(tooltipLayoutJs.includes('.uebung11-page'), 'tooltip-layout.js must pr
 // 8.6 Germanized basic operation button labels
 assert.ok(html.includes('↩️ Zurück'), 'HTML must have ↩️ Zurück back link');
 assert.ok(!html.includes('もどる'), 'HTML must not have もどる');
-assert.ok(js.includes('🔊 Anhören'), 'JS must use 🔊 Anhören for listen buttons');
-assert.ok(js.includes('⏺️ Aufnehmen'), 'JS must use ⏺️ Aufnehmen for record button');
+assert.ok(js.includes('drill-listen-btn'), 'JS must use drill-listen-btn for listen buttons');
+assert.ok(js.includes('drill-record-btn'), 'JS must use drill-record-btn for record button');
 assert.ok(!js.includes('🔊きく'), 'JS must not contain 🔊きく');
 assert.ok(!js.includes('とる'), 'JS must not contain とる');
 
@@ -460,7 +460,7 @@ async function runRecordingLifecycleTests() {
                 if (playToggle && playToggle.checked) playToggle.click();
 
                 const recBtns = [...document.querySelectorAll('#drillsContainer .recording-actions button')];
-                const recBtn = recBtns.find(b => b.textContent.includes('Aufnehmen'));
+                const recBtn = recBtns.find(b => b.classList.contains('drill-record-btn'));
                 if (recBtn) recBtn.click();
             }, isManual);
             for (let i = 0; i < 10; i++) {

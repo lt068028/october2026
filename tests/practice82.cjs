@@ -61,13 +61,13 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  for(const [i,b]of exButtons.entries()){await b.click();eq(await p.evaluate(()=>Boolean(t.spoken.at(-1)?.text)),true,`Example group ${i+1} playable`);await p.evaluate(()=>t.spoken.at(-1).onend());}
  // Record a selected D3 No response, preserve raw STT, then check the next recording stops relay.
  await p.locator('label.switch').first().click();
- await yn.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===1);
+ await yn.locator('.drill-record-btn').click();await p.waitForFunction(()=>t.recognitions.length===1);
  await p.evaluate(()=>{const result=[{transcript:'  いいえ、何も、しません。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('yn-0-a:no'));
  eq(await yn.locator('.feedback-status-accepted').count(),1,'recorded D3 No graded');
  eq(await p.evaluate(()=>audit82.saved.get('yn-0-a:no').raw),'  いいえ、何も、しません。　','raw STT retained');
  eq(await p.evaluate(()=>{const n=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===n+1}),true,'zero intentional relay gap');
- const next=p.locator('[data-row="any-0-a"]');await next.locator('button').filter({hasText:'🎙️とる'}).click();await p.waitForFunction(()=>t.recognitions.length===2);
+ const next=p.locator('[data-row="any-0-a"]');await next.locator('.drill-record-btn').click();await p.waitForFunction(()=>t.recognitions.length===2);
  eq(await p.evaluate(()=>t.audios.at(-1).paused),true,'new recording interrupts relay');
  await p.evaluate(()=>{const result=[{transcript:'何でも、作ります。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('any-0-a:fixed'));
