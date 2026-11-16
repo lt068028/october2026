@@ -20,7 +20,7 @@ Practice 8.1のExample 1（Noun／Verb＋の）とExample 5（Skillful／Observe
 | 録音・再生・TTS／STT・操作ロック・共通判定 | [PROJECT_SPEC.md](PROJECT_SPEC.md)の音声・録音・回答許容の規定 |
 | 共通部品、語彙ヒント、文法強調、色、文字基線 | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)。Yes/No Exampleのモデル表示・再生動作 | [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.3。Yes/Noボタンの視覚仕様 | [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) §8。 |
 | STT表示 | [STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md) |
-| 制作中の限定検証・ページ全体テストの開始条件 | [PROJECT_SPEC「全Practice共通：ページ作業完了とページ全体テスト」](PROJECT_SPEC.md#全practice共通ページ作業完了とページ全体テスト2026-11-04確定) |
+| 制作中の限定検証・ページ全体テストの開始条件 | [RELAY_WORKFLOW.md「ページ作業完了とページ全体テスト」](RELAY_WORKFLOW.md#ページ作業完了とページ全体テスト2026-11-04確定2026-11-14整理) |
 
 共通仕様と重複する処理手順・時間制限・色値・モード全一覧は本節に再記載しない。以下の固有制約・承認済み例外は共通仕様への参照に置き換えて失わせない。
 
