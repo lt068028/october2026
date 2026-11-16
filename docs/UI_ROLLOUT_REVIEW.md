@@ -1,6 +1,6 @@
 ## 2026-11-11 Microsoft Fluent Filled Q/Aアイコン統一（Preview用初回実装・PR #13経由でmain統合済み／承認・Production受入未確認）
 
-- 採用した表示仕様はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」を正本とする。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、現在の採用仕様ではない。
+- **実装対象として記録された表示仕様**はUI_LAYOUT_SPEC「会話役割・疑問文アイコン」を正本とする。Q＝Chat Help 24 Filled、A＝Chat 24 Filled、疑問文＝Chat Help Filled 16×16px。Q/Aに追加ストロークは付けず、色はLight `#71839A`／Dark `#D9DDE3`。疑問文マークは既存のグレー、停止ボタンとの4px間隔を保ち、Q/Aの外寸・位置・基線・行間も維持する。Regular＋0.45pxは過去の比較案であり、実装に使われた仕様ではない。ここで記録する実装仕様と、ユーザー本人によるデザイン採用承認の有無は別事項である。
 - 初回展開は`preview/qa-filled-common-allpages-20261111`。Practice 1.2、2.1～2.3、7.1～7.3、8.1～8.3のQ/Aを共通Filled表示にし、Compositionを含む対象ページの疑問文マークもFilledに統一した。Yes/No、Clipboard、Beyondの本、Icons8／Lucide移行、関連テスト・仕様書変更を含み、Q/Aだけの差分ではなかった。
 - **統合経路とGitHub上のPR状態**：Filled初回実装は `dace06614d073ee0f252eb4f22bee51e4bdb572c`。PR #9（head／GitHub APIの`merge_commit_sha`：`01e5e49d5a006a7b29602791fa8e606f121dd706`）は、GitHub API上 `closed` かつ `merged=true`、`merged_at=2026-11-12T17:48:47Z` と記録されている。したがって、PR #9を「Closeされたが未マージ」とする説明は誤りである。
 - **mainへ入った実際の経路**：PR #13は `d04264364bd0e8aa9fb560e64060ba2a2578a67e`（`merged_at=2026-11-12T17:48:45Z`）でmainへマージされた。コミット比較ではPR #13のマージコミット `d042643` がPR #9のhead／`01e5e49` を祖先として含む。PR #9のMerged記録はPR #13のマージより2秒後であるため、GitHub上のPR状態と実際にmainへ取り込まれた統合経路を分けて記録する。PR #9自身が独立した別のmain統合を行ったと解釈しない。
