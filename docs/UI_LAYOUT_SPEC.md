@@ -196,14 +196,15 @@
 - `… Not yet`は`var(--text-secondary)`とし、文言全体を一塊として扱い、内部で改行しない。結果欄が右寄せの行では右端に揃え、幅が足りない場合は文言全体を次行へ送る。
 - 再生ボタン内の`Playing...`は、録音結果・状態メッセージとは別のボタン内表示であり、本規則の18.2px統一対象外とする。現行CSSカスケード・継承によるサイズを維持し、専用の`font-size`指定を追加したり、18.2pxへ変更・統一したりしない。現状サイズの調査・報告はできるが、その実測・算出値を変更目標とはしない。
 - 録音・再生ボタン本体、ツールチップ、操作説明、Pitch Labのタイトル・説明文・音量補助文も本規則の対象外とする。
-- 本節は共通表示仕様であり、すべての既存ページの実装がこのサイズに一致していることを意味しない。適合調査・修正・テストは対象ページごとに別途行う。
+- 本節は共通表示仕様であり、すべての既存ページの実装がこのサイズに一致していることを意味しない。各ページの適合状況は、対象となる実装範囲に応じて別途確認する。
 
 ## 13. ページ固有仕様への参照
 
 - Practice 2.1： [PRACTICE2_SPEC.md](PRACTICE2_SPEC.md)
 - Practice 2.2／2.3： [PRACTICE22_23_SPEC.md](PRACTICE22_23_SPEC.md)。Practice 2.1〜2.3共通のMismatch配置は[PRACTICE2_SPEC.md](PRACTICE2_SPEC.md)も参照。
 - Practice 7.1〜7.3： [PRACTICE7_SPEC.md](PRACTICE7_SPEC.md)
-- Practice 8.1〜8.3： [PRACTICE8_SPEC.md](PRACTICE8_SPEC.md)
+- Practice 8.1／8.3： [PRACTICE8_SPEC.md](PRACTICE8_SPEC.md)
+- Practice 8.2： [PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)
 - STT表示変換： [STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)
 - 展開・実装・検証の履歴： [UI_ROLLOUT_REVIEW.md](UI_ROLLOUT_REVIEW.md)
 
