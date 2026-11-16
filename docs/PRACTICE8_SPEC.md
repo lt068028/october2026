@@ -14,6 +14,7 @@
 - Practice 8.1 Drill 5は、既存の英語区分ラベル（r.comparisonのr.kind）だけにp81-concept-badgeを適用する。ペア単位のラベル幅計測、キュー整列、選択欄、録音・判定、Noticeの意味は維持する。
 - Practice 8.1 Example 1／5は、共有ラベル列の右端に揃えてキュー開始位置を統一する。Drill 5本体の通常の項目名・比較対象でない行へ、この装飾を拡張しない。
 - Practice 8.2は日本語列と英語ラベル列の整列・6pxアンカーを固有条件として別途定める（PRACTICE82_SPEC.mdを参照）。本節のラベル外観を他Practiceへ自動適用しない。
+
 ## 2. Practice 8.1の責務と参照
 
 本節は8.1の学習目標・文型制約・教育上の判断・固有の状態／表示要件を正本とする。現在の設問、語彙、順序、モデル全文、タイトル、説明文、英語ラベル、Notice全文は [practice8.1.js](../practice8.1.js) と [practice8.1.html](../practice8.1.html) を参照し、ここへ全件転記しない。
