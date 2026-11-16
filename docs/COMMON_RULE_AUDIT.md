@@ -1,6 +1,8 @@
 > **全ページ共通表示（2026-10-30実装）**：Fluent FilledのQ/A役割アイコン→角丸X/Y→キュー→👉️→きく→モデル全文を該当箇所へ展開。人物色と白い外枠の伸縮を画像内外で共通化し、実際の話者のみ再生・準備・録音・録音再生中に強調、終了・中断で解除する。Who案内は2.1/2.2から撤去し、2.3の通話場面説明と第三者Zは維持。「どの／どれ」の質問・選択・録音準備では正答対象を囲まず、指示語を使う返答時だけ対象を示す。人物未指定の課題には人物を追加しない。詳細は[UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md)と[UI_ROLLOUT_REVIEW.md](UI_ROLLOUT_REVIEW.md)。
 
-# 共通仕様の照合（2026-10-29）
+> **履歴資料（2026-10-29〜30時点）**：本書は当時の共通仕様・コード・検証状況を記録した監査資料であり、現行仕様や作業指示の正本ではない。話者強調方式、ページ構成、UI値、実装状態、テスト対象に関する記述は当時の記録として扱う。現行仕様はPROJECT_SPEC.md、UI_LAYOUT_SPEC.mdおよび各Practice固有仕様書を参照し、現行の作業運用はAGENTS.mdとRELAY_WORKFLOW.mdに従う。
+
+# 共通仕様の照合記録（2026-10-29）
 
 - 8.1のゴールド・Y/N Example・D5初期表示の原因調査と是正：[PRACTICE81_INHERITANCE_AUDIT.md](PRACTICE81_INHERITANCE_AUDIT.md)。現在のY/N Exampleの機能要件はPROJECT_SPEC §7.3、表示配置はUI_LAYOUT_SPEC §4.3・§8を参照。
 
@@ -21,7 +23,7 @@
 | English Cues移動 | 現行の移動先・余白・対象範囲はPROJECT_SPEC §7.1を正本とする。2.2は機能未実装。 |
 | Example本文の語彙Hover | 旧一般則「キューだけ」を練習2に無条件適用すると、ユーザーが承認した画像/Example語彙Hoverと矛盾。練習2の画像教材・Example語彙は個別仕様の適用を明記。 |
 | 2.1 Example構成 | UI一覧の古い「Ex1のみ、追加Exampleなし」は現行E2と矛盾。PRACTICE2_SPECの現行E1/E2・D1〜D3・D4構成へ訂正。 |
-| 話者赤点滅 | 2.1/2.2にも実装。全3ページの適用範囲と検証は[LESSON2_SPEAKER_AUDIT.md](LESSON2_SPEAKER_AUDIT.md)。Who案内の背景点滅と人物名の赤点滅を区別する。 |
+| 話者強調 | 当時は赤点滅方式として記録。これは履歴であり現行表示ではない。現在の外観はUI_LAYOUT_SPEC.md §7.3の白い輪郭による強調、ページ別の適用範囲は[LESSON2_SPEAKER_AUDIT.md](LESSON2_SPEAKER_AUDIT.md)を参照。 |
 | Ex4の要否 | ユーザー選定済み。Ex4を撤去しD4説明「💡Use だれ to ask who someone is.」でだれを太字＋ゴールドで導入。 |
 
 ## 既存ルールの確認先
@@ -43,7 +45,3 @@
 | 短答・全文補完の許容/必須要素の例外 | PROJECT_SPEC、PRACTICE2_SPEC、PRACTICE22_23_SPEC | drill-answer-rules.jsと各課題の登録済み許容文。2.2 D2は指示語＋名詞＋価格必須 |
 | 練習2以降、文脈上自然な「も」 | PROJECT_SPEC冒頭 | 各ページモデル/許容文。独立問題に機械的に付加しない |
 | Genki進度・初期表記・カバン・L3未習内容 | PRACTICE2_SPEC、PRACTICE22_23_SPEC、PROJECT_SPEC | 各課題語彙/モデル、scripts/genki-kanji-usage.cjs。土日/何曜日は承認済み例外 |
-
-## 今後の変更時に確認すること
-
-新しい統一指示を受けたら、対象ページ/対象外、標準状態/操作中/終了時、例外を仕様書に記す。文言だけの短縮でも💡・役割表示・必要な学習要素を個別に確認する。既存の統一済み事項と提案/未実装を混同しない。旧仕様と衝突する箇所は現行記述を訂正するか、旧履歴であると明示する。実装差が見つかっても未承認の挙動を自動で新仕様にしない。
