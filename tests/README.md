@@ -1,9 +1,9 @@
 # テスト運用ガイドとテスト一覧
 
-> **版：2026-11-16.1**
+> **版：2026-11-16.2**
 >
 > - 既存のテスト運用方針：ユーザー承認済み（2026-11-14）
-> - 今回の参照・一覧補正：最終確認前
+> - 今回の参照・一覧補正：確認済み（2026-11-16）
 
 本ドキュメントは、October2026 プロジェクト（`lt068028/october2026`）における回帰テストの運用方針およびテスト一覧をまとめたものです。
 
@@ -235,11 +235,14 @@ node tests/relay-zero-gap.cjs
 #### Practice 1.1 / 1.2
 - **`node tests/practice11-topic.cjs`**: 1.1 D2/D3の「は」表示、実ボタンからのTTS入力、3文体モデル、D1 Casualの維持。
 - **`node tests/p11-cue-resize.cjs`**: 1.1 Exampleセルの幅、単語境界、リサイズ状態の検証。
+- **`node tests/copy11.cjs`**: 1.1 Task 1〜3のCopy対象範囲、各Taskの日付付き見出し、Copied表示・復帰、クリップボード失敗時の動作。
 - **`node tests/display-size.cjs`**: 1.2の130%相当固定、Size選択撤去、設定マトリクス（4幅×通常/ダーク×3文体×Vocab×漢字/ひらがな）での横はみ出し防止、Yes/No応答行の配置照合。
 - **`node tests/listen-help.cjs`**: 通常Listen説明撤去、Y/N未選択理由、1.2 D2専攻選択理由、ホバー／キーボード表示と選択後の有効化検証。
+- **`node tests/copy12.cjs`**: 1.2 Drill 1／2のCopy対象、日付付き見出し、Copied表示・復帰、クリップボード失敗時の動作。
 
 #### Practice 2.1 / 2.2 / 2.3
 - **`node tests/practice21.cjs`**: 2.1 Ex1の6音声モデル、話者・領域交代、下部モデル対応、各画面幅での表示検証。
+- **`node tests/copy21.cjs`**: 2.1 Drill 1〜3のCopy対象、日付付き見出し、Copied表示・復帰、クリップボード失敗時の動作。
 - **`node tests/practice21-keep-going.cjs`**: 2.1 Mismatch時の「Keep going!」文言およびFireアイコンの表示検証。
 - **`node tests/practice21-feedback-status.cjs`**: 2.1の新規回答がAccepted／Mismatchのみを生成し、認識エラー・音声のみ・キャンセル等を保留へ分類しないこと、および旧Undetermined表示fixtureの互換確認を行うテスト。fixtureの保留表示は現行機能・現行仕様を意味しない。
 - **`node tests/practice21-feedback-wrap.cjs`**: 2.1 フィードバック表示の折り返し挙動検証。
@@ -249,14 +252,17 @@ node tests/relay-zero-gap.cjs
 - **`node tests/practice2-next.cjs`**: 2.2のモデル、指示語、価格、場所、短答／全文判定、録音保持（`NEXT_SCREENSHOT_DIR` でスクリーンショット保存可能）。
 - **`node tests/practice2-next-inline-wrap-geometry.cjs`**: 2.2/2.3におけるインライン折り返しのDOMジオメトリ検証。
 - **`node tests/practice22-qa.cjs`**: 2.2限定のQ/A役割アイコン、人物角丸表示、Ex1〜Ex3およびD1〜D5の話者強調検証。
+- **`node tests/copy22.cjs`**: 2.2 Drill 1〜4のCopyボタン・出力見出し・対象範囲とクリップボード動作の検証。
 - **`node tests/practice22-umbrellas.cjs`**: 2.2 D5傘比較課題のモデル、指示語／形式誤答判定、所有対象同期、録音排他と保持。
 - **`node tests/practice23-cities.cjs`**: 2.3街課題（Ex1、D1人物/持ち物所在、D2 Country/Time/Cities、D3 Day、D4 English cues）の全モデル、話者色交換、短答／全文判定、録音保持。
+- **`node tests/copy23.cjs`**: 2.3 Drill 1〜3のCopy対象、日付付き見出し、Copied表示・復帰、クリップボード失敗時の動作。
 - **`node tests/speaker-guide.cjs`**: 練習2の全Exampleにおける話者案内（WhoからA/Bへの変更、Playing時点滅、復帰）の検証。
 - **`node tests/lesson2-speaker-pulse.cjs`**: 練習2の人物名赤点滅、外枠強調、reduced-motion対応の検証。
 - **`node tests/lesson2-cue-spacing.cjs`**: 練習2の全セット・表記における余計な空白文字の検出。
 
 #### Practice 7.1 / 7.2 / 7.3
 - **`node tests/practice71-answer-selection.cjs`**（`npm run test:p71`）: 7.1 Drill 2のYes/No回答選択における局所DOM更新（churnなし）、状態保持、With漢字／Hiragana切替時の維持を検証。
+- **`node tests/copy71.cjs`**: 7.1のメインDrill／Q&A別Copy出力、正誤マーカー、ボタン状態、クリップボード失敗時の動作。
 - **`node tests/copy72.cjs`**: 7.2のCopy機能・録音制御の検証。
 - **`node tests/preview73.cjs`**: 7.3の130%表示、文法強調（「の」「なんですか」）の検証。
 
@@ -266,6 +272,7 @@ node tests/relay-zero-gap.cjs
 - **`node tests/practice81-final.cjs`**: 8.1 確定タイトル／説明、問題順／保存ID、L8漢字、Beyond照合、開閉状態保持の総合検証。
 - **`node tests/practice81-timing.cjs`**: 仮想時計による録音タイミング・エラーリカバリ検証（※録音タイムアウト時間に関する詳細は第4節を参照）。
 - **`node tests/practice81-activity-select.cjs`**: 8.1 ピッカー操作と録音・選択解除の検証。
+- **`node tests/copy81.cjs`**: 8.1 Drill 1〜5のCopyボタン配置・有効化、コピー本文、Copied表示・復帰、クリップボード失敗時の動作。
 - **`node tests/practice82.cjs`**: 8.2 全モデル、3文体/2表記/3ヒント、否定形、短答、0秒リレー、録音保持の検証。
 - **`node tests/practice82-example-layout.cjs`**: 8.2 Ex1〜Ex4の配置、英語右端整列、非クリップ検証（`P82_LAYOUT_BASELINE` で比較可能）。
 - **`node tests/copy82.cjs` / `node tests/copy83.cjs`**: 8.2 / 8.3 のCopy機能の検証。
