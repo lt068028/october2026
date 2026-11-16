@@ -554,6 +554,29 @@ function initGermanDrill() {
         return el;
     }
 
+    function createExampleArrowSvg() {
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.createElementNS(NS, "svg");
+        svg.setAttribute("width", "28");
+        svg.setAttribute("height", "28");
+        svg.setAttribute("viewBox", "0 0 28 28");
+        svg.setAttribute("fill", "#F28C28");
+        svg.setAttribute("stroke", "#F28C28");
+        svg.setAttribute("stroke-width", "1");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.setAttribute("aria-hidden", "true");
+        svg.style.display = "inline-block";
+        svg.style.verticalAlign = "middle";
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("d", "M15.7048 4.28868C15.312 3.9005 14.6788 3.90428 14.2906 4.29713C13.9025 4.68998 13.9062 5.32313 14.2991 5.71132L21.6753 13H4C3.44772 13 3 13.4477 3 14C3 14.5523 3.44772 15 4 15H21.673L14.2991 22.2864C13.9062 22.6746 13.9025 23.3078 14.2906 23.7006C14.6788 24.0935 15.312 24.0972 15.7048 23.7091L24.6318 14.888C25.127 14.3987 25.127 13.5991 24.6318 13.1097L15.7048 4.28868Z");
+        path.setAttribute("fill", "#F28C28");
+        path.setAttribute("stroke", "#F28C28");
+        path.setAttribute("stroke-width", "1");
+        path.setAttribute("stroke-linejoin", "round");
+        svg.append(path);
+        return svg;
+    }
+
     function button(label, tip, click) {
         const hasTip = Boolean(tip);
         const b = node("button", "example-button" + (hasTip ? " custom-tip-wrap" : ""));
@@ -1705,7 +1728,8 @@ function initGermanDrill() {
             exCueTd.append(exCueSpan);
 
             // Arrow
-            const exArrowTd = node("td", "example-arrow-cell", "👉️");
+            const exArrowTd = node("td", "example-arrow-cell");
+            exArrowTd.append(createExampleArrowSvg());
             exArrowTd.style.width = "28px";
             exArrowTd.style.textAlign = "center";
 

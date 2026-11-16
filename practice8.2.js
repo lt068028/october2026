@@ -760,6 +760,30 @@ document.addEventListener('click',event=>{
  if(host&&!wasOpen){host.classList.add('p82-translation-open');window.DrillTooltips?.position(host);}
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));if(document.activeElement?.matches('.p82-concept-english,.p82-model-translation'))document.activeElement.blur();}});
+
+function createExampleArrowSvg(){
+ const NS='http://www.w3.org/2000/svg';
+ const svg=document.createElementNS(NS,'svg');
+ svg.setAttribute('width','28');
+ svg.setAttribute('height','28');
+ svg.setAttribute('viewBox','0 0 28 28');
+ svg.setAttribute('fill','#F28C28');
+ svg.setAttribute('stroke','#F28C28');
+ svg.setAttribute('stroke-width','1');
+ svg.setAttribute('stroke-linejoin','round');
+ svg.setAttribute('aria-hidden','true');
+ svg.style.display='inline-block';
+ svg.style.verticalAlign='middle';
+ const path=document.createElementNS(NS,'path');
+ path.setAttribute('d','M15.7048 4.28868C15.312 3.9005 14.6788 3.90428 14.2906 4.29713C13.9025 4.68998 13.9062 5.32313 14.2991 5.71132L21.6753 13H4C3.44772 13 3 13.4477 3 14C3 14.5523 3.44772 15 4 15H21.673L14.2991 22.2864C13.9062 22.6746 13.9025 23.3078 14.2906 23.7006C14.6788 24.0935 15.312 24.0972 15.7048 23.7091L24.6318 14.888C25.127 14.3987 25.127 13.5991 24.6318 13.1097L15.7048 4.28868Z');
+ path.setAttribute('fill','#F28C28');
+ path.setAttribute('stroke','#F28C28');
+ path.setAttribute('stroke-width','1');
+ path.setAttribute('stroke-linejoin','round');
+ svg.append(path);
+ return svg;
+}
+
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
@@ -784,7 +808,10 @@ function addExample(root,si){
   }
   const cue=node('span','p81-example-cue');
   cue.innerHTML=r.intro?word(r.pronoun)+'/'+word(r.verb):cues(r);
-  const arrow=node('span','p81-arrow',r.mode==='reply'?'':'👉️');
+  const arrow=node('span','p81-arrow');
+  if(r.mode!=='reply'){
+   arrow.append(createExampleArrowSvg());
+  }
   const iconSpan=node('span','ex-audio-icon');
   if(window.FluentIcons){iconSpan.append(window.FluentIcons.create('speaker2',20));}
   const frag=document.createDocumentFragment();
