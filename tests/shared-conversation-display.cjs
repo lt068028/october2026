@@ -21,7 +21,12 @@ for(const name of ['practice1.1','practice1.2','practice2.1','practice2.2','prac
   await p.locator('#scriptModeControl [data-value="kanji"]').click();
   eq((await p.locator('#drill2Container .info-panel-desc').textContent()).includes('+ 専攻.'),true,'major instruction follows Kanji');
  }
- if(name==='practice8.1')eq(await p.locator('#drill2 .p81-card .conversation-role-circle').count(),8,'all D2 roles retain icon containers');
+ if(name==='practice8.1'){
+  eq(await p.locator('#drill2 .p81-card .conversation-role-circle[aria-label="Question"]').count(),4,'all four D2 questions retain role icons');
+  eq(await p.locator('#drill2 .p81-card .conversation-role-circle[aria-label="Answer"]').count(),0,'Yes/No response rows do not duplicate the role icon');
+  eq(await p.locator('#drill2 .p81-card .answer-choice .yn-answer-icon').count(),8,'all four D2 responses retain both Yes/No icons');
+  eq(await p.locator('#drill2 .p81-card .answer-choice').evaluateAll(es=>es.every(e=>['Affirmative response','Negative response'].includes(e.getAttribute('aria-label')))),true,'Yes/No choices remain accessible');
+ }
  if(name==='practice2.1'){
   for(const width of [600,1440]){
    await p.setViewportSize({width,height:1100});await p.evaluate(()=>document.fonts.ready);await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(r)))));
