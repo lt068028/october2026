@@ -5419,18 +5419,9 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     color: #d93025;
     fill: currentColor;
 }
-.practice82-page .p82-autostop-indicator {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.4;
-    color: var(--text-primary, #222222);
-    background-color: var(--bg-secondary, #f4f6f8);
-    border: 1px solid var(--border-color, #d0d7de);
-    border-radius: 6px;
-    white-space: nowrap;
+.practice82-page .drill-record-btn.p82-autostop-open > .custom-tip-box {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Practice 8.2 & Deutsch 1.1: 録音結果エリアの共通レイアウト（外側Grid + 内側Flex、他ページ隔離） */
