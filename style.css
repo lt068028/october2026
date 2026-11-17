@@ -5419,3 +5419,16 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     color: #d93025;
     fill: currentColor;
 }
+.practice82-page .p82-autostop-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-primary, #222222);
+    background-color: var(--bg-secondary, #f4f6f8);
+    border: 1px solid var(--border-color, #d0d7de);
+    border-radius: 6px;
+    white-space: nowrap;
+}

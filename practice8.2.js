@@ -1069,7 +1069,10 @@ function sync() {
         }
         const isCurrentRecording = session?.key === key;
         const canStop = isCurrentRecording && session.manual && !session.stopping;
+        const actions = v.rec.parentElement;
+        const existingIndicator = actions?.querySelector('.p82-autostop-indicator');
         if (canStop) {
+            existingIndicator?.remove();
             v.rec.disabled = false;
             v.rec.classList.add('stop-btn-active');
             v.rec.classList.remove('custom-tip-wrap');
@@ -1078,14 +1081,17 @@ function sync() {
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled')); }
         } else {
             v.rec.classList.remove('stop-btn-active');
+            v.rec.classList.remove('custom-tip-wrap');
+            v.rec.removeAttribute('title');
             v.rec.setAttribute('aria-label', '音声を録音する');
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('mic', 20)); }
-            v.rec.removeAttribute('title');
             if (isCurrentRecording && !session.manual) {
-                v.rec.classList.add('custom-tip-wrap');
-                v.rec.append(node('span', 'custom-tip-box', 'Autostop: ON'));
+                if (!existingIndicator && actions) {
+                    const ind = node('span', 'p82-autostop-indicator', 'Autostop: ON');
+                    v.rec.after(ind);
+                }
             } else {
-                v.rec.classList.remove('custom-tip-wrap');
+                existingIndicator?.remove();
             }
             v.rec.disabled = Boolean(recBusy || exPlaying || drPlaying || v.r.pending);
         }
