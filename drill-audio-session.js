@@ -148,17 +148,19 @@ window.DrillAudio = (() => {
             });
         }
         cancelSpeech();
-        // Native cancellation can outlive cancel(); never record the old model.
-        const deadline = performance.now() + 2000;
-        while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
-            if (leaving || request !== requestGeneration) {
-                throw new DOMException('Recording cancelled', 'AbortError');
+        if (!options?.skipSpeechWait) {
+            // Native cancellation can outlive cancel(); never record the old model.
+            const deadline = performance.now() + 2000;
+            while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
+                if (leaving || request !== requestGeneration) {
+                    throw new DOMException('Recording cancelled', 'AbortError');
+                }
+                if (performance.now() >= deadline) {
+                    cancelSpeech();
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 25));
             }
-            if (performance.now() >= deadline) {
-                cancelSpeech();
-                break;
-            }
-            await new Promise(resolve => setTimeout(resolve, 25));
         }
         if (leaving || request !== requestGeneration) {
             throw new DOMException('Recording cancelled', 'AbortError');

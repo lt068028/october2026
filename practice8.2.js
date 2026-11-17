@@ -261,8 +261,27 @@ function button(text, fn, tip = '') {
 let activeExButton = null;
 let stoppedExButton = null;
 let stoppedExTime = 0;
+let playbackGen = 0;
+let relayKey = null;
+const stoppedDrillButtons = new Set();
+let stoppedDrillTime = 0;
+
+function restoreDrillButton(b) {
+    if (!b) return;
+    b.classList.remove('is-playing');
+    if (b._contents) {
+        b.replaceChildren(...b._contents);
+        delete b._contents;
+    }
+    if (b._originalAriaLabel !== undefined) {
+        if (b._originalAriaLabel === null) b.removeAttribute('aria-label');
+        else b.setAttribute('aria-label', b._originalAriaLabel);
+        delete b._originalAriaLabel;
+    }
+}
 
 function stopPlayback(isNaturalFinish = false) {
+    playbackGen++;
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
     if (utterance) {
@@ -305,21 +324,32 @@ function stopPlayback(isNaturalFinish = false) {
         activeExButton = null;
     }
 
+    if (relayKey) {
+        const v = views.get(relayKey);
+        const recPlay = v?.result?.querySelector('.play-recording-btn');
+        if (!isNaturalFinish) {
+            stoppedDrillButtons.clear();
+            if (v?.listen) stoppedDrillButtons.add(v.listen);
+            if (recPlay) stoppedDrillButtons.add(recPlay);
+            stoppedDrillTime = performance.now();
+        }
+        restoreDrillButton(v?.listen);
+        restoreDrillButton(recPlay);
+        relayKey = null;
+    }
+
     if (playButton) {
-        playButton.disabled = false;
-        if (playButton._contents) {
-            playButton.replaceChildren(...playButton._contents);
+        if (!isNaturalFinish) {
+            stoppedDrillButtons.clear();
+            stoppedDrillButtons.add(playButton);
+            stoppedDrillTime = performance.now();
         }
-        if (playButton._originalAriaLabel !== undefined) {
-            if (playButton._originalAriaLabel === null) playButton.removeAttribute('aria-label');
-            else playButton.setAttribute('aria-label', playButton._originalAriaLabel);
-            delete playButton._originalAriaLabel;
-        }
-        playButton.classList.remove('is-playing');
+        restoreDrillButton(playButton);
         playButton = null;
     }
 
     utterance = null;
+    sync();
 }
 
 function markExPlaying(b) {
@@ -339,6 +369,28 @@ function markExPlaying(b) {
         b.setAttribute('aria-label', '再生を停止');
     }
     b.disabled = false;
+    sync();
+}
+
+function setDrillStopIcon(b) {
+    if (!b || b.classList.contains('is-playing')) return;
+    b._contents = Array.from(b.childNodes);
+    b.classList.add('is-playing');
+    b.disabled = false;
+    b._originalAriaLabel = b.getAttribute('aria-label');
+    b.setAttribute('aria-label', '再生を停止');
+    if (window.FluentIcons) {
+        b.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled'));
+    }
+}
+
+function markRelayPlaying(key) {
+    relayKey = key;
+    const v = views.get(key);
+    const recPlay = v?.result?.querySelector('.play-recording-btn');
+    setDrillStopIcon(v?.listen);
+    setDrillStopIcon(recPlay);
+    sync();
 }
 
 function markPlaying(b) {
@@ -349,20 +401,16 @@ function markPlaying(b) {
     }
 
     playButton = b;
-    b._contents = Array.from(b.childNodes);
     if (b.classList.contains('play-recording-btn') || b.classList.contains('drill-listen-btn')) {
-        b.classList.add('is-playing');
-        b.disabled = false;
-        b._originalAriaLabel = b.getAttribute('aria-label');
-        b.setAttribute('aria-label', '再生を停止');
-        if (window.FluentIcons) {
-            b.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled'));
-        }
+        setDrillStopIcon(b);
+        sync();
         return;
     }
 
+    b._contents = Array.from(b.childNodes);
     b.disabled = true;
     b.textContent = 'Playing...';
+    sync();
 }
 
 function speechText(text) { return text.replace(/^ううん、/,'ううんん、').replace(/[\(（]を[\)）]/g,''); }
@@ -569,7 +617,17 @@ if (window.speechSynthesis) {
 }
 
 function speak(text, b, done, relay = false) {
-    if (!relay) stopPlayback();
+    if (!relay) {
+        if (b && stoppedDrillButtons.has(b) && (performance.now() - stoppedDrillTime) < 150) {
+            stoppedDrillButtons.clear();
+            return;
+        }
+        if (playButton === b && b) {
+            stopPlayback();
+            return;
+        }
+        stopPlayback();
+    }
 
     if (!window.speechSynthesis) {
         if (done) done();
@@ -589,11 +647,12 @@ function speak(text, b, done, relay = false) {
         u.voice = preferredVoice81;
     }
 
-    markPlaying(b);
+    const gen = playbackGen;
+    if (!relay) markPlaying(b);
     utterance = u;
 
     const finish = () => {
-        if (utterance !== u) return;
+        if (gen !== playbackGen || utterance !== u) return;
         if (relay) utterance = null;
         else stopPlayback(true);
         if (done) done();
@@ -609,6 +668,11 @@ function playRecording(key, b) {
 
     if (!value?.url || session || preparing) return;
 
+    if (b && stoppedDrillButtons.has(b) && (performance.now() - stoppedDrillTime) < 150) {
+        stoppedDrillButtons.clear();
+        return;
+    }
+
     if (playButton === b) {
         stopPlayback();
         return;
@@ -616,14 +680,21 @@ function playRecording(key, b) {
 
     stopPlayback();
 
+    const gen = playbackGen;
     playingAudio = new Audio(value.url);
     playingAudio.playbackRate = 1;
 
     markPlaying(b);
 
-    playingAudio.onended = stopPlayback;
-    playingAudio.onerror = stopPlayback;
-    DrillAudio.play(playingAudio, stopPlayback);
+    const onDone = () => {
+        if (gen !== playbackGen) return;
+        stopPlayback(true);
+    };
+    playingAudio.onended = onDone;
+    playingAudio.onerror = onDone;
+    DrillAudio.play(playingAudio, () => {
+        if (gen === playbackGen) stopPlayback();
+    });
 }
 
 function diffTokens(text) {
@@ -976,22 +1047,59 @@ function measureCues(){
  measureExampleColumns();
  document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
 function sync() {
-    const busy=Boolean(session||preparing);
-    document.querySelectorAll('#drill1Container button,#drill5Container button,#drill1Container select,.compact-settings button,.compact-settings input,.drill-cue-button').forEach(e=>e.disabled=busy);
-    views.forEach(v=>{
-        if(v.r.pending){for(const b of [v.listen,v.rec]){b.disabled=true;b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':'Choose an expression first.';}}
-        const isCurrentRecording=session?.key===keyFor(v.r);
-        const canStop=isCurrentRecording&&session.manual&&!session.stopping;
-        if(canStop){
-            v.rec.disabled=false;
+    const recBusy = Boolean(session || preparing);
+    const exPlaying = Boolean(activeExButton);
+    const drPlaying = Boolean(playButton || relayKey);
+    document.querySelectorAll('#drill1Container select,.compact-settings button,.compact-settings input,.drill-cue-button,#drill1Container .answer-choice').forEach(e => e.disabled = recBusy);
+    document.querySelectorAll('.ex-audio-btn').forEach(b => {
+        if (recBusy || drPlaying) {
+            b.disabled = true;
+        } else if (exPlaying) {
+            b.disabled = (b !== activeExButton);
+        } else {
+            b.disabled = false;
+        }
+    });
+    views.forEach((v, key) => {
+        if (v.r.pending) {
+            for (const b of [v.listen, v.rec]) {
+                b.disabled = true;
+                b.dataset.selectionHelp = v.r.qa === 'response' ? 'Choose 🙆 or 🙅 first.' : v.r.comparison ? 'Choose an adjective that matches the label.' : 'Choose an expression first.';
+            }
+        }
+        const isCurrentRecording = session?.key === key;
+        const canStop = isCurrentRecording && session.manual && !session.stopping;
+        if (canStop) {
+            v.rec.disabled = false;
             v.rec.classList.add('stop-btn-active');
-            v.rec.setAttribute('aria-label','録音を停止');
-            if(window.FluentIcons){v.rec.replaceChildren(window.FluentIcons.create('stop',20,'','filled'));}
-        }else{
+            v.rec.setAttribute('aria-label', '録音を停止');
+            if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled')); }
+        } else {
             v.rec.classList.remove('stop-btn-active');
-            v.rec.setAttribute('aria-label','音声を録音する');
-            if(window.FluentIcons){v.rec.replaceChildren(window.FluentIcons.create('mic',20));}
-            if(session||preparing){v.rec.disabled=true;}else if(!v.r.pending){v.rec.disabled=false;}
+            v.rec.setAttribute('aria-label', '音声を録音する');
+            if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('mic', 20)); }
+            v.rec.disabled = Boolean(recBusy || exPlaying || v.r.pending);
+        }
+
+        if (!v.r.pending) {
+            if (recBusy || exPlaying) {
+                v.listen.disabled = true;
+            } else if (drPlaying) {
+                v.listen.disabled = !(relayKey === key || playButton === v.listen);
+            } else {
+                v.listen.disabled = false;
+            }
+        }
+
+        const recPlay = v.result?.querySelector('.play-recording-btn');
+        if (recPlay) {
+            if (recBusy || exPlaying) {
+                recPlay.disabled = true;
+            } else if (drPlaying) {
+                recPlay.disabled = !(relayKey === key || playButton === recPlay);
+            } else {
+                recPlay.disabled = false;
+            }
         }
     });
 }
@@ -1025,7 +1133,8 @@ async function record(key, r) {
 
     try {
         stream = await DrillAudio.getUserMedia({
-            audio: true
+            audio: true,
+            skipSpeechWait: true
         });
     } catch (e) {
         preparing = false;
@@ -1145,10 +1254,11 @@ async function record(key, r) {
             s.raw.trim()
         ) {
             const view = views.get(key);
+            markRelayPlaying(key);
             DrillAudio.playRelay({
                 recordButton: view.rec,
                 result: view.result,
-                speak: done => speak(r.text, null, done, true),
+                speak: done => speak(r.text, null, () => { if (relayKey === key) done(); }, true),
                 url: () => saved.get(key)?.url
             });
         }

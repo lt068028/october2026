@@ -153,5 +153,36 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     v.correction.hidden = true;
   });
 
+  // 8. Ex <-> Dr mutual exclusion & Drill single playback / stop
+  const exBtn = p.locator('.ex-audio-btn').first();
+  const drListen = p.locator('#drill1 .drill-listen-btn').first();
+  const drRec = p.locator('#drill1 .drill-record-btn').first();
+  await exBtn.click();
+  eq(await exBtn.evaluate(b => b.classList.contains('is-playing') && !b.disabled), true, 'Ex audio is playing and stoppable');
+  eq(await drListen.isDisabled(), true, 'Dr listen disabled during Ex playback');
+  eq(await drRec.isDisabled(), true, 'Dr rec disabled during Ex playback');
+  await exBtn.click();
+  eq(await exBtn.evaluate(b => !b.classList.contains('is-playing')), true, 'Ex audio stops on re-click');
+  eq(await drListen.isDisabled(), false, 'Dr listen re-enabled after Ex stop');
+  eq(await drRec.isDisabled(), false, 'Dr rec re-enabled after Ex stop');
+
+  await drListen.click();
+  eq(await drListen.evaluate(b => b.classList.contains('is-playing') && !b.disabled), true, 'Dr listen shows Stop and is enabled');
+  eq(await exBtn.isDisabled(), true, 'Ex audio disabled during Dr listen');
+  eq(await p.locator('#drill1 .drill-listen-btn').nth(1).isDisabled(), true, 'Other Dr listen disabled during Dr listen');
+  await drListen.click();
+  eq(await drListen.evaluate(b => !b.classList.contains('is-playing')), true, 'Dr listen stops on re-click');
+  eq(await exBtn.isDisabled(), false, 'Ex audio re-enabled after Dr listen stop');
+
+  // 9. Data preservation on microphone failure (getUserMedia deny)
+  await p.evaluate(() => {
+    audit82.saved.set('any-1-a:fixed', { url: 'blob:test-keep', raw: 'kept raw', ok: true });
+    t.deny = true;
+  });
+  await drRec.click();
+  await p.waitForTimeout(50);
+  eq(await p.evaluate(() => audit82.saved.get('any-1-a:fixed')?.raw), 'kept raw', 'Saved data preserved on mic error');
+  await p.evaluate(() => { t.deny = false; });
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

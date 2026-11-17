@@ -5404,3 +5404,18 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     grid-row: 2;
     text-align: right;
 }
+
+/* Practice 8.2 Dr: Stopアイコンだけを赤くし、ボタン全体の背景・枠線は通常色にする */
+.practice82-page .drill-record-btn.stop-btn-active,
+.practice82-page .drill-listen-btn.is-playing,
+.practice82-page .play-recording-btn.is-playing {
+    background-color: var(--button-bg, #ffffff) !important;
+    border-color: var(--border-color, #cccccc) !important;
+    color: #d93025 !important;
+}
+.practice82-page .drill-record-btn.stop-btn-active svg,
+.practice82-page .drill-listen-btn.is-playing svg,
+.practice82-page .play-recording-btn.is-playing svg {
+    color: #d93025;
+    fill: currentColor;
+}
