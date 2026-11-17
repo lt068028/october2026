@@ -5221,9 +5221,29 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 .practice82-page .ex-audio-icon .fluent-icon-stop,
 .uebung11-page .ex-audio-icon .fluent-icon-stop,
-.practice82-page .play-recording-btn .fluent-icon-stop,
+.practice82-page :is(.play-recording-btn, .drill-listen-btn, .drill-record-btn) .fluent-icon-stop,
 .uebung11-page .play-recording-btn .fluent-icon-stop {
     color: var(--error-text, #be123c);
+}
+
+/* Practice 8.2 音声ボタン4種の中央配置 (既存padding・寸法を維持) */
+.practice82-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.practice82-page .ex-audio-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.practice82-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) svg {
+    flex-shrink: 0;
 }
 
 .practice82-page .play-recording-btn svg,
