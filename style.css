@@ -5432,3 +5432,40 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     border-radius: 6px;
     white-space: nowrap;
 }
+
+/* Practice 8.2 & Deutsch 1.1: 録音結果エリアの共通レイアウト（外側Grid + 内側Flex、他ページ隔離） */
+:is(.practice82-page, .uebung11-page) .recording-controls {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 10px;
+    width: 100%;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-actions {
+    grid-column: 1;
+    display: inline-flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result {
+    grid-column: 2;
+    min-width: 0;
+    width: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 8px;
+    margin: 0;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .correction-box {
+    margin-top: 0;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}

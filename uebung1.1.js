@@ -1858,13 +1858,12 @@ function initGermanDrill() {
 
                 const wrap = node("span", "recording-result");
                 const result = node("span", "result-text");
-                wrap.append(result);
-                layout.append(actions, wrap);
-
                 const correction = node("div", "correction-box");
                 correction.hidden = true;
+                wrap.append(result, correction);
+                layout.append(actions, wrap);
 
-                ctrlTd.append(layout, correction);
+                ctrlTd.append(layout);
                 tr.append(numTd, cueTd, ctrlTd);
                 body.append(tr);
                 table.append(body);
