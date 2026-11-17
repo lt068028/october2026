@@ -5258,6 +5258,12 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     height: 20px;
 }
 
+.practice82-page .drill-record-btn:not(.stop-btn-active) svg {
+    width: 23px;
+    height: 23px;
+    margin: -1.5px;
+}
+
 /* Practice 2.1 limited Preview: one right-aligned inline flow, no reserved message column. */
 /* Practice 2.1 approved E feedback: Fluent fire and label use the same orange, without a badge. */
 .p21-keep-going-preview { --p21-keep-color: #B47732; }
