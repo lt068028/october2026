@@ -1080,15 +1080,14 @@ function sync() {
             v.rec.classList.remove('stop-btn-active');
             v.rec.setAttribute('aria-label', '音声を録音する');
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('mic', 20)); }
+            v.rec.removeAttribute('title');
             if (isCurrentRecording && !session.manual) {
                 v.rec.classList.add('custom-tip-wrap');
-                v.rec.setAttribute('title', 'Autostop: ON');
                 v.rec.append(node('span', 'custom-tip-box', 'Autostop: ON'));
             } else {
                 v.rec.classList.remove('custom-tip-wrap');
-                v.rec.removeAttribute('title');
             }
-            v.rec.disabled = Boolean(recBusy || exPlaying || v.r.pending);
+            v.rec.disabled = Boolean(recBusy || exPlaying || drPlaying || v.r.pending);
         }
 
         if (!v.r.pending) {
