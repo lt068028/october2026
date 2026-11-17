@@ -1072,12 +1072,22 @@ function sync() {
         if (canStop) {
             v.rec.disabled = false;
             v.rec.classList.add('stop-btn-active');
+            v.rec.classList.remove('custom-tip-wrap');
+            v.rec.removeAttribute('title');
             v.rec.setAttribute('aria-label', '録音を停止');
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled')); }
         } else {
             v.rec.classList.remove('stop-btn-active');
             v.rec.setAttribute('aria-label', '音声を録音する');
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('mic', 20)); }
+            if (isCurrentRecording && !session.manual) {
+                v.rec.classList.add('custom-tip-wrap');
+                v.rec.setAttribute('title', 'Autostop: ON');
+                v.rec.append(node('span', 'custom-tip-box', 'Autostop: ON'));
+            } else {
+                v.rec.classList.remove('custom-tip-wrap');
+                v.rec.removeAttribute('title');
+            }
             v.rec.disabled = Boolean(recBusy || exPlaying || v.r.pending);
         }
 
@@ -1254,13 +1264,14 @@ async function record(key, r) {
             s.raw.trim()
         ) {
             const view = views.get(key);
-            markRelayPlaying(key);
             DrillAudio.playRelay({
                 recordButton: view.rec,
                 result: view.result,
                 speak: done => speak(r.text, null, () => { if (relayKey === key) done(); }, true),
-                url: () => saved.get(key)?.url
+                url: () => saved.get(key)?.url,
+                keepButtons: true
             });
+            markRelayPlaying(key);
         }
     };
 

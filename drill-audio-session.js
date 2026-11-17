@@ -413,7 +413,7 @@ window.DrillAudio = (() => {
         },
         // Ordinary grammar rows: keep both labels throughout a single relay.
         // The toggle is sampled by the recorder, never by this running sequence.
-        playRelay({ recordButton, result, speak, url }) {
+        playRelay({ recordButton, result, speak, url, keepButtons = false }) {
             adapter.stop();
             let row = recordButton.parentElement;
             while (row && ![...row.querySelectorAll('button')].some(
@@ -423,9 +423,11 @@ window.DrillAudio = (() => {
                 button => button.dataset.audioRole === 'listen' || button.textContent.trim().startsWith('🔊きく')
             );
             const own = result.querySelector('.play-recording-btn, .recorded-play-button');
-            const current = { buttons: [listen, own].filter(Boolean).map(button => ({
-                button, nodes: [...button.childNodes], disabled: button.disabled
-            })) };
+            const current = {
+                buttons: keepButtons ? [] : [listen, own].filter(Boolean).map(button => ({
+                    button, nodes: [...button.childNodes], disabled: button.disabled
+                }))
+            };
             relay = current;
             current.buttons.forEach(({ button }) => {
                 button.textContent = 'Playing...';
