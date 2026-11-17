@@ -191,7 +191,9 @@
         rows.forEach(r=>['label','cue','arrow','audio','model'].forEach(k=>{if(r[k])r[k].dataset.contentAdaptiveCell=k;}));
         const style=getComputedStyle(root),width=root.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap)||4;
         const maximum=(key,fn=intrinsic)=>Math.max(0,...rows.map(r=>r[key]?fn(r[key]):0));
-        const labelWidth=maximum('label'),cueWidth=maximum('cue'),cueMin=maximum('cue',modelMinimum),arrowWidth=maximum('arrow'),audioWidth=maximum('audio');
+        const labelWidth=maximum('label'),cueWidth=maximum('cue'),cueMin=maximum('cue',modelMinimum),arrowWidth=maximum('arrow');
+        const isPractice82=Boolean(root.closest('.practice82-page')||document.body.classList.contains('practice82-page'));
+        const audioWidth=isPractice82?Math.max(maximum('audio'),46.8):maximum('audio');
         const modelWidth=maximum('model'),modelMin=maximum('model',modelMinimum);
         const categories=entries.filter(e=>e.category).map(e=>e.category),categoryWidth=Math.max(0,...categories.map(e=>intrinsic(e,'category-inline')));
         let hasLabel=labelWidth>0,hasArrow=arrowWidth>0,hasCategory=categoryWidth>0;

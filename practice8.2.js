@@ -295,7 +295,7 @@ function stopPlayback(isNaturalFinish = false) {
         activeExButton.classList.remove('is-playing');
         const iconWrap = activeExButton.querySelector('.ex-audio-icon');
         if (iconWrap && window.FluentIcons) {
-            iconWrap.replaceChildren(window.FluentIcons.create('playCircle', 20, '', 'filled'));
+            iconWrap.replaceChildren(window.FluentIcons.create('speaker2', 20));
         }
         if (activeExButton._originalAriaLabel !== undefined) {
             if (activeExButton._originalAriaLabel === null) activeExButton.removeAttribute('aria-label');
@@ -840,7 +840,7 @@ function addExample(root,si){
    arrow.append(createExampleArrowSvg());
   }
   const iconSpan=node('span','ex-audio-icon');
-  if(window.FluentIcons){iconSpan.append(window.FluentIcons.create('playCircle',20,'','filled'));}
+  if(window.FluentIcons){iconSpan.append(window.FluentIcons.create('speaker2',20));}
   const frag=document.createDocumentFragment();
   frag.append(iconSpan);
   if(r.answer&&window.AnswerIcons){
@@ -944,7 +944,7 @@ function renderEnglishCuePanel(){
 }
 function measureExampleColumns(){
  // Measure uncropped content, not the result of the previous layout pass.
- function intrinsic(element){const copy=element.cloneNode(true);copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'inline-block',width:'max-content',minWidth:'0',maxWidth:'none',whiteSpace:'nowrap',transform:'none'});element.parentElement.append(copy);const width=copy.getBoundingClientRect().width;copy.remove();return width;}
+ function intrinsic(element){const copy=element.cloneNode(true);copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());const isButton=element.matches('button'),comp=getComputedStyle(element);Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:isButton&&comp.display.includes('flex')?'inline-flex':'inline-block',alignItems:comp.alignItems,justifyContent:comp.justifyContent,padding:comp.padding,border:comp.border,boxSizing:comp.boxSizing,width:'max-content',minWidth:isButton?(comp.minWidth!=='0px'&&comp.minWidth!=='auto'?comp.minWidth:'46.8px'):'0',maxWidth:'none',whiteSpace:'nowrap',transform:'none'});element.parentElement.append(copy);let width=copy.getBoundingClientRect().width;if(isButton)width=Math.max(width,46.8);copy.remove();return width;}
  for(const [drillId,widthVar] of [['drill1','--p82-ex1-concept-width'],['drill2','--p82-ex2-concept-width']]){
   const intro=document.querySelector('#'+drillId+' .example-box');if(!intro)continue;
   const labels=[...intro.querySelectorAll('.p82-concept-label')];
@@ -956,7 +956,7 @@ function measureExampleColumns(){
   intro.style.setProperty(widthVar,natural+'px');intro.style.setProperty('--p82-concept-natural',natural+'px');
   const style=getComputedStyle(intro),available=intro.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap);
   const max=selector=>Math.max(...[...intro.querySelectorAll(selector)].map(e=>intrinsic(e)));
-  const cue=max('.p81-example-cue'),arrow=max('.p81-arrow'),button=max('.p81-example-row > button'),model=max('.p82-model-japanese');
+  const cue=max('.p81-example-cue'),arrow=max('.p81-arrow'),button=Math.max(max('.p81-example-row > button'),46.8),model=max('.p82-model-japanese');
   // Retain an ellipsis-sized, focusable English target before moving a model.
   const englishStyle=getComputedStyle(anchor.querySelector('.p82-concept-english'));
   const englishMinimum=parseFloat(englishStyle.fontSize)*1.5+['paddingLeft','paddingRight','borderLeftWidth','borderRightWidth'].reduce((sum,key)=>sum+parseFloat(englishStyle[key]),0);
