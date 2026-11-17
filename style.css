@@ -1142,6 +1142,9 @@ body {
     text-align: right;
     white-space: normal;
 }
+:is(.practice82-page, .uebung11-page) .recording-result > .correction-box:not([hidden]) {
+    display: block;
+}
 
 /* 赤い背景と枠はメッセージ部分だけ */
 .correction-box > span {
@@ -5419,9 +5422,18 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     color: #d93025;
     fill: currentColor;
 }
-.practice82-page .drill-record-btn.p82-autostop-open > .custom-tip-box {
+.practice82-page .p82-autostop-tip-host {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    cursor: default !important;
+}
+.practice82-page .p82-autostop-tip-host.p82-autostop-open > .custom-tip-box {
     visibility: visible;
     opacity: 1;
+}
+.practice82-page .p82-autostop-tip-host.p82-autostop-open .drill-record-btn {
+    pointer-events: none;
 }
 
 /* Practice 8.2 & Deutsch 1.1: 録音結果エリアの共通レイアウト（外側Grid + 内側Flex、他ページ隔離） */

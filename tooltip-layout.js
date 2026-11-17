@@ -1,6 +1,6 @@
 // Keep existing vocabulary and control explanations within the viewport.
 (() => {
-    const selector = '.tooltip-wrap, .custom-tip-wrap, .p21-image-hint';
+    const selector = '.tooltip-wrap, .custom-tip-wrap, .p21-image-hint, .p82-autostop-open';
     // Explain missing prerequisites, rather than repeating the Listen button label.
     function applyListenPolicy() {
         observer.disconnect();
@@ -44,14 +44,19 @@
         const tip = explicitTip || anchor.querySelector('.tooltip-tip, .custom-tip-box') || document.getElementById(anchor.dataset.portalTip || '');
         if (!tip) return;
         tip.dataset.viewportTip = '';
-        const rect = anchor.getBoundingClientRect();
+        const target = anchor.matches('.p82-autostop-open')
+            ? (anchor.querySelector('.drill-record-btn') || anchor)
+            : anchor;
+        const rect = target.getBoundingClientRect();
         const box = tip.getBoundingClientRect();
         const margin = 12;
         const left = Math.max(margin, Math.min(rect.left + (rect.width - box.width) / 2,
             window.innerWidth - box.width - margin));
         let top = rect.top - box.height - 8;
-        if (top < margin) top = rect.bottom + 8;
-        top = Math.max(margin, Math.min(top, window.innerHeight - box.height - margin));
+        if (!anchor.matches('.p82-autostop-open')) {
+            if (top < margin) top = rect.bottom + 8;
+            top = Math.max(margin, Math.min(top, window.innerHeight - box.height - margin));
+        }
         tip.style.setProperty('--tip-left', `${left}px`);
         tip.style.setProperty('--tip-top', `${top}px`);
     }
@@ -104,7 +109,7 @@
 
     function reposition() {
         document.querySelectorAll(selector).forEach(anchor => {
-            if (anchor.matches(':hover, :focus-visible, .tap-tip-open')) position(anchor);
+            if (anchor.matches(':hover, :focus-visible, .tap-tip-open, .p82-autostop-open')) position(anchor);
         });
     }
     window.addEventListener('resize', reposition);
