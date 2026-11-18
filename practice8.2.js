@@ -268,7 +268,7 @@ let stoppedDrillTime = 0;
 
 function restoreDrillButton(b) {
     if (!b) return;
-    b.classList.remove('is-playing');
+    b.classList.remove('is-playing', 'p82-autoplay-stop');
     if (b._contents) {
         b.replaceChildren(...b._contents);
         delete b._contents;
@@ -393,6 +393,11 @@ function markRelayPlaying(key) {
     const recPlay = v?.result?.querySelector('.play-recording-btn');
     setDrillStopIcon(v?.listen);
     setDrillStopIcon(recPlay);
+    for (const b of [v?.listen, recPlay]) {
+        if (!b) continue;
+        b.classList.add('custom-tip-wrap', 'p82-autoplay-stop');
+        b.append(node('span', 'custom-tip-box', 'Autoplay: ON'));
+    }
     sync();
 }
 
@@ -904,7 +909,7 @@ function addExample(root,si){
  ];
  else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
- samples.forEach(r=>{
+ samples.forEach((r, ri) => {
   const row=node('div','p81-example-row'),kind=node('span','example-label-title p81-kind');
   if(r.kind){
    const rawKind=(scriptMode==='kanji'?r.kind:displayKana(r.kind))+(r.qa?':':'');
@@ -940,7 +945,7 @@ function addExample(root,si){
     return;
    }
    speak(r.text,listen);
-  });
+  },(si===0&&ri===0)?'Listen to the example.':'');
   listen.classList.add('ex-audio-btn');
   listen.dataset.isExAudio='true';
   listen.dataset.audioRole='listen';
@@ -996,7 +1001,7 @@ function render(){
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
- const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(r.text,listen);});listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{if(session?.key===key){session.stop();return;}record(key,r);});rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(rec,r.mode==='question'||r.mode==='contrast'||r.mode==='wh');}const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),result=node('span','result-text'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;wrap.append(result,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,result,correction,feedback:feeling,autostopHost,autostopTip});showResult(key);
+ const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(r.text,listen);},(index===0&&ri===0)?'Listen to the model.':'');listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{if(session?.key===key){session.stop();return;}record(key,r);},(index===0&&ri===0)?'Record your answer.':'');if(index===0&&ri===0)rec.dataset.introTip='Record your answer.';rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){window.QuestionIndicator.attach(rec,r.mode==='question'||r.mode==='contrast'||r.mode==='wh');}const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),result=node('span','result-text'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;wrap.append(result,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,result,correction,feedback:feeling,autostopHost,autostopTip});showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
 }
 function renderEnglishCuePanel(){
@@ -1092,6 +1097,12 @@ function sync() {
             v.rec.removeAttribute('title');
             v.rec.setAttribute('aria-label', '音声を録音する');
             if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('mic', 23)); }
+            if (v.rec.dataset.introTip && !isCurrentRecording) {
+                v.rec.classList.add('custom-tip-wrap');
+                v.rec.append(node('span', 'custom-tip-box', v.rec.dataset.introTip));
+            } else {
+                v.rec.classList.remove('custom-tip-wrap');
+            }
             v.rec.disabled = Boolean(recBusy || exPlaying || drPlaying || v.r.pending);
         }
 
