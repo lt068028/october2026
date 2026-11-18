@@ -184,5 +184,62 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(await p.evaluate(() => audit82.saved.get('any-1-a:fixed')?.raw), 'kept raw', 'Saved data preserved on mic error');
   await p.evaluate(() => { t.deny = false; });
 
+  // 10. Drill 2 left question markers (8 rows), separation from Q/A roles, and removal of right .question-indicator
+  eq(await p.locator('.question-indicator').count(), 0, 'Practice 8.2 has 0 .question-indicator elements');
+  eq(await p.locator('#drill2 .p81-card tr').count(), 8, 'Drill 2 has 8 rows');
+  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, 'Drill 2 has 8 left question markers total');
+  eq(await p.locator('#drill2 .p81-card tr').evaluateAll(rows => rows.every(r => r.querySelectorAll('.p82-question-marker').length === 1)), true, 'Each Drill 2 row has exactly 1 left question marker');
+  eq(await p.locator('#drill1 .p82-question-marker, #drill3 .p82-question-marker, #drill4 .p82-question-marker').count(), 0, 'Drills 1, 3, 4 have 0 .p82-question-marker elements');
+  eq(await p.locator('#drill1 .conversation-role-circle').count(), 0, 'Drill 1 has 0 Q/A role icons');
+  eq(await p.locator('#drill2 .conversation-role, #drill2 .conversation-role-circle, #drill2 [aria-label="Question"], #drill2 [aria-label="Answer"]').count(), 0, 'Drill 2 has no Q/A role DOM attributes or role names');
+  eq(await p.locator('#drill3 .p81-card .conversation-role-circle[aria-label="Question"]').count(), 5, 'Drill 3 retains 5 Q role icons');
+  eq(await p.locator('#drill4 .p81-card .conversation-role-circle[aria-label="Question"]').count(), 3, 'Drill 4 retains 3 Q role icons');
+  eq(await p.locator('#drill4 .p81-card .conversation-role-circle[aria-label="Answer"]').count(), 3, 'Drill 4 retains 3 A role icons');
+
+  const markerComparison = await p.evaluate(() => {
+    const markerWrap = document.querySelector('#drill2 .p81-card .p82-question-marker');
+    const markerIcon = markerWrap?.querySelector('.p82-question-marker-icon');
+    const markerSvg = markerIcon?.querySelector('svg');
+    const markerPath = markerSvg?.querySelector('path')?.getAttribute('d');
+    const cueWords = markerWrap?.parentElement?.querySelector('.p81-cue-words');
+    const qaRoleWrap = document.querySelector('#drill3 .p81-card .conversation-role');
+    const qaRoleIcon = qaRoleWrap?.querySelector('.conversation-role-icon');
+    const qaRoleSvg = qaRoleIcon?.querySelector('svg');
+    const qaRolePath = qaRoleSvg?.querySelector('path')?.getAttribute('d');
+    const mRect = markerIcon.getBoundingClientRect();
+    const cRect = cueWords.getBoundingClientRect();
+    const qRect = qaRoleIcon.getBoundingClientRect();
+    const mStyle = getComputedStyle(markerWrap);
+    const qStyle = getComputedStyle(qaRoleWrap);
+    return {
+      ariaHidden: markerWrap.getAttribute('aria-hidden'),
+      samePath: Boolean(markerPath && markerPath === qaRolePath),
+      sameColor: getComputedStyle(markerSvg).color === getComputedStyle(qaRoleSvg).color,
+      sameMarginRight: mStyle.marginRight === qStyle.marginRight,
+      sameWidth: Math.abs(mRect.width - qRect.width) < 0.5,
+      sameHeight: Math.abs(mRect.height - qRect.height) < 0.5,
+      leftOfCue: mRect.right <= cRect.left + 1
+    };
+  });
+  eq(markerComparison, {
+    ariaHidden: 'true',
+    samePath: true,
+    sameColor: true,
+    sameMarginRight: true,
+    sameWidth: true,
+    sameHeight: true,
+    leftOfCue: true
+  }, 'Drill 2 question marker matches Chat Help Filled SVG, color, size, and left-of-cue placement');
+
+  for (const mode of ['hiragana', 'kanji']) {
+    await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();
+    eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, `Drill 2 retains 8 question markers in scriptMode=${mode}`);
+  }
+  await p.locator('.drill-cue-button').click();
+  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, 'Drill 2 retains 8 question markers in English cues mode');
+  eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), 'what / read', 'English cue text unaffected by question marker');
+  await p.locator('.drill-cue-button').click();
+  eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), '何を／読む', 'Japanese cue text unaffected by question marker');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

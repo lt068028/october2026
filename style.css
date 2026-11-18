@@ -5498,16 +5498,40 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     margin-right: 4px;
 }
 
-/* Practice 8.2: QuestionIndicator をキュー末尾 6px 間隔・1em 同一高さでインライン配置 */
-.practice82-page .p81-cue-words .question-indicator {
+/* Practice 8.2 Drill 2: 左側疑問文マーカー（Q/A役割とは独立、Chat Help Filled 図柄・左側配置基準を共有） */
+.practice82-page .prompt-label > .p82-question-marker {
     display: inline-flex;
-    align-items: center;
-    margin-left: 6px;
-    vertical-align: -0.125em;
-    line-height: 1;
+    align-items: baseline;
+    gap: 6px;
+    margin-right: 8px;
+    white-space: nowrap;
+    color: var(--text-primary);
+    font-weight: 700;
 }
-.practice82-page .p81-cue-words .question-indicator svg {
-    width: 1em;
-    height: 1em;
+.practice82-page .p82-question-marker-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    box-sizing: border-box;
+    width: calc(1.35em + 2px);
+    height: calc(1.35em + 2px);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: .85em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.practice82-page .p82-question-marker-icon::before {
+    content: '\200b';
+}
+.practice82-page .p82-question-marker-icon > svg {
+    position: absolute;
+    inset: 0;
     display: block;
+    width: 100%;
+    height: 100%;
+    color: var(--conversation-role-filled-color);
 }

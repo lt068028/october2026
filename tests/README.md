@@ -206,9 +206,9 @@ node tests/relay-zero-gap.cjs
   - **検証内容**: Microsoft Fluent アイコンパス、SVGレンダリング、アスペクト比、明暗テーマ色、排他ポリシー。
   - **実行場面**: 会話アイコンSVGや表示スタイルの変更時。
 - **`node tests/question-indicator.cjs`**
-  - **対象**: Practice 1.1, Practice 1.2
-  - **検証内容**: 疑問文インジケーター（Question Indicator）の構造・表示契約。
-  - **実行場面**: 1.1/1.2の疑問文マーク変更時。
+  - **対象**: Practice 1.1, 1.2, 2.1, 2.2, 2.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, Composition 1
+  - **検証内容**: 停止ボタン横の疑問文インジケーター（`QuestionIndicator`）の構造・表示数・非表示条件（Practice 1.1およびPractice 8.2では0個）の契約検証（Practice 8.2 Drill 2のキュー左側「疑問文マーカー」は `tests/practice82.cjs` で分担検証）。
+  - **実行場面**: `QuestionIndicator` の表示条件・構造変更時（GitHub Actions CI Group 4A に登録済み）。
 - **`node tests/settings-availability.cjs`**
   - **対象**: 全11ページ
   - **検証内容**: 設定絵文字（Script/Vocab/Speech Style等）の利用可否表示、明暗テーマ色、無効時の白黒表示制御。

@@ -21,7 +21,7 @@ Example 1は飲むを使い、何か（something）・何も＋否定（nothing�
 
 Example 1の左側の英語ラベルは `Unspecified`／`None`／`All-inclusive` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
 
-Drill 1はタイトルを `Drill 1: 何か — Affirmative Sentences`、説明文を `Place 何か naturally before the verb.` とし、時制選択を課題にせず平叙文4問を出す。平叙文であるため `QuestionIndicator` は表示しない（Drill 2〜4の計16個は維持）。各設問では動詞の前に「何か」を置く自然な複数語順（例：`授業で、何か、話します。` および `何か、授業で、話します。`）を許容回答候補（`r.refs`）として明示的に登録し、不自然な後置語順や旧疑問文は許容しない。
+Drill 1はタイトルを `Drill 1: 何か — Affirmative Sentences`、説明文を `Place 何か naturally before the verb.` とし、時制選択を課題にせず平叙文4問を出す。平叙文であるため疑問文マーカーやQ/A役割、`QuestionIndicator` は表示しない。各設問では動詞の前に「何か」を置く自然な複数語順（例：`授業で、何か、話します。` および `何か、授業で、話します。`）を許容回答候補（`r.refs`）として明示的に登録し、不自然な後置語順や旧疑問文は許容しない。
 
 | キュー | モデル |
 | --- | --- |
@@ -34,7 +34,7 @@ Drill 1はタイトルを `Drill 1: 何か — Affirmative Sentences`、説明�
 
 Example 2は「何を · Specific」と「何か · Unspecified」の質問を、見るで対比する。
 
-Drill 2は4問それぞれを「何を」と「何か」の2行で練習する。キューの漢字は既習範囲に合わせる。
+Drill 2は4問それぞれを「何を」と「何か」の2行（計8行）で練習する。キューの漢字は既習範囲に合わせる。Drill 2（8行）は回答のない質問形式比較であるためQ/A役割は付与せず、右側の `QuestionIndicator` も表示しない。代わりにキュー左側に `Chat Help 24 Filled` 図柄の疑問文マーカー（`.p82-question-marker`、`aria-hidden="true"`）を各行1個ずつ表示する（Drill 3・4は既存のQ/A役割表示を維持）。
 
 | 問 | 動詞 | 何をモデル | 何かモデル |
 | --- | --- | --- | --- |
