@@ -401,5 +401,67 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(darkColors.mis, 'rgb(228, 173, 105)', 'Dark Mismatch is #E4AD69');
   await p.emulateMedia({ colorScheme: 'light' });
 
+  // 12. Copy my sentences clipboard output (Accepted ✅ / Incomplete 👣 without … / Mismatch 🔥)
+  const copyText = await p.evaluate(async () => {
+    let copied = '';
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: async t => { copied = t; } },
+      configurable: true
+    });
+    const a = audit82;
+    const rows = a.rowsFor(0);
+    a.saved.clear();
+    a.saved.set(a.keyFor(rows[0][0]), { raw: '授業で何か話します', refs: ['授業で何か話します'], status: 'accepted', correct: true });
+    a.saved.set(a.keyFor(rows[1][0]), { raw: '学校で何か', refs: ['学校で何か習います'], status: 'incomplete', correct: false });
+    a.saved.set(a.keyFor(rows[2][0]), { raw: 'ちがう文', refs: ['大学で何か教えます'], status: 'mismatch', correct: false });
+    a.render();
+    const copyBtn = document.querySelector('#drill1 .p82-copy-button');
+    copyBtn.click();
+    await new Promise(r => setTimeout(r, 20));
+    return copied;
+  });
+  const copyLines = copyText.split('\n');
+  eq(copyLines.some(l => l.startsWith('1. ✅ 授業で何か話します')), true, 'Copy Accepted starts with ✅');
+  eq(copyLines.some(l => l.startsWith('2. 👣 学校で何か') && !l.endsWith('…')), true, 'Copy Incomplete starts with 👣 and has no trailing …');
+  eq(copyLines.some(l => l.startsWith('3. 🔥 ちがう文')), true, 'Copy Mismatch starts with 🔥');
+
+  // 13. Recording stop timers (Autostop ON 5s pre-speech stop vs Manual no 5s stop / manual stop / 20s cap)
+  const tp = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  tp.on('pageerror', e => errors.push(e.message));
+  await tp.clock.install();
+  await tp.addInitScript('(' + mock.trim() + ')();');
+  await tp.route('http://p82.test/**', r => {
+    const f = path.join(root, new URL(r.request().url()).pathname);
+    if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' });
+    return r.fulfill({ body: fs.readFileSync(f), contentType: f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : 'text/html' });
+  });
+  await tp.goto('http://p82.test/practice8.2.html');
+
+  // A. Autostop ON: stops at 5000ms with "No speech detected within 5 seconds."
+  const firstRecBtn = tp.locator('#drill1 .drill-record-btn').first();
+  await firstRecBtn.click();
+  await tp.clock.runFor(5200);
+  const auto5sMsg = await tp.locator('#drill1 .p81-notice').first().textContent();
+  eq(auto5sMsg, 'No speech detected within 5 seconds.', 'Autostop ON stops after 5s pre-speech silence');
+
+  // B. Manual (Autostop OFF): continues past 5s, can stop manually, and stops at 20s cap
+  await tp.locator('#toggleRecordMode').click(); // switch to Manual
+  await firstRecBtn.click();
+  await tp.clock.runFor(6000);
+  eq(await tp.locator('#drill1 .result-text').first().textContent(), 'Recording...', 'Manual continues recording past 5s silence');
+  eq(await tp.locator('#drill1 .p81-notice').count(), 0, 'Manual shows no 5s timeout notice');
+
+  // Manual stop works
+  await tp.locator('#drill1 .stop-btn-active').first().click();
+  await tp.clock.runFor(100);
+  eq(await tp.locator('#drill1 .stop-btn-active').count(), 0, 'Manual stop ends recording');
+
+  // Manual 20s absolute cap
+  await firstRecBtn.click();
+  await tp.clock.runFor(20200);
+  const manual20sMsg = await tp.locator('#drill1 .p81-notice').first().textContent();
+  eq(manual20sMsg, 'Auto-stopped after 20 seconds.', 'Manual stops at 20s absolute cap');
+  await tp.close();
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

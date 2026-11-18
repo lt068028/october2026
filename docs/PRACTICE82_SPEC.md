@@ -125,3 +125,12 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
   - 元テキスト末尾に既に終端記号（`…`, `...`, `。`, `.`, `！`, `？`, `!`, `?` 等）が存在する場合は重複付与を行わず、末尾に不自然な空白が生じないようにする。
   - `…` は画面表示のみに付与し、保存用 raw STT 文字列、`Copy my sentences` 出力、および採点処理（`r.refs` 照合）には混入させない。
   - Incomplete 判定時は `Keep going!` を表示せず、`[Footprints SVG] → [認識テキスト]… → [再生ボタン]` の順序で右寄せ配置する。
+
+## 録音停止条件および Copy my sentences 出力仕様（2026-11-18）
+
+- **録音停止条件**：
+  - **Autostop ON**：発話前5秒無音で自動停止（`No speech detected within 5 seconds.`、新録音保存なし）／発話後2.0秒連続無音で自動停止／絶対上限20秒で自動停止（`Auto-stopped after 20 seconds.`）。
+  - **Manual（Autostop OFF）**：発話前5秒停止なし／発話後2.0秒無音停止なし／ユーザーの手動停止または絶対上限20秒（`Auto-stopped after 20 seconds.`）のみで停止する。
+- **`Copy my sentences` 出力アイコン**：
+  - 保存された `entry.status` を優先参照し、`accepted` は `✅`、`incomplete` は `👣`、`mismatch` は `🔥` を文頭に付与する（未設定時のみ `FeedbackStatus.clipboardMarker(entry)` へフォールバック）。
+  - Incomplete 判定の画面表示用末尾 `…` はコピー出力には混入させない。

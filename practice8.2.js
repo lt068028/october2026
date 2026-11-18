@@ -1604,17 +1604,19 @@ async function record(key, r) {
             }, 100)
         );
 
-        // 発話開始前の無音5秒：新しい録音を保存しない
-        s.timers.push(
-            setTimeout(() => {
-                if (!s.heard) {
-                    s.stop(
-                        "No speech detected within 5 seconds.",
-                        true
-                    );
-                }
-            }, 5000)
-        );
+        // Autostop ON時のみ：発話開始前の無音5秒で停止（新しい録音を保存しない）
+        if (!s.manual) {
+            s.timers.push(
+                setTimeout(() => {
+                    if (!s.heard) {
+                        s.stop(
+                            "No speech detected within 5 seconds.",
+                            true
+                        );
+                    }
+                }, 5000)
+            );
+        }
 
         // Autostop・手動停止の共通上限
         s.timers.push(
@@ -1781,7 +1783,7 @@ function entriesFor82(si) {
             const entry = saved.get(keyFor(r));
             const raw = entry?.raw;
             if (typeof raw !== 'string' || !raw.trim()) return;
-            const mark = FeedbackStatus.clipboardMarker(entry) + ' ';
+            const mark = (entry.status === 'accepted' ? '✅' : entry.status === 'incomplete' ? '👣' : entry.status === 'mismatch' ? '🔥' : FeedbackStatus.clipboardMarker(entry)) + ' ';
             const role = r.kind ? r.kind + ': ' : '';
             entries.push((index + 1) + '. ' + role + mark + raw);
         });
