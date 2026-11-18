@@ -1069,7 +1069,7 @@ function buildCard(rows,index,si) {
         if(r.comparison){const buttonGroup=node('span','p81-cue-button-group');buttonGroup.append(listen,rec,stop);notYet=node('span','not-recorded-yet','… Not yet');notYet.hidden=false;actions.classList.add('p81-cue-actions');actions.append(buttonGroup,notYet);cueBody.append(actions);}
         else actions.append(listen,rec,stop);
         if(window.QuestionIndicator&&typeof window.QuestionIndicator.attach==='function'){
-            window.QuestionIndicator.attach(content,r.qa==='question',{variant:'regular',placement:'cue'});
+            window.QuestionIndicator.attach(stop,r.qa==='question');
         }
         const wrap=node('span','recording-result');const result=node('span','result-text');wrap.append(result);if(!r.comparison)line.append(actions);
         line.append(wrap);

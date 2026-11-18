@@ -46,8 +46,8 @@ const root = path.resolve(__dirname, '..');
     check(answerIndicatorCount, 0, 'No question indicators in answer rows');
 
     // Each indicator is wrapped with its stop button in .stop-indicator-wrap
-    const wrapCount = await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count();
-    check(wrapCount, 8, 'All 8 indicators are placed at cue end');
+    const wrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
+    check(wrapCount, 8, 'All 8 indicators are wrapped with stop buttons in .stop-indicator-wrap');
 
     // Attributes check: noninteractive & 16px
     const attrs = await page.locator('.question-indicator').first().evaluate(el => {
@@ -64,12 +64,12 @@ const root = path.resolve(__dirname, '..');
     check(attrs.pointerEvents, 'none', 'Indicator has pointer-events=none');
     check(attrs.svgWidth, '16', 'Indicator SVG width is 16');
     check(attrs.svgHeight, '16', 'Indicator SVG height is 16');
-    const regularQuestionHash = '859d6556269e78746fe339ed0455294042c6cc66261d595a06c57c91444442a7';
-    const regAttrs = await page.locator('.question-indicator').first().evaluate(el => {
+    const filledQuestionHash = '45ed9a94cd9ec310a0854c13cda744cb8e1e1b7e0a9a05878f3acc33f4c8943c';
+    const filledAttrs = await page.locator('.question-indicator').first().evaluate(el => {
         const path = el.querySelector('svg path');
         return {stroke:path?.getAttribute('stroke'), fill:path?.getAttribute('fill'), d:path?.getAttribute('d')};
     });
-    check({stroke:regAttrs.stroke,fill:regAttrs.fill,hash:createHash('sha256').update(regAttrs.d||'').digest('hex')}, {stroke:'currentColor',fill:'currentColor',hash:regularQuestionHash}, 'Indicator uses approved Chat Help Regular path at cue end');
+    check({stroke:filledAttrs.stroke,fill:filledAttrs.fill,hash:createHash('sha256').update(filledAttrs.d||'').digest('hex')}, {stroke:null,fill:'currentColor',hash:filledQuestionHash}, 'Indicator uses approved Chat Help Filled path without outline');
 
     // 3. Rerendering & settings switching: no duplicates
     for (const script of ['hiragana', 'kanji']) {
@@ -84,19 +84,20 @@ const root = path.resolve(__dirname, '..');
         check(count, 8, `Count remains 8 after switching to vocab=${vocab}`);
     }
 
-    // 4. Narrow viewport (375px) check: indicator stays inside cue cell without overflow
+    // 4. Narrow viewport (375px) check: no overflow, stop button and indicator remain together
     await page.setViewportSize({width: 375, height: 667});
-    const layout = await page.locator('.drill-cue-cell:has(.question-indicator)').first().evaluate(cell => {
-        const icon = cell.querySelector('.question-indicator');
-        const cellRect = cell.getBoundingClientRect();
+    const layout = await page.locator('.stop-indicator-wrap').first().evaluate(wrap => {
+        const btn = wrap.querySelector('button');
+        const icon = wrap.querySelector('.question-indicator');
+        const btnRect = btn.getBoundingClientRect();
         const iconRect = icon.getBoundingClientRect();
         return {
-            insideCueCell: iconRect.left >= cellRect.left - 1 && iconRect.right <= cellRect.right + 1,
-            hasDimension: iconRect.width > 0 && iconRect.height > 0
+            sameTop: Math.abs(btnRect.top - iconRect.top) < 15,
+            iconRightOfBtn: iconRect.left >= btnRect.right - 1
         };
     });
-    check(layout.insideCueCell, true, 'Indicator remains inside cue cell at 375px');
-    check(layout.hasDimension, true, 'Indicator has positive rendered dimensions at 375px');
+    check(layout.sameTop, true, 'Stop button and indicator are on the same line at 375px');
+    check(layout.iconRightOfBtn, true, 'Indicator is positioned immediately to the right of stop button');
 
     // 5. Practice 2.1
     await page.setViewportSize({width: 1440, height: 900});
@@ -122,7 +123,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill3Container .question-indicator').count(), 2, 'Practice 2.1 D3 Set 2 has 2 indicators');
 
     // Wrap check in 2.1
-    const p21WrapCount = await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count();
+    const p21WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
     const p21TotalVisible = await page.locator('.question-indicator').count();
     check(p21WrapCount, p21TotalVisible, 'All visible indicators in Practice 2.1 are wrapped with stop buttons');
 
@@ -159,7 +160,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill5Container .question-indicator').count(), 3, 'Practice 2.2 D5 Set 2 has 3 indicators');
 
     // Wrap check in 2.2
-    const p22WrapCount = await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count();
+    const p22WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
     const p22TotalVisible = await page.locator('.question-indicator').count();
     check(p22WrapCount, p22TotalVisible, 'All visible indicators in Practice 2.2 are wrapped with stop buttons');
 
@@ -194,7 +195,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill3Container .question-indicator').count(), 3, 'Practice 2.3 D3 Day has 3 indicators');
 
     // Wrap check in 2.3
-    const p23WrapCount = await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count();
+    const p23WrapCount = await page.locator('.stop-indicator-wrap:has(.question-indicator)').count();
     const p23TotalVisible = await page.locator('.question-indicator').count();
     check(p23WrapCount, p23TotalVisible, 'All visible indicators in Practice 2.3 are wrapped with stop buttons');
 
@@ -206,7 +207,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.1 Examples have 0 question indicators');
     check(await page.locator('.answer-choice .question-indicator').count(), 0, 'Practice 7.1 answer choices have 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 7.1 answer rows have 0 question indicators');
-    check(await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count(), 5, 'All 5 indicators in Practice 7.1 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 5, 'All 5 indicators in Practice 7.1 are wrapped with stop buttons');
     // Verify Y/N icons are preserved
     check(await page.locator('.answer-choice svg').count(), 10, 'Practice 7.1 Y/N answer buttons preserve Fluent SVGs');
 
@@ -217,14 +218,14 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('.p71-stage-panel .question-indicator').count(), 0, 'Practice 7.2 Drill 1 has 0 question indicators');
     check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.2 Examples have 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 7.2 answer rows have 0 question indicators');
-    check(await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count(), 5, 'All 5 indicators in Practice 7.2 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 5, 'All 5 indicators in Practice 7.2 are wrapped with stop buttons');
 
     // 10. Practice 7.3
     await page.goto('http://qi.test/practice7.3.html');
     check(await page.locator('.question-indicator').count(), 13, 'Practice 7.3 has exactly 13 question indicators total');
     check(await page.locator('.example-box .question-indicator').count(), 0, 'Practice 7.3 Examples have 0 question indicators');
     check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 7.3 Drill 5 English cues panel has 0 question indicators');
-    check(await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count(), 13, 'All 13 indicators in Practice 7.3 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 13, 'All 13 indicators in Practice 7.3 are wrapped with stop buttons');
 
     // Verify rerendering does not duplicate indicators on Practice 7.3
     for (const script of ['hiragana', 'kanji']) {
@@ -242,7 +243,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill5 .question-indicator').count(), 0, 'Practice 8.1 Drill 5 has 0 question indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.1 Examples have 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.1 answer rows have 0 question indicators');
-    check(await page.locator('.p81-cue-words > .question-indicator').count(), 4, 'All 4 indicators in Practice 8.1 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 4, 'All 4 indicators in Practice 8.1 are wrapped with stop buttons');
 
     // Verify rerendering does not duplicate indicators on Practice 8.1
     for (const script of ['hiragana', 'kanji']) {
@@ -252,20 +253,20 @@ const root = path.resolve(__dirname, '..');
 
     // 12. Practice 8.2
     await page.goto('http://qi.test/practice8.2.html');
-    check(await page.locator('.question-indicator').count(), 8, 'Practice 8.2 has exactly 8 question indicators total (Drill 2 only)');
-    check(await page.locator('#drill1 .question-indicator').count(), 0, 'Practice 8.2 Drill 1 has 0 question indicators');
+    check(await page.locator('.question-indicator').count(), 20, 'Practice 8.2 has exactly 20 question indicators total');
+    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.2 Drill 1 has 4 question indicators');
     check(await page.locator('#drill2 .question-indicator').count(), 8, 'Practice 8.2 Drill 2 has 8 question indicators');
-    check(await page.locator('#drill3 .question-indicator').count(), 0, 'Practice 8.2 Drill 3 has 0 question indicators');
-    check(await page.locator('#drill4 .question-indicator').count(), 0, 'Practice 8.2 Drill 4 has 0 question indicators');
+    check(await page.locator('#drill3 .question-indicator').count(), 5, 'Practice 8.2 Drill 3 has 5 question indicators');
+    check(await page.locator('#drill4 .question-indicator').count(), 3, 'Practice 8.2 Drill 4 has 3 question indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.2 Examples have 0 question indicators');
     check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 8.2 Drill 5 English cues panel has 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.2 answer rows have 0 question indicators');
-    check(await page.locator('.p81-cue-words > .question-indicator').count(), 8, 'All 8 indicators in Practice 8.2 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 20, 'All 20 indicators in Practice 8.2 are wrapped with stop buttons');
 
     // Verify rerendering does not duplicate indicators on Practice 8.2
     for (const script of ['hiragana', 'kanji']) {
         await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
-        check(await page.locator('.question-indicator').count(), 8, `Practice 8.2 indicator count remains 8 after scriptMode=${script}`);
+        check(await page.locator('.question-indicator').count(), 20, `Practice 8.2 indicator count remains 20 after scriptMode=${script}`);
     }
 
     // 13. Practice 8.3
@@ -276,7 +277,11 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill3 .question-indicator').count(), 4, 'Practice 8.3 D3 Set 1 has 4 indicators');
     check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 1 has 4 indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.3 Examples have 0 question indicators');
-    check(await page.locator('.p81-cue-words > .question-indicator').count(), 18, 'All 18 visible indicators in Practice 8.3 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 18, 'All 18 visible indicators in Practice 8.3 are wrapped with stop buttons');
+
+    // Strict DOM hierarchy check: verify that stop-indicator-wrap is inside .recording-actions
+    const p83InsideActions = await page.locator('.recording-actions > .stop-indicator-wrap > .question-indicator').count();
+    check(p83InsideActions, 18, 'All 18 question indicators in Practice 8.3 are properly nested inside .recording-actions > .stop-indicator-wrap');
 
     // Strict row check: interrogative rows (-q1, -q2) have indicator, answer rows (-a) do NOT have indicator
     const p83QRowsWithIndicator = await page.locator('tr[data-row$="-q1"] .question-indicator, tr[data-row$="-q2"] .question-indicator').count();
@@ -286,21 +291,21 @@ const root = path.resolve(__dirname, '..');
 
     // Switch D1 to Set 2 (何): 4 indicators
     await page.locator('#drill1 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill1 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators at cue end');
+    check(await page.locator('#drill1 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators inside actions');
 
     // Switch D2 to Set 2 (何): 6 indicators
     await page.locator('#drill2 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill2 .p81-cue-words > .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators at cue end');
+    check(await page.locator('#drill2 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators inside actions');
 
     // Switch D3 to Set 2 (どこ): 4 indicators
     await page.locator('#drill3 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill3 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators at cue end');
+    check(await page.locator('#drill3 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators inside actions');
 
     // Switch D4 to Set 2 (どこ): 4 indicators, Set 3 (いつ): 4 indicators
     await page.locator('#drill4 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill4 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators at cue end');
+    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators inside actions');
     await page.locator('#drill4 .p21-set-switcher button:nth-child(3)').click();
-    check(await page.locator('#drill4 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators at cue end');
+    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators inside actions');
 
     // Total slots across all alternative sets in Practice 8.3:
     // D1: Set 1 (4) + Set 2 (4) = 8
@@ -314,7 +319,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('.question-indicator').count(), 2, 'Composition 1 has exactly 2 question indicators total');
     check(await page.locator('#drill1Container .question-indicator').count(), 2, 'Composition 1 Drill 1 has 2 question indicators');
     check(await page.locator('#drill2Container .question-indicator').count(), 0, 'Composition 1 Drill 2 has 0 question indicators');
-    check(await page.locator('.prompt-label > .question-indicator, .drill-cue-cell > .question-indicator').count(), 2, 'All 2 indicators in Composition 1 are placed at cue end');
+    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 2, 'All 2 indicators in Composition 1 are wrapped with stop buttons');
 
     // Verify row 5 and row 6 specifically have indicators
     const rowsWithIndicator = await page.locator('#drill1Container .drill-row:has(.question-indicator) .drill-number-cell').allTextContents();

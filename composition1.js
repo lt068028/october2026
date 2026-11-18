@@ -1135,7 +1135,7 @@ function compositionCreateRow(
         window.QuestionIndicator
         && typeof window.QuestionIndicator.attach === "function"
     ) {
-        window.QuestionIndicator.attach(cue, Boolean(item?.question), { variant: "regular", placement: "cue" });
+        window.QuestionIndicator.attach(stopBtn, Boolean(item?.question));
     }
 
     const resultSpan = element(
