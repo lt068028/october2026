@@ -481,6 +481,62 @@ async function runPronunciation2PitchLabTest(browser) {
     await page.close();
 }
 
+async function triggerRecognitionOnly(page, transcript = 'テスト') {
+    await page.evaluate((text) => {
+        const rec = window.t.recognitions[window.t.recognitions.length - 1];
+        if (!rec) return;
+        rec.onspeechstart?.();
+        rec.onresult?.({
+            resultIndex: 0,
+            results: [{ isFinal: true, 0: { transcript: text } }]
+        });
+    }, transcript);
+}
+
+async function runRecognitionSeparationTests(browser) {
+    for (const urlPath of ['/practice2.1.html', '/practice2.2.html', '/practice2.3.html', '/practice8.2.html']) {
+        console.log(`\n=== Testing Recognition/Mic Separation on ${urlPath} ===`);
+        const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+        await page.addInitScript(mockScript);
+        await page.route('http://f4.test/**', r => {
+            const u = new URL(r.request().url());
+            const f = path.join(rootDir, u.pathname);
+            if (!fs.existsSync(f)) return r.fulfill({ status: 404, body: '' });
+            return r.fulfill({
+                body: fs.readFileSync(f),
+                contentType: f.endsWith('.js') ? 'text/javascript' : f.endsWith('.css') ? 'text/css' : f.endsWith('.png') ? 'image/png' : 'text/html'
+            });
+        });
+        await page.goto(`http://f4.test${urlPath}`, { waitUntil: 'domcontentloaded' });
+        await page.waitForTimeout(300);
+
+        const recSelector = urlPath === '/practice8.2.html' ? '.drill-record-btn' : '.record-btn';
+        const recBtn = page.locator(recSelector).first();
+
+        // 1. 5秒未発話判定の独立性：マイク音量ゼロのまま Recognition イベントのみ発生しても 5秒で停止すること
+        await page.evaluate(() => { window.t.speaking = false; });
+        await recBtn.click();
+        await page.waitForTimeout(1000);
+        await triggerRecognitionOnly(page, 'テスト発話');
+        await page.waitForTimeout(4500);
+        const bodyText5s = await page.locator('body').textContent();
+        check(bodyText5s.includes('No speech detected within 5 seconds.'), `${urlPath}: 5s no-speech timeout fires despite Recognition events`);
+
+        // 2. 2秒無音判定の独立性：マイク音量で発話開始 -> 無音化 -> Recognition イベント発生 -> 最後のマイク音量から2秒で停止
+        await page.evaluate(() => { window.t.speaking = true; });
+        await recBtn.click();
+        await page.waitForTimeout(600);
+        await page.evaluate(() => { window.t.speaking = false; });
+        await page.waitForTimeout(1000);
+        await triggerRecognitionOnly(page, '継続認識');
+        await page.waitForTimeout(1500);
+        const activeCountAfter2s = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
+        check(activeCountAfter2s === 0, `${urlPath}: 2s autostop fires despite Recognition events during silence`);
+
+        await page.close();
+    }
+}
+
 (async () => {
     console.log(`Launching Chromium at: ${chromiumPath}`);
     const browser = await chromium.launch({
@@ -494,6 +550,7 @@ async function runPronunciation2PitchLabTest(browser) {
             await runTestsForPage(browser, p);
         }
         await runPronunciation2PitchLabTest(browser);
+        await runRecognitionSeparationTests(browser);
 
         console.log(`\n========================================`);
         console.log(`ALL F4 TESTS PASSED! Total assertions checked: ${totalChecks}`);
