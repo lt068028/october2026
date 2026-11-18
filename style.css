@@ -5491,14 +5491,45 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .recording-controls > .recording-result .play-recording-btn {
     margin-left: 4px;
 }
-.practice82-page .recording-controls > .recording-result .feedback-retry-label {
-    white-space: nowrap;
+/* Practice 8.2: 採点アイコン視覚パラメータの統合（24px, icon-gap 2px, y-offset -2px, keep-gap 8px） */
+.practice82-page .recording-controls > .recording-result .feedback-status-accepted svg,
+.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire,
+.practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
+    width: 24px;
+    height: 24px;
+    transform: translateY(-2px);
+    vertical-align: middle;
+}
+.practice82-page .recording-controls > .recording-result .feedback-accepted-result {
+    gap: 2px;
+}
+.practice82-page .recording-controls > .recording-result .feedback-status-accepted {
+    margin-right: 0;
+    color: #16A34A;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .recording-controls > .recording-result .feedback-status-accepted {
+        color: #4ADE80;
+    }
+}
+.practice82-page .recording-controls > .recording-result .p82-incomplete-mark {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    cursor: default;
+    margin-right: 2px;
+}
+.practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
+    display: inline-block;
+    color: #8064B0;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
+        color: #B9A2E5;
+    }
 }
 .practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
-    width: 20px;
-    height: 20px;
-    vertical-align: middle;
-    margin-right: 4px;
+    margin-right: 2px;
     display: inline-block;
     color: #B47732;
 }
@@ -5507,16 +5538,9 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
         color: #E4AD69;
     }
 }
-.practice82-page :is(.drill-listen-btn, .play-recording-btn).p82-autoplay-stop:hover > .custom-tip-box {
-    visibility: visible;
-    opacity: 1;
-}
-.practice82-page .p82-incomplete-mark {
-    display: inline-flex;
-    align-items: center;
-    position: relative;
-    cursor: default;
-    margin-right: 4px;
+.practice82-page .recording-controls > .recording-result .feedback-retry-label {
+    white-space: nowrap;
+    margin-left: 8px;
 }
 
 /* Practice 8.2 Drill 2: 左側疑問文マーカー（Q/A役割とは独立、Chat Help Filled 図柄・左側配置基準を共有） */

@@ -107,3 +107,21 @@ Ex1の何でもは「Anything / Whatever」、Beyond Wordsは「anything / whate
 概念ラベル・キュー・矢印・再生ボタンは、実際のカード内容幅に収まる間は同じ行を維持する。比較ラベルの日本語列（`.p82-concept-japanese`）は文字表示として左端をそろえ、英語ラベル列（`.p82-concept-english`）はB「標準」バッジ装飾（ライト／ダーク対応、角丸8px、余白6px 10px）を適用して右端整列として別々に制御する。各比較の2行目（Ex1の「〜ません」と「None」、Ex2の「何か」と「Unspecified」）を日本語右端から英語ラベル外枠左端までの6px基準（アンカー）とする。日本語の左端と英語の右端をそろえた結果、他の行の日英間隔が広くなることは許容する。幅不足時は英語を先に省略し、全文をホバー・キーボードフォーカス・タップで参照できるようにする。日本語モデルを読める幅へ配置できなければモデルだけ次行へ送り、必須のラベル・操作列も収まらない場合に限りラベルを独立させる。画面幅だけのしきい値で強制分割しない。
 
 録音中のリサイズでもExample表示だけは再計算し、Drillの録音状態・識別キー・表示処理を変更しない。この配置条件はPractice 8.2のExample 1／2だけに適用し、Practice 8.1／8.3へ自動拡張しない。
+
+## 採点結果アイコンとIncomplete視覚仕様（Practice 8.2固有）
+
+Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では、共通仕様（UI_LAYOUT_SPEC §9の22px/20px基準）を一部最適化したページ固有の視覚パラメータを適用する。
+
+- **3アイコン共通寸法**：
+  - Accepted：Microsoft Fluent `Checkmark 24 Filled`（Light: `#16A34A` / Dark: `#4ADE80`）
+  - Incomplete：Lucide `Footprints` 原本アウトラインSVG（Light: `#8064B0` / Dark: `#B9A2E5`、`aria-hidden="true"`）
+  - Mismatch：Microsoft Fluent `Fire 24 Regular`（Light: `#B47732` / Dark: `#E4AD69`）
+  - これら3アイコンをすべて **`24px × 24px`** に統一し、垂直方向の視覚的整列のため上方向オフセット **`-2px`**（`transform: translateY(-2px)`）を適用する。
+- **配置間隔（Gap）**：
+  - 各アイコンと直後の認識テキスト（または差分テキスト）との間隔（`icon-gap`）は **`2px`**（`margin-right: 2px` または `gap: 2px`）。
+  - Mismatchにおける差分テキストと `Keep going!` ラベル（`.feedback-retry-label`）の間隔（`keep-gap`）は **`8px`**（`margin-left: 8px`）。
+- **Incomplete（未完了）判定のテキスト仕様**：
+  - 判定が `incomplete` の場合、表示上の認識テキスト末尾に `…`（三点リーダー）を付加する。
+  - 元テキスト末尾に既に終端記号（`…`, `...`, `。`, `.`, `！`, `？`, `!`, `?` 等）が存在する場合は重複付与を行わず、末尾に不自然な空白が生じないようにする。
+  - `…` は画面表示のみに付与し、保存用 raw STT 文字列、`Copy my sentences` 出力、および採点処理（`r.refs` 照合）には混入させない。
+  - Incomplete 判定時は `Keep going!` を表示せず、`[Footprints SVG] → [認識テキスト]… → [再生ボタン]` の順序で右寄せ配置する。

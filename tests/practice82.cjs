@@ -241,5 +241,161 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.locator('.drill-cue-button').click();
   eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), '何を／読む', 'Japanese cue text unaffected by question marker');
 
+  // 11. Grading icons visual parameters, Lucide Footprints SVG, trailing ellipsis, and copy isolation
+  const iconAudit = await p.evaluate(async () => {
+    const a = audit82;
+    const r = a.rowsFor(0)[0][0];
+    const key = a.keyFor(r);
+
+    // A. Accepted
+    a.saved.set(key, { raw: 'なにかのみます', refs: ['何か飲みます', '何かを飲みます'], status: 'accepted', url: 'blob:test-acc' });
+    a.render();
+    let row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const accSvg = row.querySelector('.feedback-status-accepted svg');
+    const accText = row.querySelector('.feedback-accepted-text');
+    const accW = Math.round(accSvg.getBoundingClientRect().width);
+    const accH = Math.round(accSvg.getBoundingClientRect().height);
+    const accTransform = getComputedStyle(accSvg).transform;
+    const accGap = Math.round(accText.getBoundingClientRect().left - accSvg.getBoundingClientRect().right);
+
+    // B. Incomplete (standard incomplete string)
+    a.saved.set(key, { raw: 'なにかのみま', refs: ['何か飲みます', '何かを飲みます'], status: 'incomplete', url: 'blob:test-inc' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const incMark = row.querySelector('.p82-incomplete-mark');
+    const incSvg = incMark?.querySelector('.p82-incomplete-svg');
+    const incTextNode = Array.from(row.querySelector('.result-text').childNodes).find(n => n.nodeType === 3);
+    const incW = Math.round(incSvg.getBoundingClientRect().width);
+    const incH = Math.round(incSvg.getBoundingClientRect().height);
+    const incTransform = getComputedStyle(incSvg).transform;
+    const incAriaHidden = incSvg.getAttribute('aria-hidden');
+    const incHasEmoji = incMark.textContent.includes('👣');
+    const incKeepCount = row.querySelectorAll('.feedback-retry-label').length;
+    const incHasEllipsis = incTextNode?.textContent.endsWith('…');
+    const incRawSaved = a.saved.get(key).raw;
+    const incCopyEntry = a.entriesFor82(0)[0];
+
+    // C. Incomplete with existing terminal characters (no duplicate ellipsis)
+    const terminalTests = ['なにかのみま…', 'なにかのみま...', 'なにかのみます。', 'なにかのみます.'];
+    const terminalResults = [];
+    for (const raw of terminalTests) {
+      a.saved.set(key, { raw, refs: ['何か飲みます'], status: 'incomplete' });
+      a.render();
+      row = document.querySelector('tr[data-row="' + r.id + '"]');
+      const text = Array.from(row.querySelector('.result-text').childNodes).find(n => n.nodeType === 3)?.textContent || '';
+      terminalResults.push({
+        raw,
+        rendered: text,
+        noDoubleEllipsis: !text.endsWith('……') && !text.endsWith('...…') && !text.endsWith('。…') && !text.endsWith('.…')
+      });
+    }
+
+    // D. Mismatch
+    a.saved.set(key, { raw: 'ちがうことば', refs: ['何か飲みます'], status: 'mismatch', url: 'blob:test-mis' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const misFire = row.querySelector('.feedback-retry-fire');
+    const misKeep = row.querySelector('.feedback-retry-label');
+    const misW = Math.round(misFire.getBoundingClientRect().width);
+    const misH = Math.round(misFire.getBoundingClientRect().height);
+    const misTransform = getComputedStyle(misFire).transform;
+    const misKeepMargin = getComputedStyle(misKeep).marginLeft;
+    const misFireRegular = misFire.getAttribute('fill') === 'currentColor';
+
+    return {
+      acc: { w: accW, h: accH, transform: accTransform, gap: accGap },
+      inc: {
+        w: incW,
+        h: incH,
+        transform: incTransform,
+        ariaHidden: incAriaHidden,
+        hasEmoji: incHasEmoji,
+        hasKeep: incKeepCount > 0,
+        hasEllipsis: incHasEllipsis,
+        rawUnchanged: incRawSaved === 'なにかのみま',
+        copyClean: !incCopyEntry.endsWith('…')
+      },
+      terminalResults,
+      mis: {
+        w: misW,
+        h: misH,
+        transform: misTransform,
+        keepMargin: misKeepMargin,
+        isRegular: misFireRegular
+      }
+    };
+  });
+
+  eq(iconAudit.acc.w, 24, 'Accepted icon width is 24px');
+  eq(iconAudit.acc.h, 24, 'Accepted icon height is 24px');
+  eq(iconAudit.acc.gap, 2, 'Accepted icon gap is 2px');
+  eq(iconAudit.inc.w, 24, 'Incomplete Lucide Footprints width is 24px');
+  eq(iconAudit.inc.h, 24, 'Incomplete Lucide Footprints height is 24px');
+  eq(iconAudit.inc.ariaHidden, 'true', 'Incomplete Footprints SVG has aria-hidden=true');
+  eq(iconAudit.inc.hasEmoji, false, 'Incomplete emoji 👣 is replaced');
+  eq(iconAudit.inc.hasKeep, false, 'Incomplete does not render Keep going!');
+  eq(iconAudit.inc.hasEllipsis, true, 'Incomplete renders trailing ellipsis …');
+  eq(iconAudit.inc.rawUnchanged, true, 'Incomplete does not alter raw STT');
+  eq(iconAudit.inc.copyClean, true, 'Copy my sentences does not contain trailing ellipsis');
+  eq(iconAudit.terminalResults.every(t => t.noDoubleEllipsis), true, 'Incomplete terminal characters avoid duplicate ellipsis');
+  eq(iconAudit.mis.w, 24, 'Mismatch Fire width is 24px');
+  eq(iconAudit.mis.h, 24, 'Mismatch Fire height is 24px');
+  eq(iconAudit.mis.keepMargin, '8px', 'Mismatch Keep going margin-left is 8px');
+
+  // Verify Light and Dark colors for the 3 icons
+  const lightColors = await p.evaluate(() => {
+    const a = audit82;
+    const r = a.rowsFor(0)[0][0];
+    const key = a.keyFor(r);
+
+    a.saved.set(key, { raw: 'なにかのみます', refs: ['何か飲みます'], status: 'accepted' });
+    a.render();
+    let row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const acc = getComputedStyle(row.querySelector('.feedback-status-accepted')).color;
+
+    a.saved.set(key, { raw: 'なにかのみま', refs: ['何か飲みます'], status: 'incomplete' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const inc = getComputedStyle(row.querySelector('.p82-incomplete-svg')).color;
+
+    a.saved.set(key, { raw: 'ちがう', refs: ['何か飲みます'], status: 'mismatch' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const mis = getComputedStyle(row.querySelector('.feedback-retry-fire')).color;
+
+    return { acc, inc, mis };
+  });
+  eq(lightColors.acc, 'rgb(22, 163, 74)', 'Light Accepted is #16A34A');
+  eq(lightColors.inc, 'rgb(128, 100, 176)', 'Light Incomplete is #8064B0');
+  eq(lightColors.mis, 'rgb(180, 119, 50)', 'Light Mismatch is #B47732');
+
+  await p.emulateMedia({ colorScheme: 'dark' });
+  const darkColors = await p.evaluate(() => {
+    const a = audit82;
+    const r = a.rowsFor(0)[0][0];
+    const key = a.keyFor(r);
+
+    a.saved.set(key, { raw: 'なにかのみます', refs: ['何か飲みます'], status: 'accepted' });
+    a.render();
+    let row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const acc = getComputedStyle(row.querySelector('.feedback-status-accepted')).color;
+
+    a.saved.set(key, { raw: 'なにかのみま', refs: ['何か飲みます'], status: 'incomplete' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const inc = getComputedStyle(row.querySelector('.p82-incomplete-svg')).color;
+
+    a.saved.set(key, { raw: 'ちがう', refs: ['何か飲みます'], status: 'mismatch' });
+    a.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const mis = getComputedStyle(row.querySelector('.feedback-retry-fire')).color;
+
+    return { acc, inc, mis };
+  });
+  eq(darkColors.acc, 'rgb(74, 222, 128)', 'Dark Accepted is #4ADE80');
+  eq(darkColors.inc, 'rgb(185, 162, 229)', 'Dark Incomplete is #B9A2E5');
+  eq(darkColors.mis, 'rgb(228, 173, 105)', 'Dark Mismatch is #E4AD69');
+  await p.emulateMedia({ colorScheme: 'light' });
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

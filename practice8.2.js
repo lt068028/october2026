@@ -198,6 +198,34 @@ function rowsFor(si){
  return habits.map((s,i)=>[makeRow('any-'+i+'-q',{...s,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('any-'+i+'-a',{...s,mode:'any'},{kind:'A',qa:'response'})]);
 }
 const INCOMPLETE_TIPS = ['Getting closer!', 'Almost there!', 'Keep it up!', 'Nice flow!', 'Great start!'];
+const FOOTPRINTS_PATHS = [
+    'M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z',
+    'M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z',
+    'M16 17h4',
+    'M4 13h4'
+];
+function createFootprintsSvg() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    for (const [key, value] of Object.entries({
+        viewBox: '0 0 24 24',
+        width: '24',
+        height: '24',
+        'aria-hidden': 'true',
+        focusable: 'false',
+        fill: 'none',
+        stroke: 'currentColor',
+        'stroke-width': '2',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round'
+    })) svg.setAttribute(key, value);
+    svg.classList.add('p82-incomplete-svg');
+    for (const d of FOOTPRINTS_PATHS) {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', d);
+        svg.append(path);
+    }
+    return svg;
+}
 function normalizeAnswerInput(raw, r) {
     const value = r.verb === 'listen' ? String(raw).replace(/[聴訊]/g, '聞')
         : r.verb === 'takealong' ? String(raw).replace(/持って行/g, '持ってい')
@@ -869,7 +897,7 @@ function showResult(key,notice='') {
         else if(status==='incomplete') {
             const mark=node('span','p82-incomplete-mark custom-tip-wrap');
             mark.tabIndex=0;
-            mark.append(document.createTextNode('👣'));
+            mark.append(createFootprintsSvg());
             const tip=node('span','custom-tip-box',INCOMPLETE_TIPS[Math.floor(Math.random()*INCOMPLETE_TIPS.length)]);
             tip.setAttribute('role','tooltip');
             mark.append(tip);
@@ -879,7 +907,9 @@ function showResult(key,notice='') {
             };
             mark.addEventListener('mouseenter',reroll);
             mark.addEventListener('focus',reroll);
-            v.result.append(mark,document.createTextNode(displayed));
+            const cleanText=displayed.trimEnd();
+            const trailingEllipsis=/[…\.。！？!\?]+$/.test(cleanText)?cleanText:cleanText+'…';
+            v.result.append(mark,document.createTextNode(trailingEllipsis));
         }
         else {
             FeedbackStatus.setMismatch(v.correction);
