@@ -61,7 +61,9 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  for(const [i,b]of exButtons.entries()){await b.click();eq(await p.evaluate(()=>Boolean(t.spoken.at(-1)?.text)),true,`Example group ${i+1} playable`);await p.evaluate(()=>t.spoken.at(-1).onend());}
  // Record a selected D3 No response, preserve raw STT, then check the next recording stops relay.
  await p.locator('label.switch').first().click();
+ await p.evaluate(() => { t.speaking = true; });
  await yn.locator('.drill-record-btn').click();await p.waitForFunction(()=>t.recognitions.length===1);
+ await p.waitForTimeout(350);
  await p.evaluate(()=>{const result=[{transcript:'  いいえ、何も、しません。　'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('yn-0-a:no'));
  eq(await yn.locator('.feedback-status-accepted').count(),1,'recorded D3 No graded');
@@ -69,8 +71,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.evaluate(()=>{const n=t.audios.length;t.spoken.at(-1).onend();return t.audios.length===n+1}),true,'zero intentional relay gap');
  const next=p.locator('[data-row="any-0-a"]');await next.locator('.drill-record-btn').click();await p.waitForFunction(()=>t.recognitions.length===2);
  eq(await p.evaluate(()=>t.audios.at(-1).paused),true,'new recording interrupts relay');
+ await p.waitForTimeout(350);
  await p.evaluate(()=>{const result=[{transcript:'何でも、作ります。'}];result.isFinal=true;t.recognitions.at(-1).onresult({resultIndex:0,results:[result]});});
  await p.locator('.stop-btn-active').click();await p.waitForFunction(()=>audit82.saved.has('any-0-a:fixed'));
+ await p.evaluate(() => { t.speaking = false; });
  eq(await next.locator('.feedback-status-accepted').count(),1,'Drill 4 short model response graded');
  eq(await yn.locator('.feedback-status-accepted').count(),1,'previous D3 recording retained');
  await p.locator('[data-response="yn-0-a"][data-answer="yes"]').click();
@@ -445,7 +449,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(auto5sMsg, 'No speech detected within 5 seconds.', 'Autostop ON stops after 5s pre-speech silence');
 
   // B. Manual (Autostop OFF): continues past 5s, can stop manually, and stops at 20s cap
-  await tp.locator('#toggleRecordMode').click(); // switch to Manual
+  await tp.locator('label.switch').first().click(); // switch to Manual
   await firstRecBtn.click();
   await tp.clock.runFor(6000);
   eq(await tp.locator('#drill1 .result-text').first().textContent(), 'Recording...', 'Manual continues recording past 5s silence');
@@ -520,11 +524,11 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.evaluate(() => { t.audios.at(-1)?.onended?.(); });
 
   // Recording exclusion: Copy button is disabled during recording
-  await p.locator('#toggleRecordMode').click(); // Manual mode
+  await p.evaluate(() => { const cb = document.getElementById('toggleRecordMode'); if (cb.checked) cb.click(); }); // ensure Manual mode
   await p.locator('#drill1 .drill-record-btn').first().click();
   eq(await p.locator('#drill1 .p82-copy-button').isDisabled(), true, 'Copy button is disabled while recording');
   await p.locator('#drill1 .stop-btn-active').first().click();
-  await p.locator('#toggleRecordMode').click(); // restore Autostop ON
+  await p.evaluate(() => { const cb = document.getElementById('toggleRecordMode'); if (!cb.checked) cb.click(); }); // restore Autostop ON
 
   // 15. Mismatch reason separation & error-text computed color highlight verification
   const diffAudit = await p.evaluate(() => {
