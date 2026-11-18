@@ -2367,9 +2367,6 @@ async function startRecording(initialView) {
             }
             stop("Recording error.", true);
             return;
-
-                return;
-            }
         }
 
         session.timers.push(
