@@ -70,6 +70,7 @@ jobs:
               tests/uebung11.cjs
               tests/content-layout-boundaries.cjs
               tests/practice72-audio-interruption.cjs
+              tests/f4-recording-limits.cjs
           - group: 3A
             name: "Practice 1-2, QA & Order (core)"
             tests: >-
