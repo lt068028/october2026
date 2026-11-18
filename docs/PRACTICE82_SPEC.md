@@ -134,3 +134,6 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 - **`Copy my sentences` 出力アイコン**：
   - 保存された `entry.status` を優先参照し、`accepted` は `✅`、`incomplete` は `👣`、`mismatch` は `🔥` を文頭に付与する（未設定時のみ `FeedbackStatus.clipboardMarker(entry)` へフォールバック）。
   - Incomplete 判定の画面表示用末尾 `…` はコピー出力には混入させない。
+- **`Copy my sentences` 操作と音声再生・アイコン**：
+  - `PROJECT_SPEC.md` §7.2 に従い、モデル音声・録音音声の再生中に `Copy my sentences` を実行しても再生を中断せず、再生状態を維持する（録音中・マイク準備中の無効化条件は維持）。
+  - Copy ボタンアイコンは `UI_LAYOUT_SPEC.md` §10 準拠（`fluent-icons.js` 既存の Microsoft Fluent `Clipboard 24 Regular`）を用いる。

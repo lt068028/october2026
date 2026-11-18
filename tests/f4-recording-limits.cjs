@@ -392,15 +392,25 @@ async function runTestsForPage(browser, pageName) {
         const page = await createPage(browser, pageName);
         await page.clock.install();
 
-        // --- Scenario 8 & 11: Manual without speech stops at 5.0s, precedes 20s limit ---
+        // --- Scenario 8 & 11: Manual without speech ---
         await clickRecord(page, true); // Manual
         await advanceToElapsed(page, 4800);
         check(await isRecordingActive(page), `${pageName}: Scenario 8 - Manual mode still active at 4.8s without speech`);
 
         await advanceToElapsed(page, 5100);
         await page.clock.runFor(100);
-        check(!(await isRecordingActive(page)), `${pageName}: Scenario 8&11 - Manual mode auto-stops at 5.0s without speech (precedes 20s)`);
-        check(await hasStopMessage(page, 'No speech detected within 5 seconds.'), `${pageName}: Scenario 8&11 - Displays exact 5s stop-reason message in Manual mode`);
+        if (pageName === 'practice8.2.html') {
+            check(await isRecordingActive(page), `${pageName}: Scenario 8&11 - Manual mode continues past 5.0s without speech`);
+            check(!(await hasStopMessage(page, 'No speech detected within 5 seconds.')), `${pageName}: Scenario 8&11 - No 5s stop-reason message in Manual mode`);
+            const stopBtn = page.locator('button.stop-btn-active').first();
+            if (await stopBtn.count() > 0) {
+                await stopBtn.click();
+                await page.clock.runFor(100);
+            }
+        } else {
+            check(!(await isRecordingActive(page)), `${pageName}: Scenario 8&11 - Manual mode auto-stops at 5.0s without speech (precedes 20s)`);
+            check(await hasStopMessage(page, 'No speech detected within 5 seconds.'), `${pageName}: Scenario 8&11 - Displays exact 5s stop-reason message in Manual mode`);
+        }
 
         // --- Scenario 7 & 9: Manual does NOT auto-stop on silence; stops at 20s absolute upper limit ---
         await clickRecord(page, true); // Manual

@@ -463,5 +463,68 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(manual20sMsg, 'Auto-stopped after 20 seconds.', 'Manual stops at 20s absolute cap');
   await tp.close();
 
+  // 14. Copy button Fluent Clipboard SVG, playback preservation (TTS & Audio), and recording exclusion
+  const copySvgMatch = await p.evaluate(() => {
+    const actualPath = document.querySelector('#drill1 .p82-copy-button svg.p82-copy-icon path')?.getAttribute('d');
+    const expectedPath = window.FluentIcons?.create('clipboard', 20, 'p82-copy-icon')?.querySelector('path')?.getAttribute('d');
+    const attr = document.querySelector('#drill1 .p82-copy-button')?.dataset.keepPlayback;
+    return { matches: Boolean(actualPath && expectedPath && actualPath === expectedPath), keepAttr: attr === 'true' };
+  });
+  eq(copySvgMatch, { matches: true, keepAttr: true }, 'Copy button uses Fluent Clipboard 24 Regular SVG and data-keep-playback=true');
+
+  // TTS playback preservation during Copy
+  await p.evaluate(() => {
+    t.speaking = true;
+    t.cancelCount = 0;
+    const origCancel = speechSynthesis.cancel.bind(speechSynthesis);
+    speechSynthesis.cancel = () => { t.cancelCount += 1; return origCancel(); };
+    window.__copiedDuringTts = '';
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: async txt => { window.__copiedDuringTts = txt; } },
+      configurable: true
+    });
+  });
+  await p.locator('#drill1 .drill-listen-btn').first().click();
+  await p.locator('#drill1 .p82-copy-button').click();
+  const ttsCopyRes = await p.evaluate(() => ({
+    copied: window.__copiedDuringTts.length > 0,
+    cancelCount: t.cancelCount,
+    stillPlaying: Boolean(document.querySelector('#drill1 .drill-listen-btn.is-playing'))
+  }));
+  eq(ttsCopyRes, { copied: true, cancelCount: 0, stillPlaying: true }, 'Copy during TTS playback succeeds without cancelling speechSynthesis');
+  await p.evaluate(() => { t.spoken.at(-1)?.onend?.(); });
+
+  // Recorded Audio playback preservation during Copy
+  await p.evaluate(() => {
+    const a = audit82;
+    const r = a.rowsFor(0)[0][0];
+    a.saved.set(a.keyFor(r), { raw: '授業で何か話します', url: 'blob:http://p82.test/audio-copy-test', refs: ['授業で何か話します'], status: 'accepted', correct: true });
+    a.render();
+    window.__copiedDuringAudio = '';
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: async txt => { window.__copiedDuringAudio = txt; } },
+      configurable: true
+    });
+  });
+  await p.locator('#drill1 .play-recording-btn').first().click();
+  await p.locator('#drill1 .p82-copy-button').click();
+  const audioCopyRes = await p.evaluate(() => {
+    const aud = t.audios.at(-1);
+    return {
+      copied: window.__copiedDuringAudio.length > 0,
+      paused: aud ? aud.paused : true,
+      hasSrc: aud ? Boolean(aud.src) : false
+    };
+  });
+  eq(audioCopyRes, { copied: true, paused: false, hasSrc: true }, 'Copy during recorded Audio playback succeeds without pausing or resetting Audio');
+  await p.evaluate(() => { t.audios.at(-1)?.onended?.(); });
+
+  // Recording exclusion: Copy button is disabled during recording
+  await p.locator('#toggleRecordMode').click(); // Manual mode
+  await p.locator('#drill1 .drill-record-btn').first().click();
+  eq(await p.locator('#drill1 .p82-copy-button').isDisabled(), true, 'Copy button is disabled while recording');
+  await p.locator('#drill1 .stop-btn-active').first().click();
+  await p.locator('#toggleRecordMode').click(); // restore Autostop ON
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

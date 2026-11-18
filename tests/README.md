@@ -112,7 +112,7 @@ node tests/relay-zero-gap.cjs
 
 - **`node tests/f4-recording-limits.cjs`**
   - **対象**: 日本語の録音対象14ページ（`PRACTICE_PAGES` で絞り込み可能）
-  - **検証内容**: 発話開始前5秒停止（Autostop／Manual共通）と停止理由メッセージ `No speech detected within 5 seconds.`、発話後の連続2.0秒無音停止と途中発話による計測リセット（Autostopのみ）、Manual時の発話後無音停止なし、20秒の絶対上限と停止理由メッセージ `Auto-stopped after 20 seconds.`（Autostop／Manual双方）、認識終了イベント単独では2.0秒の無音停止を代替しないこと、および停止時のマイク・音量監視リソース解放。制御されたモック環境による検証。
+  - **検証内容**: 発話開始前5秒停止（Autostop ON時、およびManual時の5秒停止廃止が先行適用された `practice8.2.html` を除く未適用13ページ）と停止理由メッセージ `No speech detected within 5 seconds.`、`practice8.2.html` の Manual 時5秒継続検証、発話後の連続2.0秒無音停止と途中発話による計測リセット（Autostopのみ）、Manual時の発話後無音停止なし、20秒の絶対上限と停止理由メッセージ `Auto-stopped after 20 seconds.`（Autostop／Manual双方）、認識終了イベント単独では2.0秒の無音停止を代替しないこと、および停止時のマイク・音量監視リソース解放。制御されたモック環境による検証。
   - **実行場面**: 共通録音停止条件または対象ページの録音停止監視ロジックを変更した場合。
 
 ---

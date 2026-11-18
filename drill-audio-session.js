@@ -350,6 +350,7 @@ window.DrillAudio = (() => {
                 adapter.stop();
             }
         } else if (event.type === 'click' && target.matches('button') && !target.disabled) {
+            if (target.closest('[data-keep-playback="true"]')) return;
             adapter.stop();
         }
         queueMicrotask(sync);

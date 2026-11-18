@@ -1770,7 +1770,6 @@ const COPY82_HEADERS = [
     'Practice 8.2 — Drill 3: 何か／何も — Yes/No questions',
     'Practice 8.2 — Drill 4: 何でも — Unlimited Choice'
 ];
-const COPY82_CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p82-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
 function getCopy82Date() {
     const now = new Date();
     return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
@@ -1818,7 +1817,11 @@ function mountCopyAreas82() {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'example-button p82-copy-button';
-            button.innerHTML = COPY82_CLIPBOARD_SVG + '<span>Copy my sentences</span>';
+            button.dataset.keepPlayback = 'true';
+            if (window.FluentIcons) {
+                button.append(window.FluentIcons.create('clipboard', 20, 'p82-copy-icon'));
+            }
+            button.append(node('span', '', 'Copy my sentences'));
             const help = document.createElement('span');
             help.className = 'p82-copy-help';
             help.textContent = 'Copy your drill results to review or share.';
