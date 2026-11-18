@@ -883,7 +883,6 @@ function showResult(key,notice='') {
         }
         else {
             FeedbackStatus.setMismatch(v.correction);
-            v.correction.hidden=false;
             const retryUnit=v.correction.firstElementChild||v.correction;
             const fire=retryUnit.querySelector('.feedback-retry-fire')||retryUnit.querySelector('svg');
             if(fire)v.result.append(fire);
