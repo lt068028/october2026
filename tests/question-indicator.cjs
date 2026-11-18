@@ -243,7 +243,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill5 .question-indicator').count(), 0, 'Practice 8.1 Drill 5 has 0 question indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.1 Examples have 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.1 answer rows have 0 question indicators');
-    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 4, 'All 4 indicators in Practice 8.1 are wrapped with stop buttons');
+    check(await page.locator('.p81-cue-words > .question-indicator').count(), 4, 'All 4 indicators in Practice 8.1 are placed at cue end');
 
     // Verify rerendering does not duplicate indicators on Practice 8.1
     for (const script of ['hiragana', 'kanji']) {
@@ -253,20 +253,20 @@ const root = path.resolve(__dirname, '..');
 
     // 12. Practice 8.2
     await page.goto('http://qi.test/practice8.2.html');
-    check(await page.locator('.question-indicator').count(), 20, 'Practice 8.2 has exactly 20 question indicators total');
-    check(await page.locator('#drill1 .question-indicator').count(), 4, 'Practice 8.2 Drill 1 has 4 question indicators');
+    check(await page.locator('.question-indicator').count(), 8, 'Practice 8.2 has exactly 8 question indicators total (Drill 2 only)');
+    check(await page.locator('#drill1 .question-indicator').count(), 0, 'Practice 8.2 Drill 1 has 0 question indicators');
     check(await page.locator('#drill2 .question-indicator').count(), 8, 'Practice 8.2 Drill 2 has 8 question indicators');
-    check(await page.locator('#drill3 .question-indicator').count(), 5, 'Practice 8.2 Drill 3 has 5 question indicators');
-    check(await page.locator('#drill4 .question-indicator').count(), 3, 'Practice 8.2 Drill 4 has 3 question indicators');
+    check(await page.locator('#drill3 .question-indicator').count(), 0, 'Practice 8.2 Drill 3 has 0 question indicators');
+    check(await page.locator('#drill4 .question-indicator').count(), 0, 'Practice 8.2 Drill 4 has 0 question indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.2 Examples have 0 question indicators');
     check(await page.locator('.drill-cue-panel .question-indicator').count(), 0, 'Practice 8.2 Drill 5 English cues panel has 0 question indicators');
     check(await page.locator('tr:has(.answer-choice) .question-indicator').count(), 0, 'Practice 8.2 answer rows have 0 question indicators');
-    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 20, 'All 20 indicators in Practice 8.2 are wrapped with stop buttons');
+    check(await page.locator('.p81-cue-words > .question-indicator').count(), 8, 'All 8 indicators in Practice 8.2 are placed at cue end');
 
     // Verify rerendering does not duplicate indicators on Practice 8.2
     for (const script of ['hiragana', 'kanji']) {
         await page.locator(`#scriptModeControl [data-value="${script}"]`).click();
-        check(await page.locator('.question-indicator').count(), 20, `Practice 8.2 indicator count remains 20 after scriptMode=${script}`);
+        check(await page.locator('.question-indicator').count(), 8, `Practice 8.2 indicator count remains 8 after scriptMode=${script}`);
     }
 
     // 13. Practice 8.3
@@ -277,11 +277,7 @@ const root = path.resolve(__dirname, '..');
     check(await page.locator('#drill3 .question-indicator').count(), 4, 'Practice 8.3 D3 Set 1 has 4 indicators');
     check(await page.locator('#drill4 .question-indicator').count(), 4, 'Practice 8.3 D4 Set 1 has 4 indicators');
     check(await page.locator('.p81-example .question-indicator').count(), 0, 'Practice 8.3 Examples have 0 question indicators');
-    check(await page.locator('.stop-indicator-wrap:has(.question-indicator)').count(), 18, 'All 18 visible indicators in Practice 8.3 are wrapped with stop buttons');
-
-    // Strict DOM hierarchy check: verify that stop-indicator-wrap is inside .recording-actions
-    const p83InsideActions = await page.locator('.recording-actions > .stop-indicator-wrap > .question-indicator').count();
-    check(p83InsideActions, 18, 'All 18 question indicators in Practice 8.3 are properly nested inside .recording-actions > .stop-indicator-wrap');
+    check(await page.locator('.p81-cue-words > .question-indicator').count(), 18, 'All 18 visible indicators in Practice 8.3 are placed at cue end');
 
     // Strict row check: interrogative rows (-q1, -q2) have indicator, answer rows (-a) do NOT have indicator
     const p83QRowsWithIndicator = await page.locator('tr[data-row$="-q1"] .question-indicator, tr[data-row$="-q2"] .question-indicator').count();
@@ -291,7 +287,7 @@ const root = path.resolve(__dirname, '..');
 
     // Switch D1 to Set 2 (何): 4 indicators
     await page.locator('#drill1 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill1 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators inside actions');
+    check(await page.locator('#drill1 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D1 Set 2 has 4 indicators at cue end');
 
     // Switch D2 to Set 2 (何): 6 indicators
     await page.locator('#drill2 .p21-set-switcher button:nth-child(2)').click();

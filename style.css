@@ -5498,15 +5498,15 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     margin-right: 4px;
 }
 
-/* Practice 8.2: QuestionIndicator をキュー末尾 6px 間隔・1em 同一高さでインライン配置 */
-.practice82-page .p81-cue-words .question-indicator {
+/* Practice 8.1〜8.3: QuestionIndicator をキュー末尾 6px 間隔・1em 同一高さでインライン配置 */
+:is(.practice81-page, .practice82-page, .practice83-page) .p81-cue-words .question-indicator {
     display: inline-flex;
     align-items: center;
     margin-left: 6px;
     vertical-align: -0.125em;
     line-height: 1;
 }
-.practice82-page .p81-cue-words .question-indicator svg {
+:is(.practice81-page, .practice82-page, .practice83-page) .p81-cue-words .question-indicator svg {
     width: 1em;
     height: 1em;
     display: block;
