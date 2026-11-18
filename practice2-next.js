@@ -1184,7 +1184,7 @@ function practice2ShowNotice(resultSpan, message) {
         );
 
         if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === "function") {
-            window.QuestionIndicator.attach(cue, isInterrogative, { variant: "regular", placement: "cue" });
+            window.QuestionIndicator.attach(cueCell, isInterrogative, { variant: "regular", placement: "cue" });
         }
 
         controls.append(actions, result);
@@ -1490,8 +1490,9 @@ function practice2ShowNotice(resultSpan, message) {
     }
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
+        const indicator=view.cueCell.querySelector('.question-indicator');
         const role=view.cueCell.querySelector('strong')?.cloneNode(true);
-        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')),...(indicator?[indicator]:[]));
     };
     const englishDemonstrative=(speaker,o)=>{
         const d=demonstrative(speaker,o);

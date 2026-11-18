@@ -496,10 +496,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         actions.append(sound, record, stop);
 
-        if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
-            window.QuestionIndicator.attach(cue, question, { variant: 'regular', placement: 'cue' });
-        }
-
         const result = node(
             'span',
             'result-text not-recorded-yet',
@@ -575,6 +571,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const cell = node('td');
         populateRecordingCell(cell, item, index, kind, state);
         cueCell.prepend(ConversationDisplay.roleLabel(question ? 'Q' : 'A'), document.createTextNode(' '));
+        if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
+            window.QuestionIndicator.attach(cueCell, question, { variant: 'regular', placement: 'cue' });
+        }
         row.append(cueCell, cell);
         body.append(row);
         return cell;

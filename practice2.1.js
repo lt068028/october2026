@@ -1151,7 +1151,7 @@ function practice2ShowNotice(resultSpan, message) {
         );
 
         if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === "function") {
-            window.QuestionIndicator.attach(cue, isInterrogative, { variant: "regular", placement: "cue" });
+            window.QuestionIndicator.attach(cueCell, isInterrogative, { variant: "regular", placement: "cue" });
         }
 
         controls.append(actions, result);
@@ -1228,8 +1228,9 @@ function practice2ShowNotice(resultSpan, message) {
     const englishObject=pronoun=>({'これ':'this','それ':'that','あれ':'that (over there)'}[pronoun]);
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
+        const indicator=view.cueCell.querySelector('.question-indicator');
         const source=view.cueCell.querySelector('strong'),role=source&&(/^(?:[XYZ] · )?[QA]:$|^[XYZ][:：]?$/.test(source.textContent.trim())||source.classList.contains('conversation-role')||source.classList.contains('conversation-person'))?source.cloneNode(true):null;
-        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')));
+        view.cueCell.replaceChildren(...(role?[role,document.createTextNode(' ')]:[]),document.createTextNode(parts.join(' / ')),...(indicator?[indicator]:[]));
     };
     const nameQuestion=(speaker,o)=>question(pro(speaker,o),word(speechStyle==='formal'?'なん':'なに','何'));
     const shortAnswer=(speaker,o)=>pro(speaker,o)+({formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle]);

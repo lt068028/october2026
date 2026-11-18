@@ -64,12 +64,12 @@ const root = path.resolve(__dirname, '..');
     check(attrs.pointerEvents, 'none', 'Indicator has pointer-events=none');
     check(attrs.svgWidth, '16', 'Indicator SVG width is 16');
     check(attrs.svgHeight, '16', 'Indicator SVG height is 16');
-    const filledQuestionHash = '45ed9a94cd9ec310a0854c13cda744cb8e1e1b7e0a9a05878f3acc33f4c8943c';
-    const filledAttrs = await page.locator('.question-indicator').first().evaluate(el => {
+    const regularQuestionHash = '859d6556269e78746fe339ed0455294042c6cc66261d595a06c57c91444442a7';
+    const regAttrs = await page.locator('.question-indicator').first().evaluate(el => {
         const path = el.querySelector('svg path');
         return {stroke:path?.getAttribute('stroke'), fill:path?.getAttribute('fill'), d:path?.getAttribute('d')};
     });
-    check({stroke:filledAttrs.stroke,fill:filledAttrs.fill,hash:createHash('sha256').update(filledAttrs.d||'').digest('hex')}, {stroke:null,fill:'currentColor',hash:filledQuestionHash}, 'Indicator uses approved Chat Help Filled path without outline');
+    check({stroke:regAttrs.stroke,fill:regAttrs.fill,hash:createHash('sha256').update(regAttrs.d||'').digest('hex')}, {stroke:'currentColor',fill:'currentColor',hash:regularQuestionHash}, 'Indicator uses approved Chat Help Regular path at cue end');
 
     // 3. Rerendering & settings switching: no duplicates
     for (const script of ['hiragana', 'kanji']) {
@@ -84,20 +84,19 @@ const root = path.resolve(__dirname, '..');
         check(count, 8, `Count remains 8 after switching to vocab=${vocab}`);
     }
 
-    // 4. Narrow viewport (375px) check: no overflow, stop button and indicator remain together
+    // 4. Narrow viewport (375px) check: indicator stays inside cue cell without overflow
     await page.setViewportSize({width: 375, height: 667});
-    const layout = await page.locator('.stop-indicator-wrap').first().evaluate(wrap => {
-        const btn = wrap.querySelector('button');
-        const icon = wrap.querySelector('.question-indicator');
-        const btnRect = btn.getBoundingClientRect();
+    const layout = await page.locator('.drill-cue-cell:has(.question-indicator)').first().evaluate(cell => {
+        const icon = cell.querySelector('.question-indicator');
+        const cellRect = cell.getBoundingClientRect();
         const iconRect = icon.getBoundingClientRect();
         return {
-            sameTop: Math.abs(btnRect.top - iconRect.top) < 15,
-            iconRightOfBtn: iconRect.left >= btnRect.right - 1
+            insideCueCell: iconRect.left >= cellRect.left - 1 && iconRect.right <= cellRect.right + 1,
+            hasDimension: iconRect.width > 0 && iconRect.height > 0
         };
     });
-    check(layout.sameTop, true, 'Stop button and indicator are on the same line at 375px');
-    check(layout.iconRightOfBtn, true, 'Indicator is positioned immediately to the right of stop button');
+    check(layout.insideCueCell, true, 'Indicator remains inside cue cell at 375px');
+    check(layout.hasDimension, true, 'Indicator has positive rendered dimensions at 375px');
 
     // 5. Practice 2.1
     await page.setViewportSize({width: 1440, height: 900});
@@ -291,17 +290,17 @@ const root = path.resolve(__dirname, '..');
 
     // Switch D2 to Set 2 (何): 6 indicators
     await page.locator('#drill2 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill2 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators inside actions');
+    check(await page.locator('#drill2 .p81-cue-words > .question-indicator').count(), 6, 'Practice 8.3 D2 Set 2 has 6 indicators at cue end');
 
     // Switch D3 to Set 2 (どこ): 4 indicators
     await page.locator('#drill3 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill3 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators inside actions');
+    check(await page.locator('#drill3 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D3 Set 2 has 4 indicators at cue end');
 
     // Switch D4 to Set 2 (どこ): 4 indicators, Set 3 (いつ): 4 indicators
     await page.locator('#drill4 .p21-set-switcher button:nth-child(2)').click();
-    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators inside actions');
+    check(await page.locator('#drill4 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 2 has 4 indicators at cue end');
     await page.locator('#drill4 .p21-set-switcher button:nth-child(3)').click();
-    check(await page.locator('#drill4 .recording-actions > .stop-indicator-wrap > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators inside actions');
+    check(await page.locator('#drill4 .p81-cue-words > .question-indicator').count(), 4, 'Practice 8.3 D4 Set 3 has 4 indicators at cue end');
 
     // Total slots across all alternative sets in Practice 8.3:
     // D1: Set 1 (4) + Set 2 (4) = 8
