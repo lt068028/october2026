@@ -882,6 +882,11 @@ function showResult(key,notice='') {
             v.result.append(mark,document.createTextNode(displayed));
         }
         else {
+            FeedbackStatus.setMismatch(v.correction);
+            v.correction.hidden=false;
+            const retryUnit=v.correction.firstElementChild||v.correction;
+            const fire=retryUnit.querySelector('.feedback-retry-fire')||retryUnit.querySelector('svg');
+            if(fire)v.result.append(fire);
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
             const red=text=>{const span=document.createElement('span');span.style.color='var(--error-text)';span.textContent=text;v.result.append(span);};
@@ -889,9 +894,6 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            FeedbackStatus.setMismatch(v.correction);
-            v.correction.hidden=false;
-            const retryUnit=v.correction.firstElementChild||v.correction;
             v.result.append(document.createTextNode(' '),retryUnit);
         }
         if(value.feedback&&!v.r.comparison) {

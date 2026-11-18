@@ -5494,6 +5494,19 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .recording-controls > .recording-result .feedback-retry-label {
     white-space: nowrap;
 }
+.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-right: 4px;
+    display: inline-block;
+    color: #B47732;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+        color: #E4AD69;
+    }
+}
 .practice82-page :is(.drill-listen-btn, .play-recording-btn).p82-autoplay-stop:hover > .custom-tip-box {
     visibility: visible;
     opacity: 1;
