@@ -684,21 +684,21 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
 
     // 4. Global settings 9 icon items + Vocabulary OFF (no icon)
     const settingSpecs = [
-      { key: 'hiragana', sel: '#scriptModeControl [data-value="hiragana"]', icon: 'translate', vb: '0 0 24 24', w: '20px' },
-      { key: 'kanji', sel: '#scriptModeControl [data-value="kanji"]', icon: 'localLanguageGlobe', vb: '0 0 20 20', w: '18px' },
-      { key: 'formal', sel: '#speechStyleControl [data-value="formal"]', icon: 'personAccounts', vb: '0 0 24 24', w: '15px' },
-      { key: 'informal', sel: '#speechStyleControl [data-value="informal"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '16px' },
-      { key: 'casual', sel: '#speechStyleControl [data-value="casual"]', icon: 'chatMultiple', vb: '0 0 24 24', w: '18px' },
-      { key: 'hover', sel: '#hintModeControl [data-value="hover"]', icon: 'chatHintHalf', vb: '0 0 24 24', w: '16px' },
-      { key: 'paren', sel: '#hintModeControl [data-value="paren"]', icon: 'textEditStyle', vb: '0 0 24 24', w: '16px' },
-      { key: 'autostop', sel: '#labelAutoRecord', icon: 'stop', vb: '0 0 24 24', w: '18px' },
-      { key: 'autoplay', sel: '#labelAutoPlay', icon: 'play', vb: '0 0 24 24', w: '18px' }
+      { key: 'hiragana', sel: '#scriptModeControl [data-value="hiragana"]', icon: 'translate', vb: '0 0 24 24', w: '24px' },
+      { key: 'kanji', sel: '#scriptModeControl [data-value="kanji"]', icon: 'localLanguageGlobe', vb: '0 0 20 20', w: '24px' },
+      { key: 'formal', sel: '#speechStyleControl [data-value="formal"]', icon: 'buildingFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'informal', sel: '#speechStyleControl [data-value="informal"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'casual', sel: '#speechStyleControl [data-value="casual"]', icon: 'homeFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'hover', sel: '#hintModeControl [data-value="hover"]', icon: 'chatHintHalf', vb: '0 0 24 24', w: '24px' },
+      { key: 'paren', sel: '#hintModeControl [data-value="paren"]', icon: 'textEditStyle', vb: '0 0 24 24', w: '24px' },
+      { key: 'autostop', sel: '#labelAutoRecord', icon: 'stop', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'autoplay', sel: '#labelAutoPlay', icon: 'playCircle', vb: '0 0 24 24', w: '24px', v: 'filled' }
     ];
 
     const settings = settingSpecs.map(sp => {
       const el = document.querySelector(sp.sel);
       const info = inspectSvg(el);
-      const expectedD = FI.create(sp.icon, 20).querySelector('path').getAttribute('d');
+      const expectedD = FI.create(sp.icon, 20, '', sp.v || 'regular').querySelector('path').getAttribute('d');
       return {
         key: sp.key,
         hasSvg: info.hasSvg,
@@ -721,11 +721,42 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const expectedBackD = FI.create('arrowHookDownLeft', 20).querySelector('path').getAttribute('d');
     const expectedBulbD = FI.create('lightbulb', 20).querySelector('path').getAttribute('d');
     const expectedSpeakerD = FI.create('speaker', 20).querySelector('path').getAttribute('d');
-    const expectedStopD = FI.create('stop', 20, '', 'regular').querySelector('path').getAttribute('d');
-    const expectedPlayD = FI.create('play', 20, '', 'regular').querySelector('path').getAttribute('d');
+    const expectedStopD = FI.create('stop', 20, '', 'filled').querySelector('path').getAttribute('d');
+    const expectedPlayD = FI.create('playCircle', 20, '', 'filled').querySelector('path').getAttribute('d');
 
     const autostopD = document.querySelector('#labelAutoRecord svg path')?.getAttribute('d');
     const autoplayD = document.querySelector('#labelAutoPlay svg path')?.getAttribute('d');
+
+    // Phase C: colors, amber selection, button height and overlap
+    const colorOf = v => { const pr = document.createElement('span'); pr.style.color = v; document.body.append(pr); const c = getComputedStyle(pr).color; pr.remove(); return c; };
+    const svgColor = sel => getComputedStyle(document.querySelector(sel + ' svg')).color;
+    const realStopSvg = document.querySelector('.ex-audio-btn svg');
+    const amber = 'rgb(251, 191, 36)';
+    const segs = Array.from(document.querySelectorAll('.compact-settings .segmented-option'));
+    const withIcon = segs.filter(b => b.querySelector('svg'));
+    const heightOk = withIcon.every(b => Math.abs(b.getBoundingClientRect().height - 33.8) < 0.6);
+    const noOverlap = withIcon.every(b => {
+      const svg = b.querySelector('svg').getBoundingClientRect();
+      const walker = document.createTreeWalker(b, NodeFilter.SHOW_TEXT);
+      let ok = true;
+      while (walker.nextNode()) {
+        const n = walker.currentNode;
+        if (!n.textContent.trim() || n.parentElement.closest('.custom-tip-box')) continue;
+        const r = document.createRange(); r.selectNodeContents(n);
+        const tr = r.getBoundingClientRect();
+        if (svg.right > tr.left + 0.5) ok = false;
+      }
+      return ok;
+    });
+    const selectedAmber = withIcon.filter(b => b.getAttribute('aria-pressed') === 'true').every(b => getComputedStyle(b.querySelector('svg')).color === amber);
+    const unselectedNotAmber = withIcon.filter(b => b.getAttribute('aria-pressed') !== 'true').every(b => getComputedStyle(b.querySelector('svg')).color !== amber);
+    const phaseC = {
+      removedKeys: !('personAccounts' in FI.PATHS) && !('chatMultiple' in FI.PATHS),
+      autostopRed: svgColor('#labelAutoRecord') === colorOf('var(--error-text)'),
+      autoplayThemeText: svgColor('#labelAutoPlay') === colorOf('var(--text-primary)'),
+      stopSameAsRealBtn: Boolean(realStopSvg),
+      heightOk, noOverlap, selectedAmber, unselectedNotAmber
+    };
 
     // 5. Disabled buttons cursor check (no cursor: not-allowed anywhere)
     audit82.choices.delete('yn-1-a');
@@ -745,6 +776,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       autostopSharesStop: Boolean(autostopD && autostopD === expectedStopD),
       autoplaySharesPlay: Boolean(autoplayD && autoplayD === expectedPlayD),
       settings,
+      phaseC,
       vocabOffHasSvg,
       hasLocalLanguageZi,
       disabledCount: disabledCursors.length,
@@ -769,6 +801,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       noEmojiWrapper: true
     }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
   }
+  eq(fluentUiAudit.phaseC, { removedKeys: true, autostopRed: true, autoplayThemeText: true, stopSameAsRealBtn: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Formal/Casual Filled, removed unused keys, Autostop red, Autoplay theme color, amber selected icons, unchanged button height, no overlap');
   eq(fluentUiAudit.vocabOffHasSvg, false, 'Vocabulary Display OFF remains text-only without icon');
   eq(fluentUiAudit.hasLocalLanguageZi, true, 'Secondary candidate localLanguageZi (Local Language Zi 24 Regular) is registered in FluentIcons');
   eq(fluentUiAudit.disabledCount > 0, true, 'Disabled buttons exist for cursor audit');

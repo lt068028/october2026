@@ -159,9 +159,10 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 3. **③ 左下 Voice ラベル（`.voice-select-label`）**：
    - 先頭の `🔊` 絵文字を廃止し、モデル音声再生ボタンと同一の `Speaker 2 24 Regular`（`speaker` / `speaker2`、`20×20px`）を配置する。
 4. **④ グローバル設定の全アイコン付き項目（9箇所）**：
-   - **Script Mode**：`Hiragana Only` ＝ `Translate 24 Regular`（`translate`、`20×20px`、`translateY(-0.5px)`）、`With漢字` ＝ `Local Language Globe 20 Regular`（`localLanguageGlobe`、`18×18px`、`translateY(0.5px)`；第二候補として `Local Language Zi 24 Regular` ＝ `localLanguageZi` も `fluent-icons.js` に登録）。
-   - **Speech Style**：`Formal` ＝ `Person Accounts 24 Regular`（`personAccounts`、`15×15px`、`translateY(-0.5px)`）、`Informal` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`、`16×16px`）、`Casual` ＝ `Chat Multiple 24 Regular`（`chatMultiple`、`18×18px`）。
-   - **Vocabulary Display**：`OFF` ＝ アイコンなし、`Hover` ＝ `Chat Hint Half 24 Regular`（`chatHintHalf`、`16×16px`）、`Display` ＝ `Text Edit Style 24 Regular`（`textEditStyle`、`16×16px`）。
-   - **Autostop / Autoplay**：`Autostop` ＝ `Stop 24 Regular`（`stop`、`18×18px`、録音停止ボタンと同一定義を共有）、`Autoplay` ＝ `Play 24 Regular`（`play`、`18×18px`、録音再生系と同一定義を共有）。
-5. **無効化（`disabled`）ボタンからの禁止カーソル除外**：
+   - **Script Mode**：`Hiragana Only` ＝ `Translate 24 Regular`（`translate`、`24×24px`）、`With漢字` ＝ `Local Language Globe 20 Regular`（`localLanguageGlobe`、`24×24px`；第二候補として `Local Language Zi 24 Regular` ＝ `localLanguageZi` も `fluent-icons.js` に登録）。
+   - **Speech Style**：`Formal` ＝ `Building 24 Filled`（`buildingFilled`）、`Informal` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`）、`Casual` ＝ `Home 24 Filled`（`homeFilled`）（いずれも `24×24px`）。
+   - **Vocabulary Display**：`OFF` ＝ アイコンなし、`Hover` ＝ `Chat Hint Half 24 Regular`（`chatHintHalf`、`24×24px`）、`Display` ＝ `Text Edit Style 24 Regular`（`textEditStyle`、`24×24px`）。
+   - **Autostop / Autoplay**：`Autostop` ＝ 録音停止ボタンと同一の `Stop 24 Filled`（`stop` filled、`24×24px`、赤 `var(--error-text)`）、`Autoplay` ＝ 録音再生ボタンと同一の `Play Circle 24 Filled`（`playCircle` filled、`24×24px`、テーマ対応 `var(--text-primary)`）。
+5. **サイズ・選択色**：全設定アイコンはボタン高さ・上下paddingを変えずに収まる最大の24pxとし、セグメントボタンの選択中のみアイコン色を `#fbbf24`（アンバーゴールド）とする（非選択時は変更なし）。
+6. **無効化（`disabled`）ボタンからの禁止カーソル除外**：
    - 無効化状態（未選択時の Drill 3 回答側ボタン、未録音時の `Copy my sentences` ボタン、録音・再生中の排他ロック対象ボタン等）ではグレーアウト表現のみで状態を示し、`cursor: not-allowed` は使用しない（`cursor: default`）。

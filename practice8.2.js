@@ -1680,9 +1680,9 @@ function init() {
         [
             [
                 'formal',
-                'personAccounts',
-                'regular',
-                15,
+                'buildingFilled',
+                'filled',
+                24,
                 'Formal',
                 'Polite speech for work or unfamiliar people.'
             ],
@@ -1690,15 +1690,15 @@ function init() {
                 'informal',
                 'editLineHorizontal3Filled',
                 'filled',
-                16,
+                24,
                 'Informal',
                 'Plain forms used in writing'
             ],
             [
                 'casual',
-                'chatMultiple',
-                'regular',
-                18,
+                'homeFilled',
+                'filled',
+                24,
                 'Casual',
                 'Relaxed speech with family and friends.'
             ]

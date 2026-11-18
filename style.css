@@ -5639,52 +5639,23 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     flex-shrink: 0;
     color: currentColor;
 }
-/* 光学サイズ統一（実描画高さ Optical Height ≈ 13.0〜13.5px、垂直中央位置の統一） */
-.practice82-page .compact-settings .fluent-icon-translate {
-    width: 20px;
-    height: 20px;
-    transform: translateY(-0.5px);
+/* 全アイコンをボタン内容領域（min-height − 上下padding）に収まる最大サイズ24pxへ統一。ボタン高さ・padding不変。 */
+.practice82-page .compact-settings .p82-setting-icon {
+    width: 24px;
+    height: 24px;
+    margin-block: -1px;
+    transform: none;
 }
-.practice82-page .compact-settings .fluent-icon-localLanguageGlobe {
-    width: 18px;
-    height: 18px;
-    transform: translateY(0.5px);
+/* 選択中セグメントボタンのアイコンのみアンバーゴールド（非選択時は現状維持） */
+.practice82-page .compact-settings .segmented-option:is(.is-selected, .active, [aria-pressed="true"]) .p82-setting-icon {
+    color: #fbbf24;
 }
-.practice82-page .compact-settings .fluent-icon-localLanguageZi {
-    width: 15px;
-    height: 15px;
-    transform: translateY(0.5px);
+/* Autostop／Autoplayは実際の録音停止ボタン・録音再生ボタンと同じパス・同じ色 */
+.practice82-page .compact-settings #labelAutoRecord .p82-setting-icon {
+    color: var(--error-text, #be123c);
 }
-.practice82-page .compact-settings .fluent-icon-personAccounts {
-    width: 15px;
-    height: 15px;
-    transform: translateY(-0.5px);
-}
-.practice82-page .compact-settings .fluent-icon-editLineHorizontal3Filled,
-.practice82-page .compact-settings .fluent-icon-editLineHorizontal3 {
-    width: 16px;
-    height: 16px;
-}
-.practice82-page .compact-settings .fluent-icon-chatMultiple {
-    width: 18px;
-    height: 18px;
-}
-.practice82-page .compact-settings .fluent-icon-chatHintHalf,
-.practice82-page .compact-settings .fluent-icon-chatHelp {
-    width: 16px;
-    height: 16px;
-}
-.practice82-page .compact-settings .fluent-icon-textEditStyle {
-    width: 16px;
-    height: 16px;
-}
-.practice82-page .compact-settings .fluent-icon-stop {
-    width: 18px;
-    height: 18px;
-}
-.practice82-page .compact-settings .fluent-icon-play {
-    width: 18px;
-    height: 18px;
+.practice82-page .compact-settings #labelAutoPlay .p82-setting-icon {
+    color: var(--text-primary);
 }
 .practice82-page .compact-settings button:is(:disabled, [aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .p82-setting-icon,
 .practice82-page .compact-settings .settings-onoff:has(input:disabled:not(:checked)) .p82-setting-icon {

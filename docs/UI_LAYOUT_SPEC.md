@@ -215,15 +215,18 @@
 | ③ 左下Voiceラベル（`.voice-select-label`） | `Speaker 2 24 Regular` | `speaker` / `speaker2` (`regular`) | `0 0 24 24` | 17.99 | `20×20px`（モデル音声ボタンと同一パスを共有、Optical Height ≈ 15.0px） |
 | ④ Script Mode — Hiragana Only | `Translate 24 Regular` | `translate` (`regular`) | `0 0 24 24` | 14.73 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 12.3px） |
 | ④ Script Mode — With漢字 | `Local Language Globe 20 Regular`（第二候補：`Local Language Zi 24 Regular`） | `localLanguageGlobe` (`regular`)（予備：`localLanguageZi`） | `0 0 20 20`（予備：`0 0 24 24`） | 15.00 / 20（予備：21.00 / 24） | `18×18px`、`translateY(0.5px)`（Optical Height ≈ 13.5px；予備 `localLanguageZi` は `15×15px`） |
-| ④ Speech Style — Formal | `Person Accounts 24 Regular` | `personAccounts` (`regular`) | `0 0 24 24` | 21.00 | `15×15px`、`translateY(-0.5px)`（Optical Height ≈ 13.1px） |
+| ④ Speech Style — Formal | `Building 24 Filled` | `buildingFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
 | ④ Speech Style — Informal | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
-| ④ Speech Style — Casual | `Chat Multiple 24 Regular` | `chatMultiple` (`regular`) | `0 0 24 24` | 18.00 | `18×18px`（Optical Height ≈ 13.5px） |
+| ④ Speech Style — Casual | `Home 24 Filled` | `homeFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
 | ④ Vocabulary Display — Hover | `Chat Hint Half 24 Regular` | `chatHintHalf` (`regular`) | `0 0 24 24` | 19.79 | `16×16px`（Optical Height ≈ 13.2px） |
 | ④ Vocabulary Display — Display | `Text Edit Style 24 Regular` | `textEditStyle` (`regular`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
-| ④ Autostop | `Stop 24 Regular` | `stop` (`regular`) | `0 0 24 24` | 18.00 | `18×18px`（録音停止ボタンの `stop` 定義と共有、Optical Height ≈ 13.5px） |
-| ④ Autoplay | `Play 24 Regular` | `play` (`regular`) | `0 0 24 24` | 17.95 | `18×18px`（録音再生系の `play` 定義と共有、Optical Height ≈ 13.5px） |
+| ④ Autostop | `Stop 24 Filled`（録音停止ボタンと同一の四角Filledパス） | `stop` (`filled`) | `0 0 24 24` | — | `24×24px`、色は録音停止ボタンと同じ `var(--error-text)`（赤） |
+| ④ Autoplay | `Play Circle 24 Filled`（録音再生ボタンと同一の円付き再生Filledパス） | `playCircle` (`filled`) | `0 0 24 24` | — | `24×24px`、色は録音再生ボタンと同じテーマ対応 `var(--text-primary)`（Light：黒系／Dark：明色系） |
 
 - Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。
+- **枠内最大サイズ（2026-11-18）**：グローバル設定の全アイコン（Script Mode / Speech Style / Vocabulary Display / Autostop / Autoplay）は、セグメントボタンの高さ（`min-height`）および上下paddingを変えず、内容領域に収まる最大の `24×24px` に統一する。ラベル文字・隣接要素と重ねない。
+- **選択時のアンバーゴールド**：セグメントボタン（Script Mode / Speech Style / Vocabulary Display）で選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色は変更しない。
+- Speech Style の3項目はすべてFilled（Formal＝Building、Informal＝Edit Line Horizontal 3、Casual＝Home）。旧 `personAccounts`・`chatMultiple` 定義は未使用のため削除済み。
 - **光学サイズ統一の原則（Optical Size Alignment）**：SVG の外枠 `width`/`height` を単に一律の数値に揃えるのではなく、`viewBox` 内の余白を除いた絵部分の実描画バウンディングボックス高さ（`y_max - y_min`）と垂直中心（`(y_min + y_max) / 2`）を算出し、同じUI領域（特にグローバル設定ボタン群）内で**絵そのものの視覚的な高さ（Optical Height）と垂直中央位置が揃うよう**アイコン別の表示サイズおよびYオフセットを設定する。
 
 ### 13.2 無効化（`disabled`）ボタンにおける禁止カーソル（`cursor: not-allowed`）の廃止
