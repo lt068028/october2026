@@ -7,7 +7,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];let count=0;
  const eq=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
  p.on('pageerror',e=>errors.push(e.message));await p.addInitScript('('+mock.trim()+')();');
- await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
+ await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText,diffTokens,findDiff};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
  await p.goto('http://p82.test/practice8.2.html');
  eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
  eq(await p.locator('.example-box').count(),4,'four Example groups');
@@ -615,6 +615,34 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   });
   eq(hiraDiff, ['か'], 'Hiragana Only mode highlights only か in --error-text');
   await p.locator('#scriptModeControl [data-value="kanji"]').click();
+
+  // Unit tests verifying diffTokens token integrity (no truncated trailing character) and findDiff accuracy
+  const tokenIntegrity = await p.evaluate(() => {
+    const a = audit82;
+    const tStatement = a.diffTokens("授業で何か話しますか");
+    const tModel = a.diffTokens("授業で、何か、話します。");
+    const diffExtraKa = a.findDiff("授業で何か話しますか", "授業で、何か、話します。");
+    const tWord = a.diffTokens("靴");
+    const tSingleKana = a.diffTokens("か");
+    const tYoneEnd = a.diffTokens("話しますよね");
+    return {
+      statementTokens: tStatement.tokens.map(t => t.c),
+      modelTokens: tModel.tokens.map(t => t.c),
+      extraKaRedIndices: Array.from(diffExtraKa.red),
+      extraKaGapIndices: Array.from(diffExtraKa.gaps),
+      wordTokens: tWord.tokens.map(t => t.c),
+      singleKanaTokens: tSingleKana.tokens.map(t => t.c),
+      yoneEndTokens: tYoneEnd.tokens.map(t => t.c)
+    };
+  });
+  eq(tokenIntegrity.statementTokens.slice(-1), ['か'], 'diffTokens does not truncate trailing か');
+  eq(tokenIntegrity.statementTokens.slice(-6, -1), ['は', 'な', 'し', 'ま', 'す'], 'diffTokens preserves full 話します verb kana');
+  eq(tokenIntegrity.modelTokens.slice(-5), ['は', 'な', 'し', 'ま', 'す'], 'diffTokens model tokens contain full verb without trailing symbol loss');
+  eq(tokenIntegrity.extraKaRedIndices, [9], 'findDiff flags exactly index 9 (trailing か) in red');
+  eq(tokenIntegrity.extraKaGapIndices, [], 'findDiff has no gaps for single extra trailing character');
+  eq(tokenIntegrity.singleKanaTokens, ['か'], 'diffTokens on single kana unit keeps the kana');
+  eq(tokenIntegrity.wordTokens.length > 0, true, 'diffTokens on kanji word produces tokens');
+  eq(tokenIntegrity.yoneEndTokens.slice(-5), ['は', 'な', 'し', 'ま', 'す'], 'diffTokens safely strips sentence-ending よね at tokens level');
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

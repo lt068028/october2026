@@ -85,7 +85,8 @@ const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira
 [['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち'],['付ける','つける'],['点ける','つける']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
-function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
+function normalizeToken(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ');}
+function normalize(text){return normalizeToken(text).replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
  {title:'Drill 1: 何か — Affirmative Sentences',instruction:'💡Place 何か naturally before the verb.'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
@@ -788,8 +789,8 @@ function diffTokens(text) {
             || chars[i];
         const end = i + Array.from(unit).length;
 
-        // 語の途中の「よ・ね」は削除しない。
-        for (const c of normalize(unit + '§').slice(0, -1)) {
+        // 語の途中の「よ・ね」は削除しない（文末の「よ・ね」はトークン化完了後に末尾から除外する）。
+        for (const c of normalizeToken(unit)) {
             tokens.push({ c, start: i, end });
         }
 
