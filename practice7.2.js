@@ -497,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         actions.append(sound, record, stop);
 
         if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
-            window.QuestionIndicator.attach(stop, question);
+            window.QuestionIndicator.attach(cue, question, { variant: 'regular', placement: 'cue' });
         }
 
         const result = node(

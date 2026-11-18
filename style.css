@@ -5498,15 +5498,15 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     margin-right: 4px;
 }
 
-/* Practice 8.1〜8.3: QuestionIndicator をキュー末尾 6px 間隔・1em 同一高さでインライン配置 */
-:is(.practice81-page, .practice82-page, .practice83-page) .p81-cue-words .question-indicator {
+/* Practice 1.2〜8.3 & Composition 1: QuestionIndicator をキュー末尾 6px 間隔・1em 同一高さでインライン配置 */
+:is(.practice12-page, .practice21-page, .practice22-page, .practice23-page, .practice71-page, .practice72-page, .practice73-page, .practice81-page, .practice82-page, .practice83-page, .composition1-page) :is(.p81-cue-words, .prompt-label, .drill-cue-cell) .question-indicator {
     display: inline-flex;
     align-items: center;
     margin-left: 6px;
     vertical-align: -0.125em;
     line-height: 1;
 }
-:is(.practice81-page, .practice82-page, .practice83-page) .p81-cue-words .question-indicator svg {
+:is(.practice12-page, .practice21-page, .practice22-page, .practice23-page, .practice71-page, .practice72-page, .practice73-page, .practice81-page, .practice82-page, .practice83-page, .composition1-page) :is(.p81-cue-words, .prompt-label, .drill-cue-cell) .question-indicator svg {
     width: 1em;
     height: 1em;
     display: block;

@@ -1358,7 +1358,7 @@ function render() {
                 actions.append(rec, stop);
 
                 if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
-                    window.QuestionIndicator.attach(stop, Boolean(r.question));
+                    window.QuestionIndicator.attach(cue, Boolean(r.question), { variant: 'regular', placement: 'cue' });
                 }
 
                 const wrap = document.createElement('span');
@@ -2604,7 +2604,7 @@ render = function () {
             actions.append(listen, rec, stop);
 
             if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === 'function') {
-                window.QuestionIndicator.attach(stop, kind === 'q');
+                window.QuestionIndicator.attach(cue, kind === 'q', { variant: 'regular', placement: 'cue' });
             }
 
             const wrap = document.createElement('span');

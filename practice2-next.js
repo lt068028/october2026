@@ -1184,7 +1184,7 @@ function practice2ShowNotice(resultSpan, message) {
         );
 
         if (window.QuestionIndicator && typeof window.QuestionIndicator.attach === "function") {
-            window.QuestionIndicator.attach(stopBtn, isInterrogative);
+            window.QuestionIndicator.attach(cue, isInterrogative, { variant: "regular", placement: "cue" });
         }
 
         controls.append(actions, result);
