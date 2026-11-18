@@ -5482,9 +5482,17 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 /* Practice 8.2: 結果テキストと再生ボタンの間隔調整、およびAutoplay停止ボタンホバー */
 .practice82-page .recording-controls > .recording-result {
     gap: 6px 10px;
+    justify-content: flex-end;
+    text-align: right;
+}
+.practice82-page .recording-controls > .recording-result > .result-text {
+    text-align: right;
 }
 .practice82-page .recording-controls > .recording-result .play-recording-btn {
     margin-left: 4px;
+}
+.practice82-page .recording-controls > .recording-result .feedback-retry-label {
+    white-space: nowrap;
 }
 .practice82-page :is(.drill-listen-btn, .play-recording-btn).p82-autoplay-stop:hover > .custom-tip-box {
     visibility: visible;

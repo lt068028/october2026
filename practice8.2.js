@@ -889,7 +889,10 @@ function showResult(key,notice='') {
                 if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
                 if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
             }
-            FeedbackStatus.setMismatch(v.correction);v.correction.hidden=false;
+            FeedbackStatus.setMismatch(v.correction);
+            v.correction.hidden=false;
+            const retryUnit=v.correction.firstElementChild||v.correction;
+            v.result.append(document.createTextNode(' '),retryUnit);
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
