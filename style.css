@@ -5491,10 +5491,9 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .recording-controls > .recording-result .play-recording-btn {
     margin-left: 4px;
 }
-/* Practice 8.2: 採点アイコン視覚パラメータの統合（24px, icon-gap 2px, y-offset -2px, keep-gap 8px） */
+/* Practice 8.2: 採点アイコン視覚パラメータの統合（24px, icon-gap 2px, y-offset -2px, keep-gap 8px / Footprints 25px, y-offset -0.5px） */
 .practice82-page .recording-controls > .recording-result .feedback-status-accepted svg,
-.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire,
-.practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
+.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
     width: 24px;
     height: 24px;
     transform: translateY(-2px);
@@ -5521,6 +5520,10 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 }
 .practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
     display: inline-block;
+    width: 25px;
+    height: 25px;
+    transform: translateY(-0.5px);
+    vertical-align: middle;
     color: #8064B0;
 }
 @media (prefers-color-scheme: dark) {
@@ -5541,6 +5544,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .recording-controls > .recording-result .feedback-retry-label {
     white-space: nowrap;
     margin-left: 8px;
+    transform: translateY(-1px);
 }
 
 /* Practice 8.2 Drill 2: 左側疑問文マーカー（Q/A役割とは独立、Chat Help Filled 図柄・左側配置基準を共有） */

@@ -1456,7 +1456,7 @@ async function record(key, r) {
         recognition.onresult = e => {
             if (s.finished || s.discard) return;
 
-            interim = "";
+            if (!s.stopping) interim = "";
 
             for (
                 let i = e.resultIndex;
@@ -1467,12 +1467,12 @@ async function record(key, r) {
 
                 if (e.results[i].isFinal) {
                     s.raw += text;
-                } else {
+                } else if (!s.stopping) {
                     interim += text;
                 }
             }
 
-            s.interim = interim;
+            if (!s.stopping) s.interim = interim;
         };
 
         recognition.onerror = e => {

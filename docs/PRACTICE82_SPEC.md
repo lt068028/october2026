@@ -112,11 +112,11 @@ Ex1の何でもは「Anything / Whatever」、Beyond Wordsは「anything / whate
 
 Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では、共通仕様（UI_LAYOUT_SPEC §9の22px/20px基準）を一部最適化したページ固有の視覚パラメータを適用する。
 
-- **3アイコン共通寸法**：
-  - Accepted：Microsoft Fluent `Checkmark 24 Filled`（Light: `#16A34A` / Dark: `#4ADE80`）
-  - Incomplete：Lucide `Footprints` 原本アウトラインSVG（Light: `#8064B0` / Dark: `#B9A2E5`、`aria-hidden="true"`）
-  - Mismatch：Microsoft Fluent `Fire 24 Regular`（Light: `#B47732` / Dark: `#E4AD69`）
-  - これら3アイコンをすべて **`24px × 24px`** に統一し、垂直方向の視覚的整列のため上方向オフセット **`-2px`**（`transform: translateY(-2px)`）を適用する。
+- **3アイコン共通寸法と個別視覚補正**：
+  - Accepted：Microsoft Fluent `Checkmark 24 Filled`（Light: `#16A34A` / Dark: `#4ADE80`、`24px × 24px`、`transform: translateY(-2px)`）
+  - Incomplete：Lucide `Footprints` 原本アウトラインSVG（Light: `#8064B0` / Dark: `#B9A2E5`、`aria-hidden="true"`、`25px × 25px`、`transform: translateY(-0.5px)`）
+  - Mismatch：Microsoft Fluent `Fire 24 Regular`（Light: `#B47732` / Dark: `#E4AD69`、`24px × 24px`、`transform: translateY(-2px)`）
+  - Mismatch 時の `Keep going!` ラベル（`.feedback-retry-label`）には、日本語テキストとのベースライン視覚整列のため `transform: translateY(-1px)` を適用する。
 - **配置間隔（Gap）**：
   - 各アイコンと直後の認識テキスト（または差分テキスト）との間隔（`icon-gap`）は **`2px`**（`margin-right: 2px` または `gap: 2px`）。
   - Mismatchにおける差分テキストと `Keep going!` ラベル（`.feedback-retry-label`）の間隔（`keep-gap`）は **`8px`**（`margin-left: 8px`）。

@@ -300,6 +300,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const misH = Math.round(misFire.getBoundingClientRect().height);
     const misTransform = getComputedStyle(misFire).transform;
     const misKeepMargin = getComputedStyle(misKeep).marginLeft;
+    const misKeepTransform = getComputedStyle(misKeep).transform;
     const misFireRegular = misFire.getAttribute('fill') === 'currentColor';
 
     return {
@@ -321,6 +322,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
         h: misH,
         transform: misTransform,
         keepMargin: misKeepMargin,
+        keepTransform: misKeepTransform,
         isRegular: misFireRegular
       }
     };
@@ -329,8 +331,9 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(iconAudit.acc.w, 24, 'Accepted icon width is 24px');
   eq(iconAudit.acc.h, 24, 'Accepted icon height is 24px');
   eq(iconAudit.acc.gap, 2, 'Accepted icon gap is 2px');
-  eq(iconAudit.inc.w, 24, 'Incomplete Lucide Footprints width is 24px');
-  eq(iconAudit.inc.h, 24, 'Incomplete Lucide Footprints height is 24px');
+  eq(iconAudit.inc.w, 25, 'Incomplete Lucide Footprints width is 25px');
+  eq(iconAudit.inc.h, 25, 'Incomplete Lucide Footprints height is 25px');
+  eq(iconAudit.inc.transform, 'matrix(1, 0, 0, 1, 0, -0.5)', 'Incomplete Footprints y-offset is -0.5px');
   eq(iconAudit.inc.ariaHidden, 'true', 'Incomplete Footprints SVG has aria-hidden=true');
   eq(iconAudit.inc.hasEmoji, false, 'Incomplete emoji 👣 is replaced');
   eq(iconAudit.inc.hasKeep, false, 'Incomplete does not render Keep going!');
@@ -341,6 +344,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(iconAudit.mis.w, 24, 'Mismatch Fire width is 24px');
   eq(iconAudit.mis.h, 24, 'Mismatch Fire height is 24px');
   eq(iconAudit.mis.keepMargin, '8px', 'Mismatch Keep going margin-left is 8px');
+  eq(iconAudit.mis.keepTransform, 'matrix(1, 0, 0, 1, 0, -1)', 'Mismatch Keep going y-offset is -1px');
 
   // Verify Light and Dark colors for the 3 icons
   const lightColors = await p.evaluate(() => {
