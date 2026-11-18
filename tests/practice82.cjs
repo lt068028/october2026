@@ -526,5 +526,95 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.locator('#drill1 .stop-btn-active').first().click();
   await p.locator('#toggleRecordMode').click(); // restore Autostop ON
 
+  // 15. Mismatch reason separation & error-text computed color highlight verification
+  const diffAudit = await p.evaluate(() => {
+    const a = audit82;
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--error-text)';
+    document.body.append(probe);
+    const errorRgb = getComputedStyle(probe).color;
+    probe.remove();
+
+    const inspectRow = (rowObj, raw, opts = {}) => {
+      const key = a.keyFor(rowObj);
+      const status = opts.status || 'mismatch';
+      a.saved.set(key, {
+        raw,
+        refs: rowObj.refs,
+        modelText: rowObj.text,
+        modelHira: rowObj.hira,
+        status,
+        ...(opts.omitReason ? {} : { mismatchReason: opts.reason }),
+        correct: status === 'accepted'
+      });
+      a.render();
+      const resText = document.querySelector('tr[data-row="' + rowObj.id + '"] .result-text');
+      const spans = Array.from(resText.querySelectorAll('span')).filter(s => !s.className && !s.dataset.audioRole);
+      const redChars = spans.filter(s => s.textContent !== '＿' && getComputedStyle(s).color === errorRgb).map(s => s.textContent);
+      const redGaps = spans.filter(s => s.textContent === '＿' && getComputedStyle(s).color === errorRgb).length;
+      return { redChars, redGaps, text: resText.textContent };
+    };
+
+    // 1. Statement + extra か (Drill 1 row 0: 授業で何か話します)
+    const d1r0 = a.rowsFor(0)[0][0];
+    const extraKa = inspectRow(d1r0, '授業で何か話しますか', { reason: 'text' });
+
+    // 2. Question missing か (Drill 2 row 0: 何を読みますか)
+    const d2r0 = a.rowsFor(1)[0][0];
+    const missingKa = inspectRow(d2r0, '何を読みます', { reason: 'text' });
+
+    // 3. Formal statement + ？ (form mismatch)
+    const formQ = inspectRow(d1r0, '授業で何か話します？', { reason: 'form' });
+
+    // 4. pending mismatch (Drill 3 response unselected)
+    const d3r0a = a.rowsFor(2)[0][1];
+    const pendingRes = inspectRow(d3r0a, 'はい買います', { reason: 'pending' });
+
+    // 5. Drill 4 question & answer mismatch
+    const d4q = a.rowsFor(3)[0][0];
+    const d4a = a.rowsFor(3)[0][1];
+    const d4qRes = inspectRow(d4q, 'どんな料理を食べますか', { reason: 'text' });
+    const d4aRes = inspectRow(d4a, '何でも食べます', { reason: 'text' });
+
+    // 6. Accepted with よね/よ/ね, Incomplete, and legacy data without mismatchReason
+    const accYo = inspectRow(d1r0, '授業で何か話しますよ', { status: 'accepted' });
+    const incRes = inspectRow(d1r0, '授業で何か', { status: 'incomplete' });
+    const legacyNoDiff = inspectRow(d1r0, '授業で何か話します', { omitReason: true });
+
+    return { errorRgb, extraKa, missingKa, formQ, pendingRes, d4qRes, d4aRes, accYo, incRes, legacyNoDiff };
+  });
+
+  eq(diffAudit.extraKa.redChars, ['か'], 'Extra か in statement is highlighted in --error-text');
+  eq(diffAudit.extraKa.redGaps, 0, 'Extra か has no red gap marker');
+  eq(diffAudit.missingKa.redChars, [], 'Missing か does not highlight matching chars');
+  eq(diffAudit.missingKa.redGaps, 1, 'Missing か renders 1 red ＿ gap marker');
+  eq(diffAudit.formQ.redChars, ['？'], 'Formal ？ highlights only ？ in --error-text');
+  eq(diffAudit.pendingRes.redChars, [], 'Pending mismatch does not highlight unrelated chars');
+  eq(diffAudit.pendingRes.redGaps, 0, 'Pending mismatch has no red gap marker');
+  eq(diffAudit.d4qRes.redChars.length > 0, true, 'Drill 4 question mismatch highlights differing chars');
+  eq(diffAudit.d4aRes.redChars.length > 0, true, 'Drill 4 answer mismatch highlights differing chars');
+  eq(diffAudit.accYo.redChars, [], 'Accepted with よ has no red highlight');
+  eq(diffAudit.incRes.redChars, [], 'Incomplete has no red highlight');
+  eq(diffAudit.legacyNoDiff.redChars, [], 'Legacy mismatch without mismatchReason and zero diff has no red highlight');
+
+  // Verify Hiragana Only mode preserves diff highlight
+  await p.locator('#scriptModeControl [data-value="hiragana"]').click();
+  const hiraDiff = await p.evaluate(() => {
+    const a = audit82;
+    const d1r0 = a.rowsFor(0)[0][0];
+    const key = a.keyFor(d1r0);
+    a.saved.set(key, { raw: '授業で何か話しますか', refs: d1r0.refs, modelText: d1r0.text, modelHira: d1r0.hira, status: 'mismatch', mismatchReason: 'text', correct: false });
+    a.render();
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--error-text)';
+    document.body.append(probe);
+    const errorRgb = getComputedStyle(probe).color;
+    probe.remove();
+    const resText = document.querySelector('tr[data-row="' + d1r0.id + '"] .result-text');
+    return Array.from(resText.querySelectorAll('span')).filter(s => !s.className && getComputedStyle(s).color === errorRgb).map(s => s.textContent);
+  });
+  eq(hiraDiff, ['か'], 'Hiragana Only mode highlights only か in --error-text');
+  await p.locator('#scriptModeControl [data-value="kanji"]').click();
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

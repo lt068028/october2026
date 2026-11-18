@@ -235,6 +235,11 @@ function normalizeAnswerInput(raw, r) {
         : raw;
     return normalize(value);
 }
+function mismatchReasonFor(raw, r) {
+    if (r.pending) return 'pending';
+    if (!DrillAnswer.formAllowed(raw, speechStyle)) return 'form';
+    return 'text';
+}
 function evaluateAnswer(raw, r) {
     if (r.pending || !DrillAnswer.formAllowed(raw, speechStyle)) return 'mismatch';
     const normVal = normalizeAnswerInput(raw, r);
@@ -916,12 +921,31 @@ function showResult(key,notice='') {
             const retryUnit=v.correction.firstElementChild||v.correction;
             const fire=retryUnit.querySelector('.feedback-retry-fire')||retryUnit.querySelector('svg');
             if(fire)v.result.append(fire);
-            let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
-            best=STTDisplay.projectDiff(best,displayed);
+            const reason=value.mismatchReason||(value.status?null:mismatchReasonFor(value.raw,v.r));
             const red=text=>{const span=document.createElement('span');span.style.color='var(--error-text)';span.textContent=text;v.result.append(span);};
-            for(let i=0;i<=best.chars.length;i++) {
-                if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
-                if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
+            if(reason==='pending'){
+                v.result.append(document.createTextNode(displayed));
+            }else if(reason==='form'){
+                if(/[?？]/.test(displayed)){
+                    for(const ch of displayed){
+                        if(ch==='?'||ch==='？')red(ch);
+                        else v.result.append(document.createTextNode(ch));
+                    }
+                }else{
+                    v.result.append(document.createTextNode(displayed));
+                    red('（形式不一致）');
+                }
+            }else{
+                let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
+                best=STTDisplay.projectDiff(best,displayed);
+                if(best.red.size===0&&best.gaps.size===0){
+                    v.result.append(document.createTextNode(displayed));
+                }else{
+                    for(let i=0;i<=best.chars.length;i++) {
+                        if(best.gaps.has(i))red('＿');if(i===best.chars.length)break;
+                        if(best.red.has(i))red(best.chars[i]);else v.result.append(document.createTextNode(best.chars[i]));
+                    }
+                }
             }
             v.result.append(document.createTextNode(' '),retryUnit);
         }
@@ -1354,12 +1378,14 @@ async function record(key, r) {
             }
 
             const status = s.raw.trim() ? evaluateAnswer(s.raw, r) : 'mismatch';
+            const mismatchReason = status === 'mismatch' ? mismatchReasonFor(s.raw, r) : null;
             saved.set(key, {
                 url,
                 raw: s.raw,
                 modelText:r.text, modelHira:r.hira, refs:[...r.refs],
                 feedback:r.comparison&&status==='accepted'?feedback(r,s.raw):null,
                 status,
+                mismatchReason,
                 correct: status === 'accepted'
             });
         }

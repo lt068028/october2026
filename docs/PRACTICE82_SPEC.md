@@ -137,3 +137,13 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 - **`Copy my sentences` 操作と音声再生・アイコン**：
   - `PROJECT_SPEC.md` §7.2 に従い、モデル音声・録音音声の再生中に `Copy my sentences` を実行しても再生を中断せず、再生状態を維持する（録音中・マイク準備中の無効化条件は維持）。
   - Copy ボタンアイコンは `UI_LAYOUT_SPEC.md` §10 準拠（`fluent-icons.js` 既存の Microsoft Fluent `Clipboard 24 Regular`）を用いる。
+
+## 採点正規化・Mismatch 理由と差分ハイライト仕様（2026-11-18）
+
+- **文末終助詞の許容範囲**：
+  - 文末の終助詞は `よね / よ / ね` のみを許容対象として正規化し、疑問の `か` は許容対象から除外する（平叙文モデルに「か」が付加された場合は Mismatch とする）。
+- **Mismatch 判定理由の分離と差分ハイライト（`--error-text`）**：
+  - 判定理由を `text`（文字列距離不一致）、`form`（Formal 文体での疑問符・終助詞制約違反）、`pending`（回答選択未完了）に分離する。
+  - `text`：最小距離の許容候補（`r.refs`）との差分を `STTDisplay.projectDiff()` で表示文字列へ投影し、誤り文字および欠落記号（`＿`）を `--error-text` で示す。
+  - `form`：原因となる疑問符（`?` / `？`）が表示文字列に存在する場合はその疑問符のみを `--error-text` で示し、存在しない場合は無関係な一致文字を赤字にせず独立した形式不一致表示を行う。
+  - `pending` および旧データ等で差分が空の場合：無関係な一致文字や全文を赤字にしない。
