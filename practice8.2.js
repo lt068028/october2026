@@ -189,7 +189,25 @@ function rowsFor(si){
  if(si===2)return conversations.map((s,i)=>{const id='yn-'+i+'-a',answer=choices.get(id);return [makeRow('yn-'+i+'-q',{...s,mode:'question'},{kind:'Q',qa:'question'}),makeRow(id,{...s,mode:'reply',answer:answer||'yes'},{kind:'A',qa:'response',yn:true,pending:!answer})];});
  return habits.map((s,i)=>[makeRow('any-'+i+'-q',{...s,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('any-'+i+'-a',{...s,mode:'any'},{kind:'A',qa:'response'})]);
 }
-function matchesAnswer(raw,r){const value=r.verb==='listen'?String(raw).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(raw).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(raw).replace(/[履穿]/g,'は'):r.verb==='cap'?String(raw).replace(/被/g,'かぶ'):r.verb==='attach'?String(raw).replace(/^[付点]け/,'つけ'):raw;return !r.pending&&DrillAnswer.formAllowed(raw,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
+const INCOMPLETE_TIPS = ['Getting closer!', 'Almost there!', 'Keep it up!', 'Nice flow!', 'Great start!'];
+function normalizeAnswerInput(raw, r) {
+    const value = r.verb === 'listen' ? String(raw).replace(/[聴訊]/g, '聞')
+        : r.verb === 'takealong' ? String(raw).replace(/持って行/g, '持ってい')
+        : r.verb === 'wearshoes' ? String(raw).replace(/[履穿]/g, 'は')
+        : r.verb === 'cap' ? String(raw).replace(/被/g, 'かぶ')
+        : r.verb === 'attach' ? String(raw).replace(/^[付点]け/, 'つけ')
+        : raw;
+    return normalize(value);
+}
+function evaluateAnswer(raw, r) {
+    if (r.pending || !DrillAnswer.formAllowed(raw, speechStyle)) return 'mismatch';
+    const normVal = normalizeAnswerInput(raw, r);
+    if (!normVal) return 'mismatch';
+    if (r.refs.some(t => normalize(t) === normVal)) return 'accepted';
+    if (r.refs.some(t => normalize(t).startsWith(normVal))) return 'incomplete';
+    return 'mismatch';
+}
+function matchesAnswer(raw, r) { return evaluateAnswer(raw, r) === 'accepted'; }
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown,markup){const w=words[id],text=markup??escape(shown??w[scriptMode==='kanji'?'cue':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}
@@ -838,7 +856,23 @@ function showResult(key,notice='') {
     }
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.2'});
-        if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
+        const status=value.status||(value.correct?'accepted':evaluateAnswer(value.raw,v.r));
+        if(status==='accepted')FeedbackStatus.appendAccepted(v.result,displayed);
+        else if(status==='incomplete') {
+            const mark=node('span','p82-incomplete-mark custom-tip-wrap');
+            mark.tabIndex=0;
+            mark.append(document.createTextNode('👣'));
+            const tip=node('span','custom-tip-box',INCOMPLETE_TIPS[Math.floor(Math.random()*INCOMPLETE_TIPS.length)]);
+            tip.setAttribute('role','tooltip');
+            mark.append(tip);
+            const reroll=()=>{
+                tip.textContent=INCOMPLETE_TIPS[Math.floor(Math.random()*INCOMPLETE_TIPS.length)];
+                window.DrillTooltips?.position(mark,tip);
+            };
+            mark.addEventListener('mouseenter',reroll);
+            mark.addEventListener('focus',reroll);
+            v.result.append(mark,document.createTextNode(displayed));
+        }
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
@@ -1267,14 +1301,14 @@ async function record(key, r) {
                 URL.revokeObjectURL(previous.url);
             }
 
+            const status = s.raw.trim() ? evaluateAnswer(s.raw, r) : 'mismatch';
             saved.set(key, {
                 url,
                 raw: s.raw,
                 modelText:r.text, modelHira:r.hira, refs:[...r.refs],
-                feedback:r.comparison&&matchesAnswer(s.raw,r)?feedback(r,s.raw):null,
-                correct:
-                    Boolean(s.raw.trim()) &&
-                    matchesAnswer(s.raw, r)
+                feedback:r.comparison&&status==='accepted'?feedback(r,s.raw):null,
+                status,
+                correct: status === 'accepted'
             });
         }
 

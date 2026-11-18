@@ -5490,3 +5490,10 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     visibility: visible;
     opacity: 1;
 }
+.practice82-page .p82-incomplete-mark {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    cursor: default;
+    margin-right: 4px;
+}
