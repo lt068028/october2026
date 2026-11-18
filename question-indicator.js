@@ -2,17 +2,26 @@
 // Displays the noninteractive Microsoft Fluent message-circle-question icon beside the stop button for interrogative rows.
 window.QuestionIndicator = Object.freeze({
     SVG_MARKUP: window.FluentIcons.markup('question', 16, 'question-indicator-icon', 'filled'),
+    REGULAR_MARKUP: window.FluentIcons.markup('question', 16, 'question-indicator-icon', 'regular'),
 
-    create() {
+    create(variant = 'filled') {
         const span = document.createElement('span');
         span.className = 'question-indicator';
         span.setAttribute('aria-hidden', 'true');
-        span.innerHTML = this.SVG_MARKUP;
+        span.innerHTML = variant === 'regular' ? this.REGULAR_MARKUP : this.SVG_MARKUP;
         return span;
     },
 
-    attach(target, isInterrogative) {
+    attach(target, isInterrogative, options = {}) {
         if (!target) return null;
+
+        if (options.placement === 'cue') {
+            target.querySelector('.question-indicator')?.remove();
+            if (!isInterrogative) return null;
+            const indicator = this.create(options.variant || 'regular');
+            target.append(indicator);
+            return indicator;
+        }
 
         const isButton = target.tagName === 'BUTTON';
         const container = isButton
