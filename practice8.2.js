@@ -87,7 +87,7 @@ function displayKana(text){let value=String(text);for(const [k,h]of dictionary)v
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
- {title:'Drill 1: 何か — Questions',instruction:'💡Ask a question with 何か (unspecified item).'},
+ {title:'Drill 1: 何か — Affirmative Sentences',instruction:'💡Place 何か naturally before the verb.'},
  {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
  {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (unspecified item). For negative answers, use 何も〜ません (none).'},
  {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
@@ -126,6 +126,14 @@ function sentenceFor(s){
 function makeRow(id,spec,extra={}){
  const r={id,...spec,...extra};r.text=sentenceFor(r);r.hira=displayKana(r.text);r.refs=[r.text,r.hira];
  if(r.withWo){r.refs.push(r.text.replace(/[\(（]を[\)）]/g,''),r.text.replace(/[\(（]を[\)）]/g,'を'));}
+ if(r.mode==='statement'&&!r.intro){
+  const ctx=r.place?words[r.place].kanji+(r.placeParticle||'で')+'、':r.person?words[r.person].kanji+(r.personParticle||'に')+'、':'';
+  const vText=inflect(r)+'。';
+  if(ctx){
+   const alt='何か、'+ctx+vText;
+   r.refs.push(alt,displayKana(alt));
+  }
+ }
  if(r.mode==='reply'){
   const no=r.answer==='no',verb=inflect(r,no)+'。';
   const starts=speechStyle==='casual'?[no?'ううん、':'うん、','']:[no?'いいえ、':'はい、',''];
@@ -181,7 +189,7 @@ function makeRow(id,spec,extra={}){
  STTDisplay.register(r.text,r.hira);return r;
 }
 function rowsFor(si){
- if(si===0)return statements.map((s,i)=>[makeRow('something-'+i,{...s,mode:'question'})]);
+ if(si===0)return statements.map((s,i)=>[makeRow('something-'+i,{...s,mode:'statement'})]);
  if(si===1)return contrastPairs.map((s,i)=>[
   makeRow('contrast-'+i+'-what',{...s,pronoun:'what',mode:'contrast'}),
   makeRow('contrast-'+i+'-something',{...s,pronoun:'something',mode:'contrast'})
@@ -1711,7 +1719,7 @@ function init() {
 
 /* Practice 8.2: Copy my sentences */
 const COPY82_HEADERS = [
-    'Practice 8.2 — Drill 1: 何か — Questions — Unspecified item',
+    'Practice 8.2 — Drill 1: 何か — Affirmative Sentences',
     'Practice 8.2 — Drill 2: 何を vs 何か — Specific / Unspecified',
     'Practice 8.2 — Drill 3: 何か／何も — Yes/No questions',
     'Practice 8.2 — Drill 4: 何でも — Unlimited Choice'

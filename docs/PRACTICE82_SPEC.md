@@ -15,20 +15,20 @@ Practice 8.2の確定構成はExample 4件・Drill 4件とする。旧版の3 Ex
 
 各Drillセクションの先頭に対応するExample群を置く。共通の練習8レイアウト、表示設定、共通Q/A役割表示、独立したモデル音声、録音・採点結果保持を使う。
 
-### Example 1／Drill 1 — 何かの質問
+### Example 1／Drill 1 — 何かの平叙文
 
 Example 1は飲むを使い、何か（something）・何も＋否定（nothing）・何でも（unlimited choice）の意味を対比する3行。
 
 Example 1の左側の英語ラベルは `Unspecified`／`None`／`All-inclusive` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
 
-Drill 1は時制選択を課題にせず、Formalの疑問文4問を出す。
+Drill 1はタイトルを `Drill 1: 何か — Affirmative Sentences`、説明文を `Place 何か naturally before the verb.` とし、時制選択を課題にせず平叙文4問を出す。平叙文であるため `QuestionIndicator` は表示しない（Drill 2〜4の計16個は維持）。各設問では動詞の前に「何か」を置く自然な複数語順（例：`授業で、何か、話します。` および `何か、授業で、話します。`）を許容回答候補（`r.refs`）として明示的に登録し、不自然な後置語順や旧疑問文は許容しない。
 
 | キュー | モデル |
 | --- | --- |
-| 授業／話す | 授業で、何か、話しますか。 |
-| 学校／習う | 学校で、何か、習いますか。 |
-| 大学／教える | 大学で、何か、教えますか。 |
-| 先生／聞く | 先生に、何か、聞きますか。 |
+| 授業／話す | 授業で、何か、話します。 |
+| 学校／習う | 学校で、何か、習います。 |
+| 大学／教える | 大学で、何か、教えます。 |
+| 先生／聞く | 先生に、何か、聞きます。 |
 
 ### Example 2／Drill 2 — 何を vs 何か
 

@@ -31,17 +31,17 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   d3: audit82.rowsFor(2).map(rs=>rs.map(r=>r.text)),
   d4: audit82.rowsFor(3).map(rs=>rs.map(r=>r.text))
  }));
- eq(models.d1,['授業で、何か、話しますか。','学校で、何か、習いますか。','大学で、何か、教えますか。','先生に、何か、聞きますか。'],'Drill 1 actual models');
+ eq(models.d1,['授業で、何か、話します。','学校で、何か、習います。','大学で、何か、教えます。','先生に、何か、聞きます。'],'Drill 1 actual models');
  eq(models.d2.slice(0,4),['何を、読みますか。','何か、読みますか。','何を、書きますか。','何か、書きますか。'],'Drill 2 contrast models');
  eq(models.d3[0],['誕生日に、何か、しますか。','いいえ、何も、しません。'],'Drill 3 question and selected No models');
  eq(models.d4[0],['どんな料理を、作りますか。','何でも、作ります。'],'Drill 4 models');
  const answerChecks=await p.evaluate(()=>{const a=audit82,d1=a.rowsFor(0)[0][0],d2=a.rowsFor(1)[0][0],no=a.rowsFor(2)[0][1],any=a.rowsFor(3)[0][1];return [
-  a.matchesAnswer('授業で何か話しますか',d1),a.matchesAnswer('誕生日に何かしますか',d1),
+  a.matchesAnswer('授業で何か話します',d1),a.matchesAnswer('何か授業で話します',d1),a.matchesAnswer('授業で話します何か',d1),a.matchesAnswer('誕生日に何かしますか',d1),
   a.matchesAnswer('何を読みますか',d2),a.matchesAnswer('何か読みますか',a.rowsFor(1)[0][1]),
   a.matchesAnswer('いいえ、何もします',no),a.matchesAnswer('いいえ、します',no),
   a.matchesAnswer('何でも作ります',any),a.matchesAnswer('何でもを作ります',any),a.matchesAnswer('何でもいいです',any)
  ];});
- eq(answerChecks,[true,false,true,true,false,false,true,false,false],'accepted and rejected answers');
+ eq(answerChecks,[true,true,false,false,true,true,false,false,true,false,false],'accepted and rejected answers');
  for(const style of ['formal','informal','casual']){
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   for(let i=0;i<5;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="${i%2?'yes':'no'}"]`).click();
