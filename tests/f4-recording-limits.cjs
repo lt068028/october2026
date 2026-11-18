@@ -494,7 +494,14 @@ async function triggerRecognitionOnly(page, transcript = 'テスト') {
 }
 
 async function runRecognitionSeparationTests(browser) {
-    for (const urlPath of ['/practice2.1.html', '/practice2.2.html', '/practice2.3.html', '/practice8.2.html']) {
+    const targets = [
+        '/practice1.1.html', '/practice1.2.html',
+        '/practice2.1.html', '/practice2.2.html', '/practice2.3.html',
+        '/practice7.1.html', '/practice7.2.html', '/practice7.3.html',
+        '/practice8.1.html', '/practice8.2.html', '/practice8.3.html',
+        '/composition1.html', '/pronunciation2.html'
+    ];
+    for (const urlPath of targets) {
         console.log(`\n=== Testing Recognition/Mic Separation on ${urlPath} ===`);
         const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
         await page.addInitScript(mockScript);
@@ -510,7 +517,9 @@ async function runRecognitionSeparationTests(browser) {
         await page.goto(`http://f4.test${urlPath}`, { waitUntil: 'domcontentloaded' });
         await page.waitForTimeout(300);
 
-        const recSelector = urlPath === '/practice8.2.html' ? '.drill-record-btn' : '.record-btn';
+        const recSelector = urlPath.includes('practice8.') || urlPath === '/practice7.3.html'
+            ? '.drill-record-btn, .record-btn'
+            : '.record-btn';
         const recBtn = page.locator(recSelector).first();
 
         // 1. 5秒未発話判定の独立性：マイク音量ゼロのまま Recognition イベントのみ発生しても 5秒で停止すること
@@ -532,6 +541,15 @@ async function runRecognitionSeparationTests(browser) {
         await page.waitForTimeout(1500);
         const activeCountAfter2s = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
         check(activeCountAfter2s === 0, `${urlPath}: 2s autostop fires despite Recognition events during silence`);
+
+        // 3. AudioContext resume() reject 時に録音が継続しないこと
+        await page.evaluate(() => {
+            window.AudioContext.prototype.resume = () => Promise.reject(new Error('Resume blocked'));
+        });
+        await recBtn.click();
+        await page.waitForTimeout(300);
+        const activeOnResumeFail = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
+        check(activeOnResumeFail === 0, `${urlPath}: recording stops safely when AudioContext.resume() rejects`);
 
         await page.close();
     }

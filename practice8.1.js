@@ -404,7 +404,10 @@ function stopPlayback() {
             playingAudio.pause();
             playingAudio.currentTime = 0;
             playingAudio.src = "";
-        } catch (e) {}
+        } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
         playingAudio = null;
     }
 
@@ -454,7 +457,10 @@ function setupPreferredVoice81() {
         let savedName = null;
         try {
             savedName = localStorage.getItem(VOICE_STORAGE_KEY81);
-        } catch (e) {}
+        } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
 
         let selected = savedName
             ? japanese.find(v => v.name === savedName)
@@ -546,7 +552,10 @@ function setupPreferredVoice81() {
                             VOICE_STORAGE_KEY81,
                             selectEl.value
                         );
-                    } catch (e) {}
+                    } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
                     setupPreferredVoice81();
                 });
             }
@@ -588,7 +597,10 @@ function setupPreferredVoice81() {
                                 event.stopPropagation();
                                 try {
                                     localStorage.setItem(VOICE_STORAGE_KEY81, v.name);
-                                } catch (e) {}
+                                } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
                                 menu.hidden = true;
                                 if (btn) btn.setAttribute('aria-expanded', 'false');
                                 setupPreferredVoice81();
@@ -1389,7 +1401,10 @@ async function record(key, r) {
 
             try {
                 s.recognition.abort();
-            } catch (e) {}
+            } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
         }
 
         session = null;
@@ -1513,8 +1528,6 @@ async function record(key, r) {
             lastSound = Date.now();
         };
 
-        recognition.onspeechstart = heard;
-
         recognition.onresult = e => {
             if (s.finished || s.discard) return;
 
@@ -1526,8 +1539,6 @@ async function record(key, r) {
                 i++
             ) {
                 const text = e.results[i][0].transcript;
-
-                if (text.trim()) heard();
 
                 if (e.results[i].isFinal) {
                     s.raw += text;
@@ -1607,7 +1618,9 @@ async function record(key, r) {
             const context = new Context();
             s.context = context;
 
-            context.resume().catch(() => {});
+            context.resume().catch(() => {
+                if (!s.finished && !s.stopping) s.stop("Recording error.", true);
+            });
 
             const analyser = context.createAnalyser();
             analyser.fftSize = 1024;
@@ -1646,7 +1659,10 @@ async function record(key, r) {
                     if (frames >= 3) heard();
                 }, 100)
             );
-        } catch (e) {}
+        } catch (e) {
+            s.stop("Recording error.", true);
+            return;
+        }
 
         // Autostop：発話後の無音2秒
         s.timers.push(

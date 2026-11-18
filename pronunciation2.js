@@ -1444,11 +1444,6 @@ async function p2Record(key) {
                     session.interim += text;
                 }
             }
-
-            if (session.final || session.interim) {
-                session.speech = true;
-                session.lastSound = performance.now();
-            }
         };
 
         recognition.onerror = event => {
@@ -1531,7 +1526,9 @@ async function p2Record(key) {
         const sounds = [];
         let previous = performance.now();
 
-        session.context.resume().catch(() => {});
+        session.context.resume().catch(() => {
+            if (!session.finished && !session.stopping) stop("Recording error.", true);
+        });
 
         session.timers.push(setInterval(() => {
             if (

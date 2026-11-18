@@ -2863,7 +2863,10 @@ function bindRecorderEvents(
 
                 try {
                     session.recognition.abort();
-                } catch (error) {}
+                } catch (error) {
+                stop("Recording error.", true);
+                return;
+            }
             }
 
             if (activeRecognitionSession === session) {
@@ -3032,11 +3035,6 @@ function bindRecorderEvents(
             recognition.interimResults = true;
             recognition.continuous = true;
 
-            recognition.onspeechstart = () => {
-                session.speechStarted = true;
-                session.lastSoundAt = Date.now();
-            };
-
             recognition.onresult = event => {
                 if (
                     session.finished
@@ -3051,11 +3049,6 @@ function bindRecorderEvents(
                     i++
                 ) {
                     const result = event.results[i];
-
-                    if (result[0].transcript.trim()) {
-                        session.speechStarted = true;
-                        session.lastSoundAt = Date.now();
-                    }
 
                     if (result.isFinal) {
                         session.transcript +=
@@ -3165,7 +3158,9 @@ function bindRecorderEvents(
 
                 let soundFrames = 0;
 
-                context.resume().catch(() => {});
+                context.resume().catch(() => {
+                    if (!session.finished && !session.stopping) stop("Recording error.", true);
+                });
 
                 session.timers.push(
                     setInterval(() => {
@@ -3215,7 +3210,10 @@ function bindRecorderEvents(
                     }, 100)
                 );
 
-            } catch (error) {}
+            } catch (error) {
+                stop("Recording error.", true);
+                return;
+            }
 
             session.timers.push(
                 setTimeout(() => {

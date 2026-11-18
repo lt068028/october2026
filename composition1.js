@@ -1496,7 +1496,10 @@ async function compositionRecord(rowIndex) {
 
             try {
                 session.recognition.abort();
-            } catch (error) {}
+            } catch (error) {
+            stop("Recording error.", true);
+            return;
+        }
         }
 
         activeRecognitionSession = null;
@@ -1582,7 +1585,10 @@ async function compositionRecord(rowIndex) {
         session.timers.push(setTimeout(() => {
             try {
                 session.recognition?.abort();
-            } catch (error) {}
+            } catch (error) {
+            stop("Recording error.", true);
+            return;
+        }
 
             session.recognitionDone = true;
 
@@ -1613,8 +1619,6 @@ async function compositionRecord(rowIndex) {
                 session.lastSound = performance.now();
             };
 
-            recognition.onspeechstart = note;
-
             recognition.onresult = event => {
                 if (session.finished || session.discard) return;
 
@@ -1624,8 +1628,6 @@ async function compositionRecord(rowIndex) {
                     i++
                 ) {
                     const result = event.results[i];
-
-                    if (result[0].transcript.trim()) note();
 
                     if (result.isFinal) {
                         session.raw += result[0].transcript;
@@ -1702,7 +1704,9 @@ async function compositionRecord(rowIndex) {
             const samples = new Float32Array(analyser.fftSize);
             let frames = 0;
 
-            context.resume().catch(() => {});
+            context.resume().catch(() => {
+                if (!session.finished && !session.stopping) stop("Recording error.", true);
+            });
 
             session.timers.push(setInterval(() => {
                 if (session.stopping || session.finished) return;
@@ -1733,7 +1737,10 @@ async function compositionRecord(rowIndex) {
                     stop();
                 }
             }, 100));
-        } catch (error) {}
+        } catch (error) {
+            stop("Recording error.", true);
+            return;
+        }
 
         session.timers.push(setTimeout(() => {
             if (!session.speech) {

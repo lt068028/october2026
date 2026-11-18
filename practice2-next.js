@@ -3207,7 +3207,9 @@ function bindRecorderEvents(
 
                 let soundFrames = 0;
 
-                context.resume().catch(() => {});
+                context.resume().catch(() => {
+                    if (!session.finished && !session.stopping) stop("Recording error.", true);
+                });
 
                 session.timers.push(
                     setInterval(() => {

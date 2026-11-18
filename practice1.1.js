@@ -2213,11 +2213,6 @@ async function startRecording(initialView) {
             recognition.interimResults = true;
             recognition.continuous = true;
 
-            recognition.onspeechstart = () => {
-                session.speechStarted = true;
-                session.lastSoundAt = Date.now();
-            };
-
             recognition.onresult = event => {
                 if (
                     session.finished
@@ -2232,11 +2227,6 @@ async function startRecording(initialView) {
                     i++
                 ) {
                     const result = event.results[i];
-
-                    if (result[0].transcript.trim()) {
-                        session.speechStarted = true;
-                        session.lastSoundAt = Date.now();
-                    }
 
                     if (result.isFinal) {
                         session.transcript +=
@@ -2310,7 +2300,9 @@ async function startRecording(initialView) {
             analyser.fftSize = 2048;
 
             source.connect(analyser);
-            context.resume().catch(() => {});
+            context.resume().catch(() => {
+                if (!session.finished && !session.stopping) stop("Recording error.", true);
+            });
 
             const samples = new Float32Array(
                 analyser.fftSize
@@ -2371,6 +2363,10 @@ async function startRecording(initialView) {
                     "Audio monitoring is not supported.",
                     true
                 );
+                return;
+            }
+            stop("Recording error.", true);
+            return;
 
                 return;
             }
