@@ -210,6 +210,10 @@ async function isRecordingActive(page) {
     });
 }
 
+async function hasStopMessage(page, message) {
+    return (await page.locator('body').innerText()).includes(message);
+}
+
 async function triggerSpeech(page, text = 'こんにちは') {
     await page.evaluate(transcript => {
         window.t.speaking = true;
@@ -291,6 +295,7 @@ async function runTestsForPage(browser, pageName) {
         await advanceToElapsed(page, 5100);
         await page.clock.runFor(100);
         check(!(await isRecordingActive(page)), `${pageName}: Scenario 2 - Auto-stopped at 5.0s without speech`);
+        check(await hasStopMessage(page, 'No speech detected within 5 seconds.'), `${pageName}: Scenario 2 - Displays exact 5s stop-reason message`);
 
         const allTracksEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
         check(allTracksEnded, `${pageName}: Scenario 2 - Microphone tracks ended on 5s stop`);
@@ -356,6 +361,7 @@ async function runTestsForPage(browser, pageName) {
         await advanceToElapsed(page, 20200);
         await page.clock.runFor(100);
         check(!(await isRecordingActive(page)), `${pageName}: Scenario 10 - Stopped at 20s absolute upper limit while speaking`);
+        check(await hasStopMessage(page, 'Auto-stopped after 20 seconds.'), `${pageName}: Scenario 10 - Displays exact 20s stop-reason message`);
 
         // --- Scenario 12: Recognition onend alone does NOT stop recording if 2.0s silence has not elapsed ---
         await clickRecord(page, false);
@@ -394,6 +400,7 @@ async function runTestsForPage(browser, pageName) {
         await advanceToElapsed(page, 5100);
         await page.clock.runFor(100);
         check(!(await isRecordingActive(page)), `${pageName}: Scenario 8&11 - Manual mode auto-stops at 5.0s without speech (precedes 20s)`);
+        check(await hasStopMessage(page, 'No speech detected within 5 seconds.'), `${pageName}: Scenario 8&11 - Displays exact 5s stop-reason message in Manual mode`);
 
         // --- Scenario 7 & 9: Manual does NOT auto-stop on silence; stops at 20s absolute upper limit ---
         await clickRecord(page, true); // Manual
@@ -415,6 +422,7 @@ async function runTestsForPage(browser, pageName) {
         await advanceToElapsed(page, 20200);
         await page.clock.runFor(100);
         check(!(await isRecordingActive(page)), `${pageName}: Scenario 9 - Manual stopped at 20s absolute upper limit`);
+        check(await hasStopMessage(page, 'Auto-stopped after 20 seconds.'), `${pageName}: Scenario 9 - Displays exact 20s stop-reason message in Manual mode`);
 
         // --- Scenario 13: Stop button and resource cleanup ---
         await clickRecord(page, true); // Manual
