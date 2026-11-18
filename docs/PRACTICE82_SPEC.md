@@ -147,3 +147,21 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
   - `text`：最小距離の許容候補（`r.refs`）との差分を `STTDisplay.projectDiff()` で表示文字列へ投影し、誤り文字および欠落記号（`＿`）を `--error-text` で示す。
   - `form`：原因となる疑問符（`?` / `？`）が表示文字列に存在する場合はその疑問符のみを `--error-text` で示し、存在しない場合は無関係な一致文字を赤字にせず独立した形式不一致表示を行う。
   - `pending` および旧データ等で差分が空の場合：無関係な一致文字や全文を赤字にしない。
+
+## 共通UI 4領域のFluent SVG適用一覧と禁止カーソル廃止（2026-11-18）
+
+`UI_LAYOUT_SPEC.md` §6.2 および §13 に基づき、Practice 8.2 では以下の4領域をすべて公式 Microsoft Fluent UI System Icons（`@fluentui/svg-icons`）の SVG に統一し、余白を除いた実描画高さ（Optical Height）の光学サイズ補正を行う。
+
+1. **① もどるボタン（`.back-link`）**：
+   - 先頭の `↩️` 絵文字を廃止し、`Arrow Hook Down Left 24 Regular`（`arrowHookDownLeft`、`20×20px`、`translateY(-0.5px)`）を配置する。
+2. **② 説明文の電球アイコン（全5箇所：Drill 1〜4 および Drill 5 English Cues）**：
+   - 各 `.info-panel-desc` 先頭の `💡` 絵文字を廃止し、`Lightbulb 24 Regular`（`lightbulb`、`20×20px`、`vertical-align: -3.5px`）を配置する。
+3. **③ 左下 Voice ラベル（`.voice-select-label`）**：
+   - 先頭の `🔊` 絵文字を廃止し、モデル音声再生ボタンと同一の `Speaker 2 24 Regular`（`speaker` / `speaker2`、`20×20px`）を配置する。
+4. **④ グローバル設定の全アイコン付き項目（9箇所）**：
+   - **Script Mode**：`Hiragana Only` ＝ `Translate 24 Regular`（`translate`、`20×20px`、`translateY(-0.5px)`）、`With漢字` ＝ `Local Language Globe 20 Regular`（`localLanguageGlobe`、`18×18px`、`translateY(0.5px)`；第二候補として `Local Language Zi 24 Regular` ＝ `localLanguageZi` も `fluent-icons.js` に登録）。
+   - **Speech Style**：`Formal` ＝ `Person Accounts 24 Regular`（`personAccounts`、`15×15px`、`translateY(-0.5px)`）、`Informal` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`、`16×16px`）、`Casual` ＝ `Chat Multiple 24 Regular`（`chatMultiple`、`18×18px`）。
+   - **Vocabulary Display**：`OFF` ＝ アイコンなし、`Hover` ＝ `Chat Hint Half 24 Regular`（`chatHintHalf`、`16×16px`）、`Display` ＝ `Text Edit Style 24 Regular`（`textEditStyle`、`16×16px`）。
+   - **Autostop / Autoplay**：`Autostop` ＝ `Stop 24 Regular`（`stop`、`18×18px`、録音停止ボタンと同一定義を共有）、`Autoplay` ＝ `Play 24 Regular`（`play`、`18×18px`、録音再生系と同一定義を共有）。
+5. **無効化（`disabled`）ボタンからの禁止カーソル除外**：
+   - 無効化状態（未選択時の Drill 3 回答側ボタン、未録音時の `Copy my sentences` ボタン、録音・再生中の排他ロック対象ボタン等）ではグレーアウト表現のみで状態を示し、`cursor: not-allowed` は使用しない（`cursor: default`）。

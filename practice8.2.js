@@ -88,10 +88,10 @@ function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/
 function normalizeToken(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ');}
 function normalize(text){return normalizeToken(text).replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
- {title:'Drill 1: 何か — Affirmative Sentences',instruction:'💡Place 何か naturally before the verb.'},
- {title:'Drill 2: 何を vs 何か — Questions',instruction:'💡Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
- {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'💡Ask with 何か (unspecified item). For negative answers, use 何も〜ません (none).'},
- {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'💡何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
+ {title:'Drill 1: 何か — Affirmative Sentences',instruction:'Place 何か naturally before the verb.'},
+ {title:'Drill 2: 何を vs 何か — Questions',instruction:'Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
+ {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'Ask with 何か (unspecified item). For negative answers, use 何も〜ません (none).'},
+ {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
 ];
 const statements=[
  {place:'class',verb:'speak'},
@@ -1105,10 +1105,13 @@ function createQuestionMarker(){
  wrap.append(icon);
  return wrap;
 }
+function createLightbulbIcon(){
+ return window.FluentIcons ? window.FluentIcons.create('lightbulb',20,'p82-lightbulb-icon') : document.createTextNode('');
+}
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');if(si===2){desc.append(document.createTextNode('💡Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.textContent=scriptMode==='kanji'?section.instruction:displayKana(section.instruction);panel.append(heading,desc);group.append(panel);
+ sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
@@ -1120,7 +1123,9 @@ function renderEnglishCuePanel(){
  if(!container)return;
  container.replaceChildren();
  const panel=node('section','info-panel info-panel-task1 drill-cue-panel'),copy=node('div','drill-cue-copy');
- copy.append(node('span','info-panel-title drill-cue-title','Drill 5: Practice with English cues'),node('span','info-panel-desc drill-cue-description','💡Use English cues for Drills 1–4.'));
+ const cueDesc=node('span','info-panel-desc drill-cue-description');
+ cueDesc.append(createLightbulbIcon(),document.createTextNode('Use English cues for Drills 1–4.'));
+ copy.append(node('span','info-panel-title drill-cue-title','Drill 5: Practice with English cues'),cueDesc);
  const toggle=node('button','drill-cue-button',englishCues?'Display Japanese Cues':'Display English Cues');
  toggle.type='button';
  toggle.classList.toggle('is-english',Boolean(englishCues));
@@ -1675,21 +1680,35 @@ function init() {
         [
             [
                 'formal',
-                '👔Formal',
+                'personAccounts',
+                'regular',
+                15,
+                'Formal',
                 'Polite speech for work or unfamiliar people.'
             ],
             [
                 'informal',
-                '✏️Informal',
+                'editLineHorizontal3Filled',
+                'filled',
+                16,
+                'Informal',
                 'Plain forms used in writing'
             ],
             [
                 'casual',
-                '💬Casual',
+                'chatMultiple',
+                'regular',
+                18,
+                'Casual',
                 'Relaxed speech with family and friends.'
             ]
-        ].forEach(([value, label, tip]) => {
-            const b = button(label, () => {}, tip);
+        ].forEach(([value, iconKind, iconVariant, iconSize, label, tip]) => {
+            const frag = document.createDocumentFragment();
+            if (window.FluentIcons) {
+                frag.append(window.FluentIcons.create(iconKind, iconSize, 'p82-setting-icon', iconVariant));
+            }
+            frag.append(document.createTextNode(label));
+            const b = button(frag, () => {}, tip);
             b.classList.add('segmented-option');
             b.dataset.value = value;
             control.append(b);
@@ -1822,7 +1841,7 @@ function updateCopyButtons82() {
         if (!button) return;
         const si = Number(area.dataset.drillIndex);
         button.disabled = Boolean(session || preparing) || entriesFor82(si).length === 0;
-        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+        button.style.setProperty('cursor', button.disabled ? 'default' : 'pointer', 'important');
     });
 }
 function mountCopyAreas82() {

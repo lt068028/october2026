@@ -99,7 +99,7 @@
 
 ### 6.2 Drill説明文
 
-- Drill説明文は💡から始め、文章を短縮しても先頭の💡を残す。
+- Drill説明文（`.info-panel-desc`、English Cues説明文を含む）の先頭には、Microsoft Fluent `Lightbulb 24 Regular` SVGアイコンを配置し、文章を短縮しても先頭の電球アイコンを残す（Practice 8.2にて先行適用。未移行の既存ページでは従来の💡絵文字が残っている場合があるが、順次SVGへ統一する）。
 - 短い同目的の説明は一段落にまとめる。課題と補足、独立した操作手順は分け、句点ごとの一律改行はしない。
 - 課題を先に示し、タイトル・Exampleと重複する前置きを省く。学習者に必要な操作・文型が伝わることを優先し、画面幅に応じて自然に折り返す。
 
@@ -202,7 +202,35 @@
 - 録音・再生ボタン本体、ツールチップ、操作説明、Pitch Labのタイトル・説明文・音量補助文も本規則の対象外とする。
 - 本節は共通表示仕様であり、すべての既存ページの実装がこのサイズに一致していることを意味しない。各ページの適合状況は、対象となる実装範囲に応じて別途確認する。
 
-## 13. ページ固有仕様への参照
+## 13. 共通UIアイコン（Fluent SVG）・光学サイズ調整および無効化カーソル規定（2026-11-18策定）
+
+### 13.1 共通UI 4領域および音声操作の Microsoft Fluent UI System Icons 仕様
+
+たたき台ページ（Practice 8.2）をリファレンス実装とし、共通UIの4領域（①もどるボタン、②Drill説明文の電球、③左下Voiceラベル、④グローバル設定の全ボタン）および音声操作ボタンでは、旧絵文字を廃止して公式 Microsoft Fluent UI System Icons（`@fluentui/svg-icons`、`fluent-icons.js`）のSVGを使用する（`currentColor`連動、`aria-hidden="true"`）。
+
+| 領域・項目 | 公式 Fluent Icon 名 | `fluent-icons.js` キー（variant） | viewBox | 実描画高さ（in vb） | 表示サイズ / 光学補正（Practice 8.2基準） |
+| --- | --- | --- | :---: | :---: | --- |
+| ① もどるボタン（`.back-link`） | `Arrow Hook Down Left 24 Regular` | `arrowHookDownLeft` (`regular`) | `0 0 24 24` | 16.77 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 14.0px） |
+| ② Drill説明文先頭（`.info-panel-desc`） | `Lightbulb 24 Regular` | `lightbulb` (`regular`) | `0 0 24 24` | 20.00 | `20×20px`、`vertical-align: -3.5px`（Optical Height ≈ 16.7px） |
+| ③ 左下Voiceラベル（`.voice-select-label`） | `Speaker 2 24 Regular` | `speaker` / `speaker2` (`regular`) | `0 0 24 24` | 17.99 | `20×20px`（モデル音声ボタンと同一パスを共有、Optical Height ≈ 15.0px） |
+| ④ Script Mode — Hiragana Only | `Translate 24 Regular` | `translate` (`regular`) | `0 0 24 24` | 14.73 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 12.3px） |
+| ④ Script Mode — With漢字 | `Local Language Globe 20 Regular`（第二候補：`Local Language Zi 24 Regular`） | `localLanguageGlobe` (`regular`)（予備：`localLanguageZi`） | `0 0 20 20`（予備：`0 0 24 24`） | 15.00 / 20（予備：21.00 / 24） | `18×18px`、`translateY(0.5px)`（Optical Height ≈ 13.5px；予備 `localLanguageZi` は `15×15px`） |
+| ④ Speech Style — Formal | `Person Accounts 24 Regular` | `personAccounts` (`regular`) | `0 0 24 24` | 21.00 | `15×15px`、`translateY(-0.5px)`（Optical Height ≈ 13.1px） |
+| ④ Speech Style — Informal | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
+| ④ Speech Style — Casual | `Chat Multiple 24 Regular` | `chatMultiple` (`regular`) | `0 0 24 24` | 18.00 | `18×18px`（Optical Height ≈ 13.5px） |
+| ④ Vocabulary Display — Hover | `Chat Hint Half 24 Regular` | `chatHintHalf` (`regular`) | `0 0 24 24` | 19.79 | `16×16px`（Optical Height ≈ 13.2px） |
+| ④ Vocabulary Display — Display | `Text Edit Style 24 Regular` | `textEditStyle` (`regular`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
+| ④ Autostop | `Stop 24 Regular` | `stop` (`regular`) | `0 0 24 24` | 18.00 | `18×18px`（録音停止ボタンの `stop` 定義と共有、Optical Height ≈ 13.5px） |
+| ④ Autoplay | `Play 24 Regular` | `play` (`regular`) | `0 0 24 24` | 17.95 | `18×18px`（録音再生系の `play` 定義と共有、Optical Height ≈ 13.5px） |
+
+- Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。
+- **光学サイズ統一の原則（Optical Size Alignment）**：SVG の外枠 `width`/`height` を単に一律の数値に揃えるのではなく、`viewBox` 内の余白を除いた絵部分の実描画バウンディングボックス高さ（`y_max - y_min`）と垂直中心（`(y_min + y_max) / 2`）を算出し、同じUI領域（特にグローバル設定ボタン群）内で**絵そのものの視覚的な高さ（Optical Height）と垂直中央位置が揃うよう**アイコン別の表示サイズおよびYオフセットを設定する。
+
+### 13.2 無効化（`disabled`）ボタンにおける禁止カーソル（`cursor: not-allowed`）の廃止
+
+- ボタンが無効化・ロック状態（`button:disabled`、録音中の他ボタンロック、Yes/No未選択時の再生・録音ロック、未録音時の `Copy my sentences` 無効化等）にある場合、**グレーアウト（`disabled` による減光・不透明度低下）のみで無効状態を示し、禁止カーソル（`cursor: not-allowed`）は付与しない**（`cursor: default` とする）。
+
+## 14. ページ固有仕様への参照
 
 - Practice 2.1： [PRACTICE2_SPEC.md](PRACTICE2_SPEC.md)
 - Practice 2.2／2.3： [PRACTICE22_23_SPEC.md](PRACTICE22_23_SPEC.md)。Practice 2.1〜2.3共通のMismatch配置は[PRACTICE2_SPEC.md](PRACTICE2_SPEC.md)も参照。

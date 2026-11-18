@@ -123,7 +123,7 @@
     color: #707b8a !important;
     background: #939eac !important;
     opacity: 1 !important;
-    cursor: not-allowed !important;
+    cursor: default !important;
     box-shadow: none !important;
     font-weight: normal !important;
 }
@@ -239,7 +239,7 @@
     background: var(--lab-button) !important;
     color: var(--lab-secondary) !important;
     opacity: 0.45;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 #pitchLab .pitch-status {
@@ -1171,7 +1171,7 @@ body {
 }
 .example-button:disabled {
     background-color: var(--button-disabled-bg) !important;
-    cursor: not-allowed !important;
+    cursor: default !important;
     opacity: 0.55;
 }
 .stop-btn-active {
@@ -1319,7 +1319,7 @@ input:checked + .slider:before {
 }
 .voice-select:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: default;
 }
 .voice-select.is-enhanced {
     display: none !important;
@@ -1349,7 +1349,7 @@ input:checked + .slider:before {
 }
 .voice-dropdown-btn:disabled {
     opacity: 0.6;
-    cursor: not-allowed;
+    cursor: default;
 }
 .voice-dropdown-btn-label {
     overflow: hidden;
@@ -1782,7 +1782,7 @@ input:checked + .slider:before {
 
 .drill-cue-panel > .drill-cue-button:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .drill-cue-panel > .drill-cue-button:focus-visible {
@@ -2159,13 +2159,18 @@ input:checked + .slider:before {
     }
 }
 
-/* Match the cursor to actual disabled controls, including toggle labels. */
-button:disabled,
+/* Disabled buttons use grayed-out state without not-allowed cursor; preserve form/toggle lock cursor compatibility. */
+button:disabled {
+    cursor: default !important;
+}
 input:disabled,
 select:disabled,
 textarea:disabled,
 label:has(> input:disabled),
 label:has(> input:disabled) .slider {
+    cursor: not-allowed !important;
+}
+body:has(#pitchLab) #voiceDropdownBtn:disabled {
     cursor: not-allowed !important;
 }
 
@@ -2176,7 +2181,7 @@ label:has(> input:disabled) .slider {
     background: var(--bg-panel);
     /* A filter on the button changes the containing block of its fixed tooltip. */
     filter: none;
-    cursor: not-allowed !important;
+    cursor: default !important;
 }
 
 #audioRecoveryStatus[hidden] {
@@ -3753,11 +3758,11 @@ body[data-practice="2.3"] .tooltip-tip { position: fixed; left: 12px; top: 12px;
     background: var(--button-disabled-bg) !important;
     color: var(--text-secondary) !important;
     border-color: var(--border-color) !important;
-    cursor: not-allowed !important;
+    cursor: default !important;
     box-shadow: none !important;
 }
 .selection-help-wrap:has(> button:disabled) {
-    cursor: not-allowed !important;
+    cursor: default !important;
 }
 .practice81-page .p81-degree-cue-prefix[data-repeat-anchor],
 .practice81-page .p81-degree-cue-prefix[data-repeat-cue],
@@ -5064,7 +5069,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .practice73-page .p73-copy-button:disabled,
 .practice81-page .p81-copy-button:disabled {
     opacity: .45;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 /* Practice 1.1, 1.2, 2.1, 2.2, 2.3: Copy my sentences */
@@ -5101,7 +5106,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 :is(.practice1-page, .practice12-page, .practice21-page) :is(.p11-copy-button, .p12-copy-button, .p21-copy-button, .p22-copy-button, .p23-copy-button):disabled {
     opacity: .45;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 
@@ -5183,7 +5188,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 .practice82-page .p82-copy-button:disabled {
     opacity: .45;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 /* Practice 8.2: recording result typography (scoped to .practice82-page) */
@@ -5583,4 +5588,105 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     width: 100%;
     height: 100%;
     color: var(--conversation-role-filled-color);
+}
+
+/* Practice 8.2: 共通UI 4領域（もどる、説明文の電球、左下Voiceラベル、グローバル設定ボタン群）のFluent SVG化と光学サイズ調整 */
+.practice82-page .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.practice82-page .back-link .p82-back-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: currentColor;
+    transform: translateY(-0.5px);
+}
+.practice82-page .info-panel-desc .p82-lightbulb-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: -3.5px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    color: currentColor;
+}
+.practice82-page .voice-select-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.practice82-page .voice-select-label .p82-voice-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: currentColor;
+}
+.practice82-page .compact-settings .segmented-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+.practice82-page .compact-settings .settings-onoff .mode-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.practice82-page .compact-settings .p82-setting-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    color: currentColor;
+}
+/* 光学サイズ統一（実描画高さ Optical Height ≈ 13.0〜13.5px、垂直中央位置の統一） */
+.practice82-page .compact-settings .fluent-icon-translate {
+    width: 20px;
+    height: 20px;
+    transform: translateY(-0.5px);
+}
+.practice82-page .compact-settings .fluent-icon-localLanguageGlobe {
+    width: 18px;
+    height: 18px;
+    transform: translateY(0.5px);
+}
+.practice82-page .compact-settings .fluent-icon-localLanguageZi {
+    width: 15px;
+    height: 15px;
+    transform: translateY(0.5px);
+}
+.practice82-page .compact-settings .fluent-icon-personAccounts {
+    width: 15px;
+    height: 15px;
+    transform: translateY(-0.5px);
+}
+.practice82-page .compact-settings .fluent-icon-editLineHorizontal3Filled,
+.practice82-page .compact-settings .fluent-icon-editLineHorizontal3 {
+    width: 16px;
+    height: 16px;
+}
+.practice82-page .compact-settings .fluent-icon-chatMultiple {
+    width: 18px;
+    height: 18px;
+}
+.practice82-page .compact-settings .fluent-icon-chatHintHalf,
+.practice82-page .compact-settings .fluent-icon-chatHelp {
+    width: 16px;
+    height: 16px;
+}
+.practice82-page .compact-settings .fluent-icon-textEditStyle {
+    width: 16px;
+    height: 16px;
+}
+.practice82-page .compact-settings .fluent-icon-stop {
+    width: 18px;
+    height: 18px;
+}
+.practice82-page .compact-settings .fluent-icon-play {
+    width: 18px;
+    height: 18px;
+}
+.practice82-page .compact-settings button:is(:disabled, [aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .p82-setting-icon,
+.practice82-page .compact-settings .settings-onoff:has(input:disabled:not(:checked)) .p82-setting-icon {
+    opacity: 0.55;
 }

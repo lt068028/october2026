@@ -644,5 +644,131 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(tokenIntegrity.wordTokens.length > 0, true, 'diffTokens on kanji word produces tokens');
   eq(tokenIntegrity.yoneEndTokens.slice(-5), ['は', 'な', 'し', 'ま', 'す'], 'diffTokens safely strips sentence-ending よね at tokens level');
 
+  // 16. Common UI 4 regions Fluent SVG conversion, optical sizing, path sharing, and disabled cursor (not-allowed removal)
+  const fluentUiAudit = await p.evaluate(() => {
+    const FI = window.FluentIcons;
+    const legacyEmojis = ['↩️', '💡', '🔊', '🐣', '🐤', '👔', '✏️', '💬', '🔎', '🔡', '⏹️', '▶️'];
+
+    const inspectSvg = el => {
+      const svg = el?.querySelector('svg');
+      const path = svg?.querySelector('path');
+      const cs = svg ? getComputedStyle(svg) : null;
+      return {
+        hasSvg: Boolean(svg),
+        viewBox: svg?.getAttribute('viewBox') || null,
+        d: path?.getAttribute('d') || null,
+        width: cs ? cs.width : null,
+        height: cs ? cs.height : null,
+        transform: cs ? cs.transform : null,
+        text: el ? el.textContent : ''
+      };
+    };
+
+    // 1. Back link (.back-link)
+    const backEl = document.querySelector('.back-link');
+    const back = inspectSvg(backEl);
+
+    // 2. 5 Lightbulb explanations (Drills 1-4 + Drill 5 English cues)
+    const descEls = Array.from(document.querySelectorAll('.info-panel-desc'));
+    const descs = descEls.map(inspectSvg);
+
+    // 3. Footer Voice label (.voice-select-label) and model audio button (speaker)
+    const voiceEl = document.querySelector('.voice-select-label');
+    const voice = inspectSvg(voiceEl);
+    const modelListenSvg = document.querySelector('.drill-listen-btn svg path');
+    const modelSpeakerPath = modelListenSvg?.getAttribute('d') || null;
+
+    // 4. Global settings 9 icon items + Vocabulary OFF (no icon)
+    const settingSpecs = [
+      { key: 'hiragana', sel: '#scriptModeControl [data-value="hiragana"]', icon: 'translate', vb: '0 0 24 24', w: '20px' },
+      { key: 'kanji', sel: '#scriptModeControl [data-value="kanji"]', icon: 'localLanguageGlobe', vb: '0 0 20 20', w: '18px' },
+      { key: 'formal', sel: '#speechStyleControl [data-value="formal"]', icon: 'personAccounts', vb: '0 0 24 24', w: '15px' },
+      { key: 'informal', sel: '#speechStyleControl [data-value="informal"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '16px' },
+      { key: 'casual', sel: '#speechStyleControl [data-value="casual"]', icon: 'chatMultiple', vb: '0 0 24 24', w: '18px' },
+      { key: 'hover', sel: '#hintModeControl [data-value="hover"]', icon: 'chatHintHalf', vb: '0 0 24 24', w: '16px' },
+      { key: 'paren', sel: '#hintModeControl [data-value="paren"]', icon: 'textEditStyle', vb: '0 0 24 24', w: '16px' },
+      { key: 'autostop', sel: '#labelAutoRecord', icon: 'stop', vb: '0 0 24 24', w: '18px' },
+      { key: 'autoplay', sel: '#labelAutoPlay', icon: 'play', vb: '0 0 24 24', w: '18px' }
+    ];
+
+    const settings = settingSpecs.map(sp => {
+      const el = document.querySelector(sp.sel);
+      const info = inspectSvg(el);
+      const expectedD = FI.create(sp.icon, 20).querySelector('path').getAttribute('d');
+      return {
+        key: sp.key,
+        hasSvg: info.hasSvg,
+        vbMatch: info.viewBox === sp.vb,
+        dMatch: Boolean(info.d && info.d === expectedD),
+        wMatch: info.width === sp.w && info.height === sp.w,
+        noLegacyEmoji: !legacyEmojis.some(em => info.text.includes(em)),
+        noEmojiWrapper: !el?.querySelector('.icon-emoji')
+      };
+    });
+
+    const vocabOffEl = document.querySelector('#hintModeControl [data-value="off"]');
+    const vocabOffHasSvg = Boolean(vocabOffEl?.querySelector('svg'));
+
+    // Secondary candidate localLanguageZi registered in FluentIcons
+    const ziSvg = FI.create('localLanguageZi', 20);
+    const hasLocalLanguageZi = Boolean(ziSvg?.querySelector('path')?.getAttribute('d'));
+
+    // Path sharing checks: Voice === speaker, Autostop === stop (regular), Autoplay === play (regular)
+    const expectedBackD = FI.create('arrowHookDownLeft', 20).querySelector('path').getAttribute('d');
+    const expectedBulbD = FI.create('lightbulb', 20).querySelector('path').getAttribute('d');
+    const expectedSpeakerD = FI.create('speaker', 20).querySelector('path').getAttribute('d');
+    const expectedStopD = FI.create('stop', 20, '', 'regular').querySelector('path').getAttribute('d');
+    const expectedPlayD = FI.create('play', 20, '', 'regular').querySelector('path').getAttribute('d');
+
+    const autostopD = document.querySelector('#labelAutoRecord svg path')?.getAttribute('d');
+    const autoplayD = document.querySelector('#labelAutoPlay svg path')?.getAttribute('d');
+
+    // 5. Disabled buttons cursor check (no cursor: not-allowed anywhere)
+    audit82.choices.delete('yn-1-a');
+    audit82.saved.clear();
+    audit82.render();
+    const disabledBtns = Array.from(document.querySelectorAll('button:disabled'));
+    const disabledCursors = disabledBtns.map(b => ({
+      cls: b.className,
+      cursor: getComputedStyle(b).cursor
+    }));
+
+    return {
+      backMatch: back.hasSvg && back.viewBox === '0 0 24 24' && back.d === expectedBackD && back.width === '20px' && !legacyEmojis.some(em => back.text.includes(em)),
+      descsCount: descs.length,
+      descsMatch: descs.every(d => d.hasSvg && d.viewBox === '0 0 24 24' && d.d === expectedBulbD && d.width === '20px' && !legacyEmojis.some(em => d.text.includes(em))),
+      voiceMatch: voice.hasSvg && voice.viewBox === '0 0 24 24' && voice.d === expectedSpeakerD && voice.d === modelSpeakerPath && voice.width === '20px' && !legacyEmojis.some(em => voice.text.includes(em)),
+      autostopSharesStop: Boolean(autostopD && autostopD === expectedStopD),
+      autoplaySharesPlay: Boolean(autoplayD && autoplayD === expectedPlayD),
+      settings,
+      vocabOffHasSvg,
+      hasLocalLanguageZi,
+      disabledCount: disabledCursors.length,
+      anyNotAllowed: disabledCursors.some(c => c.cursor === 'not-allowed')
+    };
+  });
+
+  eq(fluentUiAudit.backMatch, true, 'Back link uses Fluent Arrow Hook Down Left 24 Regular SVG (20px) with no legacy emoji');
+  eq(fluentUiAudit.descsCount, 5, 'All 5 instruction blocks (Drills 1-4 and Drill 5 English cues) are present');
+  eq(fluentUiAudit.descsMatch, true, 'All 5 instruction blocks use Fluent Lightbulb 24 Regular SVG (20px) with no 💡 emoji');
+  eq(fluentUiAudit.voiceMatch, true, 'Footer Voice label uses Fluent Speaker 2 24 Regular SVG identical to model audio button with no 🔊 emoji');
+  eq(fluentUiAudit.autostopSharesStop, true, 'Autostop icon shares exact Fluent Stop 24 Regular SVG path');
+  eq(fluentUiAudit.autoplaySharesPlay, true, 'Autoplay icon shares exact Fluent Play 24 Regular SVG path');
+  for (const s of fluentUiAudit.settings) {
+    eq(s, {
+      key: s.key,
+      hasSvg: true,
+      vbMatch: true,
+      dMatch: true,
+      wMatch: true,
+      noLegacyEmoji: true,
+      noEmojiWrapper: true
+    }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
+  }
+  eq(fluentUiAudit.vocabOffHasSvg, false, 'Vocabulary Display OFF remains text-only without icon');
+  eq(fluentUiAudit.hasLocalLanguageZi, true, 'Secondary candidate localLanguageZi (Local Language Zi 24 Regular) is registered in FluentIcons');
+  eq(fluentUiAudit.disabledCount > 0, true, 'Disabled buttons exist for cursor audit');
+  eq(fluentUiAudit.anyNotAllowed, false, 'No disabled button uses cursor: not-allowed');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
