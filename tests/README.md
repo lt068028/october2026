@@ -309,7 +309,7 @@ node tests/relay-zero-gap.cjs
 
 - **`node tests/uebung11.cjs`**
   - **対象**: Deutsche Übung 1.1（`uebung1.1.html`）
-  - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー `[主語, 動詞, 場所]`・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital`）・複数名詞許容、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints+`…` 描画、音声再生世代管理・`playCircle`・再生中停止アイコン（Regular・`currentColor`）、回答済み全Drill一括Copy（各回答はキューを含めないraw STT・`✅`/`👣`/`🔥`マーカー・`Copied!`2秒自動復帰・再生維持）、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は後追改訂待ち）
+  - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー `[主語, 動詞, 場所]`・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital`）・複数名詞許容、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints+`…` 描画、音声再生世代管理・`playCircle`・再生中停止アイコン（Regular・`currentColor`）、回答済み全Drill一括Copy（各回答はキューを含めないraw STT・`✅`/`👣`/`🔥`マーカー・`Copied!`2秒自動復帰・再生維持）、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は共通仕様・コード・テストへの移行と廃止可否の確認中。現在の規則の正本として恒久維持する前提ではない）
   - **実行場面**: ドイツ語ドリルページの新規作成・修正時。
 
 ---
