@@ -899,7 +899,7 @@ async function runRecordingLifecycleTests() {
         await page.locator('#drill4 .uebung-copy-button').click();
         await page.waitForFunction(() => window.t.clipboardWrites.length === 1);
         const copiedBatch = await page.evaluate(() => window.t.clipboardWrites[0]);
-        const copiedHeaders = copiedBatch.match(/Deutsche Übung 1\\.1 — Drill \\d+: .* — \\d{4}-\\d{2}-\\d{2}/g) || [];
+        const copiedHeaders = copiedBatch.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
         assert.equal(copiedHeaders.length, 2, 'Copy must include one dated heading for each answered drill');
         assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 1: nach — Cities & Countries —'), 'Copy must keep the complete Drill 1 title');
         assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 2: in — Countries with Articles (Akkusativ) —'), 'Copy must keep the complete Drill 2 title');
@@ -912,6 +912,7 @@ async function runRecordingLifecycleTests() {
         assert.ok(!copiedBatch.includes('Drill 3:') && !copiedBatch.includes('Drill 4:'), 'Drills without answers must be omitted');
 
         const copyStatus = page.locator('#drill4 .uebung-copy-status');
+        await page.waitForFunction(() => document.querySelector('#drill4 .uebung-copy-status')?.textContent === 'Copied!');
         assert.equal(await copyStatus.textContent(), 'Copied!', 'Successful clipboard write must show Copied!');
         assert.equal(await copyStatus.isVisible(), true, 'Copied! status must be visible');
         await page.clock.runFor(2000);
