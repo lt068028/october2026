@@ -897,7 +897,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       { sel: '#hintModeControl [data-value="hover"] .custom-tip-box', text: 'Shows vocabulary hints on hover.', br: false },
       { sel: '#hintModeControl [data-value="display"] .custom-tip-box', text: 'Always shows vocabulary hints.', br: false },
       { sel: '#labelAutoRecord .custom-tip-box', text: 'ON: Stops automatically after 2s of silence.OFF: Uses the stop button.', br: true },
-      { sel: '#labelAutoPlay .custom-tip-box', text: 'ON: Automatically plays the model audio, followed by your recording, after recording ends.OFF: Uses the Play buttons separately.', br: true },
+      { sel: '#labelAutoPlay .custom-tip-box', text: 'ON: Auto-plays the model audio and your recording in sequence after recording.OFF: Uses the Play buttons separately.', br: true },
       { sel: '.voice-guide-footer .voice-help-icon .custom-tip-box', text: "If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.", br: false }
     ];
 
