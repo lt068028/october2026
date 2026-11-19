@@ -1693,7 +1693,7 @@ function init() {
                 'filled',
                 24,
                 'Informal',
-                'Plain forms used in writing'
+                'Plain forms used in writing.'
             ],
             [
                 'casual',

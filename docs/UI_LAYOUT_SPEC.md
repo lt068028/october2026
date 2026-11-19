@@ -221,11 +221,15 @@
 | ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 約20 | `24×24px` |
 | ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px` |
 | ④ Autostop | `Mic 24 Filled` | `micFilled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px`、アンバーゴールド（`#fbbf24`） |
-| ④ Autoplay | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
+| ④ Auto-Compare（旧Autoplay） | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
 
 - Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。
-- **枠内最大サイズ（2026-11-18）**：グローバル設定の全アイコン（Script Mode / Speech Style / Vocabulary Display / Autostop / Autoplay）は、セグメントボタンの高さ（`min-height`）および上下paddingを変えず、内容領域に収まる最大の `24×24px` に統一する。ラベル文字・隣接要素と重ねない。
-- **アンバーゴールド（`#fbbf24`）の統一適用**：説明文の電球5箇所、Autostop、Autoplayにはセグメントボタンの選択色と完全に同一の `#fbbf24` をLight/Dark問わず固定適用する。セグメントボタン（Script Mode / Speech Style / Vocabulary Display）は選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色・背景は変更しない。
+- **枠内最大サイズ（2026-11-18）**：グローバル設定の全アイコン（Script Mode / Speech Style / Vocabulary Display / Autostop / Auto-Compare）は、セグメントボタンの高さ（`min-height`）および上下paddingを変えず、内容領域に収まる最大の `24×24px` に統一する。ラベル文字・隣接要素と重ねない。
+- **アンバーゴールド（`#fbbf24`）の統一適用**：説明文の電球5箇所、Autostop、Auto-Compareにはセグメントボタンの選択色と完全に同一の `#fbbf24` をLight/Dark問わず固定適用する。セグメントボタン（Script Mode / Speech Style / Vocabulary Display）は選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色・背景は変更しない。
+- **Global Settings 全ホバー説明テキストの左詰め・三単現統一・ON/OFF改行（2026-11-19）**：
+  - Practice 8.2 の Global Settings に属する全11個のホバー表示領域（Script Mode: 2、Speech Style: 3、Vocabulary Display: 3、Autostop: 1、Auto-Compare: 1、Voice `?` ヘルプ: 1）は、説明テキスト領域を左詰め（`text-align: left`）に統一する（他ページ・共通ホバーには波及させない）。
+  - 動詞で始まる説明文は三単現の `-s` に統一する（`Displays...`, `Hides...`, `Shows...`, `Uses...`, `Stops...`, `Plays...` 等）。
+  - `Autostop` および `Auto-Compare` は1つのホバー内に `OFF:` 直前で `<br>` 改行を入れて2行表示とする。
 - Speech Style の3項目はすべてFilled（Formal＝Building、Informal＝Edit Line Horizontal 3、Casual＝Home）。旧 `personAccounts`・`chatMultiple` 定義は未使用のため削除済み。
 - **光学サイズ統一の原則（Optical Size Alignment）**：SVG の外枠 `width`/`height` を単に一律の数値に揃えるのではなく、`viewBox` 内の余白を除いた絵部分の実描画バウンディングボックス高さ（`y_max - y_min`）と垂直中心（`(y_min + y_max) / 2`）を算出し、同じUI領域（特にグローバル設定ボタン群）内で**絵そのものの視覚的な高さ（Optical Height）と垂直中央位置が揃うよう**アイコン別の表示サイズおよびYオフセットを設定する。
 

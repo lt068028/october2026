@@ -885,5 +885,50 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(fluentUiAudit.disabledCount > 0, true, 'Disabled buttons exist for cursor audit');
   eq(fluentUiAudit.anyNotAllowed, false, 'No disabled button uses cursor: not-allowed');
 
+  // Global Settings 11 tooltips audit: text-align left, wording, Auto-Compare rename, and <br> check
+  const tooltipsAudit = await p.evaluate(() => {
+    const tips = [
+      { sel: '#scriptModeControl [data-value="hiragana"] .custom-tip-box', text: 'Displays sentences in Hiragana only.', br: false },
+      { sel: '#scriptModeControl [data-value="kanji"] .custom-tip-box', text: 'Displays sentences with Kanji and Kana.', br: false },
+      { sel: '#speechStyleControl [data-value="formal"] .custom-tip-box', text: 'Polite speech for work or unfamiliar people.', br: false },
+      { sel: '#speechStyleControl [data-value="informal"] .custom-tip-box', text: 'Plain forms used in writing.', br: false },
+      { sel: '#speechStyleControl [data-value="casual"] .custom-tip-box', text: 'Relaxed speech with family and friends.', br: false },
+      { sel: '#hintModeControl [data-value="off"] .custom-tip-box', text: 'Hides vocabulary hints.', br: false },
+      { sel: '#hintModeControl [data-value="hover"] .custom-tip-box', text: 'Shows vocabulary hints on hover.', br: false },
+      { sel: '#hintModeControl [data-value="display"] .custom-tip-box', text: 'Always shows vocabulary hints.', br: false },
+      { sel: '#labelAutoRecord .custom-tip-box', text: 'ON: Stops automatically after 2s of silence.OFF: Uses the stop button.', br: true },
+      { sel: '#labelAutoPlay .custom-tip-box', text: 'ON: Automatically plays the model audio, followed by your recording, after recording ends.OFF: Uses the Play buttons separately.', br: true },
+      { sel: '.voice-guide-footer .voice-help-icon .custom-tip-box', text: "If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.", br: false }
+    ];
+
+    const results = tips.map(t => {
+      const el = document.querySelector(t.sel);
+      if (!el) return { found: false };
+      const cs = getComputedStyle(el);
+      const textMatch = el.textContent.trim().replace(/\s+/g, ' ') === t.text;
+      const hasBr = Boolean(el.querySelector('br'));
+      const leftAligned = cs.textAlign === 'left';
+      return { found: true, textMatch, brMatch: hasBr === t.br, leftAligned };
+    });
+
+    const autoCompareLabel = document.querySelector('#labelAutoPlay')?.textContent.replace(/[\n\r]+/g, ' ').trim().startsWith('Auto-Compare');
+
+    return {
+      allFound: results.every(r => r.found),
+      allTextMatch: results.every(r => r.textMatch),
+      allBrMatch: results.every(r => r.brMatch),
+      allLeftAligned: results.every(r => r.leftAligned),
+      autoCompareLabel
+    };
+  });
+
+  eq(tooltipsAudit, {
+    allFound: true,
+    allTextMatch: true,
+    allBrMatch: true,
+    allLeftAligned: true,
+    autoCompareLabel: true
+  }, 'All 11 Global Settings tooltips have left-aligned text, correct wording with -s, br where required, and Auto-Compare label');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
