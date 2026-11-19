@@ -2018,10 +2018,6 @@ function initGermanDrill() {
                 status.hidden = false;
             }
         };
-                status.style.color = "var(--semantic-negative-color, #E11D48)";
-            }
-            status.hidden = false;
-        };
 
         area.append(btn, help, status);
         container.append(area);
