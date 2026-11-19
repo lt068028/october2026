@@ -5242,6 +5242,11 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     font-weight: 700;
 }
 
+.uebung11-page .result-missing {
+    color: var(--semantic-negative-color, var(--error-text, #be123c));
+    font-weight: 400;
+}
+
 /* Practice 8.2 音声ボタン4種の中央配置 (既存padding・寸法を維持) */
 .practice82-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) {
     display: inline-flex;

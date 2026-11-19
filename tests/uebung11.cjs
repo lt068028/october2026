@@ -156,126 +156,150 @@ const {
 assert.ok(Array.isArray(drillsData) && drillsData.length === 4, 'drillsData must contain 4 drills');
 
 // Locate test items
-const itemGraz = drillsData[0].items[0]; // d1_1: Graz / fahren -> "Ich fahre nach Graz."
-const itemItalien = drillsData[0].items[1]; // d1_2: Italien / reisen -> "Ich reise nach Italien."
-const itemTuerkei = drillsData[1].items[0]; // d2_1: die Türkei / fliegen -> "Ich fliege in die Türkei."
-const itemIrak = drillsData[1].items[2]; // d2_3: der Irak / fliegen -> "Ich fliege in den Irak."
-const itemArzt = drillsData[2].items[0]; // d3_1: der Arzt / gehen -> "Ich gehe zum Arzt."
-const itemPost = drillsData[3].example; // Ex 4: die Post / gehen -> "Ich gehe zur Post."
-const itemSchule = drillsData[3].items[2]; // d4_3: die Schule / gehen -> regional models
+const itemSalzburg = drillsData[0].example; // d1_ex: Ich / fahren / Salzburg -> "Ich fahre nach Salzburg."
+const itemItalien = drillsData[0].items[1]; // d1_2: Ich / reisen / Italien -> "Ich reise nach Italien."
+const itemTuerkei = drillsData[1].items[0]; // d2_1: Du / fliegen / die Türkei -> "Du fliegst in die Türkei."
+const itemSupermarkt = drillsData[2].example; // d3_ex: Er / gehen / der Supermarkt -> "Er geht zum Supermarkt."
+const itemKrankenhaus = drillsData[2].items[0]; // d3_1: Er / fahren / das Krankenhaus (AT/CH: Spital)
+const itemPost = drillsData[3].example; // d4_ex: Ihr / gehen / die Post -> "Ihr geht zur Post."
+const itemBank = drillsData[3].items[0]; // d4_1: Ihr / laufen / die Bank -> "Ihr lauft zur Bank."
+const itemSchule = drillsData[3].items[2]; // d4_3: Ihr / fahren / die Schule -> regional models
 
 console.log('Running 3-stage evaluation engine unit tests...');
 
 // Case 1: Exact model match
-const resCase1 = evaluateGermanAnswer("Ich fahre nach Graz.", itemGraz, "DE");
+const resCase1 = evaluateGermanAnswer("Ich fahre nach Salzburg.", itemSalzburg, "DE");
 assert.equal(resCase1.judgment, "accepted", "Exact match must be accepted");
 assert.equal(resCase1.redPart, null, "Exact match has no redPart");
 
-// Case 2: Registered regional alternative from allowedAnswers
-const resCase2 = evaluateGermanAnswer("Ich gehe in die Schule.", itemSchule, "DE");
-assert.equal(resCase2.judgment, "accepted", "Allowed regional alternative must be accepted");
-assert.ok(resCase2.supplement && resCase2.supplement.includes("zur Schule"), "Should include regional model supplement");
+// Case 2: Regional variations (DE/AT/CH) for d4_3 (Schule) & d3_1 (Krankenhaus / Spital)
+const resCase2a = evaluateGermanAnswer("Ihr fahrt zur Schule.", itemSchule, "AT");
+assert.equal(resCase2a.judgment, "accepted", "DE expression 'zur Schule' must be accepted under AT");
+assert.ok(resCase2a.supplement && resCase2a.supplement.includes("in die Schule"), "Should include AT supplement");
 
-// Case 3: Alternate grammatical subjects
-const resCase3a = evaluateGermanAnswer("Wir fahren nach Graz.", itemGraz, "DE");
-assert.equal(resCase3a.judgment, "accepted", "Alternate subject 'Wir' must be accepted");
-const resCase3b = evaluateGermanAnswer("Sie fliegt in die Türkei.", itemTuerkei, "DE");
-assert.equal(resCase3b.judgment, "accepted", "Alternate subject 'Sie' (3sg) must be accepted");
-const resCase3c = evaluateGermanAnswer("Er geht zum Arzt.", itemArzt, "DE");
-assert.equal(resCase3c.judgment, "accepted", "Alternate subject 'Er' must be accepted");
+const resCase2b = evaluateGermanAnswer("Ihr fahrt in die Schule.", itemSchule, "DE");
+assert.equal(resCase2b.judgment, "accepted", "AT expression 'in die Schule' must be accepted under DE");
+assert.ok(resCase2b.supplement && resCase2b.supplement.includes("zur Schule"), "Should include DE supplement");
+
+const resCase2c = evaluateGermanAnswer("Er fährt zum Spital.", itemKrankenhaus, "AT");
+assert.equal(resCase2c.judgment, "accepted", "AT/CH model 'Er fährt zum Spital.' must be accepted under AT");
+const resCase2d = evaluateGermanAnswer("Er fährt zum Krankenhaus.", itemKrankenhaus, "AT");
+assert.equal(resCase2d.judgment, "accepted", "DE model 'Er fährt zum Krankenhaus.' must be accepted under AT with supplement");
+assert.ok(resCase2d.supplement && resCase2d.supplement.includes("Spital"), "Must suggest AT Spital");
+
+// Case 3: Uncontracted forms (zu dem / zu der) equivalence & strict article/case check
+const resCase3a = evaluateGermanAnswer("Er geht zu dem Supermarkt.", itemSupermarkt, "DE");
+assert.equal(resCase3a.judgment, "accepted", "Uncontracted 'zu dem Supermarkt' must be accepted");
+const resCase3b = evaluateGermanAnswer("Ihr geht zu der Post.", itemPost, "DE");
+assert.equal(resCase3b.judgment, "accepted", "Uncontracted 'zu der Post' must be accepted");
+const resCase3c = evaluateGermanAnswer("Er ist zu dem Supermarkt gegangen.", itemSupermarkt, "DE");
+assert.equal(resCase3c.judgment, "accepted", "Perfekt with 'zu dem' must be accepted");
+const resCase3d = evaluateGermanAnswer("Zu der Bank lauft ihr.", itemBank, "DE");
+assert.equal(resCase3d.judgment, "accepted", "Inverted with 'Zu der' must be accepted");
+
+const resCase3Bad1 = evaluateGermanAnswer("Er geht zu der Supermarkt.", itemSupermarkt, "DE");
+assert.equal(resCase3Bad1.judgment, "mismatch", "Wrong article 'zu der Supermarkt' must be mismatch");
+const resCase3Bad2 = evaluateGermanAnswer("Ihr lauft zu dem Bank.", itemBank, "DE");
+assert.equal(resCase3Bad2.judgment, "mismatch", "Wrong article 'zu dem Bank' must be mismatch");
+const resCase3Bad3 = evaluateGermanAnswer("Er geht zu den Supermarkt.", itemSupermarkt, "DE");
+assert.equal(resCase3Bad3.judgment, "mismatch", "Wrong case 'zu den Supermarkt' must be mismatch");
 
 // Case 4: Inverted word order (OVS)
-const resCase4a = evaluateGermanAnswer("Nach Graz fahre ich.", itemGraz, "DE");
-assert.equal(resCase4a.judgment, "accepted", "Inverted word order 'Nach Graz fahre ich.' must be accepted");
-const resCase4b = evaluateGermanAnswer("In die Türkei fliegen wir.", itemTuerkei, "DE");
+const resCase4a = evaluateGermanAnswer("Nach Salzburg fahre ich.", itemSalzburg, "DE");
+assert.equal(resCase4a.judgment, "accepted", "Inverted word order 'Nach Salzburg fahre ich.' must be accepted");
+const resCase4b = evaluateGermanAnswer("In die Türkei fliegst du.", itemTuerkei, "DE");
 assert.equal(resCase4b.judgment, "accepted", "Inverted word order 'In die Türkei fliegst du.' must be accepted");
-const resCase4c = evaluateGermanAnswer("Zum Arzt geht er.", itemArzt, "DE");
-assert.equal(resCase4c.judgment, "accepted", "Inverted word order 'Zum Arzt geht er.' must be accepted");
+const resCase4c = evaluateGermanAnswer("Zum Supermarkt geht er.", itemSupermarkt, "DE");
+assert.equal(resCase4c.judgment, "accepted", "Inverted word order 'Zum Supermarkt geht er.' must be accepted");
 
 // Case 5: Alternate tenses (Perfekt / Präteritum) with explicit drill subjects
-const resCase5a = evaluateGermanAnswer("Ich bin nach Graz gefahren.", itemGraz, "DE");
-assert.equal(resCase5a.judgment, "accepted", "Perfekt 'Ich bin nach Graz gefahren.' must be accepted");
+const resCase5a = evaluateGermanAnswer("Ich bin nach Salzburg gefahren.", itemSalzburg, "DE");
+assert.equal(resCase5a.judgment, "accepted", "Perfekt 'Ich bin nach Salzburg gefahren.' must be accepted");
 const resCase5b = evaluateGermanAnswer("Du bist in die Türkei geflogen.", itemTuerkei, "DE");
 assert.equal(resCase5b.judgment, "accepted", "Perfekt 'Du bist in die Türkei geflogen.' must be accepted");
-const resCase5c = evaluateGermanAnswer("Ich fuhr nach Graz.", itemGraz, "DE");
-assert.equal(resCase5c.judgment, "accepted", "Präteritum 'Ich fuhr nach Graz.' must be accepted");
-const resCase5d = evaluateGermanAnswer("Er ist zum Arzt gegangen.", itemArzt, "DE");
-assert.equal(resCase5d.judgment, "accepted", "Perfekt 'Er ist zum Arzt gegangen.' must be accepted");
+const resCase5c = evaluateGermanAnswer("Ich fuhr nach Salzburg.", itemSalzburg, "DE");
+assert.equal(resCase5c.judgment, "accepted", "Präteritum 'Ich fuhr nach Salzburg.' must be accepted");
+const resCase5d = evaluateGermanAnswer("Er ist zum Supermarkt gegangen.", itemSupermarkt, "DE");
+assert.equal(resCase5d.judgment, "accepted", "Perfekt 'Er ist zum Supermarkt gegangen.' must be accepted");
 
 // Case 6: Subject mismatch / wrong subject (explicit subject required)
-const resCase6 = evaluateGermanAnswer("Er fahren nach Graz.", itemGraz, "DE");
+const resCase6 = evaluateGermanAnswer("Er fahren nach Salzburg.", itemSalzburg, "DE");
 assert.equal(resCase6.judgment, "mismatch", "Subject/agreement mismatch must be mismatch");
 assert.ok(resCase6.diffTokens.some(t => t.status === "incorrect" && t.text === "Er"), "Wrong subject 'Er' must be flagged incorrect");
 
 // Case 6b: Missing subject -> mismatch with leading ＿
-const itemSchweiz = drillsData[1].example; // Du / die Schweiz / fahren
+const itemSchweiz = drillsData[1].example; // Du / fahren / die Schweiz
 const resCase6b = evaluateGermanAnswer("fährst in die Schweiz.", itemSchweiz, "DE");
 assert.equal(resCase6b.judgment, "mismatch", "Missing subject must be mismatch");
 assert.equal(resCase6b.diffTokens[0].status, "missing", "Missing subject position must have ＿");
 assert.equal(resCase6b.diffTokens[0].text, "＿", "Missing token must be ＿");
 
 // Case 6c: Inverted word order with explicit subject -> accepted (not subject-missing)
-const resCase6c1 = evaluateGermanAnswer("Nach Graz fahre ich.", itemGraz, "DE");
-assert.equal(resCase6c1.judgment, "accepted", "Inverted 'Nach Graz fahre ich.' must be accepted");
+const resCase6c1 = evaluateGermanAnswer("Nach Salzburg fahre ich.", itemSalzburg, "DE");
+assert.equal(resCase6c1.judgment, "accepted", "Inverted 'Nach Salzburg fahre ich.' must be accepted");
 const resCase6c2 = evaluateGermanAnswer("In die Schweiz fährst du.", itemSchweiz, "DE");
 assert.equal(resCase6c2.judgment, "accepted", "Inverted 'In die Schweiz fährst du.' must be accepted");
 
 // Case 7: Wrong preposition for destination -> mismatch with diffTokens
-const resCase7 = evaluateGermanAnswer("Ich fahre zu Graz.", itemGraz, "DE");
+const resCase7 = evaluateGermanAnswer("Ich fahre zu Salzburg.", itemSalzburg, "DE");
 assert.equal(resCase7.judgment, "mismatch", "Wrong preposition must be mismatch");
 assert.ok(resCase7.diffTokens.some(t => t.status === "incorrect" && t.text === "zu"), "Wrong preposition 'zu' must be flagged incorrect");
 
 // Case 8: Wrong place / cue mismatch
-const resCase8 = evaluateGermanAnswer("Ich fahre nach Berlin.", itemGraz, "DE");
+const resCase8 = evaluateGermanAnswer("Ich fahre nach Berlin.", itemSalzburg, "DE");
 assert.equal(resCase8.judgment, "mismatch", "Wrong destination place must be mismatch");
 assert.ok(resCase8.diffTokens.some(t => t.status === "incorrect" && t.text === "Berlin."), "Wrong place must be flagged incorrect");
 
 // Case 9: Wrong verb root
-const resCase9 = evaluateGermanAnswer("Ich gehe nach Graz.", itemGraz, "DE");
+const resCase9 = evaluateGermanAnswer("Ich gehe nach Salzburg.", itemSalzburg, "DE");
 assert.equal(resCase9.judgment, "mismatch", "Wrong motion verb root must be mismatch");
 assert.ok(resCase9.diffTokens.some(t => t.status === "incorrect" && t.text === "gehe"), "Wrong verb root must be flagged incorrect");
 
 // Case 10: Complex sentence structure -> mismatch (no longer undetermined)
-const resCase10 = evaluateGermanAnswer("Ich möchte nach Graz fahren.", itemGraz, "DE");
+const resCase10 = evaluateGermanAnswer("Ich möchte nach Salzburg fahren.", itemSalzburg, "DE");
 assert.equal(resCase10.judgment, "mismatch", "Complex/modal structure must be mismatch");
 assert.ok(resCase10.diffTokens.some(t => t.status === "incorrect" && t.text === "möchte"), "Modal 'möchte' must be flagged incorrect");
 
 // Case 11: Incomplete (true token-level prefix match) vs Mismatch boundaries
-const resCase11Inc = evaluateGermanAnswer("Ich fahre nach", itemGraz, "DE");
+const resCase11Inc = evaluateGermanAnswer("Ich fahre nach", itemSalzburg, "DE");
 assert.equal(resCase11Inc.judgment, "incomplete", "True prefix 'Ich fahre nach' must be incomplete");
 
-const resCase11Cut = evaluateGermanAnswer("Ich fahre nach Gra", itemGraz, "DE");
-assert.equal(resCase11Cut.judgment, "mismatch", "Cut-off token 'Ich fahre nach Gra' must be mismatch");
-const resCase11Extra = evaluateGermanAnswer("Ich fahre nach Graz und", itemGraz, "DE");
+const resCase11Cut = evaluateGermanAnswer("Ich fahre nach Salz", itemSalzburg, "DE");
+assert.equal(resCase11Cut.judgment, "mismatch", "Cut-off token 'Ich fahre nach Salz' must be mismatch");
+const resCase11Extra = evaluateGermanAnswer("Ich fahre nach Salzburg und", itemSalzburg, "DE");
 assert.equal(resCase11Extra.judgment, "mismatch", "Extra trailing word must be mismatch");
-const resCase11Mid1 = evaluateGermanAnswer("fahre nach", itemGraz, "DE");
+const resCase11Mid1 = evaluateGermanAnswer("fahre nach", itemSalzburg, "DE");
 assert.equal(resCase11Mid1.judgment, "mismatch", "Mid-sentence fragment 'fahre nach' must be mismatch");
-const resCase11Mid2 = evaluateGermanAnswer("Graz", itemGraz, "DE");
-assert.equal(resCase11Mid2.judgment, "mismatch", "Single trailing word 'Graz' must be mismatch");
+const resCase11Mid2 = evaluateGermanAnswer("Salzburg", itemSalzburg, "DE");
+assert.equal(resCase11Mid2.judgment, "mismatch", "Single trailing word 'Salzburg' must be mismatch");
 
 // Case 12: Empty STT & Low-confidence fallback
-const resCase12Empty = evaluateGermanAnswer("   ", itemGraz, "DE");
+const resCase12Empty = evaluateGermanAnswer("   ", itemSalzburg, "DE");
 assert.equal(resCase12Empty.judgment, "empty", "Whitespace-only STT must be empty");
 
-const resCase12Low = evaluateGermanAnswer("Hallo Welt heute", itemGraz, "DE");
+const resCase12Low = evaluateGermanAnswer("Hallo Welt heute", itemSalzburg, "DE");
 assert.equal(resCase12Low.judgment, "mismatch", "Completely unrelated speech must be mismatch");
 assert.ok(resCase12Low.diffTokens.every(t => t.status === "incorrect" && t.text !== "＿"), "Low-confidence fallback must mark all tokens incorrect without inserting ＿");
 
 // 7.3 Responsive style & A-F contracts verification
 assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
 assert.ok(css.includes('.uebung11-page .result-incorrect'), 'CSS must style .uebung11-page .result-incorrect');
+assert.ok(css.includes('.uebung11-page .result-missing'), 'CSS must style .uebung11-page .result-missing');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
 assert.ok(feedbackCss.includes('.feedback-retry-label'), 'Feedback CSS must style the Fluent retry renderer');
 
-// A: All 16 items cueParts must follow SVO order [subject, verb, place]
+// A: All 16 items cueParts must follow SVO order [subject, verb, place] & no duplicate verbs per drill
 const expectedSubjects = ["Ich", "Du", "Er", "Ihr"];
-const knownVerbs = new Set(["fahren", "reisen", "fliegen", "gehen"]);
+const knownVerbs = new Set(["fahren", "reisen", "fliegen", "gehen", "ziehen", "kommen", "rennen", "spazieren", "laufen", "radeln"]);
 drillsData.forEach((drill, dIdx) => {
     const allItems = [drill.example, ...drill.items];
+    const verbsInDrill = new Set();
     allItems.forEach(it => {
         assert.equal(it.cueParts[0], expectedSubjects[dIdx], `Drill ${dIdx + 1} cueParts[0] must be ${expectedSubjects[dIdx]}`);
         assert.ok(knownVerbs.has(it.cueParts[1]), `Drill ${dIdx + 1} cueParts[1] must be verb, got ${it.cueParts[1]}`);
+        assert.ok(!verbsInDrill.has(it.cueParts[1]), `Drill ${dIdx + 1} must not duplicate verb ${it.cueParts[1]}`);
+        verbsInDrill.add(it.cueParts[1]);
     });
 });
 
@@ -677,13 +701,10 @@ async function runRecordingLifecycleTests() {
         const resText10 = await getResult().textContent();
         assert.ok(resText10.includes('Recognition error.'), 'S10: Shows Recognition error.');
         const playBtn10 = getResult().locator('.play-recording-btn');
-        assert.equal(await playBtn10.count(), 1, 'S10: Play button preserved despite STT error');
-        // Scenario 11: Play audio
-        await playBtn10.click();
-        await page.clock.runFor(100);
-        assert.ok(await page.evaluate(() => Boolean(document.querySelector('.play-recording-btn'))), 'S11: Audio playback playable');
+        assert.equal(await playBtn10.count(), 0, 'S10: Empty STT discards audio without play button');
+        // Scenario 11: Skipped when no audio preserved for empty STT
 
-        // --- Scenario 12: STT空・録音音声ありの場合の表示と再生 ---
+        // --- Scenario 12: STT空・録音音声ありの場合の表示（録音破棄・再生ボタンなし） ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
@@ -694,7 +715,7 @@ async function runRecordingLifecycleTests() {
         const resText12 = await getResult().textContent();
         assert.ok(resText12.includes('No transcription available.'), 'S12: Shows No transcription available.');
         assert.ok(!resText12.includes('… Not yet'), 'S12: Does not show Not yet');
-        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S12: Play button exists when audio recorded with empty STT');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S12: No play button when STT is empty');
 
         // --- Scenario 13: AudioContext初期化失敗 ---
         await page.evaluate(() => { window.t.failAudioContext = true; });

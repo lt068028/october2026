@@ -20,10 +20,10 @@ const drillsData = [
         items: [
             {
                 id: "d1_1",
-                cue: "Ich / fahren / Graz",
-                cueParts: ["Ich", "fahren", "Graz"],
-                hints: ["I (subject)", "to travel / drive", "Graz (city in Austria)"],
-                model: "Ich fahre nach Graz."
+                cue: "Ich / fliegen / Berlin",
+                cueParts: ["Ich", "fliegen", "Berlin"],
+                hints: ["I (subject)", "to fly", "Berlin (city in Germany)"],
+                model: "Ich fliege nach Berlin."
             },
             {
                 id: "d1_2",
@@ -34,10 +34,10 @@ const drillsData = [
             },
             {
                 id: "d1_3",
-                cue: "Ich / fahren / Berlin",
-                cueParts: ["Ich", "fahren", "Berlin"],
-                hints: ["I (subject)", "to travel / drive", "Berlin (city in Germany)"],
-                model: "Ich fahre nach Berlin."
+                cue: "Ich / ziehen / Wien",
+                cueParts: ["Ich", "ziehen", "Wien"],
+                hints: ["I (subject)", "to move (relocate)", "Vienna (city in Austria)"],
+                model: "Ich ziehe nach Wien."
             }
         ]
     },
@@ -70,10 +70,10 @@ const drillsData = [
             },
             {
                 id: "d2_3",
-                cue: "Du / fliegen / der Irak",
-                cueParts: ["Du", "fliegen", "der Irak"],
-                hints: ["You (subject, sg.)", "to fly", "Iraq (masc.)"],
-                model: "Du fliegst in den Irak."
+                cue: "Du / kommen / der Irak",
+                cueParts: ["Du", "kommen", "der Irak"],
+                hints: ["You (subject, sg.)", "to come", "Iraq (masc.)"],
+                model: "Du kommst in den Irak."
             }
         ]
     },
@@ -92,24 +92,32 @@ const drillsData = [
         items: [
             {
                 id: "d3_1",
-                cue: "Er / gehen / der Arzt",
-                cueParts: ["Er", "gehen", "der Arzt"],
-                hints: ["He (subject)", "to go", "doctor (masc.)"],
-                model: "Er geht zum Arzt."
-            },
-            {
-                id: "d3_2",
                 cue: "Er / fahren / das Krankenhaus",
                 cueParts: ["Er", "fahren", "das Krankenhaus"],
                 hints: ["He (subject)", "to drive / travel", "hospital (neut.)"],
-                model: "Er fährt zum Krankenhaus."
+                regionalModels: {
+                    DE: "Er fährt zum Krankenhaus.",
+                    AT: "Er fährt zum Spital.",
+                    CH: "Er fährt zum Spital."
+                },
+                allowedAnswers: [
+                    "Er fährt zum Krankenhaus.",
+                    "Er fährt zum Spital."
+                ]
+            },
+            {
+                id: "d3_2",
+                cue: "Er / rennen / der Bahnhof",
+                cueParts: ["Er", "rennen", "der Bahnhof"],
+                hints: ["He (subject)", "to run", "train station (masc.)"],
+                model: "Er rennt zum Bahnhof."
             },
             {
                 id: "d3_3",
-                cue: "Er / gehen / der Bahnhof",
-                cueParts: ["Er", "gehen", "der Bahnhof"],
-                hints: ["He (subject)", "to go", "train station (masc.)"],
-                model: "Er geht zum Bahnhof."
+                cue: "Er / spazieren / der Park",
+                cueParts: ["Er", "spazieren", "der Park"],
+                hints: ["He (subject)", "to stroll / walk", "park (masc.)"],
+                model: "Er spaziert zum Park."
             }
         ]
     },
@@ -128,31 +136,31 @@ const drillsData = [
         items: [
             {
                 id: "d4_1",
-                cue: "Ihr / gehen / die Bank",
-                cueParts: ["Ihr", "gehen", "die Bank"],
-                hints: ["You (subject, pl.)", "to go", "bank (fem.)"],
-                model: "Ihr geht zur Bank."
+                cue: "Ihr / laufen / die Bank",
+                cueParts: ["Ihr", "laufen", "die Bank"],
+                hints: ["You (subject, pl.)", "to run / walk", "bank (fem.)"],
+                model: "Ihr lauft zur Bank."
             },
             {
                 id: "d4_2",
-                cue: "Ihr / gehen / die Apotheke",
-                cueParts: ["Ihr", "gehen", "die Apotheke"],
-                hints: ["You (subject, pl.)", "to go", "pharmacy (fem.)"],
-                model: "Ihr geht zur Apotheke."
+                cue: "Ihr / radeln / die Apotheke",
+                cueParts: ["Ihr", "radeln", "die Apotheke"],
+                hints: ["You (subject, pl.)", "to cycle", "pharmacy (fem.)"],
+                model: "Ihr radelt zur Apotheke."
             },
             {
                 id: "d4_3",
-                cue: "Ihr / gehen / die Schule",
-                cueParts: ["Ihr", "gehen", "die Schule"],
-                hints: ["You (subject, pl.)", "to go", "school (fem.)"],
+                cue: "Ihr / fahren / die Schule",
+                cueParts: ["Ihr", "fahren", "die Schule"],
+                hints: ["You (subject, pl.)", "to travel / drive", "school (fem.)"],
                 regionalModels: {
-                    DE: "Ihr geht zur Schule.",
-                    AT: "Ihr geht in die Schule.",
-                    CH: "Ihr geht zur Schule."
+                    DE: "Ihr fahrt zur Schule.",
+                    AT: "Ihr fahrt in die Schule.",
+                    CH: "Ihr fahrt zur Schule."
                 },
                 allowedAnswers: [
-                    "Ihr geht zur Schule.",
-                    "Ihr geht in die Schule."
+                    "Ihr fahrt zur Schule.",
+                    "Ihr fahrt in die Schule."
                 ]
             }
         ]
@@ -262,6 +270,156 @@ const GERMAN_VERBS = {
             "Sie": ["gingen"]
         },
         partizip: "gegangen"
+    },
+    ziehen: {
+        präsens: {
+            "ich": ["ziehe"],
+            "du": ["ziehst"],
+            "er": ["zieht"],
+            "sie": ["zieht", "ziehen"],
+            "es": ["zieht"],
+            "man": ["zieht"],
+            "wir": ["ziehen"],
+            "ihr": ["zieht"],
+            "Sie": ["ziehen"]
+        },
+        präteritum: {
+            "ich": ["zog"],
+            "du": ["zogst"],
+            "er": ["zog"],
+            "sie": ["zog", "zogen"],
+            "es": ["zog"],
+            "man": ["zog"],
+            "wir": ["zogen"],
+            "ihr": ["zogt"],
+            "Sie": ["zogen"]
+        },
+        partizip: "gezogen"
+    },
+    kommen: {
+        präsens: {
+            "ich": ["komme"],
+            "du": ["kommst"],
+            "er": ["kommt"],
+            "sie": ["kommt", "kommen"],
+            "es": ["kommt"],
+            "man": ["kommt"],
+            "wir": ["kommen"],
+            "ihr": ["kommt"],
+            "Sie": ["kommen"]
+        },
+        präteritum: {
+            "ich": ["kam"],
+            "du": ["kamst"],
+            "er": ["kam"],
+            "sie": ["kam", "kamen"],
+            "es": ["kam"],
+            "man": ["kam"],
+            "wir": ["kamen"],
+            "ihr": ["kamt"],
+            "Sie": ["kamen"]
+        },
+        partizip: "gekommen"
+    },
+    rennen: {
+        präsens: {
+            "ich": ["renne"],
+            "du": ["rennst"],
+            "er": ["rennt"],
+            "sie": ["rennt", "rennen"],
+            "es": ["rennt"],
+            "man": ["rennt"],
+            "wir": ["rennen"],
+            "ihr": ["rennt"],
+            "Sie": ["rennen"]
+        },
+        präteritum: {
+            "ich": ["rannte"],
+            "du": ["ranntest"],
+            "er": ["rannte"],
+            "sie": ["rannte", "rannten"],
+            "es": ["rannte"],
+            "man": ["rannte"],
+            "wir": ["rannten"],
+            "ihr": ["ranntet"],
+            "Sie": ["rannten"]
+        },
+        partizip: "gerannt"
+    },
+    spazieren: {
+        präsens: {
+            "ich": ["spaziere"],
+            "du": ["spazierst"],
+            "er": ["spaziert"],
+            "sie": ["spaziert", "spazieren"],
+            "es": ["spaziert"],
+            "man": ["spaziert"],
+            "wir": ["spazieren"],
+            "ihr": ["spaziert"],
+            "Sie": ["spazieren"]
+        },
+        präteritum: {
+            "ich": ["spazierte"],
+            "du": ["spaziertest"],
+            "er": ["spazierte"],
+            "sie": ["spazierte", "spazierten"],
+            "es": ["spazierte"],
+            "man": ["spazierte"],
+            "wir": ["spazierten"],
+            "ihr": ["spaziertet"],
+            "Sie": ["spazierten"]
+        },
+        partizip: "spaziert"
+    },
+    laufen: {
+        präsens: {
+            "ich": ["laufe"],
+            "du": ["läufst"],
+            "er": ["läuft"],
+            "sie": ["läuft", "laufen"],
+            "es": ["läuft"],
+            "man": ["läuft"],
+            "wir": ["laufen"],
+            "ihr": ["lauft"],
+            "Sie": ["laufen"]
+        },
+        präteritum: {
+            "ich": ["lief"],
+            "du": ["liefst"],
+            "er": ["lief"],
+            "sie": ["lief", "liefen"],
+            "es": ["lief"],
+            "man": ["lief"],
+            "wir": ["liefen"],
+            "ihr": ["lieft"],
+            "Sie": ["liefen"]
+        },
+        partizip: "gelaufen"
+    },
+    radeln: {
+        präsens: {
+            "ich": ["radele", "radle"],
+            "du": ["radelst"],
+            "er": ["radelt"],
+            "sie": ["radelt", "radeln"],
+            "es": ["radelt"],
+            "man": ["radelt"],
+            "wir": ["radeln"],
+            "ihr": ["radelt"],
+            "Sie": ["radeln"]
+        },
+        präteritum: {
+            "ich": ["radelte"],
+            "du": ["radeltest"],
+            "er": ["radelte"],
+            "sie": ["radelte", "radelten"],
+            "es": ["radelte"],
+            "man": ["radelte"],
+            "wir": ["radelten"],
+            "ihr": ["radeltet"],
+            "Sie": ["radelten"]
+        },
+        partizip: "geradelt"
     }
 };
 
@@ -316,6 +474,7 @@ function getItemGrammarSpec(item) {
 
     const validPrepPhrases = [];
     const targetPreps = new Set();
+    const targetPlaces = new Set();
 
     models.forEach(m => {
         if (!m) return;
@@ -324,12 +483,22 @@ function getItemGrammarSpec(item) {
         for (let i = 0; i < words.length; i++) {
             const w = words[i];
             if (w === "nach" || w === "zum" || w === "zur") {
-                validPrepPhrases.push(words.slice(i).join(" "));
+                const phrase = words.slice(i).join(" ");
+                validPrepPhrases.push(phrase);
                 targetPreps.add(w);
+                if (w === "zum") {
+                    targetPreps.add("zu dem");
+                    validPrepPhrases.push(`zu dem ${words.slice(i + 1).join(" ")}`);
+                } else if (w === "zur") {
+                    targetPreps.add("zu der");
+                    validPrepPhrases.push(`zu der ${words.slice(i + 1).join(" ")}`);
+                }
+                if (i + 1 < words.length) targetPlaces.add(words[i + 1]);
                 break;
             } else if (w === "in" && i + 1 < words.length && ["die", "den", "dem", "das"].includes(words[i + 1])) {
                 validPrepPhrases.push(words.slice(i).join(" "));
                 targetPreps.add(`in ${words[i + 1]}`);
+                if (i + 2 < words.length) targetPlaces.add(words[i + 2]);
                 break;
             }
         }
@@ -337,13 +506,15 @@ function getItemGrammarSpec(item) {
 
     const normCuePlace = normalizeGerman(cuePlace);
     const placeNoun = normCuePlace.split(" ").pop() || "";
+    if (placeNoun) targetPlaces.add(placeNoun);
 
     return {
         requiredSubject,
         cueVerb,
         validPrepPhrases: Array.from(new Set(validPrepPhrases)),
         targetPreps: Array.from(targetPreps),
-        targetPlace: placeNoun
+        targetPlace: placeNoun,
+        targetPlaces: Array.from(targetPlaces)
     };
 }
 
@@ -546,8 +717,16 @@ function evaluateGermanAnswer(raw, item, variety = "DE") {
             let placeWord = null;
             for (let i = 0; i < words.length; i++) {
                 const w = words[i];
-                if (w === "nach" || w === "zum" || w === "zur" || w === "zu") {
+                if (w === "nach" || w === "zum" || w === "zur") {
                     prepWord = w;
+                    if (i + 1 < words.length) placeWord = words[i + 1];
+                    break;
+                } else if (w === "zu" && i + 2 < words.length && ["dem", "der", "den", "das"].includes(words[i + 1])) {
+                    prepWord = `zu ${words[i + 1]}`;
+                    placeWord = words[i + 2];
+                    break;
+                } else if (w === "zu") {
+                    prepWord = "zu";
                     if (i + 1 < words.length) placeWord = words[i + 1];
                     break;
                 } else if (w === "in" && i + 2 < words.length && ["die", "den", "dem", "das"].includes(words[i + 1])) {
@@ -589,7 +768,7 @@ function evaluateGermanAnswer(raw, item, variety = "DE") {
             }
 
             const prepValid = prepWord && (spec.targetPreps.length === 0 || spec.targetPreps.includes(prepWord));
-            const placeValid = placeWord && (!spec.targetPlace || placeWord === spec.targetPlace);
+            const placeValid = placeWord && (spec.targetPlaces.length === 0 || spec.targetPlaces.includes(placeWord));
             const hasValidPrepPhrase = spec.validPrepPhrases.some(pp => normRaw.includes(pp));
 
             if (verbValid && prepValid && placeValid && hasValidPrepPhrase) {
@@ -1712,7 +1891,9 @@ function initGermanDrill() {
                 if (Array.isArray(val.diffTokens) && val.diffTokens.length > 0) {
                     val.diffTokens.forEach((tok, idx) => {
                         if (idx > 0) v.result.append(document.createTextNode(" "));
-                        if (tok.status === "incorrect" || tok.status === "missing") {
+                        if (tok.status === "missing") {
+                            v.result.append(node("span", "result-missing", tok.text));
+                        } else if (tok.status === "incorrect") {
                             v.result.append(node("span", "result-incorrect", tok.text));
                         } else {
                             v.result.append(document.createTextNode(tok.text));
@@ -1758,18 +1939,20 @@ function initGermanDrill() {
     // 6. Copy My Sentences
     // -------------------------------------------------------------
     function updateCopyButtons() {
+        const hasAnyRecordings = drillsData.some(drill =>
+            drill.items.some(item => {
+                const s = saved.get(item.id);
+                return Boolean(s?.raw && s.judgment !== "empty");
+            })
+        );
+
         drillsData.forEach(drill => {
             const area = document.querySelector(`.uebung-copy-area[data-drill="${drill.number}"]`);
             if (!area) return;
             const btn = area.querySelector(".uebung-copy-button");
             if (!btn) return;
 
-            const hasRecordings = drill.items.some(item => {
-                const s = saved.get(item.id);
-                return Boolean(s?.raw);
-            });
-
-            btn.disabled = Boolean(session || preparing || !hasRecordings);
+            btn.disabled = Boolean(session || preparing || !hasAnyRecordings);
         });
     }
 
@@ -1791,30 +1974,50 @@ function initGermanDrill() {
         status.setAttribute("aria-live", "polite");
         status.hidden = true;
 
+        let copyTimer = null;
+
         btn.onclick = async () => {
             if (session || preparing) return;
-            const entries = [];
-            drill.items.forEach((item, idx) => {
-                const entry = saved.get(item.id);
-                if (entry?.raw && entry.judgment !== "empty") {
-                    const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
-                    entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`);
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+            const drillBlocks = [];
+            drillsData.forEach(d => {
+                const entries = [];
+                d.items.forEach((item, idx) => {
+                    const entry = saved.get(item.id);
+                    if (entry?.raw && entry.judgment !== "empty") {
+                        const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
+                        entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`);
+                    }
+                });
+                if (entries.length > 0) {
+                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").split(/\s*—\s*/)[0].trim();
+                    const header = `Deutsche Übung 1.1 — Drill ${d.number}: ${cleanTitle} — ${dateStr}`;
+                    drillBlocks.push(`${header}\n${entries.join("\n")}`);
                 }
             });
 
-            if (!entries.length) return;
-
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-            const header = `Deutsche Übung 1.1 — Drill ${drill.number}: ${drill.title.replace(/^Drill \d+:\s*/, "")} — ${drill.learningFocus} — ${dateStr}`;
-            const fullText = `${header}\n${entries.join("\n")}`;
+            if (!drillBlocks.length) return;
+            const fullText = drillBlocks.join("\n\n");
 
             try {
                 await navigator.clipboard.writeText(fullText);
                 status.textContent = "Copied!";
                 status.style.color = "var(--semantic-positive-color, #0057E7)";
+                status.hidden = false;
+                if (copyTimer) clearTimeout(copyTimer);
+                copyTimer = setTimeout(() => {
+                    status.textContent = "";
+                    status.hidden = true;
+                    copyTimer = null;
+                }, 2000);
             } catch (_) {
                 status.textContent = "Could not copy. Please allow clipboard access.";
+                status.style.color = "var(--error-text, #be123c)";
+                status.hidden = false;
+            }
+        };
                 status.style.color = "var(--semantic-negative-color, #E11D48)";
             }
             status.hidden = false;
