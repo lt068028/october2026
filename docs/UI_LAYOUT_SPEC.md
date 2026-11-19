@@ -1,14 +1,14 @@
 # October2026 共通UI・レイアウト仕様（UI_LAYOUT_SPEC）
 
-> **文書バージョン：V4（2026-11-16構成整理・整合補正）**
+> **文書バージョン：V5（2026-11-19 Global Settings・音声再生共通仕様の追加）**
 >
-> - 文書状態：既存のユーザー承認済み共通UI契約を整理・再編したもの。今回の改定で未承認の新規UI仕様を追加しない。
+> - 文書状態：既存のユーザー承認済み共通UI契約を維持し、2026-11-19にユーザーが確認したGlobal Settings・音声再生UIの共通規則を追加したもの。文書への掲載は、全ページの実装適合や実機確認を意味しない。
 > - Q/A Filled：ユーザー承認済み（2026-11-16確認）。
 > - この文書への掲載・承認は、すべての既存ページの実装適合やProductionでの実機確認を意味しない。
 
 ## 1. 目的・適用範囲・正本
 
-本書は、October2026の共通UI、表示、操作部品の外観、レイアウト、幅配分および折り返しの設計契約を定める。
+本書は、October2026の共通UI、表示、操作部品の外観、レイアウト、幅配分および折り返しの設計契約を定める。今回、Global Settingsと音声再生ボタンの共通表示・操作補助規則を追加する。
 
 | 情報 | 正本 |
 | --- | --- |
@@ -20,7 +20,7 @@
 | 自動検証の具体的手順 | 対応するテストコード |
 | 文書の新設・更新・統合・廃止・整合性監査 | [RELAY_WORKFLOW.md §5](RELAY_WORKFLOW.md#5-仕様書管理と継続的整合性確認) |
 
-同じ共通規則を複数文書で再定義しない。ページ固有の承認済み例外は該当ページ仕様書へ置き、本書にはその内容を重複転記しない。Deutsche Übungは専用仕様書・開発ガイドを正本とし、日本語Practiceのページ固有規則を自動適用しない。
+同じ共通規則を複数文書で再定義しない。ページ固有の承認済み例外は該当ページ仕様書へ置き、本書にはその内容を重複転記しない。Deutsche Übungはドイツ語の学習内容・地域変種・ページ固有の録音／判定仕様について専用仕様書・開発ガイドを正本とし、日本語Practiceの教材・教育・設問固有規則を自動適用しない。ただし、Global Settingsおよび音声再生ボタンに関する本書§13.1〜§13.3の共通UI規則は、同等の設定・操作を採用するDeutsche Übungにも適用する。ドイツ語ページの説明文・音声案内は、対象言語と機能に合わせた文面にできる。
 
 ## 2. 正式サポート範囲・基本寸法
 
@@ -202,7 +202,7 @@
 - 録音・再生ボタン本体、ツールチップ、操作説明、Pitch Labのタイトル・説明文・音量補助文も本規則の対象外とする。
 - 本節は共通表示仕様であり、すべての既存ページの実装がこのサイズに一致していることを意味しない。各ページの適合状況は、対象となる実装範囲に応じて別途確認する。
 
-## 13. 共通UIアイコン（Fluent SVG）・光学サイズ調整および無効化カーソル規定（2026-11-19更新）
+## 13. 共通UIアイコン（Fluent SVG）・光学サイズ調整・音声再生UI・無効化カーソル規定（2026-11-19更新）
 
 ### 13.1 共通UI 4領域および音声操作の Microsoft Fluent UI System Icons 仕様
 
@@ -221,21 +221,50 @@
 | ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 約20 | `24×24px` |
 | ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px` |
 | ④ Autostop | `Mic 24 Filled` | `micFilled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px`、アンバーゴールド（`#fbbf24`） |
-| ④ Auto-Compare（旧Autoplay） | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
+| ④ Auto-Compare（旧Autoplay） | `Play Circle 24 Regular` | `playCircle` (`regular`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
 
 - Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。
 - **枠内最大サイズ（2026-11-18）**：グローバル設定の全アイコン（Script Mode / Speech Style / Vocabulary Display / Autostop / Auto-Compare）は、セグメントボタンの高さ（`min-height`）および上下paddingを変えず、内容領域に収まる最大の `24×24px` に統一する。ラベル文字・隣接要素と重ねない。
 - **アンバーゴールド（`#fbbf24`）の統一適用**：説明文の電球5箇所、Autostop、Auto-Compareにはセグメントボタンの選択色と完全に同一の `#fbbf24` をLight/Dark問わず固定適用する。セグメントボタン（Script Mode / Speech Style / Vocabulary Display）は選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色・背景は変更しない。
-- **Global Settings 全ホバー説明テキストの左詰め・三単現統一・ON/OFF改行（2026-11-19）**：
-  - Practice 8.2 の Global Settings に属する全11個のホバー表示領域（Script Mode: 2、Speech Style: 3、Vocabulary Display: 3、Autostop: 1、Auto-Compare: 1、Voice `?` ヘルプ: 1）は、説明テキスト領域を左詰め（`text-align: left`）に統一する（他ページ・共通ホバーには波及させない）。
-  - 動詞で始まる説明文は三単現の `-s` に統一する（`Displays...`, `Hides...`, `Shows...`, `Uses...`, `Stops...`, `Plays...` 等）。
-  - `Autostop` および `Auto-Compare` は1つのホバー内に `OFF:` 直前で `<br>` 改行を入れて2行表示とする。
+- **Global Settingsのホバー説明（全採用ページ共通／2026-11-19）**：
+  - 対象はGlobal Settingsパネル内の設定項目およびVoiceヘルプの説明領域とする。Practice 8.2の11領域は初期リファレンスであり、同じ設定項目を採用する既存・新規ページにも適用する。既存ページは改修機会に順次移行し、新規ページは制作時から適用する。設定項目のないページへ項目を追加する義務はない。
+  - 説明テキスト領域は左詰め（`text-align: left`）とする。対象はGlobal Settings内の説明に限り、設問内の語彙Hoverやその他の一般ツールチップへ自動拡張しない。
+  - 機能の動作を動詞で説明する英文は、設定項目を主語とする三人称単数形を用いる（`Displays...`, `Hides...`, `Shows...`, `Uses...`, `Stops...`, `Auto-plays...` 等）。名詞句や利用者への案内文には機械的に適用しない。
+  - `Autostop` および `Auto-Compare` のON/OFF説明は、同じホバー内で `OFF:` の直前に改行を入れる。
+  - 同一機能を採用するページは次の標準英文を使用する。Voice Helpは対象言語に合わせて `Japanese`／`German` 等を置き換えられる。
+
+| 設定 | 標準ツールチップ文言 |
+| --- | --- |
+| Script Mode — Hiragana Only | `Displays sentences in Hiragana only.` |
+| Script Mode — With漢字 | `Displays sentences with Kanji and Kana.` |
+| Speech Style — Formal | `Polite speech for work or unfamiliar people.` |
+| Speech Style — Informal | `Plain forms used in writing.` |
+| Speech Style — Casual | `Relaxed speech with family and friends.` |
+| Vocabulary Display — OFF | `Hides vocabulary hints.` |
+| Vocabulary Display — Hover | `Shows vocabulary hints on hover.` |
+| Vocabulary Display — Display | `Always shows vocabulary hints.` |
+| Autostop | `ON: Stops automatically after 2s of silence.` / `OFF: Uses the stop button.`（`OFF:`の前で改行） |
+| Auto-Compare | `ON: Auto-plays the model audio and your recording in sequence after recording.` / `OFF: Uses the Play buttons separately.`（`OFF:`の前で改行） |
+| Japanese Voice Help | `If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.` |
+
+  - German Voice Help等の言語固有案内は説明内容を対象言語に合わせて変更できるが、左詰めと適切な折り返しを維持する。アイコン形状・色を説明文に書く必要はなく、実装アイコンと矛盾する説明を追加しない。
 - Speech Style の3項目はすべてFilled（Formal＝Building、Informal＝Edit Line Horizontal 3、Casual＝Home）。旧 `personAccounts`・`chatMultiple` 定義は未使用のため削除済み。
 - **光学サイズ統一の原則（Optical Size Alignment）**：SVG の外枠 `width`/`height` を単に一律の数値に揃えるのではなく、`viewBox` 内の余白を除いた絵部分の実描画バウンディングボックス高さ（`y_max - y_min`）と垂直中心（`(y_min + y_max) / 2`）を算出し、同じUI領域（特にグローバル設定ボタン群）内で**絵そのものの視覚的な高さ（Optical Height）と垂直中央位置が揃うよう**アイコン別の表示サイズおよびYオフセットを設定する。
 
 ### 13.2 無効化（`disabled`）ボタンにおける禁止カーソル（`cursor: not-allowed`）の廃止
 
 - ボタンが無効化・ロック状態（`button:disabled`、録音中の他ボタンロック、Yes/No未選択時の再生・録音ロック、未録音時の `Copy my sentences` 無効化等）にある場合、**グレーアウト（`disabled` による減光・不透明度低下）のみで無効状態を示し、禁止カーソル（`cursor: not-allowed`）は付与しない**（`cursor: default` とする）。
+
+### 13.3 音声再生ボタンの再生中表示・ホバー・排他状態
+
+- `Auto-Compare`設定アイコンと録音再生ボタンは、Microsoft Fluent `Play Circle 24 Regular`（`playCircle`、`regular`）を使用する。モデル音声の通常再生ボタンは既存のスピーカーアイコンを維持する。既存ボタンの寸法・クリック領域・配置は維持し、アイコン変更だけを理由に拡大縮小しない。
+- モデル音声または録音音声の再生中は、該当ボタンを `Stop 24 Regular`（`stop`、`regular`）へ切り替え、通常のアイコン文字色（`currentColor`）で表示する。Filled variantや赤色・警告色による強調は使用しない。再生中に `Playing...` という文字表示は使用しない。
+- 本規則は**再生中の停止操作**だけに適用する。Manual録音中の停止ボタン、およびAutostop録音中の波形・録音状態表示は別機能として扱い、現行の明確な停止表示を弱めない。
+- 停止操作を警告・主要アクションのように過度に強調せず、教材や学習者の発話へ注意を向ける。ボタン寸法とクリック領域は維持する。
+- 通常時のモデル音声／録音音声ボタンの操作ガイドは、Exampleまたは最初の設問行だけに表示し、同じリストの2行目以降には表示しない。これは音声ボタンの通常ガイドに限る。
+- Auto-Compare ONでモデル音声→録音音声のリレー再生中は、通常の1行目限定ルールの例外とし、リレーに参加する停止操作部にAuto-CompareがONであることを知らせる説明を表示する。説明の表示位置は操作対象の行に合わせる。
+- 他の音源が再生中のため操作できない音声ボタンは、§13.2に従いグレーアウト・disabledで示し、禁止カーソルは使わない。
+- 再生ボタンと停止アイコンの外観規則はGlobal Settingsの有無や言語にかかわらず、同じ音声操作UIを採用するページに適用する。
 
 ## 14. ページ固有仕様への参照
 
@@ -244,6 +273,7 @@
 - Practice 7.1〜7.3： [PRACTICE7_SPEC.md](PRACTICE7_SPEC.md)
 - Practice 8.1／8.3： [PRACTICE8_SPEC.md](PRACTICE8_SPEC.md)
 - Practice 8.2： [PRACTICE82_SPEC.md](PRACTICE82_SPEC.md)
+- Deutsche Übung： [GERMAN_DRILL_SPEC.md](GERMAN_DRILL_SPEC.md)
 - STT表示変換： [STT_DISPLAY_RULES.md](STT_DISPLAY_RULES.md)
 - 展開・実装・検証の履歴： [UI_ROLLOUT_REVIEW.md](UI_ROLLOUT_REVIEW.md)
 
