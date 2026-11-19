@@ -182,7 +182,7 @@
 4. **機能**
    - 選択肢・プルダウン
    - 録音・停止・再生
-   - Autostop／Manual、Autoplay／Manual
+   - Autostop／Manual、Auto-Compare／Manual
    - TTS／STT
    - 回答判定・録音結果保持
    - ページ固有機能
