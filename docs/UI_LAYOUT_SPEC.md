@@ -99,7 +99,7 @@
 
 ### 6.2 Drill説明文
 
-- Drill説明文（`.info-panel-desc`、English Cues説明文を含む）の先頭には、Microsoft Fluent `Lightbulb 24 Filled` SVGアイコンを配置し、文章を短縮しても先頭の電球アイコンを残す（Practice 8.2にて先行適用。未移行の既存ページでは従来の💡絵文字が残っている場合があるが、順次SVGへ統一する）。
+- Drill説明文（`.info-panel-desc`、English Cues説明文を含む）の先頭にはMicrosoft Fluent `Lightbulb 24` SVGアイコンを配置し、文章を短縮しても先頭の電球アイコンを残す。Practice 8.2では `Lightbulb 24 Filled` を使用する。他ページの既存・未移行アイコンvariantは今回変更せず、各ページの個別対応時に扱う。
 - 短い同目的の説明は一段落にまとめる。課題と補足、独立した操作手順は分け、句点ごとの一律改行はしない。
 - 課題を先に示し、タイトル・Exampleと重複する前置きを省く。学習者に必要な操作・文型が伝わることを優先し、画面幅に応じて自然に折り返す。
 
@@ -218,8 +218,8 @@
 | ④ Speech Style — Formal | `Building 24 Filled` | `buildingFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
 | ④ Speech Style — Informal | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
 | ④ Speech Style — Casual | `Home 24 Filled` | `homeFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
-| ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 19.79 | `16×16px`（Optical Height ≈ 13.2px） |
-| ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
+| ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 約20 | `24×24px` |
+| ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px` |
 | ④ Autostop | `Stop 24 Filled`（録音停止ボタンと同一の四角Filledパス） | `stop` (`filled`) | `0 0 24 24` | — | `24×24px`、テーマ対応アンバーゴールド（Light `#b45309`／Dark `#fbbf24`） |
 | ④ Autoplay | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、テーマ対応アンバーゴールド（Light `#b45309`／Dark `#fbbf24`） |
 

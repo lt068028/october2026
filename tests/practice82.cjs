@@ -704,6 +704,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       return {
         key: sp.key,
         hasSvg: info.hasSvg,
+        filled: info.filled === (sp.v === 'filled'),
         vbMatch: info.viewBox === sp.vb,
         dMatch: Boolean(info.d && info.d === expectedD),
         wMatch: info.width === sp.w && info.height === sp.w,
@@ -807,6 +808,21 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
   }
   eq(fluentUiAudit.phaseC, { removedKeys: true, preservedSharedKeys: true, autostopAmber: true, autoplayAmber: true, bulbsAmber: true, stopSameAsRealBtn: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Filled icons, safe key cleanup, amber bulbs/toggles/selected icons, preserved shared paths and layout');
+  await p.emulateMedia({ colorScheme: 'dark' });
+  const darkAmberAudit = await p.evaluate(() => {
+    const amber = 'rgb(251, 191, 36)';
+    const bulbs = Array.from(document.querySelectorAll('.info-panel-desc .p82-lightbulb-icon'));
+    const color = sel => getComputedStyle(document.querySelector(sel + ' svg')).color;
+    const selected = Array.from(document.querySelectorAll('.compact-settings .segmented-option[aria-pressed="true"] svg'));
+    return {
+      bulbs: bulbs.length === 5 && bulbs.every(el => getComputedStyle(el).color === amber),
+      autostop: color('#labelAutoRecord') === amber,
+      autoplay: color('#labelAutoPlay') === amber,
+      selected: selected.every(el => getComputedStyle(el).color === amber)
+    };
+  });
+  eq(darkAmberAudit, { bulbs: true, autostop: true, autoplay: true, selected: true }, 'Dark theme amber accents are applied to bulbs, switches, and selected icons');
+  await p.emulateMedia({ colorScheme: 'light' });
   eq(fluentUiAudit.vocabOffHasSvg, false, 'Vocabulary Display OFF remains text-only without icon');
   eq(fluentUiAudit.hasLocalLanguageZi, true, 'Secondary candidate localLanguageZi (Local Language Zi 24 Regular) is registered in FluentIcons');
   eq(fluentUiAudit.disabledCount > 0, true, 'Disabled buttons exist for cursor audit');
