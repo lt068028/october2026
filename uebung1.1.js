@@ -1988,11 +1988,11 @@ function initGermanDrill() {
                     const entry = saved.get(item.id);
                     if (entry?.raw && entry.judgment !== "empty") {
                         const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
-                        entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`);
+                        entries.push(`${idx + 1}. ${marker} ${entry.raw}`);
                     }
                 });
                 if (entries.length > 0) {
-                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").split(/\s*—\s*/)[0].trim();
+                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").trim();
                     const header = `Deutsche Übung 1.1 — Drill ${d.number}: ${cleanTitle} — ${dateStr}`;
                     drillBlocks.push(`${header}\n${entries.join("\n")}`);
                 }

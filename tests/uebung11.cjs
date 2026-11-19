@@ -53,10 +53,10 @@ for (const title of expectedDrillTitles) {
     assert.ok(js.includes(title), `JS must define ${title}`);
 }
 
-// 5.2 Check Drill 4 Item 3 regional configuration
-assert.ok(js.includes('die Schule / gehen'), 'Drill 4 must include die Schule / gehen');
-assert.ok(js.includes('Ich gehe zur Schule.'), 'Must include Ich gehe zur Schule.');
-assert.ok(js.includes('Ich gehe in die Schule.'), 'Must include Ich gehe in die Schule.');
+// 5.2 Check Drill 4 Item 3 regional configuration (explicit subject + current verb cue)
+assert.ok(js.includes('Ihr / fahren / die Schule'), 'Drill 4 must include Ihr / fahren / die Schule');
+assert.ok(js.includes('Ihr fahrt zur Schule.'), 'DE/CH model must include Ihr fahrt zur Schule.');
+assert.ok(js.includes('Ihr fahrt in die Schule.'), 'AT model must include Ihr fahrt in die Schule.');
 
 // 5.3 Check DrillAudio configuration and speech ordering
 assert.ok(js.includes('DrillAudio.configure'), 'JS must configure DrillAudio');
@@ -66,10 +66,15 @@ assert.ok(js.includes('DrillAudio.speak'), 'JS must speak utterances through Dri
 assert.ok(js.indexOf('u.onend =') < js.indexOf('DrillAudio.speak(u)'), 'u.onend must be assigned before DrillAudio.speak');
 assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.onerror must be assigned before DrillAudio.speak');
 
-// 5.4 Check Copy my sentences
+// 5.4 Check Copy my sentences: raw STT only, no cue text
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must implement helper text');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
+assert.ok(js.includes('const hasAnyRecordings = drillsData.some'), 'Any saved answer must enable Copy across drills');
+assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
+assert.ok(js.includes('entries.push(`${idx + 1}. ${marker} ${entry.raw}`)'), 'Copy must include marker and untouched raw STT');
+assert.ok(!js.includes('entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`)'), 'Copy must not include the exercise cue');
+assert.ok(js.includes('const cleanTitle = d.title.replace(/^Drill \\d+:\\s*/, "").trim();'), 'Copy header must retain full drill title without duplicate learning focus');
 
 // 5.5 Check Example & Drill UI standardization (Drills 1–4)
 assert.ok(js.includes('node("table", "drill-example-table")'), 'All Ex tables must use drill-example-table without recording-table');
@@ -203,6 +208,10 @@ const resCase3Bad2 = evaluateGermanAnswer("Ihr lauft zu dem Bank.", itemBank, "D
 assert.equal(resCase3Bad2.judgment, "mismatch", "Wrong article 'zu dem Bank' must be mismatch");
 const resCase3Bad3 = evaluateGermanAnswer("Er geht zu den Supermarkt.", itemSupermarkt, "DE");
 assert.equal(resCase3Bad3.judgment, "mismatch", "Wrong case 'zu den Supermarkt' must be mismatch");
+const resCase3Prefix1 = evaluateGermanAnswer("Er geht zu", itemSupermarkt, "DE");
+assert.equal(resCase3Prefix1.judgment, "incomplete", "Prefix 'Er geht zu' must remain incomplete");
+const resCase3Prefix2 = evaluateGermanAnswer("Er geht zu dem", itemSupermarkt, "DE");
+assert.equal(resCase3Prefix2.judgment, "incomplete", "Prefix 'Er geht zu dem' must remain incomplete");
 
 // Case 4: Inverted word order (OVS)
 const resCase4a = evaluateGermanAnswer("Nach Salzburg fahre ich.", itemSalzburg, "DE");
@@ -285,10 +294,30 @@ assert.ok(resCase12Low.diffTokens.every(t => t.status === "incorrect" && t.text 
 assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
 assert.ok(css.includes('.uebung11-page .result-incorrect'), 'CSS must style .uebung11-page .result-incorrect');
 assert.ok(css.includes('.uebung11-page .result-missing'), 'CSS must style .uebung11-page .result-missing');
+const missingRule = css.match(/\\.uebung11-page \\.result-missing\\s*\\{([^}]*)\\}/);
+assert.ok(missingRule && /font-weight:\\s*400/.test(missingRule[1]), 'Missing ＿ marker must use regular font weight');
+const incorrectRule = css.match(/\\.uebung11-page \\.result-incorrect\\s*\\{([^}]*)\\}/);
+assert.ok(incorrectRule && /font-weight:\\s*700/.test(incorrectRule[1]), 'Incorrect STT tokens must remain bold');
+assert.ok(js.includes('node("span", "result-missing", tok.text)'), 'Missing diff tokens must render with result-missing');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
 assert.ok(feedbackCss.includes('.feedback-retry-label'), 'Feedback CSS must style the Fluent retry renderer');
 
+// New motion verbs must support Präteritum and Perfekt with their intended subjects.
+const newVerbTenseCases = [
+    { verb: "ziehen", item: drillsData[0].items[2], sentences: ["Ich zog nach Wien.", "Ich bin nach Wien gezogen."] },
+    { verb: "kommen", item: drillsData[1].items[2], sentences: ["Du kamst in den Irak.", "Du bist in den Irak gekommen."] },
+    { verb: "rennen", item: drillsData[2].items[1], sentences: ["Er rannte zum Bahnhof.", "Er ist zum Bahnhof gerannt."] },
+    { verb: "spazieren", item: drillsData[2].items[2], sentences: ["Er spazierte zum Park.", "Er ist zum Park spaziert."] },
+    { verb: "laufen", item: drillsData[3].items[0], sentences: ["Ihr lieft zur Bank.", "Ihr seid zur Bank gelaufen."] },
+    { verb: "radeln", item: drillsData[3].items[1], sentences: ["Ihr radeltet zur Apotheke.", "Ihr seid zur Apotheke geradelt."] }
+];
+for (const testCase of newVerbTenseCases) {
+    for (const sentence of testCase.sentences) {
+        const result = evaluateGermanAnswer(sentence, testCase.item, "DE");
+        assert.equal(result.judgment, "accepted", `New verb ${testCase.verb} must accept "${sentence}"`);
+    }
+}
 // A: All 16 items cueParts must follow SVO order [subject, verb, place] & no duplicate verbs per drill
 const expectedSubjects = ["Ich", "Du", "Er", "Ihr"];
 const knownVerbs = new Set(["fahren", "reisen", "fliegen", "gehen", "ziehen", "kommen", "rennen", "spazieren", "laufen", "radeln"]);
@@ -686,7 +715,7 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'S9: Stopped at 20s in Manual');
         assert.ok((await getResult().textContent()).includes('Auto-stopped after 20 seconds.'), 'S9: 20s limit message');
 
-        // --- Scenario 10 & 11: STTエラー時の録音音声保持と再生 ---
+        // --- Scenario 10: STT error leaves no saved audio or playback button ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
@@ -702,8 +731,6 @@ async function runRecordingLifecycleTests() {
         assert.ok(resText10.includes('Recognition error.'), 'S10: Shows Recognition error.');
         const playBtn10 = getResult().locator('.play-recording-btn');
         assert.equal(await playBtn10.count(), 0, 'S10: Empty STT discards audio without play button');
-        // Scenario 11: Skipped when no audio preserved for empty STT
-
         // --- Scenario 12: STT空・録音音声ありの場合の表示（録音破棄・再生ボタンなし） ---
         await clickRecord(false);
         await advanceToElapsed(1000);
@@ -797,12 +824,12 @@ async function runRecordingLifecycleTests() {
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
-        await triggerRecognition('Ich fahre nach Graz.');
+        await triggerRecognition('Ich fliege nach Berlin.');
         await setSpeaking(false);
         await page.clock.runFor(2200);
 
         const resText20 = await getResult().textContent();
-        assert.ok(resText20.includes('Ich fahre nach Graz.'), 'S20: Contains recognized sentence');
+        assert.ok(resText20.includes('Ich fliege nach Berlin.'), 'S20: Contains the current D1 Item 1 recognized sentence');
         assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
 
