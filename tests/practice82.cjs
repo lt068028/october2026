@@ -52,6 +52,41 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   ]));
   for(const [i,checks]of result.entries())eq(checks,[true,true,false],`${style} model/readings/rejection ${i}`);
  }
+
+ // Casual ending check: statements and replies end with 'よ。', questions end with '？' (never 'よ'), informal statements end with '。'
+ await p.locator('#speechStyleControl [data-value="casual"]').click();
+ const casualRows=await p.evaluate(()=>({
+  d1: window.audit82.rowsFor(0).flat().map(r=>r.text),
+  d2: window.audit82.rowsFor(1).flat().map(r=>r.text),
+  d3: window.audit82.rowsFor(2).flat().map(r=>r.text),
+  d4: window.audit82.rowsFor(3).flat().map(r=>r.text)
+ }));
+ eq(casualRows.d1.every(t=>t.endsWith('よ。')),true,'Casual Drill 1 statements end with よ。');
+ eq(casualRows.d2.every(t=>t.endsWith('？')&&!t.includes('よ')),true,'Casual Drill 2 questions end with ？ without よ');
+ eq(casualRows.d3.filter((_,i)=>i%2===0).every(t=>t.endsWith('？')&&!t.includes('よ')),true,'Casual Drill 3 questions end with ？ without よ');
+ eq(casualRows.d3.filter((_,i)=>i%2===1).every(t=>t.endsWith('よ。')),true,'Casual Drill 3 replies end with よ。');
+ eq(casualRows.d4.filter((_,i)=>i%2===0).every(t=>t.endsWith('？')&&!t.includes('よ')),true,'Casual Drill 4 questions end with ？ without よ');
+ eq(casualRows.d4.filter((_,i)=>i%2===1).every(t=>t.endsWith('よ。')),true,'Casual Drill 4 replies end with よ。');
+
+ // Verify TTS spoken text matches 'よ'-bearing text in casual
+ const sampleBtn=p.locator('#drill1 .ex-audio-btn').first();
+ await sampleBtn.click();
+ const spokenCasual=await p.evaluate(()=>t.spoken.at(-1)?.text);
+ eq(spokenCasual?.endsWith('よ。'),true,'Casual TTS spoken text ends with よ。');
+ await p.evaluate(()=>t.spoken.at(-1).onend());
+
+ // Casual answer acceptance regression tests: with-yo, without-yo, with-yone, but not with-ka
+ const d1Item=await p.evaluate(()=>window.audit82.rowsFor(0)[0][0]);
+ eq(await p.evaluate((r)=>window.audit82.matchesAnswer('授業で何か話すよ',r),d1Item),true,'Casual accepts answer with よ');
+ eq(await p.evaluate((r)=>window.audit82.matchesAnswer('授業で何か話す',r),d1Item),true,'Casual accepts answer without よ');
+ eq(await p.evaluate((r)=>window.audit82.matchesAnswer('授業で何か話すよね',r),d1Item),true,'Casual accepts answer with よね');
+ eq(await p.evaluate((r)=>window.audit82.matchesAnswer('授業で何か話すね',r),d1Item),true,'Casual accepts answer with ね');
+ eq(await p.evaluate((r)=>window.audit82.matchesAnswer('授業で何か話すか',r),d1Item),false,'Casual rejects statement with か');
+
+ // Informal check: statements end with '。' and not 'よ。'
+ await p.locator('#speechStyleControl [data-value="informal"]').click();
+ const informalD1=await p.evaluate(()=>window.audit82.rowsFor(0).flat().map(r=>r.text));
+ eq(informalD1.every(t=>t.endsWith('。')&&!t.endsWith('よ。')),true,'Informal Drill 1 statements end with 。 without よ');
  await p.locator('#speechStyleControl [data-value="formal"]').click();
  for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
   await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();

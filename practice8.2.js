@@ -117,12 +117,13 @@ const habitExample={object:'shoes',verb:'wearshoes'};
 function inflect(s,negative=false){const v=verbs[s.verb];return speechStyle==='formal'?v[negative?(s.past?'pastNeg':'neg'):(s.past?'past':'masu')]:negative?v[s.past?'plainPastNeg':'plainNeg']:s.past?v.plainPast:v.dict;}
 function context(s){const pP=s.placeParticle?(s.placeParticle.endsWith('、')?s.placeParticle:s.placeParticle+'、'):'で、';const perP=s.personParticle?(s.personParticle.endsWith('、')?s.personParticle:s.personParticle+'、'):'に、';const tP=s.timeParticle?(s.timeParticle.endsWith('、')?s.timeParticle:s.timeParticle+'、'):'、';return (s.time?words[s.time].kanji+tP:'')+(s.place?words[s.place].kanji+pP:'')+(s.person?words[s.person].kanji+perP:'');}
 function sentenceFor(s){
- const ending=speechStyle==='formal'?'か。':'？';
+ const isQuestion = s.mode==='wh' || s.mode==='question' || s.mode==='contrast';
+ const ending = isQuestion ? (speechStyle==='formal'?'か。':'？') : (speechStyle==='casual'?'よ。':'。');
  if(s.mode==='wh')return 'どんな'+words[s.object].kanji+(s.objectParticle||'を、')+inflect(s)+ending;
- if(s.mode==='any')return '何でも、'+inflect(s)+'。';
- if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も、':'')+inflect(s,no)+'。';}
+ if(s.mode==='any')return '何でも、'+inflect(s)+ending;
+ if(s.mode==='reply'){const no=s.answer==='no';return (speechStyle==='casual'?(no?'ううん、':'うん、'):(no?'いいえ、':'はい、'))+(no?'何も、':'')+inflect(s,no)+ending;}
  const target=s.object?words[s.object].kanji+(s.objectParticle||'、')+'何か、':(s.pronoun==='what'?'何を、':(s.withWo?'何か(を)、':(s.pronoun?words[s.pronoun].kanji+'、':'何か、')));
- return context(s)+target+inflect(s,s.pronoun==='nothing')+(s.mode==='question'||s.mode==='contrast'?ending:'。');
+ return context(s)+target+inflect(s,s.pronoun==='nothing')+ending;
 }
 function makeRow(id,spec,extra={}){
  const r={id,...spec,...extra};r.text=sentenceFor(r);r.hira=displayKana(r.text);r.refs=[r.text,r.hira];
