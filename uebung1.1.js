@@ -895,12 +895,44 @@ function initGermanDrill() {
         return baseHtml;
     }
 
+    function wrapAudioIcon(iconNode) {
+        const span = node("span", "ex-audio-icon");
+        if (iconNode) span.append(iconNode);
+        return span;
+    }
+
+    function setButtonAudioIcon(btn, iconName, variant = "regular") {
+        if (!btn || !window.FluentIcons) return;
+        const icon = window.FluentIcons.create(iconName, 20, "", variant);
+        const iconWrap = btn.querySelector(".ex-audio-icon");
+        if (iconWrap) {
+            iconWrap.replaceChildren(icon);
+        } else {
+            btn.prepend(wrapAudioIcon(icon));
+        }
+    }
+
     function sync() {
         const busy = Boolean(session || preparing);
+        const playing = Boolean(playingButton || activeExButton || relayKey);
+        const locked = busy || playing;
+        const relayView = relayKey ? views.get(relayKey) : null;
+        const relayPlayBtn = relayView?.result?.querySelector(".play-recording-btn");
+
         document.querySelectorAll(
-            ".compact-settings button, .compact-settings input, #drillsContainer button:not([data-stop])"
+            ".compact-settings button, .compact-settings input, #voiceSelect"
         ).forEach(el => {
-            el.disabled = busy;
+            el.disabled = locked;
+        });
+
+        document.querySelectorAll(
+            "#drillsContainer button:not([data-stop]):not(.uebung-copy-button)"
+        ).forEach(el => {
+            const isCurrentPlaybackStop =
+                el === playingButton ||
+                el === activeExButton ||
+                (relayView && (el === relayView.listen || el === relayPlayBtn));
+            el.disabled = isCurrentPlaybackStop ? busy : locked;
         });
 
         views.forEach((v, key) => {
@@ -948,14 +980,16 @@ function initGermanDrill() {
         const rv = views.get(keyToClear);
         if (!rv) return;
         const playBtn = rv.result?.querySelector(".play-recording-btn");
+        if (rv.listen) {
+            setButtonAudioIcon(rv.listen, "speaker2", "regular");
+        }
+        if (playBtn) {
+            setButtonAudioIcon(playBtn, "playCircle", "regular");
+        }
         [rv.listen, playBtn].forEach(b => {
             if (!b) return;
             b.classList.remove("is-playing");
             delete b.dataset.keepPlayback;
-            if (b._relayContents) {
-                b.replaceChildren(...b._relayContents);
-                delete b._relayContents;
-            }
             if (b._relayAriaLabel !== undefined) {
                 if (b._relayAriaLabel === null) b.removeAttribute("aria-label");
                 else b.setAttribute("aria-label", b._relayAriaLabel);
@@ -965,7 +999,6 @@ function initGermanDrill() {
                 applyRelayTip(b, b._relayTipText);
                 delete b._relayTipText;
             }
-            b.disabled = Boolean(session || preparing);
         });
     }
 
@@ -1002,10 +1035,8 @@ function initGermanDrill() {
                 stoppedExTime = performance.now();
             }
             activeExButton.classList.remove("is-playing");
-            const iconWrap = activeExButton.querySelector(".ex-audio-icon");
-            if (iconWrap && window.FluentIcons) {
-                iconWrap.replaceChildren(window.FluentIcons.create("speaker2", 20));
-            }
+            delete activeExButton.dataset.keepPlayback;
+            setButtonAudioIcon(activeExButton, "speaker2", "regular");
             if (activeExButton._originalAriaLabel !== undefined) {
                 if (activeExButton._originalAriaLabel === null) activeExButton.removeAttribute("aria-label");
                 else activeExButton.setAttribute("aria-label", activeExButton._originalAriaLabel);
@@ -1014,10 +1045,9 @@ function initGermanDrill() {
             activeExButton = null;
         }
         if (playingButton) {
-            playingButton.disabled = false;
-            if (playingButton._contents) {
-                playingButton.replaceChildren(...playingButton._contents);
-            }
+            const restoredName = playingButton.classList.contains("play-recording-btn") ? "playCircle" : "speaker2";
+            setButtonAudioIcon(playingButton, restoredName, "regular");
+            delete playingButton.dataset.keepPlayback;
             if (playingButton._originalAriaLabel !== undefined) {
                 if (playingButton._originalAriaLabel === null) playingButton.removeAttribute("aria-label");
                 else playingButton.setAttribute("aria-label", playingButton._originalAriaLabel);
@@ -1026,6 +1056,7 @@ function initGermanDrill() {
             playingButton.classList.remove("is-playing");
             playingButton = null;
         }
+        sync();
     }
 
     function cancelActivePlaybackToken(intentional = true) {
@@ -1051,13 +1082,12 @@ function initGermanDrill() {
         if (!b) return;
         activeExButton = b;
         b.classList.add("is-playing");
-        const iconWrap = b.querySelector(".ex-audio-icon");
-        if (iconWrap && window.FluentIcons) {
-            iconWrap.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
-        }
+        b.dataset.keepPlayback = "true";
+        setButtonAudioIcon(b, "stop", "regular");
         b._originalAriaLabel = b.getAttribute("aria-label");
         b.setAttribute("aria-label", "Wiedergabe stoppen");
         b.disabled = false;
+        sync();
     }
 
     function markPlaying(b) {
@@ -1068,24 +1098,13 @@ function initGermanDrill() {
         }
         stopPlayback();
         playingButton = b;
-        b._contents = Array.from(b.childNodes);
-        if (b.classList.contains("play-recording-btn")) {
-            b.classList.add("is-playing");
-            b.disabled = false;
-            b._originalAriaLabel = b.getAttribute("aria-label");
-            b.setAttribute("aria-label", "Wiedergabe stoppen");
-            if (window.FluentIcons) {
-                b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
-            }
-            return;
-        }
-        b.disabled = false;
         b.classList.add("is-playing");
+        b.dataset.keepPlayback = "true";
+        b.disabled = false;
         b._originalAriaLabel = b.getAttribute("aria-label");
         b.setAttribute("aria-label", "Wiedergabe stoppen");
-        if (window.FluentIcons) {
-            b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
-        }
+        setButtonAudioIcon(b, "stop", "regular");
+        sync();
     }
 
     // -------------------------------------------------------------
@@ -1643,7 +1662,6 @@ function initGermanDrill() {
                 relayKey = key;
                 [currentView?.listen, playBtn].forEach(b => {
                     if (!b) return;
-                    b._relayContents = Array.from(b.childNodes);
                     b._relayAriaLabel = b.getAttribute("aria-label");
                     const existingTip = b.querySelector(".custom-tip-box");
                     b._relayTipText = existingTip ? existingTip.textContent : null;
@@ -1651,11 +1669,10 @@ function initGermanDrill() {
                     b.dataset.keepPlayback = "true";
                     b.disabled = false;
                     b.setAttribute("aria-label", "Wiedergabe stoppen");
-                    if (window.FluentIcons) {
-                        b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
-                    }
+                    setButtonAudioIcon(b, "stop", "regular");
                     applyRelayTip(b, "Auto-Compare: ON");
                 });
+                sync();
                 suppressRelayPreStop = true;
                 try {
                     DrillAudio.playRelay({
@@ -1937,8 +1954,10 @@ function initGermanDrill() {
                     v.result.append(document.createTextNode(val.raw));
                 }
 
-                v.correction.hidden = false;
                 FeedbackStatus.setMismatch(v.correction);
+                const retryUnit = v.correction.firstElementChild || v.correction;
+                v.result.append(document.createTextNode(" "), retryUnit);
+                v.correction.hidden = true;
             }
         } else if (notice || val?.judgment === "empty") {
             const note = node("span", "result-notice", notice || "No transcription available.");
@@ -1949,7 +1968,7 @@ function initGermanDrill() {
         }
 
         if (val?.url) {
-            const playIcon = window.FluentIcons ? window.FluentIcons.create("playCircle", 20) : document.createTextNode("▶️");
+            const playIcon = wrapAudioIcon(window.FluentIcons.create("playCircle", 20));
             const playTip = key === "d1_1" ? "Play your recorded voice." : "";
             const play = button(playIcon, playTip, () => {
                 playRecording(key, play);
@@ -2028,7 +2047,7 @@ function initGermanDrill() {
                     }
                 });
                 if (entries.length > 0) {
-                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").trim();
+                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").split(/\s*—\s*/)[0].trim();
                     const header = `Deutsche Übung 1.1 — Drill ${d.number}: ${cleanTitle} — ${dateStr}`;
                     drillBlocks.push(`${header}\n${entries.join("\n")}`);
                 }
@@ -2207,7 +2226,7 @@ function initGermanDrill() {
                 const isFirstItemOfDrill1 = drill.number === 1 && index === 0;
 
                 const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
-                const listenIcon = window.FluentIcons ? window.FluentIcons.create("speaker2", 20) : document.createTextNode("🔊");
+                const listenIcon = wrapAudioIcon(window.FluentIcons.create("speaker2", 20));
                 const listenBtn = button(listenIcon, listenTip, () => {
                     if (session || preparing) return;
                     if (relayKey === item.id || playingButton === listenBtn) {
@@ -2221,7 +2240,7 @@ function initGermanDrill() {
                 listenBtn.setAttribute("aria-label", "Modellantwort anhören");
 
                 const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
-                const recIcon = window.FluentIcons ? window.FluentIcons.create("mic", 20) : document.createTextNode("🎙️");
+                const recIcon = wrapAudioIcon(window.FluentIcons.create("mic", 20));
                 const recBtn = button(recIcon, recTip, () => {
                     record(item.id, item);
                 });
@@ -2233,9 +2252,11 @@ function initGermanDrill() {
                 if (isFirstItemOfDrill1) {
                     stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
                 }
-                const stopBtn = button("⏹️", stopTip, () => {
+                const stopIcon = wrapAudioIcon(window.FluentIcons.create("stop", 20, "", "regular"));
+                const stopBtn = button(stopIcon, stopTip, () => {
                     if (session?.key === item.id) session.stop("", false, "manual");
                 });
+                stopBtn.classList.add("drill-stop-btn");
                 stopBtn.dataset.stop = "true";
                 stopBtn.disabled = true;
                 if (isFirstItemOfDrill1) {

@@ -39,7 +39,11 @@ const css = fs.readFileSync(cssPath, 'utf8');
 const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
 const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
+assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .drill-stop-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
+assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result {\n    justify-content: flex-end;\n    text-align: right;'), 'Result region must be right-aligned');
+assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result .feedback-retry-label'), 'CSS must style inline Keep going! retry label');
 assert.ok(css.includes('.uebung11-page .uebung-regional-note'), 'style.css must have simple regional note rules');
+assert.ok(css.includes('color: var(--text-secondary);'), 'Regional note must use Option 1 --text-secondary color');
 assert.ok(!css.includes('.uebung-supplement-badge'), 'style.css must not use legacy .uebung-supplement-badge pill');
 
 // 5. Check JS code contract
@@ -77,7 +81,9 @@ assert.ok(js.includes('const hasAnyRecordings = drillsData.some'), 'Any saved an
 assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
 assert.ok(js.includes('entries.push(`${idx + 1}. ${marker} ${entry.raw}`)'), 'Copy must include marker and untouched raw STT');
 assert.ok(!js.includes('entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`)'), 'Copy must not include the exercise cue');
-assert.ok(js.includes('const cleanTitle = d.title.replace(/^Drill \\d+:\\s*/, "").trim();'), 'Copy header must retain full drill title without duplicate learning focus');
+assert.ok(js.includes('const cleanTitle = d.title.replace(/^Drill \\d+:\\s*/, "").split(/\\s*—\\s*/)[0].trim();'), 'Copy header must strip learning focus duplicate from cleanTitle');
+assert.ok(!js.includes('⏹️'), 'Must not hardcode stop emoji ⏹️ anywhere in uebung1.1.js');
+assert.ok(js.includes('wrapAudioIcon') && js.includes('setButtonAudioIcon'), 'All audio buttons must preserve <span class="ex-audio-icon"> wrapper');
 
 // 5.5 Check Example & Drill UI standardization (Drills 1–4)
 assert.ok(js.includes('node("table", "drill-example-table")'), 'All Ex tables must use drill-example-table without recording-table');
@@ -913,8 +919,9 @@ async function runRecordingLifecycleTests() {
         const copiedBatch = await page.evaluate(() => window.t.clipboardWrites[0]);
         const copiedHeaders = copiedBatch.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
         assert.equal(copiedHeaders.length, 2, 'Copy must include one dated heading for each answered drill');
-        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 1: nach — Cities & Countries —'), 'Copy must keep the complete Drill 1 title');
-        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 2: in — Countries with Articles (Akkusativ) —'), 'Copy must keep the complete Drill 2 title');
+        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 1: nach —'), 'Copy must contain stripped Drill 1 header without learning focus');
+        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 2: in —'), 'Copy must contain stripped Drill 2 header without learning focus');
+        assert.ok(!copiedBatch.includes('Cities & Countries'), 'Copy header must not include duplicate learning focus');
         assert.ok(copiedBatch.indexOf('Drill 1:') < copiedBatch.indexOf('Drill 2:'), 'Copied drills must be ordered by page');
         assert.ok(copiedBatch.includes('1. ✅ Ich fliege nach Berlin.'), 'Copy must contain Drill 1 raw STT and accepted marker');
         assert.ok(copiedBatch.includes('1. ✅ Du fliegst in die Türkei.'), 'Copy must contain Drill 2 raw STT and accepted marker');
@@ -969,7 +976,10 @@ async function runRecordingLifecycleTests() {
                 listenKeep: listen?.dataset.keepPlayback,
                 playKeep: play?.dataset.keepPlayback,
                 listenTip: listen?.querySelector('.custom-tip-box')?.textContent,
-                playTip: play?.querySelector('.custom-tip-box')?.textContent
+                playTip: play?.querySelector('.custom-tip-box')?.textContent,
+                otherVoiceDisabled: document.getElementById('voiceSelect')?.disabled,
+                settingDisabled: document.querySelector('#germanVarietyControl button')?.disabled,
+                copyDisabled: document.querySelector('#drill1 .uebung-copy-button')?.disabled
             };
         });
         assert.equal(relayActiveState.listenPlaying, true, 'Relay must mark model button is-playing');
@@ -980,8 +990,11 @@ async function runRecordingLifecycleTests() {
         assert.equal(relayActiveState.playKeep, 'true', 'Relay play button must have data-keep-playback');
         assert.equal(relayActiveState.listenTip, 'Auto-Compare: ON', 'Relay model button must show Auto-Compare: ON');
         assert.equal(relayActiveState.playTip, 'Auto-Compare: ON', 'Relay play button must show Auto-Compare: ON');
+        assert.equal(relayActiveState.otherVoiceDisabled, true, 'Voice selector must be disabled during relay playback');
+        assert.equal(relayActiveState.settingDisabled, true, 'Settings must be disabled during relay playback');
+        assert.equal(relayActiveState.copyDisabled, false, 'Copy button must remain enabled during playback');
 
-        // Stop from model button -> restores both buttons
+        // Stop from model button -> restores both buttons and re-evaluates sync()
         await page.locator('#drill1 .drill-row .drill-listen-btn').click();
         await page.clock.runFor(100);
         const relayClearedState = await page.evaluate(() => {
@@ -992,13 +1005,95 @@ async function runRecordingLifecycleTests() {
                 listenPlaying: listen?.classList.contains('is-playing'),
                 playPlaying: play?.classList.contains('is-playing'),
                 listenTip: listen?.querySelector('.custom-tip-box')?.textContent,
-                playTip: play?.querySelector('.custom-tip-box')?.textContent
+                playTip: play?.querySelector('.custom-tip-box')?.textContent,
+                hasIconWrap: Boolean(listen?.querySelector('.ex-audio-icon svg')),
+                stopRecDisabled: row?.querySelector('[data-stop]')?.disabled,
+                otherVoiceDisabled: document.getElementById('voiceSelect')?.disabled
             };
         });
         assert.equal(relayClearedState.listenPlaying, false, 'Stopping from model button must restore model button');
         assert.equal(relayClearedState.playPlaying, false, 'Stopping from model button must restore play button');
         assert.equal(relayClearedState.listenTip, 'Listen to the model answer.', 'Stopping must restore original Drill 1-1 listen hover');
         assert.equal(relayClearedState.playTip, 'Play your recorded voice.', 'Stopping must restore original Drill 1-1 play hover');
+        assert.equal(relayClearedState.hasIconWrap, true, 'Stopping must preserve .ex-audio-icon wrapper');
+        assert.equal(relayClearedState.stopRecDisabled, true, 'sync() must keep recording stop button disabled after playback stops');
+        assert.equal(relayClearedState.otherVoiceDisabled, false, 'Voice selector must re-enable after playback stops');
+
+        // --- Scenario 20c: Single playback exclusive disabled & same-button re-click stop ---
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.clock.runFor(50);
+        const singlePlayingState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const listen = row?.querySelector('.drill-listen-btn');
+            const rec = row?.querySelector('.drill-record-btn');
+            const play = row?.querySelector('.play-recording-btn');
+            return {
+                listenPlaying: listen?.classList.contains('is-playing'),
+                listenKeep: listen?.dataset.keepPlayback,
+                recDisabled: rec?.disabled,
+                playDisabled: play?.disabled,
+                copyDisabled: document.querySelector('#drill1 .uebung-copy-button')?.disabled
+            };
+        });
+        assert.equal(singlePlayingState.listenPlaying, true, 'Single Drill listen click must start playback');
+        assert.equal(singlePlayingState.listenKeep, 'true', 'Playing button must set data-keep-playback=true');
+        assert.equal(singlePlayingState.recDisabled, true, 'Record button must be disabled during single playback');
+        assert.equal(singlePlayingState.playDisabled, true, 'Other play button must be disabled during single playback');
+        assert.equal(singlePlayingState.copyDisabled, false, 'Copy button must remain enabled during single playback');
+
+        // Re-click the SAME playing button -> must ONLY stop, NOT restart
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.clock.runFor(50);
+        const reclickStoppedState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const listen = row?.querySelector('.drill-listen-btn');
+            return {
+                listenPlaying: listen?.classList.contains('is-playing'),
+                listenKeep: listen?.dataset.keepPlayback,
+                hasIconWrap: Boolean(listen?.querySelector('.ex-audio-icon svg')),
+                recDisabled: row?.querySelector('.drill-record-btn')?.disabled
+            };
+        });
+        assert.equal(reclickStoppedState.listenPlaying, false, 'Re-clicking playing button must stop playback without restarting');
+        assert.equal(reclickStoppedState.listenKeep, undefined, 'Stopped button must clear data-keep-playback');
+        assert.equal(reclickStoppedState.hasIconWrap, true, 'Stopped button must preserve .ex-audio-icon SVG wrapper');
+        assert.equal(reclickStoppedState.recDisabled, false, 'Other buttons must re-enable after stop');
+
+        // --- Scenario 20d: Patch B Layout checks (right-aligned result, inline Keep going!, single-line Incomplete, 2nd-line regional note) ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await page.evaluate(() => {
+            const rec = window.t.recognitions.at(-1);
+            rec?.onresult?.({
+                resultIndex: 0,
+                results: [{ isFinal: true, 0: { transcript: 'Ich fliege zu Berlin.' } }]
+            });
+        });
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click().catch(() => {});
+        await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+        await page.clock.runFor(50);
+
+        const mismatchLayout = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const resText = row?.querySelector('.recording-result > .result-text');
+            const retry = resText?.querySelector('.feedback-retry-label');
+            return {
+                hasInlineRetry: Boolean(retry),
+                retryFontSize: retry ? window.getComputedStyle(retry).fontSize : null,
+                resTextAlign: resText ? window.getComputedStyle(resText).textAlign : null,
+                resDisplay: resText ? window.getComputedStyle(resText).display : null,
+                html: resText?.innerHTML || ''
+            };
+        });
+        assert.equal(mismatchLayout.hasInlineRetry, true, 'Mismatch must render Keep going! inline inside .result-text');
+        assert.equal(mismatchLayout.retryFontSize, '18.2px', 'Inline Keep going! must be 18.2px');
+        assert.equal(mismatchLayout.resTextAlign, 'right', 'Result text must be right-aligned');
+        assert.notEqual(mismatchLayout.resDisplay, 'flex', 'Result text must not be flex container');
+        assert.ok(mismatchLayout.html.includes('fliege <span class="result-incorrect">'), 'Mismatch must preserve space between tokens');
 
         // Verify pagehide cleanup listener
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
