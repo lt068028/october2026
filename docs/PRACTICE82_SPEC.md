@@ -73,7 +73,7 @@ Drill 4のタイトルは `Drill 4: [Sneak Peek] 何でも — Unlimited Choice`
 
 ## 共通表示・読み・音声・採点
 
-- 初期表示はWith漢字／Formal／Hover。Hiragana Only、Informal、Casual、Display、OFF、声選択、Auto/Manual録音、Autoplayを維持する。Practice 8.2のキューは未習漢字を平仮名で示し、モデル文はWith漢字表示を保つ。
+- 初期表示はWith漢字／Formal／Hover。Hiragana Only、Informal、Casual、Display、OFF、声選択、Autostop／Manual録音、Auto-Compare／Manualを維持する。Practice 8.2のキューは未習漢字を平仮名で示し、モデル文はWith漢字表示を保つ。
 - Hiragana Onlyでもデパート、バーベキュー、パーティー、スマホ等のカタカナ表記を保つ。モデル文・案内の読みと、動詞活用形の読みを登録する。
 - モデル表示文とTTS読み上げ文は、文節の区切りに対応する読点を同じ位置に置く。STTの句読点は共通正規化で採点し、STT原文表示や保存原文を書き換えない。
 - 助詞の自然な差、読み・漢字の登録済み異表記、許容される短答・主語補完だけを採点候補に加える。誤った疑問詞、動詞、否定極性、課題の対象を正答扱いしない。
@@ -154,25 +154,12 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
   - `form`：原因となる疑問符（`?` / `？`）が表示文字列に存在する場合はその疑問符のみを `--error-text` で示し、存在しない場合は無関係な一致文字を赤字にせず独立した形式不一致表示を行う。
   - `pending` および旧データ等で差分が空の場合：無関係な一致文字や全文を赤字にしない。
 
-## 共通UI 4領域のFluent SVG適用一覧とアンバーゴールド・禁止カーソル仕様（2026-11-19更新）
+## 共通UI・音声操作に関する仕様参照（2026-11-19更新）
 
-`UI_LAYOUT_SPEC.md` §6.2 および §13 に基づき、Practice 8.2 では以下の4領域を公式 Microsoft Fluent UI System Icons（`@fluentui/svg-icons`）のSVGに統一し、余白を除いた実描画高さ（Optical Height）の光学サイズ補正を行う。`Arrow Hook Down Left 24 Regular`、`Speaker 2 24 Regular`、`Translate 24 Regular` は維持する。
+Global Settingsの設定アイコン、Auto-Compare／Autostop、ツールチップ、音声再生・停止アイコン、再生中の表示、ホバーガイドおよびdisabled表示の共通仕様は、`UI_LAYOUT_SPEC.md` §13.1〜§13.3を正本とする。本書では共通規則を重複定義しない。
 
-1. **① もどるボタン（`.back-link`）**：
-   - 先頭の `↩️` 絵文字を廃止し、`Arrow Hook Down Left 24 Regular`（`arrowHookDownLeft`、`20×20px`、`translateY(-0.5px)`）を配置する。
-2. **② 説明文の電球アイコン（全5箇所：Drill 1〜4 および Drill 5 English Cues）**：
-   - 各 `.info-panel-desc` 先頭の `💡` 絵文字を廃止し、`Lightbulb 24 Filled`（`lightbulbFilled`、`20×20px`、`vertical-align: -3.5px`）を配置する。 5箇所すべてにアンバーゴールド（`#fbbf24`）を固定適用する。
-3. **③ 左下 Voice ラベル（`.voice-select-label`）**：
-   - 先頭の `🔊` 絵文字を廃止し、モデル音声再生ボタンと同一の `Speaker 2 24 Regular`（`speaker` / `speaker2`、`20×20px`）を配置する。
-4. **④ グローバル設定の全アイコン付き項目（9箇所）**：
-   - **Script Mode**：`Hiragana Only` ＝ `Translate 24 Regular`（`translate`、`24×24px`）、`With漢字` ＝ `Local Language 24 Regular`（`localLanguageGlobe`、`0 0 20 20`、`24×24px`；予備の `localLanguageZi` は保持）。
-   - **Speech Style**：`Formal` ＝ `Building 24 Filled`（`buildingFilled`）、`Informal` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`）、`Casual` ＝ `Home 24 Filled`（`homeFilled`）（いずれも `24×24px`）。
-   - **Vocabulary Display**：`OFF` ＝ アイコンなし、`Hover` ＝ `Chat Hint Half 24 Filled`（`chatHintHalfFilled`、`24×24px`）、`Display` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`、`24×24px`）。
-   - **Autostop / Auto-Compare**：`Autostop` ＝ `Mic 24 Filled`（`micFilled`、`24×24px`、アンバーゴールド `#fbbf24`）、`Auto-Compare`（旧 `Autoplay`） ＝ 録音再生ボタンと同一の `Play Circle Hint Half 24 Filled`（`playCircleHintHalfFilled`、`24×24px`、アンバーゴールド `#fbbf24`）。
-5. **サイズ・選択色**：全設定アイコンはボタン高さ・上下paddingを変えずに収まる最大の24pxとし、セグメントボタンの選択中アイコンは `#fbbf24` とする。非選択時の色・背景は変更しない。電球5箇所、Autostop、Auto-Compareは上の段の選択中アイコンと完全に同一のアンバーゴールド（`#fbbf24`）をLight/Dark問わず固定適用する。
-6. **無効化（`disabled`）ボタンからの禁止カーソル除外**：
-   - 無効化状態（未選択時の Drill 3 回答側ボタン、未録音時の `Copy my sentences` ボタン、録音・再生中の排他ロック対象ボタン等）ではグレーアウト表現のみで状態を示し、`cursor: not-allowed` は使用しない（`cursor: default`）。
-7. **Global Settings 全ホバー説明テキストの左詰め・三単現統一・ON/OFF改行（2026-11-19）**：
-   - Global Settings の全11個のホバー表示領域（Script Mode: 2、Speech Style: 3、Vocabulary Display: 3、Autostop: 1、Auto-Compare: 1、Voice `?` ヘルプ: 1）は、説明テキスト領域を左詰め（`text-align: left`）に統一する。
-   - 動詞で始まる説明文は三単現の `-s` に統一する。
-   - `Autostop` および `Auto-Compare` は、1つのホバー表示領域内に `OFF:` 直前で `<br>` 改行を入れて2行表示する。
+Practice 8.2固有の表示として、次の3点を維持する。
+1. **もどるボタン（`.back-link`）**：Microsoft Fluent `Arrow Hook Down Left 24 Regular`（`arrowHookDownLeft`、`20×20px`、`translateY(-0.5px)`）を使用する。
+2. **Drill説明文の電球アイコン（5箇所）**：Drill 1〜4およびDrill 5 English Cuesの`.info-panel-desc`先頭にMicrosoft Fluent `Lightbulb 24 Filled`（`lightbulbFilled`、`20×20px`、`vertical-align: -3.5px`）を配置し、`#fbbf24`を適用する。
+3. **左下Voiceラベル（`.voice-select-label`）**：Microsoft Fluent `Speaker 2 24 Regular`（`speaker`／`speaker2`、`20×20px`）を使用する。
+
