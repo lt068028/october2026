@@ -333,11 +333,9 @@ hints: ["Switzerland (fem.)", "to travel/drive"]
 
 ## 9. 「Copy my sentences」機能
 
-### 9.1 仕様と配置 【実装済み】
-- 各ドリルのCard 3（設問群）直下に右寄せ配置（`.uebung-copy-area`）。
-- Microsoft Fluent `Clipboard 24 Regular` SVGアイコン、ボタン文言 `Copy my sentences`、説明文 `Copy your drill results to review or share.`（`.uebung-copy-help`）。
-- クリック時、当該ドリルで学習者が発話した生認識テキスト（STTトランスクリプト）をローカル日時ヘッダー付きテキストとしてクリップボードへコピー。
-- コピー成功時、ボタン右横に `Copied!`（`.uebung-copy-status`）を一時表示（2秒後にフェードアウト）。
+- Copy対象範囲・raw STT保持・出力形式・録音中の無効化等は、共通仕様 `PROJECT_SPEC.md` §7.2を正本とする。
+- ボタンの外観・配置は `UI_LAYOUT_SPEC.md` を正本とする。
+- 本書ではGerman専用のCopy出力形式や、設問キューのコピー追加を定義しない。
 
 ---
 

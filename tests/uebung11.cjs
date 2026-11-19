@@ -294,10 +294,10 @@ assert.ok(resCase12Low.diffTokens.every(t => t.status === "incorrect" && t.text 
 assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
 assert.ok(css.includes('.uebung11-page .result-incorrect'), 'CSS must style .uebung11-page .result-incorrect');
 assert.ok(css.includes('.uebung11-page .result-missing'), 'CSS must style .uebung11-page .result-missing');
-const missingRule = css.match(/\\.uebung11-page \\.result-missing\\s*\\{([^}]*)\\}/);
-assert.ok(missingRule && /font-weight:\\s*400/.test(missingRule[1]), 'Missing ＿ marker must use regular font weight');
-const incorrectRule = css.match(/\\.uebung11-page \\.result-incorrect\\s*\\{([^}]*)\\}/);
-assert.ok(incorrectRule && /font-weight:\\s*700/.test(incorrectRule[1]), 'Incorrect STT tokens must remain bold');
+const missingRule = css.match(/\.uebung11-page \.result-missing\s*\{([^}]*)\}/);
+assert.ok(missingRule && /font-weight:\s*400/.test(missingRule[1]), 'Missing ＿ marker must use regular font weight');
+const incorrectRule = css.match(/\.uebung11-page \.result-incorrect\s*\{([^}]*)\}/);
+assert.ok(incorrectRule && /font-weight:\s*700/.test(incorrectRule[1]), 'Incorrect STT tokens must remain bold');
 assert.ok(js.includes('node("span", "result-missing", tok.text)'), 'Missing diff tokens must render with result-missing');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
@@ -427,6 +427,8 @@ async function runRecordingLifecycleTests() {
                 recorders: [],
                 recognitions: [],
                 contexts: [],
+                clipboardWrites: [],
+                clipboardFailure: false,
                 speaking: false,
                 deny: false,
                 recordError: false
@@ -500,6 +502,18 @@ async function runRecordingLifecycleTests() {
             };
             window.webkitSpeechRecognition = window.SpeechRecognition;
 
+            Object.defineProperty(navigator, 'clipboard', {
+                configurable: true,
+                value: {
+                    writeText: async text => {
+                        if (window.t.clipboardFailure) {
+                            throw new Error('Clipboard permission denied');
+                        }
+                        window.t.clipboardWrites.push(text);
+                    }
+                }
+            });
+
             window.AudioContext = class {
                 constructor() {
                     if (window.t.failAudioContext) {
@@ -552,10 +566,32 @@ async function runRecordingLifecycleTests() {
         await page.waitForFunction(() => document.readyState === 'complete');
         await page.clock.install();
 
+        const copyButtons = page.locator('.uebung-copy-button');
+        assert.equal(await copyButtons.count(), 4, 'There must be one Copy button under each drill');
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [true, true, true, true],
+            'All Copy buttons must be disabled when no valid answers exist'
+        );
+        assert.equal(
+            await copyButtons.evaluateAll(buttons => buttons.every(button => button.dataset.keepPlayback === 'true')),
+            true,
+            'Every Copy button must preserve ongoing audio playback'
+        );
+
         const isRecording = () => page.evaluate(() => {
             const rec = window.t.recorders.at(-1);
             return Boolean(rec && rec.state === 'recording');
         });
+
+        const clickRecordInDrill = async drillNo => {
+            await page.locator(`#drill${drillNo} .drill-row .drill-record-btn`).first().click();
+            for (let i = 0; i < 10; i++) {
+                await page.clock.runFor(50);
+                if (await isRecording()) break;
+            }
+            assert.ok(await isRecording(), `D${drillNo}: Recording started`);
+        };
 
         const clickRecord = async (isManual = false) => {
             await page.evaluate(manual => {
@@ -832,6 +868,62 @@ async function runRecordingLifecycleTests() {
         assert.ok(resText20.includes('Ich fliege nach Berlin.'), 'S20: Contains the current D1 Item 1 recognized sentence');
         assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
+
+        // --- Scenario 20B: All-Drill Copy aggregation, state, raw STT, and reset ---
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [false, false, false, false],
+            'One valid answer must enable all four Copy buttons'
+        );
+
+        await clickRecordInDrill(2);
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [true, true, true, true],
+            'All Copy buttons must be disabled while any recording session is active'
+        );
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Du fliegst in die Türkei.');
+        await setSpeaking(false);
+        await page.clock.runFor(2300);
+        assert.ok(!(await isRecording()), 'D2 Copy setup: recording completed');
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [false, false, false, false],
+            'All Copy buttons must re-enable after recording completes'
+        );
+
+        // Pressing Drill 4's button copies only answered drills, in page order.
+        await page.locator('#drill4 .uebung-copy-button').click();
+        await page.waitForFunction(() => window.t.clipboardWrites.length === 1);
+        const copiedBatch = await page.evaluate(() => window.t.clipboardWrites[0]);
+        const copiedHeaders = copiedBatch.match(/Deutsche Übung 1\\.1 — Drill \\d+: .* — \\d{4}-\\d{2}-\\d{2}/g) || [];
+        assert.equal(copiedHeaders.length, 2, 'Copy must include one dated heading for each answered drill');
+        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 1: nach — Cities & Countries —'), 'Copy must keep the complete Drill 1 title');
+        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 2: in — Countries with Articles (Akkusativ) —'), 'Copy must keep the complete Drill 2 title');
+        assert.ok(copiedBatch.indexOf('Drill 1:') < copiedBatch.indexOf('Drill 2:'), 'Copied drills must be ordered by page');
+        assert.ok(copiedBatch.includes('1. ✅ Ich fliege nach Berlin.'), 'Copy must contain Drill 1 raw STT and accepted marker');
+        assert.ok(copiedBatch.includes('1. ✅ Du fliegst in die Türkei.'), 'Copy must contain Drill 2 raw STT and accepted marker');
+        assert.ok(!copiedBatch.includes('Ich / fliegen / Berlin'), 'Copy must not contain Drill 1 cue text');
+        assert.ok(!copiedBatch.includes('Du / fliegen / die Türkei'), 'Copy must not contain Drill 2 cue text');
+        assert.ok(!copiedBatch.includes('…') && !copiedBatch.includes('＿'), 'Copy must not include screen-only symbols');
+        assert.ok(!copiedBatch.includes('Drill 3:') && !copiedBatch.includes('Drill 4:'), 'Drills without answers must be omitted');
+
+        const copyStatus = page.locator('#drill4 .uebung-copy-status');
+        assert.equal(await copyStatus.textContent(), 'Copied!', 'Successful clipboard write must show Copied!');
+        assert.equal(await copyStatus.isVisible(), true, 'Copied! status must be visible');
+        await page.clock.runFor(2000);
+        assert.equal(await copyStatus.textContent(), '', 'Copied! status must clear after two seconds');
+        assert.equal(await copyStatus.evaluate(el => el.hidden), true, 'Copy status must be hidden after reset');
+
+        // Clipboard failure must never be reported as success.
+        await page.evaluate(() => { window.t.clipboardFailure = true; });
+        await page.locator('#drill1 .uebung-copy-button').click();
+        await page.waitForFunction(() => document.querySelector('#drill1 .uebung-copy-status')?.textContent.includes('Could not copy'));
+        assert.notEqual(await page.locator('#drill1 .uebung-copy-status').textContent(), 'Copied!', 'Clipboard failure must not show success');
+        await page.evaluate(() => { window.t.clipboardFailure = false; });
 
         // --- Scenario 21: Typography & Computed Font Size Verification (18.2px / 20.8px / 15.6px) ---
         // 1. Normal STT extracted text: 20.8px
