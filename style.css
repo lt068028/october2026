@@ -5247,6 +5247,76 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     font-weight: 400;
 }
 
+.uebung11-page .compact-settings .custom-tip-box {
+    text-align: left;
+}
+
+.uebung11-page .uebung-setting-icon,
+.uebung11-page .uebung-back-icon,
+.uebung11-page .uebung-voice-icon {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+.uebung11-page .uebung-instruction-bulb {
+    display: inline-block;
+    vertical-align: -0.2em;
+    margin-right: 6px;
+    color: #fbbf24;
+}
+
+.uebung11-page .uebung-cue-alt-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+    font-size: 0.85em;
+    color: var(--text-secondary, #64748b);
+    font-weight: 400;
+}
+
+.uebung11-page .uebung-flag-svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.uebung11-page .recording-controls > .recording-result > .result-text {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.uebung11-page .uebung-regional-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+    font-size: 0.9em;
+    color: var(--text-secondary, #475569);
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+.uebung11-page .uebung-incomplete-wrap {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 6px;
+}
+
+.uebung11-page .uebung-incomplete-svg {
+    width: 25px;
+    height: 25px;
+    color: #8064B0;
+    transform: translateY(-0.5px);
+}
+
+[data-theme="dark"] .uebung11-page .uebung-incomplete-svg {
+    color: #B9A2E5;
+}
+
 /* Practice 8.2 音声ボタン4種の中央配置 (既存padding・寸法を維持) */
 .practice82-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) {
     display: inline-flex;

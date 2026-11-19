@@ -78,8 +78,9 @@ window.DrillAudio = (() => {
         // Existing pages sometimes set an inline !important pointer cursor.
         // Derive prohibition from the current state instead of preserving it.
         for (const el of document.querySelectorAll('button, input, select, textarea')) {
-            if (el.disabled) el.style.setProperty('cursor', 'not-allowed', 'important');
-            else if (el.style.cursor === 'not-allowed') el.style.removeProperty('cursor');
+            const targetCursor = el.tagName === 'BUTTON' ? 'default' : 'not-allowed';
+            if (el.disabled) el.style.setProperty('cursor', targetCursor, 'important');
+            else if (el.style.cursor === targetCursor) el.style.removeProperty('cursor');
         }
         if (recording || model) {
             const menu = document.getElementById('voiceDropdownMenu');

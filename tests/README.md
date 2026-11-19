@@ -309,7 +309,7 @@ node tests/relay-zero-gap.cjs
 
 - **`node tests/uebung11.cjs`**
   - **対象**: Deutsche Übung 1.1（`uebung1.1.html`）
-  - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー `[主語, 動詞, 場所]`・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital`）・複数名詞許容、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints+`…` 描画、音声再生世代管理・`playCircle`・再生中停止アイコン（Regular・`currentColor`）、回答済み全Drill一括Copy（各回答はキューを含めないraw STT・`✅`/`👣`/`🔥`マーカー・`Copied!`2秒自動復帰・再生維持）、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は共通仕様・コード・テストへの移行と廃止可否の確認中。現在の規則の正本として恒久維持する前提ではない）
+  - **検証内容**: 静的構造、Global Settings 24px / Drill 20px Fluent SVG・`Auto-Compare` 表記・左詰め標準英文ツールチップ、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital` 3モード対語直下表示）・DE/AT/CH ベクターSVG国旗・右端シンプル地域補足、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints 25×25px+`…` 描画、`Playing...` 廃止・`Auto-Compare` ON リレー再生制御（`keepButtons: true`・全終了経路復元・二重イベント/旧イベント防止）・1行目限定ホバー、`drill-audio-session.js` のボタン限定 `cursor: default`、回答済み全Drill一括Copy（ボタンラベル `Copied` 2秒自動復帰・`✅`/`👣`/`🔥`マーカー・raw STTのみ・再生維持）、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は共通仕様・コード・テストへの移行と廃止可否の確認中。現在の規則の正本として恒久維持する前提ではない）
   - **実行場面**: ドイツ語ドリルページの新規作成・修正時。
 
 ---

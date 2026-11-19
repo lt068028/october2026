@@ -27,7 +27,9 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 assert.ok(html.includes('id="germanVarietyControl"'), 'HTML must have germanVarietyControl');
 assert.ok(html.includes('data-value="DE"') && html.includes('data-value="AT"') && html.includes('data-value="CH"'), 'Variety control must have DE, AT, CH options');
 assert.ok(html.includes('id="toggleRecordMode"'), 'HTML must have Autostop toggle');
-assert.ok(html.includes('id="togglePlaybackMode"'), 'HTML must have Autoplay toggle');
+assert.ok(html.includes('id="togglePlaybackMode"'), 'HTML must have Auto-Compare toggle');
+assert.ok(html.includes('Auto-Compare'), 'HTML must display Auto-Compare');
+assert.ok(!html.includes('Autoplay'), 'HTML must not contain legacy Autoplay text');
 assert.ok(html.includes('id="voiceSelect"'), 'HTML must have Voice selector');
 assert.ok(html.includes('drill-audio-session.js'), 'HTML must load drill-audio-session.js');
 assert.ok(html.includes('uebung1.1.js'), 'HTML must load uebung1.1.js');
@@ -37,7 +39,8 @@ const css = fs.readFileSync(cssPath, 'utf8');
 const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
 const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
-assert.ok(css.includes('.uebung-supplement-badge'), 'style.css must have supplement badge rules');
+assert.ok(css.includes('.uebung11-page .uebung-regional-note'), 'style.css must have simple regional note rules');
+assert.ok(!css.includes('.uebung-supplement-badge'), 'style.css must not use legacy .uebung-supplement-badge pill');
 
 // 5. Check JS code contract
 const js = fs.readFileSync(jsPath, 'utf8');
@@ -352,16 +355,25 @@ assert.ok(js.includes('entry.judgment === "accepted" ? "✅" : (entry.judgment =
 // 8. Introductory Hover & Status Tooltip Contracts
 console.log('Testing Deutsche Übung 1.1 hover and tooltip contracts...');
 
-// 8.1 Autostop & Autoplay multi-line setting tooltips in HTML
-assert.ok(html.includes('Recording stops automatically.'), 'Autostop must have Recording stops automatically.');
-assert.ok(html.includes('Stop recording manually.'), 'Autostop must have Stop recording manually.');
-assert.ok(html.includes('tip-line"><strong>ON:</strong> Recording stops automatically.</span>'), 'Autostop ON must be wrapped in separate line');
-assert.ok(html.includes('tip-line"><strong>OFF:</strong> Stop recording manually.</span>'), 'Autostop OFF must be wrapped in separate line');
+// 8.1 Autostop & Auto-Compare multi-line setting tooltips in HTML + Fluent SVG icons
+assert.ok(html.includes('ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.'), 'Autostop must have standard multi-line tooltip');
+assert.ok(html.includes('ON: Auto-plays the model audio and your recording in sequence after recording.<br>OFF: Uses the Play buttons separately.'), 'Auto-Compare must have standard multi-line tooltip');
+assert.ok(html.includes('fluent-icon-arrowHookDownLeft'), 'Back link must use Arrow Hook Down Left Fluent SVG');
+assert.ok(html.includes('fluent-icon-speaker'), 'Voice label must use Speaker 2 Fluent SVG');
+assert.ok(html.includes('fluent-icon-playCircle'), 'Auto-Compare must use Play Circle 24 Regular Fluent SVG');
+assert.ok(html.includes('fluent-icon-micFilled'), 'Autostop must use Mic 24 Filled Fluent SVG');
+assert.ok(html.includes('fluent-icon-chatHintHalfFilled'), 'Hover must use Chat Hint Half 24 Filled Fluent SVG');
+assert.ok(html.includes('fluent-icon-editLineHorizontal3Filled'), 'Display must use Edit Line Horizontal 3 24 Filled Fluent SVG');
+assert.ok(js.includes('lightbulbFilled'), 'Instruction panel must use Lightbulb 20 Filled Fluent SVG');
+assert.ok(!js.includes('b.textContent = "Playing..."'), 'Must abolish Playing... text during Drill model playback');
+assert.ok(js.includes('key === "d1_1" ? "Play your recorded voice." : ""'), 'Recorded play hover must be restricted to Drill 1 Item 1 only');
+assert.ok(js.includes('createFlagSvgMarkup'), 'Must render DE/AT/CH vector SVG flags');
+assert.ok(js.includes('regionalCuePlaces'), 'Drill 3-1 must support regional cue place switching');
 
-assert.ok(html.includes('After recording, the model audio and your recording play automatically.'), 'Autoplay must have model + recording play automatically copy');
-assert.ok(html.includes('Choose what and when to play.'), 'Autoplay must have Choose what and when to play copy');
-assert.ok(html.includes('tip-line"><strong>ON:</strong> After recording, the model audio and your recording play automatically.</span>'), 'Autoplay ON must be wrapped in separate line');
-assert.ok(html.includes('tip-line"><strong>OFF:</strong> Choose what and when to play.</span>'), 'Autoplay OFF must be wrapped in separate line');
+// 8.1b drill-audio-session.js button-only cursor:default separation
+const sessionJs = fs.readFileSync(path.join(__dirname, '..', 'drill-audio-session.js'), 'utf8');
+assert.ok(sessionJs.includes("const targetCursor = el.tagName === 'BUTTON' ? 'default' : 'not-allowed';"), 'drill-audio-session.js must separate button cursor:default from form controls not-allowed');
+assert.ok(sessionJs.includes('else if (el.style.cursor === targetCursor) el.style.removeProperty(\'cursor\');'), 'drill-audio-session.js must clean up matching cursor inline style on enable');
 
 // 8.2 Basic operation button hovers restricted to Example 1 and Drill 1 Item 1 only
 assert.ok(js.includes('Listen to the example.'), 'Must include Listen to the example. for Example 1');
@@ -911,20 +923,86 @@ async function runRecordingLifecycleTests() {
         assert.ok(!copiedBatch.includes('…') && !copiedBatch.includes('＿'), 'Copy must not include screen-only symbols');
         assert.ok(!copiedBatch.includes('Drill 3:') && !copiedBatch.includes('Drill 4:'), 'Drills without answers must be omitted');
 
-        const copyStatus = page.locator('#drill4 .uebung-copy-status');
-        await page.waitForFunction(() => document.querySelector('#drill4 .uebung-copy-status')?.textContent === 'Copied!');
-        assert.equal(await copyStatus.textContent(), 'Copied!', 'Successful clipboard write must show Copied!');
-        assert.equal(await copyStatus.isVisible(), true, 'Copied! status must be visible');
+        const copyBtn4Label = page.locator('#drill4 .uebung-copy-button .uebung-copy-label');
+        const copyBtn1Label = page.locator('#drill1 .uebung-copy-button .uebung-copy-label');
+        await page.waitForFunction(() => document.querySelector('#drill4 .uebung-copy-button .uebung-copy-label')?.textContent === 'Copied');
+        assert.equal(await copyBtn4Label.textContent(), 'Copied', 'Clicked button label must change to Copied');
+        assert.equal(await copyBtn1Label.textContent(), 'Copy my sentences', 'Other copy buttons must keep Copy my sentences');
         await page.clock.runFor(2000);
-        assert.equal(await copyStatus.textContent(), '', 'Copied! status must clear after two seconds');
-        assert.equal(await copyStatus.evaluate(el => el.hidden), true, 'Copy status must be hidden after reset');
+        assert.equal(await copyBtn4Label.textContent(), 'Copy my sentences', 'Clicked button label must revert after two seconds');
 
-        // Clipboard failure must never be reported as success.
+        // Clipboard failure must never change button label to Copied.
         await page.evaluate(() => { window.t.clipboardFailure = true; });
         await page.locator('#drill1 .uebung-copy-button').click();
-        await page.waitForFunction(() => document.querySelector('#drill1 .uebung-copy-status')?.textContent.includes('Could not copy'));
-        assert.notEqual(await page.locator('#drill1 .uebung-copy-status').textContent(), 'Copied!', 'Clipboard failure must not show success');
+        await page.clock.runFor(100);
+        assert.equal(await copyBtn1Label.textContent(), 'Copy my sentences', 'Clipboard failure must keep Copy my sentences');
         await page.evaluate(() => { window.t.clipboardFailure = false; });
+
+        // --- Scenario 20b: Auto-Compare ON Relay Playback State Transitions (10 items + 5 independent conditions) ---
+        await page.evaluate(() => {
+            const toggle = document.getElementById('togglePlaybackMode');
+            if (toggle && !toggle.checked) toggle.click();
+        });
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await page.evaluate(() => {
+            const rec = window.t.recognitions.at(-1);
+            rec?.onresult?.({
+                resultIndex: 0,
+                results: [{ isFinal: true, 0: { transcript: 'Ich fliege nach Berlin.' } }]
+            });
+        });
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        // Relay active: both model listen & recorded play buttons show stop regular, Auto-Compare: ON hover, enabled, keep-playback
+        const relayActiveState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const listen = row?.querySelector('.drill-listen-btn');
+            const play = row?.querySelector('.play-recording-btn');
+            return {
+                listenPlaying: listen?.classList.contains('is-playing'),
+                playPlaying: play?.classList.contains('is-playing'),
+                listenDisabled: listen?.disabled,
+                playDisabled: play?.disabled,
+                listenKeep: listen?.dataset.keepPlayback,
+                playKeep: play?.dataset.keepPlayback,
+                listenTip: listen?.querySelector('.custom-tip-box')?.textContent,
+                playTip: play?.querySelector('.custom-tip-box')?.textContent
+            };
+        });
+        assert.equal(relayActiveState.listenPlaying, true, 'Relay must mark model button is-playing');
+        assert.equal(relayActiveState.playPlaying, true, 'Relay must mark play button is-playing');
+        assert.equal(relayActiveState.listenDisabled, false, 'Relay model stop button must remain enabled');
+        assert.equal(relayActiveState.playDisabled, false, 'Relay play stop button must remain enabled');
+        assert.equal(relayActiveState.listenKeep, 'true', 'Relay model button must have data-keep-playback');
+        assert.equal(relayActiveState.playKeep, 'true', 'Relay play button must have data-keep-playback');
+        assert.equal(relayActiveState.listenTip, 'Auto-Compare: ON', 'Relay model button must show Auto-Compare: ON');
+        assert.equal(relayActiveState.playTip, 'Auto-Compare: ON', 'Relay play button must show Auto-Compare: ON');
+
+        // Stop from model button -> restores both buttons
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.clock.runFor(100);
+        const relayClearedState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const listen = row?.querySelector('.drill-listen-btn');
+            const play = row?.querySelector('.play-recording-btn');
+            return {
+                listenPlaying: listen?.classList.contains('is-playing'),
+                playPlaying: play?.classList.contains('is-playing'),
+                listenTip: listen?.querySelector('.custom-tip-box')?.textContent,
+                playTip: play?.querySelector('.custom-tip-box')?.textContent
+            };
+        });
+        assert.equal(relayClearedState.listenPlaying, false, 'Stopping from model button must restore model button');
+        assert.equal(relayClearedState.playPlaying, false, 'Stopping from model button must restore play button');
+        assert.equal(relayClearedState.listenTip, 'Listen to the model answer.', 'Stopping must restore original Drill 1-1 listen hover');
+        assert.equal(relayClearedState.playTip, 'Play your recorded voice.', 'Stopping must restore original Drill 1-1 play hover');
+
+        // Verify pagehide cleanup listener
+        await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+        await page.clock.runFor(50);
 
         // --- Scenario 21: Typography & Computed Font Size Verification (18.2px / 20.8px / 15.6px) ---
         // 1. Normal STT extracted text: 20.8px

@@ -9,7 +9,7 @@ const drillsData = [
         id: "drill1",
         number: 1,
         title: "Drill 1: nach — Cities & Countries",
-        instruction: "💡Use nach with cities and countries that have no grammatical article.",
+        instruction: "Use nach with cities and countries that have no grammatical article.",
         learningFocus: "Cities & Countries",
         example: {
             cue: "Ich / fahren / Salzburg",
@@ -45,7 +45,7 @@ const drillsData = [
         id: "drill2",
         number: 2,
         title: "Drill 2: in — Countries with Articles (Akkusativ)",
-        instruction: "💡Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
+        instruction: "Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
         learningFocus: "Countries with Articles",
         example: {
             cue: "Du / fahren / die Schweiz",
@@ -81,7 +81,7 @@ const drillsData = [
         id: "drill3",
         number: 3,
         title: "Drill 3: zum — Masculine & Neuter Destinations",
-        instruction: "💡Use zum (zu + dem) for masculine and neuter destinations.",
+        instruction: "Use zum (zu + dem) for masculine and neuter destinations.",
         learningFocus: "Masculine & Neuter Destinations",
         example: {
             cue: "Er / gehen / der Supermarkt",
@@ -94,6 +94,11 @@ const drillsData = [
                 id: "d3_1",
                 cue: "Er / fahren / das Krankenhaus",
                 cueParts: ["Er", "fahren", "das Krankenhaus"],
+                regionalCuePlaces: {
+                    DE: "das Krankenhaus",
+                    AT: "das Spital",
+                    CH: "das Spital"
+                },
                 hints: ["He (subject)", "to drive / travel", "hospital (neut.)"],
                 regionalModels: {
                     DE: "Er fährt zum Krankenhaus.",
@@ -125,7 +130,7 @@ const drillsData = [
         id: "drill4",
         number: 4,
         title: "Drill 4: zur — Feminine Destinations",
-        instruction: "💡Use zur (zu + der) for feminine destinations.",
+        instruction: "Use zur (zu + der) for feminine destinations.",
         learningFocus: "Feminine Destinations",
         example: {
             cue: "Ihr / gehen / die Post",
@@ -843,21 +848,51 @@ function initGermanDrill() {
             .replace(/\b(zum|zur)\b/g, '<strong class="grammar-highlight">$1</strong>');
     }
 
-    function formatCue(item, isDrill1 = true) {
-        if (hintMode === "off") {
-            return item.cue;
+    function createFlagSvgMarkup(variety) {
+        if (variety === "AT") {
+            return '<svg class="uebung-flag-svg" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect width="16" height="4" y="0" fill="#ED2939"/><rect width="16" height="4" y="4" fill="#FFFFFF"/><rect width="16" height="4" y="8" fill="#ED2939"/></svg>';
         }
+        if (variety === "CH") {
+            return '<svg class="uebung-flag-svg" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect width="12" height="12" fill="#D52B1E"/><rect x="5" y="2.2" width="2" height="7.6" fill="#FFFFFF"/><rect x="2.2" y="5" width="7.6" height="2" fill="#FFFFFF"/></svg>';
+        }
+        return '<svg class="uebung-flag-svg" width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><rect width="16" height="4" y="0" fill="#000000"/><rect width="16" height="4" y="4" fill="#DD0000"/><rect width="16" height="4" y="8" fill="#FFCE00"/></svg>';
+    }
+
+    function createFlagSvgElement(variety) {
+        const wrap = document.createElement("span");
+        wrap.className = "uebung-flag-icon";
+        wrap.innerHTML = createFlagSvgMarkup(variety);
+        return wrap.firstElementChild;
+    }
+
+    function formatCue(item, isDrill1 = true) {
+        let baseHtml = "";
         if (item.cueParts && item.hints && item.cueParts.length === item.hints.length) {
-            const parts = item.cueParts.map((part, idx) => {
+            const parts = item.cueParts.map((rawPart, idx) => {
+                const part = (idx === 2 && item.regionalCuePlaces)
+                    ? (item.regionalCuePlaces[currentVariety] || rawPart)
+                    : rawPart;
+                if (hintMode === "off") {
+                    return part;
+                }
                 const hint = item.hints[idx];
                 if (hintMode === "paren") {
                     return `${part} <span class="vocab-inline">(${hint})</span>`;
                 }
                 return `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
             });
-            return parts.join(" / ");
+            baseHtml = parts.join(" / ");
+        } else {
+            baseHtml = item.cue;
         }
-        return item.cue;
+
+        if (item.regionalCuePlaces) {
+            const altHtml = currentVariety === "DE"
+                ? `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("AT")}${createFlagSvgMarkup("CH")} <span class="uebung-cue-alt-text">das Spital</span></span>`
+                : `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("DE")} <span class="uebung-cue-alt-text">das Krankenhaus</span></span>`;
+            return `${baseHtml}${altHtml}`;
+        }
+        return baseHtml;
     }
 
     function sync() {
@@ -885,9 +920,58 @@ function initGermanDrill() {
     let stoppedExButton = null;
     let stoppedExTime = 0;
     let playbackGeneration = 0;
+    let relayKey = null;
+    let suppressRelayPreStop = false;
+
+    function applyRelayTip(btn, text) {
+        if (!btn) return;
+        let tip = btn.querySelector(".custom-tip-box");
+        if (text) {
+            if (!tip) {
+                btn.classList.add("custom-tip-wrap");
+                tip = node("span", "custom-tip-box", text);
+                btn.append(tip);
+            } else {
+                tip.textContent = text;
+            }
+        } else if (tip) {
+            tip.remove();
+            btn.classList.remove("custom-tip-wrap");
+        }
+    }
+
+    function clearRelayState(expectedGen) {
+        if (expectedGen !== undefined && expectedGen !== playbackGeneration) return;
+        if (!relayKey) return;
+        const keyToClear = relayKey;
+        relayKey = null;
+        const rv = views.get(keyToClear);
+        if (!rv) return;
+        const playBtn = rv.result?.querySelector(".play-recording-btn");
+        [rv.listen, playBtn].forEach(b => {
+            if (!b) return;
+            b.classList.remove("is-playing");
+            delete b.dataset.keepPlayback;
+            if (b._relayContents) {
+                b.replaceChildren(...b._relayContents);
+                delete b._relayContents;
+            }
+            if (b._relayAriaLabel !== undefined) {
+                if (b._relayAriaLabel === null) b.removeAttribute("aria-label");
+                else b.setAttribute("aria-label", b._relayAriaLabel);
+                delete b._relayAriaLabel;
+            }
+            if (b._relayTipText !== undefined) {
+                applyRelayTip(b, b._relayTipText);
+                delete b._relayTipText;
+            }
+            b.disabled = Boolean(session || preparing);
+        });
+    }
 
     function stopPlayback(isNaturalFinish = false) {
         playbackGeneration++;
+        if (!suppressRelayPreStop) clearRelayState();
         if (currentUtterance) {
             currentUtterance.onend = null;
             currentUtterance.onerror = null;
@@ -995,9 +1079,13 @@ function initGermanDrill() {
             }
             return;
         }
-        b.disabled = true;
+        b.disabled = false;
         b.classList.add("is-playing");
-        b.textContent = "Playing...";
+        b._originalAriaLabel = b.getAttribute("aria-label");
+        b.setAttribute("aria-label", "Wiedergabe stoppen");
+        if (window.FluentIcons) {
+            b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
+        }
     }
 
     // -------------------------------------------------------------
@@ -1350,7 +1438,7 @@ function initGermanDrill() {
 
     function playRecording(key, btn) {
         if (session || preparing) return;
-        if (playingButton === btn) {
+        if (relayKey === key || playingButton === btn) {
             stopAllPlayback();
             return;
         }
@@ -1548,13 +1636,41 @@ function initGermanDrill() {
             sync();
 
             if (autoplay && !s.discard && raw) {
+                stopAllPlayback();
                 const currentView = views.get(key);
-                DrillAudio.playRelay({
-                    recordButton: currentView.rec,
-                    result: currentView.result,
-                    speak: done => speakModel(recModel, null, done, true),
-                    url: () => saved.get(key)?.url
+                const playBtn = currentView?.result?.querySelector(".play-recording-btn");
+                const gen = ++playbackGeneration;
+                relayKey = key;
+                [currentView?.listen, playBtn].forEach(b => {
+                    if (!b) return;
+                    b._relayContents = Array.from(b.childNodes);
+                    b._relayAriaLabel = b.getAttribute("aria-label");
+                    const existingTip = b.querySelector(".custom-tip-box");
+                    b._relayTipText = existingTip ? existingTip.textContent : null;
+                    b.classList.add("is-playing");
+                    b.dataset.keepPlayback = "true";
+                    b.disabled = false;
+                    b.setAttribute("aria-label", "Wiedergabe stoppen");
+                    if (window.FluentIcons) {
+                        b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
+                    }
+                    applyRelayTip(b, "Auto-Compare: ON");
                 });
+                suppressRelayPreStop = true;
+                try {
+                    DrillAudio.playRelay({
+                        recordButton: currentView.rec,
+                        result: currentView.result,
+                        keepButtons: true,
+                        speak: done => {
+                            suppressRelayPreStop = false;
+                            speakModel(recModel, null, done, true);
+                        },
+                        url: () => saved.get(key)?.url
+                    });
+                } finally {
+                    suppressRelayPreStop = false;
+                }
             }
         };
 
@@ -1775,16 +1891,12 @@ function initGermanDrill() {
 
             if (judgment === "accepted") {
                 FeedbackStatus.appendAccepted(v.result, val.raw);
-                if (val.supplement) {
-                    const supp = node("span", "uebung-supplement-badge", val.supplement);
-                    v.result.append(supp);
-                }
                 v.correction.hidden = true;
             } else if (judgment === "incomplete") {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 svg.setAttribute("viewBox", "0 0 24 24");
-                svg.setAttribute("width", "16");
-                svg.setAttribute("height", "16");
+                svg.setAttribute("width", "25");
+                svg.setAttribute("height", "25");
                 svg.setAttribute("fill", "none");
                 svg.setAttribute("stroke", "currentColor");
                 svg.setAttribute("stroke-width", "2");
@@ -1792,8 +1904,6 @@ function initGermanDrill() {
                 svg.setAttribute("stroke-linejoin", "round");
                 svg.setAttribute("aria-hidden", "true");
                 svg.classList.add("uebung-incomplete-svg");
-                svg.style.verticalAlign = "-0.15em";
-                svg.style.marginRight = "6px";
                 [
                     "M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z",
                     "M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z",
@@ -1804,7 +1914,9 @@ function initGermanDrill() {
                     path.setAttribute("d", d);
                     svg.appendChild(path);
                 });
-                v.result.append(svg, document.createTextNode(val.raw.trimEnd() + "…"));
+                const tipWrap = node("span", "custom-tip-wrap uebung-incomplete-wrap");
+                tipWrap.append(svg, node("span", "custom-tip-box", "Incomplete sentence."));
+                v.result.append(tipWrap, document.createTextNode(val.raw.trimEnd() + "…"));
                 v.correction.hidden = true;
             } else if (judgment === "mismatch") {
                 if (Array.isArray(val.diffTokens) && val.diffTokens.length > 0) {
@@ -1838,13 +1950,22 @@ function initGermanDrill() {
 
         if (val?.url) {
             const playIcon = window.FluentIcons ? window.FluentIcons.create("playCircle", 20) : document.createTextNode("▶️");
-            const play = button(playIcon, "Play your recorded voice.", () => {
+            const playTip = key === "d1_1" ? "Play your recorded voice." : "";
+            const play = button(playIcon, playTip, () => {
                 playRecording(key, play);
             });
             play.classList.add("play-recording-btn");
             play.dataset.audioRole = "play";
             play.style.marginLeft = "8px";
             v.result.append(play);
+        }
+
+        if (val?.raw && val.judgment === "accepted" && val.supplement) {
+            const noteText = val.supplement.replace(/^(?:🇩🇪|🇦🇹|🇨🇭)\s*/, "");
+            const noteVariety = val.supplement.startsWith("🇦🇹") ? "AT" : (val.supplement.startsWith("🇨🇭") ? "CH" : "DE");
+            const supp = node("span", "uebung-regional-note");
+            supp.append(createFlagSvgElement(noteVariety), document.createTextNode(" " + noteText));
+            v.result.append(supp);
         }
 
         if (val?.raw && notice) {
@@ -1885,13 +2006,9 @@ function initGermanDrill() {
         btn.dataset.keepPlayback = "true";
         btn.disabled = true;
 
-        btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span>Copy my sentences</span>';
+        btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span class="uebung-copy-label">Copy my sentences</span>';
 
         const help = node("span", "uebung-copy-help", "Copy all your recorded answers to review or share.");
-        const status = node("span", "uebung-copy-status", "");
-        status.setAttribute("role", "status");
-        status.setAttribute("aria-live", "polite");
-        status.hidden = true;
 
         let copyTimer = null;
 
@@ -1922,23 +2039,19 @@ function initGermanDrill() {
 
             try {
                 await navigator.clipboard.writeText(fullText);
-                status.textContent = "Copied!";
-                status.style.color = "var(--semantic-positive-color, #0057E7)";
-                status.hidden = false;
+                const labelEl = btn.querySelector(".uebung-copy-label");
+                if (labelEl) labelEl.textContent = "Copied";
                 if (copyTimer) clearTimeout(copyTimer);
                 copyTimer = setTimeout(() => {
-                    status.textContent = "";
-                    status.hidden = true;
+                    if (labelEl) labelEl.textContent = "Copy my sentences";
                     copyTimer = null;
                 }, 2000);
             } catch (_) {
-                status.textContent = "Could not copy. Please allow clipboard access.";
-                status.style.color = "var(--error-text, #be123c)";
-                status.hidden = false;
+                // Keep label unchanged on failure
             }
         };
 
-        area.append(btn, help, status);
+        area.append(btn, help);
         container.append(area);
     }
 
@@ -1993,9 +2106,16 @@ function initGermanDrill() {
 
             // Info Panel
             const panel = node("div", "info-panel info-panel-task1");
+            const desc = node("span", "info-panel-desc instruction-steps");
+            if (window.FluentIcons) {
+                const bulb = window.FluentIcons.create("lightbulbFilled", 20, "uebung-instruction-bulb", "filled");
+                desc.append(bulb, document.createTextNode(drill.instruction));
+            } else {
+                desc.textContent = drill.instruction;
+            }
             panel.append(
                 node("span", "info-panel-title", drill.title),
-                node("span", "info-panel-desc instruction-steps", drill.instruction)
+                desc
             );
             section.append(panel);
 
@@ -2089,6 +2209,11 @@ function initGermanDrill() {
                 const listenTip = isFirstItemOfDrill1 ? "Listen to the model answer." : "";
                 const listenIcon = window.FluentIcons ? window.FluentIcons.create("speaker2", 20) : document.createTextNode("🔊");
                 const listenBtn = button(listenIcon, listenTip, () => {
+                    if (session || preparing) return;
+                    if (relayKey === item.id || playingButton === listenBtn) {
+                        stopAllPlayback();
+                        return;
+                    }
                     speakModel(getModel(item, currentVariety), listenBtn);
                 });
                 listenBtn.classList.add("drill-listen-btn");
@@ -2259,6 +2384,17 @@ function initGermanDrill() {
     window.addEventListener("resize", () => {
         alignDrill1Cues();
     });
+
+    const cleanupOnLeave = () => {
+        stopAllPlayback();
+        preparing = false;
+        if (session) {
+            session.discard = true;
+            session.stop("", true);
+        }
+    };
+    window.addEventListener("pagehide", cleanupOnLeave);
+    window.addEventListener("beforeunload", cleanupOnLeave);
 
     // Initial setup and render
     setupGermanTtsNoticeEvents();
