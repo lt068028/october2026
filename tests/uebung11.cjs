@@ -39,7 +39,17 @@ const css = fs.readFileSync(cssPath, 'utf8');
 const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
 const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
-assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .drill-stop-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
+assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
+assert.ok(!js.includes('drill-stop-btn') && !js.includes('data-stop'), 'Must remove 3rd stop button completely in favor of 2-button layout');
+assert.ok(html.includes('fluent-icon-chatHintHalf"') && !html.includes('fluent-icon-chatHintHalfFilled'), 'Hover button must use chatHintHalf Regular without Filled classes');
+assert.ok(html.includes('fluent-icon-warning') && !html.includes('⚠️'), 'HTML must use Fluent warning Regular SVG instead of emoji');
+assert.ok(!js.includes('⚠️'), 'JS must not contain ⚠️ emoji');
+assert.ok(html.includes('uebung-flag-svg') && !html.includes('🇩🇪') && !html.includes('🇦🇹') && !html.includes('🇨🇭'), 'Variety selector must use vector flag SVGs without emojis');
+const fluentJs = fs.readFileSync(path.join(root, 'fluent-icons.js'), 'utf8');
+assert.ok(fluentJs.includes('chatHintHalf:') && fluentJs.includes('warning:') && fluentJs.includes('"chatHintHalfFilled":'), 'fluent-icons.js must add chatHintHalf & warning while keeping chatHintHalfFilled');
+assert.ok(css.includes('color: #fbbf24;') && css.includes('filter: grayscale(100%);'), 'CSS must apply amber #fbbf24 and flag-only dimming');
+assert.ok(css.includes('.uebung11-page .uebung-cue-place-stack'), 'CSS must align Drill 3-1 alternative cue under target noun');
+assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire'), 'CSS must style split inline Fire icon');
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result {\n    justify-content: flex-end;\n    text-align: right;'), 'Result region must be right-aligned');
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result .feedback-retry-label'), 'CSS must style inline Keep going! retry label');
 assert.ok(css.includes('.uebung11-page .uebung-regional-note'), 'style.css must have simple regional note rules');
@@ -387,10 +397,7 @@ assert.ok(js.includes('drill.number === 1 ? "Listen to the example." : ""'), 'Ex
 
 assert.ok(js.includes('Listen to the model answer.'), 'Must include Listen to the model answer. for Drill 1 Item 1');
 assert.ok(js.includes('Record your answer.'), 'Must include Record your answer. for Drill 1 Item 1');
-assert.ok(js.includes('No need to press. Autostop is ON.'), 'Must include No need to press. Autostop is ON.');
-assert.ok(js.includes('Stop recording.'), 'Must include Stop recording.');
 assert.ok(js.includes('isFirstItemOfDrill1'), 'Must conditionally check first item of Drill 1');
-assert.ok(js.includes('updateFirstStopTip'), 'Must dynamically update stop tooltip on Autostop toggle');
 
 // 8.3 Undetermined (👣) tooltip
 assert.ok(feedbackJs.includes('Could not be evaluated reliably.'), 'Shared renderer must provide the undetermined tooltip');
@@ -405,8 +412,8 @@ assert.ok(feedbackCss.includes('.feedback-status-undetermined:hover'), 'Feedback
 const tooltipLayoutJs = fs.readFileSync(path.join(root, 'tooltip-layout.js'), 'utf8');
 assert.ok(tooltipLayoutJs.includes('.uebung11-page'), 'tooltip-layout.js must preserve .uebung11-page tooltips');
 
-// 8.6 Germanized basic operation button labels
-assert.ok(html.includes('↩️ Zurück'), 'HTML must have ↩️ Zurück back link');
+// 8.6 Germanized basic operation button labels (Fluent arrowHookDownLeft + Zurück)
+assert.ok(html.includes('fluent-icon-arrowHookDownLeft') && html.includes('>Zurück<span'), 'HTML must have Fluent back icon + Zurück back link');
 assert.ok(!html.includes('もどる'), 'HTML must not have もどる');
 assert.ok(js.includes('drill-listen-btn'), 'JS must use drill-listen-btn for listen buttons');
 assert.ok(js.includes('drill-record-btn'), 'JS must use drill-record-btn for record button');
@@ -445,11 +452,33 @@ async function runRecordingLifecycleTests() {
                 recorders: [],
                 recognitions: [],
                 contexts: [],
+                utterances: [],
+                audios: [],
                 clipboardWrites: [],
                 clipboardFailure: false,
                 speaking: false,
                 deny: false,
                 recordError: false
+            };
+
+            const origSpeech = window.speechSynthesis;
+            if (origSpeech) {
+                const origSpeak = origSpeech.speak.bind(origSpeech);
+                origSpeech.speak = u => {
+                    window.t.utterances.push(u);
+                    try { origSpeak(u); } catch (_) {}
+                };
+            }
+
+            const OrigAudio = window.Audio;
+            window.Audio = class extends OrigAudio {
+                constructor(src) {
+                    super(src);
+                    window.t.audios.push(this);
+                }
+                play() {
+                    return Promise.resolve();
+                }
             };
 
             Object.defineProperty(navigator, 'mediaDevices', {
@@ -639,7 +668,7 @@ async function runRecordingLifecycleTests() {
             }
         };
 
-        const getStopBtn = () => page.locator('#drillsContainer .recording-actions button[data-stop]').first();
+        const getStopBtn = () => page.locator('#drillsContainer .recording-actions button.stop-btn-active').first();
         const getResult = () => page.locator('#drillsContainer .recording-result').first();
 
         const setSpeaking = val => page.evaluate(v => { window.t.speaking = v; }, val);
@@ -713,7 +742,11 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(900); // 2.4s total silence
         assert.ok(!(await isRecording()), 'S5: Auto-stopped after 2.0s silence');
 
-        // --- Scenario 6: Autostop OFFで発話後2秒無音停止しない ---
+        // --- Scenario 6: Autostop OFFで発話後2秒無音停止しない ＋ 2ボタン構成・手動停止検証 ---
+        const actionsBtnCount = await page.locator('#drill1 .drill-row .recording-actions button').count();
+        assert.equal(actionsBtnCount, 2, 'S6: .recording-actions must contain exactly 2 buttons (listen + rec)');
+        assert.equal(await page.locator('#drillsContainer button[data-stop]').count(), 0, 'S6: Must not render 3rd stop button');
+
         await clickRecord(true); // Manual
         await advanceToElapsed(1000);
         await setSpeaking(true);
@@ -722,11 +755,11 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(4000); // 4.0s silence
         assert.ok(await isRecording(), 'S6: Manual mode does NOT auto-stop on silence');
         await page.evaluate(() => {
-            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active:not(:disabled)');
             if (stopBtn) stopBtn.click();
         });
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'S6: Stopped via manual stop button');
+        assert.ok(!(await isRecording()), 'S6: Stopped via recBtn in manual mode');
 
         // --- Scenario 7: 音声再検出で無音時間がリセット ---
         await clickRecord(false);
@@ -837,14 +870,14 @@ async function runRecordingLifecycleTests() {
         await page.evaluate(() => { window.t.emptyChunks = false; });
 
         // --- Scenario 17: 5秒未満の手動停止 ---
-        await clickRecord(true); // Manual mode allows manual stop button
+        await clickRecord(true); // Manual mode allows manual stop via recBtn
         await page.clock.runFor(1500); // 1.5s elapsed without speech
         await page.evaluate(() => {
-            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active:not(:disabled)');
             if (stopBtn) stopBtn.click();
         });
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'S17: Stopped via manual stop at 1.5s');
+        assert.ok(!(await isRecording()), 'S17: Stopped via manual recBtn at 1.5s');
         const resText17 = await getResult().textContent();
         assert.ok(!resText17.includes('No speech detected within 5 seconds.'), 'S17: Does NOT show 5s timeout on early manual stop');
         assert.ok(resText17.includes('… Not yet'), 'S17: Shows initial Not yet state');
@@ -854,7 +887,7 @@ async function runRecordingLifecycleTests() {
         await clickRecord(true);
         await page.clock.runFor(1000);
         await page.evaluate(() => {
-            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active:not(:disabled)');
             if (stopBtn) stopBtn.click();
         });
         await page.clock.runFor(2600); // fallback watchdog
@@ -864,7 +897,7 @@ async function runRecordingLifecycleTests() {
         // --- Scenario 19: 停止条件の競合・二重停止 ---
         await clickRecord(true);
         await page.evaluate(() => {
-            const stopBtn = document.querySelector('#drillsContainer .recording-actions button[data-stop]:not(:disabled)');
+            const stopBtn = document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active:not(:disabled)');
             if (stopBtn) {
                 stopBtn.click();
                 stopBtn.click();
@@ -872,6 +905,16 @@ async function runRecordingLifecycleTests() {
         });
         await page.clock.runFor(100);
         assert.ok(!(await isRecording()), 'S19: Recording stopped cleanly without duplication errors');
+
+        // Verify Autostop mode keeps recBtn disabled and non-stoppable during recording
+        await clickRecord(false);
+        await page.clock.runFor(100);
+        const autostopDisabled = await page.evaluate(() => {
+            const recBtn = document.querySelector('#drillsContainer .drill-row .drill-record-btn');
+            return recBtn?.disabled === true && recBtn?.classList.contains('stop-btn-active');
+        });
+        assert.equal(autostopDisabled, true, 'Autostop recording must keep recBtn disabled so manual stop is blocked');
+        await page.clock.runFor(5200); // Wait for 5s silence timeout to clear autostop session cleanly
 
         // --- Scenario 20: 既存のドイツ語文字起こし・判定・保存機能の維持 ---
         await clickRecord(false);
@@ -1007,7 +1050,7 @@ async function runRecordingLifecycleTests() {
                 listenTip: listen?.querySelector('.custom-tip-box')?.textContent,
                 playTip: play?.querySelector('.custom-tip-box')?.textContent,
                 hasIconWrap: Boolean(listen?.querySelector('.ex-audio-icon svg')),
-                stopRecDisabled: row?.querySelector('[data-stop]')?.disabled,
+                recDisabled: row?.querySelector('.drill-record-btn')?.disabled,
                 otherVoiceDisabled: document.getElementById('voiceSelect')?.disabled
             };
         });
@@ -1016,12 +1059,46 @@ async function runRecordingLifecycleTests() {
         assert.equal(relayClearedState.listenTip, 'Listen to the model answer.', 'Stopping must restore original Drill 1-1 listen hover');
         assert.equal(relayClearedState.playTip, 'Play your recorded voice.', 'Stopping must restore original Drill 1-1 play hover');
         assert.equal(relayClearedState.hasIconWrap, true, 'Stopping must preserve .ex-audio-icon wrapper');
-        assert.equal(relayClearedState.stopRecDisabled, true, 'sync() must keep recording stop button disabled after playback stops');
+        assert.equal(relayClearedState.recDisabled, false, 'sync() must re-enable rec button after playback stops');
         assert.equal(relayClearedState.otherVoiceDisabled, false, 'Voice selector must re-enable after playback stops');
 
-        // --- Scenario 20c: Single playback exclusive disabled & same-button re-click stop ---
+        // Relay intermediate transition (model natural end -> recorded audio phase) preserves exclusive disabled & stops cleanly at end
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        await page.evaluate(() => {
+            const utt = window.t.utterances.at(-1);
+            utt?.onend?.();
+        });
+        await page.clock.runFor(50);
+        const relayMidState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            return {
+                listenPlaying: row?.querySelector('.drill-listen-btn')?.classList.contains('is-playing'),
+                playPlaying: row?.querySelector('.play-recording-btn')?.classList.contains('is-playing'),
+                voiceDisabled: document.getElementById('voiceSelect')?.disabled,
+                otherListenDisabled: document.querySelectorAll('#drill1 .drill-row .drill-listen-btn')[1]?.disabled
+            };
+        });
+        assert.equal(relayMidState.listenPlaying, true, 'Relay transition to recorded phase must keep listen is-playing');
+        assert.equal(relayMidState.playPlaying, true, 'Relay transition to recorded phase must keep play is-playing');
+        assert.equal(relayMidState.voiceDisabled, true, 'Relay transition must preserve exclusive disabled lock');
+        assert.equal(relayMidState.otherListenDisabled, true, 'Relay transition must keep other rows disabled');
+        await page.evaluate(() => {
+            const aud = window.t.audios.at(-1);
+            aud?.onended?.();
+        });
+        await page.clock.runFor(50);
+        assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Relay full completion must release exclusive disabled');
+
+        // --- Scenario 20c: Single playback natural completion, late-event protection, & same-button re-click stop ---
         await page.locator('#drill1 .drill-row .drill-listen-btn').click();
         await page.clock.runFor(50);
+        const oldUtteranceIdx = await page.evaluate(() => window.t.utterances.length - 1);
         const singlePlayingState = await page.evaluate(() => {
             const row = document.querySelector('#drill1 .drill-row');
             const listen = row?.querySelector('.drill-listen-btn');
@@ -1041,7 +1118,29 @@ async function runRecordingLifecycleTests() {
         assert.equal(singlePlayingState.playDisabled, true, 'Other play button must be disabled during single playback');
         assert.equal(singlePlayingState.copyDisabled, false, 'Copy button must remain enabled during single playback');
 
+        // Natural completion of Drill model playback must restore button and unlock others
+        await page.evaluate(idx => { window.t.utterances[idx]?.onend?.(); }, oldUtteranceIdx);
+        await page.clock.runFor(50);
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .drill-listen-btn')?.classList.contains('is-playing')), false, 'Drill model natural end must clear is-playing');
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .drill-record-btn')?.disabled), false, 'Drill model natural end must re-enable controls');
+
+        // Start recorded playback, verify natural end + late stale event immunity
+        await page.locator('#drill1 .drill-row .play-recording-btn').click();
+        await page.clock.runFor(50);
+        const recPlayAudioIdx = await page.evaluate(() => window.t.audios.length - 1);
+        // Fire stale utterance onend from previous playback -> must NOT unlock or disturb active recorded playback
+        await page.evaluate(idx => { window.t.utterances[idx]?.onend?.(); }, oldUtteranceIdx);
+        await page.clock.runFor(20);
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .play-recording-btn')?.classList.contains('is-playing')), true, 'Stale utterance end event must not clear active recorded playback');
+        // Now fire natural end on active recorded audio -> restores cleanly
+        await page.evaluate(idx => { window.t.audios[idx]?.onended?.(); }, recPlayAudioIdx);
+        await page.clock.runFor(50);
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .play-recording-btn')?.classList.contains('is-playing')), false, 'Recorded playback natural end must clear is-playing');
+        assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Recorded playback natural end must release disabled lock');
+
         // Re-click the SAME playing button -> must ONLY stop, NOT restart
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.clock.runFor(50);
         await page.locator('#drill1 .drill-row .drill-listen-btn').click();
         await page.clock.runFor(50);
         const reclickStoppedState = await page.evaluate(() => {
@@ -1059,41 +1158,70 @@ async function runRecordingLifecycleTests() {
         assert.equal(reclickStoppedState.hasIconWrap, true, 'Stopped button must preserve .ex-audio-icon SVG wrapper');
         assert.equal(reclickStoppedState.recDisabled, false, 'Other buttons must re-enable after stop');
 
-        // --- Scenario 20d: Patch B Layout checks (right-aligned result, inline Keep going!, single-line Incomplete, 2nd-line regional note) ---
+        // --- Scenario 20d: Visual & Coordinate Checks (Mismatch split Fire/Keep going, Drill 3-1 stack alignment, Global settings/warnings) ---
         await clickRecord(false);
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
-        await page.evaluate(() => {
-            const rec = window.t.recognitions.at(-1);
-            rec?.onresult?.({
-                resultIndex: 0,
-                results: [{ isFinal: true, 0: { transcript: 'Ich fliege zu Berlin.' } }]
-            });
-        });
+        await triggerRecognition('Ich fliege zu Berlin.');
         await setSpeaking(false);
         await page.clock.runFor(2200);
-        await page.locator('#drill1 .drill-row .drill-listen-btn').click().catch(() => {});
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
         await page.clock.runFor(50);
 
         const mismatchLayout = await page.evaluate(() => {
             const row = document.querySelector('#drill1 .drill-row');
             const resText = row?.querySelector('.recording-result > .result-text');
+            const fire = resText?.querySelector('.feedback-retry-fire');
             const retry = resText?.querySelector('.feedback-retry-label');
+            const fireRect = fire?.getBoundingClientRect();
+            const retryRect = retry?.getBoundingClientRect();
             return {
+                isFireFirstChild: resText?.firstElementChild === fire,
                 hasInlineRetry: Boolean(retry),
+                fireBeforeRetry: fireRect && retryRect ? fireRect.left < retryRect.left : false,
                 retryFontSize: retry ? window.getComputedStyle(retry).fontSize : null,
                 resTextAlign: resText ? window.getComputedStyle(resText).textAlign : null,
                 resDisplay: resText ? window.getComputedStyle(resText).display : null,
                 html: resText?.innerHTML || ''
             };
         });
-        assert.equal(mismatchLayout.hasInlineRetry, true, 'Mismatch must render Keep going! inline inside .result-text');
+        assert.equal(mismatchLayout.isFireFirstChild, true, 'Mismatch must place 🔥 icon at the start of .result-text');
+        assert.equal(mismatchLayout.hasInlineRetry, true, 'Mismatch must place Keep going! label at the end of .result-text');
+        assert.equal(mismatchLayout.fireBeforeRetry, true, '🔥 must visually appear to the left of Keep going!');
         assert.equal(mismatchLayout.retryFontSize, '18.2px', 'Inline Keep going! must be 18.2px');
         assert.equal(mismatchLayout.resTextAlign, 'right', 'Result text must be right-aligned');
         assert.notEqual(mismatchLayout.resDisplay, 'flex', 'Result text must not be flex container');
         assert.ok(mismatchLayout.html.includes('fliege <span class="result-incorrect">'), 'Mismatch must preserve space between tokens');
+
+        // Drill 3-1 cue stack alignment & Part 2 settings/warning visual checks
+        const visualAudit = await page.evaluate(() => {
+            const stack = document.querySelector('#drill3 .drill-row .uebung-cue-place-stack');
+            const stackRect = stack?.getBoundingClientRect();
+            const altLine = stack?.querySelector('.uebung-cue-alt-line');
+            const altRect = altLine?.getBoundingClientRect();
+            const hoverIcon = document.querySelector('#hintModeControl button[data-value="hover"] .uebung-setting-icon');
+            const autostopIcon = document.querySelector('#labelAutoRecord .uebung-setting-icon');
+            const inactiveFlag = document.querySelector('#germanVarietyControl button[data-value="AT"] .uebung-flag-svg');
+            const inactiveFlagBtn = document.querySelector('#germanVarietyControl button[data-value="AT"]');
+            const hoverSvgRectColor = hoverIcon ? window.getComputedStyle(hoverIcon).color : null;
+            return {
+                stackAligned: stackRect && altRect ? Math.abs(stackRect.left - altRect.left) < 2 : false,
+                stackBelow: stackRect && altRect ? altRect.top > stackRect.top : false,
+                hoverIsRegular: Boolean(hoverIcon?.classList.contains('fluent-icon-chatHintHalf')) && !hoverIcon?.classList.contains('fluent-icon-filled'),
+                hoverAmberColor: hoverSvgRectColor,
+                autostopAmberColor: autostopIcon ? window.getComputedStyle(autostopIcon).color : null,
+                inactiveFlagDimmed: inactiveFlag ? window.getComputedStyle(inactiveFlag).opacity === '0.55' : false,
+                inactiveBtnNotDimmed: inactiveFlagBtn ? window.getComputedStyle(inactiveFlagBtn).opacity === '1' : false
+            };
+        });
+        assert.equal(visualAudit.stackAligned, true, 'Drill 3-1 alt cue line must left-align under target noun');
+        assert.equal(visualAudit.stackBelow, true, 'Drill 3-1 alt cue line must sit below 1st line');
+        assert.equal(visualAudit.hoverIsRegular, true, 'Hover icon must be Regular without filled class');
+        assert.equal(visualAudit.hoverAmberColor, 'rgb(251, 191, 36)', 'Selected Hover icon must use #fbbf24');
+        assert.equal(visualAudit.autostopAmberColor, 'rgb(251, 191, 36)', 'Autostop icon must use #fbbf24');
+        assert.equal(visualAudit.inactiveFlagDimmed, true, 'Inactive flag SVG must be dimmed');
+        assert.equal(visualAudit.inactiveBtnNotDimmed, true, 'Inactive variety button text must stay full opacity');
 
         // Verify pagehide cleanup listener
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });

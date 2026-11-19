@@ -5251,7 +5251,19 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     text-align: left;
 }
 
-.uebung11-page .uebung-setting-icon,
+.uebung11-page .compact-settings .segmented-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.uebung11-page .compact-settings .settings-onoff .mode-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
 .uebung11-page .uebung-back-icon,
 .uebung11-page .uebung-voice-icon {
     display: inline-block;
@@ -5259,11 +5271,68 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     margin-right: 6px;
 }
 
+.uebung11-page .compact-settings .uebung-setting-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    color: currentColor;
+    width: 24px;
+    height: 24px;
+    margin-block: -1px;
+    margin-right: 0;
+    transform: none;
+}
+
+.uebung11-page .compact-settings .segmented-option:is(.is-selected, .active, [aria-pressed="true"]) .uebung-setting-icon {
+    color: #fbbf24;
+}
+
+.uebung11-page .compact-settings #labelAutoRecord .uebung-setting-icon,
+.uebung11-page .compact-settings #labelAutoPlay .uebung-setting-icon {
+    color: #fbbf24;
+}
+
+.uebung11-page .compact-settings button:is(:disabled, [aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .uebung-setting-icon,
+.uebung11-page .compact-settings .settings-onoff:has(input:disabled:not(:checked)) .uebung-setting-icon {
+    opacity: 0.55;
+}
+
+.uebung11-page .uebung-flag-svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+.uebung11-page .compact-settings .segmented-option:not(.is-selected):not([aria-pressed="true"]) .uebung-flag-svg {
+    filter: grayscale(100%);
+    opacity: 0.55;
+}
+
+.uebung11-page .compact-settings .segmented-option:is(.is-selected, [aria-pressed="true"]) .uebung-flag-svg {
+    filter: none;
+    opacity: 1;
+}
+
 .uebung11-page .uebung-instruction-bulb {
     display: inline-block;
     vertical-align: -0.2em;
     margin-right: 6px;
     color: #fbbf24;
+}
+
+.uebung11-page .uebung-warning-svg {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    vertical-align: -0.22em;
+    flex-shrink: 0;
+    color: currentColor;
+}
+
+.uebung11-page .uebung-cue-place-stack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    vertical-align: top;
 }
 
 .uebung11-page .uebung-cue-alt-line {
@@ -5276,13 +5345,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     font-weight: 400;
 }
 
-.uebung11-page .uebung-flag-svg {
-    display: inline-block;
-    vertical-align: middle;
-    flex-shrink: 0;
-}
-
-.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .drill-stop-btn, .play-recording-btn) {
+.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -5297,6 +5360,26 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 .uebung11-page .recording-controls > .recording-result > .result-text {
     text-align: right;
+}
+
+.uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    transform: translateY(-2px);
+    vertical-align: middle;
+    margin-right: 2px;
+    color: #B47732;
+}
+
+@media (prefers-color-scheme: dark) {
+    .uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+        color: #E4AD69;
+    }
+}
+
+[data-theme="dark"] .uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+    color: #E4AD69;
 }
 
 .uebung11-page .recording-controls > .recording-result .feedback-retry-label {
@@ -5323,14 +5406,24 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .uebung11-page .uebung-incomplete-wrap {
     display: inline-flex;
     align-items: center;
+    vertical-align: middle;
+    position: relative;
     margin-right: 2px;
 }
 
 .uebung11-page .uebung-incomplete-svg {
+    display: inline-block;
     width: 25px;
     height: 25px;
-    color: #8064B0;
     transform: translateY(-0.5px);
+    vertical-align: middle;
+    color: #8064B0;
+}
+
+@media (prefers-color-scheme: dark) {
+    .uebung11-page .uebung-incomplete-svg {
+        color: #B9A2E5;
+    }
 }
 
 [data-theme="dark"] .uebung11-page .uebung-incomplete-svg {

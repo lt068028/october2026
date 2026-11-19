@@ -735,18 +735,10 @@ function initGermanDrill() {
     let currentUtterance = null;
 
     const saved = new Map(); // key -> { url, raw, correct, modelText, supplement, variety }
-    const views = new Map(); // key -> { item, rec, listen, stop, result, correction }
+    const views = new Map(); // key -> { item, rec, listen, result, correction }
 
     const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
     let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
-
-    let drill1FirstStopTipBox = null;
-    function updateFirstStopTip() {
-        if (!drill1FirstStopTipBox) return;
-        drill1FirstStopTipBox.textContent = manual
-            ? "Stop recording."
-            : "No need to press. Autostop is ON.";
-    }
 
     // -------------------------------------------------------------
     // 3. Helper Functions
@@ -866,33 +858,34 @@ function initGermanDrill() {
     }
 
     function formatCue(item, isDrill1 = true) {
-        let baseHtml = "";
         if (item.cueParts && item.hints && item.cueParts.length === item.hints.length) {
             const parts = item.cueParts.map((rawPart, idx) => {
-                const part = (idx === 2 && item.regionalCuePlaces)
+                const isRegionalPlace = idx === 2 && Boolean(item.regionalCuePlaces);
+                const part = isRegionalPlace
                     ? (item.regionalCuePlaces[currentVariety] || rawPart)
                     : rawPart;
+                let partHtml;
                 if (hintMode === "off") {
-                    return part;
+                    partHtml = part;
+                } else {
+                    const hint = item.hints[idx];
+                    if (hintMode === "paren") {
+                        partHtml = `${part} <span class="vocab-inline">(${hint})</span>`;
+                    } else {
+                        partHtml = `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
+                    }
                 }
-                const hint = item.hints[idx];
-                if (hintMode === "paren") {
-                    return `${part} <span class="vocab-inline">(${hint})</span>`;
+                if (isRegionalPlace) {
+                    const altHtml = currentVariety === "DE"
+                        ? `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("AT")}${createFlagSvgMarkup("CH")} <span class="uebung-cue-alt-text">das Spital</span></span>`
+                        : `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("DE")} <span class="uebung-cue-alt-text">das Krankenhaus</span></span>`;
+                    return `<span class="uebung-cue-place-stack">${partHtml}${altHtml}</span>`;
                 }
-                return `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
+                return partHtml;
             });
-            baseHtml = parts.join(" / ");
-        } else {
-            baseHtml = item.cue;
+            return parts.join(" / ");
         }
-
-        if (item.regionalCuePlaces) {
-            const altHtml = currentVariety === "DE"
-                ? `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("AT")}${createFlagSvgMarkup("CH")} <span class="uebung-cue-alt-text">das Spital</span></span>`
-                : `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("DE")} <span class="uebung-cue-alt-text">das Krankenhaus</span></span>`;
-            return `${baseHtml}${altHtml}`;
-        }
-        return baseHtml;
+        return item.cue;
     }
 
     function wrapAudioIcon(iconNode) {
@@ -926,7 +919,7 @@ function initGermanDrill() {
         });
 
         document.querySelectorAll(
-            "#drillsContainer button:not([data-stop]):not(.uebung-copy-button)"
+            "#drillsContainer button:not(.uebung-copy-button)"
         ).forEach(el => {
             const isCurrentPlaybackStop =
                 el === playingButton ||
@@ -936,10 +929,15 @@ function initGermanDrill() {
         });
 
         views.forEach((v, key) => {
-            const canStop = session?.key === key && session.manual && !session.stopping;
-            v.stop.disabled = !canStop;
-            v.stop.setAttribute("aria-disabled", String(!canStop));
-            v.stop.classList.toggle("stop-btn-active", Boolean(canStop));
+            const isRecordingTarget = session?.key === key;
+            const canManualStop = isRecordingTarget && session.manual && !session.stopping;
+            v.rec.classList.toggle("stop-btn-active", isRecordingTarget);
+            setButtonAudioIcon(v.rec, isRecordingTarget ? "stop" : "mic", "regular");
+            v.rec.setAttribute(
+                "aria-label",
+                isRecordingTarget ? (canManualStop ? "Aufnahme stoppen" : "Aufnahme läuft") : "Antwort aufnehmen"
+            );
+            v.rec.disabled = isRecordingTarget ? !canManualStop : locked;
         });
 
         updateCopyButtons();
@@ -1096,7 +1094,6 @@ function initGermanDrill() {
             markExPlaying(b);
             return;
         }
-        stopPlayback();
         playingButton = b;
         b.classList.add("is-playing");
         b.dataset.keepPlayback = "true";
@@ -1268,13 +1265,20 @@ function initGermanDrill() {
         const hasDirectLocale = voices.some(v => normalizeLang(v.lang) === targetLocale);
 
         if (notice) {
-            if (!voices.length) {
-                notice.textContent = "⚠️ No German speech synthesis voice detected on this device. (Please verify your system TTS settings).";
+            const setWarningNotice = (msg) => {
+                notice.replaceChildren();
+                if (window.FluentIcons) {
+                    notice.append(window.FluentIcons.create("warning", 20, "uebung-warning-svg", "regular"), document.createTextNode(" " + msg));
+                } else {
+                    notice.textContent = msg;
+                }
                 notice.hidden = false;
+            };
+            if (!voices.length) {
+                setWarningNotice("No German speech synthesis voice detected on this device. (Please verify your system TTS settings).");
             } else if (!hasDirectLocale) {
                 const label = currentVariety === "AT" ? "de-AT (Austria)" : (currentVariety === "CH" ? "de-CH (Switzerland)" : "de-DE (Germany)");
-                notice.textContent = `⚠️ No native ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`;
-                notice.hidden = false;
+                setWarningNotice(`No native ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`);
             } else {
                 notice.hidden = true;
             }
@@ -1290,6 +1294,7 @@ function initGermanDrill() {
         if (!isRelay) {
             cancelActivePlaybackToken(true);
             stopAllPlayback();
+            if (btn) markPlaying(btn);
         }
 
         if (!("speechSynthesis" in window)) {
@@ -1299,6 +1304,7 @@ function initGermanDrill() {
                 message: "Your browser does not support speech synthesis. Please try a compatible browser.",
                 isStartup: false
             });
+            if (!isRelay) stopPlayback(true);
             onDone?.();
             return;
         }
@@ -1318,8 +1324,10 @@ function initGermanDrill() {
             u.voice = voice;
         }
 
+        const playGen = playbackGeneration;
         const token = {
             id: ++playbackTokenSeq,
+            playGen,
             text,
             btn,
             started: false,
@@ -1332,8 +1340,6 @@ function initGermanDrill() {
         };
         activePlaybackToken = token;
         currentUtterance = u;
-
-        if (btn) markPlaying(btn);
 
         const handlePlaybackError = (errorEvent) => {
             if (token.startTimeoutTimer) {
@@ -1396,9 +1402,15 @@ function initGermanDrill() {
 
         // B2. Start timeout watchdog (5000ms)
         token.startTimeoutTimer = setTimeout(() => {
-            if (activePlaybackToken === token && !token.started && !token.userCancelled) {
+            if (activePlaybackToken === token && token.playGen === playbackGeneration && !token.started && !token.userCancelled) {
                 token.userCancelled = true;
-                if (!isRelay) stopPlayback(true);
+                if (currentUtterance === u) currentUtterance = null;
+                activePlaybackToken = null;
+                if (!isRelay) {
+                    stopPlayback(true);
+                } else {
+                    onDone?.();
+                }
                 showGermanTtsNotice({
                     type: "error",
                     title: "German audio did not start",
@@ -1421,17 +1433,13 @@ function initGermanDrill() {
                 token.startTimeoutTimer = null;
             }
             if (token.handled) return;
+            if (token.playGen !== playbackGeneration || activePlaybackToken !== token || currentUtterance !== u) return;
             token.handled = true;
 
-            if (currentUtterance !== u) return;
             currentUtterance = null;
-            if (activePlaybackToken === token) {
-                activePlaybackToken = null;
-            }
+            activePlaybackToken = null;
 
-            if (isRelay) {
-                // Relay owns restoring buttons
-            } else {
+            if (!isRelay) {
                 stopPlayback(true);
             }
 
@@ -1466,15 +1474,15 @@ function initGermanDrill() {
         const entry = saved.get(key);
         if (!entry?.url) return;
 
-        const audio = new Audio(entry.url);
         if (btn) markPlaying(btn);
+        const gen = playbackGeneration;
+        const audio = new Audio(entry.url);
         activeAudio = audio;
 
         let cleaned = false;
-        const gen = ++playbackGeneration;
 
         const cleanup = () => {
-            if (cleaned || gen !== playbackGeneration) return;
+            if (cleaned || gen !== playbackGeneration || activeAudio !== audio) return;
             cleaned = true;
             stopPlayback(true);
         };
@@ -1936,6 +1944,11 @@ function initGermanDrill() {
                 v.result.append(tipWrap, document.createTextNode(val.raw.trimEnd() + "…"));
                 v.correction.hidden = true;
             } else if (judgment === "mismatch") {
+                FeedbackStatus.setMismatch(v.correction);
+                const retryUnit = v.correction.firstElementChild || v.correction;
+                const fire = retryUnit.querySelector(".feedback-retry-fire") || retryUnit.querySelector("svg");
+                if (fire) v.result.append(fire);
+
                 if (Array.isArray(val.diffTokens) && val.diffTokens.length > 0) {
                     val.diffTokens.forEach((tok, idx) => {
                         if (idx > 0) v.result.append(document.createTextNode(" "));
@@ -1954,8 +1967,6 @@ function initGermanDrill() {
                     v.result.append(document.createTextNode(val.raw));
                 }
 
-                FeedbackStatus.setMismatch(v.correction);
-                const retryUnit = v.correction.firstElementChild || v.correction;
                 v.result.append(document.createTextNode(" "), retryUnit);
                 v.correction.hidden = true;
             }
@@ -2083,7 +2094,7 @@ function initGermanDrill() {
             cues.forEach(cell => {
                 const span = cell.querySelector(".cue-content") || cell;
                 const copy = span.cloneNode(true);
-                copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
+                copy.querySelectorAll(".tooltip-tip, .custom-tip-box, .uebung-cue-alt-line").forEach(t => t.remove());
                 Object.assign(copy.style, {
                     position: "absolute",
                     visibility: "hidden",
@@ -2242,28 +2253,21 @@ function initGermanDrill() {
                 const recTip = isFirstItemOfDrill1 ? "Record your answer." : "";
                 const recIcon = wrapAudioIcon(window.FluentIcons.create("mic", 20));
                 const recBtn = button(recIcon, recTip, () => {
+                    if (session?.key === item.id) {
+                        if (session.manual && !session.stopping) {
+                            session.stop("", false, "manual");
+                        }
+                        return;
+                    }
+                    if (session || preparing) return;
+                    if (playingButton || activeExButton || relayKey) return;
                     record(item.id, item);
                 });
                 recBtn.classList.add("drill-record-btn");
                 recBtn.dataset.audioRole = "record";
                 recBtn.setAttribute("aria-label", "Antwort aufnehmen");
 
-                let stopTip = "";
-                if (isFirstItemOfDrill1) {
-                    stopTip = manual ? "Stop recording." : "No need to press. Autostop is ON.";
-                }
-                const stopIcon = wrapAudioIcon(window.FluentIcons.create("stop", 20, "", "regular"));
-                const stopBtn = button(stopIcon, stopTip, () => {
-                    if (session?.key === item.id) session.stop("", false, "manual");
-                });
-                stopBtn.classList.add("drill-stop-btn");
-                stopBtn.dataset.stop = "true";
-                stopBtn.disabled = true;
-                if (isFirstItemOfDrill1) {
-                    drill1FirstStopTipBox = stopBtn.querySelector(".custom-tip-box");
-                }
-
-                actions.append(listenBtn, recBtn, stopBtn);
+                actions.append(listenBtn, recBtn);
 
                 const wrap = node("span", "recording-result");
                 const result = node("span", "result-text");
@@ -2283,7 +2287,6 @@ function initGermanDrill() {
                     item,
                     rec: recBtn,
                     listen: listenBtn,
-                    stop: stopBtn,
                     result,
                     correction
                 });
@@ -2346,7 +2349,7 @@ function initGermanDrill() {
         autoRecInput.addEventListener("change", () => {
             manual = !autoRecInput.checked;
             autoRecLabel?.classList.toggle("active-mode", autoRecInput.checked);
-            updateFirstStopTip();
+            sync();
         });
     }
 
