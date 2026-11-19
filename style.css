@@ -5228,10 +5228,18 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 .practice82-page .ex-audio-icon .fluent-icon-stop,
-.uebung11-page .ex-audio-icon .fluent-icon-stop,
-.practice82-page :is(.play-recording-btn, .drill-listen-btn, .drill-record-btn) .fluent-icon-stop,
-.uebung11-page .play-recording-btn .fluent-icon-stop {
+.practice82-page :is(.play-recording-btn, .drill-listen-btn, .drill-record-btn) .fluent-icon-stop {
     color: var(--error-text, #be123c);
+}
+
+.uebung11-page .ex-audio-icon .fluent-icon-stop,
+.uebung11-page .play-recording-btn .fluent-icon-stop {
+    color: currentColor;
+}
+
+.uebung11-page .result-incorrect {
+    color: var(--semantic-negative-color, var(--error-text, #be123c));
+    font-weight: 700;
 }
 
 /* Practice 8.2 音声ボタン4種の中央配置 (既存padding・寸法を維持) */

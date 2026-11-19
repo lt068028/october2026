@@ -12,31 +12,31 @@ const drillsData = [
         instruction: "💡Use nach with cities and countries that have no grammatical article.",
         learningFocus: "Cities & Countries",
         example: {
-            cue: "Ich / Salzburg / fahren",
-            cueParts: ["Ich", "Salzburg", "fahren"],
-            hints: ["I (subject)", "Salzburg (city in Austria)", "to travel / drive"],
+            cue: "Ich / fahren / Salzburg",
+            cueParts: ["Ich", "fahren", "Salzburg"],
+            hints: ["I (subject)", "to travel / drive", "Salzburg (city in Austria)"],
             model: "Ich fahre nach Salzburg."
         },
         items: [
             {
                 id: "d1_1",
-                cue: "Ich / Graz / fahren",
-                cueParts: ["Ich", "Graz", "fahren"],
-                hints: ["I (subject)", "Graz (city in Austria)", "to travel / drive"],
+                cue: "Ich / fahren / Graz",
+                cueParts: ["Ich", "fahren", "Graz"],
+                hints: ["I (subject)", "to travel / drive", "Graz (city in Austria)"],
                 model: "Ich fahre nach Graz."
             },
             {
                 id: "d1_2",
-                cue: "Ich / Italien / reisen",
-                cueParts: ["Ich", "Italien", "reisen"],
-                hints: ["I (subject)", "Italy", "to travel"],
+                cue: "Ich / reisen / Italien",
+                cueParts: ["Ich", "reisen", "Italien"],
+                hints: ["I (subject)", "to travel", "Italy"],
                 model: "Ich reise nach Italien."
             },
             {
                 id: "d1_3",
-                cue: "Ich / Berlin / fahren",
-                cueParts: ["Ich", "Berlin", "fahren"],
-                hints: ["I (subject)", "Berlin (city in Germany)", "to travel / drive"],
+                cue: "Ich / fahren / Berlin",
+                cueParts: ["Ich", "fahren", "Berlin"],
+                hints: ["I (subject)", "to travel / drive", "Berlin (city in Germany)"],
                 model: "Ich fahre nach Berlin."
             }
         ]
@@ -48,31 +48,31 @@ const drillsData = [
         instruction: "💡Use in + Akkusativ for destinations with feminine, plural, or masculine country names.",
         learningFocus: "Countries with Articles",
         example: {
-            cue: "Du / die Schweiz / fahren",
-            cueParts: ["Du", "die Schweiz", "fahren"],
-            hints: ["You (subject, sg.)", "Switzerland (fem.)", "to travel / drive"],
+            cue: "Du / fahren / die Schweiz",
+            cueParts: ["Du", "fahren", "die Schweiz"],
+            hints: ["You (subject, sg.)", "to travel / drive", "Switzerland (fem.)"],
             model: "Du fährst in die Schweiz."
         },
         items: [
             {
                 id: "d2_1",
-                cue: "Du / die Türkei / fliegen",
-                cueParts: ["Du", "die Türkei", "fliegen"],
-                hints: ["You (subject, sg.)", "Turkey (fem.)", "to fly"],
+                cue: "Du / fliegen / die Türkei",
+                cueParts: ["Du", "fliegen", "die Türkei"],
+                hints: ["You (subject, sg.)", "to fly", "Turkey (fem.)"],
                 model: "Du fliegst in die Türkei."
             },
             {
                 id: "d2_2",
-                cue: "Du / die USA / reisen",
-                cueParts: ["Du", "die USA", "reisen"],
-                hints: ["You (subject, sg.)", "USA (pl.)", "to travel"],
+                cue: "Du / reisen / die USA",
+                cueParts: ["Du", "reisen", "die USA"],
+                hints: ["You (subject, sg.)", "to travel", "USA (pl.)"],
                 model: "Du reist in die USA."
             },
             {
                 id: "d2_3",
-                cue: "Du / der Irak / fliegen",
-                cueParts: ["Du", "der Irak", "fliegen"],
-                hints: ["You (subject, sg.)", "Iraq (masc.)", "to fly"],
+                cue: "Du / fliegen / der Irak",
+                cueParts: ["Du", "fliegen", "der Irak"],
+                hints: ["You (subject, sg.)", "to fly", "Iraq (masc.)"],
                 model: "Du fliegst in den Irak."
             }
         ]
@@ -84,31 +84,31 @@ const drillsData = [
         instruction: "💡Use zum (zu + dem) for masculine and neuter destinations.",
         learningFocus: "Masculine & Neuter Destinations",
         example: {
-            cue: "Er / der Supermarkt / gehen",
-            cueParts: ["Er", "der Supermarkt", "gehen"],
-            hints: ["He (subject)", "supermarket (masc.)", "to go / walk"],
+            cue: "Er / gehen / der Supermarkt",
+            cueParts: ["Er", "gehen", "der Supermarkt"],
+            hints: ["He (subject)", "to go / walk", "supermarket (masc.)"],
             model: "Er geht zum Supermarkt."
         },
         items: [
             {
                 id: "d3_1",
-                cue: "Er / der Arzt / gehen",
-                cueParts: ["Er", "der Arzt", "gehen"],
-                hints: ["He (subject)", "doctor (masc.)", "to go"],
+                cue: "Er / gehen / der Arzt",
+                cueParts: ["Er", "gehen", "der Arzt"],
+                hints: ["He (subject)", "to go", "doctor (masc.)"],
                 model: "Er geht zum Arzt."
             },
             {
                 id: "d3_2",
-                cue: "Er / das Krankenhaus / fahren",
-                cueParts: ["Er", "das Krankenhaus", "fahren"],
-                hints: ["He (subject)", "hospital (neut.)", "to drive / travel"],
+                cue: "Er / fahren / das Krankenhaus",
+                cueParts: ["Er", "fahren", "das Krankenhaus"],
+                hints: ["He (subject)", "to drive / travel", "hospital (neut.)"],
                 model: "Er fährt zum Krankenhaus."
             },
             {
                 id: "d3_3",
-                cue: "Er / der Bahnhof / gehen",
-                cueParts: ["Er", "der Bahnhof", "gehen"],
-                hints: ["He (subject)", "train station (masc.)", "to go"],
+                cue: "Er / gehen / der Bahnhof",
+                cueParts: ["Er", "gehen", "der Bahnhof"],
+                hints: ["He (subject)", "to go", "train station (masc.)"],
                 model: "Er geht zum Bahnhof."
             }
         ]
@@ -120,31 +120,31 @@ const drillsData = [
         instruction: "💡Use zur (zu + der) for feminine destinations.",
         learningFocus: "Feminine Destinations",
         example: {
-            cue: "Ihr / die Post / gehen",
-            cueParts: ["Ihr", "die Post", "gehen"],
-            hints: ["You (subject, pl.)", "post office (fem.)", "to go"],
+            cue: "Ihr / gehen / die Post",
+            cueParts: ["Ihr", "gehen", "die Post"],
+            hints: ["You (subject, pl.)", "to go", "post office (fem.)"],
             model: "Ihr geht zur Post."
         },
         items: [
             {
                 id: "d4_1",
-                cue: "Ihr / die Bank / gehen",
-                cueParts: ["Ihr", "die Bank", "gehen"],
-                hints: ["You (subject, pl.)", "bank (fem.)", "to go"],
+                cue: "Ihr / gehen / die Bank",
+                cueParts: ["Ihr", "gehen", "die Bank"],
+                hints: ["You (subject, pl.)", "to go", "bank (fem.)"],
                 model: "Ihr geht zur Bank."
             },
             {
                 id: "d4_2",
-                cue: "Ihr / die Apotheke / gehen",
-                cueParts: ["Ihr", "die Apotheke", "gehen"],
-                hints: ["You (subject, pl.)", "pharmacy (fem.)", "to go"],
+                cue: "Ihr / gehen / die Apotheke",
+                cueParts: ["Ihr", "gehen", "die Apotheke"],
+                hints: ["You (subject, pl.)", "to go", "pharmacy (fem.)"],
                 model: "Ihr geht zur Apotheke."
             },
             {
                 id: "d4_3",
-                cue: "Ihr / die Schule / gehen",
-                cueParts: ["Ihr", "die Schule", "gehen"],
-                hints: ["You (subject, pl.)", "school (fem.)", "to go"],
+                cue: "Ihr / gehen / die Schule",
+                cueParts: ["Ihr", "gehen", "die Schule"],
+                hints: ["You (subject, pl.)", "to go", "school (fem.)"],
                 regionalModels: {
                     DE: "Ihr geht zur Schule.",
                     AT: "Ihr geht in die Schule.",
@@ -306,8 +306,8 @@ function getAllowed(item, variety = (typeof currentVariety !== "undefined" ? cur
 function getItemGrammarSpec(item) {
     const hasSubjectCue = item.cueParts && item.cueParts.length >= 3;
     const requiredSubject = hasSubjectCue ? item.cueParts[0].toLowerCase().trim() : "ich";
-    const cuePlace = hasSubjectCue ? item.cueParts[1] : (item.cueParts && item.cueParts[0] ? item.cueParts[0] : "");
-    const cueVerb = hasSubjectCue ? item.cueParts[2].toLowerCase().trim() : (item.cueParts && item.cueParts[1] ? item.cueParts[1].toLowerCase().trim() : "");
+    const cueVerb = hasSubjectCue ? item.cueParts[1].toLowerCase().trim() : (item.cueParts && item.cueParts[1] ? item.cueParts[1].toLowerCase().trim() : "");
+    const cuePlace = hasSubjectCue ? item.cueParts[2] : (item.cueParts && item.cueParts[0] ? item.cueParts[0] : "");
 
     const models = [];
     if (item.model) models.push(item.model);
@@ -786,8 +786,10 @@ function initGermanDrill() {
     let activeExButton = null;
     let stoppedExButton = null;
     let stoppedExTime = 0;
+    let playbackGeneration = 0;
 
     function stopPlayback(isNaturalFinish = false) {
+        playbackGeneration++;
         if (currentUtterance) {
             currentUtterance.onend = null;
             currentUtterance.onerror = null;
@@ -869,7 +871,7 @@ function initGermanDrill() {
         b.classList.add("is-playing");
         const iconWrap = b.querySelector(".ex-audio-icon");
         if (iconWrap && window.FluentIcons) {
-            iconWrap.replaceChildren(window.FluentIcons.create("stop", 20, "", "filled"));
+            iconWrap.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
         }
         b._originalAriaLabel = b.getAttribute("aria-label");
         b.setAttribute("aria-label", "Wiedergabe stoppen");
@@ -891,7 +893,7 @@ function initGermanDrill() {
             b._originalAriaLabel = b.getAttribute("aria-label");
             b.setAttribute("aria-label", "Wiedergabe stoppen");
             if (window.FluentIcons) {
-                b.replaceChildren(window.FluentIcons.create("stop", 20, "", "filled"));
+                b.replaceChildren(window.FluentIcons.create("stop", 20, "", "regular"));
             }
             return;
         }
@@ -1260,11 +1262,16 @@ function initGermanDrill() {
         if (!entry?.url) return;
 
         const audio = new Audio(entry.url);
-        activeAudio = audio;
         if (btn) markPlaying(btn);
+        activeAudio = audio;
+
+        let cleaned = false;
+        const gen = ++playbackGeneration;
 
         const cleanup = () => {
-            stopPlayback();
+            if (cleaned || gen !== playbackGeneration) return;
+            cleaned = true;
+            stopPlayback(true);
         };
 
         audio.onended = cleanup;
@@ -1377,23 +1384,24 @@ function initGermanDrill() {
             const recModel = getModel(item, currentVariety);
 
             const previous = saved.get(key) || {};
-            let url = previous.url;
+            const normRaw = normalizeGerman(raw);
+            let url = "";
 
             const hasValidAudio = !s.discard && s.speechStarted && s.chunks.length > 0;
-            if (hasValidAudio) {
+            if (raw && normRaw && hasValidAudio) {
                 try {
                     url = URL.createObjectURL(
                         new Blob(s.chunks, { type: s.recorder?.mimeType || "audio/webm" })
                     );
-                    if (previous.url) {
-                        URL.revokeObjectURL(previous.url);
-                    }
                 } catch (_) {
-                    url = previous.url;
+                    url = "";
                 }
             }
 
-            if (raw) {
+            if (raw && normRaw) {
+                if (previous.url) {
+                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
+                }
                 const evalResult = evaluateGermanAnswer(raw, item, currentVariety);
                 const isCorrect = evalResult.judgment === "accepted";
                 saved.set(key, {
@@ -1408,13 +1416,10 @@ function initGermanDrill() {
                     variety: currentVariety
                 });
             } else if (hasValidAudio) {
-                saved.set(key, {
-                    url,
-                    raw: "",
-                    unrecognized: true,
-                    modelText: recModel,
-                    variety: currentVariety
-                });
+                if (previous.url) {
+                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
+                }
+                saved.delete(key);
             } else if (s.speechStarted && !hasValidAudio) {
                 if (previous.url) {
                     try { URL.revokeObjectURL(previous.url); } catch (_) {}
@@ -1732,7 +1737,7 @@ function initGermanDrill() {
         }
 
         if (val?.url) {
-            const playIcon = window.FluentIcons ? window.FluentIcons.create("play", 20, "", "filled") : document.createTextNode("▶️");
+            const playIcon = window.FluentIcons ? window.FluentIcons.create("playCircle", 20) : document.createTextNode("▶️");
             const play = button(playIcon, "Play your recorded voice.", () => {
                 playRecording(key, play);
             });
@@ -1775,6 +1780,7 @@ function initGermanDrill() {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "example-button uebung-copy-button";
+        btn.dataset.keepPlayback = "true";
         btn.disabled = true;
 
         btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span>Copy my sentences</span>';
@@ -1790,8 +1796,9 @@ function initGermanDrill() {
             const entries = [];
             drill.items.forEach((item, idx) => {
                 const entry = saved.get(item.id);
-                if (entry?.raw) {
-                    entries.push(`${idx + 1}. ${item.cue}: ${entry.raw}`);
+                if (entry?.raw && entry.judgment !== "empty") {
+                    const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
+                    entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`);
                 }
             });
 

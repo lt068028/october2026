@@ -261,12 +261,40 @@ const resCase12Low = evaluateGermanAnswer("Hallo Welt heute", itemGraz, "DE");
 assert.equal(resCase12Low.judgment, "mismatch", "Completely unrelated speech must be mismatch");
 assert.ok(resCase12Low.diffTokens.every(t => t.status === "incorrect" && t.text !== "＿"), "Low-confidence fallback must mark all tokens incorrect without inserting ＿");
 
-// 7.3 Responsive style contract verification
+// 7.3 Responsive style & A-F contracts verification
 assert.ok(css.includes('.uebung11-page'), 'CSS must include .uebung11-page scope');
+assert.ok(css.includes('.uebung11-page .result-incorrect'), 'CSS must style .uebung11-page .result-incorrect');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
 assert.ok(feedbackCss.includes('.feedback-retry-label'), 'Feedback CSS must style the Fluent retry renderer');
-assert.ok(feedbackCss.includes('.feedback-status-undetermined'), 'Feedback CSS must style supported undetermined status');
+
+// A: All 16 items cueParts must follow SVO order [subject, verb, place]
+const expectedSubjects = ["Ich", "Du", "Er", "Ihr"];
+const knownVerbs = new Set(["fahren", "reisen", "fliegen", "gehen"]);
+drillsData.forEach((drill, dIdx) => {
+    const allItems = [drill.example, ...drill.items];
+    allItems.forEach(it => {
+        assert.equal(it.cueParts[0], expectedSubjects[dIdx], `Drill ${dIdx + 1} cueParts[0] must be ${expectedSubjects[dIdx]}`);
+        assert.ok(knownVerbs.has(it.cueParts[1]), `Drill ${dIdx + 1} cueParts[1] must be verb, got ${it.cueParts[1]}`);
+    });
+});
+
+// C: Playback generation and order in playRecording
+assert.ok(js.includes('let playbackGeneration = 0;'), 'Must track playbackGeneration');
+assert.ok(js.includes('if (btn) markPlaying(btn);\n        activeAudio = audio;'), 'playRecording must call markPlaying before setting activeAudio');
+
+// D: Empty STT discards audio without saving
+assert.ok(js.includes('if (raw && normRaw && hasValidAudio)'), 'Empty STT must not create Blob URL');
+assert.ok(!js.includes('unrecognized: true'), 'Empty STT must not save unrecognized audio entry');
+
+// E: Icons (playCircle normal, stop regular & currentColor)
+assert.ok(js.includes('FluentIcons.create("playCircle", 20)'), 'Recording playback button must use playCircle icon');
+assert.ok(js.includes('FluentIcons.create("stop", 20, "", "regular")'), 'Playing stop icon must use regular variant');
+assert.ok(css.includes('.uebung11-page .play-recording-btn .fluent-icon-stop {\n    color: currentColor;'), 'Playing stop icon must use currentColor');
+
+// F: Copy my sentences with keepPlayback & markers
+assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy button must set data-keep-playback="true"');
+assert.ok(js.includes('entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥")'), 'Copy must prepend status markers');
 
 // 8. Introductory Hover & Status Tooltip Contracts
 console.log('Testing Deutsche Übung 1.1 hover and tooltip contracts...');

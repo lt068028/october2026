@@ -309,7 +309,7 @@ node tests/relay-zero-gap.cjs
 
 - **`node tests/uebung11.cjs`**
   - **対象**: Deutsche Übung 1.1（`uebung1.1.html`）
-  - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問、主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）、地域別モデル文・許容回答、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）および空STT分離、単語単位差分・欠落 `＿`・Footprints+`…` 描画、Copy my sentences 非修飾、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。
+  - **検証内容**: 静的構造、4 Drills（各Ex 1問＋練習3問、SVO発話順キュー `[主語, 動詞, 場所]`・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）、地域別モデル文・許容回答、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・欠落 `＿`・Footprints+`…` 描画、音声再生世代管理・`playCircle`・再生中停止アイコン（Regular・`currentColor`）、Copy my sentences（`✅`/`👣`/`🔥`マーカー・raw STTのみ・再生維持）、DrillAudioセッション管理、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は後追改訂待ち）
   - **実行場面**: ドイツ語ドリルページの新規作成・修正時。
 
 ---
