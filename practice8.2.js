@@ -1106,7 +1106,7 @@ function createQuestionMarker(){
  return wrap;
 }
 function createLightbulbIcon(){
- return window.FluentIcons ? window.FluentIcons.create('lightbulb',20,'p82-lightbulb-icon') : document.createTextNode('');
+ return window.FluentIcons ? window.FluentIcons.create('lightbulbFilled',20,'p82-lightbulb-icon','filled') : document.createTextNode('');
 }
 function render(){
  updateUnlearnedLexicon();

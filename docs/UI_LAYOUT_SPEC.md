@@ -99,7 +99,7 @@
 
 ### 6.2 Drill説明文
 
-- Drill説明文（`.info-panel-desc`、English Cues説明文を含む）の先頭には、Microsoft Fluent `Lightbulb 24 Regular` SVGアイコンを配置し、文章を短縮しても先頭の電球アイコンを残す（Practice 8.2にて先行適用。未移行の既存ページでは従来の💡絵文字が残っている場合があるが、順次SVGへ統一する）。
+- Drill説明文（`.info-panel-desc`、English Cues説明文を含む）の先頭には、Microsoft Fluent `Lightbulb 24 Filled` SVGアイコンを配置し、文章を短縮しても先頭の電球アイコンを残す（Practice 8.2にて先行適用。未移行の既存ページでは従来の💡絵文字が残っている場合があるが、順次SVGへ統一する）。
 - 短い同目的の説明は一段落にまとめる。課題と補足、独立した操作手順は分け、句点ごとの一律改行はしない。
 - 課題を先に示し、タイトル・Exampleと重複する前置きを省く。学習者に必要な操作・文型が伝わることを優先し、画面幅に応じて自然に折り返す。
 
@@ -202,7 +202,7 @@
 - 録音・再生ボタン本体、ツールチップ、操作説明、Pitch Labのタイトル・説明文・音量補助文も本規則の対象外とする。
 - 本節は共通表示仕様であり、すべての既存ページの実装がこのサイズに一致していることを意味しない。各ページの適合状況は、対象となる実装範囲に応じて別途確認する。
 
-## 13. 共通UIアイコン（Fluent SVG）・光学サイズ調整および無効化カーソル規定（2026-11-18策定）
+## 13. 共通UIアイコン（Fluent SVG）・光学サイズ調整および無効化カーソル規定（2026-11-19更新）
 
 ### 13.1 共通UI 4領域および音声操作の Microsoft Fluent UI System Icons 仕様
 
@@ -211,21 +211,21 @@
 | 領域・項目 | 公式 Fluent Icon 名 | `fluent-icons.js` キー（variant） | viewBox | 実描画高さ（in vb） | 表示サイズ / 光学補正（Practice 8.2基準） |
 | --- | --- | --- | :---: | :---: | --- |
 | ① もどるボタン（`.back-link`） | `Arrow Hook Down Left 24 Regular` | `arrowHookDownLeft` (`regular`) | `0 0 24 24` | 16.77 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 14.0px） |
-| ② Drill説明文先頭（`.info-panel-desc`） | `Lightbulb 24 Regular` | `lightbulb` (`regular`) | `0 0 24 24` | 20.00 | `20×20px`、`vertical-align: -3.5px`（Optical Height ≈ 16.7px） |
+| ② Drill説明文先頭（`.info-panel-desc`、Practice 8.2の5箇所） | `Lightbulb 24 Filled` | `lightbulbFilled` (`filled`) | `0 0 24 24` | 20.00 | `20×20px`、`vertical-align: -3.5px`（Optical Height ≈ 16.7px） |
 | ③ 左下Voiceラベル（`.voice-select-label`） | `Speaker 2 24 Regular` | `speaker` / `speaker2` (`regular`) | `0 0 24 24` | 17.99 | `20×20px`（モデル音声ボタンと同一パスを共有、Optical Height ≈ 15.0px） |
 | ④ Script Mode — Hiragana Only | `Translate 24 Regular` | `translate` (`regular`) | `0 0 24 24` | 14.73 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 12.3px） |
-| ④ Script Mode — With漢字 | `Local Language Globe 20 Regular`（第二候補：`Local Language Zi 24 Regular`） | `localLanguageGlobe` (`regular`)（予備：`localLanguageZi`） | `0 0 20 20`（予備：`0 0 24 24`） | 15.00 / 20（予備：21.00 / 24） | `18×18px`、`translateY(0.5px)`（Optical Height ≈ 13.5px；予備 `localLanguageZi` は `15×15px`） |
+| ④ Script Mode — With漢字 | `Local Language 24 Filled` | `localLanguageGlobeFilled` (`filled`) | `0 0 24 24` | 約20 | `24×24px`（予備 `localLanguageZi` は保持） |
 | ④ Speech Style — Formal | `Building 24 Filled` | `buildingFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
 | ④ Speech Style — Informal | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
 | ④ Speech Style — Casual | `Home 24 Filled` | `homeFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
-| ④ Vocabulary Display — Hover | `Chat Hint Half 24 Regular` | `chatHintHalf` (`regular`) | `0 0 24 24` | 19.79 | `16×16px`（Optical Height ≈ 13.2px） |
-| ④ Vocabulary Display — Display | `Text Edit Style 24 Regular` | `textEditStyle` (`regular`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
-| ④ Autostop | `Stop 24 Filled`（録音停止ボタンと同一の四角Filledパス） | `stop` (`filled`) | `0 0 24 24` | — | `24×24px`、色は録音停止ボタンと同じ `var(--error-text)`（赤） |
-| ④ Autoplay | `Play Circle 24 Filled`（録音再生ボタンと同一の円付き再生Filledパス） | `playCircle` (`filled`) | `0 0 24 24` | — | `24×24px`、色は録音再生ボタンと同じテーマ対応 `var(--text-primary)`（Light：黒系／Dark：明色系） |
+| ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 19.79 | `16×16px`（Optical Height ≈ 13.2px） |
+| ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `16×16px`（Optical Height ≈ 13.3px） |
+| ④ Autostop | `Stop 24 Filled`（録音停止ボタンと同一の四角Filledパス） | `stop` (`filled`) | `0 0 24 24` | — | `24×24px`、テーマ対応アンバーゴールド（Light `#b45309`／Dark `#fbbf24`） |
+| ④ Autoplay | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、テーマ対応アンバーゴールド（Light `#b45309`／Dark `#fbbf24`） |
 
 - Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。
 - **枠内最大サイズ（2026-11-18）**：グローバル設定の全アイコン（Script Mode / Speech Style / Vocabulary Display / Autostop / Autoplay）は、セグメントボタンの高さ（`min-height`）および上下paddingを変えず、内容領域に収まる最大の `24×24px` に統一する。ラベル文字・隣接要素と重ねない。
-- **選択時のアンバーゴールド**：セグメントボタン（Script Mode / Speech Style / Vocabulary Display）で選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色は変更しない。
+- **アンバーゴールドの適用**：説明文の電球5箇所、Autostop、AutoplayにはLight `#b45309`／Dark `#fbbf24`を使う。セグメントボタン（Script Mode / Speech Style / Vocabulary Display）は選択中（`aria-pressed="true"`／`.is-selected`）のアイコンのみ `#fbbf24`（青背景・白文字は維持）。非選択時の色・背景は変更しない。
 - Speech Style の3項目はすべてFilled（Formal＝Building、Informal＝Edit Line Horizontal 3、Casual＝Home）。旧 `personAccounts`・`chatMultiple` 定義は未使用のため削除済み。
 - **光学サイズ統一の原則（Optical Size Alignment）**：SVG の外枠 `width`/`height` を単に一律の数値に揃えるのではなく、`viewBox` 内の余白を除いた絵部分の実描画バウンディングボックス高さ（`y_max - y_min`）と垂直中心（`(y_min + y_max) / 2`）を算出し、同じUI領域（特にグローバル設定ボタン群）内で**絵そのものの視覚的な高さ（Optical Height）と垂直中央位置が揃うよう**アイコン別の表示サイズおよびYオフセットを設定する。
 
