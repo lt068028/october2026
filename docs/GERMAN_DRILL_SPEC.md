@@ -218,24 +218,24 @@
 - **STTエンジン**: `webkitSpeechRecognition` または `SpeechRecognition` を利用。
 - **言語設定**: `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定。
 - **音声検出と文字起こしの分離管理**:
-  - 音声検出フラグ（`speechStarted`）と認識テキスト（`raw`）を独立して管理。
-  - **STTエラー時の録音音声保持**: STTエラー（`recognition.onerror`）やSTT開始例外（`recognition.start()` 失敗）が発生した場合でも、マイク音量で発話が検出され有効な録音データが取得できていれば音声データを破棄せず保持し、再生ボタン（▶️）を表示する。
-  - **録音データ有無による結果メッセージの厳密な区別**:
-    - `No transcription available.` は、STT文字起こしが空であり、かつ**有効な録音音声が取得できている場合**にのみ表示。
-    - 発話が検出されたものの録音データ取得に失敗した場合は、`Recording error.` として区別。
+  - 音声検出フラグ（`speechStarted`）と認識テキスト（`raw`）を独立して管理する。
+  - **録音音声の保存条件**：有効なマイク録音データがあり、かつ空白だけではないSTT原文が取得できた場合に限り、録音音声Blob／再生URLを保存する。判定・Copy用のraw STTは認識原文として保持し、画面表示用の加工を保存値へ書き戻さない。
+  - **STTが空の場合**：発話が検知されてもSTT原文が空なら録音音声は保存せず、録音再生ボタンも表示しない。`No transcription available.` を表示する。
+  - **STT認識エラーまたは開始例外**：`recognition.onerror` または `recognition.start()` の例外では `Recognition error.` を表示し、空STTのため録音音声・再生URLを保存しない。再生ボタンも表示しない。
+  - **録音処理自体の失敗**：有効な録音データを取得できない場合は `Recording error.` として区別する。
 - **統一された状態・エラーメッセージ体系**:
   - 準備中：`Preparing microphone...`
   - 録音中：`Recording...`
   - 5秒未発話タイムアウト：`No speech detected within 5 seconds.`（音声保存なし）
   - 20秒絶対上限停止：`Auto-stopped after 20 seconds.`
-  - 発話検知あり・STT空（録音あり）：`No transcription available.`（音声保存あり、▶️表示）
+  - 発話検知あり・STT空：`No transcription available.`（録音音声保存なし、再生ボタンなし）
   - 非対応ブラウザ案内：
     - STT非対応：`Speech recognition is not supported in this browser.`
     - 録音非対応：`Recording is not supported in this browser.`
     - 両方非対応：`Speech recognition and recording are not supported in this browser.`
   - エラー案内：
     - 録音エラー：`Recording error.` / `Could not start recording.`
-    - 認識エラー：`Recognition error.`（有効録音音声がある場合は▶️を併記表示）
+    - 認識エラー：`Recognition error.`（空STTとなるため録音音声保存・再生ボタンなし）
 
 ### 5.3 回答判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【現行仕様】
 - **正規化関数**:
