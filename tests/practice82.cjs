@@ -687,7 +687,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     // 4. Global settings 9 icon items + Vocabulary OFF (no icon)
     const settingSpecs = [
       { key: 'hiragana', sel: '#scriptModeControl [data-value="hiragana"]', icon: 'translate', vb: '0 0 24 24', w: '24px' },
-      { key: 'kanji', sel: '#scriptModeControl [data-value="kanji"]', icon: 'localLanguageGlobeFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'kanji', sel: '#scriptModeControl [data-value="kanji"]', icon: 'localLanguageGlobe', vb: '0 0 20 20', w: '24px' },
       { key: 'formal', sel: '#speechStyleControl [data-value="formal"]', icon: 'buildingFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'informal', sel: '#speechStyleControl [data-value="informal"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'casual', sel: '#speechStyleControl [data-value="casual"]', icon: 'homeFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
@@ -754,11 +754,11 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const selectedAmber = withIcon.filter(b => b.getAttribute('aria-pressed') === 'true').every(b => getComputedStyle(b.querySelector('svg')).color === amber);
     const unselectedNotAmber = withIcon.filter(b => b.getAttribute('aria-pressed') !== 'true').every(b => getComputedStyle(b.querySelector('svg')).color !== amber);
     const phaseC = {
-      removedKeys: ['personAccounts','chatMultiple','lightbulb','localLanguageGlobe','chatHintHalf','textEditStyle'].every(k => !(k in FI.PATHS)),
-      preservedSharedKeys: ['playCircle','speaker','play','stop'].every(k => k in FI.PATHS),
-      autostopAmber: svgColor('#labelAutoRecord') === 'rgb(180, 83, 9)',
-      autoplayAmber: svgColor('#labelAutoPlay') === 'rgb(180, 83, 9)',
-      bulbsAmber: descs.every(d => d.color === 'rgb(180, 83, 9)'),
+      removedKeys: ['personAccounts','chatMultiple','lightbulb','localLanguageGlobeFilled','chatHintHalf','textEditStyle'].every(k => !(k in FI.PATHS)),
+      preservedSharedKeys: ['playCircle','speaker','play','stop','localLanguageGlobe'].every(k => k in FI.PATHS),
+      autostopAmber: svgColor('#labelAutoRecord') === amber,
+      autoplayAmber: svgColor('#labelAutoPlay') === amber,
+      bulbsAmber: descs.every(d => d.color === amber),
       stopSameAsRealBtn: Boolean(realStopSvg),
       heightOk, noOverlap, selectedAmber, unselectedNotAmber
     };
@@ -804,7 +804,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       wMatch: true,
       noLegacyEmoji: true,
       noEmojiWrapper: true,
-      filled: s.key !== 'hiragana'
+      filled: s.key !== 'hiragana' && s.key !== 'kanji'
     }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
   }
   eq(fluentUiAudit.phaseC, { removedKeys: true, preservedSharedKeys: true, autostopAmber: true, autoplayAmber: true, bulbsAmber: true, stopSameAsRealBtn: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Filled icons, safe key cleanup, amber bulbs/toggles/selected icons, preserved shared paths and layout');

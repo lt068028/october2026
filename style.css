@@ -5603,10 +5603,6 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     color: currentColor;
     transform: translateY(-0.5px);
 }
-.practice82-page { --p82-amber-icon-color: #b45309; }
-@media (prefers-color-scheme: dark) {
-    .practice82-page { --p82-amber-icon-color: #fbbf24; }
-}
 .practice82-page .info-panel-desc .p82-lightbulb-icon {
     display: inline-block;
     width: 20px;
@@ -5614,7 +5610,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     vertical-align: -3.5px;
     margin-right: 4px;
     flex-shrink: 0;
-    color: var(--p82-amber-icon-color);
+    color: #fbbf24;
 }
 .practice82-page .voice-select-label {
     display: inline-flex;
@@ -5654,10 +5650,10 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .compact-settings .segmented-option:is(.is-selected, .active, [aria-pressed="true"]) .p82-setting-icon {
     color: #fbbf24;
 }
-/* Autostop／Autoplayも説明文の電球と同じテーマ対応アンバーゴールド */
+/* Autostop／Autoplayも説明文の電球・選択中アイコンと同一のアンバーゴールド（#fbbf24） */
 .practice82-page .compact-settings #labelAutoRecord .p82-setting-icon,
 .practice82-page .compact-settings #labelAutoPlay .p82-setting-icon {
-    color: var(--p82-amber-icon-color);
+    color: #fbbf24;
 }
 .practice82-page .compact-settings button:is(:disabled, [aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .p82-setting-icon,
 .practice82-page .compact-settings .settings-onoff:has(input:disabled:not(:checked)) .p82-setting-icon {
