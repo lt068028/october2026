@@ -688,93 +688,12 @@ function evaluateGermanAnswer(raw, item, variety = "DE") {
     const spec = getItemGrammarSpec(item);
     const candidates = getAllowedCandidateSentences(item, variety);
 
-    // 3. Accepted: Grammatical motion sentence check (requires explicit target subject)
-    const unsupportedMarkers = new Set(["möchte", "will", "kann", "muss", "soll", "darf", "weil", "dass", "wenn", "ob", "obwohl"]);
-    const hasUnsupported = words.some(w => unsupportedMarkers.has(w));
-
-    if (!hasUnsupported && words.length >= 3) {
-        let subj = null;
-        let subjPos = -1;
-        for (let i = 0; i < words.length; i++) {
-            if (KNOWN_SUBJECTS.has(words[i])) {
-                subj = words[i];
-                subjPos = i;
-                break;
-            }
-        }
-
-        if (subj && subj === spec.requiredSubject) {
-            let finiteVerb = null;
-            if (subjPos === 0) {
-                finiteVerb = words[1];
-            } else if (subjPos === 3) {
-                finiteVerb = words[2];
-            } else if (subjPos === 4) {
-                finiteVerb = words[3];
-            }
-
-            let prepWord = null;
-            let placeWord = null;
-            for (let i = 0; i < words.length; i++) {
-                const w = words[i];
-                if (w === "nach" || w === "zum" || w === "zur") {
-                    prepWord = w;
-                    if (i + 1 < words.length) placeWord = words[i + 1];
-                    break;
-                } else if (w === "zu" && i + 2 < words.length && ["dem", "der", "den", "das"].includes(words[i + 1])) {
-                    prepWord = `zu ${words[i + 1]}`;
-                    placeWord = words[i + 2];
-                    break;
-                } else if (w === "zu") {
-                    prepWord = "zu";
-                    if (i + 1 < words.length) placeWord = words[i + 1];
-                    break;
-                } else if (w === "in" && i + 2 < words.length && ["die", "den", "dem", "das"].includes(words[i + 1])) {
-                    prepWord = `in ${words[i + 1]}`;
-                    placeWord = words[i + 2];
-                    break;
-                } else if (w === "in" && i + 1 < words.length) {
-                    prepWord = "in";
-                    placeWord = words[i + 1];
-                    break;
-                }
-            }
-
-            const verbInfo = GERMAN_VERBS[spec.cueVerb];
-            const isPerfekt = words.some(w => ALL_SEIN.has(w));
-            let participle = null;
-            for (const vInfo of Object.values(GERMAN_VERBS)) {
-                if (words.includes(vInfo.partizip)) {
-                    participle = vInfo.partizip;
-                    break;
-                }
-            }
-
-            let verbValid = false;
-            if (verbInfo) {
-                if (isPerfekt) {
-                    const expectedAux = SEIN_FORMS[subj] || [];
-                    const auxFound = words.find(w => ALL_SEIN.has(w));
-                    if (auxFound && expectedAux.includes(auxFound) && participle === verbInfo.partizip) {
-                        verbValid = true;
-                    }
-                } else if (finiteVerb) {
-                    const expectedPraesens = verbInfo.präsens[subj] || [];
-                    const expectedPraet = verbInfo.präteritum[subj] || [];
-                    if ([...expectedPraesens, ...expectedPraet].includes(finiteVerb)) {
-                        verbValid = true;
-                    }
-                }
-            }
-
-            const prepValid = prepWord && (spec.targetPreps.length === 0 || spec.targetPreps.includes(prepWord));
-            const placeValid = placeWord && (spec.targetPlaces.length === 0 || spec.targetPlaces.includes(placeWord));
-            const hasValidPrepPhrase = spec.validPrepPhrases.some(pp => normRaw.includes(pp));
-
-            if (verbValid && prepValid && placeValid && hasValidPrepPhrase) {
-                return { judgment: "accepted", redPart: null, supplement: null, reason: "valid_motion_sentence", diffTokens: null };
-            }
-        }
+    // 3. Accepted: Exact registered grammatical candidates only.
+    // Candidate generation already accounts for the item's registered subject, verb forms,
+    // allowed regional destinations, contractions, Perfekt / Präteritum, and inversion.
+    // Compare the whole normalized sentence so unrelated trailing or inserted words cannot pass.
+    if (candidates.includes(normRaw)) {
+        return { judgment: "accepted", redPart: null, supplement: null, reason: "valid_motion_sentence", diffTokens: null };
     }
 
     // 4. Incomplete: True token-level prefix match against any allowed candidate
@@ -1968,7 +1887,7 @@ function initGermanDrill() {
 
         btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span>Copy my sentences</span>';
 
-        const help = node("span", "uebung-copy-help", "Copy your drill results to review or share.");
+        const help = node("span", "uebung-copy-help", "Copy all your recorded answers to review or share.");
         const status = node("span", "uebung-copy-status", "");
         status.setAttribute("role", "status");
         status.setAttribute("aria-live", "polite");

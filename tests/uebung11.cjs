@@ -68,7 +68,7 @@ assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.oner
 
 // 5.4 Check Copy my sentences: raw STT only, no cue text
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');
-assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must implement helper text');
+assert.ok(js.includes('Copy all your recorded answers to review or share.'), 'JS must describe the all-Drill Copy scope');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 assert.ok(js.includes('const hasAnyRecordings = drillsData.some'), 'Any saved answer must enable Copy across drills');
 assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
