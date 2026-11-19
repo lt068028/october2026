@@ -169,7 +169,7 @@
 ## 10. Copy my sentencesボタン
 
 - 録音付きDrillのコピー操作領域は、左にMicrosoft Fluent `Clipboard 24 Regular` SVG（20×20px、`currentColor`）、右に`Copy my sentences`を並べる。絵文字📋は使用しない。
-- ボタン下の補助説明は`Copy your drill results to review or share.`とする。
+- ボタン下の補助説明はCopy範囲に合わせ、当該Drillのみをコピーする場合は`Copy your drill results to review or share.`、複数Drillの回答をまとめてコピーする場合は`Copy all your recorded answers to review or share.`とする。
 - 操作領域は各録音付きDrillの最終問題カード直後・カード枠外、同じDrillセクション内に置く。次のDrillやExampleのコンテナへ含めない。
 - ボタン、補助説明、成功／失敗ステータスを一つの操作領域とし、Drill内の右端に揃える。1つのDrillに1つだけ置き、再描画や設定変更で重複生成しない。
 - 既存のボタン外観を維持し、正式サポート範囲（600px以上）でラベルの縦折れや横はみ出しを起こさない。375pxは参考診断に限る。
