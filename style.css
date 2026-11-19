@@ -5439,6 +5439,9 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     position: relative;
     cursor: default !important;
 }
+.practice82-page #labelAutoRecord > .custom-tip-box {
+    text-align: left;
+}
 .practice82-page .p82-autostop-tip-host.p82-autostop-open:hover > .custom-tip-box {
     visibility: visible;
     opacity: 1;

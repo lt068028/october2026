@@ -11,6 +11,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  await p.goto('http://p82.test/practice8.2.html');
  eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
   eq(await p.locator('#labelAutoRecord .custom-tip-box').innerHTML(),'ON: Stops if no speech starts within 5 seconds, or after 2 seconds of silence following speech.<br>OFF: Use the stop button. All recordings stop after 20 seconds.','Autostop hover tooltip breaks before OFF');
+  eq(await p.locator('#labelAutoRecord .custom-tip-box').evaluate(el=>getComputedStyle(el).textAlign),'left','Autostop hover tooltip text is left-aligned');
  eq(await p.locator('.example-box').count(),4,'four Example groups');
  eq(await p.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent})),['お土産に、何か、買いますか。','はい、買います。','いいえ、何も、買いません。'],'Example 3 current-tense souvenir models');
  eq(await p.locator('#unlearnedCounts').textContent(),'ことば(1語) 漢字(3字)','Beyond L8 updated counts');
