@@ -693,7 +693,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       { key: 'casual', sel: '#speechStyleControl [data-value="casual"]', icon: 'homeFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'hover', sel: '#hintModeControl [data-value="hover"]', icon: 'chatHintHalfFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'paren', sel: '#hintModeControl [data-value="paren"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '24px', v: 'filled' },
-      { key: 'autostop', sel: '#labelAutoRecord', icon: 'stop', vb: '0 0 24 24', w: '24px', v: 'filled' },
+      { key: 'autostop', sel: '#labelAutoRecord', icon: 'micFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'autoplay', sel: '#labelAutoPlay', icon: 'playCircleHintHalfFilled', vb: '0 0 24 24', w: '24px', v: 'filled' }
     ];
 
@@ -720,11 +720,12 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const ziSvg = FI.create('localLanguageZi', 20);
     const hasLocalLanguageZi = Boolean(ziSvg?.querySelector('path')?.getAttribute('d'));
 
-    // Path sharing checks: Voice === speaker, Autostop === stop (regular), Autoplay === play (regular)
+    // Path checks: Voice === speaker, Autostop === official Mic 24 Filled, Autoplay === Play Circle Hint Half 24 Filled.
     const expectedBackD = FI.create('arrowHookDownLeft', 20).querySelector('path').getAttribute('d');
     const expectedBulbD = FI.create('lightbulbFilled', 20, '', 'filled').querySelector('path').getAttribute('d');
     const expectedSpeakerD = FI.create('speaker', 20).querySelector('path').getAttribute('d');
-    const expectedStopD = FI.create('stop', 20, '', 'filled').querySelector('path').getAttribute('d');
+    const expectedMicD = FI.create('micFilled', 20, '', 'filled').querySelector('path').getAttribute('d');
+    const expectedStopD = FI.PATHS.stop;
     const expectedPlayD = FI.create('playCircleHintHalfFilled', 20, '', 'filled').querySelector('path').getAttribute('d');
 
     const autostopD = document.querySelector('#labelAutoRecord svg path')?.getAttribute('d');
@@ -733,7 +734,6 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     // Phase C: colors, amber selection, button height and overlap
     const colorOf = v => { const pr = document.createElement('span'); pr.style.color = v; document.body.append(pr); const c = getComputedStyle(pr).color; pr.remove(); return c; };
     const svgColor = sel => getComputedStyle(document.querySelector(sel + ' svg')).color;
-    const realStopSvg = document.querySelector('.ex-audio-btn svg');
     const amber = 'rgb(251, 191, 36)';
     const segs = Array.from(document.querySelectorAll('.compact-settings .segmented-option'));
     const withIcon = segs.filter(b => b.querySelector('svg'));
@@ -751,6 +751,24 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       }
       return ok;
     });
+    const autoLabel = document.querySelector('#labelAutoRecord');
+    const autoIconRect = autoLabel?.querySelector('svg')?.getBoundingClientRect();
+    const autoTextNode = Array.from(autoLabel?.childNodes || []).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.includes('Autostop'));
+    let autoTextRect = null;
+    if (autoTextNode) {
+      const start = autoTextNode.textContent.indexOf('Autostop');
+      const range = document.createRange();
+      range.setStart(autoTextNode, start);
+      range.setEnd(autoTextNode, start + 'Autostop'.length);
+      autoTextRect = range.getBoundingClientRect();
+    }
+    const autoLabelRect = autoLabel?.getBoundingClientRect();
+    const autoSwitchRect = autoLabel?.parentElement.querySelector('.switch')?.getBoundingClientRect();
+    const autostopLabelLayoutOk = Boolean(autoIconRect && autoTextRect && autoLabelRect && autoSwitchRect)
+      && Math.abs(autoIconRect.width - 24) < 0.1
+      && Math.abs(autoIconRect.height - 24) < 0.1
+      && autoIconRect.right <= autoTextRect.left + 0.5
+      && autoLabelRect.right <= autoSwitchRect.left + 0.5;
     const selectedAmber = withIcon.filter(b => b.getAttribute('aria-pressed') === 'true').every(b => getComputedStyle(b.querySelector('svg')).color === amber);
     const unselectedNotAmber = withIcon.filter(b => b.getAttribute('aria-pressed') !== 'true').every(b => getComputedStyle(b.querySelector('svg')).color !== amber);
     const phaseC = {
@@ -759,7 +777,9 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       autostopAmber: svgColor('#labelAutoRecord') === amber,
       autoplayAmber: svgColor('#labelAutoPlay') === amber,
       bulbsAmber: descs.every(d => d.color === amber),
-      stopSameAsRealBtn: Boolean(realStopSvg),
+      micIconPathMatch: Boolean(autostopD && autostopD === expectedMicD),
+      stopKeyPreserved: Boolean(expectedStopD && FI.PATHS.stop === expectedStopD),
+      autostopLabelLayoutOk,
       heightOk, noOverlap, selectedAmber, unselectedNotAmber
     };
 
@@ -793,7 +813,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(fluentUiAudit.descsCount, 5, 'All 5 instruction blocks (Drills 1-4 and Drill 5 English cues) are present');
   eq(fluentUiAudit.descsMatch, true, 'All 5 instruction blocks use official Fluent Lightbulb 24 Filled SVG (20px) with no 💡 emoji');
   eq(fluentUiAudit.voiceMatch, true, 'Footer Voice label uses Fluent Speaker 2 24 Regular SVG identical to model audio button with no 🔊 emoji');
-  eq(fluentUiAudit.autostopSharesStop, true, 'Autostop icon shares exact Fluent Stop 24 Regular SVG path');
+  eq(fluentUiAudit.settings.find(s => s.key === 'autostop')?.dMatch, true, 'Autostop icon uses exact official Fluent Mic 24 Filled SVG path');
   eq(fluentUiAudit.autoplaySharesPlay, true, 'Autoplay icon uses exact Fluent Play Circle Hint Half 24 Filled SVG path');
   for (const s of fluentUiAudit.settings) {
     eq(s, {
@@ -807,7 +827,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       filled: s.key !== 'hiragana' && s.key !== 'kanji'
     }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
   }
-  eq(fluentUiAudit.phaseC, { removedKeys: true, preservedSharedKeys: true, autostopAmber: true, autoplayAmber: true, bulbsAmber: true, stopSameAsRealBtn: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Filled icons, safe key cleanup, amber bulbs/toggles/selected icons, preserved shared paths and layout');
+  eq(fluentUiAudit.phaseC, { removedKeys: true, preservedSharedKeys: true, autostopAmber: true, autoplayAmber: true, bulbsAmber: true, micIconPathMatch: true, stopKeyPreserved: true, autostopLabelLayoutOk: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Mic Filled path, preserved stop key, amber icons, and unchanged layout');
   await p.emulateMedia({ colorScheme: 'dark' });
   const darkAmberAudit = await p.evaluate(() => {
     const amber = 'rgb(251, 191, 36)';

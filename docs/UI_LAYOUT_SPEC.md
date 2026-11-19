@@ -220,7 +220,7 @@
 | ④ Speech Style — Casual | `Home 24 Filled` | `homeFilled` (`filled`) | `0 0 24 24` | — | `24×24px`（枠内最大） |
 | ④ Vocabulary Display — Hover | `Chat Hint Half 24 Filled` | `chatHintHalfFilled` (`filled`) | `0 0 24 24` | 約20 | `24×24px` |
 | ④ Vocabulary Display — Display | `Edit Line Horizontal 3 24 Filled` | `editLineHorizontal3Filled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px` |
-| ④ Autostop | `Stop 24 Filled`（録音停止ボタンと同一の四角Filledパス） | `stop` (`filled`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
+| ④ Autostop | `Mic 24 Filled` | `micFilled` (`filled`) | `0 0 24 24` | 20.00 | `24×24px`、アンバーゴールド（`#fbbf24`） |
 | ④ Autoplay | `Play Circle Hint Half 24 Filled` | `playCircleHintHalfFilled` (`filled`) | `0 0 24 24` | — | `24×24px`、アンバーゴールド（`#fbbf24`） |
 
 - Vocabulary Display の `OFF` はアイコンを置かずテキストのみとする。

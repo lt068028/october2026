@@ -162,7 +162,7 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
    - **Script Mode**：`Hiragana Only` ＝ `Translate 24 Regular`（`translate`、`24×24px`）、`With漢字` ＝ `Local Language 24 Regular`（`localLanguageGlobe`、`0 0 20 20`、`24×24px`；予備の `localLanguageZi` は保持）。
    - **Speech Style**：`Formal` ＝ `Building 24 Filled`（`buildingFilled`）、`Informal` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`）、`Casual` ＝ `Home 24 Filled`（`homeFilled`）（いずれも `24×24px`）。
    - **Vocabulary Display**：`OFF` ＝ アイコンなし、`Hover` ＝ `Chat Hint Half 24 Filled`（`chatHintHalfFilled`、`24×24px`）、`Display` ＝ `Edit Line Horizontal 3 24 Filled`（`editLineHorizontal3Filled`、`24×24px`）。
-   - **Autostop / Autoplay**：`Autostop` ＝ 録音停止ボタンと同一の `Stop 24 Filled`（`stop` filled、`24×24px`、アンバーゴールド `#fbbf24`）、`Autoplay` ＝ 録音再生ボタンと同一の `Play Circle Hint Half 24 Filled`（`playCircleHintHalfFilled`、`24×24px`、アンバーゴールド `#fbbf24`）。
+   - **Autostop / Autoplay**：`Autostop` ＝ `Mic 24 Filled`（`micFilled`、`24×24px`、アンバーゴールド `#fbbf24`）、`Autoplay` ＝ 録音再生ボタンと同一の `Play Circle Hint Half 24 Filled`（`playCircleHintHalfFilled`、`24×24px`、アンバーゴールド `#fbbf24`）。
 5. **サイズ・選択色**：全設定アイコンはボタン高さ・上下paddingを変えずに収まる最大の24pxとし、セグメントボタンの選択中アイコンは `#fbbf24` とする。非選択時の色・背景は変更しない。電球5箇所、Autostop、Autoplayは上の段の選択中アイコンと完全に同一のアンバーゴールド（`#fbbf24`）をLight/Dark問わず固定適用する。
 6. **無効化（`disabled`）ボタンからの禁止カーソル除外**：
    - 無効化状態（未選択時の Drill 3 回答側ボタン、未録音時の `Copy my sentences` ボタン、録音・再生中の排他ロック対象ボタン等）ではグレーアウト表現のみで状態を示し、`cursor: not-allowed` は使用しない（`cursor: default`）。

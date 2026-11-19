@@ -5650,8 +5650,8 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .compact-settings .segmented-option:is(.is-selected, .active, [aria-pressed="true"]) .p82-setting-icon {
     color: #fbbf24;
 }
-/* Autostop／Autoplayも説明文の電球・選択中アイコンと同一のアンバーゴールド（#fbbf24） */
-.practice82-page .compact-settings #labelAutoRecord .p82-setting-icon,
+/* Autostop Mic Filled／Autoplayも電球・選択中アイコンと同一のアンバーゴールド（#fbbf24） */
+.practice82-page .compact-settings #labelAutoRecord .p82-setting-icon.fluent-icon-micFilled,
 .practice82-page .compact-settings #labelAutoPlay .p82-setting-icon {
     color: #fbbf24;
 }
