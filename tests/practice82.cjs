@@ -525,14 +525,24 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       configurable: true
     });
   });
+  const idleListenColor = await p.locator('#drill1 .drill-listen-btn').first().evaluate(el => getComputedStyle(el).color);
   await p.locator('#drill1 .drill-listen-btn').first().click();
   await p.locator('#drill1 .p82-copy-button').click();
-  const ttsCopyRes = await p.evaluate(() => ({
-    copied: window.__copiedDuringTts.length > 0,
-    cancelCount: t.cancelCount,
-    stillPlaying: Boolean(document.querySelector('#drill1 .drill-listen-btn.is-playing'))
-  }));
-  eq(ttsCopyRes, { copied: true, cancelCount: 0, stillPlaying: true }, 'Copy during TTS playback succeeds without cancelling speechSynthesis');
+  const ttsCopyRes = await p.evaluate((expectedBtnColor) => {
+    const btn = document.querySelector('#drill1 .drill-listen-btn.is-playing');
+    const svg = btn?.querySelector('svg');
+    const path = svg?.querySelector('path');
+    const btnColor = btn ? getComputedStyle(btn).color : null;
+    const svgColor = svg ? getComputedStyle(svg).color : null;
+    const pathFill = path ? getComputedStyle(path).fill : null;
+    return {
+      copied: window.__copiedDuringTts.length > 0,
+      cancelCount: t.cancelCount,
+      stillPlaying: Boolean(btn),
+      stopUsesCurrentColor: Boolean(btn && svg && btnColor === expectedBtnColor && svgColor === expectedBtnColor && pathFill === expectedBtnColor && btnColor !== 'rgb(217, 48, 37)')
+    };
+  }, idleListenColor);
+  eq(ttsCopyRes, { copied: true, cancelCount: 0, stillPlaying: true, stopUsesCurrentColor: true }, 'Copy during TTS playback succeeds without cancelling speechSynthesis and playing Stop inherits currentColor without #d93025');
   await p.evaluate(() => { t.spoken.at(-1)?.onend?.(); });
 
   // Recorded Audio playback preservation during Copy
@@ -547,22 +557,39 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       configurable: true
     });
   });
+  const idlePlayRecColor = await p.locator('#drill1 .play-recording-btn').first().evaluate(el => getComputedStyle(el).color);
   await p.locator('#drill1 .play-recording-btn').first().click();
   await p.locator('#drill1 .p82-copy-button').click();
-  const audioCopyRes = await p.evaluate(() => {
+  const audioCopyRes = await p.evaluate((expectedBtnColor) => {
     const aud = t.audios.at(-1);
+    const btn = document.querySelector('#drill1 .play-recording-btn.is-playing');
+    const svg = btn?.querySelector('svg');
+    const path = svg?.querySelector('path');
+    const btnColor = btn ? getComputedStyle(btn).color : null;
+    const svgColor = svg ? getComputedStyle(svg).color : null;
+    const pathFill = path ? getComputedStyle(path).fill : null;
     return {
       copied: window.__copiedDuringAudio.length > 0,
       paused: aud ? aud.paused : true,
-      hasSrc: aud ? Boolean(aud.src) : false
+      hasSrc: aud ? Boolean(aud.src) : false,
+      stopUsesCurrentColor: Boolean(btn && svg && btnColor === expectedBtnColor && svgColor === expectedBtnColor && pathFill === expectedBtnColor && btnColor !== 'rgb(217, 48, 37)')
     };
-  });
-  eq(audioCopyRes, { copied: true, paused: false, hasSrc: true }, 'Copy during recorded Audio playback succeeds without pausing or resetting Audio');
+  }, idlePlayRecColor);
+  eq(audioCopyRes, { copied: true, paused: false, hasSrc: true, stopUsesCurrentColor: true }, 'Copy during recorded Audio playback succeeds and playing Stop inherits currentColor without #d93025');
   await p.evaluate(() => { t.audios.at(-1)?.onended?.(); });
 
-  // Recording exclusion: Copy button is disabled during recording
+  // Recording exclusion: Copy button is disabled during recording & manual recording Stop keeps #d93025
   await p.evaluate(() => { const cb = document.getElementById('toggleRecordMode'); if (cb.checked) cb.click(); }); // ensure Manual mode
   await p.locator('#drill1 .drill-record-btn').first().click();
+  const manualStopRed = await p.evaluate(() => {
+    const btn = document.querySelector('#drill1 .drill-record-btn.stop-btn-active');
+    const svg = btn?.querySelector('svg');
+    return {
+      btnColor: btn ? getComputedStyle(btn).color : null,
+      svgColor: svg ? getComputedStyle(svg).color : null
+    };
+  });
+  eq(manualStopRed, { btnColor: 'rgb(217, 48, 37)', svgColor: 'rgb(217, 48, 37)' }, 'Manual recording Stop button (.stop-btn-active) preserves #d93025');
   eq(await p.locator('#drill1 .p82-copy-button').isDisabled(), true, 'Copy button is disabled while recording');
   await p.locator('#drill1 .stop-btn-active').first().click();
   await p.evaluate(() => { const cb = document.getElementById('toggleRecordMode'); if (!cb.checked) cb.click(); }); // restore Autostop ON

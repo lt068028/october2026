@@ -308,11 +308,12 @@
   4. 標準ドイツ語（`de-DE`）
   5. 端末内の最初のドイツ語音声（`de-*`）
 
-### 7.2 透過的案内（無断フォールバックの禁止） 【実装済み】
-- 端末に選択地域（例: `de-AT`, `de-CH`）のネイティブ音声が存在しない場合、無言で他音声へフォールバックせず、フッターの `#voiceRegionNotice` にて端末状況と実際に使用する音声を明示する。
-- 端末にドイツ語音声が1件も存在しない場合は警告を表示する：
-  `⚠️ No German speech synthesis voice detected on this device. (Please verify your system TTS settings).`
-- 音声エラー発生時は無言で終了せず、`DrillAudio.notify()` を用いて画面上に明確な通知を行う。
+### 7.2 透過的案内と通知3段階分離（Info / Warning / Error） 【実装済み】
+- 通知は情報重要度に応じて **Info / Warning / Error の3段階**に分離し、`#voiceRegionNotice`（フッター）と `#germanTtsNotice`（上部専用バナー）の重複表示を防ぐ：
+  - **Info（`#voiceRegionNotice`）**：ドイツ語音声が1件以上存在する状態で、選択地域（`de-DE`, `de-AT`, `de-CH`）のネイティブ音声が端末にない場合のみ、使用音声と適用タグを明示する。Microsoft Fluent `Info 24 Regular`（`info`, `regular`、`20×20px`）、補助文字色 `var(--text-secondary)`、`role="status"`、`aria-live="polite"` を使用する。直接一致する音声がある場合、およびドイツ語音声が0件の場合は非表示とする。
+  - **Warning（`#germanTtsNotice`）**：ドイツ語音声が1件も検出できない起動時未検出（`German voice not detected`）および短時間無音終了疑い案内（`Can't hear the audio?`）を表示する。`Warning 24 Filled`（`warningFilled`, `filled`、`20×20px`）、左境界・アイコン色 `var(--warning-color)`（Light `#d97706` / Dark `#fbbf24`）、`role="status"`、`aria-live="polite"` を使用する。ドイツ語音声が利用可能になった場合は起動時通知を自動消去する。
+  - **Error（`#germanTtsNotice.is-error`）**：Speech Synthesis 非対応、再生エラー、開始タイムアウト等のエラーを表示する。`Error Circle 24 Filled`（`errorCircleFilled`, `filled`、`20×20px`）、赤系エラー強調、`.is-error`、`role="alert"`、`aria-live="assertive"` を用い、`showGermanTtsNotice()` で `type` に応じてアイコン・色・ARIA属性を同期切替する。
+- 音声エラー発生時は無言で終了せず、上記バナーを用いて画面上に明確な通知を行う。
 
 ---
 

@@ -1113,9 +1113,14 @@ function initGermanDrill() {
         const banner = document.getElementById("germanTtsNotice");
         if (!banner) return;
 
+        const iconEl = banner.querySelector(".german-tts-notice-icon");
         const titleEl = banner.querySelector(".german-tts-notice-title");
         const msgEl = banner.querySelector(".german-tts-notice-message");
 
+        if (iconEl && window.FluentIcons) {
+            const iconName = type === "error" ? "errorCircleFilled" : "warningFilled";
+            iconEl.replaceChildren(window.FluentIcons.create(iconName, 20, "uebung-warning-svg", "filled"));
+        }
         if (titleEl) titleEl.textContent = title;
         if (msgEl) msgEl.textContent = message;
 
@@ -1164,6 +1169,9 @@ function initGermanDrill() {
         const germanVoices = getGermanVoices();
         if (germanVoices.length > 0) {
             ttsStartupStatus = "available";
+            if (isDelayedCheck) {
+                updateVoiceSelector();
+            }
             if (currentNoticeKind === "startup") {
                 hideGermanTtsNotice();
             }
@@ -1265,21 +1273,25 @@ function initGermanDrill() {
         const hasDirectLocale = voices.some(v => normalizeLang(v.lang) === targetLocale);
 
         if (notice) {
-            const setWarningNotice = (msg) => {
+            const setInfoNotice = (msg) => {
                 notice.replaceChildren();
                 if (window.FluentIcons) {
-                    notice.append(window.FluentIcons.create("warningFilled", 20, "uebung-warning-svg", "filled"), document.createTextNode(" " + msg));
+                    notice.append(window.FluentIcons.create("info", 20, "uebung-info-svg", "regular"), document.createTextNode(" " + msg));
                 } else {
                     notice.textContent = msg;
                 }
+                notice.setAttribute("role", "status");
+                notice.setAttribute("aria-live", "polite");
                 notice.hidden = false;
             };
             if (!voices.length) {
-                setWarningNotice("No German speech synthesis voice detected on this device. (Please verify your system TTS settings).");
+                notice.replaceChildren();
+                notice.hidden = true;
             } else if (!hasDirectLocale) {
                 const label = currentVariety === "AT" ? "de-AT (Austria)" : (currentVariety === "CH" ? "de-CH (Switzerland)" : "de-DE (Germany)");
-                setWarningNotice(`No native ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`);
+                setInfoNotice(`No native ${label} voice detected on this device. Using ${chosen ? chosen.name : "system voice"} with ${targetLocaleForVariety(currentVariety)} tag.`);
             } else {
+                notice.replaceChildren();
                 notice.hidden = true;
             }
         }
@@ -2096,7 +2108,7 @@ function initGermanDrill() {
             cues.forEach(cell => {
                 const span = cell.querySelector(".cue-content") || cell;
                 const copy = span.cloneNode(true);
-                copy.querySelectorAll(".tooltip-tip, .custom-tip-box, .uebung-cue-alt-line").forEach(t => t.remove());
+                copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
                 Object.assign(copy.style, {
                     position: "absolute",
                     visibility: "hidden",
@@ -2113,7 +2125,7 @@ function initGermanDrill() {
                 if (w > max) max = w;
             });
             if (max > 0) {
-                section.style.setProperty("--drill-cue-width", `${Math.ceil(max) + 4}px`);
+                section.style.setProperty("--drill-cue-width", `${Math.ceil(max) + 8}px`);
             }
         });
     }

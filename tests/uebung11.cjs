@@ -1211,28 +1211,52 @@ async function runRecordingLifecycleTests() {
         await page.emulateMedia({ colorScheme: 'light' });
 
         // Drill 3-1 cue stack alignment (DE/AT/CH) & Part 2 settings/warning visual checks
+        const d1AlignRef = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const num = row?.querySelector('.drill-number-cell');
+            const btn = row?.querySelector('.drill-listen-btn');
+            const rr = row?.getBoundingClientRect();
+            const nr = num?.getBoundingClientRect();
+            const br = btn?.getBoundingClientRect();
+            return (rr && nr && br) ? { numTopOffset: nr.top - rr.top, btnTopOffset: br.top - rr.top } : null;
+        });
         const checkDrill3Alignment = async (varietyCode) => {
             await page.locator(`#germanVarietyControl button[data-value="${varietyCode}"]`).click();
             await page.clock.runFor(50);
-            return page.evaluate(() => {
-                const cueCell = document.querySelector('#drill3 .drill-row .drill-cue-cell');
+            return page.evaluate((ref) => {
+                const row = document.querySelector('#drill3 .drill-row');
+                const cueCell = row?.querySelector('.drill-cue-cell');
+                const numCell = row?.querySelector('.drill-number-cell');
+                const listenBtn = row?.querySelector('.drill-listen-btn');
                 const stack = cueCell?.querySelector('.uebung-cue-place-stack');
+                const rowRect = row?.getBoundingClientRect();
                 const stackRect = stack?.getBoundingClientRect();
                 const altText = stack?.querySelector('.uebung-cue-alt-text');
                 const altTextRect = altText?.getBoundingClientRect();
                 const flags = stack?.querySelector('.uebung-cue-alt-flags');
                 const flagsRect = flags?.getBoundingClientRect();
+                const numRect = numCell?.getBoundingClientRect();
+                const btnRect = listenBtn?.getBoundingClientRect();
+                const d3NumOffset = (rowRect && numRect) ? numRect.top - rowRect.top : -1;
+                const d3BtnOffset = (rowRect && btnRect) ? btnRect.top - rowRect.top : -1;
                 // Verify slash preceding the stack is strictly on line 1 above flagsRect.top
                 return {
                     aligned: stackRect && altTextRect ? Math.abs(stackRect.left - altTextRect.left) <= 1 : false,
                     flagsLeftOfText: flagsRect && altTextRect ? flagsRect.right <= altTextRect.left : false,
-                    altBelowLine1: stackRect && altTextRect && flagsRect ? (altTextRect.top > stackRect.top && flagsRect.top > stackRect.top) : false
+                    altBelowLine1: stackRect && altTextRect && flagsRect ? (altTextRect.top > stackRect.top && flagsRect.top > stackRect.top) : false,
+                    line1NumAligned: ref ? Math.abs(d3NumOffset - ref.numTopOffset) <= 2 : false,
+                    line1BtnAligned: ref ? Math.abs(d3BtnOffset - ref.btnTopOffset) <= 2 : false,
+                    speakerClearance: altTextRect && btnRect ? (altTextRect.right + 4 <= btnRect.left) : false
                 };
-            });
+            }, d1AlignRef);
         };
         for (const vCode of ['DE', 'AT', 'CH']) {
             const d3Check = await checkDrill3Alignment(vCode);
-            assert.deepEqual(d3Check, { aligned: true, flagsLeftOfText: true, altBelowLine1: true }, `Drill 3-1 (${vCode}) alt noun must align under line 1 noun with flags protruding cleanly left`);
+            assert.deepEqual(
+                d3Check,
+                { aligned: true, flagsLeftOfText: true, altBelowLine1: true, line1NumAligned: true, line1BtnAligned: true, speakerClearance: true },
+                `Drill 3-1 (${vCode}) alt noun must align cleanly with line-1 number/speaker alignment and >=4px speaker clearance`
+            );
         }
         await page.locator('#germanVarietyControl button[data-value="DE"]').click();
 
@@ -1243,13 +1267,25 @@ async function runRecordingLifecycleTests() {
             const inactiveFlagBtn = document.querySelector('#germanVarietyControl button[data-value="AT"]');
             const ttsWarnIcon = document.querySelector('#germanTtsNotice .fluent-icon-warningFilled.fluent-icon-filled');
             const hoverSvgRectColor = hoverIcon ? window.getComputedStyle(hoverIcon).color : null;
+            const voiceHelp = document.querySelector('.voice-help-icon');
+            const panelProbe = document.createElement('span');
+            panelProbe.style.backgroundColor = 'var(--bg-panel)';
+            const warnProbe = document.createElement('span');
+            warnProbe.style.color = 'var(--warning-color)';
+            document.body.append(panelProbe, warnProbe);
+            const panelBg = window.getComputedStyle(panelProbe).backgroundColor;
+            const warnTokenColor = window.getComputedStyle(warnProbe).color;
+            panelProbe.remove();
+            warnProbe.remove();
             return {
                 hoverIsFilled: Boolean(hoverIcon?.classList.contains('fluent-icon-chatHintHalfFilled')) && Boolean(hoverIcon?.classList.contains('fluent-icon-filled')),
                 hoverAmberColor: hoverSvgRectColor,
                 autostopAmberColor: autostopIcon ? window.getComputedStyle(autostopIcon).color : null,
                 inactiveFlagDimmed: inactiveFlag ? window.getComputedStyle(inactiveFlag).opacity === '0.55' : false,
                 inactiveBtnNotDimmed: inactiveFlagBtn ? window.getComputedStyle(inactiveFlagBtn).opacity === '1' : false,
-                hasFilledTtsWarning: Boolean(ttsWarnIcon)
+                hasFilledTtsWarning: Boolean(ttsWarnIcon),
+                voiceHelpBgMatchesPanel: voiceHelp ? window.getComputedStyle(voiceHelp).backgroundColor === panelBg : false,
+                warningTokenLight: warnTokenColor
             };
         });
         assert.equal(visualAudit.hoverIsFilled, true, 'Hover icon must use chatHintHalfFilled Filled icon');
@@ -1258,6 +1294,147 @@ async function runRecordingLifecycleTests() {
         assert.equal(visualAudit.inactiveFlagDimmed, true, 'Inactive flag SVG must be dimmed');
         assert.equal(visualAudit.inactiveBtnNotDimmed, true, 'Inactive variety button text must stay full opacity');
         assert.equal(visualAudit.hasFilledTtsWarning, true, '#germanTtsNotice must render warningFilled SVG');
+        assert.equal(visualAudit.voiceHelpBgMatchesPanel, true, '.voice-help-icon must use defined --bg-panel instead of undefined --bg-card');
+        assert.equal(visualAudit.warningTokenLight, 'rgb(217, 119, 6)', ':root --warning-color in light mode must be #d97706');
+
+        // Notice deduplication & 3-level transitions (Info / Warning / Error)
+        await page.evaluate(() => {
+            window.__origGetVoices = window.speechSynthesis.getVoices.bind(window.speechSynthesis);
+            window.speechSynthesis.getVoices = () => [];
+            window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
+        });
+        await page.clock.runFor(1100);
+        const zeroVoicesState = await page.evaluate(() => {
+            const banner = document.getElementById('germanTtsNotice');
+            const region = document.getElementById('voiceRegionNotice');
+            const icon = banner?.querySelector('.german-tts-notice-icon svg');
+            const cs = banner ? window.getComputedStyle(banner) : null;
+            return {
+                bannerHidden: banner?.hidden,
+                bannerHasIsError: banner?.classList.contains('is-error'),
+                bannerRole: banner?.getAttribute('role'),
+                bannerLive: banner?.getAttribute('aria-live'),
+                bannerIconWarning: Boolean(icon?.classList.contains('fluent-icon-warningFilled')),
+                bannerIconColor: icon ? window.getComputedStyle(icon).color : null,
+                bannerLeftBorderColor: cs?.borderLeftColor,
+                regionHidden: region?.hidden
+            };
+        });
+        assert.deepEqual(zeroVoicesState, {
+            bannerHidden: false,
+            bannerHasIsError: false,
+            bannerRole: 'status',
+            bannerLive: 'polite',
+            bannerIconWarning: true,
+            bannerIconColor: 'rgb(217, 119, 6)',
+            bannerLeftBorderColor: 'rgb(217, 119, 6)',
+            regionHidden: true
+        }, '0 German voices must show Warning only in #germanTtsNotice and hide #voiceRegionNotice');
+
+        await page.locator('#germanVarietyControl button[data-value="AT"]').click();
+        await page.evaluate(() => {
+            window.speechSynthesis.getVoices = () => [
+                { name: 'Mock German DE', lang: 'de-DE', default: false, localService: true, voiceURI: 'mock-de' }
+            ];
+            window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
+        });
+        await page.clock.runFor(50);
+        const infoNoticeState = await page.evaluate(() => {
+            const banner = document.getElementById('germanTtsNotice');
+            const region = document.getElementById('voiceRegionNotice');
+            const icon = region?.querySelector('svg');
+            const secProbe = document.createElement('span');
+            secProbe.style.color = 'var(--text-secondary)';
+            document.body.append(secProbe);
+            const secColor = window.getComputedStyle(secProbe).color;
+            secProbe.remove();
+            return {
+                bannerHidden: banner?.hidden,
+                regionHidden: region?.hidden,
+                regionRole: region?.getAttribute('role'),
+                regionLive: region?.getAttribute('aria-live'),
+                hasInfoRegularIcon: Boolean(icon?.classList.contains('fluent-icon-info')) && !Boolean(icon?.classList.contains('fluent-icon-filled')),
+                regionColorMatchesSecondary: region ? window.getComputedStyle(region).color === secColor : false
+            };
+        });
+        assert.deepEqual(infoNoticeState, {
+            bannerHidden: true,
+            regionHidden: false,
+            regionRole: 'status',
+            regionLive: 'polite',
+            hasInfoRegularIcon: true,
+            regionColorMatchesSecondary: true
+        }, 'Regional fallback with >=1 German voices must hide startup #germanTtsNotice and show #voiceRegionNotice as Info');
+
+        // Switching to matching variety hides #voiceRegionNotice
+        await page.locator('#germanVarietyControl button[data-value="DE"]').click();
+        assert.equal(await page.evaluate(() => document.getElementById('voiceRegionNotice')?.hidden), true, '#voiceRegionNotice must hide when native regional voice exists');
+
+        // Warning <-> Error state transition inside #germanTtsNotice
+        await page.locator('#drill1 .drill-row .drill-listen-btn').first().click();
+        await page.evaluate(() => {
+            const u = window.t.utterances.at(-1);
+            u?.onerror?.({ error: 'synthesis-failed' });
+        });
+        await page.clock.runFor(50);
+        const errorNoticeState = await page.evaluate(() => {
+            const banner = document.getElementById('germanTtsNotice');
+            const icon = banner?.querySelector('.german-tts-notice-icon svg');
+            return {
+                bannerHidden: banner?.hidden,
+                hasIsError: banner?.classList.contains('is-error'),
+                role: banner?.getAttribute('role'),
+                live: banner?.getAttribute('aria-live'),
+                hasErrorCircleFilled: Boolean(icon?.classList.contains('fluent-icon-errorCircleFilled')) && Boolean(icon?.classList.contains('fluent-icon-filled')),
+                iconColor: icon ? window.getComputedStyle(icon).color : null
+            };
+        });
+        assert.deepEqual(errorNoticeState, {
+            bannerHidden: false,
+            hasIsError: true,
+            role: 'alert',
+            live: 'assertive',
+            hasErrorCircleFilled: true,
+            iconColor: 'rgb(220, 38, 38)'
+        }, 'Error notice must switch icon to errorCircleFilled, apply .is-error and role=alert / aria-live=assertive');
+
+        // Transition back from Error to Warning
+        await page.evaluate(() => {
+            window.speechSynthesis.getVoices = () => [];
+            window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
+        });
+        await page.clock.runFor(1100);
+        const revertedWarningState = await page.evaluate(() => {
+            const banner = document.getElementById('germanTtsNotice');
+            const icon = banner?.querySelector('.german-tts-notice-icon svg');
+            const region = document.getElementById('voiceRegionNotice');
+            return {
+                bannerHidden: banner?.hidden,
+                hasIsError: banner?.classList.contains('is-error'),
+                role: banner?.getAttribute('role'),
+                live: banner?.getAttribute('aria-live'),
+                hasWarningFilled: Boolean(icon?.classList.contains('fluent-icon-warningFilled')),
+                regionHidden: region?.hidden
+            };
+        });
+        assert.deepEqual(revertedWarningState, {
+            bannerHidden: false,
+            hasIsError: false,
+            role: 'status',
+            live: 'polite',
+            hasWarningFilled: true,
+            regionHidden: true
+        }, 'Warning restoration after Error must remove .is-error and restore warningFilled, status/polite, and hide #voiceRegionNotice');
+
+        // Restore original getVoices cleanly
+        await page.evaluate(() => {
+            if (window.__origGetVoices) {
+                window.speechSynthesis.getVoices = window.__origGetVoices;
+                delete window.__origGetVoices;
+            }
+            window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
+        });
+        await page.clock.runFor(50);
 
         // --- Scenario 20e: Recognized STT without audio volume threshold does NOT false-timeout at 5s ---
         await page.evaluate(() => {

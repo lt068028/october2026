@@ -258,13 +258,18 @@
 ### 13.3 音声再生ボタンの再生中表示・ホバー・排他状態
 
 - `Auto-Compare`設定アイコンと録音再生ボタンは、Microsoft Fluent `Play Circle 24 Regular`（`playCircle`、`regular`）を使用する。モデル音声の通常再生ボタンは既存のスピーカーアイコンを維持する。既存ボタンの寸法・クリック領域・配置は維持し、アイコン変更だけを理由に拡大縮小しない。
-- モデル音声または録音音声の再生中は、該当ボタンを `Stop 24 Regular`（`stop`、`regular`）へ切り替え、通常のアイコン文字色（`currentColor`）で表示する。Filled variantや赤色・警告色による強調は使用しない。再生中に `Playing...` という文字表示は使用しない。
-- 本規則は**再生中の停止操作**だけに適用する。Manual録音中の停止ボタン、およびAutostop録音中の波形・録音状態表示は別機能として扱い、現行の明確な停止表示を弱めない。
+- モデル音声または録音音声の再生中は、該当ボタンを `Stop 24 Regular`（`stop`、`regular`）へ切り替え、通常のアイコン文字色（`currentColor`）で表示する。Filled variantや赤色（`#d93025` 等）・警告色による強調は、共通ルール・ページ固有ルール（Practice 8.2の `.drill-listen-btn.is-playing` / `.play-recording-btn.is-playing` 等）のいずれにおいても使用しない。再生中に `Playing...` という文字表示は使用しない。
+- 本規則は**再生中の停止操作**だけに適用する。Manual録音中の停止ボタン（`.drill-record-btn.stop-btn-active` での `#d93025` 赤色強調）、およびAutostop録音中の波形・録音状態表示は別機能として扱い、現行の明確な停止表示を弱めない。
 - 停止操作を警告・主要アクションのように過度に強調せず、教材や学習者の発話へ注意を向ける。ボタン寸法とクリック領域は維持する。
 - 通常時のモデル音声／録音音声ボタンの操作ガイドは、Exampleまたは最初の設問行だけに表示し、同じリストの2行目以降には表示しない。これは音声ボタンの通常ガイドに限る。
 - Auto-Compare ONでモデル音声→録音音声のリレー再生中は、通常の1行目限定ルールの例外とし、リレーに参加する停止操作部にAuto-CompareがONであることを知らせる説明を表示する。説明の表示位置は操作対象の行に合わせる。
 - 他の音源が再生中のため操作できない音声ボタンは、§13.2に従いグレーアウト・disabledで示し、禁止カーソルは使わない。
 - 再生ボタンと停止アイコンの外観規則はGlobal Settingsの有無や言語にかかわらず、同じ音声操作UIを採用するページに適用する。
+
+### 13.4 状態通知アイコンと共通状態色トークン（`--warning-color`）
+
+- 共通 `:root` トークンとして `--warning-color` を正式定義する（Light `#d97706` / Dark `#fbbf24`）。未定義変数（`--bg-card`・`--muted-text` 等）は使用せず、パネル背景には `--bg-panel`、補助文言（Info等）には `--text-secondary` を使用する。
+- 通知の3段階アイコンは Microsoft Fluent UI System Icons（`fluent-icons.js`）を使用する：**Info**＝`Info 24 Regular`（`info`, `regular`、`var(--text-secondary)`、`role="status"` / `aria-live="polite"`）、**Warning**＝`Warning 24 Filled`（`warningFilled`, `filled`、`var(--warning-color)`、`role="status"` / `aria-live="polite"`）、**Error**＝`Error Circle 24 Filled`（`errorCircleFilled`, `filled`、`role="alert"` / `aria-live="assertive"`）。
 
 ## 14. ページ固有仕様への参照
 
