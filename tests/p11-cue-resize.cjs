@@ -9,18 +9,28 @@ const observations=[],failures=[];let checks=0;
 function check(ok,label,details){checks++;if(!ok)failures.push({label,details});}
 async function geometry(p){await h.settle(p);return p.evaluate(()=>{
  const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,right:r.right,bottom:r.bottom};};
+ const intrinsic=e=>{const c=e.cloneNode(true),s=getComputedStyle(e);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(e=>e.remove());Object.assign(c.style,{position:'absolute',visibility:'hidden',display:s.display.includes('flex')?'inline-flex':s.display.includes('grid')?'inline-grid':'inline-block',width:'max-content',minWidth:'0',maxWidth:'none',whiteSpace:'nowrap',flexWrap:'nowrap'});e.parentElement.append(c);const w=c.getBoundingClientRect().width;c.remove();return w;};
  const examples=[...document.querySelectorAll('.drill-example-table tr')].map(row=>{const c=row.children[1],table=row.closest('table');return {card:box(table.closest('.example-box')),table:box(table),tracks:getComputedStyle(table).gridTemplateColumns,cue:box(c),words:[...c.querySelectorAll('.target-word')].map(w=>{const r=document.createRange();r.selectNodeContents(w);return {text:w.textContent,rects:[...r.getClientRects()].map(x=>({x:x.x,y:x.y,w:x.width,h:x.height}))};})};});
- const drills=[...document.querySelectorAll('.recording-table.content-record-grid')].map(t=>({table:box(t),layout:t.dataset.contentLayout,tracks:getComputedStyle(t).gridTemplateColumns,cells:[...t.querySelectorAll('td')].map(c=>({role:c.dataset.contentCell,rect:box(c)}))}));
- return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth+1,examples,drills};
+ const drillTables=[...document.querySelectorAll('.recording-table.content-record-grid')];
+ const drills=drillTables.map(t=>({table:box(t),layout:t.dataset.contentLayout,tracks:getComputedStyle(t).gridTemplateColumns,cells:[...t.querySelectorAll('td')].map(c=>({role:c.dataset.contentCell,rect:box(c)}))}));
+ const metrics=drillTables.map(t=>{
+  const cues=[...t.querySelectorAll('td.prompt-label,td.drill-cue-cell')],controls=[...t.querySelectorAll('.recording-controls')].map(e=>e.closest('td')).filter(e=>e.querySelector('.recording-actions')),numbers=[...t.querySelectorAll('.drill-number-cell,.p73-number')];
+  const number=parseFloat(getComputedStyle(t).getPropertyValue('--content-number-width'))||Math.max(0,...numbers.map(intrinsic));
+  const cue=cues.length?Math.max(...cues.map(intrinsic)):0;
+  const actions=controls.length?Math.max(...controls.map(e=>{const s=getComputedStyle(e);return intrinsic(e.querySelector('.recording-actions'))+parseFloat(s.paddingLeft)+parseFloat(s.paddingRight);})):0;
+  return {available:t.clientWidth,needed:number+cue+actions+(number>0?8:4)};
+ });
+ return {width:innerWidth,overflow:document.documentElement.scrollWidth>innerWidth+1,examples,drills,metrics};
  });}
 function audit(g,key){check(!g.overflow,key+' page fits');for(const e of g.examples){const track=parseFloat(e.tracks.split(' ')[1]);check(Math.abs(e.cue.w-track)<1,key+' actual Example cue fills track',{track,cell:e.cue.w});check(e.cue.right<=e.table.right+1,key+' Example cue fits');for(const w of e.words)check(new Set(w.rects.map(r=>Math.round(r.y))).size<=1,key+' Japanese word intact',w);}for(const t of g.drills)check(t.cells.every(c=>!!c.role),key+' every recording cell classified',t);}
-function signature(g){return JSON.stringify({examples:g.examples,drills:g.drills},(k,v)=>typeof v==='number'?Math.round(v*10)/10:v);}
+function roundJson(v){return JSON.stringify(v,(k,x)=>typeof x==='number'?Math.round(x*10)/10:x);}
 async function state(p){return p.evaluate(()=>({forms:[...document.querySelectorAll('input,select,textarea')].map(e=>[e.id,e.value,e.checked,e.disabled]),saved:JSON.stringify(practice1State.savedResults),recordings:JSON.stringify(practice1State.audioUrls),results:[...document.querySelectorAll('.recording-result')].map(e=>e.innerHTML)}));}
 (async()=>{fs.mkdirSync(out,{recursive:true});const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
 try{for(const mode of (process.env.STATE_ONLY?[]:['hiragana','kanji']))for(const hint of ['off','hover','paren']){
  const p=await h.open(b,'practice1.1',root);await h.settings(p,mode,hint,'formal');
- const fresh=new Map();for(const width of [...new Set(widths)]){const q=await h.open(b,'practice1.1',root);await q.setViewportSize({width,height:1100});await h.settings(q,mode,hint,'formal');fresh.set(width,signature(await geometry(q)));await q.close();}
- for(const width of widths){await p.setViewportSize({width,height:1100});const g=await geometry(p),key=[mode,hint,width].join('/');audit(g,key);check(signature(g)===fresh.get(width),key+' resize equals fresh load');observations.push({key,...g});}
+ const fresh=new Map();for(const width of [...new Set(widths)]){const q=await h.open(b,'practice1.1',root);await q.setViewportSize({width,height:1100});await h.settings(q,mode,hint,'formal');const fg=await geometry(q);fresh.set(width,{examples:roundJson(fg.examples),drills:roundJson(fg.drills),drillList:fg.drills});await q.close();}
+ let prevLayouts=null;
+ for(const width of widths){await p.setViewportSize({width,height:1100});const g=await geometry(p),key=[mode,hint,width].join('/'),f=fresh.get(width);audit(g,key);check(roundJson(g.examples)===f.examples,key+' examples equal fresh load');const inHyst=prevLayouts&&g.metrics.map((m,i)=>prevLayouts[i]&&m.needed>m.available-25&&m.needed<=m.available+.25);if(inHyst&&inHyst.some(Boolean)){for(const [ti,d]of g.drills.entries()){if(inHyst[ti]){check(d.layout===prevLayouts[ti],key+' drill '+ti+' keeps hysteresis layout',{expected:prevLayouts[ti],actual:d.layout,metric:g.metrics[ti]});}else{check(d.layout===f.drillList[ti].layout&&d.tracks===f.drillList[ti].tracks,key+' drill '+ti+' matches fresh outside hysteresis',{fresh:f.drillList[ti].layout,actual:d.layout,metric:g.metrics[ti]});}}}else{check(roundJson(g.drills)===f.drills,key+' resize equals fresh load');}prevLayouts=g.drills.map(d=>d.layout);observations.push({key,...g});}
  if(mode==='hiragana'&&hint==='hover'){await p.setViewportSize({width:1363,height:1100});await geometry(p);await p.locator('.example-box').first().screenshot({path:path.join(out,'p11-example-1363.png')});await p.setViewportSize({width:375,height:1100});await geometry(p);await p.locator('.example-box').first().screenshot({path:path.join(out,'p11-example-375.png')});}
  console.log('RESIZE',mode,hint);await p.close();
 }
