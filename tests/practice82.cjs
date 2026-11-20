@@ -7,10 +7,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];let count=0;
  const eq=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
  p.on('pageerror',e=>errors.push(e.message));await p.addInitScript('('+mock.trim()+')();');
- await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText,diffTokens,findDiff};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
+ await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText,diffTokens,findDiff,render};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
  await p.goto('http://p82.test/practice8.2.html');
  eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
-  eq(await p.locator('#labelAutoRecord .custom-tip-box').innerHTML(),'ON: Stop automatically after 2s of silence.<br>OFF: Use the stop button.','Autostop hover tooltip breaks before OFF');
+  eq(await p.locator('#labelAutoRecord .custom-tip-box').innerHTML(),'ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.','Autostop hover tooltip breaks before OFF');
   eq(await p.locator('#labelAutoRecord .custom-tip-box').evaluate(el=>getComputedStyle(el).textAlign),'left','Autostop hover tooltip text is left-aligned');
  eq(await p.locator('.example-box').count(),4,'four Example groups');
  eq(await p.locator('#drill3 .example-box .p81-model').evaluateAll(es=>es.map(e=>{const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());return c.textContent})),['お土産に、何か、買いますか。','はい、買います。','いいえ、何も、買いません。'],'Example 3 current-tense souvenir models');
@@ -1235,6 +1235,162 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const manualToggle = document.getElementById('toggleRecordMode');
     if (manualToggle?.checked) manualToggle.click();
   });
+
+  // D. Practice 8.2 25px hysteresis and mixed-group (inline + stacked) track isolation
+  await p.setViewportSize({ width: 1280, height: 1000 });
+  await p.waitForTimeout(100);
+  const d1Hyst = await p.evaluate(() => {
+    const intrinsic = (el) => {
+      const c = el.cloneNode(true), s = getComputedStyle(el);
+      c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x => x.remove());
+      Object.assign(c.style, { position: 'absolute', visibility: 'hidden', display: s.display.includes('flex') ? 'inline-flex' : 'inline-block', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap', flexWrap: 'nowrap' });
+      el.parentElement.append(c);
+      const w = c.getBoundingClientRect().width;
+      c.remove();
+      return w;
+    };
+    const sec = document.getElementById('drill1');
+    const card = sec.querySelector('.p81-card');
+    const tbl = card.querySelector('table.recording-table.p81-table');
+    const numW = parseFloat(getComputedStyle(tbl).getPropertyValue('--content-number-width')) || intrinsic(tbl.querySelector('.drill-number-cell'));
+    const cueW = intrinsic(tbl.querySelector('.prompt-label'));
+    const ctrlTd = tbl.querySelector('.p81-controls');
+    const ctrlS = getComputedStyle(ctrlTd);
+    const actW = intrinsic(ctrlTd.querySelector('.recording-actions')) + parseFloat(ctrlS.paddingLeft) + parseFloat(ctrlS.paddingRight);
+    const needed = numW + cueW + actW + 8;
+    const chrome = card.offsetWidth - tbl.clientWidth;
+    return { needed, chrome };
+  });
+  const setDrill1Width = async (w) => {
+    await p.evaluate((widthPx) => {
+      const sec = document.getElementById('drill1');
+      sec.style.width = widthPx ? `${widthPx}px` : '';
+    }, w);
+    await p.waitForTimeout(120);
+  };
+  await setDrill1Width(Math.round(d1Hyst.needed + d1Hyst.chrome + 60));
+  eq(await p.locator('#drill1 .p81-card table').first().getAttribute('data-content-layout'), 'inline',
+    'P8.2 starts inline when available width clears needed width');
+  await setDrill1Width(Math.round(d1Hyst.needed + d1Hyst.chrome - 10));
+  eq(await p.locator('#drill1 .p81-card table').first().getAttribute('data-content-layout'), 'stacked',
+    'P8.2 switches to stacked when cue exceeds room');
+  await setDrill1Width(Math.round(d1Hyst.needed + d1Hyst.chrome + 10));
+  eq(await p.locator('#drill1 .p81-card table').first().getAttribute('data-content-layout'), 'stacked',
+    'P8.2 25px hysteresis keeps stacked inside [needed, needed + 25) band');
+  await setDrill1Width(Math.round(d1Hyst.needed + d1Hyst.chrome + 35));
+  eq(await p.locator('#drill1 .p81-card table').first().getAttribute('data-content-layout'), 'inline',
+    'P8.2 restores inline once available width exceeds needed + 25px');
+  await setDrill1Width(null);
+
+  // Mixed group (inline + stacked) --content-cue-width track isolation on Drill 3
+  const d3MixInfo = await p.evaluate(() => {
+    const intrinsic = (el) => {
+      const c = el.cloneNode(true), s = getComputedStyle(el);
+      c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x => x.remove());
+      Object.assign(c.style, { position: 'absolute', visibility: 'hidden', display: s.display.includes('flex') ? 'inline-flex' : 'inline-block', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap', flexWrap: 'nowrap' });
+      el.parentElement.append(c);
+      const w = c.getBoundingClientRect().width;
+      c.remove();
+      return w;
+    };
+    const cards = [...document.querySelectorAll('#drill3 .p81-card')];
+    const stats = cards.map(card => {
+      const tbl = card.querySelector('table.recording-table.p81-table');
+      const numW = parseFloat(getComputedStyle(tbl).getPropertyValue('--content-number-width')) || 0;
+      const cueW = Math.max(...[...tbl.querySelectorAll('.prompt-label')].map(intrinsic));
+      const actW = Math.max(...[...tbl.querySelectorAll('.p81-controls')].map(td => {
+        const cs = getComputedStyle(td);
+        return intrinsic(td.querySelector('.recording-actions')) + parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+      }));
+      return { needed: numW + cueW + actW + 8, cueW, chrome: card.offsetWidth - tbl.clientWidth };
+    });
+    const sorted = [...stats].sort((a, b) => a.needed - b.needed);
+    return { min: sorted[0], max: sorted[sorted.length - 1] };
+  });
+  const midMixWidth = Math.round(d3MixInfo.min.needed + (d3MixInfo.max.needed - d3MixInfo.min.needed) * 0.5 + d3MixInfo.min.chrome);
+  await p.evaluate((w) => { document.getElementById('drill3').style.width = `${w}px`; }, midMixWidth);
+  await p.waitForTimeout(120);
+  const mixCheck = await p.evaluate(() => {
+    const intrinsic = (el) => {
+      const c = el.cloneNode(true), s = getComputedStyle(el);
+      c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x => x.remove());
+      Object.assign(c.style, { position: 'absolute', visibility: 'hidden', display: 'inline-block', width: 'max-content', minWidth: '0', maxWidth: 'none', whiteSpace: 'nowrap' });
+      el.parentElement.append(c);
+      const w = c.getBoundingClientRect().width;
+      c.remove();
+      return w;
+    };
+    const tables = [...document.querySelectorAll('#drill3 .p81-card table.recording-table.p81-table')];
+    const inlineTbls = tables.filter(t => t.dataset.contentLayout === 'inline');
+    const stackedTbls = tables.filter(t => t.dataset.contentLayout === 'stacked');
+    const maxInlineCue = Math.max(...inlineTbls.flatMap(t => [...t.querySelectorAll('.prompt-label')].map(intrinsic)));
+    const maxStackedCue = Math.max(...stackedTbls.flatMap(t => [...t.querySelectorAll('.prompt-label')].map(intrinsic)));
+    const inlineTracks = inlineTbls.map(t => parseFloat(t.style.getPropertyValue('--content-cue-width')));
+    return {
+      hasInline: inlineTbls.length > 0,
+      hasStacked: stackedTbls.length > 0,
+      trackMatchesInlineOnly: inlineTracks.every(tr => Math.abs(tr - maxInlineCue) < 1 && tr < maxStackedCue)
+    };
+  });
+  eq(mixCheck, { hasInline: true, hasStacked: true, trackMatchesInlineOnly: true },
+    'Mixed inline+stacked group computes --content-cue-width exclusively from inline tables');
+  await p.evaluate(() => { document.getElementById('drill3').style.width = ''; });
+  await p.waitForTimeout(100);
+
+  // E. Low-volume STT validity boundary (5 patterns: "...", "、。", "   ", "★♪", valid text)
+  await p.evaluate(() => {
+    const manualToggle = document.getElementById('toggleRecordMode');
+    if (manualToggle?.checked) manualToggle.click();
+    const autoToggle = document.getElementById('togglePlaybackMode');
+    if (autoToggle && !autoToggle.checked) autoToggle.click();
+    t.speaking = false;
+  });
+  const eRow = p.locator('[data-row="any-1-a"]');
+  for (const invalidStt of ['...', '、。', '   ', '★♪']) {
+    const recCount = await p.evaluate(() => t.recognitions.length);
+    const spokenCount = await p.evaluate(() => t.spoken.length);
+    await eRow.locator('.drill-record-btn').click();
+    await p.waitForFunction((n) => t.recognitions.length > n, recCount);
+    await p.waitForTimeout(400);
+    await p.evaluate((txt) => {
+      const res = [{ transcript: txt }];
+      res.isFinal = true;
+      t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+    }, invalidStt);
+    await p.waitForTimeout(4900);
+    eq(await eRow.locator('.stop-btn-active').count(), 0,
+      `Invalid low-vol STT ${JSON.stringify(invalidStt)} triggers 5s timeout`);
+    eq((await eRow.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), true,
+      `Invalid low-vol STT ${JSON.stringify(invalidStt)} shows 5s timeout message`);
+    eq(await p.evaluate(() => audit82.saved.has('any-1-a:fixed')), false,
+      `Invalid low-vol STT ${JSON.stringify(invalidStt)} does not save audio`);
+    eq(await eRow.locator('.play-recording-btn').count(), 0,
+      `Invalid low-vol STT ${JSON.stringify(invalidStt)} renders no play button`);
+    eq(await p.evaluate(() => t.spoken.length), spokenCount,
+      `Invalid low-vol STT ${JSON.stringify(invalidStt)} triggers no Auto-Compare relay`);
+  }
+
+  const validRecCount = await p.evaluate(() => t.recognitions.length);
+  const validSpokenBefore = await p.evaluate(() => t.spoken.length);
+  await eRow.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, validRecCount);
+  await p.waitForTimeout(400);
+  await p.evaluate(() => {
+    const res = [{ transcript: '何か食べます' }];
+    res.isFinal = true;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await p.waitForTimeout(4900);
+  eq(await eRow.locator('.stop-btn-active').count(), 1, 'Valid Japanese low-vol STT bypasses 5s timeout');
+  await eRow.locator('.stop-btn-active').click();
+  await p.waitForFunction(() => audit82.saved.has('any-1-a:fixed'));
+  await p.waitForFunction((n) => t.spoken.length > n, validSpokenBefore);
+  eq(await p.evaluate(() => audit82.saved.get('any-1-a:fixed')?.raw), '何か食べます', 'Valid Japanese low-vol STT saves raw transcript');
+  eq(await eRow.locator('.play-recording-btn').count(), 1, 'Valid Japanese low-vol STT renders playback button');
+  const eAudioBefore = await p.evaluate(() => t.audios.length);
+  await p.evaluate(() => { t.spoken.at(-1).onend?.(); });
+  await p.waitForFunction((n) => t.audios.length > n, eAudioBefore);
+  await p.evaluate(() => { t.audios.at(-1).onended?.(); });
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

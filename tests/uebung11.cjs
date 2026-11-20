@@ -38,6 +38,7 @@ assert.ok(html.includes('uebung1.1.js'), 'HTML must load uebung1.1.js');
 const css = fs.readFileSync(cssPath, 'utf8');
 const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
 const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
+const js = fs.readFileSync(jsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
 assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
 assert.ok(!js.includes('drill-stop-btn') && !js.includes('data-stop'), 'Must remove 3rd stop button completely in favor of 2-button layout');
@@ -55,10 +56,9 @@ assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result {
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result .feedback-retry-label'), 'CSS must style inline Keep going! retry label');
 assert.ok(css.includes('.uebung11-page .uebung-regional-note'), 'style.css must have simple regional note rules');
 assert.ok(css.includes('color: var(--text-secondary);'), 'Regional note must use Option 1 --text-secondary color');
-assert.ok(!css.includes('.uebung-supplement-badge'), 'style.css must not use legacy .uebung-supplement-badge pill');
+assert.ok(!html.includes('uebung-supplement-badge') && !js.includes('uebung-supplement-badge'), 'HTML and JS must not use legacy .uebung-supplement-badge pill');
 
 // 5. Check JS code contract
-const js = fs.readFileSync(jsPath, 'utf8');
 
 // 5.1 Drills data check: 4 drills, each with 1 Ex and 3 Items
 const expectedDrillTitles = [
@@ -354,7 +354,12 @@ drillsData.forEach((drill, dIdx) => {
 
 // C: Playback generation and order in playRecording
 assert.ok(js.includes('let playbackGeneration = 0;'), 'Must track playbackGeneration');
-assert.ok(js.includes('if (btn) markPlaying(btn);\n        activeAudio = audio;'), 'playRecording must call markPlaying before setting activeAudio');
+const playRecordingStart = js.indexOf('function playRecording(');
+const playRecordingEnd = js.indexOf('function record(', playRecordingStart);
+const playRecordingBody = playRecordingStart >= 0 && playRecordingEnd > playRecordingStart ? js.slice(playRecordingStart, playRecordingEnd) : '';
+const markPlayingPos = playRecordingBody.indexOf('if (btn) markPlaying(btn);');
+const activeAudioPos = playRecordingBody.indexOf('activeAudio = audio;');
+assert.ok(markPlayingPos >= 0 && activeAudioPos > markPlayingPos, 'playRecording must call markPlaying before setting activeAudio');
 
 // D: Empty STT discards audio without saving
 assert.ok(js.includes('if (raw && normRaw && hasValidAudio)'), 'Empty STT must not create Blob URL');
@@ -362,7 +367,7 @@ assert.ok(!js.includes('unrecognized: true'), 'Empty STT must not save unrecogni
 
 // E: Icons (playCircle normal, stop regular & currentColor)
 assert.ok(js.includes('FluentIcons.create("playCircle", 20)'), 'Recording playback button must use playCircle icon');
-assert.ok(js.includes('FluentIcons.create("stop", 20, "", "regular")'), 'Playing stop icon must use regular variant');
+assert.ok(js.includes('setButtonAudioIcon(b, "stop", "regular")') && js.includes('FluentIcons.create(iconName, 20, "", variant)'), 'Playing stop icon must use regular variant via setButtonAudioIcon');
 assert.ok(css.includes('.uebung11-page .play-recording-btn .fluent-icon-stop {\n    color: currentColor;'), 'Playing stop icon must use currentColor');
 
 // F: Copy my sentences with keepPlayback & markers
@@ -699,17 +704,22 @@ async function runRecordingLifecycleTests() {
         assert.ok(resText1.includes('No speech detected within 5 seconds.'), 'S1: Shows 5s timeout message');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S1: No play button saved');
 
-        // --- Scenario 2: Autostop OFFで未発話5秒停止 ---
+        // --- Scenario 2: Autostop OFF（Manual）で未発話5秒タイムアウトが発動しない ---
         await clickRecord(true); // Manual
         assert.ok(await isRecording(), 'S2: Recording started in Autostop OFF');
         await advanceToElapsed(4800);
         assert.ok(await isRecording(), 'S2: Still recording at 4.8s in Manual');
-        await advanceToElapsed(5100);
+        await advanceToElapsed(5500);
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'S2: Stopped at 5.0s timeout in Manual');
+        assert.ok(await isRecording(), 'S2: Still recording past 5.0s in Manual without speech');
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S2: Stops on manual stop button click');
         const resText2 = await getResult().textContent();
-        assert.ok(resText2.includes('No speech detected within 5 seconds.'), 'S2: Shows 5s timeout message');
-        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S2: No play button saved');
+        assert.ok(!resText2.includes('No speech detected within 5 seconds.'), 'S2: Does not show 5s timeout message in Manual');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S2: No play button saved without speech');
 
         // --- Scenario 3: onspeechstart先行でも5秒タイムアウトが成立 ---
         // (SpeechRecognition mock automatically dispatches onspeechstart at 50ms)
@@ -721,16 +731,30 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'S3: Auto-stopped at 5s timeout despite onspeechstart');
         assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S3: 5s timeout message');
 
-        // --- Scenario 4: onresult先行でも5秒タイムアウトが成立 ---
+        // --- Scenario 4: onresult単独は2秒無音停止を起こさず、有効STTは5秒保護・無効STTは5秒停止 ---
         await clickRecord(false);
-        // Early onresult without microphone volume activity
+        // Early valid onresult without microphone volume activity
         await page.clock.runFor(200);
         await triggerRecognition('Frühzeitiger Text');
         await page.clock.runFor(2500); // Past 2s from onresult
         assert.ok(await isRecording(), 'S4: onresult alone without mic volume does NOT trigger 2s silence stop');
+        await advanceToElapsed(5200);
+        await page.clock.runFor(100);
+        assert.ok(await isRecording(), 'S4: Recognized STT protects against 5.0s timeout');
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S4: Stopped cleanly via manual stop after valid STT');
+
+        // Whitespace-only onresult without mic volume still times out at 5.0s
+        await clickRecord(false);
+        await page.clock.runFor(200);
+        await triggerRecognition('   ');
         await advanceToElapsed(5100);
         await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'S4: Stops at 5.0s timeout');
+        assert.ok(!(await isRecording()), 'S4b: Whitespace-only onresult still stops at 5.0s timeout');
+        assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S4b: Shows 5s timeout message');
 
         // --- Scenario 5: Autostop ONで発話後2秒無音停止 ---
         await clickRecord(false);
@@ -1531,6 +1555,15 @@ async function runRecordingLifecycleTests() {
         assert.equal(feedbackSize, '18.2px', 'Answer feedback (.correction-box) must be 18.2px');
 
         // --- Scenario 22: Content-Width-First Layout, 25px Hysteresis, and Non-Destructive Resize ---
+        await setSpeaking(true);
+        await clickRecord(false);
+        await page.clock.runFor(400);
+        await triggerRecognition('Ich fliege nach Köln.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        assert.equal(await page.locator('#drill1 .drill-row .play-recording-btn').first().count(), 1,
+            'Scenario 22 setup creates saved playback button before resize checks');
+
         await page.setViewportSize({ width: 650, height: 800 });
         await page.clock.runFor(100);
         const d11LayoutParams = await page.evaluate(() => {

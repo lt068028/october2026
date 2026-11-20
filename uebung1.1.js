@@ -1891,12 +1891,14 @@ function initGermanDrill() {
         }
 
         // Watchdog timers
-        // 1. 5s limit before speech starts (Autostop ON/OFF common)
-        s.timers.push(setTimeout(() => {
-            if (!s.speechStarted && !hasRecognizedText()) {
-                s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
-            }
-        }, 5000));
+        // 1. 5s limit before speech starts (Autostop ON only)
+        if (!s.manual) {
+            s.timers.push(setTimeout(() => {
+                if (!s.speechStarted && !hasRecognizedText()) {
+                    s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
+                }
+            }, 5000));
+        }
 
         // 2. 20s absolute upper limit (Autostop ON/OFF common)
         s.timers.push(setTimeout(() => {

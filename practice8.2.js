@@ -1322,7 +1322,12 @@ async function record(key, r) {
 
     const recordingStartedAt = Date.now();
     let firstRecognizedAt = null;
-    const hasRecognizedText = () => Boolean((s.raw || "").trim() || (s.interim || "").trim());
+    const hasValidSttText = text => {
+        const raw = String(text || "").trim();
+        if (!raw) return false;
+        return Boolean(normalizeToken(raw).replace(/[\p{S}]/gu, ""));
+    };
+    const hasRecognizedText = () => hasValidSttText(s.raw) || hasValidSttText(s.interim);
     const hasProtected5sStt = () =>
         firstRecognizedAt !== null &&
         (firstRecognizedAt - recordingStartedAt) <= 5000 &&
@@ -1377,10 +1382,11 @@ async function record(key, r) {
         s.interim = "";
 
         const previous = saved.get(key) || {};
+        const hasNormRaw = hasValidSttText(s.raw);
 
         if (
             !s.discard &&
-            (s.heard || Boolean(s.raw.trim())) &&
+            (s.heard || hasNormRaw) &&
             s.chunks.length
         ) {
             const url = URL.createObjectURL(
@@ -1419,7 +1425,7 @@ async function record(key, r) {
         if (
             autoplay &&
             !s.discard &&
-            s.raw.trim()
+            hasNormRaw
         ) {
             const view = views.get(key);
             DrillAudio.playRelay({

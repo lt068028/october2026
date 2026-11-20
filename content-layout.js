@@ -65,19 +65,28 @@
             groups.get(group).push(info);
             info.group = groups.get(group);
         });
-        for (const {table, cues, controls, numbers, cue, actions, group} of infos) {
-            const number = Math.max(...group.map(i => i.number));
-            const available = table.clientWidth;
+        // Pass 1: Evaluate each table's own room with 25px hysteresis.
+        for (const info of infos) {
+            const number = Math.max(...info.group.map(i => i.number));
+            const available = info.table.clientWidth;
             const gap = 4; // Existing shared recording column gutter.
-            const room = available - number - actions - (number > 0 ? 2 : 1) * gap;
-            const inline = cue <= room + .25;
-            // Share the longest fitting cue; a longer stacked question must not
-            // force otherwise fitting questions to stack as well.
-            const track = inline ? Math.max(cue, ...group.filter(i => i.cue <= room + .25).map(i => i.cue)) : cue;
+            const room = available - number - info.actions - (number > 0 ? 2 : 1) * gap;
+            const currentLayout = info.table.dataset.contentLayout || '';
+            const inline = !currentLayout
+                ? info.cue <= room + .25
+                : (info.cue <= room - 25 ? true : (info.cue > room + .25 ? false : currentLayout === 'inline'));
+            info.groupNumber = number;
+            info.available = available;
+            info.inline = inline;
+        }
+        // Pass 2: Share the longest cue track only among inline tables in the group.
+        for (const info of infos) {
+            const {table, cues, controls, numbers, cue, group, groupNumber, available, inline} = info;
+            const track = inline ? Math.max(cue, ...group.filter(i => i.inline).map(i => i.cue)) : cue;
             table.classList.add('content-record-grid');
             table.dataset.contentLayout = inline ? 'inline' : 'stacked';
-            table.dataset.contentNumber = number > 0 ? 'true' : 'false';
-            table.style.setProperty('--content-number-width', number + 'px');
+            table.dataset.contentNumber = groupNumber > 0 ? 'true' : 'false';
+            table.style.setProperty('--content-number-width', groupNumber + 'px');
             table.style.setProperty('--content-cue-width', track + 'px');
             table.querySelectorAll('td[rowspan]').forEach(e => e.style.setProperty('--content-row-span', String(e.rowSpan)));
             numbers.forEach(e => e.dataset.contentCell = 'number');
