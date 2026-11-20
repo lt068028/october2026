@@ -980,5 +980,261 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await checkP82MismatchColor('dark', 'rgb(255, 138, 165)');
   await p.emulateMedia({ colorScheme: 'light' });
 
+  // --- Phase 4: Shared Table Contract, Status Color Tokens, Paired Rows AX & Geometry, Low-Volume STT Protection ---
+  // A. [data-theme="dark"] status color tokens (--status-accepted/incomplete/mismatch-color)
+  await p.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); });
+  const themeDarkTokens = await p.evaluate(() => {
+    const a = audit82;
+    const r = a.rowsFor(0)[0][0];
+    const key = a.keyFor(r);
+    a.saved.set(key, { raw: 'なにかのみます', refs: ['何か飲みます'], status: 'accepted' });
+    practice82State.render();
+    let row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const acc = getComputedStyle(row.querySelector('.feedback-status-accepted')).color;
+    a.saved.set(key, { raw: 'なにかのみま', refs: ['何か飲みます'], status: 'incomplete' });
+    practice82State.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const inc = getComputedStyle(row.querySelector('.p82-incomplete-svg')).color;
+    a.saved.set(key, { raw: 'ちがう', refs: ['何か飲みます'], status: 'mismatch' });
+    practice82State.render();
+    row = document.querySelector('tr[data-row="' + r.id + '"]');
+    const mis = getComputedStyle(row.querySelector('.feedback-retry-fire')).color;
+    const rootStyle = getComputedStyle(document.documentElement);
+    return {
+      acc, inc, mis,
+      tokAcc: rootStyle.getPropertyValue('--status-accepted-color').trim().toLowerCase(),
+      tokInc: rootStyle.getPropertyValue('--status-incomplete-color').trim().toLowerCase(),
+      tokMis: rootStyle.getPropertyValue('--status-mismatch-color').trim().toLowerCase()
+    };
+  });
+  eq(themeDarkTokens, {
+    acc: 'rgb(74, 222, 128)',
+    inc: 'rgb(185, 162, 229)',
+    mis: 'rgb(228, 173, 105)',
+    tokAcc: '#4ade80',
+    tokInc: '#b9a2e5',
+    tokMis: '#e4ad69'
+  }, 'Phase 4: [data-theme="dark"] status color tokens resolve consistently on P8.2');
+  await p.evaluate(() => { document.documentElement.removeAttribute('data-theme'); });
+
+  // B. Valid grid-template-columns, .practice82-page CSS isolation (600px/850px), and Paired Rows (rowspan="2") AX + Geometry
+  for (const vpWidth of [375, 600, 850, 1440]) {
+    await p.setViewportSize({ width: vpWidth, height: 1000 });
+    await p.waitForTimeout(100);
+    const tableAudit = await p.evaluate(() => {
+      const tables = [...document.querySelectorAll('.p81-card table.recording-table.p81-table')];
+      return {
+        count: tables.length,
+        allGridValid: tables.every(tbl => getComputedStyle(tbl).gridTemplateColumns !== 'none'),
+        allStartAligned: tables.every(tbl => getComputedStyle(tbl).alignItems === 'start'),
+        allInlineTrackMatch: tables.every(tbl => {
+          const layout = tbl.dataset.contentLayout;
+          const cols = getComputedStyle(tbl).gridTemplateColumns.trim().split(/\s+/).length;
+          return layout === 'inline' ? cols === 3 : (layout === 'stacked' ? cols === 2 : true);
+        })
+      };
+    });
+    eq(tableAudit, { count: 19, allGridValid: true, allStartAligned: true, allInlineTrackMatch: true },
+      `Phase 4: P8.2 gridTemplateColumns valid, start-aligned, and isolated from 600px/850px at ${vpWidth}px`);
+  }
+
+  // Paired Rows AX semantics (`table` -> 2 `row`s -> 3 cells on row 1, 2 cells on row 2, Yes/No ONLY on Drill 3 row 2)
+  await p.setViewportSize({ width: 1440, height: 1000 });
+  await p.waitForTimeout(100);
+  for (const [drillSel, expectYnOnRow2] of [['#drill2', false], ['#drill3', true], ['#drill4', false]]) {
+    const firstCard = p.locator(`${drillSel} .p81-card`).first();
+    const tbl = firstCard.getByRole('table');
+    eq(await tbl.count(), 1, `${drillSel} Paired card exposes 1 AX table`);
+    const rows = tbl.getByRole('row');
+    eq(await rows.count(), 2, `${drillSel} Paired card exposes 2 AX rows`);
+    eq(await rows.nth(0).getByRole('cell').count(), 3, `${drillSel} Row 1 exposes 3 AX cells`);
+    eq(await rows.nth(1).getByRole('cell').count(), 2, `${drillSel} Row 2 exposes 2 AX cells`);
+    eq(await rows.nth(0).getByRole('button', { name: 'モデル音声を聞く' }).count(), 1, `${drillSel} Row 1 listen button accessible`);
+    eq(await rows.nth(0).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 1 record button accessible`);
+    eq(await rows.nth(1).getByRole('button', { name: 'モデル音声を聞く' }).count(), 1, `${drillSel} Row 2 listen button accessible`);
+    eq(await rows.nth(1).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 2 record button accessible`);
+    eq(await rows.nth(0).getByRole('button', { name: /Affirmative response|Negative response/ }).count(), 0, `${drillSel} Row 1 has no Yes/No buttons`);
+    eq(await rows.nth(1).getByRole('button', { name: /Affirmative response|Negative response/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
+  }
+
+  // Paired Rows visual bounding-box check in both inline (1440px) and stacked (375px)
+  const checkPairedGeometry = async (vpWidth, expectedLayout) => {
+    await p.setViewportSize({ width: vpWidth, height: 1000 });
+    await p.waitForTimeout(150);
+    const geom = await p.evaluate((exp) => {
+      const card = document.querySelector('#drill3 .p81-card');
+      const tbl = card.querySelector('table.recording-table.p81-table');
+      const layout = tbl.dataset.contentLayout;
+      const trs = tbl.querySelectorAll('tbody > tr');
+      const numRect = trs[0].querySelector('.drill-number-cell').getBoundingClientRect();
+      const cue1Rect = trs[0].querySelector('.prompt-label').getBoundingClientRect();
+      const ctrl1Rect = trs[0].querySelector('.p81-controls').getBoundingClientRect();
+      const cue2Rect = trs[1].querySelector('.prompt-label').getBoundingClientRect();
+      const ctrl2Rect = trs[1].querySelector('.p81-controls').getBoundingClientRect();
+      return {
+        layoutMatches: layout === exp,
+        row1NumCueTopOk: Math.abs(numRect.top - cue1Rect.top) <= 6,
+        cuesSameLeft: Math.abs(cue1Rect.left - cue2Rect.left) <= 2,
+        cuesNoOverlap: cue2Rect.top >= cue1Rect.bottom - 2,
+        inlineOk: exp === 'inline'
+          ? (cue1Rect.right <= ctrl1Rect.left + 1 && cue2Rect.right <= ctrl2Rect.left + 1)
+          : true,
+        stackedOk: exp === 'stacked'
+          ? (ctrl1Rect.top >= cue1Rect.bottom - 2 &&
+             cue2Rect.top >= ctrl1Rect.bottom - 2 &&
+             ctrl2Rect.top >= cue2Rect.bottom - 2 &&
+             ctrl1Rect.left <= numRect.right + 1)
+          : true
+      };
+    }, expectedLayout);
+    eq(geom, {
+      layoutMatches: true,
+      row1NumCueTopOk: true,
+      cuesSameLeft: true,
+      cuesNoOverlap: true,
+      inlineOk: true,
+      stackedOk: true
+    }, `Phase 4: Paired Rows visual placement holds in ${expectedLayout} (${vpWidth}px)`);
+  };
+  await checkPairedGeometry(1440, 'inline');
+  await checkPairedGeometry(375, 'stacked');
+  await p.setViewportSize({ width: 1440, height: 1000 });
+
+  // C. P8.2 Low-Volume STT Protection (6 scenarios, 5s boundary, empty/late discard, interim/final, s.heard empty STT mismatch, Manual no-5s)
+  await p.evaluate(() => {
+    const manualToggle = document.getElementById('toggleRecordMode');
+    if (manualToggle?.checked) manualToggle.click();
+    const autoToggle = document.getElementById('togglePlaybackMode');
+    if (autoToggle && !autoToggle.checked) autoToggle.click();
+    t.speaking = false;
+  });
+
+  // Scenario 1: Low-volume STT within 5s bypasses 5s timeout, stays open without 7s stop, saves on manual stop, and runs Auto-Compare ON relay
+  const s1Row = p.locator('[data-row="any-2-a"]');
+  const s1RecStartCount = await p.evaluate(() => t.recognitions.length);
+  await s1Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s1RecStartCount);
+  await p.waitForTimeout(800);
+  await p.evaluate(() => {
+    const res = [{ transcript: '大学で何か教えます' }];
+    res.isFinal = true;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await p.waitForTimeout(4500);
+  eq(await s1Row.locator('.stop-btn-active').count(), 1, 'Low-vol STT <=5s keeps recording active past 5s without timeout');
+  eq((await s1Row.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), false, 'Low-vol STT <=5s shows no 5s timeout notice');
+  const s1SpokenBefore = await p.evaluate(() => t.spoken.length);
+  await s1Row.locator('.stop-btn-active').click();
+  await p.waitForFunction(() => audit82.saved.has('any-2-a:fixed'));
+  await p.waitForFunction((n) => t.spoken.length > n, s1SpokenBefore);
+  eq(await p.evaluate(() => {
+    const entry = audit82.saved.get('any-2-a:fixed');
+    return { raw: entry?.raw, status: entry?.status };
+  }), { raw: '大学で何か教えます', status: 'accepted' }, 'Low-vol STT <=5s saves and grades transcript cleanly');
+  eq(await s1Row.locator('.play-recording-btn').count(), 1, 'Low-vol STT <=5s renders own playback button');
+  // Complete relay cleanly
+  const s1AudioBefore = await p.evaluate(() => t.audios.length);
+  await p.evaluate(() => { t.spoken.at(-1).onend?.(); });
+  await p.waitForFunction((n) => t.audios.length > n, s1AudioBefore);
+  await p.evaluate(() => { t.audios.at(-1).onended?.(); });
+
+  // Scenario 2 & 3: Whitespace-only / empty STT within 5s triggers 5s discard & keeps prior saved; late onresult after discard is ignored
+  const s2RecCount = await p.evaluate(() => t.recognitions.length);
+  await s1Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s2RecCount);
+  await p.waitForTimeout(500);
+  await p.evaluate(() => {
+    const res = [{ transcript: '   ' }];
+    res.isFinal = true;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await p.waitForTimeout(4800);
+  eq(await s1Row.locator('.stop-btn-active').count(), 0, 'Empty/whitespace STT triggers 5s autostop');
+  eq((await s1Row.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), true, 'Empty/whitespace STT shows 5s timeout notice');
+  await p.evaluate(() => {
+    const res = [{ transcript: 'あとから届いた認識' }];
+    res.isFinal = true;
+    t.recognitions.at(-1).onresult?.({ resultIndex: 0, results: [res] });
+  });
+  eq(await p.evaluate(() => audit82.saved.get('any-2-a:fixed')?.raw), '大学で何か教えます', '5s discard preserves previous saved recording and ignores late onresult');
+
+  // Turn off Auto-Compare for remaining save checks
+  await p.evaluate(() => {
+    const autoToggle = document.getElementById('togglePlaybackMode');
+    if (autoToggle?.checked) autoToggle.click();
+  });
+
+  // Scenario 4a: Interim-only low-volume STT saved on manual stop
+  const s4Row = p.locator('[data-row="any-3-a"]');
+  const s4RecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s4RecCount);
+  await p.waitForTimeout(300);
+  await p.evaluate(() => {
+    const res = [{ transcript: '先生に何か聞きます' }];
+    res.isFinal = false;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForFunction(() => audit82.saved.has('any-3-a:fixed'));
+  eq(await p.evaluate(() => ({
+    raw: audit82.saved.get('any-3-a:fixed')?.raw,
+    status: audit82.saved.get('any-3-a:fixed')?.status
+  })), { raw: '先生に何か聞きます', status: 'accepted' }, 'Interim-only low-vol STT saved on manual stop');
+
+  // Scenario 4b: Trailing isFinal arriving during s.stopping before onend does not duplicate interim
+  const s4bRecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s4bRecCount);
+  await p.waitForTimeout(200);
+  await p.evaluate(() => {
+    const rec = t.recognitions.at(-1);
+    const interimRes = [{ transcript: '先生に何か聞きます' }];
+    interimRes.isFinal = false;
+    rec.onresult({ resultIndex: 0, results: [interimRes] });
+    rec.stop = () => {
+      setTimeout(() => {
+        const finalRes = [{ transcript: '先生に何か聞きます' }];
+        finalRes.isFinal = true;
+        rec.onresult({ resultIndex: 0, results: [finalRes] });
+        rec.onend?.();
+      }, 60);
+    };
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(180);
+  eq(await p.evaluate(() => audit82.saved.get('any-3-a:fixed')?.raw), '先生に何か聞きます', 'Trailing isFinal during stopping replaces interim without duplication');
+
+  // Scenario 5: s.heard === true with empty STT still saves as mismatch
+  await p.evaluate(() => { t.speaking = true; });
+  const s5RecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s5RecCount);
+  await p.waitForTimeout(450);
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  eq(await p.evaluate(() => ({
+    raw: audit82.saved.get('any-3-a:fixed')?.raw,
+    status: audit82.saved.get('any-3-a:fixed')?.status
+  })), { raw: '', status: 'mismatch' }, 'Empty STT with s.heard === true saves as mismatch');
+
+  // Scenario 6: Manual mode has NO 5s timeout even with speaking: false and no STT
+  await p.evaluate(() => {
+    t.speaking = false;
+    const manualToggle = document.getElementById('toggleRecordMode');
+    if (manualToggle && !manualToggle.checked) manualToggle.click();
+  });
+  const s6RecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s6RecCount);
+  await p.waitForTimeout(5200);
+  eq(await s4Row.locator('.stop-btn-active').count(), 1, 'Manual mode does NOT auto-stop at 5s even without STT or mic volume');
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  await p.evaluate(() => {
+    const manualToggle = document.getElementById('toggleRecordMode');
+    if (manualToggle?.checked) manualToggle.click();
+  });
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

@@ -1530,6 +1530,97 @@ async function runRecordingLifecycleTests() {
         });
         assert.equal(feedbackSize, '18.2px', 'Answer feedback (.correction-box) must be 18.2px');
 
+        // --- Scenario 22: Content-Width-First Layout, 25px Hysteresis, and Non-Destructive Resize ---
+        await page.setViewportSize({ width: 650, height: 800 });
+        await page.clock.runFor(100);
+        const d11LayoutParams = await page.evaluate(() => {
+            const section = document.getElementById('drill1');
+            const row = section.querySelector('.drill-row');
+            const actions = row.querySelector('.recording-actions');
+            const copy = actions.cloneNode(true);
+            copy.querySelectorAll('.tooltip-tip, .custom-tip-box').forEach(t => t.remove());
+            Object.assign(copy.style, { position: 'absolute', visibility: 'hidden', display: 'inline-flex', width: 'max-content', whiteSpace: 'nowrap' });
+            row.append(copy);
+            const actionsWidth = Math.ceil(copy.getBoundingClientRect().width);
+            copy.remove();
+            const cueWidth = parseFloat(getComputedStyle(section).getPropertyValue('--drill-cue-width')) || 0;
+            const needed = 34 + 16 + cueWidth + actionsWidth + 120;
+            const style = getComputedStyle(row);
+            const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+            const currentAvailable = row.clientWidth - pad;
+            const chromeDelta = window.innerWidth - currentAvailable;
+            return { needed, chromeDelta };
+        });
+        const setOffsetVp = async (offset) => {
+            const targetVp = Math.max(320, Math.round(d11LayoutParams.chromeDelta + d11LayoutParams.needed + offset));
+            await page.setViewportSize({ width: targetVp, height: 800 });
+            await page.clock.runFor(100);
+        };
+
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.clock.runFor(100);
+        const wideD11 = await page.evaluate(() => {
+            const tbl = document.querySelector('#drill1 .drill-row .recording-table');
+            const cue = tbl.querySelector('.drill-cue-cell').getBoundingClientRect();
+            const ctrl = tbl.querySelector('td:has(> .recording-controls)').getBoundingClientRect();
+            return {
+                validGrid: getComputedStyle(tbl).gridTemplateColumns !== 'none',
+                layout: tbl.dataset.controlsLayout,
+                tracks: getComputedStyle(tbl).gridTemplateColumns.trim().split(/\s+/).length,
+                inlineSideBySide: ctrl.left >= cue.right - 2
+            };
+        });
+        assert.deepEqual(wideD11, { validGrid: true, layout: 'inline', tracks: 3, inlineSideBySide: true },
+            'D1.1 wide viewport uses valid 3-track inline layout');
+
+        const playBtnBeforeResize = await page.locator('#drill1 .drill-row .play-recording-btn').first().count();
+        await setOffsetVp(-20);
+        const stackedD11 = await page.evaluate(() => {
+            const tbl = document.querySelector('#drill1 .drill-row .recording-table');
+            const cue = tbl.querySelector('.drill-cue-cell').getBoundingClientRect();
+            const ctrl = tbl.querySelector('td:has(> .recording-controls)').getBoundingClientRect();
+            return {
+                validGrid: getComputedStyle(tbl).gridTemplateColumns !== 'none',
+                layout: tbl.dataset.controlsLayout,
+                tracks: getComputedStyle(tbl).gridTemplateColumns.trim().split(/\s+/).length,
+                controlsBelowCue: ctrl.top >= cue.bottom - 2
+            };
+        });
+        assert.deepEqual(stackedD11, { validGrid: true, layout: 'stacked', tracks: 2, controlsBelowCue: true },
+            'D1.1 switches to valid 2-track stacked layout when content exceeds available width');
+
+        await setOffsetVp(10);
+        assert.equal(
+            await page.locator('#drill1 .drill-row .recording-table').first().getAttribute('data-controls-layout'),
+            'stacked',
+            'D1.1 25px hysteresis keeps stacked layout inside [needed, needed + 25) band'
+        );
+
+        await setOffsetVp(35);
+        assert.equal(
+            await page.locator('#drill1 .drill-row .recording-table').first().getAttribute('data-controls-layout'),
+            'inline',
+            'D1.1 restores inline layout once available width clears 25px hysteresis threshold'
+        );
+        assert.equal(
+            await page.locator('#drill1 .drill-row .play-recording-btn').first().count(),
+            playBtnBeforeResize,
+            'Non-destructive resize preserves existing recording UI state'
+        );
+
+        // Verify [data-theme="dark"] shared status tokens on uebung1.1
+        await page.evaluate(() => { document.documentElement.setAttribute('data-theme', 'dark'); });
+        const d11StatusTokensDark = await page.evaluate(() => {
+            const s = getComputedStyle(document.documentElement);
+            return {
+                inc: s.getPropertyValue('--status-incomplete-color').trim().toLowerCase(),
+                mis: s.getPropertyValue('--status-mismatch-color').trim().toLowerCase()
+            };
+        });
+        assert.deepEqual(d11StatusTokensDark, { inc: '#b9a2e5', mis: '#e4ad69' },
+            'D1.1 resolves shared dark status color tokens under [data-theme="dark"]');
+        await page.evaluate(() => { document.documentElement.removeAttribute('data-theme'); });
+
         // Resource cleanup check
         const tracksAllEnded = await page.evaluate(() => window.t.tracks.every(tr => tr.readyState === 'ended'));
         assert.ok(tracksAllEnded, 'All microphone tracks ended');

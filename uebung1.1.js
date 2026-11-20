@@ -2099,39 +2099,86 @@ function initGermanDrill() {
         container.append(area);
     }
 
-    function alignDrillCues() {
+    const lastRowWidths = new WeakMap();
+
+    function alignDrillCues(force = true) {
+        const measureIntrinsicWidth = (target, host, displayMode = "inline-block") => {
+            const copy = target.cloneNode(true);
+            copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
+            Object.assign(copy.style, {
+                position: "absolute",
+                visibility: "hidden",
+                display: displayMode,
+                width: "max-content",
+                minWidth: "0",
+                maxWidth: "none",
+                whiteSpace: "nowrap",
+                transform: "none"
+            });
+            host.append(copy);
+            const w = copy.getBoundingClientRect().width;
+            copy.remove();
+            return w;
+        };
+
         ["drill1", "drill2", "drill3", "drill4"].forEach(drillId => {
             const section = document.getElementById(drillId);
             if (!section) return;
+            const rows = [...section.querySelectorAll(".drill-row")];
+            if (!rows.length) return;
+
+            const widthChanged = force || rows.some(row => {
+                const style = getComputedStyle(row);
+                const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+                const available = row.clientWidth - pad;
+                const prev = lastRowWidths.get(row);
+                return prev === undefined || Math.abs(available - prev) >= 0.25;
+            });
+            if (!widthChanged) return;
+
             const cues = section.querySelectorAll(".drill-row .drill-cue-cell");
             let max = 0;
             cues.forEach(cell => {
                 const span = cell.querySelector(".cue-content") || cell;
-                const copy = span.cloneNode(true);
-                copy.querySelectorAll(".tooltip-tip, .custom-tip-box").forEach(t => t.remove());
-                Object.assign(copy.style, {
-                    position: "absolute",
-                    visibility: "hidden",
-                    display: "inline-block",
-                    width: "max-content",
-                    minWidth: "0",
-                    maxWidth: "none",
-                    whiteSpace: "nowrap",
-                    transform: "none"
-                });
-                cell.append(copy);
-                const w = copy.getBoundingClientRect().width;
-                copy.remove();
+                const w = measureIntrinsicWidth(span, cell, "inline-block");
                 if (w > max) max = w;
             });
-            if (max > 0) {
-                section.style.setProperty("--drill-cue-width", `${Math.ceil(max) + 8}px`);
+            const cueWidth = max > 0 ? Math.ceil(max) + 8 : 0;
+            if (cueWidth > 0) {
+                section.style.setProperty("--drill-cue-width", `${cueWidth}px`);
             }
+
+            const minResultWidth = 120;
+            rows.forEach(row => {
+                const table = row.querySelector(".recording-table");
+                const actions = row.querySelector(".recording-actions");
+                if (!table || !actions) return;
+
+                const style = getComputedStyle(row);
+                const pad = (parseFloat(style.paddingLeft) || 0) + (parseFloat(style.paddingRight) || 0);
+                const available = row.clientWidth - pad;
+                if (available <= 0) return;
+
+                lastRowWidths.set(row, available);
+
+                const actionsWidth = Math.ceil(measureIntrinsicWidth(actions, row, "inline-flex"));
+                const maxCueAllowed = Math.max(0, Math.floor(available - 34 - 16 - actionsWidth - minResultWidth));
+                table.style.setProperty("--drill-cue-max-width", `${maxCueAllowed}px`);
+
+                const needed = 34 + 16 + cueWidth + actionsWidth + minResultWidth;
+                const currentLayout = table.dataset.controlsLayout || "";
+                const nextLayout = !currentLayout
+                    ? (needed <= available + 0.25 ? "inline" : "stacked")
+                    : (needed <= available - 25
+                        ? "inline"
+                        : (needed > available + 0.25 ? "stacked" : currentLayout));
+                table.dataset.controlsLayout = nextLayout;
+            });
         });
     }
 
-    function alignDrill1Cues() {
-        alignDrillCues();
+    function alignDrill1Cues(force = true) {
+        alignDrillCues(force);
     }
 
     // -------------------------------------------------------------
@@ -2314,7 +2361,7 @@ function initGermanDrill() {
             container.append(section);
         });
 
-        alignDrill1Cues();
+        alignDrill1Cues(true);
         sync();
     }
 
@@ -2420,7 +2467,7 @@ function initGermanDrill() {
     });
 
     window.addEventListener("resize", () => {
-        alignDrill1Cues();
+        alignDrill1Cues(false);
     });
 
     const cleanupOnLeave = () => {
@@ -2439,6 +2486,9 @@ function initGermanDrill() {
     updateVoiceSelector();
     diagnoseTtsStartup();
     renderAll();
+    document.fonts?.ready?.then(() => {
+        alignDrill1Cues(true);
+    });
 }
 
 if (typeof document !== "undefined") {

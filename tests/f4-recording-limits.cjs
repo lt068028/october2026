@@ -540,14 +540,32 @@ async function runRecognitionSeparationTests(browser) {
             : '.record-btn';
         const recBtn = page.locator(recSelector).first();
 
-        // 1. 5秒未発話判定の独立性：マイク音量ゼロのまま Recognition イベントのみ発生しても 5秒で停止すること
+        // 1. 5秒未発話判定の独立性：P8.2は5秒以内の有効STTを保護し、その他ページまたはSTT空・未取得時は5秒で停止すること
         await page.evaluate(() => { window.t.speaking = false; });
         await recBtn.click();
         await page.waitForTimeout(1000);
         await triggerRecognitionOnly(page, 'テスト発話');
         await page.waitForTimeout(4500);
         const bodyText5s = await page.locator('body').textContent();
-        check(bodyText5s.includes('No speech detected within 5 seconds.'), `${urlPath}: 5s no-speech timeout fires despite Recognition events`);
+        if (urlPath === '/practice8.2.html') {
+            const activeAfterLowVol5s = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
+            check(!bodyText5s.includes('No speech detected within 5 seconds.'), `${urlPath}: low-volume STT within 5s bypasses 5s no-speech timeout`);
+            check(activeAfterLowVol5s === 1, `${urlPath}: low-volume STT keeps recording active past 5s`);
+            await recBtn.click();
+            await page.waitForTimeout(300);
+
+            // Empty/whitespace STT within 5s must still trigger the 5s timeout and discard
+            await recBtn.click();
+            await page.waitForTimeout(1000);
+            await triggerRecognitionOnly(page, '   ');
+            await page.waitForTimeout(4500);
+            const bodyTextEmpty5s = await page.locator('body').textContent();
+            const activeAfterEmpty5s = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
+            check(bodyTextEmpty5s.includes('No speech detected within 5 seconds.'), `${urlPath}: empty/whitespace STT still triggers 5s no-speech timeout`);
+            check(activeAfterEmpty5s === 0, `${urlPath}: empty/whitespace STT stops recorder at 5s timeout`);
+        } else {
+            check(bodyText5s.includes('No speech detected within 5 seconds.'), `${urlPath}: 5s no-speech timeout fires despite Recognition events`);
+        }
 
         // 2. 2秒無音判定の独立性：マイク音量で発話開始 -> 無音化 -> Recognition イベント発生 -> 最後のマイク音量から2秒で停止
         await page.evaluate(() => { window.t.speaking = true; });

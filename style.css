@@ -631,6 +631,9 @@
     --text-secondary: #64748b;
     --warning-color: #d97706;
     --accent-color: #2196F3;
+    --status-accepted-color: #16a34a;
+    --status-incomplete-color: #8064b0;
+    --status-mismatch-color: #b47732;
     --button-bg: #f8f9fa;
     --button-disabled-bg: #e2e8f0;
     --tooltip-bg: #333333;
@@ -653,6 +656,9 @@
         --text-secondary: #94a3b8;
         --warning-color: #fbbf24;
         --accent-color: #38bdf8;
+        --status-accepted-color: #4ade80;
+        --status-incomplete-color: #b9a2e5;
+        --status-mismatch-color: #e4ad69;
         --button-bg: #334155;
         --button-disabled-bg: #475569;
         --tooltip-bg: #f8fafc;
@@ -663,6 +669,13 @@
         --rec-active-bg: #9f1239;
         --rec-active-text: #fecdd3;
     }
+}
+
+:root[data-theme="dark"],
+[data-theme="dark"] {
+    --status-accepted-color: #4ade80;
+    --status-incomplete-color: #b9a2e5;
+    --status-mismatch-color: #e4ad69;
 }
 
 body {
@@ -4975,7 +4988,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 /* Deutsche Übung 1.1 — Drill Items Layout (Drills 1–4) */
 .uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table {
     display: grid;
-    grid-template-columns: 34px var(--drill-cue-width, max-content) minmax(0, 1fr);
+    grid-template-columns: 34px minmax(0, min(var(--drill-cue-width, 50%), var(--drill-cue-max-width, 55%))) minmax(0, 1fr);
     align-items: start;
     gap: 6px 8px;
 }
@@ -5005,16 +5018,18 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     grid-column: 3;
 }
 
-@container (max-width: 480px) {
-    .uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table {
-        grid-template-columns: 34px minmax(0, 1fr);
-    }
-    .uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table .drill-cue-cell {
-        grid-column: 2;
-    }
-    .uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table td:has(> .recording-controls) {
-        grid-column: 1 / -1;
-    }
+.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table[data-controls-layout="stacked"] {
+    grid-template-columns: 34px minmax(0, 1fr);
+}
+
+.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table[data-controls-layout="stacked"] .drill-cue-cell {
+    grid-column: 2;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+}
+
+.uebung11-page :is(#drill1, #drill2, #drill3, #drill4) .drill-row .recording-table[data-controls-layout="stacked"] td:has(> .recording-controls) {
+    grid-column: 1 / -1;
 }
 
 /* Deutsche Übung 1.1: Settings and status tooltips */
@@ -5396,17 +5411,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     transform: translateY(-2px);
     vertical-align: middle;
     margin-right: 2px;
-    color: #B47732;
-}
-
-@media (prefers-color-scheme: dark) {
-    .uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
-        color: #E4AD69;
-    }
-}
-
-[data-theme="dark"] .uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
-    color: #E4AD69;
+    color: var(--status-mismatch-color, #b47732);
 }
 
 .uebung11-page .recording-controls > .recording-result .feedback-retry-label {
@@ -5444,17 +5449,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     height: 25px;
     transform: translateY(-0.5px);
     vertical-align: middle;
-    color: #8064B0;
-}
-
-@media (prefers-color-scheme: dark) {
-    .uebung11-page .uebung-incomplete-svg {
-        color: #B9A2E5;
-    }
-}
-
-[data-theme="dark"] .uebung11-page .uebung-incomplete-svg {
-    color: #B9A2E5;
+    color: var(--status-incomplete-color, #8064b0);
 }
 
 /* Practice 8.2 音声ボタン4種の中央配置 (既存padding・寸法を維持) */
@@ -5741,12 +5736,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 }
 .practice82-page .recording-controls > .recording-result .feedback-status-accepted {
     margin-right: 0;
-    color: #16A34A;
-}
-@media (prefers-color-scheme: dark) {
-    .practice82-page .recording-controls > .recording-result .feedback-status-accepted {
-        color: #4ADE80;
-    }
+    color: var(--status-accepted-color, #16a34a);
 }
 .practice82-page .recording-controls > .recording-result .p82-incomplete-mark {
     display: inline-flex;
@@ -5761,22 +5751,12 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     height: 25px;
     transform: translateY(-0.5px);
     vertical-align: middle;
-    color: #8064B0;
-}
-@media (prefers-color-scheme: dark) {
-    .practice82-page .recording-controls > .recording-result .p82-incomplete-svg {
-        color: #B9A2E5;
-    }
+    color: var(--status-incomplete-color, #8064b0);
 }
 .practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
     margin-right: 2px;
     display: inline-block;
-    color: #B47732;
-}
-@media (prefers-color-scheme: dark) {
-    .practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
-        color: #E4AD69;
-    }
+    color: var(--status-mismatch-color, #b47732);
 }
 .practice82-page .recording-controls > .recording-result .feedback-retry-label {
     white-space: nowrap;
@@ -5890,4 +5870,85 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page .compact-settings button:is(:disabled, [aria-disabled="true"]):not([aria-pressed="true"]):not(.is-selected) .p82-setting-icon,
 .practice82-page .compact-settings .settings-onoff:has(input:disabled:not(:checked)) .p82-setting-icon {
     opacity: 0.55;
+}
+
+/* Practice 8.2: 第1・第2層 共通テーブル基盤（.practice82-page 限定隔離 / P8.1固定幅・850px・600px上書き） */
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table {
+    display: grid;
+    width: 100%;
+    grid-template-columns: var(--content-number-width, 34px) minmax(0, var(--content-cue-width, min(var(--drill-cue-width, 50%), var(--drill-cue-max-width, 55%)))) minmax(0, 1fr);
+    align-items: start;
+    gap: 6px 8px;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > colgroup {
+    display: none;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody,
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr {
+    display: contents;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:first-of-type > .drill-number-cell {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+    padding-top: 5px;
+    line-height: 1.35;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:first-of-type > .drill-number-cell[rowspan="2"] {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:first-of-type > :is(.prompt-label, .drill-cue-cell) {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto !important;
+    max-width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    padding-top: 5px;
+    line-height: 1.35;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:first-of-type > :is(.p81-controls, td:has(> .recording-controls)) {
+    grid-column: 3;
+    grid-row: 1;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell) {
+    grid-column: 2;
+    grid-row: 2;
+    width: auto !important;
+    max-width: 100%;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+    padding-top: 5px;
+    line-height: 1.35;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table > tbody > tr:nth-of-type(2) > :is(.p81-controls, td:has(> .recording-controls)) {
+    grid-column: 3;
+    grid-row: 2;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] {
+    grid-template-columns: var(--content-number-width, 34px) minmax(0, 1fr);
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:first-of-type > .drill-number-cell,
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:first-of-type > .drill-number-cell[rowspan="2"] {
+    grid-column: 1;
+    grid-row: 1;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:first-of-type > :is(.prompt-label, .drill-cue-cell) {
+    grid-column: 2;
+    grid-row: 1;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:first-of-type > :is(.p81-controls, td:has(> .recording-controls)) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell) {
+    grid-column: 2;
+    grid-row: 3;
+}
+body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:nth-of-type(2) > :is(.p81-controls, td:has(> .recording-controls)) {
+    grid-column: 1 / -1;
+    grid-row: 4;
 }

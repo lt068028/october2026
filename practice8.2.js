@@ -1179,7 +1179,7 @@ function measureExampleColumns(){
 }
 function measureCues(){
  measureExampleColumns();
- document.querySelectorAll('.p81-section').forEach(group=>{let width=0;for(const cell of group.querySelectorAll('.p81-card .prompt-label')){const copy=cell.cloneNode(true);copy.querySelectorAll('.tooltip-tip').forEach(t=>t.remove());Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:'block',width:'max-content',maxWidth:'none',whiteSpace:'nowrap'});group.append(copy);width=Math.max(width,Math.ceil(copy.getBoundingClientRect().width));copy.remove();}for(const card of group.querySelectorAll('.p81-card'))card.style.setProperty('--p81-cue-width',(width+8)+'px');});}
+}
 function sync() {
     const recBusy = Boolean(session || preparing);
     const exPlaying = Boolean(activeExButton);
@@ -1320,6 +1320,14 @@ async function record(key, r) {
 
     session = s;
 
+    const recordingStartedAt = Date.now();
+    let firstRecognizedAt = null;
+    const hasRecognizedText = () => Boolean((s.raw || "").trim() || (s.interim || "").trim());
+    const hasProtected5sStt = () =>
+        firstRecognizedAt !== null &&
+        (firstRecognizedAt - recordingStartedAt) <= 5000 &&
+        hasRecognizedText();
+
     const clear = () => {
         s.timers.forEach(id => {
             clearTimeout(id);
@@ -1366,12 +1374,13 @@ async function record(key, r) {
         if (s.interim?.trim()) {
             s.raw += s.interim;
         }
+        s.interim = "";
 
         const previous = saved.get(key) || {};
 
         if (
             !s.discard &&
-            s.heard &&
+            (s.heard || Boolean(s.raw.trim())) &&
             s.chunks.length
         ) {
             const url = URL.createObjectURL(
@@ -1429,7 +1438,7 @@ async function record(key, r) {
 
         s.stopping = true;
         s.notice = notice;
-        s.discard = discard || !s.heard;
+        s.discard = discard ? true : (!s.heard && !hasProtected5sStt());
 
         clear();
         sync();
@@ -1490,6 +1499,7 @@ async function record(key, r) {
             if (s.finished || s.discard) return;
 
             if (!s.stopping) interim = "";
+            let sawFinal = false;
 
             for (
                 let i = e.resultIndex;
@@ -1500,12 +1510,21 @@ async function record(key, r) {
 
                 if (e.results[i].isFinal) {
                     s.raw += text;
+                    sawFinal = true;
                 } else if (!s.stopping) {
                     interim += text;
                 }
             }
 
-            if (!s.stopping) s.interim = interim;
+            if (!s.stopping) {
+                s.interim = interim;
+            } else if (sawFinal) {
+                s.interim = "";
+            }
+
+            if (firstRecognizedAt === null && hasRecognizedText()) {
+                firstRecognizedAt = Date.now();
+            }
         };
 
         recognition.onerror = e => {
@@ -1637,11 +1656,11 @@ async function record(key, r) {
             }, 100)
         );
 
-        // Autostop ON時のみ：発話開始前の無音5秒で停止（新しい録音を保存しない）
+        // Autostop ON時のみ：発話開始前の無音5秒で停止（有効な低音量STTは保護し、未取得時のみ破棄）
         if (!s.manual) {
             s.timers.push(
                 setTimeout(() => {
-                    if (!s.heard) {
+                    if (!s.heard && !hasProtected5sStt()) {
                         s.stop(
                             "No speech detected within 5 seconds.",
                             true
