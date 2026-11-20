@@ -41,12 +41,13 @@ const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
 assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
 assert.ok(!js.includes('drill-stop-btn') && !js.includes('data-stop'), 'Must remove 3rd stop button completely in favor of 2-button layout');
-assert.ok(html.includes('fluent-icon-chatHintHalf"') && !html.includes('fluent-icon-chatHintHalfFilled'), 'Hover button must use chatHintHalf Regular without Filled classes');
-assert.ok(html.includes('fluent-icon-warning') && !html.includes('⚠️'), 'HTML must use Fluent warning Regular SVG instead of emoji');
-assert.ok(!js.includes('⚠️'), 'JS must not contain ⚠️ emoji');
+assert.ok(html.includes('fluent-icon-chatHintHalfFilled fluent-icon-filled'), 'Hover button must use chatHintHalfFilled Filled icon per UI_LAYOUT_SPEC §13.1');
+assert.ok(html.includes('fluent-icon-warningFilled fluent-icon-filled') && !html.includes('⚠️'), 'HTML must use Fluent warningFilled SVG instead of emoji');
+assert.ok(js.includes('warningFilled') && !js.includes('⚠️'), 'JS must use warningFilled SVG without ⚠️ emoji');
+assert.ok(html.includes('>Standarddeutsch<') && html.includes('>Österreichisches Deutsch<') && html.includes('>Schweizer Hochdeutsch<'), 'Variety tips must use German-only designations');
 assert.ok(html.includes('uebung-flag-svg') && !html.includes('🇩🇪') && !html.includes('🇦🇹') && !html.includes('🇨🇭'), 'Variety selector must use vector flag SVGs without emojis');
 const fluentJs = fs.readFileSync(path.join(root, 'fluent-icons.js'), 'utf8');
-assert.ok(fluentJs.includes('chatHintHalf:') && fluentJs.includes('warning:') && fluentJs.includes('"chatHintHalfFilled":'), 'fluent-icons.js must add chatHintHalf & warning while keeping chatHintHalfFilled');
+assert.ok(fluentJs.includes('chatHintHalf:') && fluentJs.includes('warning:') && fluentJs.includes('"chatHintHalfFilled":') && fluentJs.includes('"warningFilled":'), 'fluent-icons.js must preserve existing Regular/Filled keys and add warningFilled');
 assert.ok(css.includes('color: #fbbf24;') && css.includes('filter: grayscale(100%);'), 'CSS must apply amber #fbbf24 and flag-only dimming');
 assert.ok(css.includes('.uebung11-page .uebung-cue-place-stack'), 'CSS must align Drill 3-1 alternative cue under target noun');
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire'), 'CSS must style split inline Fire icon');
@@ -1194,34 +1195,106 @@ async function runRecordingLifecycleTests() {
         assert.notEqual(mismatchLayout.resDisplay, 'flex', 'Result text must not be flex container');
         assert.ok(mismatchLayout.html.includes('fliege <span class="result-incorrect">'), 'Mismatch must preserve space between tokens');
 
-        // Drill 3-1 cue stack alignment & Part 2 settings/warning visual checks
+        // Verify .result-incorrect weight (400) & Light/Dark error color unity with P8.2
+        const errStyleLight = await page.evaluate(() => {
+            const inc = document.querySelector('#drill1 .drill-row .result-incorrect');
+            const cs = inc ? getComputedStyle(inc) : null;
+            return cs ? { fw: cs.fontWeight, color: cs.color } : null;
+        });
+        assert.deepEqual(errStyleLight, { fw: '400', color: 'rgb(225, 29, 72)' }, 'Light mode .result-incorrect must use weight 400 and #E11D48');
+        await page.emulateMedia({ colorScheme: 'dark' });
+        const errColorDark = await page.evaluate(() => {
+            const inc = document.querySelector('#drill1 .drill-row .result-incorrect');
+            return inc ? getComputedStyle(inc).color : null;
+        });
+        assert.equal(errColorDark, 'rgb(255, 138, 165)', 'Dark mode .result-incorrect must match #FF8AA5');
+        await page.emulateMedia({ colorScheme: 'light' });
+
+        // Drill 3-1 cue stack alignment (DE/AT/CH) & Part 2 settings/warning visual checks
+        const checkDrill3Alignment = async (varietyCode) => {
+            await page.locator(`#germanVarietyControl button[data-value="${varietyCode}"]`).click();
+            await page.clock.runFor(50);
+            return page.evaluate(() => {
+                const cueCell = document.querySelector('#drill3 .drill-row .drill-cue-cell');
+                const stack = cueCell?.querySelector('.uebung-cue-place-stack');
+                const stackRect = stack?.getBoundingClientRect();
+                const altText = stack?.querySelector('.uebung-cue-alt-text');
+                const altTextRect = altText?.getBoundingClientRect();
+                const flags = stack?.querySelector('.uebung-cue-alt-flags');
+                const flagsRect = flags?.getBoundingClientRect();
+                // Verify slash preceding the stack is strictly on line 1 above flagsRect.top
+                return {
+                    aligned: stackRect && altTextRect ? Math.abs(stackRect.left - altTextRect.left) <= 1 : false,
+                    flagsLeftOfText: flagsRect && altTextRect ? flagsRect.right <= altTextRect.left : false,
+                    altBelowLine1: stackRect && altTextRect && flagsRect ? (altTextRect.top > stackRect.top && flagsRect.top > stackRect.top) : false
+                };
+            });
+        };
+        for (const vCode of ['DE', 'AT', 'CH']) {
+            const d3Check = await checkDrill3Alignment(vCode);
+            assert.deepEqual(d3Check, { aligned: true, flagsLeftOfText: true, altBelowLine1: true }, `Drill 3-1 (${vCode}) alt noun must align under line 1 noun with flags protruding cleanly left`);
+        }
+        await page.locator('#germanVarietyControl button[data-value="DE"]').click();
+
         const visualAudit = await page.evaluate(() => {
-            const stack = document.querySelector('#drill3 .drill-row .uebung-cue-place-stack');
-            const stackRect = stack?.getBoundingClientRect();
-            const altLine = stack?.querySelector('.uebung-cue-alt-line');
-            const altRect = altLine?.getBoundingClientRect();
             const hoverIcon = document.querySelector('#hintModeControl button[data-value="hover"] .uebung-setting-icon');
             const autostopIcon = document.querySelector('#labelAutoRecord .uebung-setting-icon');
             const inactiveFlag = document.querySelector('#germanVarietyControl button[data-value="AT"] .uebung-flag-svg');
             const inactiveFlagBtn = document.querySelector('#germanVarietyControl button[data-value="AT"]');
+            const ttsWarnIcon = document.querySelector('#germanTtsNotice .fluent-icon-warningFilled.fluent-icon-filled');
             const hoverSvgRectColor = hoverIcon ? window.getComputedStyle(hoverIcon).color : null;
             return {
-                stackAligned: stackRect && altRect ? Math.abs(stackRect.left - altRect.left) < 2 : false,
-                stackBelow: stackRect && altRect ? altRect.top > stackRect.top : false,
-                hoverIsRegular: Boolean(hoverIcon?.classList.contains('fluent-icon-chatHintHalf')) && !hoverIcon?.classList.contains('fluent-icon-filled'),
+                hoverIsFilled: Boolean(hoverIcon?.classList.contains('fluent-icon-chatHintHalfFilled')) && Boolean(hoverIcon?.classList.contains('fluent-icon-filled')),
                 hoverAmberColor: hoverSvgRectColor,
                 autostopAmberColor: autostopIcon ? window.getComputedStyle(autostopIcon).color : null,
                 inactiveFlagDimmed: inactiveFlag ? window.getComputedStyle(inactiveFlag).opacity === '0.55' : false,
-                inactiveBtnNotDimmed: inactiveFlagBtn ? window.getComputedStyle(inactiveFlagBtn).opacity === '1' : false
+                inactiveBtnNotDimmed: inactiveFlagBtn ? window.getComputedStyle(inactiveFlagBtn).opacity === '1' : false,
+                hasFilledTtsWarning: Boolean(ttsWarnIcon)
             };
         });
-        assert.equal(visualAudit.stackAligned, true, 'Drill 3-1 alt cue line must left-align under target noun');
-        assert.equal(visualAudit.stackBelow, true, 'Drill 3-1 alt cue line must sit below 1st line');
-        assert.equal(visualAudit.hoverIsRegular, true, 'Hover icon must be Regular without filled class');
+        assert.equal(visualAudit.hoverIsFilled, true, 'Hover icon must use chatHintHalfFilled Filled icon');
         assert.equal(visualAudit.hoverAmberColor, 'rgb(251, 191, 36)', 'Selected Hover icon must use #fbbf24');
         assert.equal(visualAudit.autostopAmberColor, 'rgb(251, 191, 36)', 'Autostop icon must use #fbbf24');
         assert.equal(visualAudit.inactiveFlagDimmed, true, 'Inactive flag SVG must be dimmed');
         assert.equal(visualAudit.inactiveBtnNotDimmed, true, 'Inactive variety button text must stay full opacity');
+        assert.equal(visualAudit.hasFilledTtsWarning, true, '#germanTtsNotice must render warningFilled SVG');
+
+        // --- Scenario 20e: Recognized STT without audio volume threshold does NOT false-timeout at 5s ---
+        await page.evaluate(() => {
+            const toggle = document.getElementById('togglePlaybackMode');
+            if (toggle && !toggle.checked) toggle.click();
+        });
+        await clickRecord(true); // Manual mode
+        // Push MediaRecorder audio chunk directly without triggering volume threshold (speaking = false)
+        await page.evaluate(() => {
+            const rec = window.t.recorders.at(-1);
+            rec?.ondataavailable?.({ data: new Blob(['low-vol-audio'], { type: 'audio/webm' }) });
+        });
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await page.clock.runFor(5200); // Exceed 5s timer
+        assert.equal(await isRecording(), true, '5s watchdog must NOT cancel when STT text is already recognized');
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        const lowVolResText = await getResult().textContent();
+        assert.ok(!lowVolResText.includes('No speech detected within 5 seconds.'), 'Must NOT show 5s timeout when STT recognized');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'Must save non-empty audio chunks and render [▶] when STT recognized');
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .drill-listen-btn')?.classList.contains('is-playing')), true, 'Auto-Compare ON relay must start when valid STT + URL exist');
+        await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
+        await page.clock.runFor(50);
+
+        // Recognized STT with empty chunks must keep STT text but NOT generate [▶] play button
+        await page.evaluate(() => { window.t.emptyChunks = true; });
+        await clickRecord(true);
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await page.clock.runFor(5200);
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'Empty chunks must NOT render [▶] play button even if STT recognized');
+        await page.evaluate(() => { window.t.emptyChunks = false; });
 
         // Verify pagehide cleanup listener
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });

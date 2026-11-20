@@ -877,8 +877,8 @@ function initGermanDrill() {
                 }
                 if (isRegionalPlace) {
                     const altHtml = currentVariety === "DE"
-                        ? `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("AT")}${createFlagSvgMarkup("CH")} <span class="uebung-cue-alt-text">das Spital</span></span>`
-                        : `<span class="uebung-cue-alt-line">${createFlagSvgMarkup("DE")} <span class="uebung-cue-alt-text">das Krankenhaus</span></span>`;
+                        ? `<span class="uebung-cue-alt-line"><span class="uebung-cue-alt-flags">${createFlagSvgMarkup("AT")}${createFlagSvgMarkup("CH")}</span><span class="uebung-cue-alt-text">das Spital</span></span>`
+                        : `<span class="uebung-cue-alt-line"><span class="uebung-cue-alt-flags">${createFlagSvgMarkup("DE")}</span><span class="uebung-cue-alt-text">das Krankenhaus</span></span>`;
                     return `<span class="uebung-cue-place-stack">${partHtml}${altHtml}</span>`;
                 }
                 return partHtml;
@@ -1268,7 +1268,7 @@ function initGermanDrill() {
             const setWarningNotice = (msg) => {
                 notice.replaceChildren();
                 if (window.FluentIcons) {
-                    notice.append(window.FluentIcons.create("warning", 20, "uebung-warning-svg", "regular"), document.createTextNode(" " + msg));
+                    notice.append(window.FluentIcons.create("warningFilled", 20, "uebung-warning-svg", "filled"), document.createTextNode(" " + msg));
                 } else {
                     notice.textContent = msg;
                 }
@@ -1600,7 +1600,7 @@ function initGermanDrill() {
             const normRaw = normalizeGerman(raw);
             let url = "";
 
-            const hasValidAudio = !s.discard && s.speechStarted && s.chunks.length > 0;
+            const hasValidAudio = !s.discard && (s.speechStarted || Boolean(raw && normRaw)) && s.chunks.length > 0;
             if (raw && normRaw && hasValidAudio) {
                 try {
                     url = URL.createObjectURL(
@@ -1662,7 +1662,7 @@ function initGermanDrill() {
             showResult(key, noticeMessage);
             sync();
 
-            if (autoplay && !s.discard && raw) {
+            if (autoplay && !s.discard && raw && url) {
                 stopAllPlayback();
                 const currentView = views.get(key);
                 const playBtn = currentView?.result?.querySelector(".play-recording-btn");
@@ -1699,13 +1699,15 @@ function initGermanDrill() {
             }
         };
 
+        const hasRecognizedText = () => Boolean(normalizeGerman(`${s.raw || ""} ${s.interim || ""}`));
+
         s.stop = (notice = "", discard = false, reason = "") => {
             if (s.stopping || s.finished) return;
             s.stopping = true;
             if (reason) s.stopReason = reason;
             else if (!s.stopReason) s.stopReason = notice ? "error" : "manual";
             if (notice) s.notice = notice;
-            s.discard = discard || !s.speechStarted;
+            s.discard = discard || (!s.speechStarted && !hasRecognizedText());
 
             clear();
             sync();
@@ -1879,7 +1881,7 @@ function initGermanDrill() {
         // Watchdog timers
         // 1. 5s limit before speech starts (Autostop ON/OFF common)
         s.timers.push(setTimeout(() => {
-            if (!s.speechStarted) {
+            if (!s.speechStarted && !hasRecognizedText()) {
                 s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
             }
         }, 5000));

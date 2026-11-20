@@ -5187,7 +5187,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     color: var(--text-secondary);
 }
 .practice82-page .p82-copy-button:disabled {
-    opacity: .45;
+    opacity: 0.55;
     cursor: default;
 }
 
@@ -5239,7 +5239,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 
 .uebung11-page .result-incorrect {
     color: var(--semantic-negative-color, var(--error-text, #be123c));
-    font-weight: 700;
+    font-weight: 400;
 }
 
 .uebung11-page .result-missing {
@@ -5336,13 +5336,23 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 .uebung11-page .uebung-cue-alt-line {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    position: relative;
+    display: inline-block;
     margin-top: 4px;
     font-size: 0.85em;
     color: var(--text-secondary, #64748b);
     font-weight: 400;
+}
+
+.uebung11-page .uebung-cue-alt-flags {
+    position: absolute;
+    right: calc(100% + 5px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
 }
 
 .uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn) {

@@ -731,7 +731,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       { key: 'hover', sel: '#hintModeControl [data-value="hover"]', icon: 'chatHintHalfFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'paren', sel: '#hintModeControl [data-value="paren"]', icon: 'editLineHorizontal3Filled', vb: '0 0 24 24', w: '24px', v: 'filled' },
       { key: 'autostop', sel: '#labelAutoRecord', icon: 'micFilled', vb: '0 0 24 24', w: '24px', v: 'filled' },
-      { key: 'autoplay', sel: '#labelAutoPlay', icon: 'playCircleHintHalfFilled', vb: '0 0 24 24', w: '24px', v: 'filled' }
+      { key: 'autoplay', sel: '#labelAutoPlay', icon: 'playCircle', vb: '0 0 24 24', w: '24px', v: 'regular' }
     ];
 
     const settings = settingSpecs.map(sp => {
@@ -763,7 +763,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const expectedSpeakerD = FI.create('speaker', 20).querySelector('path').getAttribute('d');
     const expectedMicD = FI.create('micFilled', 20, '', 'filled').querySelector('path').getAttribute('d');
     const expectedStopD = FI.PATHS.stop;
-    const expectedPlayD = FI.create('playCircleHintHalfFilled', 20, '', 'filled').querySelector('path').getAttribute('d');
+    const expectedPlayD = FI.create('playCircle', 20, '', 'regular').querySelector('path').getAttribute('d');
 
     const autostopD = document.querySelector('#labelAutoRecord svg path')?.getAttribute('d');
     const autoplayD = document.querySelector('#labelAutoPlay svg path')?.getAttribute('d');
@@ -809,8 +809,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const selectedAmber = withIcon.filter(b => b.getAttribute('aria-pressed') === 'true').every(b => getComputedStyle(b.querySelector('svg')).color === amber);
     const unselectedNotAmber = withIcon.filter(b => b.getAttribute('aria-pressed') !== 'true').every(b => getComputedStyle(b.querySelector('svg')).color !== amber);
     const phaseC = {
-      removedKeys: ['personAccounts','chatMultiple','lightbulb','localLanguageGlobeFilled','chatHintHalf','textEditStyle'].every(k => !(k in FI.PATHS)),
-      preservedSharedKeys: ['playCircle','speaker','play','stop','localLanguageGlobe'].every(k => k in FI.PATHS),
+      removedKeys: ['personAccounts','chatMultiple','lightbulb','localLanguageGlobeFilled','textEditStyle'].every(k => !(k in FI.PATHS)),
+      preservedSharedKeys: ['playCircle','speaker','play','stop','localLanguageGlobe','chatHintHalf'].every(k => k in FI.PATHS),
       autostopAmber: svgColor('#labelAutoRecord') === amber,
       autoplayAmber: svgColor('#labelAutoPlay') === amber,
       bulbsAmber: descs.every(d => d.color === amber),
@@ -851,7 +851,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(fluentUiAudit.descsMatch, true, 'All 5 instruction blocks use official Fluent Lightbulb 24 Filled SVG (20px) with no 💡 emoji');
   eq(fluentUiAudit.voiceMatch, true, 'Footer Voice label uses Fluent Speaker 2 24 Regular SVG identical to model audio button with no 🔊 emoji');
   eq(fluentUiAudit.settings.find(s => s.key === 'autostop')?.dMatch, true, 'Autostop icon uses exact official Fluent Mic 24 Filled SVG path');
-  eq(fluentUiAudit.autoplaySharesPlay, true, 'Autoplay icon uses exact Fluent Play Circle Hint Half 24 Filled SVG path');
+  eq(fluentUiAudit.autoplaySharesPlay, true, 'Auto-Compare icon uses exact Fluent Play Circle 24 Regular SVG path');
   for (const s of fluentUiAudit.settings) {
     eq(s, {
       key: s.key,
@@ -861,7 +861,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       wMatch: true,
       noLegacyEmoji: true,
       noEmojiWrapper: true,
-      filled: s.key !== 'hiragana' && s.key !== 'kanji'
+      filled: s.key !== 'hiragana' && s.key !== 'kanji' && s.key !== 'autoplay'
     }, `Global setting [${s.key}] renders official Fluent SVG with optical size and no legacy emoji`);
   }
   eq(fluentUiAudit.phaseC, { removedKeys: true, preservedSharedKeys: true, autostopAmber: true, autoplayAmber: true, bulbsAmber: true, micIconPathMatch: true, stopKeyPreserved: true, autostopLabelLayoutOk: true, heightOk: true, noOverlap: true, selectedAmber: true, unselectedNotAmber: true }, 'Mic Filled path, preserved stop key, amber icons, and unchanged layout');
@@ -929,6 +929,29 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     allLeftAligned: true,
     autoCompareLabel: true
   }, 'All 11 Global Settings tooltips have left-aligned text, correct wording with -s, br where required, and Auto-Compare label');
+
+  // Verify disabled Copy button opacity (0.55) and Mismatch error color consistency (Light/Dark)
+  const copyOpacity = await p.evaluate(() => {
+    const btn = document.querySelector('.p82-copy-button:disabled');
+    return btn ? getComputedStyle(btn).opacity : null;
+  });
+  eq(copyOpacity, '0.55', 'Practice 8.2 disabled Copy button opacity must be 0.55');
+
+  const checkP82MismatchColor = async (scheme, expectedColor) => {
+    await p.emulateMedia({ colorScheme: scheme });
+    const col = await p.evaluate(() => {
+      const span = document.createElement('span');
+      span.style.color = 'var(--semantic-negative-color, var(--error-text, #be123c))';
+      document.body.append(span);
+      const c = getComputedStyle(span).color;
+      span.remove();
+      return c;
+    });
+    eq(col, expectedColor, `Practice 8.2 mismatch red color in ${scheme} mode matches semantic negative color`);
+  };
+  await checkP82MismatchColor('light', 'rgb(225, 29, 72)');
+  await checkP82MismatchColor('dark', 'rgb(255, 138, 165)');
+  await p.emulateMedia({ colorScheme: 'light' });
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
