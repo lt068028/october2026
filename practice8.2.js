@@ -390,7 +390,7 @@ function stopPlayback(isNaturalFinish = false) {
 
     if (relayKey) {
         const v = views.get(relayKey);
-        const recPlay = v?.result?.querySelector('.play-recording-btn');
+        const recPlay = v?.mainRow?.querySelector('.play-recording-btn');
         if (!isNaturalFinish) {
             stoppedDrillButtons.clear();
             if (v?.listen) stoppedDrillButtons.add(v.listen);
@@ -422,7 +422,7 @@ function markExPlaying(b) {
     b.classList.add('is-playing');
     const iconWrap = b.querySelector('.ex-audio-icon');
     if (iconWrap && window.FluentIcons) {
-        iconWrap.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled'));
+        iconWrap.replaceChildren(window.FluentIcons.create('stop', 20, '', 'regular'));
     }
     b._originalAriaLabel = b.getAttribute('aria-label');
     if (b.dataset.answer === 'yes') {
@@ -444,14 +444,14 @@ function setDrillStopIcon(b) {
     b._originalAriaLabel = b.getAttribute('aria-label');
     b.setAttribute('aria-label', '再生を停止');
     if (window.FluentIcons) {
-        b.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled'));
+        b.replaceChildren(window.FluentIcons.create('stop', 20, '', 'regular'));
     }
 }
 
 function markRelayPlaying(key) {
     relayKey = key;
     const v = views.get(key);
-    const recPlay = v?.result?.querySelector('.play-recording-btn');
+    const recPlay = v?.mainRow?.querySelector('.play-recording-btn');
     setDrillStopIcon(v?.listen);
     setDrillStopIcon(recPlay);
     for (const b of [v?.listen, recPlay]) {
@@ -890,7 +890,10 @@ function showResult(key,notice='') {
     const value=saved.get(key);
     v.result.classList.remove('not-recorded-yet');
     v.result.classList.remove('recording-status');
-    v.result.replaceChildren();v.correction.replaceChildren();v.correction.hidden=true;
+    v.result.replaceChildren();
+    v.mainRow.replaceChildren(v.result);
+    v.subRow.replaceChildren();v.subRow.hidden=true;
+    v.correction.replaceChildren();v.correction.hidden=true;
     v.feedback.replaceChildren();v.feedback.hidden=true;
     if(session?.key===key){
         v.result.classList.add('recording-status');
@@ -949,20 +952,32 @@ function showResult(key,notice='') {
                     }
                 }
             }
-            v.result.append(document.createTextNode(' '),retryUnit);
+            v.subRow.append(retryUnit);
+            v.subRow.hidden=false;
         }
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else {v.result.textContent='… Not yet';v.result.classList.add('not-recorded-yet');}
+    }else if(value?.url) {
+        v.result.textContent='No transcription available.';
+    }else {
+        v.result.textContent='… Not yet';
+        v.result.classList.add('not-recorded-yet');
+    }
     if(value?.url) {
-        const playIcon = window.FluentIcons ? window.FluentIcons.create('playCircle', 20, '', 'filled') : document.createTextNode('▶️');
-        const play=button(playIcon,()=>playRecording(key,play),'Play your recorded voice');
+        const playIcon = window.FluentIcons ? window.FluentIcons.create('playCircle', 20, '', 'regular') : document.createTextNode('▶️');
+        const play=button(playIcon,()=>playRecording(key,play),v.isFirstRow?'Play your recorded voice.':'');
         play.classList.add('play-recording-btn');
         play.dataset.audioRole = 'play';
-        v.result.append(play);
+        v.mainRow.append(play);
     }
-    if(notice){const note=document.createElement('span');note.className='p81-notice';note.textContent=notice;v.result.append(note);}
+    if(notice){
+        const note=document.createElement('span');
+        note.className='p81-notice';
+        note.textContent=notice;
+        v.subRow.append(note);
+        v.subRow.hidden=false;
+    }
 }
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 
@@ -1115,8 +1130,8 @@ function render(){
  sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
- if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();});choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
- const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(r.text,listen);},(index===0&&ri===0)?'Listen to the model.':'');listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{if(session?.key===key){session.stop();return;}record(key,r);},(index===0&&ri===0)?'Record your answer.':'');if(index===0&&ri===0)rec.dataset.introTip='Record your answer.';rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),result=node('span','result-text'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');correction.hidden=true;feeling.hidden=true;wrap.append(result,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,rec,listen,result,correction,feedback:feeling,autostopHost,autostopTip});showResult(key);
+ if(r.yn)for(const value of ['yes','no']){const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();},(si===2&&index===0)?(value==='yes'?'Affirmative response':'Negative response'):'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',value==='yes'?'Affirmative response':'Negative response');choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
+ const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const isFirstRow=(si===0&&index===0&&ri===0);const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(r.text,listen);},isFirstRow?'Listen to the model answer.':'');listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{if(session?.key===key){session.stop();return;}record(key,r);},isFirstRow?'Record your answer.':'');if(isFirstRow)rec.dataset.introTip='Record your answer.';rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),mainRow=node('div','result-main-row'),result=node('span','result-text'),subRow=node('div','result-sub-row'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');subRow.hidden=true;correction.hidden=true;feeling.hidden=true;mainRow.append(result);wrap.append(mainRow,subRow,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,si,isFirstRow,rec,listen,mainRow,result,subRow,correction,feedback:feeling,autostopHost,autostopTip});showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
 }
 function renderEnglishCuePanel(){
@@ -1208,7 +1223,7 @@ function sync() {
             v.rec.classList.add('stop-btn-active');
             v.rec.removeAttribute('title');
             v.rec.setAttribute('aria-label', '録音を停止');
-            if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('stop', 20, '', 'filled')); }
+            if (window.FluentIcons) { v.rec.replaceChildren(window.FluentIcons.create('stop', 20, '', 'regular')); }
         } else {
             v.rec.classList.remove('stop-btn-active');
             v.rec.removeAttribute('title');
@@ -1244,7 +1259,7 @@ function sync() {
             }
         }
 
-        const recPlay = v.result?.querySelector('.play-recording-btn');
+        const recPlay = v.mainRow?.querySelector('.play-recording-btn');
         if (recPlay) {
             if (recBusy || exPlaying) {
                 recPlay.disabled = true;
@@ -1417,7 +1432,7 @@ async function record(key, r) {
         showResult(
             key,
             s.notice ||
-            (!s.raw.trim() ? "No speech recognized." : "")
+            (!s.raw.trim() && !saved.get(key)?.url ? "No speech recognized." : "")
         );
 
         sync();
@@ -1430,7 +1445,7 @@ async function record(key, r) {
             const view = views.get(key);
             DrillAudio.playRelay({
                 recordButton: view.rec,
-                result: view.result,
+                result: view.mainRow,
                 speak: done => speak(r.text, null, () => { if (relayKey === key) done(); }, true),
                 url: () => saved.get(key)?.url,
                 keepButtons: true

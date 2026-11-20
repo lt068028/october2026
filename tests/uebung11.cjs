@@ -51,8 +51,8 @@ const fluentJs = fs.readFileSync(path.join(root, 'fluent-icons.js'), 'utf8');
 assert.ok(fluentJs.includes('chatHintHalf:') && fluentJs.includes('warning:') && fluentJs.includes('"chatHintHalfFilled":') && fluentJs.includes('"warningFilled":'), 'fluent-icons.js must preserve existing Regular/Filled keys and add warningFilled');
 assert.ok(css.includes('color: #fbbf24;') && css.includes('filter: grayscale(100%);'), 'CSS must apply amber #fbbf24 and flag-only dimming');
 assert.ok(css.includes('.uebung11-page .uebung-cue-place-stack'), 'CSS must align Drill 3-1 alternative cue under target noun');
-assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire'), 'CSS must style split inline Fire icon');
-assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result {\n    justify-content: flex-end;\n    text-align: right;'), 'Result region must be right-aligned');
+assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-main-row > .result-text > .feedback-retry-fire'), 'CSS must style split inline Fire icon');
+assert.ok(css.includes(':is(.practice82-page, .uebung11-page) .recording-controls > .recording-result {') && css.includes('align-items: flex-end;') && css.includes('text-align: right;'), 'Result region must be right-aligned');
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result .feedback-retry-label'), 'CSS must style inline Keep going! retry label');
 assert.ok(css.includes('.uebung11-page .uebung-regional-note'), 'style.css must have simple regional note rules');
 assert.ok(css.includes('color: var(--text-secondary);'), 'Regional note must use Option 1 --text-secondary color');
@@ -692,16 +692,54 @@ async function runRecordingLifecycleTests() {
         // 19 Scenarios based on Section 7 Requirements
         // =========================================================================
 
+        // --- Section structure check: Example -> Info Panel -> Drill rows ---
+        const d1OrderOk = await page.evaluate(() => {
+            const sec = document.querySelector('#drill1');
+            const kids = [...sec.children];
+            const exIdx = kids.findIndex(el => el.classList.contains('example-box'));
+            const panelIdx = kids.findIndex(el => el.classList.contains('info-panel'));
+            const drillIdx = kids.findIndex(el => el.classList.contains('drill-row'));
+            return exIdx !== -1 && panelIdx !== -1 && drillIdx !== -1 && exIdx < panelIdx && panelIdx < drillIdx;
+        });
+        assert.equal(d1OrderOk, true, 'D1.1 section order must place .example-box before .info-panel and .drill-row');
+
         // --- Scenario 1: Autostop ONで未発話5秒停止 ---
         await clickRecord(false);
         assert.ok(await isRecording(), 'S1: Recording started in Autostop ON');
+        const tipDuringAutostop = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            const host = row?.querySelector('.p82-autostop-tip-host');
+            const recTip = row?.querySelector('.drill-record-btn > .custom-tip-box');
+            const hostTip = host?.querySelector(':scope > .custom-tip-box');
+            return {
+                hostOpen: Boolean(host?.classList.contains('p82-autostop-open')),
+                hostText: hostTip?.textContent || '',
+                hasDuplicateRecTip: Boolean(recTip)
+            };
+        });
+        assert.deepEqual(tipDuringAutostop, {
+            hostOpen: true,
+            hostText: 'Autostop: ON',
+            hasDuplicateRecTip: false
+        }, 'S1: Shows single Autostop: ON tooltip on host while Autostop ON recording is active');
         await advanceToElapsed(4800);
         assert.ok(await isRecording(), 'S1: Still recording at 4.8s without speech');
         await advanceToElapsed(5100);
         await page.clock.runFor(100);
         assert.ok(!(await isRecording()), 'S1: Stopped at 5.0s timeout');
-        const resText1 = await getResult().textContent();
-        assert.ok(resText1.includes('No speech detected within 5 seconds.'), 'S1: Shows 5s timeout message');
+        const s1UiState = await page.evaluate(() => {
+            const row = document.querySelector('#drill1 .drill-row');
+            return {
+                mainText: row?.querySelector('.recording-result > .result-main-row > .result-text')?.textContent || '',
+                subNotice: row?.querySelector('.recording-result > .result-sub-row > .result-notice')?.textContent || '',
+                hostOpen: Boolean(row?.querySelector('.p82-autostop-tip-host')?.classList.contains('p82-autostop-open')),
+                restoredRecTip: row?.querySelector('.drill-record-btn > .custom-tip-box')?.textContent || ''
+            };
+        });
+        assert.equal(s1UiState.mainText, '… Not yet', 'S1: Keeps … Not yet in row 1 after unsaved timeout notice');
+        assert.equal(s1UiState.subNotice, 'No speech detected within 5 seconds.', 'S1: Shows 5s timeout notice independently in row 2');
+        assert.equal(s1UiState.hostOpen, false, 'S1: Closes Autostop: ON tooltip after stopping');
+        assert.equal(s1UiState.restoredRecTip, 'Record your answer.', 'S1: Restores Drill 1 Item 1 Record your answer. tooltip after stopping');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'S1: No play button saved');
 
         // --- Scenario 2: Autostop OFF（Manual）で未発話5秒タイムアウトが発動しない ---
@@ -1190,6 +1228,8 @@ async function runRecordingLifecycleTests() {
         await setSpeaking(true);
         await page.clock.runFor(400);
         await triggerRecognition('Ich fliege zu Berlin.');
+        const duringRecText = await getResult().locator('.result-main-row > .result-text').textContent();
+        assert.equal(duringRecText, 'Recording...', 'D1.1 hides intermediate STT text and keeps Recording... until recording stops');
         await setSpeaking(false);
         await page.clock.runFor(2200);
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });
@@ -1197,15 +1237,17 @@ async function runRecordingLifecycleTests() {
 
         const mismatchLayout = await page.evaluate(() => {
             const row = document.querySelector('#drill1 .drill-row');
-            const resText = row?.querySelector('.recording-result > .result-text');
+            const resText = row?.querySelector('.recording-result > .result-main-row > .result-text');
+            const subRow = row?.querySelector('.recording-result > .result-sub-row');
             const fire = resText?.querySelector('.feedback-retry-fire');
-            const retry = resText?.querySelector('.feedback-retry-label');
+            const retry = subRow?.querySelector('.feedback-retry-label');
             const fireRect = fire?.getBoundingClientRect();
             const retryRect = retry?.getBoundingClientRect();
             return {
                 isFireFirstChild: resText?.firstElementChild === fire,
-                hasInlineRetry: Boolean(retry),
-                fireBeforeRetry: fireRect && retryRect ? fireRect.left < retryRect.left : false,
+                hasSubRowRetry: Boolean(retry),
+                subRowVisible: Boolean(subRow && !subRow.hidden),
+                retryBelowMainRow: fireRect && retryRect ? retryRect.top >= fireRect.bottom - 2 : false,
                 retryFontSize: retry ? window.getComputedStyle(retry).fontSize : null,
                 resTextAlign: resText ? window.getComputedStyle(resText).textAlign : null,
                 resDisplay: resText ? window.getComputedStyle(resText).display : null,
@@ -1213,8 +1255,9 @@ async function runRecordingLifecycleTests() {
             };
         });
         assert.equal(mismatchLayout.isFireFirstChild, true, 'Mismatch must place 🔥 icon at the start of .result-text');
-        assert.equal(mismatchLayout.hasInlineRetry, true, 'Mismatch must place Keep going! label at the end of .result-text');
-        assert.equal(mismatchLayout.fireBeforeRetry, true, '🔥 must visually appear to the left of Keep going!');
+        assert.equal(mismatchLayout.hasSubRowRetry, true, 'Mismatch must place Keep going! label inside .result-sub-row');
+        assert.equal(mismatchLayout.subRowVisible, true, 'Mismatch must show .result-sub-row');
+        assert.equal(mismatchLayout.retryBelowMainRow, true, 'Keep going! in .result-sub-row must render below row 1');
         assert.equal(mismatchLayout.retryFontSize, '18.2px', 'Inline Keep going! must be 18.2px');
         assert.equal(mismatchLayout.resTextAlign, 'right', 'Result text must be right-aligned');
         assert.notEqual(mismatchLayout.resDisplay, 'flex', 'Result text must not be flex container');

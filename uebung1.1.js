@@ -910,7 +910,7 @@ function initGermanDrill() {
         const playing = Boolean(playingButton || activeExButton || relayKey);
         const locked = busy || playing;
         const relayView = relayKey ? views.get(relayKey) : null;
-        const relayPlayBtn = relayView?.result?.querySelector(".play-recording-btn");
+        const relayPlayBtn = relayView?.mainRow?.querySelector(".play-recording-btn");
 
         document.querySelectorAll(
             ".compact-settings button, .compact-settings input, #voiceSelect"
@@ -938,6 +938,33 @@ function initGermanDrill() {
                 isRecordingTarget ? (canManualStop ? "Aufnahme stoppen" : "Aufnahme läuft") : "Antwort aufnehmen"
             );
             v.rec.disabled = isRecordingTarget ? !canManualStop : locked;
+
+            const showAutostop = isRecordingTarget && Boolean(session?.recordingStarted && !session.manual && !session.stopping);
+            if (v.autostopHost) {
+                const wasOpen = v.autostopHost.classList.contains("p82-autostop-open");
+                if (showAutostop) {
+                    if (!wasOpen) {
+                        v.autostopHost.classList.add("custom-tip-wrap", "p82-autostop-open");
+                        window.DrillTooltips?.position(v.autostopHost, v.autostopTip);
+                    }
+                } else {
+                    v.autostopHost.classList.remove("custom-tip-wrap", "p82-autostop-open");
+                }
+            }
+
+            if (v.rec.dataset.introTip && !isRecordingTarget) {
+                let tip = v.rec.querySelector(".custom-tip-box");
+                if (!tip) {
+                    tip = node("span", "custom-tip-box", v.rec.dataset.introTip);
+                    v.rec.append(tip);
+                } else if (tip.textContent !== v.rec.dataset.introTip) {
+                    tip.textContent = v.rec.dataset.introTip;
+                }
+                v.rec.classList.add("custom-tip-wrap");
+            } else {
+                v.rec.querySelector(".custom-tip-box")?.remove();
+                v.rec.classList.remove("custom-tip-wrap");
+            }
         });
 
         updateCopyButtons();
@@ -977,7 +1004,7 @@ function initGermanDrill() {
         relayKey = null;
         const rv = views.get(keyToClear);
         if (!rv) return;
-        const playBtn = rv.result?.querySelector(".play-recording-btn");
+        const playBtn = rv.mainRow?.querySelector(".play-recording-btn");
         if (rv.listen) {
             setButtonAudioIcon(rv.listen, "speaker2", "regular");
         }
@@ -1531,6 +1558,9 @@ function initGermanDrill() {
 
         const v = views.get(key);
         if (v) {
+            v.mainRow.replaceChildren(v.result);
+            v.subRow.replaceChildren();
+            v.subRow.hidden = true;
             v.result.classList.remove("not-recorded-yet");
             v.result.classList.add("recording-status");
             v.result.textContent = "Preparing microphone...";
@@ -1552,6 +1582,7 @@ function initGermanDrill() {
         const s = {
             key,
             manual,
+            recordingStarted: false,
             stopping: false,
             finished: false,
             speechStarted: false,
@@ -1677,7 +1708,7 @@ function initGermanDrill() {
             if (autoplay && !s.discard && raw && url) {
                 stopAllPlayback();
                 const currentView = views.get(key);
-                const playBtn = currentView?.result?.querySelector(".play-recording-btn");
+                const playBtn = currentView?.mainRow?.querySelector(".play-recording-btn");
                 const gen = ++playbackGeneration;
                 relayKey = key;
                 [currentView?.listen, playBtn].forEach(b => {
@@ -1697,7 +1728,7 @@ function initGermanDrill() {
                 try {
                     DrillAudio.playRelay({
                         recordButton: currentView.rec,
-                        result: currentView.result,
+                        result: currentView.mainRow,
                         keepButtons: true,
                         speak: done => {
                             suppressRelayPreStop = false;
@@ -1777,12 +1808,6 @@ function initGermanDrill() {
                 }
                 if (finalStr) s.raw += finalStr;
                 s.interim = interimStr;
-
-                const display = (s.raw + (s.interim ? ` (${s.interim})` : "")).trim();
-                const view = views.get(key);
-                if (view && display) {
-                    view.result.textContent = display;
-                }
             };
 
             s.recognition.onerror = event => {
@@ -1823,6 +1848,8 @@ function initGermanDrill() {
                 s.stop("Recording error.", true, "rec-error");
             };
             s.recorder.start();
+            s.recordingStarted = true;
+            sync();
         } catch (_) {
             s.recorderDone = true;
             s.stop("Could not start recording.", true, "rec-error");
@@ -1917,6 +1944,9 @@ function initGermanDrill() {
         v.result.classList.remove("recording-status");
         v.result.classList.remove("not-recorded-yet");
         v.result.replaceChildren();
+        v.mainRow.replaceChildren(v.result);
+        v.subRow.replaceChildren();
+        v.subRow.hidden = true;
         v.correction.replaceChildren();
         v.correction.hidden = true;
 
@@ -1926,6 +1956,8 @@ function initGermanDrill() {
             v.result.textContent = "Recording...";
             return;
         }
+
+        let noticeHandledInMain = false;
 
         if (val?.raw && val.judgment !== "empty") {
             const judgment = val.judgment || (val.correct ? "accepted" : "mismatch");
@@ -1983,15 +2015,17 @@ function initGermanDrill() {
                     v.result.append(document.createTextNode(val.raw));
                 }
 
-                v.result.append(document.createTextNode(" "), retryUnit);
+                v.subRow.append(retryUnit);
                 v.correction.hidden = true;
             }
-        } else if (notice || val?.judgment === "empty") {
-            const note = node("span", "result-notice", notice || "No transcription available.");
-            note.style.color = "var(--text-secondary)";
-            v.result.append(note);
+        } else if (val?.judgment === "empty" || notice === "No transcription available.") {
+            v.result.append(node("span", "result-notice", "No transcription available."));
+            if (notice === "No transcription available.") {
+                noticeHandledInMain = true;
+            }
         } else {
-            v.result.append(node("span", "result-text not-recorded-yet", "… Not yet"));
+            v.result.classList.add("not-recorded-yet");
+            v.result.textContent = "… Not yet";
         }
 
         if (val?.url) {
@@ -2002,8 +2036,7 @@ function initGermanDrill() {
             });
             play.classList.add("play-recording-btn");
             play.dataset.audioRole = "play";
-            play.style.marginLeft = "8px";
-            v.result.append(play);
+            v.mainRow.append(play);
         }
 
         if (val?.raw && val.judgment === "accepted" && val.supplement) {
@@ -2011,14 +2044,14 @@ function initGermanDrill() {
             const noteVariety = val.supplement.startsWith("🇦🇹") ? "AT" : (val.supplement.startsWith("🇨🇭") ? "CH" : "DE");
             const supp = node("span", "uebung-regional-note");
             supp.append(createFlagSvgElement(noteVariety), document.createTextNode(" " + noteText));
-            v.result.append(supp);
+            v.subRow.append(supp);
         }
 
-        if (val?.raw && notice) {
-            const note = node("span", "result-notice", ` ${notice}`);
-            note.style.color = "var(--text-secondary)";
-            v.result.append(note);
+        if (notice && !noticeHandledInMain) {
+            v.subRow.append(node("span", "result-notice", notice));
         }
+
+        v.subRow.hidden = v.subRow.childElementCount === 0;
     }
 
     // -------------------------------------------------------------
@@ -2210,7 +2243,6 @@ function initGermanDrill() {
                 node("span", "info-panel-title", drill.title),
                 desc
             );
-            section.append(panel);
 
             // Example Box
             const exBox = node("div", "example-box example-text-layout");
@@ -2269,6 +2301,7 @@ function initGermanDrill() {
             exTable.append(exBody);
             exBox.append(exTable);
             section.append(exBox);
+            section.append(panel);
 
             // Drill Cards
             drill.items.forEach((item, index) => {
@@ -2326,17 +2359,29 @@ function initGermanDrill() {
                     if (playingButton || activeExButton || relayKey) return;
                     record(item.id, item);
                 });
+                if (isFirstItemOfDrill1) {
+                    recBtn.dataset.introTip = recTip;
+                }
                 recBtn.classList.add("drill-record-btn");
                 recBtn.dataset.audioRole = "record";
                 recBtn.setAttribute("aria-label", "Antwort aufnehmen");
 
-                actions.append(listenBtn, recBtn);
+                const autostopHost = node("span", "p82-autostop-tip-host");
+                const autostopTip = node("span", "custom-tip-box", "Autostop: ON");
+                autostopTip.setAttribute("role", "tooltip");
+                autostopHost.append(recBtn, autostopTip);
+
+                actions.append(listenBtn, autostopHost);
 
                 const wrap = node("span", "recording-result");
+                const mainRow = node("div", "result-main-row");
                 const result = node("span", "result-text");
+                mainRow.append(result);
+                const subRow = node("div", "result-sub-row");
+                subRow.hidden = true;
                 const correction = node("div", "correction-box");
                 correction.hidden = true;
-                wrap.append(result, correction);
+                wrap.append(mainRow, subRow, correction);
                 layout.append(actions, wrap);
 
                 ctrlTd.append(layout);
@@ -2351,6 +2396,10 @@ function initGermanDrill() {
                     rec: recBtn,
                     listen: listenBtn,
                     result,
+                    mainRow,
+                    subRow,
+                    autostopHost,
+                    autostopTip,
                     correction
                 });
 

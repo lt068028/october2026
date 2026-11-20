@@ -5258,8 +5258,8 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 .practice82-page .ex-audio-icon .fluent-icon-stop,
-.practice82-page :is(.play-recording-btn, .drill-listen-btn, .drill-record-btn) .fluent-icon-stop {
-    color: var(--error-text, #be123c);
+.practice82-page :is(.play-recording-btn, .drill-listen-btn) .fluent-icon-stop {
+    color: currentColor;
 }
 
 .uebung11-page .ex-audio-icon .fluent-icon-stop,
@@ -5404,7 +5404,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     text-align: right;
 }
 
-.uebung11-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+.uebung11-page .recording-controls > .recording-result > .result-main-row > .result-text > .feedback-retry-fire {
     display: inline-block;
     width: 24px;
     height: 24px;
@@ -5421,8 +5421,7 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 }
 
 .uebung11-page .uebung-regional-note {
-    display: flex;
-    width: 100%;
+    display: inline-flex;
     justify-content: flex-end;
     align-items: center;
     gap: 5px;
@@ -5438,7 +5437,6 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
 .uebung11-page .uebung-incomplete-wrap {
     display: inline-flex;
     align-items: center;
-    vertical-align: middle;
     position: relative;
     margin-right: 2px;
 }
@@ -5637,11 +5635,11 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     text-align: right;
 }
 
-/* Practice 8.2 Dr: Stopアイコンだけを赤くし、ボタン全体の背景・枠線は通常色にする */
+/* Practice 8.2 Dr: Manual 録音中の停止ボタンはボタン全体赤背景＋白線アイコン（D1.1・共通 .stop-btn-active と統一） */
 .practice82-page .drill-record-btn.stop-btn-active {
-    background-color: var(--button-bg, #ffffff) !important;
-    border-color: var(--border-color, #cccccc) !important;
-    color: #d93025 !important;
+    background-color: var(--rec-active-bg) !important;
+    border-color: var(--rec-active-bg) !important;
+    color: var(--rec-active-text) !important;
 }
 .practice82-page .drill-listen-btn.is-playing,
 .practice82-page .play-recording-btn.is-playing {
@@ -5649,7 +5647,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     border-color: var(--border-color, #cccccc) !important;
 }
 .practice82-page .drill-record-btn.stop-btn-active svg {
-    color: #d93025;
+    color: currentColor;
     fill: currentColor;
 }
 .practice82-page .drill-listen-btn.is-playing svg,
@@ -5657,7 +5655,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     color: currentColor;
     fill: currentColor;
 }
-.practice82-page .p82-autostop-tip-host {
+:is(.practice82-page, .uebung11-page) .p82-autostop-tip-host {
     display: inline-flex;
     align-items: center;
     position: relative;
@@ -5666,15 +5664,18 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 .practice82-page :is(.compact-settings, .voice-guide-footer) .custom-tip-box {
     text-align: left;
 }
-.practice82-page .p82-autostop-tip-host.p82-autostop-open:hover > .custom-tip-box {
+:is(.practice82-page, .uebung11-page) .p82-autostop-tip-host:not(.p82-autostop-open) > .custom-tip-box {
+    display: none;
+}
+:is(.practice82-page, .uebung11-page) .p82-autostop-tip-host.p82-autostop-open:hover > .custom-tip-box {
     visibility: visible;
     opacity: 1;
 }
-.practice82-page .p82-autostop-tip-host.p82-autostop-open .drill-record-btn {
+:is(.practice82-page, .uebung11-page) .p82-autostop-tip-host.p82-autostop-open .drill-record-btn {
     pointer-events: none;
 }
 
-/* Practice 8.2 & Deutsch 1.1: 録音結果エリアの共通レイアウト（外側Grid + 内側Flex、他ページ隔離） */
+/* Practice 8.2 & Deutsch 1.1: 録音結果エリアの共通レイアウト（外側Grid + 内側2行構造、他ページ隔離） */
 :is(.practice82-page, .uebung11-page) .recording-controls {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
@@ -5693,16 +5694,48 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 :is(.practice82-page, .uebung11-page) .recording-controls > .recording-result {
     grid-column: 2;
     min-width: 0;
-    width: auto;
+    width: 100%;
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    margin: 0;
+    text-align: right;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-main-row > .result-text {
+    display: inline;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 !important;
+    text-align: right;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-main-row > .play-recording-btn {
+    flex-shrink: 0;
+    margin-left: 0 !important;
+}
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-sub-row {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
+    justify-content: flex-end;
     gap: 4px 8px;
-    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    text-align: right;
 }
-:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-text {
-    min-width: 0;
-    overflow-wrap: anywhere;
+:is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-sub-row[hidden] {
+    display: none !important;
 }
 :is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .correction-box {
     margin-top: 0;
@@ -5710,22 +5743,15 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     min-width: 0;
     overflow-wrap: anywhere;
 }
-
-/* Practice 8.2: 結果テキストと再生ボタンの間隔調整、およびAutoplay停止ボタンホバー */
-.practice82-page .recording-controls > .recording-result {
-    gap: 6px 10px;
-    justify-content: flex-end;
-    text-align: right;
-}
-.practice82-page .recording-controls > .recording-result > .result-text {
-    text-align: right;
-}
-.practice82-page .recording-controls > .recording-result .play-recording-btn {
-    margin-left: 4px;
+.practice82-page .recording-result .p81-notice,
+.uebung11-page .recording-result .result-notice {
+    display: inline-block;
+    color: var(--text-secondary);
+    font-size: 18.2px;
 }
 /* Practice 8.2: 採点アイコン視覚パラメータの統合（24px, icon-gap 2px, y-offset -2px, keep-gap 8px / Footprints 25px, y-offset -0.5px） */
 .practice82-page .recording-controls > .recording-result .feedback-status-accepted svg,
-.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+.practice82-page .recording-controls > .recording-result > .result-main-row > .result-text > .feedback-retry-fire {
     width: 24px;
     height: 24px;
     transform: translateY(-2px);
@@ -5753,7 +5779,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     vertical-align: middle;
     color: var(--status-incomplete-color, #8064b0);
 }
-.practice82-page .recording-controls > .recording-result > .result-text > .feedback-retry-fire {
+.practice82-page .recording-controls > .recording-result > .result-main-row > .result-text > .feedback-retry-fire {
     margin-right: 2px;
     display: inline-block;
     color: var(--status-mismatch-color, #b47732);
