@@ -25,7 +25,7 @@
             const target = copies[index], computed = getComputedStyle(original);
             properties.forEach(property => target.style.setProperty(property, computed.getPropertyValue(property)));
             target.style.minWidth = original.matches('button,select,input') ? computed.minWidth : '0'; target.style.maxWidth = 'none';
-            target.style.width = original.style.width ? original.style.width : (original.matches('.p81-kind,.p81-repeat-spacer,.p81-drill-repeat-spacer,.p81-repeat-separator-spacer,.practice7-category,.conversation-role-circle')) ? computed.width : 'auto';
+            target.style.width = original.style.width ? original.style.width : (original.matches('.p81-kind,.p81-repeat-spacer,.p81-drill-repeat-spacer,.p81-repeat-separator-spacer,.practice7-category,.conversation-role-circle,.p82-question-marker-icon')) ? computed.width : 'auto';
             if (computed.display.includes('grid')) target.style.gridTemplateColumns = computed.gridTemplateColumns.split(/\s+/).map(() => 'max-content').join(' ');
             if (original.matches('select,input')) target.value = original.value;
         });

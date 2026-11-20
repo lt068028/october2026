@@ -741,11 +741,12 @@ async function runRecordingLifecycleTests() {
         await advanceToElapsed(5200);
         await page.clock.runFor(100);
         assert.ok(await isRecording(), 'S4: Recognized STT protects against 5.0s timeout');
-        await page.evaluate(() => {
-            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
-        });
-        await page.clock.runFor(100);
-        assert.ok(!(await isRecording()), 'S4: Stopped cleanly via manual stop after valid STT');
+        // Finish cleanly via speech + 2s silence autostop
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        assert.ok(!(await isRecording()), 'S4: Stops cleanly via 2s silence autostop after speech');
 
         // Whitespace-only onresult without mic volume still times out at 5.0s
         await clickRecord(false);

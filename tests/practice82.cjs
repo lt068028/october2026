@@ -1102,14 +1102,14 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
 
   // C. P8.2 Low-Volume STT Protection (6 scenarios, 5s boundary, empty/late discard, interim/final, s.heard empty STT mismatch, Manual no-5s)
   await p.evaluate(() => {
-    const manualToggle = document.getElementById('toggleRecordMode');
-    if (manualToggle?.checked) manualToggle.click();
+    const autoRecord = document.getElementById('toggleRecordMode');
+    if (autoRecord && !autoRecord.checked) autoRecord.click(); // Autostop ON
     const autoToggle = document.getElementById('togglePlaybackMode');
-    if (autoToggle && !autoToggle.checked) autoToggle.click();
+    if (autoToggle && !autoToggle.checked) autoToggle.click(); // Auto-Compare ON
     t.speaking = false;
   });
 
-  // Scenario 1: Low-volume STT within 5s bypasses 5s timeout, stays open without 7s stop, saves on manual stop, and runs Auto-Compare ON relay
+  // Scenario 1: Low-volume STT within 5s bypasses 5s timeout, stays open without 7s stop, saves on speech stop, and runs Auto-Compare ON relay
   const s1Row = p.locator('[data-row="any-2-a"]');
   const s1RecStartCount = await p.evaluate(() => t.recognitions.length);
   await s1Row.locator('.drill-record-btn').click();
@@ -1121,11 +1121,13 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
   });
   await p.waitForTimeout(4500);
-  eq(await s1Row.locator('.stop-btn-active').count(), 1, 'Low-vol STT <=5s keeps recording active past 5s without timeout');
+  eq(await p.evaluate(() => t.recorders.at(-1)?.state), 'recording', 'Low-vol STT <=5s keeps recording active past 5s without timeout');
   eq((await s1Row.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), false, 'Low-vol STT <=5s shows no 5s timeout notice');
   const s1SpokenBefore = await p.evaluate(() => t.spoken.length);
-  await s1Row.locator('.stop-btn-active').click();
-  await p.waitForFunction(() => audit82.saved.has('any-2-a:fixed'));
+  await p.evaluate(() => { t.speaking = true; });
+  await p.waitForTimeout(450);
+  await p.evaluate(() => { t.speaking = false; });
+  await p.waitForFunction(() => audit82.saved.has('any-2-a:fixed'), { timeout: 5000 });
   await p.waitForFunction((n) => t.spoken.length > n, s1SpokenBefore);
   eq(await p.evaluate(() => {
     const entry = audit82.saved.get('any-2-a:fixed');
@@ -1149,7 +1151,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
   });
   await p.waitForTimeout(4800);
-  eq(await s1Row.locator('.stop-btn-active').count(), 0, 'Empty/whitespace STT triggers 5s autostop');
+  eq(await p.evaluate(() => t.recorders.at(-1)?.state), 'inactive', 'Empty/whitespace STT triggers 5s autostop');
   eq((await s1Row.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), true, 'Empty/whitespace STT shows 5s timeout notice');
   await p.evaluate(() => {
     const res = [{ transcript: 'あとから届いた認識' }];
@@ -1158,10 +1160,12 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   });
   eq(await p.evaluate(() => audit82.saved.get('any-2-a:fixed')?.raw), '大学で何か教えます', '5s discard preserves previous saved recording and ignores late onresult');
 
-  // Turn off Auto-Compare for remaining save checks
+  // Switch to Manual mode & turn off Auto-Compare for manual stop tests (Scenarios 4a, 4b, 5, 6)
   await p.evaluate(() => {
+    const autoRecord = document.getElementById('toggleRecordMode');
+    if (autoRecord?.checked) autoRecord.click(); // Manual
     const autoToggle = document.getElementById('togglePlaybackMode');
-    if (autoToggle?.checked) autoToggle.click();
+    if (autoToggle?.checked) autoToggle.click(); // Auto-Compare OFF
   });
 
   // Scenario 4a: Interim-only low-volume STT saved on manual stop
@@ -1219,11 +1223,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   })), { raw: '', status: 'mismatch' }, 'Empty STT with s.heard === true saves as mismatch');
 
   // Scenario 6: Manual mode has NO 5s timeout even with speaking: false and no STT
-  await p.evaluate(() => {
-    t.speaking = false;
-    const manualToggle = document.getElementById('toggleRecordMode');
-    if (manualToggle && !manualToggle.checked) manualToggle.click();
-  });
+  await p.evaluate(() => { t.speaking = false; });
   const s6RecCount = await p.evaluate(() => t.recognitions.length);
   await s4Row.locator('.drill-record-btn').click();
   await p.waitForFunction((n) => t.recognitions.length > n, s6RecCount);
@@ -1232,8 +1232,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await s4Row.locator('.stop-btn-active').click();
   await p.waitForTimeout(150);
   await p.evaluate(() => {
-    const manualToggle = document.getElementById('toggleRecordMode');
-    if (manualToggle?.checked) manualToggle.click();
+    const autoRecord = document.getElementById('toggleRecordMode');
+    if (autoRecord && !autoRecord.checked) autoRecord.click(); // restore Autostop ON
   });
 
   // D. Practice 8.2 25px hysteresis and mixed-group (inline + stacked) track isolation
@@ -1339,10 +1339,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
 
   // E. Low-volume STT validity boundary (5 patterns: "...", "、。", "   ", "★♪", valid text)
   await p.evaluate(() => {
-    const manualToggle = document.getElementById('toggleRecordMode');
-    if (manualToggle?.checked) manualToggle.click();
+    const autoRecord = document.getElementById('toggleRecordMode');
+    if (autoRecord && !autoRecord.checked) autoRecord.click(); // Autostop ON
     const autoToggle = document.getElementById('togglePlaybackMode');
-    if (autoToggle && !autoToggle.checked) autoToggle.click();
+    if (autoToggle && !autoToggle.checked) autoToggle.click(); // Auto-Compare ON
     t.speaking = false;
   });
   const eRow = p.locator('[data-row="any-1-a"]');
@@ -1358,7 +1358,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
     }, invalidStt);
     await p.waitForTimeout(4900);
-    eq(await eRow.locator('.stop-btn-active').count(), 0,
+    eq(await p.evaluate(() => t.recorders.at(-1)?.state), 'inactive',
       `Invalid low-vol STT ${JSON.stringify(invalidStt)} triggers 5s timeout`);
     eq((await eRow.locator('.result-text').textContent()).includes('No speech detected within 5 seconds.'), true,
       `Invalid low-vol STT ${JSON.stringify(invalidStt)} shows 5s timeout message`);
@@ -1381,9 +1381,11 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
   });
   await p.waitForTimeout(4900);
-  eq(await eRow.locator('.stop-btn-active').count(), 1, 'Valid Japanese low-vol STT bypasses 5s timeout');
-  await eRow.locator('.stop-btn-active').click();
-  await p.waitForFunction(() => audit82.saved.has('any-1-a:fixed'));
+  eq(await p.evaluate(() => t.recorders.at(-1)?.state), 'recording', 'Valid Japanese low-vol STT bypasses 5s timeout');
+  await p.evaluate(() => { t.speaking = true; });
+  await p.waitForTimeout(450);
+  await p.evaluate(() => { t.speaking = false; });
+  await p.waitForFunction(() => audit82.saved.has('any-1-a:fixed'), { timeout: 5000 });
   await p.waitForFunction((n) => t.spoken.length > n, validSpokenBefore);
   eq(await p.evaluate(() => audit82.saved.get('any-1-a:fixed')?.raw), '何か食べます', 'Valid Japanese low-vol STT saves raw transcript');
   eq(await eRow.locator('.play-recording-btn').count(), 1, 'Valid Japanese low-vol STT renders playback button');
