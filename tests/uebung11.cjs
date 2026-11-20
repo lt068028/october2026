@@ -317,7 +317,7 @@ assert.ok(css.includes('.uebung11-page .result-missing'), 'CSS must style .uebun
 const missingRule = css.match(/\.uebung11-page \.result-missing\s*\{([^}]*)\}/);
 assert.ok(missingRule && /font-weight:\s*400/.test(missingRule[1]), 'Missing ＿ marker must use regular font weight');
 const incorrectRule = css.match(/\.uebung11-page \.result-incorrect\s*\{([^}]*)\}/);
-assert.ok(incorrectRule && /font-weight:\s*700/.test(incorrectRule[1]), 'Incorrect STT tokens must remain bold');
+assert.ok(incorrectRule && /font-weight:\s*400/.test(incorrectRule[1]), 'Incorrect STT tokens must use regular font weight');
 assert.ok(js.includes('node("span", "result-missing", tok.text)'), 'Missing diff tokens must render with result-missing');
 assert.ok(css.includes('.correction-box'), 'CSS must style .correction-box');
 assert.ok(feedbackCss.includes('.feedback-status'), 'Feedback CSS must style shared status renderers');
