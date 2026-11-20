@@ -126,10 +126,13 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
    eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${mode}/${hint}/${width}px`);
   }
  }
+ await p.locator('#hintModeControl [data-value="hover"]').click();
+ await p.waitForTimeout(80);
  for(const width of [375,600,900,1440])for(const theme of ['light','dark']){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});
   eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${width}px ${theme}`);
  }
+ await p.emulateMedia({colorScheme:'light'});
   // Typography & Computed Font Size Verification (18.2px / 20.8px / 15.6px)
   // 1. Normal STT extracted text: 20.8px
   eq(await p.locator('[data-row="any-0-a"] .result-text').evaluate(el=>getComputedStyle(el).fontSize),'20.8px','Practice 8.2 normal STT text font size is 20.8px');

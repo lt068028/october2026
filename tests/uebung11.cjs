@@ -769,7 +769,7 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'S5: Auto-stopped after 2.0s silence');
 
         // --- Scenario 6: Autostop OFFで発話後2秒無音停止しない ＋ 2ボタン構成・手動停止検証 ---
-        const actionsBtnCount = await page.locator('#drill1 .drill-row .recording-actions button').count();
+        const actionsBtnCount = await page.locator('#drill1 .drill-row').first().locator('.recording-actions button').count();
         assert.equal(actionsBtnCount, 2, 'S6: .recording-actions must contain exactly 2 buttons (listen + rec)');
         assert.equal(await page.locator('#drillsContainer button[data-stop]').count(), 0, 'S6: Must not render 3rd stop button');
 
