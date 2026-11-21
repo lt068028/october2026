@@ -1821,6 +1821,26 @@ async function runRecordingLifecycleTests() {
         const contextsClosed = await page.evaluate(() => window.t.contexts.every(c => c.state === 'closed'));
         assert.ok(contextsClosed, 'All AudioContext instances closed');
 
+        // Escape dismiss and suppression checks for Übung 1.1
+        const backLink = page.locator('.back-link.custom-tip-wrap').first();
+        if (await backLink.count() > 0) {
+            await backLink.hover();
+            assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
+                'Uebung 1.1 back-link tooltip visible on hover');
+            await page.keyboard.press('Escape');
+            assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'hidden' && parseFloat(getComputedStyle(e).opacity) === 0), true,
+                'Uebung 1.1 back-link tooltip hidden on Escape');
+            assert.equal(await backLink.evaluate(e => e.getAttribute('data-tip-suppressed') === 'true'), true,
+                'Uebung 1.1 back-link tooltip suppressed on Escape');
+            await page.mouse.move(0, 0);
+            assert.equal(await backLink.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true,
+                'Uebung 1.1 back-link suppression cleared on pointer leave');
+            await backLink.hover();
+            assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
+                'Uebung 1.1 back-link tooltip re-revealed on new hover');
+            await page.mouse.move(0, 0);
+        }
+
         assert.equal(errors.length, 0, 'No uncaught page errors during tests');
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {

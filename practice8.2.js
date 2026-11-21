@@ -991,7 +991,7 @@ document.addEventListener('click',event=>{
  document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));
  if(host&&!wasOpen){host.classList.add('p82-translation-open');window.DrillTooltips?.position(host);}
 });
-document.addEventListener('keydown',event=>{if(event.key==='Escape'){document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));if(document.activeElement?.matches('.p82-concept-english,.p82-model-translation'))document.activeElement.blur();}});
+window.DrillTooltips?.enableEscapeDismiss();
 
 function createExampleArrowSvg(){
  const NS='http://www.w3.org/2000/svg';

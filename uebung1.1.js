@@ -719,6 +719,7 @@ function evaluateGermanAnswer(raw, item, variety = "DE") {
 }
 
 function initGermanDrill() {
+    window.DrillTooltips?.enableEscapeDismiss();
 
     // -------------------------------------------------------------
     // 2. Global State

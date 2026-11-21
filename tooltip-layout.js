@@ -60,7 +60,140 @@
         tip.style.setProperty('--tip-left', `${left}px`);
         tip.style.setProperty('--tip-top', `${top}px`);
     }
-    window.DrillTooltips = { position };
+    const escapeTipSelector = '.custom-tip-wrap, .tooltip-wrap, .p82-concept-english, .p82-model-translation, .p82-incomplete-mark, .uebung-incomplete-wrap';
+
+    function isOtherUIPrioritized(event) {
+        if (event.defaultPrevented) return true;
+        if (document.querySelector('.voice-dropdown.open, .voice-list.open, #voiceDropdownBtn[aria-expanded="true"], [id*="voiceDropdownBtn"][aria-expanded="true"]')) return true;
+        if (document.querySelector('#behindTheCuesDrawer.is-open, .drawer.open, body.drawer-open')) return true;
+        if (document.querySelector('details.picker-panel[open], .picker-panel.open')) return true;
+        if (document.querySelector('dialog[open]')) return true;
+        if (document.activeElement && document.activeElement.tagName === 'SELECT') return true;
+        return false;
+    }
+
+    function isStatusIndicator(host) {
+        if (!host || typeof host.matches !== 'function') return false;
+        return host.matches('.p82-autostop-open, .p82-autoplay-stop, .p82-autostop-tip-host, [data-tip-status-only]') ||
+               Boolean(host.closest('.p82-autostop-open, .p82-autoplay-stop, .p82-autostop-tip-host, [data-tip-status-only]'));
+    }
+
+    function isOptInTarget(host) {
+        if (!host) return false;
+        if (isStatusIndicator(host)) return false;
+        return Boolean(host.closest('.practice82-page, .uebung11-page, .uebung-page') || host.dataset.tipEscape === 'true');
+    }
+
+    function findPriorityTarget() {
+        const active = document.activeElement;
+        if (active) {
+            const host = active.closest(escapeTipSelector);
+            if (host && isOptInTarget(host)) return host;
+        }
+        const openHosts = Array.from(document.querySelectorAll('.p82-translation-open, .tap-tip-open'));
+        for (let i = openHosts.length - 1; i >= 0; i--) {
+            const host = openHosts[i].closest(escapeTipSelector);
+            if (host && isOptInTarget(host)) return host;
+        }
+        const hovered = Array.from(document.querySelectorAll(':hover'));
+        for (let i = hovered.length - 1; i >= 0; i--) {
+            const host = hovered[i].closest(escapeTipSelector);
+            if (host && isOptInTarget(host)) return host;
+        }
+        return null;
+    }
+
+    function dismissTarget(host) {
+        if (host.classList.contains('p82-translation-open')) {
+            host.classList.remove('p82-translation-open');
+        }
+        if (host.classList.contains('tap-tip-open')) {
+            host.classList.remove('tap-tip-open');
+            if (openVocabulary === host) openVocabulary = null;
+        }
+        host.setAttribute('data-tip-suppressed', 'true');
+        if (document.activeElement && (document.activeElement === host || host.contains(document.activeElement))) {
+            document.activeElement.blur();
+        }
+    }
+
+    let activePointerDown = false;
+    let suppressCurrentPointerGesture = false;
+
+    function enableEscapeDismiss() {
+        if (DrillTooltips._escapeDismissInitialized) return;
+        DrillTooltips._escapeDismissInitialized = true;
+
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            if (isOtherUIPrioritized(e)) return;
+
+            const target = findPriorityTarget();
+            if (!target) return;
+
+            if (activePointerDown) {
+                suppressCurrentPointerGesture = true;
+            }
+            dismissTarget(target);
+        });
+
+        document.addEventListener('pointerdown', e => {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                activePointerDown = true;
+                const host = e.target.closest?.(escapeTipSelector);
+                if (host && host.hasAttribute('data-tip-suppressed')) {
+                    host.removeAttribute('data-tip-suppressed');
+                }
+            }
+        }, true);
+
+        document.addEventListener('pointerup', e => {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                activePointerDown = false;
+                suppressCurrentPointerGesture = false;
+            }
+        }, true);
+
+        document.addEventListener('pointercancel', e => {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                activePointerDown = false;
+                suppressCurrentPointerGesture = false;
+            }
+        }, true);
+
+        document.addEventListener('click', e => {
+            if (suppressCurrentPointerGesture) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
+
+        document.addEventListener('pointerout', e => {
+            const host = e.target.closest?.(escapeTipSelector);
+            if (host && host.hasAttribute('data-tip-suppressed')) {
+                if (!e.relatedTarget || !host.contains(e.relatedTarget)) {
+                    host.removeAttribute('data-tip-suppressed');
+                }
+            }
+        }, true);
+
+        document.addEventListener('focusout', e => {
+            const host = e.target.closest?.(escapeTipSelector);
+            if (host && host.hasAttribute('data-tip-suppressed')) {
+                if (!e.relatedTarget || !host.contains(e.relatedTarget)) {
+                    host.removeAttribute('data-tip-suppressed');
+                }
+            }
+        }, true);
+    }
+
+    window.DrillTooltips = {
+        position,
+        enableEscapeDismiss,
+        _escapeDismissInitialized: false,
+        isStatusIndicator,
+        isOtherUIPrioritized
+    };
     for (const event of ['pointerover', 'focusin']) {
         document.addEventListener(event, e => {
             const anchor = e.target.closest?.(selector);

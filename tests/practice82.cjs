@@ -1473,5 +1473,18 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.waitForFunction((n) => t.audios.length > n, eAudioBefore);
   await p.evaluate(() => { t.audios.at(-1).onended?.(); });
 
+  // Verify Escape does NOT affect status indicator (.p82-autostop-open / .p82-autoplay-stop)
+  const recBtn = p.locator('#drill1 .drill-record-btn').first();
+  await recBtn.click();
+  await p.waitForFunction(() => t.recognitions.length > 0);
+  const autostopHost = p.locator('.p82-autostop-open').first();
+  if (await autostopHost.count() > 0) {
+    await p.keyboard.press('Escape');
+    eq(await autostopHost.evaluate(e => e.classList.contains('p82-autostop-open')), true, 'Recording autostop host unaffected by Escape');
+    eq(await autostopHost.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Recording autostop host has no data-tip-suppressed');
+  }
+  const stopBtn = p.locator('.stop-btn-active').first();
+  if (await stopBtn.count() > 0) await stopBtn.click();
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

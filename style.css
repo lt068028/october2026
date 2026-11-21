@@ -6026,3 +6026,10 @@ body.site-scale.practice81-page.practice82-page #drill3 .answer-choice {
     margin-top: 0;
     margin-bottom: 0;
 }
+
+/* Escape抑止状態での強制非表示（先行実装ページに限定適用） */
+:is(.practice82-page, .uebung11-page, .uebung-page) [data-tip-suppressed="true"] > :is(.custom-tip-box, .tooltip-tip, .tooltip-box) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
