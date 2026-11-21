@@ -69,7 +69,7 @@
         for (const info of infos) {
             const number = Math.max(...info.group.map(i => i.number));
             const available = info.table.clientWidth;
-            const measuredGap = parseFloat(getComputedStyle(table).columnGap);
+            const measuredGap = parseFloat(getComputedStyle(info.table).columnGap);
             const gap = Number.isFinite(measuredGap) ? measuredGap : 4;
             const room = available - number - info.actions - (number > 0 ? 2 : 1) * gap;
             const currentLayout = info.table.dataset.contentLayout || '';
