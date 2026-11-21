@@ -4510,7 +4510,7 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    max-width: calc(100% - var(--p82-japanese-width) - 6px);
+    max-width: calc(100% - var(--p82-japanese-width) - 12px);
     box-sizing: border-box;
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
@@ -5981,4 +5981,12 @@ body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.
 body.site-scale.practice81-page.practice82-page .p81-card table.recording-table.p81-table[data-content-layout="stacked"] > tbody > tr:nth-of-type(2) > :is(.p81-controls, td:has(> .recording-controls)) {
     grid-column: 1 / -1;
     grid-row: 4;
+}
+body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recording-table.p81-table:not([data-content-layout="stacked"]) > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recording-table.p81-table:not([data-content-layout="stacked"]) > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell) > .answer-choice:last-of-type {
+    margin-right: 4px;
 }

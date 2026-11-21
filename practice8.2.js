@@ -1169,11 +1169,11 @@ function measureExampleColumns(){
  for(const [drillId,widthVar] of [['drill1','--p82-ex1-concept-width'],['drill2','--p82-ex2-concept-width']]){
   const intro=document.querySelector('#'+drillId+' .example-box');if(!intro)continue;
   const labels=[...intro.querySelectorAll('.p82-concept-label')];
-  // The second comparison row is the Japanese/English 6px anchor in each Ex.
+  // The second comparison row is the Japanese/English 12px anchor in each Ex.
   const anchor=labels[1];if(!anchor)continue;
   let japaneseWidth=0;
   for(const label of labels){const width=intrinsic(label.querySelector('.p82-concept-japanese'));label.style.setProperty('--p82-japanese-width',width+'px');japaneseWidth=Math.max(japaneseWidth,width);}
-  const natural=intrinsic(anchor.querySelector('.p82-concept-japanese'))+intrinsic(anchor.querySelector('.p82-concept-english'))+6;
+  const natural=intrinsic(anchor.querySelector('.p82-concept-japanese'))+intrinsic(anchor.querySelector('.p82-concept-english'))+12;
   intro.style.setProperty(widthVar,natural+'px');intro.style.setProperty('--p82-concept-natural',natural+'px');
   const style=getComputedStyle(intro),available=intro.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),gap=parseFloat(style.columnGap);
   const max=selector=>Math.max(...[...intro.querySelectorAll(selector)].map(e=>intrinsic(e)));
@@ -1181,7 +1181,7 @@ function measureExampleColumns(){
   // Retain an ellipsis-sized, focusable English target before moving a model.
   const englishStyle=getComputedStyle(anchor.querySelector('.p82-concept-english'));
   const englishMinimum=parseFloat(englishStyle.fontSize)*1.5+['paddingLeft','paddingRight','borderLeftWidth','borderRightWidth'].reduce((sum,key)=>sum+parseFloat(englishStyle[key]),0);
-  const minimumLabel=japaneseWidth+6+englishMinimum;
+  const minimumLabel=japaneseWidth+12+englishMinimum;
   const translationMinimum=parseFloat(getComputedStyle(intro.querySelector('.p82-model-translation')).fontSize)*1.5+4;
   const fixed=cue+arrow+button;
   const inline=available>=minimumLabel+fixed+4*gap+model+translationMinimum;
