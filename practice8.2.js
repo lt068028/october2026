@@ -991,7 +991,7 @@ document.addEventListener('click',event=>{
  document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));
  if(host&&!wasOpen){host.classList.add('p82-translation-open');window.DrillTooltips?.position(host);}
 });
-window.DrillTooltips?.enableEscapeDismiss();
+window.__enableDrillTooltipEscapeDismiss=true;window.DrillTooltips?.enableEscapeDismiss();
 
 function createExampleArrowSvg(){
  const NS='http://www.w3.org/2000/svg';

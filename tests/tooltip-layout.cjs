@@ -76,22 +76,114 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await tipA.focus();
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible on focus');
  await testPage.keyboard.press('Escape');
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden' && e.getAttribute('data-tip-suppressed') === 'true'), true, 'Tip A blurred and hidden on keyboard Escape');
- await testPage.evaluate(() => document.body.focus());
- check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Tip A suppression cleared on focusout');
-
- await tipA.hover();
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible before voice dropdown check');
+ check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden' && e.getAttribute('data-tip-suppressed') === 'true' && document.activeElement !== e), true, 'Tip A blurred, hidden, and retains data-tip-suppressed after self-blur on keyboard Escape');
+ await tipA.focus();
+ check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed') && getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A suppression cleared and re-revealed on new Focus');
+ await testPage.keyboard.press('Escape');
  await testPage.evaluate(() => {
-   const btn = document.getElementById('voiceDropdownBtn');
-   if (btn) btn.click();
+   document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
+   document.body.focus();
  });
- const menuOpen = await testPage.evaluate(() => !document.getElementById('voiceDropdownMenu')?.hidden);
- if (menuOpen) {
-   await testPage.keyboard.press('Escape');
-   check(await testPage.evaluate(() => document.getElementById('voiceDropdownMenu')?.hidden), true, 'Voice dropdown closed by Escape');
- }
- await testPage.mouse.move(0, 0);
+
+ // Single dismissal principle: vocabulary tooltip + translation tooltip both open -> 1st Escape closes only 1
+ const vocabTip = testPage.locator('#drill1 .tooltip-wrap').first();
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   v.removeAttribute('data-tip-suppressed');
+   v.classList.add('tap-tip-open');
+   const t = document.querySelector('#drill1 .p82-concept-english');
+   t.removeAttribute('data-tip-suppressed');
+   t.classList.add('p82-translation-open');
+ });
+ await testPage.keyboard.press('Escape');
+ const singleDismissState = await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const t = document.querySelector('#drill1 .p82-concept-english');
+   const vOpen = v.classList.contains('tap-tip-open') && !v.hasAttribute('data-tip-suppressed');
+   const tOpen = t.classList.contains('p82-translation-open') && !t.hasAttribute('data-tip-suppressed');
+   return { openCount: (vOpen ? 1 : 0) + (tOpen ? 1 : 0), suppressedCount: (v.hasAttribute('data-tip-suppressed') ? 1 : 0) + (t.hasAttribute('data-tip-suppressed') ? 1 : 0) };
+ });
+ check(singleDismissState, { openCount: 1, suppressedCount: 1 }, 'Single Escape closes only 1 priority tooltip while the other remains open');
+ await testPage.keyboard.press('Escape');
+ const secondDismissState = await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const t = document.querySelector('#drill1 .p82-concept-english');
+   return !v.classList.contains('tap-tip-open') && !t.classList.contains('p82-translation-open') && v.hasAttribute('data-tip-suppressed') && t.hasAttribute('data-tip-suppressed');
+ });
+ check(secondDismissState, true, 'Second Escape closes the remaining open tooltip');
+ await testPage.evaluate(() => {
+   document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
+ });
+
+ // Other UI priority: Voice Dropdown open -> Escape closes dropdown without closing open vocabulary tooltip
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 1, clientX: 10, clientY: 10 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 1, clientX: 10, clientY: 10 }));
+ });
+ check(await vocabTip.evaluate(e => e.classList.contains('tap-tip-open')), true, 'Vocab tooltip opened via touch before Voice Dropdown check');
+ await testPage.evaluate(() => {
+   const menu = document.getElementById('voiceDropdownMenu');
+   const btn = document.getElementById('voiceDropdownBtn');
+   if (menu) menu.hidden = false;
+   if (btn) btn.setAttribute('aria-expanded', 'true');
+ });
+ await testPage.keyboard.press('Escape');
+ check(await testPage.evaluate(() => {
+   const menu = document.getElementById('voiceDropdownMenu');
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   return Boolean(menu?.hidden) && v.classList.contains('tap-tip-open') && !v.hasAttribute('data-tip-suppressed');
+ }), true, 'Escape closes Voice Dropdown while preserving open vocabulary tooltip');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   v.classList.remove('tap-tip-open');
+   document.documentElement.removeAttribute('data-tooltip-input');
+ });
+
+ // Touch in-progress gesture suppression & valid-tap restoration
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 10, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 10, clientX: 50, clientY: 50 }));
+ });
+ check(await vocabTip.evaluate(e => e.classList.contains('tap-tip-open') && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'visible'), true, 'Touch tap opens vocabulary tooltip');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 11, clientX: 50, clientY: 50 }));
+ });
+ await testPage.keyboard.press('Escape');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 11, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, pointerType: 'touch', pointerId: 11, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+ });
+ check(await vocabTip.evaluate(e => !e.classList.contains('tap-tip-open') && e.getAttribute('data-tip-suppressed') === 'true' && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'hidden'), true, 'Touch Escape during in-progress gesture keeps tooltip hidden and suppressed across pointerup and click');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 12, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 12, clientX: 50, clientY: 80 }));
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 13, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerType: 'touch', pointerId: 13, clientX: 50, clientY: 50 }));
+ });
+ check(await vocabTip.evaluate(e => !e.classList.contains('tap-tip-open') && e.getAttribute('data-tip-suppressed') === 'true'), true, 'Touch scroll (>10px) and pointercancel do NOT clear data-tip-suppressed');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 14, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 14, clientX: 52, clientY: 51 }));
+ });
+ check(await vocabTip.evaluate(e => e.classList.contains('tap-tip-open') && !e.hasAttribute('data-tip-suppressed') && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'visible'), true, 'Subsequent valid touch tap clears suppression and re-opens vocabulary tooltip');
+ await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   v.classList.remove('tap-tip-open');
+   document.documentElement.removeAttribute('data-tooltip-input');
+ });
 
  await testPage.evaluate(() => {
    const host = document.createElement('div');

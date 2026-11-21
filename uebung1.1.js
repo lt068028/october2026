@@ -719,6 +719,7 @@ function evaluateGermanAnswer(raw, item, variety = "DE") {
 }
 
 function initGermanDrill() {
+    window.__enableDrillTooltipEscapeDismiss = true;
     window.DrillTooltips?.enableEscapeDismiss();
 
     // -------------------------------------------------------------

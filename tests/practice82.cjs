@@ -7,7 +7,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  const p=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];let count=0;
  const eq=(a,b,label)=>{assert.deepEqual(a,b,label);count++};
  p.on('pageerror',e=>errors.push(e.message));await p.addInitScript('('+mock.trim()+')();');
- await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText,diffTokens,findDiff,render};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
+ await p.route('http://p82.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});let s=fs.readFileSync(f);if(f.endsWith('practice8.2.js')){s=s.toString();const i=s.lastIndexOf('})();');s=s.slice(0,i)+'window.audit82={rowsFor,makeRow,matchesAnswer,sentenceFor,keyFor,saved,views,choices,speechText,diffTokens,findDiff,render,entriesFor82};'+s.slice(i);}return r.fulfill({body:s,contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':'text/html'});});
  await p.goto('http://p82.test/practice8.2.html');
  eq(errors,[],'initial render');eq(await p.locator('h1').textContent(),'Practice 8.2: 何か・何も・何でも','page title');
   eq(await p.locator('#labelAutoRecord .custom-tip-box').innerHTML(),'ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.','Autostop hover tooltip breaks before OFF');
@@ -1473,7 +1473,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.waitForFunction((n) => t.audios.length > n, eAudioBefore);
   await p.evaluate(() => { t.audios.at(-1).onended?.(); });
 
-  // Verify Escape does NOT affect status indicator (.p82-autostop-open / .p82-autoplay-stop)
+  // Verify Escape does NOT affect status indicator (.p82-autostop-open / .p82-autoplay-stop) and covers single dismissal & UI priority
   const recBtn = p.locator('#drill1 .drill-record-btn').first();
   await recBtn.click();
   await p.waitForFunction(() => t.recognitions.length > 0);
@@ -1485,6 +1485,30 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   }
   const stopBtn = p.locator('.stop-btn-active').first();
   if (await stopBtn.count() > 0) await stopBtn.click();
+
+  // Single dismissal & Voice Dropdown priority on Practice 8.2
+  await p.evaluate(() => {
+    const v = document.querySelector('#drill1 .tooltip-wrap');
+    const t = document.querySelector('#drill1 .p82-concept-english');
+    if (v && t) {
+      v.removeAttribute('data-tip-suppressed');
+      t.removeAttribute('data-tip-suppressed');
+      v.classList.add('tap-tip-open');
+      t.classList.add('p82-translation-open');
+    }
+  });
+  await p.keyboard.press('Escape');
+  eq(await p.evaluate(() => {
+    const v = document.querySelector('#drill1 .tooltip-wrap');
+    const t = document.querySelector('#drill1 .p82-concept-english');
+    const vOpen = v.classList.contains('tap-tip-open') && !v.hasAttribute('data-tip-suppressed');
+    const tOpen = t.classList.contains('p82-translation-open') && !t.hasAttribute('data-tip-suppressed');
+    return (vOpen ? 1 : 0) + (tOpen ? 1 : 0);
+  }), 1, 'P8.2 single Escape closes only 1 tooltip when vocabulary and translation tooltips are both open');
+  await p.keyboard.press('Escape');
+  await p.evaluate(() => {
+    document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
+  });
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

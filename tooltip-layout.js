@@ -63,9 +63,9 @@
     const escapeTipSelector = '.custom-tip-wrap, .tooltip-wrap, .p82-concept-english, .p82-model-translation, .p82-incomplete-mark, .uebung-incomplete-wrap';
 
     function isOtherUIPrioritized(event) {
-        if (event.defaultPrevented) return true;
-        if (document.querySelector('.voice-dropdown.open, .voice-list.open, #voiceDropdownBtn[aria-expanded="true"], [id*="voiceDropdownBtn"][aria-expanded="true"]')) return true;
-        if (document.querySelector('#behindTheCuesDrawer.is-open, .drawer.open, body.drawer-open')) return true;
+        if (event && event.defaultPrevented) return true;
+        if (document.querySelector('.voice-dropdown.open, .voice-list.open, #voiceDropdownMenu:not([hidden]), .voice-dropdown-menu:not([hidden]), #voiceDropdownBtn[aria-expanded="true"], [id*="voiceDropdownBtn"][aria-expanded="true"]')) return true;
+        if (document.querySelector('#behindTheCuesDrawer.is-open, .drawer.is-open, .drawer.open, body.drawer-open')) return true;
         if (document.querySelector('details.picker-panel[open], .picker-panel.open')) return true;
         if (document.querySelector('dialog[open]')) return true;
         if (document.activeElement && document.activeElement.tagName === 'SELECT') return true;
@@ -79,29 +79,37 @@
     }
 
     function isOptInTarget(host) {
-        if (!host) return false;
+        if (!host || typeof host.matches !== 'function') return false;
         if (isStatusIndicator(host)) return false;
+        if (!host.querySelector(':scope > .custom-tip-box, :scope > .tooltip-tip, :scope > .tooltip-box')) return false;
         return Boolean(host.closest('.practice82-page, .uebung11-page, .uebung-page') || host.dataset.tipEscape === 'true');
     }
 
     function findPriorityTarget() {
         const active = document.activeElement;
-        if (active) {
-            const host = active.closest(escapeTipSelector);
-            if (host && isOptInTarget(host)) return host;
+        if (active && active !== document.body && active !== document.documentElement) {
+            const host = active.closest?.(escapeTipSelector);
+            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
         }
         const openHosts = Array.from(document.querySelectorAll('.p82-translation-open, .tap-tip-open'));
         for (let i = openHosts.length - 1; i >= 0; i--) {
-            const host = openHosts[i].closest(escapeTipSelector);
-            if (host && isOptInTarget(host)) return host;
+            const host = openHosts[i].closest?.(escapeTipSelector);
+            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
         }
         const hovered = Array.from(document.querySelectorAll(':hover'));
         for (let i = hovered.length - 1; i >= 0; i--) {
-            const host = hovered[i].closest(escapeTipSelector);
-            if (host && isOptInTarget(host)) return host;
+            const host = hovered[i].closest?.(escapeTipSelector);
+            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
         }
         return null;
     }
+
+    let ignoringSelfBlur = false;
+    let activePointerDown = false;
+    let dismissedDuringCurrentGesture = false;
+    let suppressNextClick = false;
+    let tapCandidate = null;
+    let otherUIWasOpenOnCapture = false;
 
     function dismissTarget(host) {
         if (host.classList.contains('p82-translation-open')) {
@@ -113,62 +121,65 @@
         }
         host.setAttribute('data-tip-suppressed', 'true');
         if (document.activeElement && (document.activeElement === host || host.contains(document.activeElement))) {
-            document.activeElement.blur();
+            ignoringSelfBlur = true;
+            try {
+                document.activeElement.blur();
+            } finally {
+                ignoringSelfBlur = false;
+            }
         }
     }
 
-    let activePointerDown = false;
-    let suppressCurrentPointerGesture = false;
-
+    /**
+     * Document-wide parameterless API: initializes Escape dismiss and re-display suppression
+     * once for the entire document via event delegation.
+     */
     function enableEscapeDismiss() {
         if (DrillTooltips._escapeDismissInitialized) return;
         DrillTooltips._escapeDismissInitialized = true;
 
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
-            if (isOtherUIPrioritized(e)) return;
+            otherUIWasOpenOnCapture = isOtherUIPrioritized(e);
+        }, true);
+
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            const skipForOtherUI = otherUIWasOpenOnCapture || isOtherUIPrioritized(e);
+            otherUIWasOpenOnCapture = false;
+            if (skipForOtherUI) return;
 
             const target = findPriorityTarget();
-            if (!target) return;
+            if (!target) {
+                if (openVocabulary && !isOptInTarget(openVocabulary)) {
+                    closeVocabulary();
+                }
+                return;
+            }
 
             if (activePointerDown) {
-                suppressCurrentPointerGesture = true;
+                dismissedDuringCurrentGesture = true;
+                suppressNextClick = true;
+                touchStart = null;
+                tapCandidate = null;
+            } else if (document.documentElement.dataset.tooltipInput === 'touch') {
+                suppressNextClick = true;
             }
             dismissTarget(target);
         });
 
-        document.addEventListener('pointerdown', e => {
-            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-                activePointerDown = true;
-                const host = e.target.closest?.(escapeTipSelector);
-                if (host && host.hasAttribute('data-tip-suppressed')) {
-                    host.removeAttribute('data-tip-suppressed');
-                }
-            }
-        }, true);
-
-        document.addEventListener('pointerup', e => {
-            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-                activePointerDown = false;
-                suppressCurrentPointerGesture = false;
-            }
-        }, true);
-
-        document.addEventListener('pointercancel', e => {
-            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
-                activePointerDown = false;
-                suppressCurrentPointerGesture = false;
-            }
-        }, true);
-
         document.addEventListener('click', e => {
-            if (suppressCurrentPointerGesture) {
+            const host = e.target.closest?.(escapeTipSelector);
+            if (suppressNextClick || (host && isOptInTarget(host) && host.hasAttribute('data-tip-suppressed') && document.documentElement.dataset.tooltipInput === 'touch')) {
+                suppressNextClick = false;
                 e.preventDefault();
                 e.stopPropagation();
+                e.stopImmediatePropagation();
             }
         }, true);
 
         document.addEventListener('pointerout', e => {
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
             const host = e.target.closest?.(escapeTipSelector);
             if (host && host.hasAttribute('data-tip-suppressed')) {
                 if (!e.relatedTarget || !host.contains(e.relatedTarget)) {
@@ -177,7 +188,16 @@
             }
         }, true);
 
+        document.addEventListener('focusin', e => {
+            if (activePointerDown || dismissedDuringCurrentGesture) return;
+            const host = e.target.closest?.(escapeTipSelector);
+            if (host && host.hasAttribute('data-tip-suppressed')) {
+                host.removeAttribute('data-tip-suppressed');
+            }
+        }, true);
+
         document.addEventListener('focusout', e => {
+            if (ignoringSelfBlur) return;
             const host = e.target.closest?.(escapeTipSelector);
             if (host && host.hasAttribute('data-tip-suppressed')) {
                 if (!e.relatedTarget || !host.contains(e.relatedTarget)) {
@@ -216,19 +236,55 @@
     }
     document.addEventListener('pointerdown', e=>{
         if(e.pointerType==='mouse'){
+            activePointerDown=false;
+            dismissedDuringCurrentGesture=false;
+            suppressNextClick=false;
+            tapCandidate=null;
             document.documentElement.removeAttribute('data-tooltip-input');
             closeVocabulary();touchStart=null;return;
         }
         if(e.pointerType!=='touch' && e.pointerType!=='pen')return;
         document.documentElement.dataset.tooltipInput='touch';
+        activePointerDown=true;
+        dismissedDuringCurrentGesture=false;
+        suppressNextClick=false;
+        const optHost=e.target.closest?.(escapeTipSelector);
+        tapCandidate={
+            id:e.pointerId,
+            x:e.clientX,
+            y:e.clientY,
+            host:(optHost && isOptInTarget(optHost))?optHost:null
+        };
         touchStart={id:e.pointerId,x:e.clientX,y:e.clientY,host:vocabularyAt(e.target)};
     },{passive:true});
     document.addEventListener('pointerup', e=>{
+        if(e.pointerType==='touch' || e.pointerType==='pen'){
+            activePointerDown=false;
+            if(dismissedDuringCurrentGesture){
+                dismissedDuringCurrentGesture=false;
+                tapCandidate=null;
+                touchStart=null;
+                return;
+            }
+            const candidate=tapCandidate;
+            tapCandidate=null;
+            if(candidate && e.pointerId===candidate.id){
+                if(Math.hypot(e.clientX-candidate.x,e.clientY-candidate.y)<=10){
+                    const endHost=e.target.closest?.(escapeTipSelector);
+                    if(endHost && endHost===candidate.host && endHost.hasAttribute('data-tip-suppressed')){
+                        endHost.removeAttribute('data-tip-suppressed');
+                    }
+                }else if(candidate.host && candidate.host.hasAttribute('data-tip-suppressed')){
+                    suppressNextClick=true;
+                }
+            }
+        }
         if(!touchStart || e.pointerId!==touchStart.id)return;
         const start=touchStart;touchStart=null;
         if(Math.hypot(e.clientX-start.x,e.clientY-start.y)>10)return;
         const host=vocabularyAt(e.target);
         if(host!==start.host)return;
+        if(host && DrillTooltips._escapeDismissInitialized && host.hasAttribute('data-tip-suppressed'))return;
         const wasOpen=host && host===openVocabulary;
         closeVocabulary();
         if(host && !wasOpen){
@@ -237,8 +293,19 @@
             position(host);
         }
     },{passive:true});
-    document.addEventListener('pointercancel',()=>{touchStart=null;});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeVocabulary();});
+    document.addEventListener('pointercancel',()=>{
+        activePointerDown=false;
+        dismissedDuringCurrentGesture=false;
+        tapCandidate=null;
+        touchStart=null;
+    });
+    document.addEventListener('keydown',e=>{
+        if(e.key==='Escape' && !DrillTooltips._escapeDismissInitialized)closeVocabulary();
+    });
+
+    if (window.__enableDrillTooltipEscapeDismiss || document.querySelector('.practice82-page, .uebung11-page, .uebung-page')) {
+        enableEscapeDismiss();
+    }
 
     function reposition() {
         document.querySelectorAll(selector).forEach(anchor => {
