@@ -185,6 +185,174 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    document.documentElement.removeAttribute('data-tooltip-input');
  });
 
+ // 1 & 2. Escape followed by pointercancel / scroll (no click) / non-in-progress Escape -> unrelated button click & keyboard operation unaffected
+ const unrelatedClickResults = await testPage.evaluate(() => {
+   const v = document.querySelector('#drill1 .tooltip-wrap');
+   const target = v.querySelector('.target-word');
+   const btn = document.createElement('button');
+   btn.type = 'button';
+   let btnClicks = 0;
+   btn.addEventListener('click', () => { btnClicks++; });
+   document.body.appendChild(btn);
+
+   // A. In-progress touch pointerdown -> Escape -> pointercancel -> unrelated button click
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 40, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 40, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 41, clientX: 50, clientY: 50 }));
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   target.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerType: 'touch', pointerId: 41, clientX: 50, clientY: 50 }));
+   btn.click();
+   const afterCancelClicks = btnClicks;
+
+   // B. Scroll (>10px, pointerdown -> pointerup without click) on suppressed host -> unrelated button click
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 42, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 42, clientX: 50, clientY: 90 }));
+   btn.click();
+   const afterScrollClicks = btnClicks;
+
+   // C. Non-in-progress Escape (tap complete -> Escape) -> keyboard/programmatic click on unrelated button
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 43, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 43, clientX: 50, clientY: 50 }));
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   btn.click();
+   const afterNonInProgressEscapeClicks = btnClicks;
+
+   // D. In-progress Escape -> unrelated button click before and after pointerup
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 44, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 44, clientX: 50, clientY: 50 }));
+   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 45, clientX: 50, clientY: 50 }));
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   btn.click();
+   const duringInProgressEscapeUnrelatedClicks = btnClicks;
+   target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 45, clientX: 50, clientY: 50 }));
+
+   btn.remove();
+   v.removeAttribute('data-tip-suppressed');
+   v.classList.remove('tap-tip-open');
+   return { afterCancelClicks, afterScrollClicks, afterNonInProgressEscapeClicks, duringInProgressEscapeUnrelatedClicks };
+ });
+ check(unrelatedClickResults, {
+   afterCancelClicks: 1,
+   afterScrollClicks: 2,
+   afterNonInProgressEscapeClicks: 3,
+   duringInProgressEscapeUnrelatedClicks: 4
+ }, 'Unrelated button clicks and keyboard/programmatic activations are never blocked after pointercancel, scroll, or Escape');
+
+ // 3 & 4. Escape on Host A -> valid tap on Host B opens in 1 tap; valid tap on suppressed Host A (both vocab and P8.2 translation) re-opens
+ const crossAndSameHostResults = await testPage.evaluate(() => {
+   const vocabA = document.querySelectorAll('#drill1 .tooltip-wrap')[0];
+   const vocabB = document.querySelectorAll('#drill1 .tooltip-wrap')[1];
+   const transA = document.querySelector('#drill1 .p82-concept-english');
+   const transB = document.querySelector('#drill1 .p82-model-translation');
+
+   const targetA = vocabA.querySelector('.target-word');
+   const targetB = vocabB.querySelector('.target-word');
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 50, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 50, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 51, clientX: 10, clientY: 10 }));
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 51, clientX: 10, clientY: 10 }));
+
+   // Tap another vocabulary host (vocabB) -> opens in 1 tap
+   targetB.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 52, clientX: 20, clientY: 20 }));
+   targetB.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 52, clientX: 20, clientY: 20 }));
+   const vocabBOpenedInOneTap = vocabB.classList.contains('tap-tip-open') && !vocabB.hasAttribute('data-tip-suppressed');
+
+   // Valid tap on suppressed vocabA -> re-opens in 1 tap
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 53, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 53, clientX: 11, clientY: 11 }));
+   const vocabAReopened = vocabA.classList.contains('tap-tip-open') && !vocabA.hasAttribute('data-tip-suppressed');
+
+   // P8.2 translation host: open transA -> in-progress Escape -> pointerup + blocked click -> valid tap on transB -> valid tap on transA
+   transA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 54, clientX: 30, clientY: 30 }));
+   transA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 54, clientX: 30, clientY: 30 }));
+   transA.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+   const transAInitiallyOpen = transA.classList.contains('p82-translation-open');
+
+   transA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 55, clientX: 30, clientY: 30 }));
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   transA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 55, clientX: 30, clientY: 30 }));
+   transA.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+   const transASuppressedAfterInProgressEscape = !transA.classList.contains('p82-translation-open') && transA.getAttribute('data-tip-suppressed') === 'true';
+
+   // Tap another translation host (transB) -> opens in 1 tap
+   transB.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 56, clientX: 40, clientY: 40 }));
+   transB.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 56, clientX: 40, clientY: 40 }));
+   transB.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+   const transBOpenedInOneTap = transB.classList.contains('p82-translation-open') && !transB.hasAttribute('data-tip-suppressed');
+
+   // Valid tap on suppressed transA -> clears suppression and re-opens in 1 tap
+   transA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 57, clientX: 30, clientY: 30 }));
+   transA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 57, clientX: 31, clientY: 31 }));
+   transA.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+   const transAReopened = transA.classList.contains('p82-translation-open') && !transA.hasAttribute('data-tip-suppressed');
+
+   vocabA.classList.remove('tap-tip-open');
+   vocabB.classList.remove('tap-tip-open');
+   transA.classList.remove('p82-translation-open');
+   transB.classList.remove('p82-translation-open');
+   document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
+
+   return {
+     vocabBOpenedInOneTap,
+     vocabAReopened,
+     transAInitiallyOpen,
+     transASuppressedAfterInProgressEscape,
+     transBOpenedInOneTap,
+     transAReopened
+   };
+ });
+ check(crossAndSameHostResults, {
+   vocabBOpenedInOneTap: true,
+   vocabAReopened: true,
+   transAInitiallyOpen: true,
+   transASuppressedAfterInProgressEscape: true,
+   transBOpenedInOneTap: true,
+   transAReopened: true
+ }, 'Escape on one host does not block tapping another host, and subsequent valid tap re-opens suppressed vocab/translation host');
+
+ // 5. Bidirectional desync recovery between internal openVocabulary and DOM .tap-tip-open
+ const desyncRecoveryResults = await testPage.evaluate(() => {
+   const vocabA = document.querySelectorAll('#drill1 .tooltip-wrap')[0];
+   const vocabB = document.querySelectorAll('#drill1 .tooltip-wrap')[1];
+   const targetA = vocabA.querySelector('.target-word');
+
+   // Case 5a (Forward desync): open vocabA via touch (sets openVocabulary = vocabA), then manually remove .tap-tip-open from DOM
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 60, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 60, clientX: 10, clientY: 10 }));
+   vocabA.classList.remove('tap-tip-open');
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 61, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 61, clientX: 10, clientY: 10 }));
+   const forwardDesyncReopenedInOneTap = vocabA.classList.contains('tap-tip-open');
+
+   // Case 5b (Reverse desync - tap): reset openVocabulary via mouse pointerdown, then manually add .tap-tip-open to vocabA
+   document.body.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse', pointerId: 62, clientX: 0, clientY: 0 }));
+   vocabA.classList.add('tap-tip-open');
+   targetA.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 63, clientX: 10, clientY: 10 }));
+   targetA.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 63, clientX: 10, clientY: 10 }));
+   const reverseDesyncClosedByTap = !vocabA.classList.contains('tap-tip-open');
+
+   // Case 5c (Reverse desync - Escape): openVocabulary is null while vocabA has .tap-tip-open in DOM
+   vocabA.classList.add('tap-tip-open');
+   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+   const reverseDesyncClosedByEscape = !vocabA.classList.contains('tap-tip-open') && vocabA.getAttribute('data-tip-suppressed') === 'true';
+
+   vocabA.removeAttribute('data-tip-suppressed');
+   vocabB.removeAttribute('data-tip-suppressed');
+   document.documentElement.removeAttribute('data-tooltip-input');
+
+   return {
+     forwardDesyncReopenedInOneTap,
+     reverseDesyncClosedByTap,
+     reverseDesyncClosedByEscape
+   };
+ });
+ check(desyncRecoveryResults, {
+   forwardDesyncReopenedInOneTap: true,
+   reverseDesyncClosedByTap: true,
+   reverseDesyncClosedByEscape: true
+ }, 'Bidirectional desync between openVocabulary and DOM .tap-tip-open recovers cleanly on tap and Escape');
+
  await testPage.evaluate(() => {
    const host = document.createElement('div');
    host.className = 'custom-tip-wrap p82-autostop-open';

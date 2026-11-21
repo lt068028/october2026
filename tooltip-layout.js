@@ -107,9 +107,26 @@
     let ignoringSelfBlur = false;
     let activePointerDown = false;
     let dismissedDuringCurrentGesture = false;
-    let suppressNextClick = false;
+    let suppressedClickHost = null;
+    let suppressedClickClearTimer = null;
     let tapCandidate = null;
     let otherUIWasOpenOnCapture = false;
+
+    function clearSuppressedClickHost() {
+        if (suppressedClickClearTimer) {
+            clearTimeout(suppressedClickClearTimer);
+            suppressedClickClearTimer = null;
+        }
+        suppressedClickHost = null;
+    }
+
+    function scheduleClearSuppressedClickHost() {
+        if (suppressedClickClearTimer) clearTimeout(suppressedClickClearTimer);
+        suppressedClickClearTimer = setTimeout(() => {
+            suppressedClickClearTimer = null;
+            suppressedClickHost = null;
+        }, 0);
+    }
 
     function dismissTarget(host) {
         if (host.classList.contains('p82-translation-open')) {
@@ -117,7 +134,9 @@
         }
         if (host.classList.contains('tap-tip-open')) {
             host.classList.remove('tap-tip-open');
-            if (openVocabulary === host) openVocabulary = null;
+        }
+        if (openVocabulary === host || (openVocabulary && !openVocabulary.classList.contains('tap-tip-open'))) {
+            openVocabulary = document.querySelector('.tooltip-wrap.tap-tip-open') || null;
         }
         host.setAttribute('data-tip-suppressed', 'true');
         if (document.activeElement && (document.activeElement === host || host.contains(document.activeElement))) {
@@ -151,27 +170,29 @@
 
             const target = findPriorityTarget();
             if (!target) {
-                if (openVocabulary && !isOptInTarget(openVocabulary)) {
-                    closeVocabulary();
+                if ((openVocabulary && !isOptInTarget(openVocabulary)) || document.querySelector('.tooltip-wrap.tap-tip-open')) {
+                    const openDomVocab = document.querySelector('.tooltip-wrap.tap-tip-open');
+                    if (!openDomVocab || !isOptInTarget(openDomVocab)) {
+                        closeVocabulary();
+                    }
                 }
                 return;
             }
 
             if (activePointerDown) {
                 dismissedDuringCurrentGesture = true;
-                suppressNextClick = true;
+                suppressedClickHost = target;
                 touchStart = null;
                 tapCandidate = null;
-            } else if (document.documentElement.dataset.tooltipInput === 'touch') {
-                suppressNextClick = true;
             }
             dismissTarget(target);
         });
 
         document.addEventListener('click', e => {
+            if (!suppressedClickHost) return;
             const host = e.target.closest?.(escapeTipSelector);
-            if (suppressNextClick || (host && isOptInTarget(host) && host.hasAttribute('data-tip-suppressed') && document.documentElement.dataset.tooltipInput === 'touch')) {
-                suppressNextClick = false;
+            if (host && host === suppressedClickHost) {
+                clearSuppressedClickHost();
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
@@ -225,6 +246,9 @@
     let openVocabulary=null, touchStart=null;
     function closeVocabulary() {
         openVocabulary?.classList.remove('tap-tip-open');
+        document.querySelectorAll('.tooltip-wrap.tap-tip-open, .tap-tip-open').forEach(el => {
+            el.classList.remove('tap-tip-open');
+        });
         openVocabulary=null;
     }
     function vocabularyAt(target) {
@@ -238,7 +262,7 @@
         if(e.pointerType==='mouse'){
             activePointerDown=false;
             dismissedDuringCurrentGesture=false;
-            suppressNextClick=false;
+            clearSuppressedClickHost();
             tapCandidate=null;
             document.documentElement.removeAttribute('data-tooltip-input');
             closeVocabulary();touchStart=null;return;
@@ -247,7 +271,7 @@
         document.documentElement.dataset.tooltipInput='touch';
         activePointerDown=true;
         dismissedDuringCurrentGesture=false;
-        suppressNextClick=false;
+        clearSuppressedClickHost();
         const optHost=e.target.closest?.(escapeTipSelector);
         tapCandidate={
             id:e.pointerId,
@@ -264,6 +288,7 @@
                 dismissedDuringCurrentGesture=false;
                 tapCandidate=null;
                 touchStart=null;
+                if(suppressedClickHost)scheduleClearSuppressedClickHost();
                 return;
             }
             const candidate=tapCandidate;
@@ -275,7 +300,8 @@
                         endHost.removeAttribute('data-tip-suppressed');
                     }
                 }else if(candidate.host && candidate.host.hasAttribute('data-tip-suppressed')){
-                    suppressNextClick=true;
+                    suppressedClickHost=candidate.host;
+                    scheduleClearSuppressedClickHost();
                 }
             }
         }
@@ -285,7 +311,7 @@
         const host=vocabularyAt(e.target);
         if(host!==start.host)return;
         if(host && DrillTooltips._escapeDismissInitialized && host.hasAttribute('data-tip-suppressed'))return;
-        const wasOpen=host && host===openVocabulary;
+        const wasOpen=Boolean(host && host.classList.contains('tap-tip-open'));
         closeVocabulary();
         if(host && !wasOpen){
             openVocabulary=host;
@@ -296,6 +322,7 @@
     document.addEventListener('pointercancel',()=>{
         activePointerDown=false;
         dismissedDuringCurrentGesture=false;
+        clearSuppressedClickHost();
         tapCandidate=null;
         touchStart=null;
     });
