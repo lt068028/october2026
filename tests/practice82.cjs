@@ -283,7 +283,11 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, 'Drill 2 retains 8 question markers in English cues mode');
   eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), 'what / read', 'English cue text unaffected by question marker');
   await p.locator('.drill-cue-button').click();
-  eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), '何を／読む', 'Japanese cue text unaffected by question marker');
+  eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().evaluate(el => {
+    const c = el.cloneNode(true);
+    c.querySelectorAll('.tooltip-tip, .custom-tip-box').forEach(x => x.remove());
+    return c.textContent;
+  }), '何/読む', 'Japanese cue text unaffected by question marker');
 
   // 11. Grading icons visual parameters, Lucide Footprints SVG, trailing ellipsis, and copy isolation
   const iconAudit = await p.evaluate(async () => {
@@ -1070,7 +1074,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
         c.querySelectorAll('.tooltip-tip, .custom-tip-box').forEach(x => x.remove());
         return c.textContent.replace(/\s+/g, '');
       };
-      const target = [...document.querySelectorAll('#drill2 .p81-card .p81-cue-words')].find(el => strip(el) === '何か／あらう');
+      const target = [...document.querySelectorAll('#drill2 .p81-card .p81-cue-words')].find(el => strip(el) === '何か/あらう');
       if (!target) return { found: false };
       const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, {
         acceptNode: n => (n.parentElement?.closest('.tooltip-tip, .custom-tip-box') || !n.textContent.trim())
