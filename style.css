@@ -5990,3 +5990,16 @@ body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recordin
 body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recording-table.p81-table:not([data-content-layout="stacked"]) > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell) > .answer-choice:last-of-type {
     margin-right: 4px;
 }
+body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recording-table.p81-table > tbody > tr:nth-of-type(2) > :is(.prompt-label, .drill-cue-cell),
+body.site-scale.practice81-page.practice82-page #drill3 .p81-card table.recording-table.p81-table > tbody > tr:nth-of-type(2) > :is(.p81-controls, td:has(> .recording-controls)) {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+body.site-scale.practice81-page.practice82-page #drill3 .answer-choice {
+    box-sizing: border-box;
+    padding: 4px 8px;
+    min-height: calc(26px * var(--practice12-scale));
+    line-height: 1;
+    margin-top: 0;
+    margin-bottom: 0;
+}
