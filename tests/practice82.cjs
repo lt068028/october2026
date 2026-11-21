@@ -226,7 +226,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await drRec.click();
   await p.waitForTimeout(50);
   eq(await p.evaluate(() => audit82.saved.get('any-1-a:fixed')?.raw), 'kept raw', 'Saved data preserved on mic error');
-  await p.evaluate(() => { t.deny = false; });
+  await p.evaluate(() => {
+    audit82.saved.delete('any-1-a:fixed');
+    t.deny = false;
+  });
 
   // 10. Drill 2 left question markers (8 rows), separation from Q/A roles, and removal of right .question-indicator
   eq(await p.locator('.question-indicator').count(), 0, 'Practice 8.2 has 0 .question-indicator elements');

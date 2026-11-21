@@ -97,7 +97,7 @@ assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result >
 assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
 assert.ok(js.includes('entries.push(`${idx + 1}. ${marker} ${entry.raw}`)'), 'Copy must include marker and untouched raw STT');
 assert.ok(!js.includes('entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`)'), 'Copy must not include the exercise cue');
-assert.ok(js.includes('const cleanTitle = d.title.replace(/^Drill \\d+:\\s*/, "").split(/\\s*—\\s*/)[0].trim();'), 'Copy header must strip learning focus duplicate from cleanTitle');
+assert.ok(js.includes('const cleanTitle = drill.title.replace(/^Drill \\d+:\\s*/, "").split(/\\s*—\\s*/)[0].trim();'), 'Copy header must strip learning focus duplicate from cleanTitle');
 assert.ok(!js.includes('⏹️'), 'Must not hardcode stop emoji ⏹️ anywhere in uebung1.1.js');
 assert.ok(js.includes('wrapAudioIcon') && js.includes('setButtonAudioIcon'), 'All audio buttons must preserve <span class="ex-audio-icon"> wrapper');
 
