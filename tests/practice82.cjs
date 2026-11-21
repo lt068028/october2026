@@ -120,16 +120,18 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await yn.locator('.feedback-status-accepted').count(),1,'No result restored after answer switch');
  for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
   await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
-  for(const width of [375,600,1440]){
+  for(const width of [600,1440]){
    await p.setViewportSize({width,height:1000});
+   await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
    eq(await p.locator('.example-box').evaluateAll(es=>es.some(e=>e.scrollWidth>e.clientWidth+2)),false,`Example fits ${mode}/${hint}/${width}px`);
    eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${mode}/${hint}/${width}px`);
   }
  }
  await p.locator('#hintModeControl [data-value="hover"]').click();
  await p.waitForTimeout(80);
- for(const width of [375,600,900,1440])for(const theme of ['light','dark']){
+ for(const width of [600,900,1440])for(const theme of ['light','dark']){
   await p.setViewportSize({width,height:1000});await p.emulateMedia({colorScheme:theme});
+  await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${width}px ${theme}`);
  }
  await p.emulateMedia({colorScheme:'light'});

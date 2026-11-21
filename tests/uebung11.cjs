@@ -1057,6 +1057,8 @@ async function runRecordingLifecycleTests() {
         assert.ok(!copiedD1.includes('Ich / fliegen / Berlin'), 'Copy must not contain Drill 1 cue text');
         assert.ok(!copiedD1.includes('…') && !copiedD1.includes('＿'), 'Copy must not include screen-only symbols');
 
+        await page.clock.runFor(2000);
+
         // Pressing Drill 2's button copies only Drill 2 without Drill 1 contamination.
         await page.locator('#drill2 .uebung-copy-button').click();
         await page.waitForFunction(() => window.t.clipboardWrites.length === 2);
