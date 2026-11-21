@@ -1214,7 +1214,7 @@ function sync() {
         if (v.r.pending) {
             for (const b of [v.listen, v.rec]) {
                 b.disabled = true;
-                b.dataset.selectionHelp = v.r.qa === 'response' ? 'Choose 🙆 or 🙅 first.' : v.r.comparison ? 'Choose an adjective that matches the label.' : 'Choose an expression first.';
+                b.dataset.selectionHelp = v.r.qa === 'response' ? 'Choose Yes or No first.' : v.r.comparison ? 'Choose an adjective that matches the label.' : 'Choose an expression first.';
             }
         }
         const isCurrentRecording = session?.key === key;

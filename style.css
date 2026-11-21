@@ -75,8 +75,20 @@
     outline-offset: 1px;
 }
 
+/* Avoid filter on hover: it creates a containing block that traps fixed-positioned tooltips. */
 .example-button.answer-choice:hover:not(:disabled) {
-    filter: brightness(0.96);
+    background: #dcdedf;
+    border-color: #c5cbd3;
+}
+
+.example-button.answer-choice[data-answer="yes"]:is([aria-pressed="true"], .is-selected):hover:not(:disabled) {
+    background: #44d479;
+    border-color: #1fb857;
+}
+
+.example-button.answer-choice[data-answer="no"]:is([aria-pressed="true"], .is-selected):hover:not(:disabled) {
+    background: #f29c9c;
+    border-color: #e53e3e;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -111,7 +123,18 @@
     }
 
     .example-button.answer-choice:hover:not(:disabled) {
-        filter: brightness(1.1);
+        background: #414c5e;
+        border-color: #5a6577;
+    }
+
+    .example-button.answer-choice[data-answer="yes"]:is([aria-pressed="true"], .is-selected):hover:not(:disabled) {
+        background: #186236;
+        border-color: #199446;
+    }
+
+    .example-button.answer-choice[data-answer="no"]:is([aria-pressed="true"], .is-selected):hover:not(:disabled) {
+        background: #922222;
+        border-color: #cf2424;
     }
 }
 /* =========================================================
