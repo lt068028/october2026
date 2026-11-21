@@ -14,7 +14,7 @@ const drillsData = [
         example: {
             cue: "Ich / fahren / Salzburg",
             cueParts: ["Ich", "fahren", "Salzburg"],
-            hints: ["I (subject)", "to travel / drive", "Salzburg (city in Austria)"],
+            hints: ["I", "to drive", "Salzburg (city in Austria)"],
             model: "Ich fahre nach Salzburg."
         },
         items: [
@@ -22,21 +22,21 @@ const drillsData = [
                 id: "d1_1",
                 cue: "Ich / fliegen / Berlin",
                 cueParts: ["Ich", "fliegen", "Berlin"],
-                hints: ["I (subject)", "to fly", "Berlin (city in Germany)"],
+                hints: ["I", "to fly", "Berlin"],
                 model: "Ich fliege nach Berlin."
             },
             {
                 id: "d1_2",
                 cue: "Ich / reisen / Italien",
                 cueParts: ["Ich", "reisen", "Italien"],
-                hints: ["I (subject)", "to travel", "Italy"],
+                hints: ["I", "to travel", "Italy"],
                 model: "Ich reise nach Italien."
             },
             {
                 id: "d1_3",
                 cue: "Ich / ziehen / Wien",
                 cueParts: ["Ich", "ziehen", "Wien"],
-                hints: ["I (subject)", "to move (relocate)", "Vienna (city in Austria)"],
+                hints: ["I", "to move", "Vienna (city in Austria)"],
                 model: "Ich ziehe nach Wien."
             }
         ]
@@ -50,7 +50,7 @@ const drillsData = [
         example: {
             cue: "Du / fahren / die Schweiz",
             cueParts: ["Du", "fahren", "die Schweiz"],
-            hints: ["You (subject, sg.)", "to travel / drive", "Switzerland (fem.)"],
+            hints: ["You", "to drive", "Switzerland"],
             model: "Du fährst in die Schweiz."
         },
         items: [
@@ -58,21 +58,21 @@ const drillsData = [
                 id: "d2_1",
                 cue: "Du / fliegen / die Türkei",
                 cueParts: ["Du", "fliegen", "die Türkei"],
-                hints: ["You (subject, sg.)", "to fly", "Turkey (fem.)"],
+                hints: ["You", "to fly", "Turkey"],
                 model: "Du fliegst in die Türkei."
             },
             {
                 id: "d2_2",
                 cue: "Du / reisen / die USA",
                 cueParts: ["Du", "reisen", "die USA"],
-                hints: ["You (subject, sg.)", "to travel", "USA (pl.)"],
+                hints: ["You", "to travel", "USA"],
                 model: "Du reist in die USA."
             },
             {
                 id: "d2_3",
                 cue: "Du / kommen / der Irak",
                 cueParts: ["Du", "kommen", "der Irak"],
-                hints: ["You (subject, sg.)", "to come", "Iraq (masc.)"],
+                hints: ["You", "to come", "Iraq"],
                 model: "Du kommst in den Irak."
             }
         ]
@@ -86,7 +86,7 @@ const drillsData = [
         example: {
             cue: "Er / gehen / der Supermarkt",
             cueParts: ["Er", "gehen", "der Supermarkt"],
-            hints: ["He (subject)", "to go / walk", "supermarket (masc.)"],
+            hints: ["He", "to go", "supermarket"],
             model: "Er geht zum Supermarkt."
         },
         items: [
@@ -99,7 +99,7 @@ const drillsData = [
                     AT: "das Spital",
                     CH: "das Spital"
                 },
-                hints: ["He (subject)", "to drive / travel", "hospital (neut.)"],
+                hints: ["He", "to drive", "hospital"],
                 regionalModels: {
                     DE: "Er fährt zum Krankenhaus.",
                     AT: "Er fährt zum Spital.",
@@ -114,14 +114,14 @@ const drillsData = [
                 id: "d3_2",
                 cue: "Er / rennen / der Bahnhof",
                 cueParts: ["Er", "rennen", "der Bahnhof"],
-                hints: ["He (subject)", "to run", "train station (masc.)"],
+                hints: ["He", "to run", "train station"],
                 model: "Er rennt zum Bahnhof."
             },
             {
                 id: "d3_3",
                 cue: "Er / spazieren / der Park",
                 cueParts: ["Er", "spazieren", "der Park"],
-                hints: ["He (subject)", "to stroll / walk", "park (masc.)"],
+                hints: ["He", "to take a walk", "park"],
                 model: "Er spaziert zum Park."
             }
         ]
@@ -135,7 +135,7 @@ const drillsData = [
         example: {
             cue: "Ihr / gehen / die Post",
             cueParts: ["Ihr", "gehen", "die Post"],
-            hints: ["You (subject, pl.)", "to go", "post office (fem.)"],
+            hints: ["You", "to go", "post office"],
             model: "Ihr geht zur Post."
         },
         items: [
@@ -143,21 +143,21 @@ const drillsData = [
                 id: "d4_1",
                 cue: "Ihr / laufen / die Bank",
                 cueParts: ["Ihr", "laufen", "die Bank"],
-                hints: ["You (subject, pl.)", "to run / walk", "bank (fem.)"],
+                hints: ["You", "to run", "bank"],
                 model: "Ihr lauft zur Bank."
             },
             {
                 id: "d4_2",
                 cue: "Ihr / radeln / die Apotheke",
                 cueParts: ["Ihr", "radeln", "die Apotheke"],
-                hints: ["You (subject, pl.)", "to cycle", "pharmacy (fem.)"],
+                hints: ["You", "to cycle", "pharmacy"],
                 model: "Ihr radelt zur Apotheke."
             },
             {
                 id: "d4_3",
                 cue: "Ihr / fahren / die Schule",
                 cueParts: ["Ihr", "fahren", "die Schule"],
-                hints: ["You (subject, pl.)", "to travel / drive", "school (fem.)"],
+                hints: ["You", "to drive", "school"],
                 regionalModels: {
                     DE: "Ihr fahrt zur Schule.",
                     AT: "Ihr fahrt in die Schule.",
@@ -875,7 +875,7 @@ function initGermanDrill() {
                     if (hintMode === "paren") {
                         partHtml = `${part} <span class="vocab-inline">(${hint})</span>`;
                     } else {
-                        partHtml = `<span class="tooltip-wrap"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
+                        partHtml = `<span class="tooltip-wrap" tabindex="0"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
                     }
                 }
                 if (isRegionalPlace) {

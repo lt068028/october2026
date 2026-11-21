@@ -16,7 +16,7 @@ function W(id,kanji,hira,romaji,meaning,cue,english) {
 }
 
 W('something','何か','なにか','nanika','something');
-W('nothing','何も','なにも','nanimo','nothing (with a negative ending)',null,'nothing');
+W('nothing','何も','なにも','nanimo','nothing',null,'nothing');
 W('anything','何でも','なんでも','nandemo','everything',null,'anything');
 W('what','何','なに','nani','what','何');
 W('whatkind','どんな','どんな','donna','what kind of');
@@ -288,7 +288,7 @@ function modelHTML(r){
  tokens.sort((a,b)=>b.text.length-a.text.length);
  let out='',i=0;while(i<text.length){
   const optional=['何か(を)','なにか(を)'].find(t=>text.startsWith(t,i));
-  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after '+(scriptMode==='kanji'?'何か':'なにか')+'.</span></span>';i+=optional.length;continue;}
+  if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap" tabindex="0">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after '+(scriptMode==='kanji'?'何か':'なにか')+'.</span></span>';i+=optional.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
   if(mark){out+=indefiniteHTML(mark,true,r.id.startsWith('contrast-'));i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
@@ -981,16 +981,10 @@ function showResult(key,notice='') {
 }
 function node(tag,className='',text=''){const e=document.createElement(tag);e.className=className;e.textContent=text;return e;}
 
-// Reuse shared tooltip positioning; keep English-label interactions scoped here.
 function exampleTranslation(text,className){
- const wrap=node('span',className+' custom-tip-wrap');wrap.tabIndex=0;wrap.setAttribute('aria-label',text);
- wrap.append(node('span','p82-translation-text'+(className==='p82-model-translation'?' vocab-inline':''),text),node('span','custom-tip-box',text));return wrap;
+ const wrap=node('span',className);
+ wrap.append(node('span','p82-translation-text'+(className==='p82-model-translation'?' vocab-inline':''),text));return wrap;
 }
-document.addEventListener('click',event=>{
- const host=event.target.closest('.p82-concept-english,.p82-model-translation'),wasOpen=host?.classList.contains('p82-translation-open');
- document.querySelectorAll('.p82-translation-open').forEach(e=>e.classList.remove('p82-translation-open'));
- if(host&&!wasOpen){host.classList.add('p82-translation-open');window.DrillTooltips?.position(host);}
-});
 window.__enableDrillTooltipEscapeDismiss=true;window.DrillTooltips?.enableEscapeDismiss();
 
 function createExampleArrowSvg(){

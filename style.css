@@ -4548,21 +4548,6 @@ html[data-tooltip-input="touch"] .tooltip-wrap.tap-tip-open .tooltip-tip {
     border-radius: 8px;
     box-shadow: none;
 }
-.practice82-page :is(#drill1,#drill2) .p82-concept-english:focus-visible {
-    outline: 2px solid var(--focus-color, #2563eb);
-    outline-offset: 2px;
-}
-
-.practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):is(:focus-visible,.p82-translation-open) > .custom-tip-box {
-    visibility: visible;
-    opacity: 1;
-}
-
-/* Touch must not leave an emulated mouse hover open after the second tap. */
-html[data-tooltip-input="touch"] .practice82-page :is(#drill1,#drill2) :is(.p82-concept-english,.p82-model-translation):not(.p82-translation-open):not(:focus-visible) > .custom-tip-box {
-    visibility: hidden;
-    opacity: 0;
-}
 
 /* Practice 8.2: optional を explanation uses the grammar emphasis color. */
 [data-practice="8.2"] .optional-particle .tooltip-tip {
@@ -6025,6 +6010,18 @@ body.site-scale.practice81-page.practice82-page #drill3 .answer-choice {
     line-height: 1;
     margin-top: 0;
     margin-bottom: 0;
+}
+
+/* 先行実装ページ：Tab Focus時のTooltip表示 */
+:is(.practice82-page, .uebung11-page, .uebung-page) :is(.tooltip-wrap:is(:focus, :focus-visible) > :is(.tooltip-tip, .tooltip-box), .custom-tip-wrap:is(:focus, :focus-visible) > .custom-tip-box) {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 操作ボタン等のTooltip（.custom-tip-wrap）は実際のTouch操作時に表示しない（Mouse Hover / Tab Focusは維持） */
+html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-page) .custom-tip-wrap:not(.p82-autostop-open):not(.p82-autoplay-stop) > .custom-tip-box {
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 /* Escape抑止状態での強制非表示（先行実装ページに限定適用） */

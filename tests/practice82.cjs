@@ -1486,26 +1486,15 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   const stopBtn = p.locator('.stop-btn-active').first();
   if (await stopBtn.count() > 0) await stopBtn.click();
 
-  // Single dismissal & Voice Dropdown priority on Practice 8.2
-  await p.evaluate(() => {
-    const v = document.querySelector('#drill1 .tooltip-wrap');
-    const t = document.querySelector('#drill1 .p82-concept-english');
-    if (v && t) {
-      v.removeAttribute('data-tip-suppressed');
-      t.removeAttribute('data-tip-suppressed');
-      v.classList.add('tap-tip-open');
-      t.classList.add('p82-translation-open');
-    }
-  });
-  await p.keyboard.press('Escape');
+  // Verify duplicate translation tooltips and grammar spoiler are removed, while Dr1 guidance & optional particle remain
   eq(await p.evaluate(() => {
-    const v = document.querySelector('#drill1 .tooltip-wrap');
-    const t = document.querySelector('#drill1 .p82-concept-english');
-    const vOpen = v.classList.contains('tap-tip-open') && !v.hasAttribute('data-tip-suppressed');
-    const tOpen = t.classList.contains('p82-translation-open') && !t.hasAttribute('data-tip-suppressed');
-    return (vOpen ? 1 : 0) + (tOpen ? 1 : 0);
-  }), 1, 'P8.2 single Escape closes only 1 tooltip when vocabulary and translation tooltips are both open');
-  await p.keyboard.press('Escape');
+    const nodes = [...document.querySelectorAll('.p82-concept-english, .p82-model-translation')];
+    return nodes.length > 0 && nodes.every(n => !n.classList.contains('custom-tip-wrap') && !n.querySelector('.custom-tip-box') && !n.hasAttribute('title'));
+  }), true, 'P8.2 concept labels and model translations have no duplicate tooltip or title attribute');
+  eq(await p.evaluate(() => {
+    const tips = [...document.querySelectorAll('.tooltip-tip')].map(e => e.textContent);
+    return tips.includes('nanimo, nothing') && !tips.some(t => t.includes('with a negative ending'));
+  }), true, 'P8.2 nothing vocabulary hint has no grammar spoiler');
   await p.evaluate(() => {
     document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
   });

@@ -357,6 +357,41 @@ drillsData.forEach((drill, dIdx) => {
     });
 });
 
+// B: All 16 items (48 hint elements) must match approved clean hint strings without grammar/gender/subject spoilers
+const expectedHintsByDrill = [
+    [
+        ["I", "to drive", "Salzburg (city in Austria)"],
+        ["I", "to fly", "Berlin"],
+        ["I", "to travel", "Italy"],
+        ["I", "to move", "Vienna (city in Austria)"]
+    ],
+    [
+        ["You", "to drive", "Switzerland"],
+        ["You", "to fly", "Turkey"],
+        ["You", "to travel", "USA"],
+        ["You", "to come", "Iraq"]
+    ],
+    [
+        ["He", "to go", "supermarket"],
+        ["He", "to drive", "hospital"],
+        ["He", "to run", "train station"],
+        ["He", "to take a walk", "park"]
+    ],
+    [
+        ["You", "to go", "post office"],
+        ["You", "to run", "bank"],
+        ["You", "to cycle", "pharmacy"],
+        ["You", "to drive", "school"]
+    ]
+];
+drillsData.forEach((drill, dIdx) => {
+    const allItems = [drill.example, ...drill.items];
+    assert.equal(allItems.length, 4, `Drill ${dIdx + 1} must have 4 items (1 Ex + 3 Items)`);
+    allItems.forEach((it, iIdx) => {
+        assert.deepEqual(it.hints, expectedHintsByDrill[dIdx][iIdx], `Drill ${dIdx + 1} item ${iIdx} hints must match approved 48-element contract`);
+    });
+});
+
 // C: Playback generation and order in playRecording
 assert.ok(js.includes('let playbackGeneration = 0;'), 'Must track playbackGeneration');
 const playRecordingStart = js.indexOf('function playRecording(');
@@ -1821,7 +1856,7 @@ async function runRecordingLifecycleTests() {
         const contextsClosed = await page.evaluate(() => window.t.contexts.every(c => c.state === 'closed'));
         assert.ok(contextsClosed, 'All AudioContext instances closed');
 
-        // Escape dismiss and suppression checks for Übung 1.1 (Hover, Focus, Touch, Single Dismissal, Other UI Priority)
+        // Minimal tooltip baseline checks for Übung 1.1 (Hover, Tab Focus on cues, simple Escape, Touch button exclusion)
         const backLink = page.locator('.back-link.custom-tip-wrap').first();
         if (await backLink.count() > 0) {
             await backLink.hover();
@@ -1839,21 +1874,27 @@ async function runRecordingLifecycleTests() {
             assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
                 'Uebung 1.1 back-link tooltip re-revealed on new hover');
             await page.mouse.move(0, 0);
-
-            // Keyboard focus: self-blur retains data-tip-suppressed, new focus clears suppression
-            await backLink.focus();
-            await page.keyboard.press('Escape');
-            assert.equal(await backLink.evaluate(e => e.getAttribute('data-tip-suppressed') === 'true' && document.activeElement !== e), true,
-                'Uebung 1.1 back-link retains data-tip-suppressed after self-blur on Escape');
-            await backLink.focus();
-            assert.equal(await backLink.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true,
-                'Uebung 1.1 back-link suppression cleared on subsequent new focus');
-            await page.evaluate(() => document.body.focus());
         }
 
-        // Touch in-progress gesture suppression & valid-tap restoration on Übung 1.1 vocabulary tooltip
+        // Tab Focus on D1.1 vocabulary cues & simple Escape without stealing focus
         const vocabWrap = page.locator('#drill1 .tooltip-wrap').first();
         if (await vocabWrap.count() > 0) {
+            assert.equal(await vocabWrap.getAttribute('tabindex'), '0', 'Uebung 1.1 vocabulary cue has tabindex="0" for Tab focus');
+            await vocabWrap.focus();
+            assert.equal(await vocabWrap.locator('.tooltip-tip').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
+                'Uebung 1.1 vocabulary cue tooltip visible on keyboard focus');
+            await page.keyboard.press('Escape');
+            assert.equal(await vocabWrap.evaluate(e => e.getAttribute('data-tip-suppressed') === 'true' && document.activeElement === e && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'hidden'), true,
+                'Uebung 1.1 vocabulary cue tooltip hidden on Escape while preserving focus');
+            await backLink.focus();
+            assert.equal(await vocabWrap.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true,
+                'Uebung 1.1 vocabulary cue suppression cleared when focus moves away');
+            await vocabWrap.focus();
+            assert.equal(await vocabWrap.locator('.tooltip-tip').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
+                'Uebung 1.1 vocabulary cue tooltip re-revealed when focused again');
+            await page.evaluate(() => document.body.focus());
+
+            // Touch behavior: vocabulary cue opens on tap, while control button tooltip stays hidden during touch input
             await page.evaluate(() => {
                 const v = document.querySelector('#drill1 .tooltip-wrap');
                 const target = v.querySelector('.target-word');
@@ -1862,39 +1903,8 @@ async function runRecordingLifecycleTests() {
             });
             assert.equal(await vocabWrap.evaluate(e => e.classList.contains('tap-tip-open')), true,
                 'Uebung 1.1 vocabulary tooltip opened via touch tap');
-            await page.evaluate(() => {
-                const v = document.querySelector('#drill1 .tooltip-wrap');
-                const target = v.querySelector('.target-word');
-                target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 32, clientX: 40, clientY: 40 }));
-            });
-            await page.keyboard.press('Escape');
-            await page.evaluate(() => {
-                const v = document.querySelector('#drill1 .tooltip-wrap');
-                const target = v.querySelector('.target-word');
-                target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 32, clientX: 40, clientY: 40 }));
-                target.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, pointerType: 'touch', pointerId: 32, clientX: 40, clientY: 40 }));
-                target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-            });
-            assert.equal(await vocabWrap.evaluate(e => !e.classList.contains('tap-tip-open') && e.getAttribute('data-tip-suppressed') === 'true'), true,
-                'Uebung 1.1 touch Escape during gesture keeps hidden and suppressed across pointerup/click');
-            await page.evaluate(() => {
-                const v = document.querySelector('#drill1 .tooltip-wrap');
-                const target = v.querySelector('.target-word');
-                target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 33, clientX: 40, clientY: 40 }));
-                target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 33, clientX: 40, clientY: 75 }));
-                target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 34, clientX: 40, clientY: 40 }));
-                target.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, pointerType: 'touch', pointerId: 34, clientX: 40, clientY: 40 }));
-            });
-            assert.equal(await vocabWrap.evaluate(e => !e.classList.contains('tap-tip-open') && e.getAttribute('data-tip-suppressed') === 'true'), true,
-                'Uebung 1.1 touch scroll/cancel does not clear data-tip-suppressed');
-            await page.evaluate(() => {
-                const v = document.querySelector('#drill1 .tooltip-wrap');
-                const target = v.querySelector('.target-word');
-                target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: 35, clientX: 40, clientY: 40 }));
-                target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 35, clientX: 41, clientY: 41 }));
-            });
-            assert.equal(await vocabWrap.evaluate(e => e.classList.contains('tap-tip-open') && !e.hasAttribute('data-tip-suppressed')), true,
-                'Uebung 1.1 subsequent valid touch tap clears suppression and re-opens vocabulary tooltip');
+            assert.equal(await backLink.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden'), true,
+                'Uebung 1.1 control button tooltip stays hidden during touch input');
 
             // Native select focused -> Escape does NOT close open vocabulary tooltip
             await page.evaluate(() => {
