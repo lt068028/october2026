@@ -739,6 +739,7 @@ function initGermanDrill() {
 
     const VOICE_STORAGE_KEY = "october2026.german.selectedVoiceName";
     let preferredVoiceName = localStorage.getItem(VOICE_STORAGE_KEY) || null;
+    const INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"];
 
     // -------------------------------------------------------------
     // 3. Helper Functions
@@ -931,7 +932,7 @@ function initGermanDrill() {
         views.forEach((v, key) => {
             const isRecordingTarget = session?.key === key;
             const canManualStop = isRecordingTarget && session.manual && !session.stopping;
-            v.rec.classList.toggle("stop-btn-active", isRecordingTarget);
+            v.rec.classList.toggle("stop-btn-active", canManualStop);
             setButtonAudioIcon(v.rec, isRecordingTarget ? "stop" : "mic", "regular");
             v.rec.setAttribute(
                 "aria-label",
@@ -1579,9 +1580,13 @@ function initGermanDrill() {
 
         preparing = false;
 
+        const autoRecEl = document.getElementById("toggleRecordMode");
+        const isManual = autoRecEl ? !autoRecEl.checked : manual;
+        manual = isManual;
+
         const s = {
             key,
-            manual,
+            manual: isManual,
             recordingStarted: false,
             stopping: false,
             finished: false,
@@ -1890,7 +1895,7 @@ function initGermanDrill() {
                 }
                 const volume = Math.sqrt(sum / samples.length);
 
-                const sound = volume > 0.025;
+                const sound = volume > 0.015;
                 soundFrames = sound ? soundFrames + 1 : 0;
 
                 if (sound && s.speechStarted) {
@@ -1988,7 +1993,16 @@ function initGermanDrill() {
                     svg.appendChild(path);
                 });
                 const tipWrap = node("span", "custom-tip-wrap uebung-incomplete-wrap");
-                tipWrap.append(svg, node("span", "custom-tip-box", "Incomplete sentence."));
+                tipWrap.tabIndex = 0;
+                const tip = node("span", "custom-tip-box", INCOMPLETE_TIPS[Math.floor(Math.random() * INCOMPLETE_TIPS.length)]);
+                tip.setAttribute("role", "tooltip");
+                tipWrap.append(svg, tip);
+                const reroll = () => {
+                    tip.textContent = INCOMPLETE_TIPS[Math.floor(Math.random() * INCOMPLETE_TIPS.length)];
+                    window.DrillTooltips?.position(tipWrap, tip);
+                };
+                tipWrap.addEventListener("mouseenter", reroll);
+                tipWrap.addEventListener("focus", reroll);
                 v.result.append(tipWrap, document.createTextNode(val.raw.trimEnd() + "…"));
                 v.correction.hidden = true;
             } else if (judgment === "mismatch") {
@@ -2058,20 +2072,18 @@ function initGermanDrill() {
     // 6. Copy My Sentences
     // -------------------------------------------------------------
     function updateCopyButtons() {
-        const hasAnyRecordings = drillsData.some(drill =>
-            drill.items.some(item => {
-                const s = saved.get(item.id);
-                return Boolean(s?.raw && s.judgment !== "empty");
-            })
-        );
-
         drillsData.forEach(drill => {
             const area = document.querySelector(`.uebung-copy-area[data-drill="${drill.number}"]`);
             if (!area) return;
             const btn = area.querySelector(".uebung-copy-button");
             if (!btn) return;
 
-            btn.disabled = Boolean(session || preparing || !hasAnyRecordings);
+            const hasDrillRecordings = drill.items.some(item => {
+                const s = saved.get(item.id);
+                return Boolean(s?.raw && s.judgment !== "empty");
+            });
+
+            btn.disabled = Boolean(session || preparing || !hasDrillRecordings);
         });
     }
 
@@ -2087,7 +2099,7 @@ function initGermanDrill() {
 
         btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span class="uebung-copy-label">Copy my sentences</span>';
 
-        const help = node("span", "uebung-copy-help", "Copy all your recorded answers to review or share.");
+        const help = node("span", "uebung-copy-help", "Copy your drill results to review or share.");
 
         let copyTimer = null;
 
@@ -2096,25 +2108,19 @@ function initGermanDrill() {
             const now = new Date();
             const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
-            const drillBlocks = [];
-            drillsData.forEach(d => {
-                const entries = [];
-                d.items.forEach((item, idx) => {
-                    const entry = saved.get(item.id);
-                    if (entry?.raw && entry.judgment !== "empty") {
-                        const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
-                        entries.push(`${idx + 1}. ${marker} ${entry.raw}`);
-                    }
-                });
-                if (entries.length > 0) {
-                    const cleanTitle = d.title.replace(/^Drill \d+:\s*/, "").split(/\s*—\s*/)[0].trim();
-                    const header = `Deutsche Übung 1.1 — Drill ${d.number}: ${cleanTitle} — ${dateStr}`;
-                    drillBlocks.push(`${header}\n${entries.join("\n")}`);
+            const entries = [];
+            drill.items.forEach((item, idx) => {
+                const entry = saved.get(item.id);
+                if (entry?.raw && entry.judgment !== "empty") {
+                    const marker = entry.judgment === "accepted" ? "✅" : (entry.judgment === "incomplete" ? "👣" : "🔥");
+                    entries.push(`${idx + 1}. ${marker} ${entry.raw}`);
                 }
             });
 
-            if (!drillBlocks.length) return;
-            const fullText = drillBlocks.join("\n\n");
+            if (!entries.length) return;
+            const cleanTitle = drill.title.replace(/^Drill \d+:\s*/, "").split(/\s*—\s*/)[0].trim();
+            const header = `Deutsche Übung 1.1 — Drill ${drill.number}: ${cleanTitle} — ${dateStr}`;
+            const fullText = `${header}\n${entries.join("\n")}`;
 
             try {
                 await navigator.clipboard.writeText(fullText);
@@ -2458,6 +2464,7 @@ function initGermanDrill() {
     const autoRecInput = document.getElementById("toggleRecordMode");
     const autoRecLabel = document.getElementById("labelAutoRecord");
     if (autoRecInput) {
+        manual = !autoRecInput.checked;
         autoRecInput.addEventListener("change", () => {
             manual = !autoRecInput.checked;
             autoRecLabel?.classList.toggle("active-mode", autoRecInput.checked);

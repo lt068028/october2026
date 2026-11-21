@@ -1056,9 +1056,76 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     eq(await rows.nth(0).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 1 record button accessible`);
     eq(await rows.nth(1).getByRole('button', { name: 'モデル音声を聞く' }).count(), 1, `${drillSel} Row 2 listen button accessible`);
     eq(await rows.nth(1).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 2 record button accessible`);
-    eq(await rows.nth(0).getByRole('button', { name: /Affirmative response|Negative response/ }).count(), 0, `${drillSel} Row 1 has no Yes/No buttons`);
-    eq(await rows.nth(1).getByRole('button', { name: /Affirmative response|Negative response/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
+    eq(await rows.nth(0).getByRole('button', { name: /Give a positive answer!|Give a negative answer!|Affirmative response|Negative response/ }).count(), 0, `${drillSel} Row 1 has no Yes/No buttons`);
+    eq(await rows.nth(1).getByRole('button', { name: /Give a positive answer!|Give a negative answer!|Affirmative response|Negative response/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
   }
+
+  // Drill 2 longest cue "何か／あらう" must remain on a single line at 600px and 1280px
+  for (const vpWidth of [600, 1280]) {
+    await p.setViewportSize({ width: vpWidth, height: 1000 });
+    await p.waitForTimeout(120);
+    const cueLineCheck = await p.evaluate(() => {
+      const strip = el => {
+        const c = el.cloneNode(true);
+        c.querySelectorAll('.tooltip-tip, .custom-tip-box').forEach(x => x.remove());
+        return c.textContent.replace(/\s+/g, '');
+      };
+      const target = [...document.querySelectorAll('#drill2 .p81-card .p81-cue-words')].find(el => strip(el) === '何か／あらう');
+      if (!target) return { found: false };
+      const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, {
+        acceptNode: n => (n.parentElement?.closest('.tooltip-tip, .custom-tip-box') || !n.textContent.trim())
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT
+      });
+      const yLines = new Set();
+      while (walker.nextNode()) {
+        const r = document.createRange();
+        r.selectNodeContents(walker.currentNode);
+        for (const rect of r.getClientRects()) {
+          if (rect.width > 0 && rect.height > 0) yLines.add(Math.round(rect.top / 4));
+        }
+      }
+      const box = target.getBoundingClientRect();
+      const lh = parseFloat(getComputedStyle(target).lineHeight) || 32;
+      return { found: true, lineCount: yLines.size, singleLineHeight: box.height <= lh * 1.5 };
+    });
+    eq(cueLineCheck, { found: true, lineCount: 1, singleLineHeight: true },
+      `Drill 2 longest cue "何か／あらう" renders on a single line at ${vpWidth}px`);
+  }
+  await p.setViewportSize({ width: 1440, height: 1000 });
+  await p.waitForTimeout(100);
+
+  // Drill 3 item 1 Yes/No tooltips + aria-labels (none on item 2+) & Example 3 Smile/Frown listen tooltips
+  const d3TooltipAudit = await p.evaluate(() => {
+    const cards = document.querySelectorAll('#drill3 .p81-card');
+    const c1Yes = cards[0]?.querySelector('.answer-choice[data-answer="yes"]');
+    const c1No = cards[0]?.querySelector('.answer-choice[data-answer="no"]');
+    const c2Tips = cards[1] ? cards[1].querySelectorAll('.answer-choice .custom-tip-box').length : -1;
+    const exYes = document.querySelector('#drill3 .p81-example .ex-audio-btn[data-answer="yes"]');
+    const exNo = document.querySelector('#drill3 .p81-example .ex-audio-btn[data-answer="no"]');
+    return {
+      c1YesTip: c1Yes?.querySelector('.custom-tip-box')?.textContent || '',
+      c1YesAria: c1Yes?.getAttribute('aria-label') || '',
+      c1NoTip: c1No?.querySelector('.custom-tip-box')?.textContent || '',
+      c1NoAria: c1No?.getAttribute('aria-label') || '',
+      c2Tips,
+      exYesTip: exYes?.querySelector('.custom-tip-box')?.textContent || '',
+      exYesAria: exYes?.getAttribute('aria-label') || '',
+      exNoTip: exNo?.querySelector('.custom-tip-box')?.textContent || '',
+      exNoAria: exNo?.getAttribute('aria-label') || ''
+    };
+  });
+  eq(d3TooltipAudit, {
+    c1YesTip: 'Give a positive answer!',
+    c1YesAria: 'Give a positive answer!',
+    c1NoTip: 'Give a negative answer!',
+    c1NoAria: 'Give a negative answer!',
+    c2Tips: 0,
+    exYesTip: 'Listen to affirmative model.',
+    exYesAria: 'Listen to affirmative model.',
+    exNoTip: 'Listen to negative model.',
+    exNoAria: 'Listen to negative model.'
+  }, 'Practice 8.2 Drill 3 item 1 Yes/No and Example 3 Smile/Frown hover tooltips match spec');
 
   // Paired Rows visual bounding-box check in both inline (1440px) and stacked (375px)
   const checkPairedGeometry = async (vpWidth, expectedLayout) => {

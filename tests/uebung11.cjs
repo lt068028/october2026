@@ -86,9 +86,14 @@ assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.oner
 
 // 5.4 Check Copy my sentences: raw STT only, no cue text
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');
-assert.ok(js.includes('Copy all your recorded answers to review or share.'), 'JS must describe the all-Drill Copy scope');
+assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must use UI_LAYOUT_SPEC Copy help text');
+assert.ok(!js.includes('Copy all your recorded answers to review or share.'), 'JS must remove legacy all-Drill Copy help text');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
-assert.ok(js.includes('const hasAnyRecordings = drillsData.some'), 'Any saved answer must enable Copy across drills');
+assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && !js.includes('const hasAnyRecordings = drillsData.some'), 'Copy button enabling must be scoped per individual drill');
+assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
+assert.ok(js.includes('volume > 0.015') && !js.includes('volume > 0.025'), 'D1.1 speech volume threshold must unify to 0.015');
+assert.ok(js.includes('v.rec.classList.toggle("stop-btn-active", canManualStop);'), 'D1.1 must apply stop-btn-active to manual stop only');
+assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-sub-row {\n    flex-direction: column;\n    align-items: flex-end;'), 'style.css must stack D1.1 row-2 items vertically');
 assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
 assert.ok(js.includes('entries.push(`${idx + 1}. ${marker} ${entry.raw}`)'), 'Copy must include marker and untouched raw STT');
 assert.ok(!js.includes('entries.push(`${idx + 1}. ${marker} ${item.cue}: ${entry.raw}`)'), 'Copy must not include the exercise cue');
@@ -595,7 +600,7 @@ async function runRecordingLifecycleTests() {
                     return {
                         fftSize: 2048,
                         getFloatTimeDomainData(arr) {
-                            arr.fill(window.t.speaking ? 0.08 : 0);
+                            arr.fill(typeof window.t.speaking === 'number' ? window.t.speaking : (window.t.speaking ? 0.08 : 0));
                         },
                         disconnect() {}
                     };
@@ -812,6 +817,11 @@ async function runRecordingLifecycleTests() {
         assert.equal(await page.locator('#drillsContainer button[data-stop]').count(), 0, 'S6: Must not render 3rd stop button');
 
         await clickRecord(true); // Manual
+        assert.equal(
+            await page.evaluate(() => Boolean(document.querySelector('#drillsContainer .drill-row .drill-record-btn')?.classList.contains('stop-btn-active'))),
+            true,
+            'S6: Manual recording must apply .stop-btn-active'
+        );
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
@@ -824,6 +834,15 @@ async function runRecordingLifecycleTests() {
         });
         await page.clock.runFor(100);
         assert.ok(!(await isRecording()), 'S6: Stopped via recBtn in manual mode');
+
+        // Manual -> Autostop ON transition with 0.020 RMS volume (> 0.015 threshold) still stops after 2.0s silence
+        await clickRecord(false);
+        await advanceToElapsed(800);
+        await setSpeaking(0.02);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        assert.ok(!(await isRecording()), 'Manual -> Autostop ON session with 0.020 RMS volume stops after 2.0s silence');
 
         // --- Scenario 7: 音声再検出で無音時間がリセット ---
         await clickRecord(false);
@@ -970,14 +989,14 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(100);
         assert.ok(!(await isRecording()), 'S19: Recording stopped cleanly without duplication errors');
 
-        // Verify Autostop mode keeps recBtn disabled and non-stoppable during recording
+        // Verify Autostop mode keeps recBtn disabled without .stop-btn-active red border
         await clickRecord(false);
         await page.clock.runFor(100);
         const autostopDisabled = await page.evaluate(() => {
             const recBtn = document.querySelector('#drillsContainer .drill-row .drill-record-btn');
-            return recBtn?.disabled === true && recBtn?.classList.contains('stop-btn-active');
+            return recBtn?.disabled === true && !recBtn?.classList.contains('stop-btn-active');
         });
-        assert.equal(autostopDisabled, true, 'Autostop recording must keep recBtn disabled so manual stop is blocked');
+        assert.equal(autostopDisabled, true, 'Autostop recording must keep recBtn disabled without .stop-btn-active');
         await page.clock.runFor(5200); // Wait for 5s silence timeout to clear autostop session cleanly
 
         // --- Scenario 20: 既存のドイツ語文字起こし・判定・保存機能の維持 ---
@@ -994,11 +1013,17 @@ async function runRecordingLifecycleTests() {
         assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
 
-        // --- Scenario 20B: All-Drill Copy aggregation, state, raw STT, and reset ---
+        // --- Scenario 20B: Per-Drill Copy isolation, state, help text, raw STT, and reset ---
+        const copyHelpTexts = await page.locator('.uebung-copy-help').evaluateAll(els => els.map(el => el.textContent.trim()));
+        assert.deepEqual(
+            copyHelpTexts,
+            Array(4).fill('Copy your drill results to review or share.'),
+            'All 4 Copy areas must use standardized per-drill help copy'
+        );
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, false, false, false],
-            'One valid answer must enable all four Copy buttons'
+            [false, true, true, true],
+            'Drill 1 answer must enable only Drill 1 Copy button while Drills 2-4 remain disabled'
         );
 
         await clickRecordInDrill(2);
@@ -1016,34 +1041,41 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'D2 Copy setup: recording completed');
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, false, false, false],
-            'All Copy buttons must re-enable after recording completes'
+            [false, false, true, true],
+            'Drills 1 and 2 answers must enable only Drills 1 and 2 Copy buttons while Drills 3-4 remain disabled'
         );
 
-        // Pressing Drill 4's button copies only answered drills, in page order.
-        await page.locator('#drill4 .uebung-copy-button').click();
+        // Pressing Drill 1's button copies only Drill 1 without Drill 2 contamination.
+        await page.locator('#drill1 .uebung-copy-button').click();
         await page.waitForFunction(() => window.t.clipboardWrites.length === 1);
-        const copiedBatch = await page.evaluate(() => window.t.clipboardWrites[0]);
-        const copiedHeaders = copiedBatch.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
-        assert.equal(copiedHeaders.length, 2, 'Copy must include one dated heading for each answered drill');
-        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 1: nach —'), 'Copy must contain stripped Drill 1 header without learning focus');
-        assert.ok(copiedBatch.includes('Deutsche Übung 1.1 — Drill 2: in —'), 'Copy must contain stripped Drill 2 header without learning focus');
-        assert.ok(!copiedBatch.includes('Cities & Countries'), 'Copy header must not include duplicate learning focus');
-        assert.ok(copiedBatch.indexOf('Drill 1:') < copiedBatch.indexOf('Drill 2:'), 'Copied drills must be ordered by page');
-        assert.ok(copiedBatch.includes('1. ✅ Ich fliege nach Berlin.'), 'Copy must contain Drill 1 raw STT and accepted marker');
-        assert.ok(copiedBatch.includes('1. ✅ Du fliegst in die Türkei.'), 'Copy must contain Drill 2 raw STT and accepted marker');
-        assert.ok(!copiedBatch.includes('Ich / fliegen / Berlin'), 'Copy must not contain Drill 1 cue text');
-        assert.ok(!copiedBatch.includes('Du / fliegen / die Türkei'), 'Copy must not contain Drill 2 cue text');
-        assert.ok(!copiedBatch.includes('…') && !copiedBatch.includes('＿'), 'Copy must not include screen-only symbols');
-        assert.ok(!copiedBatch.includes('Drill 3:') && !copiedBatch.includes('Drill 4:'), 'Drills without answers must be omitted');
+        const copiedD1 = await page.evaluate(() => window.t.clipboardWrites[0]);
+        const d1Headers = copiedD1.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
+        assert.equal(d1Headers.length, 1, 'Drill 1 Copy must include only one dated heading');
+        assert.ok(copiedD1.includes('Deutsche Übung 1.1 — Drill 1: nach —'), 'Drill 1 Copy must contain Drill 1 heading');
+        assert.ok(copiedD1.includes('1. ✅ Ich fliege nach Berlin.'), 'Drill 1 Copy must contain Drill 1 raw STT and accepted marker');
+        assert.ok(!copiedD1.includes('Drill 2:') && !copiedD1.includes('Du fliegst in die Türkei.'), 'Drill 1 Copy must not include Drill 2 answers');
+        assert.ok(!copiedD1.includes('Ich / fliegen / Berlin'), 'Copy must not contain Drill 1 cue text');
+        assert.ok(!copiedD1.includes('…') && !copiedD1.includes('＿'), 'Copy must not include screen-only symbols');
 
-        const copyBtn4Label = page.locator('#drill4 .uebung-copy-button .uebung-copy-label');
+        // Pressing Drill 2's button copies only Drill 2 without Drill 1 contamination.
+        await page.locator('#drill2 .uebung-copy-button').click();
+        await page.waitForFunction(() => window.t.clipboardWrites.length === 2);
+        const copiedD2 = await page.evaluate(() => window.t.clipboardWrites[1]);
+        const d2Headers = copiedD2.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
+        assert.equal(d2Headers.length, 1, 'Drill 2 Copy must include only one dated heading');
+        assert.ok(copiedD2.includes('Deutsche Übung 1.1 — Drill 2: in —'), 'Drill 2 Copy must contain Drill 2 heading');
+        assert.ok(copiedD2.includes('1. ✅ Du fliegst in die Türkei.'), 'Drill 2 Copy must contain Drill 2 raw STT and accepted marker');
+        assert.ok(!copiedD2.includes('Drill 1:') && !copiedD2.includes('Ich fliege nach Berlin.'), 'Drill 2 Copy must not include Drill 1 answers');
+        assert.ok(!copiedD2.includes('Cities & Countries'), 'Copy header must not include duplicate learning focus');
+        assert.ok(!copiedD2.includes('Du / fliegen / die Türkei'), 'Copy must not contain Drill 2 cue text');
+
+        const copyBtn2Label = page.locator('#drill2 .uebung-copy-button .uebung-copy-label');
         const copyBtn1Label = page.locator('#drill1 .uebung-copy-button .uebung-copy-label');
-        await page.waitForFunction(() => document.querySelector('#drill4 .uebung-copy-button .uebung-copy-label')?.textContent === 'Copied');
-        assert.equal(await copyBtn4Label.textContent(), 'Copied', 'Clicked button label must change to Copied');
+        await page.waitForFunction(() => document.querySelector('#drill2 .uebung-copy-button .uebung-copy-label')?.textContent === 'Copied');
+        assert.equal(await copyBtn2Label.textContent(), 'Copied', 'Clicked button label must change to Copied');
         assert.equal(await copyBtn1Label.textContent(), 'Copy my sentences', 'Other copy buttons must keep Copy my sentences');
         await page.clock.runFor(2000);
-        assert.equal(await copyBtn4Label.textContent(), 'Copy my sentences', 'Clicked button label must revert after two seconds');
+        assert.equal(await copyBtn2Label.textContent(), 'Copy my sentences', 'Clicked button label must revert after two seconds');
 
         // Clipboard failure must never change button label to Copied.
         await page.evaluate(() => { window.t.clipboardFailure = true; });
@@ -1051,6 +1083,89 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(100);
         assert.equal(await copyBtn1Label.textContent(), 'Copy my sentences', 'Clipboard failure must keep Copy my sentences');
         await page.evaluate(() => { window.t.clipboardFailure = false; });
+
+        // --- Incomplete random encouragement tooltip (mouseenter/focus + DrillTooltips.position) + Row-2 vertical stacking (Keep going! + notice) ---
+        await clickRecordInDrill(3);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Er fährt zum');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        const incompleteCheck = await page.evaluate(() => {
+            const tips = ['Getting closer!', 'Almost there!', 'Keep it up!', 'Nice flow!', 'Great start!'];
+            const wrap = document.querySelector('#drill3 .drill-row .uebung-incomplete-wrap');
+            const box = wrap?.querySelector('.custom-tip-box');
+            if (!wrap || !box) return { found: false };
+            const initial = box.textContent;
+            let positioned = 0;
+            const origPos = window.DrillTooltips?.position;
+            if (window.DrillTooltips) {
+                window.DrillTooltips.position = (h, b) => {
+                    positioned++;
+                    return origPos?.(h, b);
+                };
+            }
+            const seen = new Set([initial]);
+            for (let i = 0; i < 15; i++) {
+                wrap.dispatchEvent(new MouseEvent('mouseenter', { bubbles: false }));
+                seen.add(box.textContent);
+                wrap.dispatchEvent(new FocusEvent('focus'));
+                seen.add(box.textContent);
+            }
+            if (window.DrillTooltips && origPos) window.DrillTooltips.position = origPos;
+            return {
+                found: true,
+                tabIndex: wrap.tabIndex,
+                role: box.getAttribute('role'),
+                allValid: [...seen].every(t => tips.includes(t)),
+                rerolledVariety: seen.size >= 2,
+                positionedCount: positioned
+            };
+        });
+        assert.deepEqual(incompleteCheck, {
+            found: true,
+            tabIndex: 0,
+            role: 'tooltip',
+            allValid: true,
+            rerolledVariety: true,
+            positionedCount: 30
+        }, 'D1.1 incomplete mark exposes accessible tooltip that rerolls and repositions on mouseenter/focus');
+
+        // Stack Keep going! and notice vertically inside #drill3 .result-sub-row
+        await clickRecordInDrill(3);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Er fährt in Krankenhaus.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        await clickRecordInDrill(3);
+        await advanceToElapsed(5200);
+        await page.clock.runFor(100);
+        const subRowStackCheck = await page.evaluate(() => {
+            const subRow = document.querySelector('#drill3 .drill-row .recording-result > .result-sub-row');
+            const retry = subRow?.querySelector('.feedback-retry-label');
+            const notice = subRow?.querySelector('.result-notice');
+            if (!subRow || !retry || !notice) return { found: false };
+            const rRect = retry.getBoundingClientRect();
+            const nRect = notice.getBoundingClientRect();
+            const cs = getComputedStyle(subRow);
+            return {
+                found: true,
+                flexDir: cs.flexDirection,
+                stackedVertically: nRect.top >= rRect.bottom - 2,
+                retryText: retry.textContent.trim(),
+                noticeText: notice.textContent.trim()
+            };
+        });
+        assert.deepEqual(subRowStackCheck, {
+            found: true,
+            flexDir: 'column',
+            stackedVertically: true,
+            retryText: 'Keep going!',
+            noticeText: 'No speech detected within 5 seconds.'
+        }, 'D1.1 .result-sub-row stacks Keep going! and session notice vertically');
 
         // --- Scenario 20b: Auto-Compare ON Relay Playback State Transitions (10 items + 5 independent conditions) ---
         await page.evaluate(() => {

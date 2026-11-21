@@ -69,7 +69,8 @@
         for (const info of infos) {
             const number = Math.max(...info.group.map(i => i.number));
             const available = info.table.clientWidth;
-            const gap = 4; // Existing shared recording column gutter.
+            const measuredGap = parseFloat(getComputedStyle(table).columnGap);
+            const gap = Number.isFinite(measuredGap) ? measuredGap : 4;
             const room = available - number - info.actions - (number > 0 ? 2 : 1) * gap;
             const currentLayout = info.table.dataset.contentLayout || '';
             const inline = !currentLayout

@@ -5737,6 +5737,10 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 :is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .result-sub-row[hidden] {
     display: none !important;
 }
+.uebung11-page .recording-controls > .recording-result > .result-sub-row {
+    flex-direction: column;
+    align-items: flex-end;
+}
 :is(.practice82-page, .uebung11-page) .recording-controls > .recording-result > .correction-box {
     margin-top: 0;
     flex: 0 1 auto;
