@@ -4655,9 +4655,9 @@ body.site-scale .p2x-food-example .p21-which-guide.content-docked-guide {
 /* Price is one teacher-supplied cue, including in Hiragana / Vocab OFF. */
 body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; white-space:nowrap; }
 
-/* Practice 8.1 Ex1 and Ex5: match the 8.2 English concept badges; align cue starts. */
+/* Practice 8.1 Ex1 and Ex5: match the 8.2 English concept badges; left-align headings. */
 .practice81-page[data-practice="8.1"] :is(#drill1,#drill5) .p81-example-row > .p81-kind {
-    justify-self: end;
+    justify-self: start;
     box-sizing: border-box;
     white-space: nowrap;
     font-family: 'Lato', sans-serif;
@@ -4669,11 +4669,6 @@ body.site-scale[data-practice="2.2"] .p22-price-cue { display:inline-block; whit
     background: var(--surface-bg-subtle, rgba(0, 0, 0, 0.04));
     border: 1px solid var(--border-color, #e2e8f0);
     border-radius: 8px;
-}
-
-/* Practice 8.1 Ex5: left-align Skillful / Observed headings only. */
-.practice81-page[data-practice="8.1"] #drill5 .p81-example-row > .p81-kind {
-    justify-self: start;
 }
 
 /* Practice 1.1: English concept badges in Example (Affirmative / Negative) */
