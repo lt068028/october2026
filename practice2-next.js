@@ -1496,18 +1496,20 @@ function practice2ShowNotice(resultSpan, message) {
     const zoneLabel=zone=>({A:'near X',B:'near Y',far:'far from X & Y'}[zone]);
     const englishDemonstrative=(speaker,o)=>{
         const d=demonstrative(speaker,o);
-        return `${{'この':'this','その':'that','あの':'that'}[d]||'which'} (${zoneLabel(o.zone)})`;
+        if(d==='この')return 'this';
+        return `${{'その':'that','あの':'that'}[d]||'which'} (${zoneLabel(o.zone)})`;
     };
     const englishPersonCue=(speaker,o)=>{
         const d=demonstrative(speaker,o);
-        return `${{'この':'this person','その':'that person','あの':'that person'}[d]||'which person'} (${zoneLabel(o.zone)})`;
+        if(d==='この')return 'this person';
+        return `${{'その':'that person','あの':'that person'}[d]||'which person'} (${zoneLabel(o.zone)})`;
     };
     function renderCitySections(){
         practice2State.exampleCueObserver?.disconnect();
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const identifySpeaker=(view,key)=>{view.row.dataset.p23RecordingKey=key;};
         const p23ZoneLabel=zone=>({A:'near X',B:'near Y',far:"Z's location; far from X & Y"}[zone]);
-        const englishPlace=(place,zone)=>{const base={'ここ':'here','そこ':'there','あそこ':'there','Zさん':'Z','Yさん':'Y','Xさん':'X'}[place]||place;return (place==='ここ'||place==='そこ'||place==='あそこ')?`${base} (${p23ZoneLabel(zone)})`:base;};
+        const englishPlace=(place,zone)=>{const base={'ここ':'here','そこ':'there','あそこ':'there','Zさん':'Z','Yさん':'Y','Xさん':'X'}[place]||place;return (place==='そこ'||place==='あそこ')?`${base} (${p23ZoneLabel(zone)})`:base;};
         const cs=cityObjects(),whereContainer=document.getElementById('drill2Container'),describeContainer=document.getElementById('drill1Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ・どこ'));
@@ -1640,7 +1642,7 @@ function practice2ShowNotice(resultSpan, message) {
             const r=recordingRow(c,'a',`<strong>${speakerName(reply)} · A:</strong> ${whereSet===2?wrongReply+'/'+loc:replyCue+(whereSet===0?'/'+vocabulary(o):i===3?'/'+loc:'')}`,prefix+'_r',answer,true,false);
             identifySpeaker(q,prefix+'_q');identifySpeaker(r,prefix+'_r');
             englishCue(q,[whereSet===0?englishPlace(subject(),o.zone):o.meaning,whereSet===2?englishPlace(wrongQuestion,wrongPlace.zone):'where']);
-            englishCue(r,whereSet===2?[englishPlace(wrongReply,wrongPlace.zone),englishPlace(loc,o.zone)]:whereSet===0?[replySubject()==='Zさん'?'Z':`here (${p23ZoneLabel(o.zone)})`,o.meaning]:[o.meaning,...(i===3?[englishPlace(loc,o.zone)]:[])]);
+            englishCue(r,whereSet===2?[englishPlace(wrongReply,wrongPlace.zone),englishPlace(loc,o.zone)]:whereSet===0?[replySubject()==='Zさん'?'Z':'here',o.meaning]:[o.meaning,...(i===3?[englishPlace(loc,o.zone)]:[])]);
             if(whereSet===2)r.actions.append(node('span','p21-response-lead',speechStyle==='casual'?'ううん…':'いいえ…'));
             const select=(who,zone)=>{selectWhere(who,zone);wherePicture.querySelectorAll('.p23-where-item').forEach(e=>e.classList.toggle('is-target',e.dataset.kind===o.kind));};
             attachCity(q,ask,o,select);attachCity(r,reply,o,select);

@@ -1226,7 +1226,7 @@ function practice2ShowNotice(resultSpan, message) {
     const noun=o=>word(o.hira,o.kanji);
     const pro=(speaker,o)=>Practice21.pronoun(speaker,o.zone);
     const zoneLabel=zone=>({A:'near X',B:'near Y',far:'far from X & Y'}[zone]);
-    const englishObject=(pronoun,zone)=>`${{'これ':'this','それ':'that','あれ':'that'}[pronoun]} (${zoneLabel(zone)})`;
+    const englishObject=(pronoun,zone)=>pronoun==='これ'?'this':`that (${zoneLabel(zone)})`;
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
         const source=view.cueCell.querySelector('strong'),role=source&&(/^(?:[XYZ] · )?[QA]:$|^[XYZ][:：]?$/.test(source.textContent.trim())||source.classList.contains('conversation-role')||source.classList.contains('conversation-person'))?source.cloneNode(true):null;

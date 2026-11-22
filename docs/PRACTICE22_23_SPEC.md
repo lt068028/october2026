@@ -89,7 +89,7 @@ D4はD3の「どの＋名詞」と分離した人物課題とし、Exampleは設
 ### 2.7 English Cues
 
 - English Cuesの適用対象はD1〜D5の問題キューとする。切替・スクロール・状態保持等の共通動作は [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従う。
-- English Cuesでは、指示表現「あの」を`that`、人物表現「あの人」を`that person`とする。`over there`を付け足さず、対象語に合った短い表現を用いる。
+- English Cuesでは、`この／この人` の `this`／`this person` には位置ラベルを付けず、`その／あの`・`その人／あの人` の `that`／`that person` には位置ラベル（`near X` / `near Y` / `far from X & Y`）を付ける。基本訳語は `that`／`that person` を維持する。
 
 
 ## 3. Practice 2.3 — ここ・そこ・あそこ・どこ
@@ -178,6 +178,7 @@ D4はD3の「どの＋名詞」と分離した人物課題とし、Exampleは設
 ### English Cues切替パネル
 
 - English Cuesの適用対象はD1〜D3の問題キューとする。D3 Dayの返答キューは`Saturday`／`Sunday`とする。
+- `ここ` の `here` には位置ラベルを付けず、`そこ／あそこ` の `there` には位置ラベル（`near X` / `near Y` / `Z's location; far from X & Y`）を付ける。Drill 1には場所Cueを追加しない。
 - D1（Country／Cities／Time）は国名・都市名・時刻等の問題情報を切り替え、場所を表す「あそこ」等の英語Cueは追加しない。D2／D3の所在・場所Cueに「あそこ」が現れる場合は`there`とし、`over there`にはしない。
 - 切替操作・スクロール・録音状態の保持等は [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従う。
 
