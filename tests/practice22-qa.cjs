@@ -93,6 +93,27 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  check(await p.locator('.p22-person-badge.is-speaking').evaluate(e=>{const s=getComputedStyle(e);return s.animationName==='none'&&s.boxShadow.includes('rgb(255, 255, 255)')&&s.boxShadow.includes('rgb(51, 65, 85)')&&s.boxShadow.endsWith('8px')}),true);
  await p.evaluate(()=>t.spoken.at(-1).onend());await p.emulateMedia({reducedMotion:'no-preference'});
  for(const theme of ['light','dark']){await p.emulateMedia({colorScheme:theme});await p.locator('.p2x-price-example').screenshot({path:'/tmp/p22-speaker-colors-'+theme+'.png'});}
+
+ // Verify Dr4 (Set 1 & Set 2) A-side cues use neutral person cues (…のひと / …の人 / … person) while retaining trailing vocabulary tooltips
+ const d4Switcher=p.locator('#drill4Container .p21-set-switcher button');
+ for(const setIdx of [0,1]){
+  await d4Switcher.nth(setIdx).click();
+  for(const [script,expected] of [['hiragana','…のひと'],['kanji','…の人']]){
+   await p.locator(`#scriptModeControl [data-value="${script}"]`).click();
+   const d4Cues=await p.locator('#drill4Container tr[data-speaker-recording-key*="_r_"] .drill-cue-cell').evaluateAll(es=>es.map(e=>{
+    const c=e.cloneNode(true);c.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(x=>x.remove());
+    return {text:c.textContent.trim(),tips:e.querySelectorAll('.tooltip-wrap').length};
+   }));
+   check(d4Cues.length,3,`Dr4 Set ${setIdx+1} has 3 A-side rows (${script})`);
+   check(d4Cues.every(x=>x.text.includes(expected)&&!x.text.includes('このひと')&&!x.text.includes('あのひと')&&!x.text.includes('この人')&&!x.text.includes('あの人')),true,`Dr4 Set ${setIdx+1} A cues use ${expected}`);
+   if(setIdx===0||d4Cues.length===3)check(d4Cues[0].tips>0,true,`Dr4 Set ${setIdx+1} row 1 retains trailing vocabulary tooltip (${script})`);
+  }
+  await p.locator('.drill-cue-button').click();
+  const engCues=await p.locator('#drill4Container tr[data-speaker-recording-key*="_r_"] .drill-cue-cell').allTextContents();
+  check(engCues.every(t=>t.includes('… person')&&!t.includes('this person')&&!t.includes('that person')),true,`Dr4 Set ${setIdx+1} English A cues use … person`);
+  await p.locator('.drill-cue-button').click();
+ }
+
  await p.goto('http://qa.test/practice2.3.html');check(await p.locator('.p22-role-circle').count(),0);
  check(await p.locator('.p2x-person').evaluateAll(es=>es.every(e=>!['rgb(109, 40, 217)','rgb(196, 181, 253)','rgb(75, 85, 99)','rgb(209, 213, 219)'].includes(getComputedStyle(e).backgroundColor))),true);
  console.log('PASS '+count);await browser.close();
