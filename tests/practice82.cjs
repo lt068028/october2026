@@ -1065,8 +1065,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     eq(await rows.nth(0).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 1 record button accessible`);
     eq(await rows.nth(1).getByRole('button', { name: 'モデル音声を聞く' }).count(), 1, `${drillSel} Row 2 listen button accessible`);
     eq(await rows.nth(1).getByRole('button', { name: '音声を録音する' }).count(), 1, `${drillSel} Row 2 record button accessible`);
-    eq(await rows.nth(0).getByRole('button', { name: /Give a positive answer!|Give a negative answer!|Affirmative response|Negative response/ }).count(), 0, `${drillSel} Row 1 has no Yes/No buttons`);
-    eq(await rows.nth(1).getByRole('button', { name: /Give a positive answer!|Give a negative answer!|Affirmative response|Negative response/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
+    eq(await rows.nth(0).getByRole('button', { name: /^(Yes|No|Affirmative response|Negative response)$/ }).count(), 0, `${drillSel} Row 1 has no Yes/No buttons`);
+    eq(await rows.nth(1).getByRole('button', { name: /^(Yes|No|Affirmative response|Negative response)$/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
   }
 
   // Drill 2 longest cue "何か／あらう" must remain on a single line at 600px and 1280px
@@ -1125,13 +1125,13 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     };
   });
   eq(d3TooltipAudit, {
-    c1YesTip: 'Give a positive answer!',
-    c1YesAria: 'Give a positive answer!',
-    c1NoTip: 'Give a negative answer!',
-    c1NoAria: 'Give a negative answer!',
+    c1YesTip: 'Yes',
+    c1YesAria: 'Yes',
+    c1NoTip: 'No',
+    c1NoAria: 'No',
     c2Tips: 0,
-    exYesTip: 'Listen to affirmative model.',
-    exYesAria: 'Listen to affirmative model.',
+    exYesTip: 'Listen to the affirmative model.',
+    exYesAria: 'Listen to the affirmative model.',
     exNoTip: 'Listen to negative model.',
     exNoAria: 'Listen to negative model.'
   }, 'Practice 8.2 Drill 3 item 1 Yes/No and Example 3 Smile/Frown hover tooltips match spec');
