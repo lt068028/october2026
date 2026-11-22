@@ -1495,17 +1495,17 @@ function practice2ShowNotice(resultSpan, message) {
     };
     const englishDemonstrative=(speaker,o)=>{
         const d=demonstrative(speaker,o);
-        return {'この':'this','その':'that','あの':'that (over there)'}[d]||'which';
+        return {'この':'this','その':'that','あの':'that'}[d]||'which';
     };
     const englishPersonCue=(speaker,o)=>{
         const d=demonstrative(speaker,o);
-        return {'この':'this person','その':'that person','あの':'that person over there'}[d]||'which person';
+        return {'この':'this person','その':'that person','あの':'that person'}[d]||'which person';
     };
     function renderCitySections(){
         practice2State.exampleCueObserver?.disconnect();
         const attachCity=(view,speaker,o,select)=>{view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;for(const control of [view.listenBtn,view.recordBtn])control.addEventListener('click',()=>select(speaker,o.zone));};
         const identifySpeaker=(view,key)=>{view.row.dataset.p23RecordingKey=key;};
-        const englishPlace=place=>({'ここ':'here','そこ':'there','あそこ':'over there','Zさん':'Z','Yさん':'Y','Xさん':'X'}[place]||place);
+        const englishPlace=place=>({'ここ':'here','そこ':'there','あそこ':'there','Zさん':'Z','Yさん':'Y','Xさん':'X'}[place]||place);
         const cs=cityObjects(),whereContainer=document.getElementById('drill2Container'),describeContainer=document.getElementById('drill1Container'),d3=document.getElementById('drill3Container');
         const period=o=>word(o.periodHira,o.periodKanji),time=o=>word(o.timeHira,o.timeKanji);
         const e1=node('section','example-box p2x-example');e1.append(node('h2','p21-distance-heading','ここ・そこ・あそこ・どこ'));
