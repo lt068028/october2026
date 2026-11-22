@@ -1045,7 +1045,7 @@ function addExample(root,si){
   if(r.answer&&window.AnswerIcons){
    frag.append(window.AnswerIcons.create(r.answer,true));
   }
-  const exTip=(si===0&&ri===0)?'Listen to the example.':(si===2&&r.answer?(r.answer==='yes'?'Listen to the affirmative model.':'Listen to negative model.'):'');
+  const exTip=(si===0&&ri===0)?'Listen to the example.':(si===2&&r.answer?(r.answer==='yes'?'Listen to the affirmative model.':'Listen to the negative model.'):'');
   const listen=button(frag,()=>{
    if(session||preparing)return;
    if(stoppedExButton===listen&&(performance.now()-stoppedExTime)<150){

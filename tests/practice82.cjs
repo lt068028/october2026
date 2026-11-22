@@ -1132,7 +1132,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     c2Tips: 0,
     exYesTip: 'Listen to the affirmative model.',
     exYesAria: 'Listen to the affirmative model.',
-    exNoTip: 'Listen to negative model.',
+    exNoTip: 'Listen to the negative model.',
     exNoAria: 'Listen to negative model.'
   }, 'Practice 8.2 Drill 3 item 1 Yes/No and Example 3 Smile/Frown hover tooltips match spec');
 
