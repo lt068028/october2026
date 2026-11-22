@@ -163,10 +163,14 @@ Practice 8.3のEnglish Cuesは [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従い
 | きれい | `clean` |
 | 親切 | `kind` |
 | 得意 | `confident in` |
+| 上手 | `skillful at` |
+| 近い | `nearby` |
+| どのトイレ | `which restroom` |
+| 泳いでいる | `swimming / to be swimming` |
 | どの時間 | `which time` |
 | きらい | `dislike` |
 
-`there is (living things)`、`that watch over there`、`expensive / high`、`clean / beautiful`等の追加説明・同義語併記はしない。なお、日本語側Vocab Tooltipの意味情報とEnglish Cueは別々に管理し、English Cue変更時も日本語側Tooltipの意味情報は維持する。
+`there is (living things)`、`that watch over there`、`expensive / high`、`clean / beautiful`等の追加説明・同義語併記はしない。なお、日本語側Vocab Tooltipの意味情報とEnglish Cueは一般原則として別々に管理するが、上記5語（得意・上手・近い・どのトイレ・泳いでいる）についてはユーザー指定により双方の英語表現を一致させ、`泳いでいる` のスラッシュ併記はユーザー指定の教育上の例外として扱う。
 
 ## 4. Practice 8固有の表示例外
 
