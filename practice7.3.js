@@ -2695,8 +2695,8 @@ for (const [index, section] of sections.entries()) {
 // Practice 7.3 Copy: page-owned recording keys and results.
 const headers73 = {
     0: 'Practice 7.3 — Drill 1: Compare Past & Past Continuous — ～ました／～ていました',
-    1: 'Practice 7.3 — Drill 2: What were you doing? — ～ていましたか',
-    2: 'Practice 7.3 — Drill 3: Until when? — ～まで～ていました'
+    1: 'Practice 7.3 — Drill 3: What were you doing? — ～ていましたか',
+    2: 'Practice 7.3 — Drill 4: Until when? — ～まで～ていました'
 };
 
 function entriesFor73(si) {
