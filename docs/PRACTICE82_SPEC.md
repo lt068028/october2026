@@ -49,7 +49,7 @@ Drill 2は4問それぞれを「何を」と「何か」の2行（計8行）で�
 
 Example 3は「お土産に、何か、買いますか。」の質問と、肯定・否定の回答を常時表示する。回答は「はい、買います。」「いいえ、何も、買いません。」。キューはおみやげ／かう。Drill 3は質問と回答を別々に録音し、🙆／🙅の選択が済むまで回答側の再生・録音をロックする。選択操作だけではモデルを再生しない。
 
-- Drill 3の最初の回答行のY/Nボタンは、Tooltipとアクセシブル名を`Yes`／`No`とする。選択前のスピーカーとマイクの案内は`Choose Yes/No first.`。Example 3の肯定モデル音声Tooltipは`Listen to the affirmative model.`とする。
+- Drill 3の最初の回答行のY/Nボタンは、Tooltipとアクセシブル名を`Yes`／`No`とする。選択前のスピーカーとマイクの案内は`Choose Yes/No first.`。Example 3の肯定モデル音声Tooltipは`Listen to the affirmative model.`、否定モデル音声Tooltipは`Listen to the negative model.`とする。
 
 | 問 | 質問キュー・動詞 | 質問モデル |
 | --- | --- | --- |
