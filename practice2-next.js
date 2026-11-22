@@ -1828,24 +1828,23 @@ function practice2ShowNotice(resultSpan, message) {
     function renderPeopleChoosing(container) {
         const relationshipSet=practice2State.peopleConversationSet===1;
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
-        panel(container,'Drill 4: どの人ですか？だれですか？','');
+        panel(container,'Drill 4: どの＋Noun / だれ for people','');
         const instruction=container.lastElementChild.querySelector('.info-panel-desc');
-        if(relationshipSet)instruction.textContent='💡Ask about each person.';
-        else instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
+        instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
         setButtons(container,['Set 1','Set 2'],'peopleConversationSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
         const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:true},{asker:'A',answerer:'B',object:objects[2],full:true}];
         turns.forEach(({asker,answerer,object:o,full},i)=>{
             const c=card(container,String(i+1)),prefix=relationshipSet?'p22_people_relations':'p22_people_mixed';
             const subject=speaker=>demonstrative(speaker,o)+word('ひと','人');
-            const personCue=speaker=>{const d=demonstrative(speaker,o);return formatWord(d+'ひと',d+'人',({この:'kono',その:'sono',あの:'ano'}[d])+' hito',({この:'this person',その:'that person',あの:'that person over there'}[d]));};
+            const personCue=speaker=>demonstrative(speaker,o)+word('ひと','人');
             const neutralPersonCue = '…の' + (scriptMode === 'kanji' ? '人' : 'ひと');
             if(relationshipSet){
                 if(i===2){
                     const key='p22_people_classmate';
                     const mine=()=>word('わたし','私')+'のクラスメート';
                     const which=()=>word('どのひと','どの人');
-                    const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${formatWord('Yさんのクラスメート','Yさんのクラスメート','Y-san no kurasumēto','Y’s classmate')}/${formatWord('どのひと','どの人','dono hito','which person')}`,key+'_q_2',()=>question('Yさんのクラスメート',which()),true,true);
+                    const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${formatWord('Yさんのクラスメート','Yさんのクラスメート','Y-san no kurasumēto','Y’s classmate')}/${which()}`,key+'_q_2',()=>question('Yさんのクラスメート',which()),true,true);
                     practice2State.replyReferences[key+'_r_2']=()=>[short(subject(answerer)),statement(mine(),subject(answerer))];
                     const r=recordingRow(c,'a',`<strong>${speakerName(answerer)} · A:</strong> ${neutralPersonCue}`,key+'_r_2',()=>short(subject(answerer)),true,false);
                     q.row.dataset.targetPolicy='question';r.row.dataset.targetPolicy='answer';
@@ -1868,7 +1867,7 @@ function practice2ShowNotice(resultSpan, message) {
                 englishCue(r,['… person','my '+relation.meaning]);
                 attach(q,asker,o,select);attach(r,answerer,o,select);return;
             }
-            const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${personCue(asker)}/${formatWord('だれ','誰','dare','who')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')),true,true);
+            const q=recordingRow(c,'q',`<strong>${speakerName(asker)} · Q:</strong> ${personCue(asker)}/${word('だれ','誰')}`,`${prefix}_q_${i}`,()=>question(subject(asker),word('だれ','誰')),true,true);
             const key=`${prefix}_r_${i}`;
             practice2State.replyReferences[key]=()=>[short(noun(o)+'さん'),short(noun(o)),statement(subject(answerer),noun(o)+'さん'),statement(subject(answerer),noun(o))];
             const cue=(full?neutralPersonCue+'/':'')+vocabulary(o);
@@ -1893,7 +1892,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
 
     function renderUmbrellaComparison(container) {
-        panel(container,'Drill 5: どのかさ・どれ','💡Compare the same umbrella: どのかさ → このかさ; どれ → これ.');
+        panel(container,'Drill 5: どの＋Noun / どれ for objects','💡Identify a specific item by asking with どの＋Noun or どれ.');
         const mode=setButtons(container,['Adjectives','Pronouns'],'umbrellaModeSet')===1?'pronoun':'adjective';
         const picture=node('div','p2x-picture p2x-umbrella-picture'),stage=node('div','p2x-stage');
         const photo=node('img','p2x-photo');photo.src='assets/practice22-umbrellas.webp';photo.width=2135;photo.height=736;
@@ -1914,7 +1913,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const wh=()=>mode==='adjective'?word('どのかさ','どの傘'):'どれ';
                 const answer=()=>mode==='adjective'?adj+umbrella():pro;
                 const ownerCue=formatWord((o.owner==='teacher'?'せんせいの':speakerName(o.owner)+'さんの')+'かさ',(o.owner==='teacher'?'先生の':speakerName(o.owner)+'さんの')+'傘',(o.owner==='teacher'?'sensei no':speakerName(o.owner)+'-san no')+' kasa',(o.owner==='teacher'?'the teacher':speakerName(o.owner))+'’s umbrella');
-                const whCue=mode==='adjective'?formatWord('どのかさ','どの傘','dono kasa','which umbrella'):formatWord('どれ','どれ','dore','which one');
+                const whCue=wh();
                 const q=recordingRow(current,'q',`<strong>${speakerName(asker)} · Q:</strong> ${ownerCue}/${whCue}`,prefix+'_q',()=>question(subject(),wh()),true,true);
                 const replyCue=['🟡','🔵','🔴'][i];
                 practice2State.replyReferences[prefix+'_r']=()=>[short(answer()),statement(subject(),answer())];

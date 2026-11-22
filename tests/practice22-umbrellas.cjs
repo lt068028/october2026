@@ -23,6 +23,14 @@ for(const eng of [false,true]){
  }
 }
 if((await p.locator('.drill-cue-button').getAttribute('aria-pressed'))==='true')await p.locator('.drill-cue-button').click();
+check(await d.locator('.info-panel .info-panel-title').textContent(),'Drill 5: どの＋Noun / どれ for objects','D5 title');
+check(await d.locator('.info-panel .info-panel-desc').textContent(),'💡Identify a specific item by asking with どの＋Noun or どれ.','D5 description');
+check(await d.locator('.p2x-umbrella-target[data-image-hint]').count(),3,'D5 photo imageHint preserved');
+for(const modeIdx of [0,1]){
+ await p.locator('[data-set-state="umbrellaModeSet"] button').nth(modeIdx).click();
+ check(await d.locator('tr[data-target-policy="question"] .drill-cue-cell .tooltip-wrap').count(),3,`D5 Q-side keeps 3 owner+umbrella tooltips (mode=${modeIdx})`);
+ check(await d.locator('tr[data-target-policy="question"] .drill-cue-cell .tooltip-wrap').evaluateAll(es=>es.every(e=>!e.textContent.includes('どのかさ')&&!e.textContent.includes('どの傘')&&!e.textContent.includes('どれ'))),true,`D5 Q-side removes どのかさ/どれ tooltips (mode=${modeIdx})`);
+}
 await p.locator('[data-set-state="umbrellaModeSet"] button').first().click();
 
 await p.evaluate(()=>{stopAllPlayback();for(const id of ['togglePlaybackMode','toggleRecordMode']){const e=document.getElementById(id);if(e.checked)e.click();}t.defer=true;});
