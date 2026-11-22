@@ -171,7 +171,7 @@ const PAGES = [
         hasSlash: true,
         slashSpacing: 'compact',
         sampleJaCues: ['その/かばん'],
-        sampleEnCues: ['that / bag'],
+        sampleEnCues: ['that (near Y) / bag'],
         hasEnglishCues: true,
         hasAudio: true
     },
