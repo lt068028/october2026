@@ -277,7 +277,7 @@ function rowsFor(si){
  }
  return [];
 }
-function matchesAnswer(raw,r){const source=r.id==='d1-4-a'?String(raw).replace(/恋/g,'コイ'):raw;const value=r.verb==='listen'?String(source).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(source).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(source).replace(/[履穿]/g,'は'):r.verb==='cap'?String(source).replace(/被/g,'かぶ'):source;return !r.pending&&DrillAnswer.formAllowed(source,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
+function matchesAnswer(raw,r){const source=r.id==='d1-3-a'?String(raw).replace(/恋/g,'コイ'):raw;const value=r.verb==='listen'?String(source).replace(/[聴訊]/g,'聞'):r.verb==='takealong'?String(source).replace(/持って行/g,'持ってい'):r.verb==='wearshoes'?String(source).replace(/[履穿]/g,'は'):r.verb==='cap'?String(source).replace(/被/g,'かぶ'):source;return !r.pending&&DrillAnswer.formAllowed(source,speechStyle)&&Boolean(normalize(value))&&r.refs.some(t=>normalize(t)===normalize(value));}
 function feedback(){return null;}
 function keyFor(r){return r.id+':'+(r.yn?(r.pending?'unselected':r.answer):'fixed');}
 function word(id,shown){const w=words[id],text=escape(shown??w[scriptMode==='kanji'?'kanji':'hira']),tip=escape(w.romaji+', '+w.meaning);if(hintMode==='off')return '<span class="target-word">'+text+'</span>';if(hintMode==='paren')return '<span class="target-word">'+text+'</span><span class="vocab-inline">('+tip+')</span>';return '<span class="tooltip-wrap"><span class="target-word">'+text+'</span><span class="tooltip-tip">'+tip+'</span></span>';}

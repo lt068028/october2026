@@ -122,6 +122,9 @@ const plainGolden=[
   check(await page.evaluate(()=>audit83.getStyle()),current,'busy guard rejects forced style event');
   await page.evaluate(kind=>audit83.busy(kind,false),kind);
  }
+ await page.locator('#drill1Container [data-set-state="d1Set"] button').nth(1).click();
+ check(await page.evaluate(()=>matchesAnswer('恋が泳いでいます。',audit83.rowsFor(0)[1][2])),true,'d1-3-a accepts 恋->コイ');
+ check(await page.evaluate(()=>matchesAnswer('恋がいます。',audit83.rowsFor(0)[0][2])),false,'other items do not convert 恋->コイ');
  check(errors,[],'no initial or runtime errors');
  await browser.close();console.log('PASS Practice 8.3 speech-style regression',checks);
 })().catch(e=>{console.error(e);process.exit(1)});
