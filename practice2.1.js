@@ -1225,7 +1225,8 @@ function practice2ShowNotice(resultSpan, message) {
 
     const noun=o=>word(o.hira,o.kanji);
     const pro=(speaker,o)=>Practice21.pronoun(speaker,o.zone);
-    const englishObject=pronoun=>({'これ':'this','それ':'that','あれ':'that'}[pronoun]);
+    const zoneLabel=zone=>({A:'near X',B:'near Y',far:'far from X & Y'}[zone]);
+    const englishObject=(pronoun,zone)=>`${{'これ':'this','それ':'that','あれ':'that'}[pronoun]} (${zoneLabel(zone)})`;
     const englishCue=(view,parts)=>{
         if(!practice2State.englishCues)return;
         const source=view.cueCell.querySelector('strong'),role=source&&(/^(?:[XYZ] · )?[QA]:$|^[XYZ][:：]?$/.test(source.textContent.trim())||source.classList.contains('conversation-role')||source.classList.contains('conversation-person'))?source.cloneNode(true):null;
@@ -1401,7 +1402,7 @@ function practice2ShowNotice(resultSpan, message) {
                 const cue=`${pronoun}は…`;
                 const getText=()=>statement(pronoun,noun(o));
                 const view=recordingRow(current,i===0?'q':'a',cue,`p21_d1_s${setIndex}_${speaker}_${i}`,getText,true,false);
-                englishCue(view,[englishObject(pronoun),'…']);
+                englishCue(view,[englishObject(pronoun,o.zone),'…']);
                 view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';
                 view.listenBtn.addEventListener('click',()=>showSpeaker(speaker));
                 view.recordBtn.addEventListener('click',()=>showSpeaker(speaker));
@@ -1429,7 +1430,7 @@ function practice2ShowNotice(resultSpan, message) {
                     })].flatMap(text=>[text,text.replace(/^(?:いいえ|ううん)、/,'')]);
                 };
                 const r=recordingRow(current,'a',answerCue,key,answer,true,false);
-                englishCue(q,[englishObject(pro('A',o)),wrong[i].meaning]);englishCue(r,['no',o.meaning]);
+                englishCue(q,[englishObject(pro('A',o),o.zone),wrong[i].meaning]);englishCue(r,['no',o.meaning]);
                 r.actions.append(node('span','p21-response-lead',`${prefix}…`));
                 for(const [view,speaker] of [[q,'A'],[r,'B']]) {
                     view.row.dataset.drillSpeaker=speaker;view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';
@@ -1516,8 +1517,8 @@ function practice2ShowNotice(resultSpan, message) {
             const ending={formal:'です。',informal:'だ。',casual:'だよ。'}[speechStyle];
             practice2State.replyReferences[key]=()=>[statement(pro('B',o),noun(o)),noun(o)+ending];
             const r=recordingRow(current,'a',`<strong>Y · A:</strong> ${pro('B',o)}/${formatWord(o.hira,o.kanji,o.romaji,o.meaning)}`,key,()=>statement(pro('B',o),noun(o)),true,false);
-            englishCue(q,[englishObject(pro('A',o)),'what']);
-            englishCue(r,[englishObject(pro('B',o)),o.meaning]);
+            englishCue(q,[englishObject(pro('A',o),o.zone),'what']);
+            englishCue(r,[englishObject(pro('B',o),o.zone),o.meaning]);
             for(const view of [q,r]){view.row.dataset.zone=o.zone;view.row.dataset.targetPolicy='answer';}
             bindSpeaker(q,'A',show2);bindSpeaker(r,'B',show2);
         });show2('A');
