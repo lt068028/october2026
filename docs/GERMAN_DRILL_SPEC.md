@@ -325,11 +325,9 @@
 - `paren`（Display）：単語の後ろに括弧付きで英訳を常時インライン表示。
 
 ### 8.2 データ構造 【実装済み】
-```javascript
-cue: "die Schweiz / fahren",
-cueParts: ["die Schweiz", "fahren"],
-hints: ["Switzerland (fem.)", "to travel/drive"]
-```
+
+- `cueParts`と`hints`は同じインデックスで対応させ、独立した英語ヒントが重複・不要な箇所には`null`を使用する。
+- 個々のキュー・ヒントのデータ正本は`uebung1.1.js`とする。本書に全件一覧やコード例を再掲しない。
 
 ---
 
