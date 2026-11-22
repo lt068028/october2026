@@ -1581,7 +1581,7 @@ function practice2ShowNotice(resultSpan, message) {
         const listenBtn = listen(getText);
         if (!enabled && part === 'a') {
             listenBtn.dataset.selectionHelp = key.startsWith('p2_drill2_')
-                ? 'Select a major first.' : 'Choose 🙆 or 🙅 first.';
+                ? 'Select a major first.' : 'Choose Yes/No first.';
         }
 
         const recordBtn = button(

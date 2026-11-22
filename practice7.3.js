@@ -2585,7 +2585,7 @@ render = function () {
                 }
             });
 
-            if (!enabled) listen.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+            if (!enabled) listen.dataset.selectionHelp = 'Choose Yes/No first.';
 
             const rec = button('🎙️とる', () => {
                 if (enabled && !session && !preparing) {
@@ -2593,7 +2593,7 @@ render = function () {
                 }
             });
 
-            if (!enabled) rec.dataset.selectionHelp = 'Choose 🙆 or 🙅 first.';
+            if (!enabled) rec.dataset.selectionHelp = 'Choose Yes/No first.';
 
             const stop = button('⏹️', () => {
                 if (session?.key === key) {

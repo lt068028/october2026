@@ -100,7 +100,7 @@ function mock() {
 
         // Unready buttons should be disabled with selectionHelp before answer is chosen
         const initialSound = rows.nth(0).locator('tr:nth-child(2) .recording-actions button').first();
-        eq(await initialSound.getAttribute('data-selection-help'), 'Choose 🙆 or 🙅 first.', 'Help hint before choice');
+        eq(await initialSound.getAttribute('data-selection-help'), 'Choose Yes/No first.', 'Help hint before choice');
 
         // Snapshot DOM references to verify immutability
         const d1Snapshot = await page.evaluate(() => {

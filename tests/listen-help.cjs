@@ -5,7 +5,7 @@ const root=path.resolve(__dirname,'..');
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  let checks=0;
  const check=(a,b,label)=>{assert.deepEqual(a,b,label);checks++};
- for(const name of ['practice1.1','practice1.2','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','composition1','pronunciation1','pronunciation2']) {
+ for(const name of ['practice1.1','practice1.2','practice2.2','practice2.3','practice7.1','practice7.2','practice7.3','practice8.1','practice8.3','composition1','pronunciation1','pronunciation2']) {
   const p=await browser.newPage();p.setDefaultTimeout(10000);const errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.route('http://drill.test/**',r=>{
    const file=path.join(root,new URL(r.request().url()).pathname);
@@ -13,14 +13,14 @@ const root=path.resolve(__dirname,'..');
   });
   await p.goto('http://drill.test/'+name+'.html');await p.bringToFront();
   check(await p.locator('button .custom-tip-box').evaluateAll(es=>es.some(e=>/^(Listen\b|Record\b|Stop\b|Play your recorded voice|Affirmative response|Negative response)/i.test(e.textContent.trim()))),false,name+' no routine Listen explanations');
-  if(['practice1.2','practice7.1','practice7.2','practice7.3'].includes(name)) {
-   const lock=p.locator('.selection-help-wrap').filter({hasText:'Choose 🙆 or 🙅 first.'}).first();
+  if(['practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','practice8.3'].includes(name)) {
+   const lock=p.locator('.selection-help-wrap').filter({hasText:'Choose Yes/No first.'}).first();
    check(await lock.locator('button').isDisabled(),true,name+' Y/N Listen disabled');
    await lock.hover();await p.waitForTimeout(250);
    check(await lock.locator('.custom-tip-box').evaluate(e=>getComputedStyle(e).visibility),'visible',name+' real hover shows reason');
    await lock.focus();check(await lock.locator('.custom-tip-box').evaluate(e=>getComputedStyle(e).visibility),'visible',name+' keyboard reason');
    const before=await p.locator('.selection-help-wrap').count();
-   await lock.evaluate(e=>{const card=e.closest('.drill-row');const yes=[...card.querySelectorAll('button')].find(b=>b.dataset.answer==='yes'||b.firstChild?.textContent.trim()==='🙆');yes.click();});
+   await lock.evaluate(e=>{const card=e.closest('.drill-row');const yes=[...card.querySelectorAll('button')].find(b=>b.dataset.answer==='yes');yes.click();});
    check(await p.locator('.selection-help-wrap').count(),before-2,name+' reason removed after Y/N selection');
   }
   if(name==='practice1.1') {

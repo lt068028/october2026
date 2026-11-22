@@ -1299,7 +1299,7 @@ function sync() {
             b.disabled=locked;
             b.setAttribute('aria-disabled',String(locked));
             b.classList.toggle('is-selection-locked',pending);
-            if(pending)b.dataset.selectionHelp=v.r.qa==='response'?'Choose 🙆 or 🙅 first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';
+            if(pending)b.dataset.selectionHelp=v.r.qa==='response'?'Choose Yes/No first.':v.r.comparison?'Choose an adjective that matches the label.':v.r.selectKind==='activity'?'Select first.':'Choose an expression first.';
             else delete b.dataset.selectionHelp;
         }
         const canStop=Boolean(session&&session.key===keyFor(v.r)&&session.manual&&manual&&!session.stopping);

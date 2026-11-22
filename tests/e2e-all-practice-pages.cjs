@@ -424,7 +424,7 @@ async function setupPage(browser, pageName, width = 1440) {
 
                 // Initial help hint on sound button
                 const initialSound = row0.locator('tr:nth-child(2) .recording-actions button').first();
-                check(await initialSound.getAttribute('data-selection-help') === 'Choose 🙆 or 🙅 first.', 'Practice 7.1 sound button has initial help hint');
+                check(await initialSound.getAttribute('data-selection-help') === 'Choose Yes/No first.', 'Practice 7.1 sound button has initial help hint');
 
                 // Snapshot row 1 DOM node to verify immutability (proving localized update without re-rendering row 1)
                 await page.evaluate(() => {
