@@ -152,7 +152,21 @@ Exampleは各3行の質問セットを2組表示し、左端に3行分結合し�
     2. いつが、忙しいですか。／どの時間が、忙しいですか。／午後が、忙しいです。（キュー: `いつ／いそがしい`、`どの時間／いそがしい`、`午後`）
 
 
-- Practice 8.3のEnglish Cuesは [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従い、文脈に適した意味を示す。承認済み表現は「いる」→`there is`、「休む」→`be absent`、「あの時計」→`that watch`とし、`(living things)`等の追加説明や`over there`のような位置表現を付け足さない。
+Practice 8.3のEnglish Cuesは [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従い、次の単一表記を使用する。辞書上の同義語や補足語を機械的に併記しない。
+
+| 日本語キュー | English Cue |
+| --- | --- |
+| いる | `there is` |
+| 休む | `be absent` |
+| あの時計 | `that watch` |
+| 高い | `expensive` |
+| きれい | `clean` |
+| 親切 | `kind` |
+| 得意 | `good at` |
+| どの時間 | `which time` |
+| きらい | `dislike` |
+
+`there is (living things)`、`that watch over there`、`expensive / high`、`clean / beautiful`等の追加説明・同義語併記はしない。
 
 ## 4. Practice 8固有の表示例外
 
