@@ -56,9 +56,36 @@
         if (!anchor.matches('.p82-autostop-open')) {
             if (top < margin) top = rect.bottom + 8;
             top = Math.max(margin, Math.min(top, window.innerHeight - box.height - margin));
+            const others = [...document.querySelectorAll('.tooltip-tip, .custom-tip-box')].filter(el => {
+                if (el === tip) return false;
+                const cs = getComputedStyle(el);
+                if (cs.visibility !== 'visible' || cs.display === 'none') return false;
+                const r = el.getBoundingClientRect();
+                return r.width > 0 && r.height > 0;
+            }).map(el => el.getBoundingClientRect());
+            const overlaps = (l, t) => others.some(o => !(l + box.width <= o.left || l >= o.right || t + box.height <= o.top || t >= o.bottom));
+            if (overlaps(left, top)) {
+                const flipped = top < rect.top ? rect.bottom + 8 : rect.top - box.height - 8;
+                const clampedFlipped = Math.max(margin, Math.min(flipped, window.innerHeight - box.height - margin));
+                if (!overlaps(left, clampedFlipped)) top = clampedFlipped;
+            }
         }
         tip.style.setProperty('--tip-left', `${left}px`);
         tip.style.setProperty('--tip-top', `${top}px`);
+    }
+    function repositionAll() {
+        document.querySelectorAll(selector).forEach(anchor => position(anchor));
+    }
+    if (typeof ResizeObserver === 'function') {
+        let resizeRaf = 0;
+        const ro = new ResizeObserver(() => {
+            if (resizeRaf) return;
+            resizeRaf = requestAnimationFrame(() => {
+                resizeRaf = 0;
+                repositionAll();
+            });
+        });
+        ro.observe(document.documentElement);
     }
     const escapeTipSelector = '.custom-tip-wrap, .tooltip-wrap, .p82-incomplete-mark, .uebung-incomplete-wrap';
 

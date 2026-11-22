@@ -165,4 +165,5 @@ Practice 8.2固有の表示として、次の3点を維持する。
 1. **もどるボタン（`.back-link`）**：Microsoft Fluent `Arrow Hook Down Left 24 Regular`（`arrowHookDownLeft`、`20×20px`、`translateY(-0.5px)`）を使用する。
 2. **Drill説明文の電球アイコン（5箇所）**：Drill 1〜4およびDrill 5 English Cuesの`.info-panel-desc`先頭にMicrosoft Fluent `Lightbulb 24 Filled`（`lightbulbFilled`、`20×20px`、`vertical-align: -3.5px`）を配置し、`#fbbf24`を適用する。
 3. **左下Voiceラベル（`.voice-select-label`）**：Microsoft Fluent `Speaker 2 24 Regular`（`speaker`／`speaker2`、`20×20px`）を使用する。
+4. **Tooltip衝突回避・ResizeObserver・入力状態管理**：`tooltip-layout.js` により `600px` 以上の画面幅で隣接ツールチップ同士の矩形重複を回避し、`ResizeObserver`（`requestAnimationFrame` デバウンス）によりリサイズ時の再配置を追従する。`practice8.2.js` でも `ResizeObserver` による再配置追従および `DrillTooltips.enableEscapeDismiss()`（`Escape` キーによるツールチップ抑止・入力種別分離）を有効化する。
 
