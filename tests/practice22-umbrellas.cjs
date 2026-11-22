@@ -17,7 +17,7 @@ for(const eng of [false,true]){
  if((await toggle.getAttribute('aria-pressed'))!==String(eng))await toggle.click();
  for(const modeIdx of [0,1]){
   await p.locator('[data-set-state="umbrellaModeSet"] button').nth(modeIdx).click();
-  const aCues=await d.locator('tr[data-target-policy="answer"] .prompt-label').evaluateAll(es=>es.map(e=>e.textContent.trim()));
+  const aCues=await d.locator('tr[data-target-policy="answer"] .drill-cue-cell').evaluateAll(es=>es.map(e=>e.textContent.trim()));
   check(aCues.map(s=>s.slice(-2)),['🟡','🔵','🔴'],`D5 A cues use color emojis (mode=${modeIdx}, eng=${eng})`);
   check(aCues.every(s=>!s.includes('1A:')&&!s.includes('adjective')&&!s.includes('pronoun')&&!s.includes('umbrella')),true,`D5 A cues have no legacy labels (mode=${modeIdx}, eng=${eng})`);
  }

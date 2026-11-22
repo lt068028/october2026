@@ -106,7 +106,8 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
    }));
    check(d4Cues.length,3,`Dr4 Set ${setIdx+1} has 3 A-side rows (${script})`);
    check(d4Cues.every(x=>x.text.includes(expected)&&!x.text.includes('このひと')&&!x.text.includes('あのひと')&&!x.text.includes('この人')&&!x.text.includes('あの人')),true,`Dr4 Set ${setIdx+1} A cues use ${expected}`);
-   if(setIdx===0||d4Cues.length===3)check(d4Cues[0].tips>0,true,`Dr4 Set ${setIdx+1} row 1 retains trailing vocabulary tooltip (${script})`);
+   const tipIdxs=setIdx===0?[0,1,2]:[0,1];
+   for(const i of tipIdxs)check(d4Cues[i].tips>0,true,`Dr4 Set ${setIdx+1} row ${i+1} retains trailing vocabulary tooltip (${script})`);
   }
   await p.locator('.drill-cue-button').click();
   const engCues=await p.locator('#drill4Container tr[data-speaker-recording-key*="_r_"] .drill-cue-cell').allTextContents();
