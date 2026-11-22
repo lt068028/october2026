@@ -162,11 +162,11 @@ Practice 8.3のEnglish Cuesは [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従い
 | 高い | `expensive` |
 | きれい | `clean` |
 | 親切 | `kind` |
-| 得意 | `good at` |
+| 得意 | `confident in` |
 | どの時間 | `which time` |
 | きらい | `dislike` |
 
-`there is (living things)`、`that watch over there`、`expensive / high`、`clean / beautiful`等の追加説明・同義語併記はしない。
+`there is (living things)`、`that watch over there`、`expensive / high`、`clean / beautiful`等の追加説明・同義語併記はしない。なお、日本語側Vocab Tooltipの意味情報とEnglish Cueは別々に管理し、English Cue変更時も日本語側Tooltipの意味情報は維持する。
 
 ## 4. Practice 8固有の表示例外
 
