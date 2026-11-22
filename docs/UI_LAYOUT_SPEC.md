@@ -192,7 +192,7 @@
 - 説明型Tooltipは、語彙・キュー・ガイド等の説明を表示する `.tooltip-wrap` と、操作ボタンの説明を表示する `.custom-tip-wrap` 等を指す。状態を示すだけの表示は対象外とする。
 - 説明型Tooltipは、Mouse Hover およびキーボード Tab Focus で表示する。キーボード操作による表示は、実際のTab／Shift+Tabによるフォーカス移動を対象とし、プログラムからの `.focus()` だけをTab操作の検証根拠にしない。
 - `.custom-tip-wrap` の操作説明は、実Touchでは表示しない。PC・タブレット等でのMouse Hover／Tab Focus表示は維持する。
-- `.tooltip-wrap` の語彙説明はTouchに対応する。タップで開き、同じホストへの有効な再タップで閉じる。別の場所をタップしても自動的に閉じない。Escapeでも閉じる。
+- `.tooltip-wrap` の語彙説明はTouchに対応する。有効なタップで開き、同じホストへの有効な再タップで閉じる。別の `.tooltip-wrap` をタップした場合は前の表示を閉じて新しい対象を開き、Tooltip外をタップした場合は開いている表示を閉じる。Mouse Hover／Keyboard Focusへの移動だけではTouch表示を閉じない。Escapeでも閉じる。
 
 **Touchのタップ判定**
 
