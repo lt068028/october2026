@@ -961,7 +961,7 @@ function practice2ShowNotice(resultSpan, message) {
         anchor.addEventListener('pointerleave',close);anchor.addEventListener('blur',close);
     }
 
-    function modelText(getText, object, onlyWhich = false) {
+    function modelText(getText, object, onlyWhich = false, { withWordTooltips = true } = {}) {
         const span = node("span");
         const text = getText();
 
@@ -985,7 +985,7 @@ function practice2ShowNotice(resultSpan, message) {
             document.createTextNode(text.slice(position))
         );
 
-        if(object&&hintMode==='hover') {
+        if(withWordTooltips&&object&&hintMode==='hover') {
             const walker=document.createTreeWalker(span,NodeFilter.SHOW_TEXT),texts=[];
             while(walker.nextNode())texts.push(walker.currentNode);
             for(const textNode of texts) {
@@ -1544,7 +1544,7 @@ function practice2ShowNotice(resultSpan, message) {
             line.append(node('strong','',speakerName(speaker)+'：'));
             if(cue){const prompt=node('span','p21-which-cue');prompt.innerHTML=cue;line.append(prompt,node('span','','👉️'));}
             const sound=listen(()=>{showExample(speaker);return text();},'🔊きく',()=>showExample.announce(speaker));sound.dataset.speaker=speaker;sound.dataset.targetPolicy=part==='question'?'question':'answer';sound.dataset.targetZone=part==='intro'?mine.zone:yours.zone;
-            line.append(sound,modelText(text,phone,true));models.append(line);
+            line.append(sound,modelText(text,phone,true,{withWordTooltips:false}));models.append(line);
         }
         exampleBox.append(models);d3.append(exampleBox);showExample('A');
         const panel3=node('div','info-panel info-panel-task1');panel3.append(node('span','info-panel-title','Drill 3: Which one?'),node('span','info-panel-desc','💡Take turns asking. Use これ／それ／あれ for the color shown.'));d3.append(panel3);

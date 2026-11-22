@@ -992,7 +992,7 @@ function practice2ShowNotice(resultSpan, message) {
         anchor.addEventListener('pointerleave',close);anchor.addEventListener('blur',close);
     }
 
-    function modelText(getText, object, placesOnly = false) {
+    function modelText(getText, object, placesOnly = false, { withWordTooltips = true } = {}) {
         const span = node("span");
         const text = getText();
 
@@ -1019,7 +1019,7 @@ function practice2ShowNotice(resultSpan, message) {
             document.createTextNode(text.slice(position))
         );
 
-        if(object&&hintMode==='hover') {
+        if(withWordTooltips&&object&&hintMode==='hover') {
             const walker=document.createTreeWalker(span,NodeFilter.SHOW_TEXT),texts=[];
             while(walker.nextNode())texts.push(walker.currentNode);
             for(const textNode of texts) {
@@ -1786,8 +1786,8 @@ function practice2ShowNotice(resultSpan, message) {
         const objects=merchandise('clock');objects[1]={...objects[1],priceNumber:4000,priceHira:'よんせんえん',priceKanji:'四千円'};
         const sample=objects[0],box=node('section','example-box p2x-dialogue-example p2x-price-example');
         const select=scene(box,objects,{model:true}),q=node('p','example-text-layout p22-conversation-line'),r=node('p','example-text-layout p22-conversation-line');
-        q.append(node('strong','','X · Q: '),exampleCue(`${demonstrative('A',sample)}/${vocabulary(sample)}/${formatWord('いくら','いくら','ikura','how much')}`),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample));
-        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}/${vocabulary(sample)}/${priceCue(sample)}`),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample));box.append(q,r);container.append(box);
+        q.append(node('strong','','X · Q: '),exampleCue(`${demonstrative('A',sample)}/${vocabulary(sample)}/${formatWord('いくら','いくら','ikura','how much')}`),listen(()=>{select('A','A');return question(adnominal('A',sample),'いくら');},'🔊きく',()=>select.announce('A')),modelText(()=>question(adnominal('A',sample),'いくら'),sample,false,{withWordTooltips:false}));
+        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}/${vocabulary(sample)}/${priceCue(sample)}`),listen(()=>{select('B','A');return statement(adnominal('B',sample),price(sample));},'🔊きく',()=>select.announce('B')),modelText(()=>statement(adnominal('B',sample),price(sample)),sample,false,{withWordTooltips:false}));box.append(q,r);container.append(box);
     }
     function renderPriceDialogue(container) {
         priceConversationExample(container);
@@ -1808,8 +1808,8 @@ function practice2ShowNotice(resultSpan, message) {
         box.querySelector('.p2x-picture').dataset.whTargets='true';
         const qText=o=>'どの'+noun(o)+'が、'+price(o)+(speechStyle==='formal'?'ですか？':'？');
         const q=node('p','example-text-layout p22-conversation-line'),r=node('p','example-text-layout p22-conversation-line');
-        q.append(node('strong','','X · Q: '),exampleCue(`どの/${vocabulary(sample)}/${priceCue(sample)}`),listen(()=>{selectExample('A',null);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample));
-        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}/${vocabulary(sample)}`),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample));for(const [line,policy]of [[q,'question'],[r,'answer']]){const b=line.querySelector('button');b.dataset.targetPolicy=policy;b.dataset.targetZone=sample.zone;}
+        q.append(node('strong','','X · Q: '),exampleCue(`どの/${vocabulary(sample)}/${priceCue(sample)}`),listen(()=>{selectExample('A',null);return qText(sample);},'🔊きく',()=>selectExample.announce('A')),modelText(()=>qText(sample),sample,false,{withWordTooltips:false}));
+        r.append(node('strong','','Y · A: '),exampleCue(`${demonstrative('B',sample)}/${vocabulary(sample)}`),listen(()=>{selectExample('B',sample.zone);return short(adnominal('B',sample));},'🔊きく',()=>selectExample.announce('B')),modelText(()=>short(adnominal('B',sample)),sample,false,{withWordTooltips:false}));for(const [line,policy]of [[q,'question'],[r,'answer']]){const b=line.querySelector('button');b.dataset.targetPolicy=policy;b.dataset.targetZone=sample.zone;}
         box.append(q,r);container.append(box);
         panel(container,'Drill 3: どの＋Noun','💡Ask with どの＋noun.');
         const set=setButtons(container,['おにぎり',word('おべんとう','お弁当')],'choosingSet'),objects=merchandise(set===0?'onigiri':'bento'),select=scene(container,objects,{which:false,speakerGuide:false});

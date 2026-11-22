@@ -25,6 +25,50 @@ function check(ok,label,details){checks++;if(!ok)failures.push({label,details});
     for(let i=0;i<t.cells.length;i++)for(let j=i+1;j<t.cells.length;j++){const a=t.cells[i],b=t.cells[j];if(a.rect.w<1||b.rect.w<1||(!a.button&&!a.textRects.length)||(!b.button&&!b.textRects.length))continue;check(!(Math.min(a.rect.right,b.rect.right)-Math.max(a.rect.x,b.rect.x)>1&&Math.min(a.rect.bottom,b.rect.bottom)-Math.max(a.rect.y,b.rect.y)>1),key+' no cell overlap',{a,b});}
    }
   }
+  if (['practice2.1', 'practice2.2', 'practice8.1', 'practice8.2'].includes(name)) {
+   await p.setViewportSize({width: 900, height: 1100});
+   await p.evaluate(() => {
+    const hoverBtn = document.querySelector('#hintModeControl [data-value="hover"]');
+    if (hoverBtn && hoverBtn.getAttribute('aria-pressed') !== 'true') hoverBtn.click();
+   });
+   await p.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+   const domainCheck = await p.evaluate((pageName) => {
+    if (pageName === 'practice2.1') {
+     const exRightTips = document.querySelectorAll('#drill3Container .p21-which-model-line .p21-model .tooltip-wrap, #drill3Container .p21-which-model-line .tooltip-wrap:not(.p21-which-cue .tooltip-wrap)').length;
+     const exLeftCueTips = document.querySelectorAll('#drill3Container .p21-which-cue .tooltip-wrap').length;
+     const drillTips = document.querySelectorAll('#drill1Container .recording-table .tooltip-wrap, #drill2Container .recording-table .tooltip-wrap').length;
+     const emphasis = document.querySelectorAll('#drill3Container .p21-which-model-line strong').length;
+     return { exRightTips, hasLeftCue: exLeftCueTips > 0, hasDrillTips: drillTips > 0, hasEmphasis: emphasis > 0 };
+    }
+    if (pageName === 'practice2.2') {
+     const exRightTips = document.querySelectorAll('.p22-conversation-line .tooltip-wrap:not(.p22-example-cue .tooltip-wrap)').length;
+     const exLeftCueTips = document.querySelectorAll('.p22-example-cue .tooltip-wrap').length;
+     const drillTips = document.querySelectorAll('.recording-table .tooltip-wrap').length;
+     const emphasis = document.querySelectorAll('.p22-conversation-line .grammar-highlight').length;
+     return { exRightTips, hasLeftCue: exLeftCueTips > 0, hasDrillTips: drillTips > 0, hasEmphasis: emphasis > 0 };
+    }
+    if (pageName === 'practice8.1') {
+     const exRightTips = document.querySelectorAll('.p81-example .p81-model .tooltip-wrap').length;
+     const exLeftCueTips = document.querySelectorAll('.p81-example .p81-example-cue .tooltip-wrap').length;
+     const drillTips = document.querySelectorAll('.recording-table .tooltip-wrap').length;
+     const emphasis = document.querySelectorAll('.p81-example .p81-model strong.p81-gold, .p81-example .p81-model .degree-negative').length;
+     return { exRightTips, hasLeftCue: exLeftCueTips > 0, hasDrillTips: drillTips > 0, hasEmphasis: emphasis > 0 };
+    }
+    const exRightVocabTips = document.querySelectorAll('.p81-example .p81-model .tooltip-wrap:not(.optional-particle)').length;
+    const exOptionalParticleTip = document.querySelector('#drill2 .p81-example .p81-model .optional-particle.tooltip-wrap .tooltip-tip')?.textContent || '';
+    const exLeftCueTips = document.querySelectorAll('.p81-example .p81-example-cue .tooltip-wrap').length;
+    const drillTips = document.querySelectorAll('.recording-table .tooltip-wrap').length;
+    const emphasis = document.querySelectorAll('.p81-example .p81-model strong').length;
+    return { exRightTips: exRightVocabTips, hasOptionalParticle: exOptionalParticleTip.includes('The particle を is optional'), hasLeftCue: exLeftCueTips > 0, hasDrillTips: drillTips > 0, hasEmphasis: emphasis > 0 };
+   }, name);
+   check(domainCheck.exRightTips === 0, name + ' Example right model has no vocabulary tooltips', domainCheck);
+   check(domainCheck.hasLeftCue, name + ' Example left cue retains vocabulary tooltips', domainCheck);
+   check(domainCheck.hasDrillTips, name + ' Drill rows retain vocabulary tooltips', domainCheck);
+   check(domainCheck.hasEmphasis, name + ' Example model retains grammar emphasis', domainCheck);
+   if (name === 'practice8.2') {
+    check(domainCheck.hasOptionalParticle, name + ' Ex2 retains optional particle を explanation tooltip', domainCheck);
+   }
+  }
   check(!errors.length,name+' runtime',errors);console.log('EXAMPLES',name,'checked');await p.close();
  }
  await browser.close();fs.writeFileSync(process.env.EXAMPLE_REPORT||'/tmp/content-examples.json',JSON.stringify({checks,failures,observations},null,2));console.log(JSON.stringify({checks,failures:failures.length,first:failures.slice(0,8)},null,2));if(failures.length)process.exitCode=1;

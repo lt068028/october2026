@@ -280,7 +280,7 @@ function conceptHTML(text){
  const rest=mark?text.slice(mark.length):text;
  return (mark?indefiniteHTML(mark):'')+escape(rest).replace(/〜ません/,'<span class="degree-negative">〜ません</span>').replace(' — ','<span class="p82-concept-separator"> — </span>');
 }
-function modelHTML(r){
+function modelHTML(r,{withWordTooltips=true}={}){
  const text=scriptMode==='kanji'?r.text:r.hira;
  const marks=Object.keys(indefiniteParts).sort((a,b)=>b.length-a.length);
  const tokens=Object.entries(words).map(([id,w])=>({id,text:w[scriptMode==='kanji'?'kanji':'hira']}));
@@ -290,10 +290,10 @@ function modelHTML(r){
   const optional=['何か(を)','なにか(を)'].find(t=>text.startsWith(t,i));
   if(optional){out+=indefiniteHTML(optional.slice(0,-3))+'<span class="optional-particle tooltip-wrap" tabindex="0">(<strong class="optional-particle-label">を</strong>)<span class="tooltip-tip">The particle を is optional and usually omitted after '+(scriptMode==='kanji'?'何か':'なにか')+'.</span></span>';i+=optional.length;continue;}
   const mark=marks.find(t=>text.startsWith(t,i));
-  if(mark){out+=indefiniteHTML(mark,true,r.id.startsWith('contrast-'));i+=mark.length;continue;}
+  if(mark){out+=indefiniteHTML(mark,withWordTooltips,withWordTooltips&&r.id.startsWith('contrast-'));i+=mark.length;continue;}
   // Split negative endings so 何も and the ending stay visibly linked.
   const token=tokens.find(t=>text.startsWith(t.text,i));
-  if(token){const neg=r.text.includes('何も')&&['ませんでした','ません','なかった','ない'].find(e=>token.text.endsWith(e));out+=neg?word(token.id,token.text.slice(0,-neg.length))+'<strong class="degree-negative">'+escape(neg)+'</strong>':word(token.id,token.text);i+=token.text.length;}else out+=escape(text[i++]);
+  if(token){const neg=r.text.includes('何も')&&['ませんでした','ません','なかった','ない'].find(e=>token.text.endsWith(e));out+=neg?(withWordTooltips?word(token.id,token.text.slice(0,-neg.length)):escape(token.text.slice(0,-neg.length)))+'<strong class="degree-negative">'+escape(neg)+'</strong>':(withWordTooltips?word(token.id,token.text):escape(token.text));i+=token.text.length;}else out+=escape(text[i++]);
  }return out;
 }
 function button(text, fn, tip = '') {
@@ -1070,10 +1070,10 @@ function addExample(root,si){
   const text=node('span','p81-model');
   if(si<2){
    const japanese=node('span','p82-model-japanese');
-   japanese.innerHTML=modelHTML(r);
+   japanese.innerHTML=modelHTML(r,{withWordTooltips:false});
    text.append(japanese);
    if(r.translation)text.append(exampleTranslation(r.translation,'p82-model-translation'));
-  }else text.innerHTML=modelHTML(r);
+  }else text.innerHTML=modelHTML(r,{withWordTooltips:false});
   row.append(kind,cue,arrow,listen,text);
   ex.append(row);
  });

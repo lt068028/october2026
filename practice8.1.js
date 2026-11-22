@@ -342,7 +342,7 @@ function cues(r,visibleIds,isDrill=false) {
     return ids.filter(id=>!compound||id!==r.verb).map(id=>wrap(word(id,false,Boolean(compound&&id===r.object)))).join(hintMode==='paren'?'':'/');
 }
 
-function modelHTML(r,repeatPrefix=false) {
+function modelHTML(r,repeatPrefix=false,{withWordTooltips=true}={}) {
     const fullText=scriptMode==='kanji'?r.text:r.hira;
     const nogaIndex=repeatPrefix?fullText.indexOf('のが'):-1;
     const text=nogaIndex>=0?fullText.slice(nogaIndex):fullText;
@@ -356,7 +356,7 @@ function modelHTML(r,repeatPrefix=false) {
         if(r.degreeLevel&&['zenzen','amari'].includes(r.adverb)&&text.startsWith('ない',i)){out+='<span class="degree-negative">ない</span>';i+=2;continue;}
         const token=tokens.find(t=>text.startsWith(t,i));
         const id=token&&Object.keys(words).find(k=>words[k][scriptMode==='kanji'?'kanji':'hira']===token);
-        if(id){out+=word(id,true);i+=token.length;}else{out+=escape(text[i]);i++;}
+        if(id){out+=withWordTooltips?word(id,true):escape(token);i+=token.length;}else{out+=escape(text[i]);i++;}
     }
     return out;
 }
@@ -963,7 +963,7 @@ function addExample(root,si) {
         const arrow=node('span','p81-arrow',r.qa==='response'?'':'👉️');
         const listen=button(r.listenLabel||'🔊きく',()=>{if(!session&&!preparing)speak(r.text,listen);});
         if(r.answer){listen.dataset.answer=r.answer;listen.setAttribute('aria-label',r.answer==='yes'?'Listen to affirmative model.':'Listen to negative model.');}
-        const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix);SemanticDisplay.exampleNegatives(text);
+        const text=node('span','p81-model');text.innerHTML=modelHTML(r,repeatPrefix,{withWordTooltips:false});SemanticDisplay.exampleNegatives(text);
         if(si===2||si===3||si===4){
             if(index===0)text.dataset.repeatModelAnchor=String(si);
             else text.dataset.repeatModelCue=String(si);
