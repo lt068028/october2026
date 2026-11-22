@@ -99,7 +99,7 @@ const mock=new Function(source.slice(source.indexOf('function mock()'),source.in
  for(const setIdx of [0,1]){
   await d4Switcher.nth(setIdx).click();
   check(await p.locator('#drill4Container > .info-panel .info-panel-title').textContent(),'Drill 4: どの＋Noun / だれ for people',`Dr4 Set ${setIdx+1} title`);
-  check(await p.locator('#drill4Container > .info-panel .info-panel-desc').textContent(),'💡Use だれ to ask who someone is.',`Dr4 Set ${setIdx+1} description`);
+  check(await p.locator('#drill4Container > .info-panel .info-panel-desc').textContent(),'💡Use だれ to ask who a person is.',`Dr4 Set ${setIdx+1} description`);
   check(await p.locator('#drill4Container tr[data-speaker-recording-key*="_q_"] .drill-cue-cell .tooltip-wrap').evaluateAll(es=>es.map(e=>e.textContent)),setIdx===0?[]:['Yさんのクラスメート','Xさんのクラスメート','Yさんのクラスメート'],`Dr4 Set ${setIdx+1} Q-side removes だれ/どの人/この人/その人/あの人 tooltips while keeping classmate tooltips`);
   check(await p.locator('#drill4Container .p2x-stage .p2x-target[data-image-hint]').count(),3,`Dr4 Set ${setIdx+1} photo imageHint preserved`);
   for(const [script,expected] of [['hiragana','…のひと'],['kanji','…の人']]){

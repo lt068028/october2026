@@ -1830,7 +1830,7 @@ function practice2ShowNotice(resultSpan, message) {
         const objects=PracticeNext.people.map((o,i)=>({...o,zone:['A','B','far'][i]}));
         panel(container,'Drill 4: どの＋Noun / だれ for people','');
         const instruction=container.lastElementChild.querySelector('.info-panel-desc');
-        instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who someone is.'));
+        instruction.append(document.createTextNode('💡Use '),node('strong','grammar-highlight','だれ'),document.createTextNode(' to ask who a person is.'));
         setButtons(container,['Set 1','Set 2'],'peopleConversationSet');
         const select=scene(container,objects,{people:true,speakerGuide:false});
         const turns=[{asker:'A',answerer:'B',object:objects[1],full:true},{asker:'B',answerer:'A',object:objects[0],full:true},{asker:'A',answerer:'B',object:objects[2],full:true}];
