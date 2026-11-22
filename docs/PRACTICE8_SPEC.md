@@ -152,6 +152,8 @@ Exampleは各3行の質問セットを2組表示し、左端に3行分結合し�
     2. いつが、忙しいですか。／どの時間が、忙しいですか。／午後が、忙しいです。（キュー: `いつ／いそがしい`、`どの時間／いそがしい`、`午後`）
 
 
+- Practice 8.3のEnglish Cuesは [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従い、文脈に適した意味を示す。承認済み表現は「いる」→`there is`、「休む」→`be absent`、「あの時計」→`that watch`とし、`(living things)`等の追加説明や`over there`のような位置表現を付け足さない。
+
 ## 4. Practice 8固有の表示例外
 
 本節はPractice 8ページ群に限る表示・配置の例外を記録する。全ページ共通の基本UIは [UI_LAYOUT_SPEC.md](UI_LAYOUT_SPEC.md) を正本とする。
