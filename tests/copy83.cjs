@@ -98,7 +98,7 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         eq(await page.locator('#drill1 .p83-copy-button').isEnabled(), true, 'valid raw STT enables only relevant Drill');
         eq(await page.locator('#drill2 .p83-copy-button').isEnabled(), false, 'unrelated Drill remains disabled');
         await page.locator('#drill1 .p83-copy-button').click();
-        eq(await page.evaluate(() => window.copied.at(-1)), 'Practice 8.3 — Drill 1: Subject Questions — だれ／何 (Verb) — 2026-11-12\n1. Q: ✅ だれが、料理しますか。', 'raw transcript, date, role, and marker are copied');
+        eq(await page.evaluate(() => window.copied.at(-1)), 'Practice 8.3 — Drill 1: Subject Questions — だれ／何 (Verb Predicate) — 2026-11-12\n1. Q: ✅ だれが、料理しますか。', 'raw transcript, date, role, and marker are copied');
         ok(!(await page.evaluate(() => window.copied.at(-1))).match(/<svg|feedback-status|p83-copy-icon/), 'clipboard contains no implementation markup');
         ok(!(await page.evaluate(() => window.copied.at(-1))).includes('料理します。'), 'model answer is excluded');
 

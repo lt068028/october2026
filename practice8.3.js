@@ -66,10 +66,10 @@ function displayKana(text){let value=String(text);for(const [k,h]of explicitRead
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
 function normalize(text){return hira(text).replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
- {title:'Drill 1: Subject Questions — だれ／何 (Verb)',instruction:'💡Ask with だれ or 何, narrow down with a specific noun, then answer.'},
- {title:'Drill 2: Subject Questions — だれ／何 (Adjective)',instruction:'💡Ask with an adjective (だれ or 何), narrow down with a specific noun, then answer.'},
- {title:'Drill 3: Subject Questions — どれ／どこ (Verb)',instruction:'💡Ask with どれ or どこ, narrow down with a specific noun, then answer.'},
- {title:'Drill 4: Subject Questions — どれ／どこ／いつ (Adjective)',instruction:'💡Ask with an adjective (どれ, どこ, or いつ), narrow down with a specific noun, then answer.'}
+ {title:'Drill 1: Subject Questions — だれ／何 (Verb Predicate)',instruction:'💡 Ask with だれ or 何, then ask a more specific question with a noun before answering.'},
+ {title:'Drill 2: Subject Questions — だれ／何 (Adjective Predicate)',instruction:'💡 Ask with だれ or 何 using an adjective predicate, then ask a more specific question with a noun before answering.'},
+ {title:'Drill 3: Subject Questions — どれ／どこ (Verb Predicate)',instruction:'💡 Ask with どれ or どこ, then ask a more specific question with a noun before answering.'},
+ {title:'Drill 4: Subject Questions — どれ／どこ／いつ (Adjective Predicate)',instruction:'💡 Ask with どれ, どこ, or いつ using an adjective predicate, then ask a more specific question with a noun before answering.'}
 ];
 let currentD1Set=0,currentD2Set=0,currentD3Set=0,currentD4Set=0;
 const d1Sets=[
@@ -1489,10 +1489,10 @@ function init() {
 
 /* Practice 8.3: Copy my sentences */
 const COPY83_HEADERS = [
-    'Practice 8.3 — Drill 1: Subject Questions — だれ／何 (Verb)',
-    'Practice 8.3 — Drill 2: Subject Questions — だれ／何 (Adjective)',
-    'Practice 8.3 — Drill 3: Subject Questions — どれ／どこ (Verb)',
-    'Practice 8.3 — Drill 4: Subject Questions — どれ／どこ／いつ (Adjective)'
+    'Practice 8.3 — Drill 1: Subject Questions — だれ／何 (Verb Predicate)',
+    'Practice 8.3 — Drill 2: Subject Questions — だれ／何 (Adjective Predicate)',
+    'Practice 8.3 — Drill 3: Subject Questions — どれ／どこ (Verb Predicate)',
+    'Practice 8.3 — Drill 4: Subject Questions — どれ／どこ／いつ (Adjective Predicate)'
 ];
 const COPY83_CLIPBOARD_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p83-copy-icon" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>';
 function getCopy83Date() {
