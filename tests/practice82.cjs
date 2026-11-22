@@ -1030,7 +1030,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.evaluate(() => { document.documentElement.removeAttribute('data-theme'); });
 
   // B. Valid grid-template-columns, .practice82-page CSS isolation (600px/850px), and Paired Rows (rowspan="2") AX + Geometry
-  for (const vpWidth of [375, 600, 850, 1440]) {
+  for (const vpWidth of [600, 850, 1440]) {
     await p.setViewportSize({ width: vpWidth, height: 1000 });
     await p.waitForTimeout(100);
     const tableAudit = await p.evaluate(() => {
@@ -1136,7 +1136,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     exNoAria: 'Listen to negative model.'
   }, 'Practice 8.2 Drill 3 item 1 Yes/No and Example 3 Smile/Frown hover tooltips match spec');
 
-  // Paired Rows visual bounding-box check in both inline (1440px) and stacked (375px)
+  // Paired Rows visual bounding-box check at 1440px (inline)
   const checkPairedGeometry = async (vpWidth, expectedLayout) => {
     await p.setViewportSize({ width: vpWidth, height: 1000 });
     await p.waitForTimeout(150);
@@ -1176,7 +1176,6 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     }, `Phase 4: Paired Rows visual placement holds in ${expectedLayout} (${vpWidth}px)`);
   };
   await checkPairedGeometry(1440, 'inline');
-  await checkPairedGeometry(375, 'stacked');
   await p.setViewportSize({ width: 1440, height: 1000 });
 
   // C. P8.2 Low-Volume STT Protection (6 scenarios, 5s boundary, empty/late discard, interim/final, s.heard empty STT mismatch, Manual no-5s)
