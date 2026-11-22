@@ -96,11 +96,6 @@
             const host = openHosts[i].closest?.(escapeTipSelector);
             if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
         }
-        const hovered = Array.from(document.querySelectorAll(':hover'));
-        for (let i = hovered.length - 1; i >= 0; i--) {
-            const host = hovered[i].closest?.(escapeTipSelector);
-            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
-        }
         return null;
     }
 
@@ -149,16 +144,6 @@
             }
             dismissTarget(target);
         });
-
-        document.addEventListener('pointerout', e => {
-            if (e.pointerType === 'touch' || e.pointerType === 'pen') return;
-            const host = e.target.closest?.(escapeTipSelector);
-            if (host && host.hasAttribute('data-tip-suppressed')) {
-                if (!e.relatedTarget || !host.contains(e.relatedTarget)) {
-                    host.removeAttribute('data-tip-suppressed');
-                }
-            }
-        }, true);
 
         document.addEventListener('focusout', e => {
             const host = e.target.closest?.(escapeTipSelector);

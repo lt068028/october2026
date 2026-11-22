@@ -62,25 +62,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  const tipA = testPage.locator('#drill1 .drill-listen-btn.custom-tip-wrap').first();
  const tipB = testPage.locator('#drill1 .drill-record-btn.custom-tip-wrap').first();
 
- // 1. Mouse Hover -> Escape closes 1 tooltip and suppresses re-display until pointer leaves
+ // 1. Mouse Hover is NOT closed or suppressed by Escape
  await tipA.hover();
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible on hover');
  await testPage.keyboard.press('Escape');
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden' && e.getAttribute('data-tip-suppressed') === 'true'), true, 'Tip A hidden and suppressed on Escape');
-
- await testPage.waitForTimeout(50);
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden'), true, 'Tip A stays suppressed while pointer remains');
-
- await tipB.hover();
- check(await tipB.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible' && !e.hasAttribute('data-tip-suppressed')), true, 'Tip B shows normally after Tip A was dismissed on Escape');
-
- await testPage.mouse.move(0, 0);
- check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Tip A suppression cleared when pointer leaves');
- await tipA.hover();
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A re-revealed on new hover');
+ check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible' && !e.hasAttribute('data-tip-suppressed')), true, 'Tip A stays visible and unsuppressed on Mouse Hover Escape');
  await testPage.mouse.move(0, 0);
 
- // 2. Keyboard Tab Focus -> Escape closes tooltip without stealing focus -> moving focus away clears suppression
+ // 2. Keyboard Tab Focus -> Escape closes tooltip without stealing focus -> stays suppressed while focused -> moving focus away clears suppression
  await tipA.focus();
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible on keyboard focus');
  await testPage.keyboard.press('Escape');
