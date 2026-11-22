@@ -6,6 +6,15 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  let checks=0;
  const check=(actual,expected,label)=>{assert.deepEqual(actual,expected,label);checks++};
+ async function tabFocus(page,host){
+  const reached=await host.evaluate(el=>{
+   const nodes=[...document.querySelectorAll('a[href],button,input,select,textarea,[tabindex]:not([tabindex="-1"])')].filter(n=>!n.disabled&&n.getAttribute('aria-hidden')!=='true'&&n.getClientRects().length);
+   const index=nodes.indexOf(el);if(index<=0)return false;nodes[index-1].focus();return true;
+  });
+  if(!reached)throw new Error('No preceding focusable element for Tab test');
+  await page.keyboard.press('Tab');
+  return host.evaluate(el=>document.activeElement===el);
+ }
  async function open(context,name='practice1.2'){
   const page=await context.newPage();page.setDefaultTimeout(10000);page.errors=[];page.on('pageerror',e=>page.errors.push(e.message));
   await page.route('http://drill.test/**',r=>{
@@ -70,14 +79,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await testPage.mouse.move(0, 0);
 
  // 2. Keyboard Tab Focus -> Escape closes tooltip without stealing focus -> stays suppressed while focused -> moving focus away clears suppression
- await tipA.focus();
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible on keyboard focus');
+ check(await tabFocus(testPage,tipA), true, 'Actual Tab moves focus to Tip A');
+ check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A visible on keyboard Tab focus');
  await testPage.keyboard.press('Escape');
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden' && e.getAttribute('data-tip-suppressed') === 'true' && document.activeElement === e), true, 'Tip A hidden on keyboard Escape while preserving element focus');
- await tipB.focus();
- check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Tip A suppression cleared when focus moves to another element');
- await tipA.focus();
- check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A re-revealed when focused again');
+ check(await tabFocus(testPage,tipB), true, 'Actual Tab moves focus to Tip B');
+ check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Tip A suppression cleared when focus moves away');
+ check(await tabFocus(testPage,tipA), true, 'Actual Tab returns focus to Tip A');
+ check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A re-revealed on a new Tab focus');
  await testPage.evaluate(() => document.body.focus());
 
  // 3. Touch behavior: vocabulary cue (.tooltip-wrap) works via tap, while control button tooltip (.custom-tip-wrap) stays hidden on touch but works on subsequent mouse hover / keyboard focus
@@ -89,6 +98,10 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch', pointerId: 1, clientX: 10, clientY: 10 }));
  });
  check(await vocabTip.evaluate(e => e.classList.contains('tap-tip-open') && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'visible'), true, 'Vocabulary cue tooltip opens on touch tap');
+ await testPage.evaluate(() => { const v=document.querySelector('#drill1 .tooltip-wrap'); const target=v.querySelector('.target-word'); target.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'touch',pointerId:3,clientX:10,clientY:10})); target.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerType:'touch',pointerId:3,clientX:10,clientY:10})); });
+ check(await vocabTip.evaluate(e => !e.classList.contains('tap-tip-open')), true, 'Retapping the same vocabulary cue tooltip closes it');
+ await testPage.evaluate(() => { const v=document.querySelector('#drill1 .tooltip-wrap'); const target=v.querySelector('.target-word'); target.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'touch',pointerId:4,clientX:10,clientY:10})); target.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerType:'touch',pointerId:4,clientX:10,clientY:10})); });
+ check(await vocabTip.evaluate(e => e.classList.contains('tap-tip-open')), true, 'A new valid tap reopens the vocabulary tooltip');
 
  // Control button tooltip is hidden while in touch input state
  check(await tipA.evaluate(e => {
