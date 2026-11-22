@@ -361,7 +361,7 @@ drillsData.forEach((drill, dIdx) => {
 const expectedHintsByDrill = [
     [
         ["I", "to drive", "Salzburg (city in Austria)"],
-        ["I", "to fly", "Berlin"],
+        ["I", "to fly", null],
         ["I", "to travel", "Italy"],
         ["I", "to move", "Vienna (city in Austria)"]
     ],
@@ -378,10 +378,10 @@ const expectedHintsByDrill = [
         ["He", "to take a walk", "park"]
     ],
     [
-        ["You", "to go", "post office"],
-        ["You", "to run", "bank"],
-        ["You", "to cycle", "pharmacy"],
-        ["You", "to drive", "school"]
+        ["You all", "to go", "post office"],
+        ["You all", "to run", "bank"],
+        ["You all", "to cycle", "pharmacy"],
+        ["You all", "to drive", "school"]
     ]
 ];
 drillsData.forEach((drill, dIdx) => {
@@ -1920,6 +1920,31 @@ async function runRecordingLifecycleTests() {
                 document.body.focus();
             });
         }
+
+        // Verify Berlin has no tooltip while Ich (I) and fliegen (to fly) keep theirs, and Drill 4 Ihr has You all
+        const berlinAndIhrCheck = await page.evaluate(() => {
+            const d1Row1 = document.querySelector('#drill1 .drill-row .drill-cue-cell .cue-content');
+            const d1Tips = d1Row1 ? [...d1Row1.querySelectorAll('.tooltip-wrap')].map(w => ({
+                word: w.querySelector('.target-word')?.textContent,
+                tip: w.querySelector('.tooltip-tip')?.textContent
+            })) : [];
+            const d4SubjectTips = [...document.querySelectorAll('#drill4 .example-box .cue-content .tooltip-wrap:first-child, #drill4 .drill-row .cue-content .tooltip-wrap:first-child')].map(w => ({
+                word: w.querySelector('.target-word')?.textContent,
+                tip: w.querySelector('.tooltip-tip')?.textContent
+            }));
+            return { d1Tips, d1Text: d1Row1?.textContent || '', d4SubjectTips };
+        });
+        assert.deepEqual(berlinAndIhrCheck.d1Tips, [
+            { word: 'Ich', tip: 'I' },
+            { word: 'fliegen', tip: 'to fly' }
+        ], 'Berlin has no tooltip while Ich and fliegen retain theirs');
+        assert.ok(berlinAndIhrCheck.d1Text.includes('Berlin'), 'Berlin cue text remains rendered');
+        assert.deepEqual(berlinAndIhrCheck.d4SubjectTips, [
+            { word: 'Ihr', tip: 'You all' },
+            { word: 'Ihr', tip: 'You all' },
+            { word: 'Ihr', tip: 'You all' },
+            { word: 'Ihr', tip: 'You all' }
+        ], 'Drill 4 Ex and 3 items all use You all for Ihr');
 
         assert.equal(errors.length, 0, 'No uncaught page errors during tests');
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');

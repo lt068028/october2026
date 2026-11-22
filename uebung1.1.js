@@ -22,7 +22,7 @@ const drillsData = [
                 id: "d1_1",
                 cue: "Ich / fliegen / Berlin",
                 cueParts: ["Ich", "fliegen", "Berlin"],
-                hints: ["I", "to fly", "Berlin"],
+                hints: ["I", "to fly", null],
                 model: "Ich fliege nach Berlin."
             },
             {
@@ -135,7 +135,7 @@ const drillsData = [
         example: {
             cue: "Ihr / gehen / die Post",
             cueParts: ["Ihr", "gehen", "die Post"],
-            hints: ["You", "to go", "post office"],
+            hints: ["You all", "to go", "post office"],
             model: "Ihr geht zur Post."
         },
         items: [
@@ -143,21 +143,21 @@ const drillsData = [
                 id: "d4_1",
                 cue: "Ihr / laufen / die Bank",
                 cueParts: ["Ihr", "laufen", "die Bank"],
-                hints: ["You", "to run", "bank"],
+                hints: ["You all", "to run", "bank"],
                 model: "Ihr lauft zur Bank."
             },
             {
                 id: "d4_2",
                 cue: "Ihr / radeln / die Apotheke",
                 cueParts: ["Ihr", "radeln", "die Apotheke"],
-                hints: ["You", "to cycle", "pharmacy"],
+                hints: ["You all", "to cycle", "pharmacy"],
                 model: "Ihr radelt zur Apotheke."
             },
             {
                 id: "d4_3",
                 cue: "Ihr / fahren / die Schule",
                 cueParts: ["Ihr", "fahren", "die Schule"],
-                hints: ["You", "to drive", "school"],
+                hints: ["You all", "to drive", "school"],
                 regionalModels: {
                     DE: "Ihr fahrt zur Schule.",
                     AT: "Ihr fahrt in die Schule.",
@@ -872,7 +872,9 @@ function initGermanDrill() {
                     partHtml = part;
                 } else {
                     const hint = item.hints[idx];
-                    if (hintMode === "paren") {
+                    if (!hint) {
+                        partHtml = part;
+                    } else if (hintMode === "paren") {
                         partHtml = `${part} <span class="vocab-inline">(${hint})</span>`;
                     } else {
                         partHtml = `<span class="tooltip-wrap" tabindex="0"><span class="target-word">${part}</span><span class="tooltip-tip">${hint}</span></span>`;
