@@ -686,20 +686,20 @@ async function runRecordingLifecycleTests() {
             assert.ok(await isRecording(), `D${drillNo}: Recording started`);
         };
 
-        const clickRecord = async (isManual = false) => {
-            await page.evaluate(manual => {
+        const clickRecord = async (isManual = false, preserveAutoCompare = false) => {
+            await page.evaluate(({ manual, preserve }) => {
                 const toggle = document.querySelector('#toggleRecordMode');
                 if (toggle) {
                     if (manual && toggle.checked) toggle.click();
                     if (!manual && !toggle.checked) toggle.click();
                 }
                 const playToggle = document.querySelector('#togglePlaybackMode');
-                if (playToggle && playToggle.checked) playToggle.click();
+                if (!preserve && playToggle && playToggle.checked) playToggle.click();
 
                 const recBtns = [...document.querySelectorAll('#drillsContainer .recording-actions button')];
                 const recBtn = recBtns.find(b => b.classList.contains('drill-record-btn'));
                 if (recBtn) recBtn.click();
-            }, isManual);
+            }, { manual: isManual, preserve: preserveAutoCompare });
             for (let i = 0; i < 10; i++) {
                 await page.clock.runFor(50);
                 if (await page.evaluate(() => window.t.recorders.at(-1)?.state === 'recording')) break;
@@ -1209,7 +1209,7 @@ async function runRecordingLifecycleTests() {
             const toggle = document.getElementById('togglePlaybackMode');
             if (toggle && !toggle.checked) toggle.click();
         });
-        await clickRecord(false);
+        await clickRecord(false, true);
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
