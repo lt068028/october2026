@@ -185,40 +185,33 @@
 - 練習2の画像内品物・Example本文の語彙Hoverは承認済みのページ固有仕様であり、キュー側だけという共通原則を理由に撤去しない。
 
 
-### 11.1 説明型TooltipのEscape閉鎖・再表示抑止（共通原則／先行適用：2026-11-21）
+### 11.1 説明型Tooltipの表示・Escape閉鎖・Touch操作（共通原則／先行適用）
 
-**対象と除外**
+**対象と表示トリガー**
 
-- 本規則の対象は、語彙の意味・翻訳、操作方法、補足説明など、情報を説明する目的のTooltipとする。Tooltipの形を使っていても、現在の状態を示すだけの表示は対象外とし、Escapeによる閉鎖・再表示抑止を適用しない。
-- 状態表示型のホストおよびその内側にある表示は、少なくとも `.p82-autostop-open`、`.p82-autoplay-stop`、`.p82-autostop-tip-host`、`[data-tip-status-only]` を対象外として扱う。状態表示の意味・タイミング・操作を本規則で変更しない。
-- Portal型 Hint と Selection Help は本規則の先行適用対象に含めない。これらの適用は、構造・操作・フォーカス管理を個別に確認した別タスクで判断する。
+- 説明型Tooltipは、語彙・キュー・ガイド等の説明を表示する `.tooltip-wrap` と、操作ボタンの説明を表示する `.custom-tip-wrap` 等を指す。状態を示すだけの表示は対象外とする。
+- 説明型Tooltipは、Mouse Hover およびキーボード Tab Focus で表示する。キーボード操作による表示は、実際のTab／Shift+Tabによるフォーカス移動を対象とし、プログラムからの `.focus()` だけをTab操作の検証根拠にしない。
+- `.custom-tip-wrap` の操作説明は、実Touchでは表示しない。PC・タブレット等でのMouse Hover／Tab Focus表示は維持する。
+- `.tooltip-wrap` の語彙説明はTouchに対応する。タップで開き、同じホストへの有効な再タップで閉じる。別の場所をタップしても自動的に閉じない。Escapeでも閉じる。
+
+**Touchのタップ判定**
+
+- `.tooltip-wrap` はTouch／Penのpointerdownからpointerupまでの移動量が10px以内の場合に有効なタップとして扱う。10pxを超える移動および `pointercancel` はスクロール等として扱い、Tooltipを開閉しない。
+- Touchで開いたTooltipは `.tap-tip-open` で管理する。再タップによる閉鎖は同じホストに限定し、他ホストや無関係な操作へ波及させない。
 
 **Escapeによる閉鎖**
 
-- Escape 1回につき、説明型Tooltipの最優先対象を1つだけ閉じる。複数のTooltipが開いている場合も、一度のEscapeで全てを閉じない。
-- 対象選択は、フォーカス中の説明型Tooltip、既に開いている説明型Tooltip、ポインターが乗っている説明型Tooltipの順を基本とする。
-- Voice Dropdown、Drawer、Picker Panel、開いている `<dialog>`、フォーカス中の `<select>` など、Tooltipより優先されるUIが開いている場合は、Tooltipを閉じない。Escapeは優先UI側の操作に委ねる。
-- 対象外の状態表示型Tooltipや、先行適用していないTooltipの既存動作は変更しない。
+- Escapeで閉じる説明型Tooltipは、Tab Focusで表示されたもの、およびTouchで開いた `.tap-tip-open` とする。
+- Mouse Hoverだけで表示されているTooltipはEscapeで閉じない。ポインターが乗っていても、Mouse Hoverを理由に閉鎖対象へ選ばない。
+- Escape 1回につき最優先対象を1つだけ閉じる。Voice Dropdown、Drawer、Picker Panel、開いている `<dialog>`、フォーカス中の `<select>` 等、Tooltipより優先されるUIがある場合は、そちらの操作を優先する。
+- 状態表示型Tooltip（少なくとも `.p82-autostop-open`、`.p82-autoplay-stop`、`.p82-autostop-tip-host`、`[data-tip-status-only]`）は対象外とし、状態や操作に干渉しない。
+- Escapeで閉じたTab Focus対象は、フォーカスが別要素へ移るまで再表示を抑止する。Touch対象は閉じたホストに対する次の新しい有効なタップで抑止を解除し、そのタップで再表示できる。Mouse Hover対象にはEscapeによる閉鎖・再表示抑止を適用しない。
 
-**閉鎖後の再表示抑止と解除条件**
+**適用範囲・実装管理**
 
-- **Mouse**：Escapeで閉じたホストは、ポインターがそのホストから離れるまで再表示しない。離脱後の新しいHoverで再表示できる。
-- **Keyboard**：Escape処理に伴う対象自身の強制 `blur()` では抑止を解除しない。対象から別要素へフォーカスが移った後、対象に新たにFocusしたときに再表示できる。
-- **Touch / Pen**：ポインター操作の進行中にEscapeで閉じた場合、同じジェスチャー内の `pointerup` および当該ホストへの `click` によって再表示しない。クリック抑止は閉じた当該ホストと当該ジェスチャーに限定し、無関係な要素のクリックやKeyboard操作を妨げない。
-- Touch / Penでは、移動量が10pxを超えるスクロール、および `pointercancel` によってホストの再表示抑止を解除しない。抑止された同一ホストに対する次の新しい有効なタップ（開始位置から完了位置まで10px以内）が完了した場合に限り抑止を解除し、そのタップで再表示できる。
-- 上記の解除条件は入力方式ごとに独立して扱う。あるホストへのEscapeや抑止が、別ホスト・無関係な操作へ波及しない。
-
-**実装・検証状況（先行適用）**
-
-- `tooltip-layout.js` の `DrillTooltips.enableEscapeDismiss()` により、Practice 8.2 および Deutsche Übung 1.1 に先行適用している。
-- **技術的完了**：Commit `689ca1d3cae9a1c6cc7d68d4fe1f4d86bdc240b9`。依頼時に報告された CI Run #430 では `tests/tooltip-layout.cjs` および `tests/practice82-example-layout.cjs` が合格。
-- **ユーザー実機確認**：未実施。技術的完了および自動テスト合格を、ユーザー実機での受入確認済みとは扱わない。
-
-**未対応・適用範囲外**
-
-- 上記2ページ以外の13ページには、現時点で本規則のオプトイン適用を行っていない。既存のTooltip動作を維持する。
-- Portal型 Hint と Selection Help も未適用とする。これらを含む他ページへの展開は、本書の原則を登録しただけで自動適用済みとは扱わず、対象・構造・既存動作を確認する別タスクとして扱う。
-- 本節は共通原則と現在の適用範囲を定める。実装コードや自動テストの手順・詳細な作業経緯は仕様書へ転記しない。
+- 共通規則を定めることは、全ページへの実装適用を意味しない。各ページへの適用は、既存構造・操作・フォーカス管理を確認した範囲に限る。
+- 状態表示型Tooltip、Portal型Hint、Selection Helpは、個別に適用を確認する。これらを説明型Tooltipと同一視して一律に閉鎖制御しない。
+- 本節は共通のユーザー向け動作と適用原則を定める。実装コードや自動テストの作業経緯は仕様書へ転記しない。
 
 ## 12. 録音結果・状態メッセージの文字サイズ
 
