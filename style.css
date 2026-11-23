@@ -5860,7 +5860,7 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
     vertical-align: -3.5px;
     margin-right: 4px;
     flex-shrink: 0;
-    color: #fbbf24;
+    color: currentColor;
 }
 .practice82-page .voice-select-label {
     display: inline-flex;
@@ -6064,7 +6064,7 @@ html[data-theme="dark"] .practice82-page {
     grid-template-columns: minmax(0, 1fr) auto;
     column-gap: 6px;
     row-gap: 6px;
-    align-items: center;
+    align-items: end;
 }
 .practice82-page #drill1 > .info-panel > .info-panel-title {
     grid-column: 1;
@@ -6077,9 +6077,11 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page #drill1 > .info-panel > .p82-drill1-guide-actions {
     grid-column: 2;
     grid-row: 1 / span 2;
+    align-self: end;
+    justify-self: end;
     display: flex;
     justify-content: flex-end;
-    align-items: center;
+    align-items: flex-end;
     margin: 0;
     padding: 0;
 }
@@ -6100,11 +6102,11 @@ html[data-theme="dark"] .practice82-page {
     margin: 0;
     padding: 5px 12px;
     border-radius: 6px;
-    border: 1px solid #7dd3fc;
-    background: #e0f2fe;
-    color: #0369a1;
+    border: 1px solid var(--border-color, #cbd5e1);
+    background: var(--card-bg, #ffffff);
+    color: var(--text-primary, #1e293b);
     font-family: 'Lato', sans-serif;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
     line-height: 1.25;
     cursor: pointer;
@@ -6114,26 +6116,12 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-stt-guide-btn:hover,
 .practice82-page .p82-stt-guide-btn:focus-visible {
-    background: #bae6fd;
-    border-color: #38bdf8;
-    color: #0284c7;
-}
-@media (prefers-color-scheme: dark) {
-    .practice82-page .p82-stt-guide-btn {
-        background: rgba(14, 116, 144, 0.28);
-        border-color: rgba(56, 189, 248, 0.45);
-        color: #7dd3fc;
-    }
-    .practice82-page .p82-stt-guide-btn:hover,
-    .practice82-page .p82-stt-guide-btn:focus-visible {
-        background: rgba(14, 116, 144, 0.42);
-        border-color: #38bdf8;
-        color: #bae6fd;
-    }
+    border-color: var(--accent-color, #2563eb);
+    color: var(--accent-color, #2563eb);
 }
 .practice82-page .p82-stt-guide-dialog[open] {
     box-sizing: border-box;
-    width: min(860px, calc(100vw - 24px));
+    width: min(880px, calc(100vw - 24px));
     max-width: calc(100vw - 24px);
     margin: auto;
     padding: 16px;
@@ -6161,7 +6149,7 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-stt-guide-title {
     margin: 0;
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 700;
     line-height: 1.3;
 }
@@ -6179,7 +6167,7 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-stt-guide-lead {
     margin: 0 0 12px;
-    font-size: 13.5px;
+    font-size: 14px;
     color: var(--text-secondary, #475569);
     line-height: 1.4;
 }
@@ -6197,7 +6185,7 @@ html[data-theme="dark"] .practice82-page {
     padding: 4px 2px;
 }
 .practice82-page .p82-stt-guide-row-tag {
-    font-size: 10.5px;
+    font-size: 11.5px;
     font-weight: 800;
     letter-spacing: 0.06em;
     color: var(--text-secondary, #64748b);
@@ -6208,9 +6196,12 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .p82-stt-guide-cards {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
+    gap: 0;
     align-items: stretch;
     min-width: 0;
+    border-radius: 12px;
+    border: 1.5px solid var(--border-color, #cbd5e1);
+    background: var(--card-bg, #ffffff);
 }
 .practice82-page .p82-guide-step-card {
     position: relative;
@@ -6218,24 +6209,44 @@ html[data-theme="dark"] .practice82-page {
     min-width: 0;
     display: grid;
     grid-template-rows: 1fr 1fr;
-    border-radius: 10px;
-    border: 1px solid var(--border-color, #cbd5e1);
-    background: var(--card-bg, #ffffff);
+    border-right: 1px solid var(--border-color, #cbd5e1);
+    background: transparent;
 }
-.practice82-page .p82-guide-step-card:not(.p82-guide-no-next-arrow)::after {
-    content: "→";
-    position: absolute;
-    right: -10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--text-secondary, #64748b);
-    pointer-events: none;
-    z-index: 3;
+.practice82-page .p82-guide-step-card[data-col="1"] .p82-guide-half-system {
+    border-top-left-radius: 10px;
+}
+.practice82-page .p82-guide-step-card[data-col="1"] .p82-guide-half-you {
+    border-bottom-left-radius: 10px;
 }
 .practice82-page .p82-guide-step-card-goal {
-    border: 2px solid var(--p82-amber-accent);
+    border-right: 0;
+    box-shadow: inset 0 0 0 2px var(--p82-amber-accent);
+    border-radius: 0 10px 10px 0;
+}
+.practice82-page .p82-guide-step-card-goal .p82-guide-half-system {
+    border-top-right-radius: 10px;
+}
+.practice82-page .p82-guide-step-card-goal .p82-guide-half-you {
+    border-bottom-right-radius: 10px;
+}
+.practice82-page .p82-guide-boundary-arrow {
+    position: absolute;
+    right: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary, #475569);
+    pointer-events: none;
+    z-index: 5;
+}
+.practice82-page .p82-guide-boundary-arrow svg {
+    width: 30px;
+    height: 30px;
+    display: block;
 }
 .practice82-page .p82-guide-half {
     position: relative;
@@ -6247,21 +6258,19 @@ html[data-theme="dark"] .practice82-page {
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 10px 5px;
+    padding: 14px 6px;
     border: 0;
     font-family: 'Lato', sans-serif;
     color: var(--text-primary, #1e293b);
     cursor: pointer;
-    gap: 3px;
+    gap: 4px;
 }
 .practice82-page .p82-guide-half-system {
     background: var(--p82-guide-system-bg);
     border-bottom: 1.5px dashed var(--border-color, #94a3b8);
-    border-radius: 9px 9px 0 0;
 }
 .practice82-page .p82-guide-half-you {
     background: var(--p82-guide-you-bg);
-    border-radius: 0 0 9px 9px;
 }
 .practice82-page .p82-guide-autocompare-half {
     background: var(--p82-amber-bg);
@@ -6270,6 +6279,7 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-guide-goal-half {
     background: var(--p82-amber-bg);
+    color: var(--p82-amber-accent);
 }
 .practice82-page .p82-guide-status-trio {
     position: absolute;
@@ -6278,13 +6288,18 @@ html[data-theme="dark"] .practice82-page {
     transform: translate(-50%, -50%);
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 2px 6px;
+    gap: 3px;
+    padding: 2px 5px;
     border-radius: 999px;
     border: 1px dashed var(--border-color, #94a3b8);
     background: var(--card-bg, #ffffff);
     pointer-events: none;
     z-index: 4;
+}
+.practice82-page .p82-trio-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
 }
 .practice82-page .p82-trio-accepted {
     color: var(--status-accepted-color, #16a34a);
@@ -6307,15 +6322,22 @@ html[data-theme="dark"] .practice82-page {
     }
 }
 .practice82-page .p82-guide-goal-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: inline-block;
-    padding: 1px 6px;
+    padding: 2px 7px;
     border-radius: 999px;
     background: var(--p82-amber-accent);
     color: #ffffff;
-    font-size: 9.5px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.04em;
-    line-height: 1.3;
+    line-height: 1.25;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 4;
 }
 @media (prefers-color-scheme: dark) {
     .practice82-page .p82-guide-goal-badge {
@@ -6330,10 +6352,18 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 26px;
+    height: 28px;
+}
+.practice82-page .p82-guide-icon-wrap-v {
+    height: 42px;
+    max-width: 100%;
+}
+.practice82-page .p82-recognition-v-svg {
+    max-width: 100%;
+    height: auto;
 }
 .practice82-page .p82-guide-label {
-    font-size: 12.5px;
+    font-size: 14.5px;
     font-weight: 700;
     line-height: 1.25;
     max-width: 100%;
@@ -6341,15 +6371,16 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 }
 .practice82-page .p82-guide-sub,
 .practice82-page .p82-guide-goal-action {
-    font-size: 11px;
+    font-size: 12.5px;
+    font-weight: 600;
     line-height: 1.25;
     color: var(--text-secondary, #475569);
     max-width: 100%;
     overflow-wrap: anywhere;
 }
-.practice82-page .p82-guide-goal-action {
-    font-weight: 600;
-    color: var(--text-primary, #1e293b);
+.practice82-page .p82-guide-goal-half .p82-guide-goal-action {
+    font-weight: 700;
+    color: var(--p82-amber-accent);
 }
 @keyframes p82WavePulse {
     0%, 100% { opacity: 1; }
