@@ -1123,7 +1123,7 @@ function createLightbulbIcon(){
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
+ sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);if(si===0){const actions=node('div','info-panel-actions p82-drill1-guide-actions'),gBtn=node('button','p82-stt-guide-btn');gBtn.type='button';gBtn.id='p82SttGuideBtn';gBtn.setAttribute('aria-haspopup','dialog');gBtn.setAttribute('aria-controls','p82SttGuideDialog');gBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-guide-btn-icon"><path d="M11 3.5a5.5 5.5 0 0 0-3.7 9.57c.45.41.7.99.7 1.6V15.5h6v-.83c0-.61.25-1.19.7-1.6A5.5 5.5 0 0 0 11 3.5ZM8.5 17.5h5M9.25 20h3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 2.5v3M17.5 4h3M20.5 9.5v2M19.5 10.5h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>How Speaking Practice Works</span>';actions.append(gBtn);panel.append(actions);}group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const ynLabel=(si===2&&index===0)?(value==='yes'?'Yes':'No'):(value==='yes'?'Affirmative response':'Negative response');const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();},(si===2&&index===0)?ynLabel:'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',ynLabel);choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
@@ -1955,10 +1955,9 @@ showResult = function(...args) {
 window.practice82State = { saved, choices, rowsFor, keyFor, entriesFor82, sync, render };
 
 function initSttGuide82() {
-    const openBtn = document.getElementById('p82SttGuideBtn');
     const dialog = document.getElementById('p82SttGuideDialog');
     const closeBtn = document.getElementById('p82SttGuideClose');
-    if (!openBtn || !dialog) return;
+    if (!dialog) return;
     const tipHosts = [...dialog.querySelectorAll('.p82-guide-tip-wrap')];
     const clearGuideTips = () => {
         tipHosts.forEach(h => {
@@ -1981,7 +1980,9 @@ function initSttGuide82() {
             }
         });
     };
-    openBtn.addEventListener('click', () => {
+    document.addEventListener('click', e => {
+        const trigger = e.target.closest?.('#p82SttGuideBtn');
+        if (!trigger) return;
         clearGuideTips();
         if (typeof dialog.showModal === 'function' && !dialog.open) {
             dialog.showModal();
@@ -2032,7 +2033,7 @@ function initSttGuide82() {
     });
     dialog.addEventListener('close', () => {
         clearGuideTips();
-        openBtn.focus();
+        document.getElementById('p82SttGuideBtn')?.focus();
     });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSttGuide82);
