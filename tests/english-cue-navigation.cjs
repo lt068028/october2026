@@ -13,10 +13,13 @@ const root=path.resolve(__dirname,'..');
    const toggle=p.locator(name==='practice7.1'?'#practice71Stage3Button':'.drill-cue-button');await toggle.scrollIntoViewIfNeeded();
    assert.ok(await p.evaluate(()=>scrollY)>1000,'starts from the bottom cue panel');checks++;
    await toggle.click();
-   await p.waitForFunction(()=>{const e=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)'),c=getComputedStyle(e),line=parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5;return Math.abs(e.getBoundingClientRect().top-line)<35;},{timeout:5000}).catch(()=>{});
-   assert.equal(await toggle.getAttribute('aria-pressed'),String(english));checks++;
+   let timedOut=false;
+   await p.waitForFunction(()=>{const e=document.querySelector('#drill1Container .info-panel:not(.drill-cue-panel)'),c=getComputedStyle(e),line=parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5;return Math.abs(e.getBoundingClientRect().top-line)<35;},{timeout:5000}).catch(()=>{timedOut=true;});
+   const ariaPressed=await toggle.getAttribute('aria-pressed');
+   assert.equal(ariaPressed,String(english));checks++;
    const gap=await p.locator('#drill1Container .info-panel:not(.drill-cue-panel)').first().evaluate(e=>{const c=getComputedStyle(e);return[e.getBoundingClientRect().top,parseFloat(c.lineHeight)||parseFloat(c.fontSize)*1.5];});
-   assert.ok(Math.abs(gap[0]-gap[1])<35,'The first Drill heading is one line below viewport top');checks++;
+   const diff=Math.abs(gap[0]-gap[1]);
+   assert.ok(diff<35,`The first Drill heading is one line below viewport top (${JSON.stringify({name,width,script,english,ariaPressed,timedOut,top:gap[0],lineHeight:gap[1],diff})})`);checks++;
   }
  }
  assert.deepEqual(errors,[]);checks++;await b.close();console.log('PASS English cue navigation',checks);
