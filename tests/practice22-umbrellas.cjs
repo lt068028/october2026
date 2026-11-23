@@ -23,8 +23,8 @@ for(const eng of [false,true]){
  }
 }
 if((await p.locator('.drill-cue-button').getAttribute('aria-pressed'))==='true')await p.locator('.drill-cue-button').click();
-check(await d.locator('.info-panel .info-panel-title').textContent(),'Drill 5: どの＋Noun / どれ for objects','D5 title');
-check(await d.locator('.info-panel .info-panel-desc').textContent(),'💡Identify a specific item by asking with どの＋Noun or どれ.','D5 description');
+check(await d.locator(':scope > .info-panel:not(.drill-cue-panel) .info-panel-title').textContent(),'Drill 5: どの＋Noun / どれ for objects','D5 title');
+check(await d.locator(':scope > .info-panel:not(.drill-cue-panel) .info-panel-desc').textContent(),'💡Identify a specific item by asking with どの＋Noun or どれ.','D5 description');
 check(await d.locator('.p2x-umbrella-target[data-image-hint]').count(),3,'D5 photo imageHint preserved');
 for(const modeIdx of [0,1]){
  await p.locator('[data-set-state="umbrellaModeSet"] button').nth(modeIdx).click();
