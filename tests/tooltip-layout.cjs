@@ -91,7 +91,8 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  check(await tipA.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true, 'Tip A suppression cleared when focus moves away');
  check(await tabFocus(testPage,tipA), true, 'Actual Tab returns focus to Tip A');
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Tip A re-revealed on a new Tab focus');
- await testPage.evaluate(() => document.body.focus());
+ await testPage.evaluate(() => document.activeElement?.blur());
+ check(await testPage.evaluate(() => document.activeElement === document.body), true, 'Focus cleared from Tip A before Touch tests');
 
  // 3. Touch behavior: vocabulary cue (.tooltip-wrap) works via tap, while control button tooltip (.custom-tip-wrap) stays hidden on touch but works on subsequent mouse hover / keyboard focus
  const vocabTip = testPage.locator('#drill1 .tooltip-wrap').first();
