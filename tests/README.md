@@ -81,9 +81,12 @@ node tests/relay-zero-gap.cjs
 
 ## 3. テスト一覧（用途別の整理）
 
+- **CI 登録状況（全 85 テスト）**：`.github/workflows/test.yml` の Group 1〜5 に登録されている 70 テストが CI 実行対象です。残り 15 テスト（`copy11.cjs`, `copy12.cjs`, `copy21.cjs`, `copy22.cjs`, `copy23.cjs`, `copy71.cjs`, `copy81.cjs`, `eyeless-answer-icons.cjs`, `fluent-filled.cjs`, `practice21-checkmark-stroke.cjs`, `practice21-feedback-icons-preview.cjs`, `practice21-feedback-status.cjs`, `practice21-feedback-wrap.cjs`, `practice21-keep-going.cjs`, `qa-role-policy.cjs`）は **CI 対象外（個別補助検証）** です。
+- **対象ページ数・検証範囲の最新基準**：`fluid-width.cjs`（12 ページ）、`global-display.cjs`（12 ページ）、`example-vertical-spacing.cjs`（既定 14 ページ）、`section-spacing.cjs`（practice・pronunciation・composition の HTML 走査）、`tooltip-layout.cjs`（8 Practice ＋ Composition・Pronunciation 対象、Mouse Hover / Tab Focus / Escape 閉鎖 / Voice Dropdown 優先 Escape / Touch / Practice 8.2・Übung 1.1 契約検証）。
+
 ### 3.1 音声操作・録音・リレー・ライフサイクル
 
-音声合成・マイク・録音・デコード・ピッチ値には制御可能な代替（モック）を使用しています。実際のブラウザ音声認識精度、実TTS発音、実マイク音質を保証するテストではありません。
+原則として外部環境に依存しない制御可能な代替（モック）を使用していますが、一部テストではブラウザ標準 API ラッパーや明示的なイベント制御を併用しています。実際のブラウザ音声認識精度、実TTS発音、実マイク音質を保証するテストではありません。
 
 - **`node tests/audio-transitions.cjs`**
   - **対象**: 作文、発音1、発音2

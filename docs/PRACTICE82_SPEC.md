@@ -11,84 +11,19 @@ Practice 8.2の英語概念ラベルの外観は [PRACTICE8_SPEC.md](PRACTICE8_S
 
 Practice 8.2の確定構成はExample 4件・Drill 4件とする。旧版の3 Example・3 Drill構成へ戻さない。追加・変更は、明示されたユーザーの指示・承認に基づいて行う。
 
-## 構成とモデル
+## 構成とモデル（固有制約・具体データは `practice8.2.js` を正本とする）
 
-各Drillセクションの先頭に対応するExample群を置く。共通の練習8レイアウト、表示設定、共通Q/A役割表示、独立したモデル音声、録音・採点結果保持を使う。
+各Drillセクションの先頭に対応するExample群を置く。共通仕様は `PROJECT_SPEC.md` および `UI_LAYOUT_SPEC.md` を参照し、ここでは Practice 8.2 固有の教育上の制約のみを定める。
 
-### Example 1／Drill 1 — 何かの平叙文
+- **Example 1／Drill 1 — 何かの平叙文**：Example 1 は `Unspecified`／`None`／`All-inclusive`（`— I drink something.` 等、丸括弧なし・em dash 開始）を対比。Drill 1（`Drill 1: 何か — Affirmative Sentences`）は平叙文 4 問とし、疑問文マーカー・Q/A 役割・`QuestionIndicator` を表示せず、動詞前の自然な複数語順を許容する。
+- **Example 2／Drill 2 — 何を vs 何か**：Drill 2（4 問×2 行）は回答なしの質問比較のため Q/A 役割と `QuestionIndicator` を出さず、キュー左側に `.p82-question-marker`（`aria-hidden="true"`）を表示する。設問にない主語補完を許容し、誤った疑問詞・動詞は許容しない。
+- **Example 3／Drill 3 — 何か／何も Yes/No**：質問・回答を別々に録音し、Y/N 選択まで回答側の再生・録音をロックする（選択操作だけではモデル再生しない）。Drill 3 最初の回答行の Y/N ボタンは Tooltip・アクセシブル名とも `Yes`／`No`、選択前案内は `Choose Yes/No first.`、Ex3 モデル音声 Tooltip は `Listen to the affirmative model.`／`Listen to the negative model.` とする。
+- **Example 4／Drill 4 — 何でも（先取り）**：Drill 4（`Drill 4: [Sneak Peek] 何でも — Unlimited Choice`、課番号付き Sneak Peek や Advanced は不使用）は「何でも＋動詞」と自然な「何でも」短答を許容し、「何でもを＋動詞」「何でもいいです」・動詞だけの返答・たい形・可能形は許容しない。
 
-Example 1は飲むを使い、何か（something）・何も＋否定（nothing）・何でも（unlimited choice）の意味を対比する3行。
+## 固有表示・表記と Beyond L8 Words
 
-Example 1の左側の英語ラベルは `Unspecified`／`None`／`All-inclusive` とする。各モデル文の右側には英訳を表示する：`— I drink something.`／`— I drink nothing.`／`— I drink anything.`。Example 2と同じく、丸括弧なし、先頭にem dash（`—`）と半角スペースを置き、Lato・既存の薄い文字色（`--text-secondary`、`.vocab-inline`）を用いる。
-
-Drill 1はタイトルを `Drill 1: 何か — Affirmative Sentences`、説明文を `Place 何か naturally before the verb.` とし、時制選択を課題にせず平叙文4問を出す。平叙文であるため疑問文マーカーやQ/A役割、`QuestionIndicator` は表示しない。各設問では動詞の前に「何か」を置く自然な複数語順（例：`授業で、何か、話します。` および `何か、授業で、話します。`）を許容回答候補（`r.refs`）として明示的に登録し、不自然な後置語順や旧疑問文は許容しない。
-
-| キュー | モデル |
-| --- | --- |
-| 授業／話す | 授業で、何か、話します。 |
-| 学校／習う | 学校で、何か、習います。 |
-| 大学／教える | 大学で、何か、教えます。 |
-| 先生／聞く | 先生に、何か、聞きます。 |
-
-### Example 2／Drill 2 — 何を vs 何か
-
-Example 2は「何を · Specific」と「何か · Unspecified」の質問を、見るで対比する。
-
-Drill 2は4問それぞれを「何を」と「何か」の2行（計8行）で練習する。キューの漢字は既習範囲に合わせる。Drill 2（8行）は回答のない質問形式比較であるためQ/A役割は付与せず、右側の `QuestionIndicator` も表示しない。代わりにキュー左側に `Chat Help 24 Filled` 図柄の疑問文マーカー（`.p82-question-marker`、`aria-hidden="true"`）を各行1個ずつ表示する（Drill 3・4は既存のQ/A役割表示を維持）。
-
-| 問 | 動詞 | 何をモデル | 何かモデル |
-| --- | --- | --- | --- |
-| 1 | 読む | 何を、読みますか。 | 何か、読みますか。 |
-| 2 | 書く | 何を、書きますか。 | 何か、書きますか。 |
-| 3 | 撮る | 何を、撮りますか。 | 何か、撮りますか。 |
-| 4 | 洗う | 何を、洗いますか。 | 何か、洗いますか。 |
-
-判定は適切な助詞・キューに沿う回答を許容する。設問に指定のない「あなたは」等の主語補完も許容する。誤った疑問詞や動詞は許容しない。
-
-### Example 3／Drill 3 — 何か／何も Yes/No
-
-Example 3は「お土産に、何か、買いますか。」の質問と、肯定・否定の回答を常時表示する。回答は「はい、買います。」「いいえ、何も、買いません。」。キューはおみやげ／かう。Drill 3は質問と回答を別々に録音し、🙆／🙅の選択が済むまで回答側の再生・録音をロックする。選択操作だけではモデルを再生しない。
-
-- Drill 3の最初の回答行のY/Nボタンは、Tooltipとアクセシブル名を`Yes`／`No`とする。選択前のスピーカーとマイクの案内は`Choose Yes/No first.`。Example 3の肯定モデル音声Tooltipは`Listen to the affirmative model.`、否定モデル音声Tooltipは`Listen to the negative model.`とする。
-
-| 問 | 質問キュー・動詞 | 質問モデル |
-| --- | --- | --- |
-| 1 | 誕生日／する | 誕生日に、何か、しますか。 |
-| 2 | パーティー／持っていく | パーティーに、何か、持っていきますか。 |
-| 3 | おやつ／食べる | おやつで、何か、食べますか。 |
-| 4 | 友達／借りる | 友達に、何か、借りますか。 |
-| 5 | スマホ／つける | スマホに、何か、つけますか。 |
-
-回答は選択した極性と一致すること、否定側は何も＋否定形を含むことが必要。肯定／否定の録音と結果は独立して保持する。パーティーへ、スマホへ、誕生日の助詞省略、友達から等、登録済みの自然な助詞差は許容する。
-
-### Example 4／Drill 4 — 何でも（先取り）
-
-Example 4は「どんな靴を、はきますか。」／「何でも、はきます。」。Drill 4は次の3つの習慣・種類の質問と回答を扱う。
-
-| キュー | 質問モデル | 回答モデル |
-| --- | --- | --- |
-| どんな／料理／作る | どんな料理を、作りますか。 | 何でも、作ります。 |
-| どんな／歌／歌う | どんな歌を、歌いますか。 | 何でも、歌います。 |
-| どんな／帽子／かぶる | どんな帽子を、かぶりますか。 | 何でも、かぶります。 |
-
-Drill 4のタイトルは `Drill 4: [Sneak Peek] 何でも — Unlimited Choice`。案内は、何でもが制限のない選択を表すことと、どんなで質問して何でもで答えることを簡潔に示す。課番号付きSneak Peekや難易度を示すAdvancedは使わない。何でも＋動詞をモデルにし、会話として自然な「何でも」の短答も許容する。「何でもを＋動詞」「何でもいいです」、動詞だけの返答は許容しない。たい形・可能形は導入しない。
-
-## 共通表示・読み・音声・採点
-
-- 初期表示はWith漢字／Formal／Hover。Hiragana Only、Informal、Casual、Display、OFF、声選択、Autostop／Manual録音、Auto-Compare／Manualを維持する。Practice 8.2のキューは未習漢字を平仮名で示し、モデル文はWith漢字表示を保つ。
-- Hiragana Onlyでもデパート、バーベキュー、パーティー、スマホ等のカタカナ表記を保つ。モデル文・案内の読みと、動詞活用形の読みを登録する。
-- モデル表示文とTTS読み上げ文は、文節の区切りに対応する読点を同じ位置に置く。STTの句読点は共通正規化で採点し、STT原文表示や保存原文を書き換えない。
-- 助詞の自然な差、読み・漢字の登録済み異表記、許容される短答・主語補完だけを採点候補に加える。誤った疑問詞、動詞、否定極性、課題の対象を正答扱いしない。
-- 行とY/N選択ごとに録音URL、STT原文、録音時モデル／許容文、採点結果を保持する。設定変更や選択切替で別キーの録音を消さず、過去の採点を再計算しない。
-- 録音開始時に既存のモデル再生・録音再生・リレーを停止する。マイク準備中と録音中は他操作をロックする。モデル再生終了から録音再生への意図的な待機は0秒。
-- Text/Hideボタン、サイズ切替、追加画像は設けない。English CuesはD1〜D4の問題キューに適用し、切替等の共通動作は [PROJECT_SPEC.md](PROJECT_SPEC.md) §7.1に従う。
-- Example右側の完成モデル文には、重複する語彙訳Tooltipや`(with a negative ending)`等の余分な文法補足を加えない。Example 2の任意助詞「(を)」Tooltipは維持する（詳細は「表記とBeyond L8 Words」を参照）。
-
-## 表記とBeyond L8 Words（2026-11-04）
-
-共通原則はPROJECT_SPEC.md §§3.2・3.4に従う。Ex・DrillのキューはL8漢字範囲。Ex3のキューは「おみやげ／かう」、右側の例文では「お土産」「買います」を使う。Ex4のキューは「どんな／くつ／はく」、右側の例文では「靴」を使用する。音声生成用内部文およびSTT原文は別用途として扱う。
-
-8.3と同じ位置・共通スタイルのBeyond L8 Wordsを設置する。Wordsは何でも（L13）の1語。お土産はL5の既習語のためWordsには掲載せず、Kanjiの「産：お土産（おみやげ）」は維持する。Kanjiは産／靴（Genki外）・買（L10）の3項目。漢字欄はWith漢字だけ表示し、件数も連動する。「何か(を)」の「を」は個別ホバー説明 “The particle を is optional and usually omitted after 何か.” を持ち、点線下線でホバー可能と示す。開閉状態は現在のブラウザーセッション中に保持する。L8はPractice 8に対応する値であり、他課の名称はBeyond L{対象課番号} Wordsとする。
+- 共通の表示・音声・採点・状態保持・English Cues 規則は `PROJECT_SPEC.md`（§3.2・§3.4・§5.2・§7.1）に従う。Practice 8.2 固有として、キューは未習漢字を平仮名で示し、Example 右側の完成モデル文には重複する語彙訳 Tooltip や余分な文法補足を加えない。
+- Beyond L8 Words（`何でも`、Kanji 欄は With漢字のみ表示）および Example 2「何か(を)」の任意助詞「(を)」ホバー説明（`The particle を is optional and usually omitted after 何か.`）を維持する。具体データは `practice8.2.js` を正本とする。
 
 ## 不定表現の部分強調（Practice 8.2固有）
 
@@ -131,15 +66,8 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 
 ## 録音停止条件および Copy my sentences 出力仕様（2026-11-18）
 
-- **録音停止条件**：
-  - **Autostop ON**：発話前5秒無音で自動停止（`No speech detected within 5 seconds.`、新録音保存なし）／発話後2.0秒連続無音で自動停止／絶対上限20秒で自動停止（`Auto-stopped after 20 seconds.`）。
-  - **Manual（Autostop OFF）**：発話前5秒停止なし／発話後2.0秒無音停止なし／ユーザーの手動停止または絶対上限20秒（`Auto-stopped after 20 seconds.`）のみで停止する。
-- **`Copy my sentences` 出力アイコン**：
-  - 保存された `entry.status` を優先参照し、`accepted` は `✅`、`incomplete` は `👣`、`mismatch` は `🔥` を文頭に付与する（未設定時のみ `FeedbackStatus.clipboardMarker(entry)` へフォールバック）。
-  - Incomplete 判定の画面表示用末尾 `…` はコピー出力には混入させない。
-- **`Copy my sentences` 操作と音声再生・アイコン**：
-  - `PROJECT_SPEC.md` §7.2 に従い、モデル音声・録音音声の再生中に `Copy my sentences` を実行しても再生を中断せず、再生状態を維持する（録音中・マイク準備中の無効化条件は維持）。
-  - Copy ボタンアイコンは `UI_LAYOUT_SPEC.md` §10 準拠（`fluent-icons.js` 既存の Microsoft Fluent `Clipboard 24 Regular`）を用いる。
+- **録音停止条件・Copy 基本動作**：`PROJECT_SPEC.md` §5.2（Autostop ON/Manual 停止条件）および §7.2（Copy 中の再生維持）を正本とする。
+- **Practice 8.2 固有の Copy 出力仕様**：保存された `entry.status` を優先参照し、`accepted` は `✅`、`incomplete` は `👣`、`mismatch` は `🔥` を文頭に付与する（未設定時のみ `FeedbackStatus.clipboardMarker(entry)`）。Incomplete 判定の画面表示用末尾 `…` はコピー出力には混入させない。
 
 ## 採点正規化・Mismatch 理由と差分ハイライト仕様（2026-11-18）
 
@@ -159,11 +87,5 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 
 ## 共通UI・音声操作に関する仕様参照（2026-11-19更新）
 
-Global Settingsの設定アイコン、Auto-Compare／Autostop、ツールチップ、音声再生・停止アイコン、再生中の表示、ホバーガイドおよびdisabled表示の共通仕様は、`UI_LAYOUT_SPEC.md` §13.1〜§13.3を正本とする。本書では共通規則を重複定義しない。
-
-Practice 8.2固有の表示として、次の3点を維持する。
-1. **もどるボタン（`.back-link`）**：Microsoft Fluent `Arrow Hook Down Left 24 Regular`（`arrowHookDownLeft`、`20×20px`、`translateY(-0.5px)`）を使用する。
-2. **Drill説明文の電球アイコン（5箇所）**：Drill 1〜4およびDrill 5 English Cuesの`.info-panel-desc`先頭にMicrosoft Fluent `Lightbulb 24 Filled`（`lightbulbFilled`、`20×20px`、`vertical-align: -3.5px`）を配置し、`#fbbf24`を適用する。
-3. **左下Voiceラベル（`.voice-select-label`）**：Microsoft Fluent `Speaker 2 24 Regular`（`speaker`／`speaker2`、`20×20px`）を使用する。
-4. **Tooltip衝突回避・ResizeObserver・入力状態管理**：`tooltip-layout.js` により `600px` 以上の画面幅で隣接ツールチップ同士の矩形重複を回避し、`ResizeObserver`（`requestAnimationFrame` デバウンス）によりリサイズ時の再配置を追従する。`practice8.2.js` でも `ResizeObserver` による再配置追従および `DrillTooltips.enableEscapeDismiss()`（`Escape` キーによるツールチップ抑止・入力種別分離）を有効化する。
+Global Settings、Auto-Compare／Autostop、共通アイコン、音声再生・停止アイコン、再生中表示、ホバーガイド、disabled表示および Tooltip 配置・操作の共通仕様は `UI_LAYOUT_SPEC.md`（§11・§13.1〜§13.3）を正本とする。Practice 8.2 固有として、`practice8.2.js` 側の `ResizeObserver` による再配置追従および `DrillTooltips.enableEscapeDismiss()` を維持する。
 

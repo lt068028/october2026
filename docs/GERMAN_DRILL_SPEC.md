@@ -154,9 +154,7 @@
   ```
 
 ### 4.2 再生中ボタンの排他表示（`markPlaying` / `stopPlayback`） 【実装済み】
-- 再生開始時、ボタンの元のDOM構造（テキストノードおよびツールチップ要素）を `b._contents = Array.from(b.childNodes)` に退避し、`b.disabled = true; b.textContent = "Playing..."; b.classList.add("is-playing");` を適用する。
-- 終了時・停止時・エラー時は、`b.disabled = false; b.replaceChildren(...b._contents);` により元のDOM状態へ完全復元する。
-- ボタンが「Playing...」のまま固定化される障害を完全に防止する。
+- 音声再生中のボタン表示・停止アイコン・排他ロックは `UI_LAYOUT_SPEC.md` §13.3 を正本とする（`Playing...` 文字列は表示しない）。終了時・停止時・エラー時は元の DOM 状態へ復元する。
 
 ### 4.3 共通音声セッション（`drill-audio-session.js`）との連携契約 【既存共通仕様】
 - **コールバック順序の契約**:
@@ -194,15 +192,10 @@
 - **マイクストリーム取得**: `DrillAudio.getUserMedia({ audio: true })` によりマイクストリームを取得。
 - **録音と状態保持**: `MediaRecorder`（mimeType: `audio/webm;codecs=opus` 等を自動選択）で学習者の音声を録音・Blob化。録音中は `document.body.classList.add('drill-recording-locked')` が付与され、他操作が排他ロックされる。
 - **マイク音量監視（`AudioContext` / `AnalyserNode`）**:
-  - `AudioContext` と `AnalyserNode`（fftSize: 2048）を使用し、100msごとに時間領域サンプルからRMS音量を計算。
-  - 音量閾値（volume > 0.025）を3フレーム連続で満たした場合に発話開始（`speechStarted = true`）を確定。
-  - 発話中に入力を検出するごとに無音タイマーの起算点（`lastSoundAt`）を更新。
-  - **発話判定の音量監視への一本化**: 発話開始（`speechStarted`）および無音タイマー起算点（`lastSoundAt`）の更新はマイク音量監視のみで行い、SpeechRecognitionの `onspeechstart` や `onresult` は一切使用しない。
-  - **初期化・音量監視失敗時の安全停止**: `AudioContext` / `AnalyserNode` の生成失敗や `context.resume()` の失敗を検知した場合、ゾンビ状態の継続を防止し、`Recording error.` として安全に停止・リソース解放を行う。
-- **3つの正式な録音停止条件（日本語Practice確定仕様と統一）**:
-  1. **発話開始前の上限：5秒（Autostop ON/OFF共通）**:
-     - 録音開始から5秒以内にマイク入力による発話（`speechStarted`）も有効なSTT認識テキスト（`raw` / `interim`）も検出できない場合、録音を自動停止。有効なSTT認識テキストが存在する場合は音量閾値未達でも5秒未発話タイムアウト・録音破棄を適用しない。
-     - 発話・認識ともにないままタイムアウトした場合は音声を保存せず破棄し、`No speech detected within 5 seconds.` を表示。
+  - マイク入力音量を監視して発話開始（`speechStarted = true`）および無音タイマー起算点（`lastSoundAt`）を更新する（SpeechRecognition の `onspeechstart` や `onresult` は使用しない）。初期化・音量監視失敗時は `Recording error.` として安全に停止・リソース解放する。
+- **3つの正式な録音停止条件（`PROJECT_SPEC.md` §5.2 対象外の German 固有仕様）**:
+  1. **発話開始前の上限：5秒（Autostop ON時のみ）**:
+     - Autostop ON 時、録音開始から5秒以内にマイク入力による発話（`speechStarted`）も有効なSTT認識テキスト（`raw` / `interim`）も検出できない場合、録音を自動停止し、`No speech detected within 5 seconds.` を表示する（音声保存なし）。Manual（Autostop OFF）時は5秒未発話で自動停止しない。
      - 5秒未満で手動停止された場合は、未発話タイムアウトメッセージを表示せず初期状態（`… Not yet`）とする。
   2. **発話後の無音停止：連続2.0秒（Autostop ON時のみ）**:
      - SpeechRecognitionの文字起こしイベントではなく、マイク入力音量の監視により無音を判定。
@@ -250,19 +243,15 @@
           .trim();
   }
   ```
-- **2段階判定の基準**:
+- **3状態判定の基準（`Accepted` / `Incomplete` / `Mismatch`、`PROJECT_SPEC.md` §6.4.1 準拠）**:
   1. **`accepted`（正解受容）**:
-     - モデル文との完全一致。
-     - 地域変種や別解リスト（`allowedAnswers`）との一致。
-     - キューの学習目標（動詞・目的地・対応する前置詞）を満たし、主語（`ich`, `wir`, `sie`, `er` 等）、語順（SVO、倒置OVS `Nach Graz fahre ich.` 等）、時制（現在形、現在完了形Perfekt `Ich bin nach Graz gefahren.`、過去形Präteritum `Ich fuhr nach Graz.`）が文法的に正しく一致している発話。
+     - モデル文との完全一致、地域変種・別解リスト（`allowedAnswers`）との一致、およびキューの学習目標（動詞・目的地・対応する前置詞）を満たし、主語・語順（SVO、倒置OVS `Nach Graz fahre ich.` 等）・時制（現在形、現在完了形Perfekt `Ich bin nach Graz gefahren.`、過去形Präteritum `Ich fuhr nach Graz.`）が文法的に正しく一致している発話。
      - UI表示：生認識テキスト ＋ ` ✅`（選択外地域文の場合は推奨モデル補足バッジを表示）。訂正ボックスは非表示。
-  2. **`mismatch`（明示的不一致）**:
-     - 主語と動詞の人称変化の不一致（例: `Er fahren nach Graz.` → `fahren` が不一致）。
-     - 目的地に対する前置詞の誤り（例: `Ich fahre zu Graz.` → `zu` が不一致）。
-     - キューと異なる目的地・名詞の発話（例: `Ich fahre nach Berlin.` → `berlin` が不一致）。
-     - キューと異なる移動動詞語幹の使用（例: `Ich gehe nach Graz.` → `gehe` が不一致）。
-     - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。❌マークは付与しない。訂正ボックスには `🔥 Keep going!` のみを表示し、モデル文の自動開示（`→ ...`）や重複 `🔊 Anhören` ボタンは配置しない。
-     - 判定状態はAccepted／Mismatchの2種類のみとする。短い発話・未対応構文・未解析構文等を理由に第3の判定状態を設けず、該当する回答も既存のAccepted／Mismatch判定基準に従って扱う。
+  2. **`incomplete`（途中・不足）**:
+     - 発話が途中で切れている、または必要な要素が不足しているが明確な誤りではない発話。
+  3. **`mismatch`（明示的不一致）**:
+     - 主語と動詞の人称変化の不一致（例: `Er fahren nach Graz.` → `fahren` が不一致）、目的地に対する前置詞の誤り（例: `Ich fahre zu Graz.` → `zu` が不一致）、キューと異なる目的地・名詞の発話（例: `Ich fahre nach Berlin.` → `berlin` が不一致）、キューと異なる移動動詞語幹の使用（例: `Ich gehe nach Graz.` → `gehe` が不一致）。
+     - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。訂正ボックスには `🔥 Keep going!` のみを表示する。
 
 ---
 
