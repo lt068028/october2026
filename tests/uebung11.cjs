@@ -509,10 +509,25 @@ async function runRecordingLifecycleTests() {
 
             const origSpeech = window.speechSynthesis;
             if (origSpeech) {
-                const origSpeak = origSpeech.speak.bind(origSpeech);
+                let mockSpeaking = false;
+                try {
+                    Object.defineProperty(origSpeech, 'speaking', { configurable: true, get: () => mockSpeaking });
+                } catch (_) {}
                 origSpeech.speak = u => {
+                    mockSpeaking = true;
                     window.t.utterances.push(u);
-                    try { origSpeak(u); } catch (_) {}
+                    Promise.resolve().then(() => u?.onstart?.());
+                };
+                origSpeech.cancel = () => {
+                    mockSpeaking = false;
+                };
+                window.t.finishUtterance = (u = window.t.utterances.at(-1)) => {
+                    mockSpeaking = false;
+                    u?.onend?.();
+                };
+                window.t.errorUtterance = (u = window.t.utterances.at(-1)) => {
+                    mockSpeaking = false;
+                    u?.onerror?.({ error: 'canceled' });
                 };
             }
 
