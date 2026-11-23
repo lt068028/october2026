@@ -194,16 +194,20 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    document.body.append(wrap1, wrap2);
    window.DrillTooltips.position(wrap2);
    const topVal = parseFloat(tip2.style.getPropertyValue('--tip-top'));
+   const beforeTop = tip1.style.getPropertyValue('--tip-top');
    wrap1.style.top = '300px';
    window.DrillTooltips.repositionAll();
-   const movedTop = parseFloat(tip1.style.getPropertyValue('--tip-top'));
+   const afterTop = tip1.style.getPropertyValue('--tip-top');
+   const r1 = tip1.getBoundingClientRect(), r2 = tip2.getBoundingClientRect();
+   const inViewport = r1.left >= 0 && r1.right <= window.innerWidth && r1.top >= 0 && r1.bottom <= window.innerHeight;
+   const noOverlap = r1.right <= r2.left || r1.left >= r2.right || r1.bottom <= r2.top || r1.top >= r2.bottom;
    wrap1.remove();
    wrap2.remove();
-   return { hasRepositionAll: typeof window.DrillTooltips.repositionAll === 'function', flippedBelow: topVal >= 220, movedTop };
+   return { hasRepositionAll: typeof window.DrillTooltips.repositionAll === 'function', flippedBelow: topVal >= 220, beforeTop, afterTop, inViewport, noOverlap };
  });
  check(collisionResult.hasRepositionAll, true, 'DrillTooltips.repositionAll is exposed');
  check(collisionResult.flippedBelow, true, 'Collision avoidance flips second tooltip below overlapping first tooltip');
- check(collisionResult.movedTop < 300, true, 'repositionAll updates tooltip coordinates after target move');
+ check(collisionResult.afterTop !== collisionResult.beforeTop && collisionResult.inViewport && collisionResult.noOverlap, true, `repositionAll updates tooltip coordinates within viewport without overlap (${JSON.stringify(collisionResult)})`);
 
  check(testPage.errors, [], 'practice8.2 tooltip escape tests no runtime errors');
  await testPage.close();

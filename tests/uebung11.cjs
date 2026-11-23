@@ -1327,7 +1327,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Relay full completion must release exclusive disabled');
 
         // --- Scenario 20c: Single playback natural completion, late-event protection, & same-button re-click stop ---
-        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn').first().click();
         await page.clock.runFor(50);
         const oldUtteranceIdx = await page.evaluate(() => window.t.utterances.length - 1);
         const singlePlayingState = await page.evaluate(() => {
