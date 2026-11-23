@@ -72,9 +72,31 @@
         }
         tip.style.setProperty('--tip-left', `${left}px`);
         tip.style.setProperty('--tip-top', `${top}px`);
+        const actual = tip.getBoundingClientRect();
+        const dx = actual.left - left;
+        const dy = actual.top - top;
+        if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+            tip.style.setProperty('--tip-left', `${left - dx}px`);
+            tip.style.setProperty('--tip-top', `${top - dy}px`);
+        }
+    }
+    function isTipActive(anchor, tip) {
+        if (!tip) return false;
+        if (anchor.matches('.tap-tip-open, :hover, :focus, :focus-within, .p82-autostop-open')) return true;
+        return getComputedStyle(tip).visibility === 'visible';
+    }
+    function resetHiddenTip(tip) {
+        if (!tip) return;
+        delete tip.dataset.viewportTip;
+        tip.style.removeProperty('--tip-left');
+        tip.style.removeProperty('--tip-top');
     }
     function repositionAll() {
-        document.querySelectorAll(selector).forEach(anchor => position(anchor));
+        document.querySelectorAll(selector).forEach(anchor => {
+            const tip = anchor.querySelector('.tooltip-tip, .custom-tip-box') || document.getElementById(anchor.dataset.portalTip || '');
+            if (isTipActive(anchor, tip)) position(anchor, tip);
+            else resetHiddenTip(tip);
+        });
     }
     if (typeof ResizeObserver === 'function') {
         let resizeRaf = 0;

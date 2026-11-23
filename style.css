@@ -2602,9 +2602,12 @@ body.site-scale {
 /* Unpositioned hidden tips must not enlarge the page scroll area. */
 .site-scale :is(.tooltip-tip, .custom-tip-box):not([data-viewport-tip]) {
     position: fixed;
-    left: 12px;
-    top: 12px;
+    left: 0;
+    top: 0;
     bottom: auto;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
     transform: none;
 }
 .site-scale [data-viewport-tip] {
