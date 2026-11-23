@@ -5639,10 +5639,12 @@ body.practice21-page .recording-controls.p21-feedback-inline-wrap.p21-feedback-f
 }
 
 /* Practice 8.2 Dr: Manual 録音中の停止ボタンはボタン全体赤背景＋白線アイコン（D1.1・共通 .stop-btn-active と統一） */
-.practice82-page .drill-record-btn.stop-btn-active {
-    background-color: var(--rec-active-bg) !important;
-    border-color: var(--rec-active-bg) !important;
-    color: var(--rec-active-text) !important;
+.practice82-page .drill-record-btn.stop-btn-active,
+.uebung11-page .stop-btn-active,
+.uebung-page .stop-btn-active {
+    background-color: #d93025 !important;
+    border-color: #d93025 !important;
+    color: var(--rec-active-text, #ffffff) !important;
 }
 .practice82-page .drill-listen-btn.is-playing,
 .practice82-page .play-recording-btn.is-playing {
