@@ -1294,7 +1294,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(relayClearedState.otherVoiceDisabled, false, 'Voice selector must re-enable after playback stops');
 
         // Relay intermediate transition (model natural end -> recorded audio phase) preserves exclusive disabled & stops cleanly at end
-        await clickRecord(false);
+        await clickRecord(false, true);
         await advanceToElapsed(1000);
         await setSpeaking(true);
         await page.clock.runFor(400);
