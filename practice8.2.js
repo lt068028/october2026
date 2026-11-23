@@ -927,7 +927,7 @@ function showResult(key,notice='') {
             const fire=retryUnit.querySelector('.feedback-retry-fire')||retryUnit.querySelector('svg');
             if(fire)v.result.append(fire);
             const reason=value.mismatchReason||(value.status?null:mismatchReasonFor(value.raw,v.r));
-            const red=text=>{const span=document.createElement('span');span.style.color='var(--semantic-negative-color, var(--error-text, #be123c))';span.textContent=text;v.result.append(span);};
+            const red=text=>{const span=document.createElement('span');span.style.color='var(--error-text, #be123c)';span.textContent=text;v.result.append(span);};
             if(reason==='pending'){
                 v.result.append(document.createTextNode(displayed));
             }else if(reason==='form'){
