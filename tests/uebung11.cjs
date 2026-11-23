@@ -1294,6 +1294,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(relayClearedState.otherVoiceDisabled, false, 'Voice selector must re-enable after playback stops');
 
         // Relay intermediate transition (model natural end -> recorded audio phase) preserves exclusive disabled & stops cleanly at end
+        const beforeUtterances = await page.evaluate(() => window.t.utterances.length);
         await clickRecord(false, true);
         await advanceToElapsed(1000);
         await setSpeaking(true);
@@ -1301,6 +1302,13 @@ async function runRecordingLifecycleTests() {
         await triggerRecognition('Ich fliege nach Berlin.');
         await setSpeaking(false);
         await page.clock.runFor(2200);
+        await page.waitForFunction(prev => {
+            const row = document.querySelector('#drill1 .drill-row');
+            return window.t.utterances.length > prev &&
+                Boolean(row?.querySelector('.drill-listen-btn')?.classList.contains('is-playing')) &&
+                Boolean(row?.querySelector('.play-recording-btn')?.classList.contains('is-playing')) &&
+                Boolean(document.getElementById('voiceSelect')?.disabled);
+        }, beforeUtterances);
         await page.evaluate(() => {
             const utt = window.t.utterances.at(-1);
             utt?.onend?.();
