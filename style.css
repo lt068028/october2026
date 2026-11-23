@@ -6035,7 +6035,7 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
 .practice82-page {
     --p82-amber-accent: #b45309;
     --p82-amber-bg: rgba(180, 83, 9, 0.08);
-    --p82-amber-border: rgba(180, 83, 9, 0.55);
+    --p82-amber-border: rgba(180, 83, 9, 0.28);
     --p82-guide-system-bg: rgba(148, 163, 184, 0.11);
     --p82-guide-you-bg: rgba(59, 130, 246, 0.05);
 }
@@ -6043,7 +6043,7 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
     .practice82-page {
         --p82-amber-accent: #fbbf24;
         --p82-amber-bg: rgba(251, 191, 36, 0.12);
-        --p82-amber-border: rgba(251, 191, 36, 0.65);
+        --p82-amber-border: rgba(251, 191, 36, 0.32);
         --p82-guide-system-bg: rgba(148, 163, 184, 0.14);
         --p82-guide-you-bg: rgba(96, 165, 250, 0.09);
     }
@@ -6052,7 +6052,7 @@ body.dark-mode.practice82-page,
 html[data-theme="dark"] .practice82-page {
     --p82-amber-accent: #fbbf24;
     --p82-amber-bg: rgba(251, 191, 36, 0.12);
-    --p82-amber-border: rgba(251, 191, 36, 0.65);
+    --p82-amber-border: rgba(251, 191, 36, 0.32);
     --p82-guide-system-bg: rgba(148, 163, 184, 0.14);
     --p82-guide-you-bg: rgba(96, 165, 250, 0.09);
 }
@@ -6220,14 +6220,16 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-guide-step-card-goal {
     border-right: 0;
-    box-shadow: inset 0 0 0 2px var(--p82-amber-accent);
+    box-shadow: inset 0 0 0 1px var(--p82-amber-border);
     border-radius: 0 8.5px 8.5px 0;
 }
 .practice82-page .p82-guide-step-card-goal .p82-guide-half-system {
     border-top-right-radius: 8.5px;
+    box-shadow: inset 1px 1px 0 0 var(--p82-amber-border), inset -1px 0 0 0 var(--p82-amber-border);
 }
 .practice82-page .p82-guide-step-card-goal .p82-guide-half-you {
     border-bottom-right-radius: 8.5px;
+    box-shadow: inset 1px -1px 0 0 var(--p82-amber-border), inset -1px 0 0 0 var(--p82-amber-border);
 }
 .practice82-page .p82-guide-boundary-arrow {
     position: absolute;
@@ -6239,14 +6241,29 @@ html[data-theme="dark"] .practice82-page {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary, #475569);
+    color: var(--text-primary, #1e293b);
+    filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.22));
     pointer-events: none;
-    z-index: 5;
+    z-index: 12;
 }
 .practice82-page .p82-guide-boundary-arrow svg {
     width: 30px;
     height: 30px;
     display: block;
+    overflow: visible;
+}
+.practice82-page .p82-guide-boundary-arrow .p82-arrow-halo {
+    fill: none;
+    stroke: var(--card-bg, #ffffff);
+    stroke-width: 4.2px;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.practice82-page .p82-guide-boundary-arrow .p82-arrow-fg {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 0.75px;
+    stroke-linejoin: round;
 }
 .practice82-page .p82-guide-half {
     position: relative;
@@ -6289,11 +6306,25 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-guide-icon-wrap-trio {
     height: 44px;
+    max-width: 100%;
+}
+.practice82-page .p82-guide-visibility-scene {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    max-width: 100%;
+}
+.practice82-page .p82-visibility-icon {
+    width: 28px;
+    height: 24px;
+    flex-shrink: 0;
+    color: var(--text-primary, #1e293b);
 }
 .practice82-page .p82-guide-status-trio {
     display: grid;
-    grid-template-columns: 22px 22px;
-    column-gap: 6px;
+    grid-template-columns: 20px 20px;
+    column-gap: 3px;
     row-gap: 1px;
     justify-items: center;
     align-items: center;
@@ -6303,8 +6334,8 @@ html[data-theme="dark"] .practice82-page {
     grid-column: 1 / -1;
 }
 .practice82-page .p82-trio-icon {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
 }
 .practice82-page .p82-trio-accepted {
@@ -6330,7 +6361,7 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .p82-guide-goal-badge {
     position: absolute;
     top: 78px;
-    left: 50%;
+    left: calc(50% + 4px);
     transform: translate(-50%, -50%);
     display: inline-block;
     padding: 1px 7px;
@@ -6343,7 +6374,7 @@ html[data-theme="dark"] .practice82-page {
     line-height: 1.15;
     white-space: nowrap;
     pointer-events: none;
-    z-index: 4;
+    z-index: 6;
 }
 @media (prefers-color-scheme: dark) {
     .practice82-page .p82-guide-goal-badge {
