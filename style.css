@@ -6281,20 +6281,38 @@ html[data-theme="dark"] .practice82-page {
     background: var(--p82-amber-bg);
     color: var(--p82-amber-accent);
 }
+.practice82-page .p82-guide-recognition-half {
+    padding-bottom: 34px;
+}
+.practice82-page .p82-guide-understand-half {
+    padding-top: 34px;
+}
+.practice82-page .p82-guide-down-flow {
+    font-size: 11px;
+    line-height: 1;
+    color: var(--text-secondary, #64748b);
+    opacity: 0.75;
+}
 .practice82-page .p82-guide-status-trio {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    display: inline-flex;
+    display: grid;
+    grid-template-columns: 20px 20px;
+    column-gap: 8px;
+    row-gap: 3px;
+    justify-items: center;
     align-items: center;
-    gap: 3px;
-    padding: 2px 5px;
-    border-radius: 999px;
+    padding: 5px 8px;
+    border-radius: 12px;
     border: 1px dashed var(--border-color, #94a3b8);
     background: var(--card-bg, #ffffff);
     pointer-events: none;
     z-index: 4;
+}
+.practice82-page .p82-trio-accepted {
+    grid-column: 1 / -1;
 }
 .practice82-page .p82-trio-icon {
     width: 20px;
@@ -6354,11 +6372,11 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     justify-content: center;
     height: 28px;
 }
-.practice82-page .p82-guide-icon-wrap-v {
-    height: 42px;
+.practice82-page .p82-guide-icon-wrap-pair {
+    height: 26px;
     max-width: 100%;
 }
-.practice82-page .p82-recognition-v-svg {
+.practice82-page .p82-recognition-pair-svg {
     max-width: 100%;
     height: auto;
 }
@@ -6379,7 +6397,7 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     overflow-wrap: anywhere;
 }
 .practice82-page .p82-guide-goal-half .p82-guide-goal-action {
-    font-weight: 700;
+    font-weight: 400;
     color: var(--p82-amber-accent);
 }
 @keyframes p82WavePulse {
