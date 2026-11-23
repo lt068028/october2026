@@ -6209,7 +6209,7 @@ html[data-theme="dark"] .practice82-page {
     min-width: 0;
     display: grid;
     grid-template-rows: 1fr 1fr;
-    border-right: 1px solid var(--border-color, #cbd5e1);
+    border-right: 0;
     background: transparent;
 }
 .practice82-page .p82-guide-step-card[data-col="1"] .p82-guide-half-system {
@@ -6253,23 +6253,28 @@ html[data-theme="dark"] .practice82-page {
     box-sizing: border-box;
     min-width: 0;
     width: 100%;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    justify-items: center;
     align-items: center;
-    justify-content: center;
     text-align: center;
-    padding: 14px 6px;
     border: 0;
     font-family: 'Lato', sans-serif;
     color: var(--text-primary, #1e293b);
     cursor: pointer;
-    gap: 4px;
 }
 .practice82-page .p82-guide-half-system {
+    grid-template-rows: 42px auto;
+    align-content: start;
+    row-gap: 6px;
+    padding: 18px 6px 24px;
     background: var(--p82-guide-system-bg);
     border-bottom: 1.5px dashed var(--border-color, #94a3b8);
 }
 .practice82-page .p82-guide-half-you {
+    grid-template-rows: 54px auto minmax(18px, auto);
+    align-content: start;
+    row-gap: 4px;
+    padding: 24px 6px 14px;
     background: var(--p82-guide-you-bg);
 }
 .practice82-page .p82-guide-autocompare-half {
@@ -6281,42 +6286,24 @@ html[data-theme="dark"] .practice82-page {
     background: var(--p82-amber-bg);
     color: var(--p82-amber-accent);
 }
-.practice82-page .p82-guide-recognition-half {
-    padding-bottom: 34px;
-}
-.practice82-page .p82-guide-understand-half {
-    padding-top: 34px;
-}
-.practice82-page .p82-guide-down-flow {
-    font-size: 11px;
-    line-height: 1;
-    color: var(--text-secondary, #64748b);
-    opacity: 0.75;
+.practice82-page .p82-guide-icon-wrap-trio {
+    height: 54px;
 }
 .practice82-page .p82-guide-status-trio {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     display: grid;
-    grid-template-columns: 20px 20px;
-    column-gap: 8px;
+    grid-template-columns: 24px 24px;
+    column-gap: 10px;
     row-gap: 3px;
     justify-items: center;
     align-items: center;
-    padding: 5px 8px;
-    border-radius: 12px;
-    border: 1px dashed var(--border-color, #94a3b8);
-    background: var(--card-bg, #ffffff);
-    pointer-events: none;
-    z-index: 4;
+    padding: 2px 6px;
 }
 .practice82-page .p82-trio-accepted {
     grid-column: 1 / -1;
 }
 .practice82-page .p82-trio-icon {
-    width: 20px;
-    height: 20px;
+    width: 23px;
+    height: 23px;
     flex-shrink: 0;
 }
 .practice82-page .p82-trio-accepted {
@@ -6342,17 +6329,17 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .p82-guide-goal-badge {
     position: absolute;
     top: 50%;
-    left: 50%;
+    left: calc(50% + 5px);
     transform: translate(-50%, -50%);
     display: inline-block;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 999px;
     background: var(--p82-amber-accent);
     color: #ffffff;
-    font-size: 10px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 0.04em;
-    line-height: 1.25;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
     white-space: nowrap;
     pointer-events: none;
     z-index: 4;
@@ -6370,13 +6357,13 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 28px;
+    height: 36px;
 }
-.practice82-page .p82-guide-icon-wrap-pair {
-    height: 26px;
+.practice82-page .p82-guide-icon-wrap-triad {
+    height: 36px;
     max-width: 100%;
 }
-.practice82-page .p82-recognition-pair-svg {
+.practice82-page .p82-recognition-triad-svg {
     max-width: 100%;
     height: auto;
 }
@@ -6390,7 +6377,7 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 .practice82-page .p82-guide-sub,
 .practice82-page .p82-guide-goal-action {
     font-size: 12.5px;
-    font-weight: 600;
+    font-weight: 400;
     line-height: 1.25;
     color: var(--text-secondary, #475569);
     max-width: 100%;
