@@ -16,6 +16,14 @@
         <div class="page-heading">
             <h1>Practice 8.2: 何か・何も・何でも</h1>
 
+            <button
+                type="button"
+                id="p82SttGuideBtn"
+                class="p82-stt-guide-btn"
+                aria-haspopup="dialog"
+                aria-controls="p82SttGuideDialog"
+            ><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-guide-btn-icon"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 1.5a8.5 8.5 0 1 1 0 17 8.5 8.5 0 0 1 0-17Zm0 7a.75.75 0 0 1 .75.75v5a.75.75 0 0 1-1.5 0v-5A.75.75 0 0 1 12 10.5Zm0-3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z" fill="currentColor"/></svg>Practice Guide</button>
+
             <a
                 href="#"
                 class="back-link custom-tip-wrap"
@@ -176,6 +184,125 @@
             <span class="custom-tip-box">If no voices appear, you can add a Japanese voice in your device's Text-to-Speech settings.</span>
         </span>
     </div>
+
+    <dialog id="p82SttGuideDialog" class="p82-stt-guide-dialog" aria-labelledby="p82SttGuideTitle">
+        <div class="p82-stt-guide-inner">
+            <div class="p82-stt-guide-header">
+                <h2 id="p82SttGuideTitle" class="p82-stt-guide-title">How Speech Recognition Practice Works</h2>
+                <button type="button" id="p82SttGuideClose" class="p82-stt-guide-close" aria-label="Close guide">× Close</button>
+            </div>
+            <p class="p82-stt-guide-lead">Hover, focus, or tap any step below to see how background audio tools support your listening and speaking loop.</p>
+
+            <div class="p82-stt-guide-band p82-stt-guide-band-system" role="region" aria-label="System Process">
+                <div class="p82-stt-guide-band-heading">SYSTEM PROCESS</div>
+                <div class="p82-stt-guide-grid">
+                    <button type="button" class="p82-guide-cell p82-guide-system-cell p82-guide-tip-wrap" data-col="1">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M15 4.25a1.25 1.25 0 0 0-2.08-.93L8.42 7.3a.8.8 0 0 1-.49.19H4.25C3.01 7.5 2 8.5 2 9.75v4.5c0 1.24 1 2.25 2.25 2.25h3.68q.28 0 .5.19l4.49 3.99c.8.72 2.08.14 2.08-.93zM9.42 8.43l4.08-3.62v14.38l-4.08-3.63A2.3 2.3 0 0 0 7.93 15H4.25a.75.75 0 0 1-.75-.75v-4.5c0-.42.34-.75.75-.75h3.68c.55 0 1.08-.2 1.5-.57M19 5.9a.75.75 0 0 1 1.05.15 10 10 0 0 1 0 11.9.75.75 0 1 1-1.2-.9 8.5 8.5 0 0 0 0-10.1.75.75 0 0 1 .15-1.05m-1.85 2.47a.75.75 0 0 1 1.02.3 7 7 0 0 1 0 6.66.75.75 0 0 1-1.32-.72 5.5 5.5 0 0 0 0-5.22.75.75 0 0 1 .3-1.02" fill="currentColor"/></svg>
+                        </span>
+                        <span class="p82-guide-label">Model Audio</span>
+                        <span class="p82-guide-sub">Reference voice</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Plays the model sentence as your audio reference.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-system-cell p82-guide-tip-wrap p82-guide-dashed-next" data-col="2">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M18.25 11c.38 0 .7.28.74.65l.01.1v.5a6.75 6.75 0 0 1-6.25 6.73v2.27a.75.75 0 0 1-1.5.1v-2.37A6.75 6.75 0 0 1 5 12.48v-.73a.75.75 0 0 1 1.5-.1v.6a5.25 5.25 0 0 0 5.03 5.25h.72a5.25 5.25 0 0 0 5.25-5.03v-.72c0-.41.34-.75.75-.75M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4m0 1.5A2.5 2.5 0 0 0 9.5 6v6a2.5 2.5 0 0 0 5 0V6A2.5 2.5 0 0 0 12 3.5" fill="currentColor"/></svg>
+                        </span>
+                        <span class="p82-guide-label">Microphone</span>
+                        <span class="p82-guide-sub">Voice capture</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Captures your spoken voice for playback and recognition.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-system-cell p82-guide-tip-wrap p82-guide-no-next-arrow" data-col="3">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="26" viewBox="0 0 28 24" fill="none" class="p82-wave-morph-svg">
+                                <path d="M3 10v4M6.5 7v10M10 9v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" class="p82-wave-bars"/>
+                                <path d="M12.5 12h3.5m0 0-1.5-1.5M16 12l-1.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1.5 1.5"/>
+                                <rect x="18" y="5.5" width="7.5" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M20.2 9.5h3.1M20.2 12.5h3.1M20.2 15.5h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Recognition</span>
+                        <span class="p82-guide-sub">Audio → Text guess</span>
+                        <span class="p82-guide-tip-box" role="tooltip">The system estimates what you said from the audio and turns it into text.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-system-cell p82-guide-autocompare-cell p82-guide-tip-wrap p82-guide-no-next-arrow" data-col="4">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                                <path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19 8.4M19 4.8v3.6h-3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M19.5 12a7.5 7.5 0 0 1-12.8 5.3L5 15.6M5 19.2v-3.6h3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10.2 9.3v5.4l4.5-2.7-4.5-2.7Z" fill="currentColor"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Auto-Compare</span>
+                        <span class="p82-guide-sub">Model + Your Voice</span>
+                        <span class="p82-guide-down-merge" aria-hidden="true">↓</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Automatically plays the model audio and your recording one after the other. It does not grade your speech.</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p82-stt-guide-band p82-stt-guide-band-learner" role="region" aria-label="Learner Process">
+                <div class="p82-stt-guide-band-heading">LEARNER PROCESS</div>
+                <div class="p82-stt-guide-grid">
+                    <button type="button" class="p82-guide-cell p82-guide-learner-cell p82-guide-tip-wrap" data-col="1">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                                <path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                                <rect x="3" y="12.5" width="3.5" height="6" rx="1.75" stroke="currentColor" stroke-width="1.6"/>
+                                <rect x="17.5" y="12.5" width="3.5" height="6" rx="1.75" stroke="currentColor" stroke-width="1.6"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Listen</span>
+                        <span class="p82-guide-sub">Hear the model</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Listen carefully to the model audio before speaking.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-learner-cell p82-guide-tip-wrap" data-col="2">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                                <path d="M4 11v2M8 7v10M12 4.5v15M16 7v10M20 10v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Speak</span>
+                        <span class="p82-guide-sub">Say it aloud</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Say the sentence aloud into your microphone.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-learner-cell p82-guide-understand-cell p82-guide-tip-wrap" data-col="3">
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                                <rect x="3.5" y="4.5" width="13" height="15" rx="2" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.5 2"/>
+                                <path d="M6.5 9h7M6.5 12.5h4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                <circle cx="16.5" cy="15.5" r="3" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="m18.7 17.7 1.8 1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Understand</span>
+                        <span class="p82-guide-sub">Text as a clue</span>
+                        <span class="p82-guide-tip-box" role="tooltip">This text is the system's guess—use it as a clue, not as a final judgment.</span>
+                    </button>
+
+                    <button type="button" class="p82-guide-cell p82-guide-learner-cell p82-guide-goal-cell p82-guide-tip-wrap p82-guide-no-next-arrow" data-col="4">
+                        <span class="p82-guide-goal-badge">YOUR GOAL</span>
+                        <span class="p82-guide-icon-wrap" aria-hidden="true">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
+                                <path d="M4.5 12.5v-1a7.5 7.5 0 0 1 15 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                                <rect x="3" y="12" width="3.5" height="6" rx="1.75" stroke="currentColor" stroke-width="1.6"/>
+                                <rect x="17.5" y="12" width="3.5" height="6" rx="1.75" stroke="currentColor" stroke-width="1.6"/>
+                                <path d="m9.2 13.5 2 2 3.8-3.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="p82-guide-label">Compare</span>
+                        <span class="p82-guide-goal-action">Listen to both &amp; check your sentence</span>
+                        <span class="p82-guide-tip-box" role="tooltip">Listen to the model audio and your own recording with your ears, and check if your sentence works the same way.</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     <script src="semantic-display.js?v=20261106-semantic-colors"></script>
     <script src="fluent-icons.js?v=20261111-qa-allpages"></script>
