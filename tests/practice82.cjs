@@ -597,11 +597,13 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const btn = document.querySelector('#drill1 .drill-record-btn.stop-btn-active');
     const svg = btn?.querySelector('svg');
     return {
+      backgroundColor: btn ? getComputedStyle(btn).backgroundColor : null,
+      borderColor: btn ? getComputedStyle(btn).borderColor : null,
       btnColor: btn ? getComputedStyle(btn).color : null,
       svgColor: svg ? getComputedStyle(svg).color : null
     };
   });
-  eq(manualStopRed, { btnColor: 'rgb(217, 48, 37)', svgColor: 'rgb(217, 48, 37)' }, 'Manual recording Stop button (.stop-btn-active) preserves #d93025');
+  eq(manualStopRed, { backgroundColor: 'rgb(217, 48, 37)', borderColor: 'rgb(217, 48, 37)', btnColor: 'rgb(255, 255, 255)', svgColor: 'rgb(255, 255, 255)' }, 'Manual recording Stop button (.stop-btn-active) preserves red background/border and white icon');
   eq(await p.locator('#drill1 .p82-copy-button').isDisabled(), true, 'Copy button is disabled while recording');
   await p.locator('#drill1 .stop-btn-active').first().click();
   await p.evaluate(() => { const cb = document.getElementById('toggleRecordMode'); if (!cb.checked) cb.click(); }); // restore Autostop ON

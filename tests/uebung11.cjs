@@ -1269,7 +1269,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(relayActiveState.copyDisabled, false, 'Copy button must remain enabled during playback');
 
         // Stop from model button -> restores both buttons and re-evaluates sync()
-        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
         await page.clock.runFor(100);
         const relayClearedState = await page.evaluate(() => {
             const row = document.querySelector('#drill1 .drill-row');
@@ -1327,7 +1327,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Relay full completion must release exclusive disabled');
 
         // --- Scenario 20c: Single playback natural completion, late-event protection, & same-button re-click stop ---
-        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
         await page.clock.runFor(50);
         const oldUtteranceIdx = await page.evaluate(() => window.t.utterances.length - 1);
         const singlePlayingState = await page.evaluate(() => {
@@ -1370,9 +1370,9 @@ async function runRecordingLifecycleTests() {
         assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Recorded playback natural end must release disabled lock');
 
         // Re-click the SAME playing button -> must ONLY stop, NOT restart
-        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
         await page.clock.runFor(50);
-        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
         await page.clock.runFor(50);
         const reclickStoppedState = await page.evaluate(() => {
             const row = document.querySelector('#drill1 .drill-row');
