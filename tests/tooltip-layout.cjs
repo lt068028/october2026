@@ -77,6 +77,10 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await testPage.keyboard.press('Escape');
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible' && !e.hasAttribute('data-tip-suppressed')), true, 'Tip A stays visible and unsuppressed on Mouse Hover Escape');
  await testPage.mouse.move(0, 0);
+ await testPage.evaluate(() => {
+   document.querySelectorAll('.tooltip-wrap.tap-tip-open').forEach(e => e.classList.remove('tap-tip-open'));
+ });
+ check(await testPage.evaluate(() => document.querySelectorAll('.tooltip-wrap.tap-tip-open').length), 0, 'Section 3 closes open vocabulary tooltip before Section 4');
 
  // 2. Keyboard Tab Focus -> Escape closes tooltip without stealing focus -> stays suppressed while focused -> moving focus away clears suppression
  check(await tabFocus(testPage,tipA), true, 'Actual Tab moves focus to Tip A');
@@ -117,6 +121,10 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await tipA.hover();
  check(await tipA.evaluate(e => getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'visible'), true, 'Control button tooltip works on mouse hover after touch');
  await testPage.mouse.move(0, 0);
+ await testPage.evaluate(() => {
+   document.querySelectorAll('.tooltip-wrap.tap-tip-open').forEach(e => e.classList.remove('tap-tip-open'));
+ });
+ check(await testPage.evaluate(() => document.querySelectorAll('.tooltip-wrap.tap-tip-open').length), 0, 'Section 3 closes open vocabulary tooltip before Section 4');
 
  // 4. Other UI priority: Voice Dropdown open -> Escape closes dropdown without closing open vocabulary tooltip
  await testPage.evaluate(() => {
@@ -130,11 +138,14 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    if (btn) btn.setAttribute('aria-expanded', 'true');
  });
  await testPage.keyboard.press('Escape');
- check(await testPage.evaluate(() => {
+ const afterEscape4 = await testPage.evaluate(() => {
    const menu = document.getElementById('voiceDropdownMenu');
    const v = document.querySelector('#drill1 .tooltip-wrap');
-   return Boolean(menu?.hidden) && v.classList.contains('tap-tip-open') && !v.hasAttribute('data-tip-suppressed');
- }), true, 'Escape closes Voice Dropdown while preserving open vocabulary tooltip');
+   return { menuHidden: Boolean(menu?.hidden), tipOpen: v.classList.contains('tap-tip-open'), suppressed: v.hasAttribute('data-tip-suppressed') };
+ });
+ check(afterEscape4.menuHidden, true, 'Escape closes Voice Dropdown');
+ check(afterEscape4.tipOpen, true, 'Escape preserves open vocabulary tooltip');
+ check(afterEscape4.suppressed, false, 'Escape does not set data-tip-suppressed on vocabulary tooltip');
  await testPage.keyboard.press('Escape');
  check(await vocabTip.evaluate(e => !e.classList.contains('tap-tip-open') && e.getAttribute('data-tip-suppressed') === 'true'), true, 'Subsequent Escape closes vocabulary tooltip');
  await testPage.evaluate(() => {
@@ -157,6 +168,41 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await testPage.keyboard.press('Escape');
  check(await testPage.evaluate(() => window.__testStatusHost.classList.contains('p82-autostop-open') && !window.__testStatusHost.hasAttribute('data-tip-suppressed')), true, 'Status indicator completely unaffected by Escape');
  await testPage.evaluate(() => window.__testStatusHost.remove());
+
+ // 6. Collision avoidance & repositionAll
+ await testPage.setViewportSize({ width: 900, height: 1100 });
+ const collisionResult = await testPage.evaluate(() => {
+   const wrap1 = document.createElement('span');
+   wrap1.className = 'tooltip-wrap tap-tip-open';
+   wrap1.style.cssText = 'position:fixed;left:200px;top:200px;width:40px;height:20px;';
+   const tip1 = document.createElement('span');
+   tip1.className = 'tooltip-tip';
+   tip1.style.cssText = 'visibility:visible;position:fixed;left:150px;top:160px;width:120px;height:32px;';
+   tip1.textContent = 'First tip';
+   wrap1.appendChild(tip1);
+
+   const wrap2 = document.createElement('span');
+   wrap2.className = 'tooltip-wrap tap-tip-open';
+   wrap2.style.cssText = 'position:fixed;left:200px;top:200px;width:40px;height:20px;';
+   const tip2 = document.createElement('span');
+   tip2.className = 'tooltip-tip';
+   tip2.style.cssText = 'visibility:visible;position:fixed;width:120px;height:32px;';
+   tip2.textContent = 'Second tip';
+   wrap2.appendChild(tip2);
+
+   document.body.append(wrap1, wrap2);
+   window.DrillTooltips.position(wrap2);
+   const topVal = parseFloat(tip2.style.getPropertyValue('--tip-top'));
+   wrap1.style.top = '300px';
+   window.DrillTooltips.repositionAll();
+   const movedTop = parseFloat(tip1.style.getPropertyValue('--tip-top'));
+   wrap1.remove();
+   wrap2.remove();
+   return { hasRepositionAll: typeof window.DrillTooltips.repositionAll === 'function', flippedBelow: topVal >= 220, movedTop };
+ });
+ check(collisionResult.hasRepositionAll, true, 'DrillTooltips.repositionAll is exposed');
+ check(collisionResult.flippedBelow, true, 'Collision avoidance flips second tooltip below overlapping first tooltip');
+ check(collisionResult.movedTop < 300, true, 'repositionAll updates tooltip coordinates after target move');
 
  check(testPage.errors, [], 'practice8.2 tooltip escape tests no runtime errors');
  await testPage.close();

@@ -183,6 +183,7 @@
     }
 
     window.DrillTooltips = {
+        repositionAll,
         position,
         enableEscapeDismiss,
         _escapeDismissInitialized: false,
