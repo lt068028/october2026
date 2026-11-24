@@ -96,51 +96,10 @@
                 </div>
             </div>
 
-            <div class="settings-row settings-auto-row">
-                <div class="control-item settings-onoff">
-                    <span
-                        id="labelAutoRecord"
-                        class="mode-label active-mode custom-tip-wrap"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-setting-icon fluent-icon fluent-icon-micFilled fluent-icon-filled"><path d="M18.25 11C18.6297 11 18.9435 11.2822 18.9932 11.6482L19 11.75V12.25C19 15.8094 16.245 18.7254 12.751 18.9817L12.75 21.25C12.75 21.6642 12.4142 22 12 22C11.6203 22 11.3065 21.7178 11.2568 21.3518L11.25 21.25L11.25 18.9818C7.83323 18.7316 5.12283 15.938 5.00406 12.4863L5 12.25V11.75C5 11.3358 5.33579 11 5.75 11C6.1297 11 6.44349 11.2822 6.49315 11.6482L6.5 11.75V12.25C6.5 15.077 8.73445 17.3821 11.5336 17.4956L11.75 17.5H12.25C15.077 17.5 17.3821 15.2656 17.4956 12.4664L17.5 12.25V11.75C17.5 11.3358 17.8358 11 18.25 11ZM12 2C14.2091 2 16 3.79086 16 6V12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12V6C8 3.79086 9.79086 2 12 2Z" fill="currentColor"/></svg>Autostop
-                        <span class="custom-tip-box">ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.</span>
-                    </span>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            id="toggleRecordMode"
-                            aria-label="Autostop"
-                            checked
-                        >
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="control-item settings-onoff">
-                    <span
-                        id="labelAutoPlay"
-                        class="mode-label active-mode custom-tip-wrap"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-setting-icon fluent-icon fluent-icon-playCircle"><path d="M10.86 8.15A1.25 1.25 0 0 0 9 9.25v5.5c0 .95 1.02 1.56 1.86 1.1l5.75-3.2a.75.75 0 0 0 0-1.3zM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0" fill="currentColor"/></svg>Auto-Compare
-                        <span class="custom-tip-box">ON: Auto-plays the model audio and your recording in sequence after recording.<br>OFF: Uses the Play buttons separately.</span>
-                    </span>
-
-                    <label class="switch">
-                        <input
-                            type="checkbox"
-                            id="togglePlaybackMode"
-                            aria-label="Auto-Compare"
-                            checked
-                        >
-                        <span class="slider"></span>
-                    </label>
-                </div>
-            </div>
         </div>
     </div>
 
-    <div class="unlearned-lexicon-container">
+    <div class="p82-guide-top-grid">
         <div class="p82-stt-guide-inline" aria-labelledby="p82SttGuideInlineTitle">
             <h2 id="p82SttGuideInlineTitle" class="p82-stt-guide-inline-title">How the Drill Works</h2>
             <div class="p82-stt-guide-board" role="region" aria-label="Speaking Practice Flow">
@@ -277,7 +236,51 @@
                 </div>
             </div>
         </div>
-        <details id="unlearnedAccordion" class="unlearned-accordion">
+        <div class="p82-top-right-col">
+            <div class="control-group settings-group-right">
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoRecord"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-setting-icon fluent-icon fluent-icon-micFilled fluent-icon-filled"><path d="M18.25 11C18.6297 11 18.9435 11.2822 18.9932 11.6482L19 11.75V12.25C19 15.8094 16.245 18.7254 12.751 18.9817L12.75 21.25C12.75 21.6642 12.4142 22 12 22C11.6203 22 11.3065 21.7178 11.2568 21.3518L11.25 21.25L11.25 18.9818C7.83323 18.7316 5.12283 15.938 5.00406 12.4863L5 12.25V11.75C5 11.3358 5.33579 11 5.75 11C6.1297 11 6.44349 11.2822 6.49315 11.6482L6.5 11.75V12.25C6.5 15.077 8.73445 17.3821 11.5336 17.4956L11.75 17.5H12.25C15.077 17.5 17.3821 15.2656 17.4956 12.4664L17.5 12.25V11.75C17.5 11.3358 17.8358 11 18.25 11ZM12 2C14.2091 2 16 3.79086 16 6V12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12V6C8 3.79086 9.79086 2 12 2Z" fill="currentColor"/></svg>Autostop
+                        <span class="custom-tip-box">ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="toggleRecordMode"
+                            aria-label="Autostop"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="control-item settings-onoff">
+                    <span
+                        id="labelAutoPlay"
+                        class="mode-label active-mode custom-tip-wrap"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-setting-icon fluent-icon fluent-icon-playCircle"><path d="M10.86 8.15A1.25 1.25 0 0 0 9 9.25v5.5c0 .95 1.02 1.56 1.86 1.1l5.75-3.2a.75.75 0 0 0 0-1.3zM12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M3.5 12a8.5 8.5 0 1 1 17 0 8.5 8.5 0 0 1-17 0" fill="currentColor"/></svg>Auto-Compare
+                        <span class="custom-tip-box">ON: Auto-plays the model audio and your recording in sequence after recording.<br>OFF: Uses the Play buttons separately.</span>
+                    </span>
+
+                    <label class="switch">
+                        <input
+                            type="checkbox"
+                            id="togglePlaybackMode"
+                            aria-label="Auto-Compare"
+                            checked
+                        >
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="unlearned-lexicon-container">
+                <details id="unlearnedAccordion" class="unlearned-accordion">
             <summary class="unlearned-summary">
                 <span id="unlearnedCounts" class="unlearned-counts">ことば(1語) 漢字(3字)</span>
                 <span class="unlearned-summary-title"><svg class="unlearned-book-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 19.1375C11.4986 19.6686 10.788 20 10 20H3.75C2.7835 20 2 19.2165 2 18.25V5.75C2 4.7835 2.7835 4 3.75 4H10C10.788 4 11.4986 4.33145 12 4.86253C12.5014 4.33145 13.212 4 14 4H20.25C21.2165 4 22 4.7835 22 5.75V18.25C22 19.2165 21.2165 20 20.25 20H14C13.212 20 12.5014 19.6686 12 19.1375ZM3.5 5.75V18.25C3.5 18.3881 3.61193 18.5 3.75 18.5H10C10.6904 18.5 11.25 17.9404 11.25 17.25V6.75C11.25 6.05964 10.6904 5.5 10 5.5H3.75C3.61193 5.5 3.5 5.61193 3.5 5.75ZM12.75 17.25C12.75 17.9404 13.3096 18.5 14 18.5H20.25C20.3881 18.5 20.5 18.3881 20.5 18.25V5.75C20.5 5.61193 20.3881 5.5 20.25 5.5H14C13.3096 5.5 12.75 6.05964 12.75 6.75V17.25Z" fill="currentColor"/></svg> Beyond L8 Words</span>
@@ -300,6 +303,8 @@
                 </div>
             </div>
         </details>
+            </div>
+        </div>
     </div>
 
     <div id="drill1Container"></div>

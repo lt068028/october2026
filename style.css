@@ -6095,44 +6095,60 @@ html[data-theme="dark"] .practice82-page {
         justify-content: flex-end;
     }
 }
-.practice82-page .unlearned-lexicon-container {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    flex-wrap: nowrap;
-}
-.practice82-page .unlearned-lexicon-container > .unlearned-accordion {
-    flex: 0 0 auto;
+.practice82-page .p82-guide-top-grid {
+    max-width: var(--content-max-width, 1080px);
+    margin: 4px auto 14px;
+    padding: 0 16px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 16px;
 }
 .practice82-page .p82-stt-guide-inline {
     font-family: 'Lato', sans-serif;
     box-sizing: border-box;
-    flex: 1 1 0;
+    width: 100%;
     min-width: 0;
     max-width: 720px;
 }
 .practice82-page .p82-stt-guide-inline-title {
     margin: 0 0 6px;
-    padding-left: 8px;
-    border-left: 3px solid var(--p82-amber-accent);
-    font-size: 15.5px;
+    padding-left: 0;
+    border-left: 0;
+    font-family: var(--font-latin);
+    font-size: 16.5px;
     font-weight: 700;
     line-height: 1.25;
     color: var(--text-primary, #1e293b);
 }
+.practice82-page .p82-top-right-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+.practice82-page .p82-top-right-col .unlearned-lexicon-container {
+    margin: 0;
+    padding: 0;
+    width: auto;
+    max-width: none;
+    display: flex;
+    justify-content: flex-end;
+}
+.practice82-page .p82-top-right-col .unlearned-accordion {
+    flex: 0 0 auto;
+}
 @media (max-width: 900px) {
-    .practice82-page .unlearned-lexicon-container {
-        flex-direction: column;
-        align-items: stretch;
+    .practice82-page .p82-guide-top-grid {
+        grid-template-columns: minmax(0, 1fr);
         gap: 10px;
     }
     .practice82-page .p82-stt-guide-inline {
-        width: 100%;
         max-width: 100%;
     }
-    .practice82-page .unlearned-lexicon-container > .unlearned-accordion {
-        align-self: flex-end;
+    .practice82-page .p82-top-right-col {
+        align-items: flex-end;
     }
 }
 .practice82-page .p82-stt-guide-btn {
