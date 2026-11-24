@@ -2010,9 +2010,11 @@ function initSttGuide82() {
             }
         });
     };
+    let lastGuideTrigger = null;
     document.addEventListener('click', e => {
-        const trigger = e.target.closest?.('#p82SttGuideBtn');
+        const trigger = e.target.closest?.('.p82-stt-guide-btn');
         if (!trigger) return;
+        lastGuideTrigger = trigger;
         clearGuideTips();
         if (typeof dialog.showModal === 'function' && !dialog.open) {
             dialog.showModal();
@@ -2071,7 +2073,7 @@ function initSttGuide82() {
     });
     dialog.addEventListener('close', () => {
         clearGuideTips();
-        document.getElementById('p82SttGuideBtn')?.focus();
+        (lastGuideTrigger && document.contains(lastGuideTrigger) ? lastGuideTrigger : document.getElementById('p82SttGuideBtn'))?.focus();
     });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSttGuide82);

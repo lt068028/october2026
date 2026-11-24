@@ -141,6 +141,10 @@
     </div>
 
     <div class="unlearned-lexicon-container">
+        <button type="button" id="p82SttGuideBtnTop" class="p82-stt-guide-btn" aria-haspopup="dialog" aria-controls="p82SttGuideDialog">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-guide-btn-icon"><path d="M11.5 3.5 2.5 8l9 4.5 9-4.5-9-4.5Zm-5.5 6.8v4.2c0 1.7 2.46 3.1 5.5 3.1s5.5-1.4 5.5-3.1v-4.2l-5.5 2.75L6 10.3Zm13-.6v5.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.5 2v3M18 3.5h3M21.2 8.2v2.2M20.1 9.3h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span>How the Drill Works</span>
+        </button>
         <details id="unlearnedAccordion" class="unlearned-accordion">
             <summary class="unlearned-summary">
                 <span id="unlearnedCounts" class="unlearned-counts">ことば(1語) 漢字(3字)</span>
@@ -248,9 +252,12 @@
                         <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-recognition-half p82-guide-tip-wrap" data-col="3" aria-describedby="p82RecognitionTip">
                             <span class="p82-guide-icon-wrap p82-guide-icon-wrap-duo" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <rect x="6.5" y="6.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
-                                    <rect x="9.5" y="9.5" width="5" height="5" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
-                                    <path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M11.5 4.25A3.25 3.25 0 0 0 8.25 7.5a2.75 2.75 0 0 0-2.5 2.74v.26a2.75 2.75 0 0 0-.5 5.45v.3a3.25 3.25 0 0 0 3.25 3.25h3V4.25Zm1.5 0V19.5h3a3.25 3.25 0 0 0 3.25-3.25v-.3a2.75 2.75 0 0 0-.5-5.45v-.26a2.75 2.75 0 0 0-2.5-2.74A3.25 3.25 0 0 0 13 4.25Z" stroke="currentColor" stroke-width="1.45" stroke-linejoin="round"/>
+                                    <path d="M11.5 9.5H9.2M11.5 13.5H8.8M13 8.5h2.3M13 12.5h2.7M13 16h2" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+                                    <circle cx="8.6" cy="9.5" r="0.9" fill="currentColor"/>
+                                    <circle cx="8.2" cy="13.5" r="0.9" fill="currentColor"/>
+                                    <circle cx="15.8" cy="8.5" r="0.9" fill="currentColor"/>
+                                    <circle cx="16.2" cy="12.5" r="0.9" fill="currentColor"/>
                                 </svg>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="24" viewBox="0 0 28 24" fill="none" class="p82-wave-morph-svg">
                                     <path d="M3 10v4M6.5 7v10M10 9v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" class="p82-wave-bars"/>
@@ -266,7 +273,6 @@
                                 </svg>
                             </span>
                             <span class="p82-guide-tip-box" id="p82RecognitionTip" role="tooltip">
-                                <span class="p82-guide-tip-title">Just a hint</span>
                                 <span class="p82-guide-tip-body">The system <strong class="p82-tip-positive">guesses</strong> what you said from your speech. Even native speakers aren't always recognized correctly, so treat the result as a guide, <strong>not an exact transcript</strong>.</span>
                             </span>
                         </button>
