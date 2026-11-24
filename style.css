@@ -6304,38 +6304,24 @@ html[data-theme="dark"] .practice82-page {
     background: var(--p82-amber-bg);
     color: var(--p82-amber-accent);
 }
+.practice82-page .p82-guide-icon-wrap-duo {
+    gap: 8px;
+    max-width: 100%;
+}
 .practice82-page .p82-guide-icon-wrap-trio {
     height: 44px;
     max-width: 100%;
 }
-.practice82-page .p82-guide-visibility-scene {
+.practice82-page .p82-guide-status-trio {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    max-width: 100%;
-}
-.practice82-page .p82-visibility-icon {
-    width: 28px;
-    height: 24px;
-    flex-shrink: 0;
-    color: var(--text-primary, #1e293b);
-}
-.practice82-page .p82-guide-status-trio {
-    display: grid;
-    grid-template-columns: 20px 20px;
-    column-gap: 3px;
-    row-gap: 1px;
-    justify-items: center;
-    align-items: center;
+    gap: 6px;
     padding: 0;
 }
-.practice82-page .p82-trio-accepted {
-    grid-column: 1 / -1;
-}
 .practice82-page .p82-trio-icon {
-    width: 20px;
-    height: 20px;
+    width: 21px;
+    height: 21px;
     flex-shrink: 0;
 }
 .practice82-page .p82-trio-accepted {
