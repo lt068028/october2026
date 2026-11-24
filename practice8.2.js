@@ -1970,7 +1970,7 @@ function initSttGuide82() {
     const dialog = document.getElementById('p82SttGuideDialog');
     const closeBtn = document.getElementById('p82SttGuideClose');
     if (!dialog) return;
-    const tipHosts = [...dialog.querySelectorAll('.p82-guide-tip-wrap')];
+    const tipHosts = [...document.querySelectorAll('.practice82-page .p82-guide-tip-wrap')];
     const positionGuideTip = host => {
         const box = host?.querySelector('.p82-guide-tip-box');
         if (!box) return;
@@ -2055,8 +2055,31 @@ function initSttGuide82() {
             h.classList.remove('is-tip-open');
         });
     });
+    document.addEventListener('click', e => {
+        if (e.target.closest?.('#p82SttGuideBtn') || e.target.closest?.('#p82SttGuideClose')) return;
+        const host = e.target.closest?.('.practice82-page .p82-guide-tip-wrap');
+        if (!host) {
+            tipHosts.forEach(h => h.classList.remove('is-tip-open'));
+            return;
+        }
+        if (dialog.contains(host)) return;
+        const wasOpen = host.classList.contains('is-tip-open');
+        tipHosts.forEach(h => h.classList.remove('is-tip-open'));
+        host.removeAttribute('data-guide-tip-suppressed');
+        if (!wasOpen) {
+            host.classList.add('is-tip-open');
+            positionGuideTip(host);
+        }
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && hasVisibleGuideTip()) {
+            e.preventDefault();
+            e.stopPropagation();
+            suppressVisibleGuideTips();
+        }
+    });
     window.addEventListener('resize', () => {
-        if (dialog.open) tipHosts.forEach(positionGuideTip);
+        tipHosts.forEach(positionGuideTip);
     });
     dialog.addEventListener('keydown', e => {
         if (e.key === 'Escape' && dialog.open && hasVisibleGuideTip()) {

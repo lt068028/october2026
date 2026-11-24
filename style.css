@@ -6096,8 +6096,44 @@ html[data-theme="dark"] .practice82-page {
     }
 }
 .practice82-page .unlearned-lexicon-container {
+    display: flex;
     align-items: flex-start;
-    gap: 10px;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: nowrap;
+}
+.practice82-page .unlearned-lexicon-container > .unlearned-accordion {
+    flex: 0 0 auto;
+}
+.practice82-page .p82-stt-guide-inline {
+    font-family: 'Lato', sans-serif;
+    box-sizing: border-box;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 720px;
+}
+.practice82-page .p82-stt-guide-inline-title {
+    margin: 0 0 6px;
+    padding-left: 8px;
+    border-left: 3px solid var(--p82-amber-accent);
+    font-size: 15.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text-primary, #1e293b);
+}
+@media (max-width: 900px) {
+    .practice82-page .unlearned-lexicon-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .practice82-page .p82-stt-guide-inline {
+        width: 100%;
+        max-width: 100%;
+    }
+    .practice82-page .unlearned-lexicon-container > .unlearned-accordion {
+        align-self: flex-end;
+    }
 }
 .practice82-page .p82-stt-guide-btn {
     display: inline-flex;
