@@ -180,10 +180,9 @@
     <dialog id="p82SttGuideDialog" class="p82-stt-guide-dialog" aria-labelledby="p82SttGuideTitle">
         <div class="p82-stt-guide-inner">
             <div class="p82-stt-guide-header">
-                <h2 id="p82SttGuideTitle" class="p82-stt-guide-title">How Speaking Practice Works</h2>
+                <h2 id="p82SttGuideTitle" class="p82-stt-guide-title">How the Drill Works</h2>
                 <button type="button" id="p82SttGuideClose" class="p82-stt-guide-close" aria-label="Close guide">× Close</button>
             </div>
-            <p class="p82-stt-guide-lead">Hover, focus, or tap any step to see how system tools and your listening loop work together.</p>
 
             <div class="p82-stt-guide-board" role="region" aria-label="Speaking Practice Flow">
                 <div class="p82-stt-guide-row-labels" aria-hidden="true">
@@ -194,14 +193,13 @@
                 <div class="p82-stt-guide-cards">
                     <!-- Step 1 -->
                     <div class="p82-guide-step-card" data-col="1">
-                        <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-tip-wrap" data-col="1">
+                        <div class="p82-guide-half p82-guide-half-system" data-col="1">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M15 4.25a1.25 1.25 0 0 0-2.08-.93L8.42 7.3a.8.8 0 0 1-.49.19H4.25C3.01 7.5 2 8.5 2 9.75v4.5c0 1.24 1 2.25 2.25 2.25h3.68q.28 0 .5.19l4.49 3.99c.8.72 2.08.14 2.08-.93zM9.42 8.43l4.08-3.62v14.38l-4.08-3.63A2.3 2.3 0 0 0 7.93 15H4.25a.75.75 0 0 1-.75-.75v-4.5c0-.42.34-.75.75-.75h3.68c.55 0 1.08-.2 1.5-.57M19 5.9a.75.75 0 0 1 1.05.15 10 10 0 0 1 0 11.9.75.75 0 1 1-1.2-.9 8.5 8.5 0 0 0 0-10.1.75.75 0 0 1 .15-1.05m-1.85 2.47a.75.75 0 0 1 1.02.3 7 7 0 0 1 0 6.66.75.75 0 0 1-1.32-.72 5.5 5.5 0 0 0 0-5.22.75.75 0 0 1 .3-1.02" fill="currentColor"/></svg>
                             </span>
                             <span class="p82-guide-label">Model Audio</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Plays the model sentence as your audio reference.</span>
-                        </button>
-                        <button type="button" class="p82-guide-half p82-guide-half-you p82-guide-tip-wrap" data-col="1">
+                        </div>
+                        <div class="p82-guide-half p82-guide-half-you" data-col="1">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
                                     <path d="M4.5 13.5v-1a7.5 7.5 0 0 1 15 0v1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -210,8 +208,7 @@
                                 </svg>
                             </span>
                             <span class="p82-guide-label">Listen</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Listen carefully to the model audio before speaking.</span>
-                        </button>
+                        </div>
                         <span class="p82-guide-boundary-arrow" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none">
                                 <path class="p82-arrow-halo" d="M13.2 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 0 1-1.4-1.4l4.3-4.3H4a1 1 0 1 1 0-2h13.5l-4.3-4.3a1 1 0 0 1 0-1.4Z"/>
@@ -222,14 +219,13 @@
 
                     <!-- Step 2 -->
                     <div class="p82-guide-step-card" data-col="2">
-                        <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-tip-wrap" data-col="2">
+                        <div class="p82-guide-half p82-guide-half-system" data-col="2">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M18.25 11c.38 0 .7.28.74.65l.01.1v.5a6.75 6.75 0 0 1-6.25 6.73v2.27a.75.75 0 0 1-1.5.1v-2.37A6.75 6.75 0 0 1 5 12.48v-.73a.75.75 0 0 1 1.5-.1v.6a5.25 5.25 0 0 0 5.03 5.25h.72a5.25 5.25 0 0 0 5.25-5.03v-.72c0-.41.34-.75.75-.75M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4m0 1.5A2.5 2.5 0 0 0 9.5 6v6a2.5 2.5 0 0 0 5 0V6A2.5 2.5 0 0 0 12 3.5" fill="currentColor"/></svg>
                             </span>
                             <span class="p82-guide-label">Microphone</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Captures your spoken voice for playback and recognition.</span>
-                        </button>
-                        <button type="button" class="p82-guide-half p82-guide-half-you p82-guide-tip-wrap" data-col="2">
+                        </div>
+                        <div class="p82-guide-half p82-guide-half-you" data-col="2">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
                                     <circle cx="9.5" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.6"/>
@@ -238,8 +234,7 @@
                                 </svg>
                             </span>
                             <span class="p82-guide-label">Speak</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Say the sentence aloud into your microphone.</span>
-                        </button>
+                        </div>
                         <span class="p82-guide-boundary-arrow" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none">
                                 <path class="p82-arrow-halo" d="M13.2 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 0 1-1.4-1.4l4.3-4.3H4a1 1 0 1 1 0-2h13.5l-4.3-4.3a1 1 0 0 1 0-1.4Z"/>
@@ -250,12 +245,12 @@
 
                     <!-- Step 3 -->
                     <div class="p82-guide-step-card p82-guide-step-card-clue" data-col="3">
-                        <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-recognition-half p82-guide-tip-wrap" data-col="3">
+                        <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-recognition-half p82-guide-tip-wrap" data-col="3" aria-describedby="p82RecognitionTip">
                             <span class="p82-guide-icon-wrap p82-guide-icon-wrap-duo" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                    <path d="M8.5 15.5h8.2a3.8 3.8 0 0 0 .5-7.56 5 5 0 0 0-9.5-1.1A3.6 3.6 0 0 0 8.5 15.5Z" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
-                                    <circle cx="5.5" cy="18.2" r="1.15" fill="currentColor"/>
-                                    <circle cx="3" cy="20.4" r="0.85" fill="currentColor"/>
+                                    <rect x="6.5" y="6.5" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                                    <rect x="9.5" y="9.5" width="5" height="5" rx="0.8" stroke="currentColor" stroke-width="1.4"/>
+                                    <path d="M9.5 3.5v3M14.5 3.5v3M9.5 17.5v3M14.5 17.5v3M3.5 9.5h3M3.5 14.5h3M17.5 9.5h3M17.5 14.5h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                                 </svg>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="24" viewBox="0 0 28 24" fill="none" class="p82-wave-morph-svg">
                                     <path d="M3 10v4M6.5 7v10M10 9v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" class="p82-wave-bars"/>
@@ -264,11 +259,19 @@
                                     <path d="M20.2 9.5h3.1M20.2 12.5h3.1M20.2 15.5h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
                                 </svg>
                             </span>
-                            <span class="p82-guide-label">Recognition</span>
-                            <span class="p82-guide-tip-box" role="tooltip">The system listens to your voice, estimates what you said, and writes it down as text.</span>
+                            <span class="p82-guide-label p82-guide-recognition-label">
+                                <span>Recognition</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" class="p82-recognition-info-icon" aria-hidden="true">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 5.2a1.15 1.15 0 1 1 0 2.3 1.15 1.15 0 0 1 0-2.3Zm-1 4.3h2v6h-2v-6Z" fill="currentColor"/>
+                                </svg>
+                            </span>
+                            <span class="p82-guide-tip-box" id="p82RecognitionTip" role="tooltip">
+                                <span class="p82-guide-tip-title">Just a hint</span>
+                                <span class="p82-guide-tip-body">The system <strong class="p82-tip-positive">guesses</strong> what you said from your speech. Even native speakers aren't always recognized correctly, so treat the result as a guide, <strong>not an exact transcript</strong>.</span>
+                            </span>
                         </button>
 
-                        <button type="button" class="p82-guide-half p82-guide-half-you p82-guide-understand-half p82-guide-tip-wrap" data-col="3">
+                        <div class="p82-guide-half p82-guide-half-you p82-guide-understand-half" data-col="3">
                             <span class="p82-guide-icon-wrap p82-guide-icon-wrap-trio" aria-hidden="true">
                                 <span class="p82-guide-status-trio">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" class="p82-trio-icon p82-trio-accepted"><path d="M8.5 16.5858L4.70711 12.7929C4.31658 12.4024 3.68342 12.4024 3.29289 12.7929C2.90237 13.1834 2.90237 13.8166 3.29289 14.2071L7.79289 18.7071C8.18342 19.0976 8.81658 19.0976 9.20711 18.7071L20.2071 7.70711C20.5976 7.31658 20.5976 6.68342 20.2071 6.29289C19.8166 5.90237 19.1834 5.90237 18.7929 6.29289L8.5 16.5858Z"/></svg>
@@ -278,8 +281,7 @@
                             </span>
                             <span class="p82-guide-label">Rough Result</span>
                             <span class="p82-guide-sub">Just a clue</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Rough Result: the recognized text and status marks are just a clue, not a final judgment.</span>
-                        </button>
+                        </div>
                         <span class="p82-guide-boundary-arrow" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none">
                                 <path class="p82-arrow-halo" d="M13.2 5.3a1 1 0 0 1 1.4 0l6 6a1 1 0 0 1 0 1.4l-6 6a1 1 0 0 1-1.4-1.4l4.3-4.3H4a1 1 0 1 1 0-2h13.5l-4.3-4.3a1 1 0 0 1 0-1.4Z"/>
@@ -290,7 +292,7 @@
 
                     <!-- Step 4 -->
                     <div class="p82-guide-step-card p82-guide-step-card-goal p82-guide-no-next-arrow" data-col="4">
-                        <button type="button" class="p82-guide-half p82-guide-half-system p82-guide-autocompare-half p82-guide-tip-wrap" data-col="4">
+                        <div class="p82-guide-half p82-guide-half-system p82-guide-autocompare-half" data-col="4">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none">
                                     <path d="M4.5 12a7.5 7.5 0 0 1 12.8-5.3L19 8.4M19 4.8v3.6h-3.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -299,12 +301,11 @@
                                 </svg>
                             </span>
                             <span class="p82-guide-label">Auto-Compare</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Automatically plays the model audio and your recording one after the other. It does not grade your speech.</span>
-                        </button>
+                        </div>
 
                         <span class="p82-guide-goal-badge" aria-hidden="true">YOUR GOAL</span>
 
-                        <button type="button" class="p82-guide-half p82-guide-half-you p82-guide-goal-half p82-guide-tip-wrap" data-col="4">
+                        <div class="p82-guide-half p82-guide-half-you p82-guide-goal-half" data-col="4">
                             <span class="p82-guide-icon-wrap" aria-hidden="true">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" class="p82-ear-sound-svg">
                                     <path d="M4 8.8C4 5.5 6.5 3.5 9.5 3.5c3.1 0 5.3 2.2 5.3 5.3 0 2.7-1.6 4.2-2.6 5.8-.9 1.5-1.6 3.7-3.7 4.6-2 .8-3.9-.4-4-2.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
@@ -314,8 +315,7 @@
                             </span>
                             <span class="p82-guide-label">Check</span>
                             <span class="p82-guide-goal-action">Sound matters most</span>
-                            <span class="p82-guide-tip-box" role="tooltip">Listen to the model audio and your own recording by ear—how your speech sounds matters most.</span>
-                        </button>
+                        </div>
                     </div>
                 </div>
             </div>

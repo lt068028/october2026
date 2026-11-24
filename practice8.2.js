@@ -1135,7 +1135,7 @@ function createLightbulbIcon(){
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);if(si===0){const actions=node('div','info-panel-actions p82-drill1-guide-actions'),gBtn=node('button','p82-stt-guide-btn');gBtn.type='button';gBtn.id='p82SttGuideBtn';gBtn.setAttribute('aria-haspopup','dialog');gBtn.setAttribute('aria-controls','p82SttGuideDialog');gBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-guide-btn-icon"><path d="M11.5 3.5 2.5 8l9 4.5 9-4.5-9-4.5Zm-5.5 6.8v4.2c0 1.7 2.46 3.1 5.5 3.1s5.5-1.4 5.5-3.1v-4.2l-5.5 2.75L6 10.3Zm13-.6v5.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.5 2v3M18 3.5h3M21.2 8.2v2.2M20.1 9.3h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>How Speaking Practice Works</span>';actions.append(gBtn);panel.append(actions);}group.append(panel);
+ sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);if(si===0){const actions=node('div','info-panel-actions p82-drill1-guide-actions'),gBtn=node('button','p82-stt-guide-btn');gBtn.type='button';gBtn.id='p82SttGuideBtn';gBtn.setAttribute('aria-haspopup','dialog');gBtn.setAttribute('aria-controls','p82SttGuideDialog');gBtn.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" class="p82-guide-btn-icon"><path d="M11.5 3.5 2.5 8l9 4.5 9-4.5-9-4.5Zm-5.5 6.8v4.2c0 1.7 2.46 3.1 5.5 3.1s5.5-1.4 5.5-3.1v-4.2l-5.5 2.75L6 10.3Zm13-.6v5.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M19.5 2v3M18 3.5h3M21.2 8.2v2.2M20.1 9.3h2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>How the Drill Works</span>';actions.append(gBtn);panel.append(actions);}group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const ynLabel=(si===2&&index===0)?(value==='yes'?'Yes':'No'):(value==='yes'?'Affirmative response':'Negative response');const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();},(si===2&&index===0)?ynLabel:'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',ynLabel);choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
@@ -1971,6 +1971,24 @@ function initSttGuide82() {
     const closeBtn = document.getElementById('p82SttGuideClose');
     if (!dialog) return;
     const tipHosts = [...dialog.querySelectorAll('.p82-guide-tip-wrap')];
+    const positionGuideTip = host => {
+        const box = host?.querySelector('.p82-guide-tip-box');
+        if (!box) return;
+        const rect = host.getBoundingClientRect();
+        const margin = 12;
+        const gap = 8;
+        const bw = box.offsetWidth || 260;
+        const bh = box.offsetHeight || 96;
+        let left = rect.left + rect.width / 2 - bw / 2;
+        left = Math.max(margin, Math.min(left, window.innerWidth - margin - bw));
+        let top = rect.bottom + gap;
+        if (top + bh > window.innerHeight - margin && rect.top - gap - bh >= margin) {
+            top = rect.top - gap - bh;
+        }
+        top = Math.max(margin, Math.min(top, window.innerHeight - margin - bh));
+        box.style.left = Math.round(left) + 'px';
+        box.style.top = Math.round(top) + 'px';
+    };
     const clearGuideTips = () => {
         tipHosts.forEach(h => {
             h.classList.remove('is-tip-open');
@@ -2016,19 +2034,27 @@ function initSttGuide82() {
         const wasOpen = host.classList.contains('is-tip-open');
         tipHosts.forEach(h => h.classList.remove('is-tip-open'));
         host.removeAttribute('data-guide-tip-suppressed');
-        if (!wasOpen) host.classList.add('is-tip-open');
+        if (!wasOpen) {
+            host.classList.add('is-tip-open');
+            positionGuideTip(host);
+        }
     });
     tipHosts.forEach(h => {
         h.addEventListener('pointerenter', e => {
             if (e.pointerType === 'mouse') h.removeAttribute('data-guide-tip-suppressed');
+            positionGuideTip(h);
         });
         h.addEventListener('focusin', () => {
             h.removeAttribute('data-guide-tip-suppressed');
+            positionGuideTip(h);
         });
         h.addEventListener('focusout', () => {
             h.removeAttribute('data-guide-tip-suppressed');
             h.classList.remove('is-tip-open');
         });
+    });
+    window.addEventListener('resize', () => {
+        if (dialog.open) tipHosts.forEach(positionGuideTip);
     });
     dialog.addEventListener('keydown', e => {
         if (e.key === 'Escape' && dialog.open && hasVisibleGuideTip()) {
