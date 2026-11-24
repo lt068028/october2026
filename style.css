@@ -6095,6 +6095,9 @@ html[data-theme="dark"] .practice82-page {
         justify-content: flex-end;
     }
 }
+.practice82-page .settings-onoff input:checked + .slider {
+    background-color: #3b4d63;
+}
 .practice82-page .p82-guide-top-grid {
     max-width: var(--content-max-width, 1080px);
     margin: 4px auto 14px;
@@ -6107,31 +6110,9 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .p82-stt-guide-inline {
     display: contents;
 }
-.practice82-page .p82-stt-guide-inline-title {
-    grid-column: 1;
-    grid-row: 1;
-    justify-self: start;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 2px;
-    padding: 0 0 0 2px;
-    border: 0;
-    background: transparent;
-    box-shadow: none;
-    font-family: var(--font-latin);
-    font-size: 1.05rem;
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--text-primary, #1e293b);
-}
-.practice82-page .p82-inline-title-icon {
-    flex-shrink: 0;
-    color: var(--text-secondary, #475569);
-}
 .practice82-page .p82-stt-guide-inline > .p82-stt-guide-board {
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
     font-family: 'Lato', sans-serif;
     width: 100%;
     min-width: 0;
@@ -6139,29 +6120,40 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-top-right-col {
     grid-column: 1;
-    grid-row: 3;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: center;
-    justify-content: flex-end;
-    gap: 10px 18px;
     padding-top: 2px;
+    padding-left: 12px;
     box-sizing: border-box;
 }
 .practice82-page .p82-top-right-col > .settings-group-right {
     display: contents;
 }
-.practice82-page .p82-top-right-col .unlearned-lexicon-container {
-    margin: 0;
-    padding: 0;
-    width: auto;
-    max-width: 100%;
-    display: flex;
-    justify-content: flex-end;
+.practice82-page .p82-top-right-col .control-item.settings-onoff:first-child {
+    grid-column: 2;
+    justify-self: center;
+    justify-content: center;
 }
-.practice82-page .p82-top-right-col .unlearned-accordion {
-    flex: 0 0 auto;
+.practice82-page .p82-top-right-col .control-item.settings-onoff:last-child {
+    grid-column: 4;
+    justify-self: center;
+    justify-content: center;
+}
+@media (max-width: 880px) {
+    .practice82-page .p82-top-right-col .control-item.settings-onoff:last-child {
+        grid-column: 3 / 5;
+        justify-self: end;
+    }
+}
+@media (max-width: 520px) {
+    .practice82-page .p82-top-right-col {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px 14px;
+    }
 }
 .practice82-page .p82-stt-guide-btn {
     display: inline-flex;
@@ -6361,10 +6353,19 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-btn:focus-visible {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary, #1e293b);
-    filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.22));
+    color: #94a3b8;
+    filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.08));
     pointer-events: none;
     z-index: 12;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .p82-guide-boundary-arrow {
+        color: #64748b;
+    }
+}
+body.dark-mode.practice82-page .p82-guide-boundary-arrow,
+html[data-theme="dark"] .practice82-page .p82-guide-boundary-arrow {
+    color: #64748b;
 }
 .practice82-page .p82-guide-boundary-arrow svg {
     width: 30px;
@@ -6410,6 +6411,8 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-btn:focus-visible {
     gap: 4px;
 }
 .practice82-page .p82-recognition-info-icon {
+    width: 18px;
+    height: 18px;
     color: var(--semantic-positive-color);
     flex-shrink: 0;
     display: block;
