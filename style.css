@@ -6101,6 +6101,10 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .p82-top-right-col .settings-onoff .mode-label {
     font-size: 14.5px;
 }
+.practice82-page .p82-top-right-col .custom-tip-box {
+    bottom: auto;
+    top: calc(100% + 6px);
+}
 .practice82-page .p82-top-right-col .compact-settings .p82-setting-icon {
     width: 20px;
     height: 20px;
