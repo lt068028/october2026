@@ -6098,18 +6098,25 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page > .unlearned-lexicon-container {
     margin: 2px auto 6px;
 }
+.practice82-page .p82-top-right-col .settings-onoff .mode-label {
+    font-size: 14.5px;
+}
+.practice82-page .p82-top-right-col .compact-settings .p82-setting-icon {
+    width: 20px;
+    height: 20px;
+}
 .practice82-page .settings-onoff .switch {
-    width: 40px;
-    height: 22px;
+    width: 36px;
+    height: 20px;
 }
 .practice82-page .settings-onoff .slider::before {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     left: 3px;
     bottom: 3px;
 }
 .practice82-page .settings-onoff input:checked + .slider::before {
-    transform: translateX(18px);
+    transform: translateX(16px);
 }
 .practice82-page .settings-onoff .slider::after {
     content: none;
@@ -6118,16 +6125,16 @@ html[data-theme="dark"] .practice82-page {
 .practice82-page .settings-onoff input:checked + .slider {
     background-color: #3b4d63;
 }
-.practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+.practice82-page .p82-top-right-col .compact-settings :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
     color: #475569;
 }
 @media (prefers-color-scheme: dark) {
-    .practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+    .practice82-page .p82-top-right-col .compact-settings :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
         color: #cbd5e1;
     }
 }
-body.dark-mode.practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon,
-html[data-theme="dark"] .practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+body.dark-mode.practice82-page .p82-top-right-col .compact-settings :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon,
+html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
     color: #cbd5e1;
 }
 .practice82-page .p82-guide-top-grid {
@@ -6448,6 +6455,11 @@ html[data-theme="dark"] .practice82-page .p82-guide-boundary-arrow {
     color: var(--semantic-positive-color);
     flex-shrink: 0;
     display: block;
+    overflow: visible;
+}
+.practice82-page .p82-recognition-info-icon .p82-info-sparkle {
+    fill: #f59e0b;
+    stroke: var(--card-bg, #ffffff);
 }
 .practice82-page .p82-guide-icon-wrap:not(.p82-guide-icon-wrap-trio) {
     color: #475569;
