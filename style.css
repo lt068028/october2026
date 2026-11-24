@@ -6095,8 +6095,40 @@ html[data-theme="dark"] .practice82-page {
         justify-content: flex-end;
     }
 }
+.practice82-page > .unlearned-lexicon-container {
+    margin: 2px auto 6px;
+}
+.practice82-page .settings-onoff .switch {
+    width: 40px;
+    height: 22px;
+}
+.practice82-page .settings-onoff .slider::before {
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    bottom: 3px;
+}
+.practice82-page .settings-onoff input:checked + .slider::before {
+    transform: translateX(18px);
+}
+.practice82-page .settings-onoff .slider::after {
+    content: none;
+    display: none;
+}
 .practice82-page .settings-onoff input:checked + .slider {
     background-color: #3b4d63;
+}
+.practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+    color: #475569;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+        color: #cbd5e1;
+    }
+}
+body.dark-mode.practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon,
+html[data-theme="dark"] .practice82-page .p82-top-right-col :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
+    color: #cbd5e1;
 }
 .practice82-page .p82-guide-top-grid {
     max-width: var(--content-max-width, 1080px);
@@ -6124,7 +6156,7 @@ html[data-theme="dark"] .practice82-page {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: center;
-    padding-top: 2px;
+    padding-top: 0;
     padding-left: 12px;
     box-sizing: border-box;
 }
@@ -6411,11 +6443,23 @@ html[data-theme="dark"] .practice82-page .p82-guide-boundary-arrow {
     gap: 4px;
 }
 .practice82-page .p82-recognition-info-icon {
-    width: 18px;
-    height: 18px;
+    width: 22px;
+    height: 22px;
     color: var(--semantic-positive-color);
     flex-shrink: 0;
     display: block;
+}
+.practice82-page .p82-guide-icon-wrap:not(.p82-guide-icon-wrap-trio) {
+    color: #475569;
+}
+@media (prefers-color-scheme: dark) {
+    .practice82-page .p82-guide-icon-wrap:not(.p82-guide-icon-wrap-trio) {
+        color: #cbd5e1;
+    }
+}
+body.dark-mode.practice82-page .p82-guide-icon-wrap:not(.p82-guide-icon-wrap-trio),
+html[data-theme="dark"] .practice82-page .p82-guide-icon-wrap:not(.p82-guide-icon-wrap-trio) {
+    color: #cbd5e1;
 }
 .practice82-page .p82-guide-half-system {
     grid-template-rows: 32px auto;
