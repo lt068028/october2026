@@ -6036,16 +6036,16 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
     --p82-amber-accent: #b45309;
     --p82-amber-bg: rgba(180, 83, 9, 0.08);
     --p82-amber-border: rgba(180, 83, 9, 0.28);
-    --p82-guide-system-bg: rgba(148, 163, 184, 0.11);
-    --p82-guide-you-bg: rgba(59, 130, 246, 0.05);
+    --p82-guide-system-bg: rgba(148, 163, 184, 0.13);
+    --p82-guide-you-bg: rgba(59, 130, 246, 0.065);
 }
 @media (prefers-color-scheme: dark) {
     .practice82-page {
         --p82-amber-accent: #fbbf24;
         --p82-amber-bg: rgba(251, 191, 36, 0.12);
         --p82-amber-border: rgba(251, 191, 36, 0.32);
-        --p82-guide-system-bg: rgba(148, 163, 184, 0.14);
-        --p82-guide-you-bg: rgba(96, 165, 250, 0.09);
+        --p82-guide-system-bg: rgba(148, 163, 184, 0.15);
+        --p82-guide-you-bg: rgba(96, 165, 250, 0.10);
     }
 }
 body.dark-mode.practice82-page,
@@ -6053,8 +6053,8 @@ html[data-theme="dark"] .practice82-page {
     --p82-amber-accent: #fbbf24;
     --p82-amber-bg: rgba(251, 191, 36, 0.12);
     --p82-amber-border: rgba(251, 191, 36, 0.32);
-    --p82-guide-system-bg: rgba(148, 163, 184, 0.14);
-    --p82-guide-you-bg: rgba(96, 165, 250, 0.09);
+    --p82-guide-system-bg: rgba(148, 163, 184, 0.15);
+    --p82-guide-you-bg: rgba(96, 165, 250, 0.10);
 }
 .practice82-page .p82-stt-guide-dialog:not([open]) {
     display: none !important;
@@ -6101,61 +6101,52 @@ html[data-theme="dark"] .practice82-page {
     padding: 0 16px;
     box-sizing: border-box;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: stretch;
-    column-gap: 16px;
-    row-gap: 6px;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 8px;
 }
 .practice82-page .p82-stt-guide-inline {
     display: contents;
 }
 .practice82-page .p82-stt-guide-inline-title {
-    grid-column: 1 / -1;
+    grid-column: 1;
     grid-row: 1;
     justify-self: start;
     display: inline-flex;
     align-items: center;
+    gap: 6px;
     margin: 0 0 2px;
-    padding: 6px 14px 6px 12px;
-    border-radius: 6px 8px 8px 6px;
-    border: 1px solid var(--border-color, #e2e8f0);
-    border-left: 4.5px solid #007bff;
-    background: var(--card-bg, #ffffff);
-    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+    padding: 0 0 0 2px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     font-family: var(--font-latin);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     line-height: 1.25;
     color: var(--text-primary, #1e293b);
 }
-@media (prefers-color-scheme: dark) {
-    .practice82-page .p82-stt-guide-inline-title {
-        border-left-color: #3b82f6;
-    }
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline-title,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline-title {
-    border-left-color: #3b82f6;
+.practice82-page .p82-inline-title-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary, #475569);
 }
 .practice82-page .p82-stt-guide-inline > .p82-stt-guide-board {
     grid-column: 1;
     grid-row: 2;
-    align-self: start;
     font-family: 'Lato', sans-serif;
     width: 100%;
     min-width: 0;
-    max-width: 720px;
+    max-width: 100%;
 }
 .practice82-page .p82-top-right-col {
-    grid-column: 2;
-    grid-row: 2;
-    align-self: stretch;
+    grid-column: 1;
+    grid-row: 3;
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
-    padding-top: 10px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px 18px;
+    padding-top: 2px;
     box-sizing: border-box;
 }
 .practice82-page .p82-top-right-col > .settings-group-right {
@@ -6165,39 +6156,12 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-inline-title {
     margin: 0;
     padding: 0;
     width: auto;
-    max-width: none;
+    max-width: 100%;
     display: flex;
     justify-content: flex-end;
 }
 .practice82-page .p82-top-right-col .unlearned-accordion {
     flex: 0 0 auto;
-}
-@media (max-width: 900px) {
-    .practice82-page .p82-guide-top-grid {
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: 10px;
-    }
-    .practice82-page .p82-top-right-col {
-        grid-column: 1;
-        grid-row: 1;
-        order: -1;
-        align-self: auto;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 8px 14px;
-        padding-top: 0;
-    }
-    .practice82-page .p82-stt-guide-inline-title {
-        grid-column: 1;
-        grid-row: 2;
-    }
-    .practice82-page .p82-stt-guide-inline > .p82-stt-guide-board {
-        grid-column: 1;
-        grid-row: 3;
-        max-width: 100%;
-    }
 }
 .practice82-page .p82-stt-guide-btn {
     display: inline-flex;
@@ -6354,9 +6318,9 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-btn:focus-visible {
     gap: 0;
     align-items: stretch;
     min-width: 0;
-    border-radius: 10px;
-    border: 1.5px solid var(--border-color, #cbd5e1);
-    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    border: 0;
+    background: transparent;
 }
 .practice82-page .p82-guide-step-card {
     position: relative;
@@ -6369,23 +6333,23 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-btn:focus-visible {
     background: transparent;
 }
 .practice82-page .p82-guide-step-card[data-col="1"] .p82-guide-half-system {
-    border-top-left-radius: 8.5px;
+    border-top-left-radius: 12px;
 }
 .practice82-page .p82-guide-step-card[data-col="1"] .p82-guide-half-you {
-    border-bottom-left-radius: 8.5px;
+    border-bottom-left-radius: 12px;
 }
 .practice82-page .p82-guide-step-card-goal {
     border-right: 0;
-    box-shadow: inset 0 0 0 1px var(--p82-amber-border);
-    border-radius: 0 8.5px 8.5px 0;
+    box-shadow: none;
+    border-radius: 0 12px 12px 0;
 }
 .practice82-page .p82-guide-step-card-goal .p82-guide-half-system {
-    border-top-right-radius: 8.5px;
-    box-shadow: inset 1px 1px 0 0 var(--p82-amber-border), inset -1px 0 0 0 var(--p82-amber-border);
+    border-top-right-radius: 12px;
+    box-shadow: none;
 }
 .practice82-page .p82-guide-step-card-goal .p82-guide-half-you {
-    border-bottom-right-radius: 8.5px;
-    box-shadow: inset 1px -1px 0 0 var(--p82-amber-border), inset -1px 0 0 0 var(--p82-amber-border);
+    border-bottom-right-radius: 12px;
+    box-shadow: none;
 }
 .practice82-page .p82-guide-boundary-arrow {
     position: absolute;
@@ -6467,12 +6431,10 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-btn:focus-visible {
 }
 .practice82-page .p82-guide-autocompare-half {
     background: var(--p82-amber-bg);
-    color: var(--p82-amber-accent);
     border-bottom-color: var(--p82-amber-border);
 }
 .practice82-page .p82-guide-goal-half {
     background: var(--p82-amber-bg);
-    color: var(--p82-amber-accent);
 }
 .practice82-page .p82-guide-icon-wrap-duo {
     gap: 8px;
@@ -6574,7 +6536,6 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 }
 .practice82-page .p82-guide-goal-half .p82-guide-goal-action {
     font-weight: 400;
-    color: var(--p82-amber-accent);
 }
 @keyframes p82WavePulse {
     0%, 100% { opacity: 1; }
