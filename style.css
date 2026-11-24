@@ -6102,8 +6102,12 @@ html[data-theme="dark"] .practice82-page {
     font-size: 14.5px;
 }
 .practice82-page .p82-top-right-col .custom-tip-box {
-    bottom: auto;
-    top: calc(100% + 6px);
+    position: absolute !important;
+    bottom: auto !important;
+    top: calc(100% + 6px) !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
 }
 .practice82-page .p82-top-right-col .compact-settings .p82-setting-icon {
     width: 20px;
