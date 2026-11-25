@@ -75,6 +75,7 @@ window.DrillAudio = (() => {
             }
         }
         if (!recording && !model && released) adapter.sync?.();
+        if (!recording && !model && recordingTipTokens.size > 0) clearRecordingTipTokens();
         // Existing pages sometimes set an inline !important pointer cursor.
         // Derive prohibition from the current state instead of preserving it.
         for (const el of document.querySelectorAll('button, input, select, textarea')) {
@@ -128,58 +129,98 @@ window.DrillAudio = (() => {
         sync();
     }
 
+    const recordingTipTokens = new Set();
+    function clearRecordingTipTokens() {
+        for (const t of recordingTipTokens) {
+            window.DrillTooltips?.endAudioAction?.(t);
+        }
+        recordingTipTokens.clear();
+    }
+
     async function getUserMedia(options) {
-        window.DrillTooltips?.beginAudioAction?.();
-        clearNotice();
-        if (leaving) throw new DOMException('Page left', 'AbortError');
-        const request = requestGeneration;
-        if (activeAudio) {
-            stopAudio(activeAudio);
-            activeAudio = null;
-        }
-        if (relay) {
-            const old = relay;
-            relay = null;
-            if (old.audio) {
-                stopAudio(old.audio);
-                if (activeAudio === old.audio) activeAudio = null;
+        const recTipToken = window.DrillTooltips?.beginAudioAction?.();
+        if (recTipToken !== undefined) recordingTipTokens.add(recTipToken);
+        let recTipReleased = false;
+        const releaseRecTip = () => {
+            if (recTipReleased) return;
+            recTipReleased = true;
+            if (recTipToken !== undefined) {
+                recordingTipTokens.delete(recTipToken);
+                window.DrillTooltips?.endAudioAction?.(recTipToken);
             }
-            old.buttons.forEach(({ button, nodes, disabled }) => {
-                button.replaceChildren(...nodes);
-                button.disabled = disabled;
+        };
+        try {
+            clearNotice();
+            if (leaving) throw new DOMException('Page left', 'AbortError');
+            const request = requestGeneration;
+            if (activeAudio) {
+                stopAudio(activeAudio);
+                activeAudio = null;
+            }
+            if (relay) {
+                const old = relay;
+                relay = null;
+                if (old.audio) {
+                    stopAudio(old.audio);
+                    if (activeAudio === old.audio) activeAudio = null;
+                }
+                old.buttons.forEach(({ button, nodes, disabled }) => {
+                    button.replaceChildren(...nodes);
+                    button.disabled = disabled;
+                });
+            }
+            cancelSpeech();
+            if (!options?.skipSpeechWait) {
+                // Native cancellation can outlive cancel(); never record the old model.
+                const deadline = performance.now() + 2000;
+                while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
+                    if (leaving || request !== requestGeneration) {
+                        throw new DOMException('Recording cancelled', 'AbortError');
+                    }
+                    if (performance.now() >= deadline) {
+                        cancelSpeech();
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 25));
+                }
+            }
+            if (leaving || request !== requestGeneration) {
+                throw new DOMException('Recording cancelled', 'AbortError');
+            }
+            const stream = await nativeGetUserMedia(options);
+            if (leaving || request !== requestGeneration) {
+                stream.getTracks().forEach(track => track.stop());
+                throw new DOMException('Page left', 'AbortError');
+            }
+            for (const previous of streams) {
+                if (previous.getTracks().every(track => track.readyState === 'ended')) streams.delete(previous);
+            }
+            streams.add(stream);
+            stream.getTracks().forEach(track => {
+                track.addEventListener?.('ended', () => {
+                    if (stream.getTracks().every(t => t.readyState === 'ended')) {
+                        streams.delete(stream);
+                        releaseRecTip();
+                    }
+                }, { once: true });
+                if (typeof track.stop === 'function') {
+                    const origStop = track.stop.bind(track);
+                    track.stop = () => {
+                        try { return origStop(); }
+                        finally {
+                            if (stream.getTracks().every(t => t.readyState === 'ended')) {
+                                streams.delete(stream);
+                                releaseRecTip();
+                            }
+                        }
+                    };
+                }
             });
+            return stream;
+        } catch (error) {
+            releaseRecTip();
+            throw error;
         }
-        cancelSpeech();
-        if (!options?.skipSpeechWait) {
-            // Native cancellation can outlive cancel(); never record the old model.
-            const deadline = performance.now() + 2000;
-            while (window.speechSynthesis?.speaking || window.speechSynthesis?.pending) {
-                if (leaving || request !== requestGeneration) {
-                    throw new DOMException('Recording cancelled', 'AbortError');
-                }
-                if (performance.now() >= deadline) {
-                    cancelSpeech();
-                    break;
-                }
-                await new Promise(resolve => setTimeout(resolve, 25));
-            }
-        }
-        if (leaving || request !== requestGeneration) {
-            throw new DOMException('Recording cancelled', 'AbortError');
-        }
-        const stream = await nativeGetUserMedia(options);
-        if (leaving || request !== requestGeneration) {
-            stream.getTracks().forEach(track => track.stop());
-            throw new DOMException('Page left', 'AbortError');
-        }
-        for (const previous of streams) {
-            if (previous.getTracks().every(track => track.readyState === 'ended')) streams.delete(previous);
-        }
-        streams.add(stream);
-        stream.getTracks().forEach(track => track.addEventListener?.('ended', () => {
-            if (stream.getTracks().every(t => t.readyState === 'ended')) streams.delete(stream);
-        }, { once: true }));
-        return stream;
     }
 
     function notify(message) {
@@ -333,6 +374,7 @@ window.DrillAudio = (() => {
         cancelModel();
         streams.forEach(stream => stream.getTracks().forEach(track => track.stop()));
         streams.clear();
+        clearRecordingTipTokens();
     }
     function control(event) {
         if (!adapter) return;

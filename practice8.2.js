@@ -2042,6 +2042,8 @@ function initSttGuide82() {
         if (!wasOpen) {
             host.classList.add('is-tip-open');
             positionGuideTip(host);
+        } else {
+            host.setAttribute('data-guide-tip-suppressed', 'true');
         }
     });
     document.addEventListener('keydown', e => {
@@ -2051,9 +2053,15 @@ function initSttGuide82() {
             suppressVisibleGuideTips();
         }
     });
-    window.addEventListener('resize', () => {
-        tipHosts.forEach(positionGuideTip);
-    });
+    const repositionGuideTips = () => {
+        tipHosts.forEach(h => {
+            if (h.classList.contains('is-tip-open') || document.activeElement === h || h.matches(':hover')) {
+                positionGuideTip(h);
+            }
+        });
+    };
+    window.addEventListener('resize', repositionGuideTips);
+    window.addEventListener('scroll', repositionGuideTips, true);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSttGuide82);
 else initSttGuide82();

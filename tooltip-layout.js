@@ -52,9 +52,14 @@
         const margin = 12;
         const left = Math.max(margin, Math.min(rect.left + (rect.width - box.width) / 2,
             window.innerWidth - box.width - margin));
-        let top = rect.top - box.height - 8;
+        let top = (anchor.matches('#labelAutoRecord, #labelAutoPlay') || anchor.closest('.p82-top-right-col'))
+            ? rect.bottom + 8
+            : rect.top - box.height - 8;
         if (!anchor.matches('.p82-autostop-open')) {
             if (top < margin) top = rect.bottom + 8;
+            if (top + box.height > window.innerHeight - margin && rect.top - box.height - 8 >= margin) {
+                top = rect.top - box.height - 8;
+            }
             top = Math.max(margin, Math.min(top, window.innerHeight - box.height - margin));
             const others = [...document.querySelectorAll('.tooltip-tip, .custom-tip-box')].filter(el => {
                 if (el === tip) return false;
@@ -274,9 +279,6 @@
 
     // Action & Audio Tooltip Suppression Manager (Practice 8.2 / D1.1先行適用)
     const isActionSuppressEnabled = () => Boolean(document.querySelector('.practice82-page, .uebung11-page, .uebung-page'));
-    const isStatusIndicator = host => Boolean(
-        host && host.matches('.p82-autostop-open, .p82-autoplay-stop, .p82-autostop-tip-host, [data-tip-status-only]')
-    );
     const activeAudioTokens = new Set();
     let audioTokenSeq = 0;
 
@@ -305,8 +307,7 @@
         const token = ++audioTokenSeq;
         activeAudioTokens.add(token);
         if (isActionSuppressEnabled()) {
-            document.querySelectorAll('.custom-tip-wrap, .tooltip-wrap').forEach(suppressActionHost);
-            document.querySelectorAll('.p82-guide-tip-wrap.is-tip-open').forEach(h => h.classList.remove('is-tip-open'));
+            document.querySelectorAll('.custom-tip-wrap, .tooltip-wrap, .p82-guide-tip-wrap').forEach(suppressActionHost);
             closeVocabulary();
         }
         return token;

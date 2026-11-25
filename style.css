@@ -6032,7 +6032,7 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
 }
 
 /* Escape抑止・押下/音声操作抑止状態での強制非表示（先行実装ページに限定適用） */
-:is(.practice82-page, .uebung11-page, .uebung-page) :is([data-tip-suppressed="true"], [data-tip-action-suppressed="true"]) > :is(.custom-tip-box, .tooltip-tip, .tooltip-box) {
+:is(.practice82-page, .uebung11-page, .uebung-page) :is([data-tip-suppressed="true"], [data-tip-action-suppressed="true"]) > :is(.custom-tip-box, .tooltip-tip, .tooltip-box, .p82-guide-tip-box) {
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
@@ -6083,14 +6083,6 @@ html[data-theme="dark"] .practice82-page {
 }
 .practice82-page .p82-top-right-col .settings-onoff .mode-label {
     font-size: 14.5px;
-}
-.practice82-page .p82-top-right-col .custom-tip-box {
-    position: absolute !important;
-    bottom: auto !important;
-    top: calc(100% + 6px) !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
 }
 .practice82-page .p82-top-right-col .compact-settings .p82-setting-icon {
     width: 20px;
@@ -6651,7 +6643,7 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     line-height: 1.55;
     text-align: left;
 }
-.practice82-page :is(#labelAutoRecord, #labelAutoPlay) > .custom-tip-box {
+:is(.practice82-page, .uebung11-page) :is(#labelAutoRecord, #labelAutoPlay) > .custom-tip-box {
     width: max-content;
     max-width: min(260px, 70vw);
     white-space: normal;
@@ -6659,7 +6651,7 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 .practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) strong {
     font-weight: 700;
 }
-.practice82-page .p82-guide-tip-wrap:not([data-guide-tip-suppressed="true"]):is(:hover, :focus-visible, .is-tip-open) > .p82-guide-tip-box {
+.practice82-page .p82-guide-tip-wrap:not([data-guide-tip-suppressed="true"]):not([data-tip-action-suppressed="true"]):is(:hover, :focus-visible, .is-tip-open) > .p82-guide-tip-box {
     visibility: visible;
     opacity: 1;
 }
