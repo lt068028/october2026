@@ -6146,7 +6146,7 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     color: #cbd5e1;
 }
 .practice82-page .p82-guide-top-grid {
-    max-width: var(--content-max-width, 1080px);
+    max-width: 820px;
     margin: 4px auto 14px;
     padding: 0 16px;
     box-sizing: border-box;
@@ -6164,12 +6164,12 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    padding-top: 12px;
+    padding-top: 16px;
     padding-left: 0;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-step-card {
     grid-template-rows: 1fr;
-    min-height: 112px;
+    min-height: 88px;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-step-card[data-col="1"] .p82-guide-half-you {
     border-top-left-radius: 12px;
@@ -6180,14 +6180,20 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     border-bottom-right-radius: 12px;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-half-you {
-    padding: 16px 6px 10px;
+    padding: 10px 6px 8px;
+    grid-template-rows: 34px auto 15px;
+}
+.practice82-page .p82-stt-guide-inline .p82-guide-icon-wrap-trio {
+    height: 34px;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-mini-btn {
     position: absolute;
-    top: 8px;
-    left: 9px;
-    width: 26px;
-    height: 24px;
+    top: 0;
+    left: 12px;
+    transform: translateY(-50%);
+    z-index: 6;
+    width: 30px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -6199,21 +6205,25 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     pointer-events: none;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-mini-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     display: block;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-mini-info {
     position: absolute;
-    top: 8px;
-    left: 9px;
+    top: 0;
+    left: 12px;
+    transform: translateY(-50%);
+    z-index: 6;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    background: var(--card-bg, #ffffff);
+    border-radius: 999px;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-goal-badge {
     top: 0;
-    left: calc(50% + 10px);
+    left: calc(50% + 18px);
     transform: translate(-50%, -50%);
 }
 .practice82-page .p82-top-right-col {
