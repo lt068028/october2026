@@ -531,14 +531,23 @@ async function runRecordingLifecycleTests() {
                 };
             }
 
-            const OrigAudio = window.Audio;
-            window.Audio = class extends OrigAudio {
-                constructor(src) {
-                    super(src);
+            window.Audio = class {
+                constructor(src = '') {
+                    this.src = src;
+                    this.paused = true;
+                    this.currentTime = 0;
+                    this.onended = null;
+                    this.onerror = null;
                     window.t.audios.push(this);
                 }
+                addEventListener() {}
+                removeEventListener() {}
                 play() {
+                    this.paused = false;
                     return Promise.resolve();
+                }
+                pause() {
+                    this.paused = true;
                 }
             };
 
@@ -1310,8 +1319,7 @@ async function runRecordingLifecycleTests() {
                 Boolean(document.getElementById('voiceSelect')?.disabled);
         }, beforeUtterances);
         await page.evaluate(() => {
-            const utt = window.t.utterances.at(-1);
-            utt?.onend?.();
+            window.t.finishUtterance();
         });
         await page.clock.runFor(50);
         const relayMidState = await page.evaluate(() => {
