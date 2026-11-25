@@ -6147,7 +6147,7 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
 }
 .practice82-page .p82-guide-top-grid {
     max-width: 820px;
-    margin: 4px auto 18px;
+    margin: 10px auto 30px;
     padding: 0 16px;
     box-sizing: border-box;
     display: grid;
@@ -6157,7 +6157,7 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
 .practice82-page > .unlearned-lexicon-container {
     max-width: 100%;
     padding: 0;
-    margin: 4px auto 12px;
+    margin: 0 auto 5px;
 }
 .practice82-page .p82-stt-guide-inline {
     display: contents;
