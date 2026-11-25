@@ -6690,21 +6690,27 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     font-weight: 700;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
-    width: min(390px, calc(100vw - 24px));
-    padding: 12px 15px;
+    width: min(360px, calc(100vw - 24px));
+    padding: 10px 13px;
     background: #EFF7F1;
     color: #30483A;
-    border: 1px solid #568365;
-    font-size: 16px;
-    line-height: 1.5;
+    border: 1px solid rgba(86, 131, 101, 0.4);
+    border-radius: 8px;
+    font-size: 15.5px;
+    line-height: 1.45;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title {
-    display: block;
-    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15.5px;
     font-weight: 700;
     color: #568365;
     margin-bottom: 4px;
+}
+.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-tip-info-svg {
+    flex-shrink: 0;
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
