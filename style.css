@@ -6651,8 +6651,17 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     line-height: 1.55;
     text-align: left;
 }
+.practice82-page :is(#labelAutoRecord, #labelAutoPlay) > .custom-tip-box {
+    width: max-content;
+    max-width: min(260px, 70vw);
+    white-space: normal;
+}
 .practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) strong {
     font-weight: 700;
+}
+.practice82-page .p82-guide-tip-wrap:not([data-guide-tip-suppressed="true"]):is(:hover, :focus-visible, .is-tip-open) > .p82-guide-tip-box {
+    visibility: visible;
+    opacity: 1;
 }
 .index-page .index-guide-section {
     margin-top: 28px;
