@@ -2029,7 +2029,6 @@ function initSttGuide82() {
             tipHosts.forEach(h => h.classList.remove('is-tip-open'));
             return;
         }
-        if (dialog.contains(host)) return;
         const wasOpen = host.classList.contains('is-tip-open');
         tipHosts.forEach(h => h.classList.remove('is-tip-open'));
         host.removeAttribute('data-guide-tip-suppressed');
@@ -2047,23 +2046,6 @@ function initSttGuide82() {
     });
     window.addEventListener('resize', () => {
         tipHosts.forEach(positionGuideTip);
-    });
-    dialog.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && dialog.open && hasVisibleGuideTip()) {
-            e.preventDefault();
-            e.stopPropagation();
-            suppressVisibleGuideTips();
-        }
-    });
-    dialog.addEventListener('cancel', e => {
-        if (hasVisibleGuideTip()) {
-            e.preventDefault();
-            suppressVisibleGuideTips();
-        }
-    });
-    dialog.addEventListener('close', () => {
-        clearGuideTips();
-        (lastGuideTrigger && document.contains(lastGuideTrigger) ? lastGuideTrigger : document.getElementById('p82SttGuideBtn'))?.focus();
     });
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSttGuide82);
