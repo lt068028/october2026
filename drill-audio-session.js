@@ -395,6 +395,7 @@ window.DrillAudio = (() => {
         invalidatePlayback() {
             ++playbackGeneration;
             playbackStage?.cancel();
+            const prevActiveAudio = activeAudio;
             if (activeAudio) {
                 stopAudio(activeAudio);
                 activeAudio = null;
@@ -402,9 +403,8 @@ window.DrillAudio = (() => {
             if (relay) {
                 const old = relay;
                 relay = null;
-                if (old.audio) {
+                if (old.audio && old.audio !== prevActiveAudio) {
                     stopAudio(old.audio);
-                    if (activeAudio === old.audio) activeAudio = null;
                 }
                 old.buttons.forEach(({ button, nodes, disabled }) => {
                     button.replaceChildren(...nodes);

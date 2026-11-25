@@ -1103,7 +1103,6 @@ function initGermanDrill() {
     }
 
     function stopAllPlayback() {
-        cancelActivePlaybackToken(true);
         DrillAudio.invalidatePlayback();
         stopPlayback();
     }
@@ -1336,7 +1335,6 @@ function initGermanDrill() {
     function speakModel(text, btn = null, onDone = null, isRelay = false) {
         if ((session || preparing) && !isRelay) return;
         if (!isRelay) {
-            cancelActivePlaybackToken(true);
             stopAllPlayback();
             if (btn) markPlaying(btn);
         }
