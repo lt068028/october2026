@@ -6648,6 +6648,9 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     max-width: min(420px, 85vw);
     white-space: normal;
 }
+.practice82-page #labelAutoPlay > .custom-tip-box {
+    max-width: min(330px, 80vw);
+}
 .practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) strong {
     font-weight: 700;
 }
