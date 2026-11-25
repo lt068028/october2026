@@ -1905,19 +1905,37 @@ async function runRecordingLifecycleTests() {
         const vocabWrap = page.locator('#drill1 .tooltip-wrap').first();
         if (await vocabWrap.count() > 0) {
             assert.equal(await vocabWrap.getAttribute('tabindex'), '0', 'Uebung 1.1 vocabulary cue has tabindex="0" for Tab focus');
-            await vocabWrap.focus();
+            // Move focus via actual Tab key to trigger :focus-visible
+            await backLink.focus();
+            for (let i = 0; i < 40; i++) {
+                await page.keyboard.press('Tab');
+                if (await vocabWrap.evaluate(e => document.activeElement === e)) break;
+            }
+            assert.equal(await vocabWrap.evaluate(e => document.activeElement === e), true,
+                'Uebung 1.1 vocabulary cue reachable via Tab key');
             assert.equal(await vocabWrap.locator('.tooltip-tip').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
-                'Uebung 1.1 vocabulary cue tooltip visible on keyboard focus');
+                'Uebung 1.1 vocabulary cue tooltip visible on keyboard :focus-visible');
             await page.keyboard.press('Escape');
             assert.equal(await vocabWrap.evaluate(e => e.getAttribute('data-tip-suppressed') === 'true' && document.activeElement === e && getComputedStyle(e.querySelector('.tooltip-tip')).visibility === 'hidden'), true,
                 'Uebung 1.1 vocabulary cue tooltip hidden on Escape while preserving focus');
-            await backLink.focus();
+            await page.keyboard.press('Shift+Tab');
             assert.equal(await vocabWrap.evaluate(e => !e.hasAttribute('data-tip-suppressed')), true,
                 'Uebung 1.1 vocabulary cue suppression cleared when focus moves away');
-            await vocabWrap.focus();
+            await page.keyboard.press('Tab');
             assert.equal(await vocabWrap.locator('.tooltip-tip').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
-                'Uebung 1.1 vocabulary cue tooltip re-revealed when focused again');
+                'Uebung 1.1 vocabulary cue tooltip re-revealed when tabbed to again');
             await page.evaluate(() => document.body.focus());
+
+            // Action suppression: pointerdown/click suppresses tooltip even if focus remains, and releases after pointerleave + focusout
+            await backLink.click();
+            await page.mouse.move(0, 0);
+            assert.equal(await backLink.evaluate(e => e.getAttribute('data-tip-action-suppressed') === 'true' && getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden'), true,
+                'Uebung 1.1 tooltip suppressed after click even on pointer leave');
+            await page.evaluate(() => document.body.focus());
+            await backLink.hover();
+            assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
+                'Uebung 1.1 tooltip re-enabled on hover after pointerleave + focusout');
+            await page.mouse.move(0, 0);
 
             // Touch behavior: vocabulary cue opens on tap, while control button tooltip stays hidden during touch input
             await page.evaluate(() => {

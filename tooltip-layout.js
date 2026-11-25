@@ -271,6 +271,71 @@
         enableEscapeDismiss();
     }
 
+    // Action & Audio Tooltip Suppression Manager (Practice 8.2 / D1.1先行適用)
+    const isActionSuppressEnabled = () => Boolean(document.querySelector('.practice82-page, .uebung11-page, .uebung-page'));
+    const isStatusIndicator = host => Boolean(
+        host && host.matches('.p82-autostop-open, .p82-autoplay-stop, .p82-autostop-tip-host, [data-tip-status-only]')
+    );
+    const activeAudioTokens = new Set();
+    let audioTokenSeq = 0;
+
+    const suppressActionHost = host => {
+        if (!host || isStatusIndicator(host)) return;
+        host.setAttribute('data-tip-action-suppressed', 'true');
+        host.classList.remove('is-tip-open');
+    };
+
+    const maybeReleaseActionHost = host => {
+        if (!host || activeAudioTokens.size > 0) return;
+        if (host.matches(':hover')) return;
+        const active = document.activeElement;
+        if (active && (host === active || host.contains(active))) return;
+        host.removeAttribute('data-tip-action-suppressed');
+    };
+
+    const releaseEligibleActionHosts = () => {
+        if (activeAudioTokens.size > 0) return;
+        document.querySelectorAll('[data-tip-action-suppressed="true"]').forEach(maybeReleaseActionHost);
+    };
+
+    DrillTooltips.beginAudioAction = function () {
+        const token = ++audioTokenSeq;
+        activeAudioTokens.add(token);
+        if (isActionSuppressEnabled()) {
+            document.querySelectorAll('.custom-tip-wrap, .tooltip-wrap').forEach(suppressActionHost);
+            document.querySelectorAll('.p82-guide-tip-wrap.is-tip-open').forEach(h => h.classList.remove('is-tip-open'));
+            closeVocabulary();
+        }
+        return token;
+    };
+
+    DrillTooltips.endAudioAction = function (token) {
+        if (token !== undefined) activeAudioTokens.delete(token);
+        else activeAudioTokens.clear();
+        if (activeAudioTokens.size === 0 && isActionSuppressEnabled()) {
+            releaseEligibleActionHosts();
+        }
+    };
+
+    if (isActionSuppressEnabled()) {
+        document.addEventListener('pointerdown', e => {
+            if (e.pointerType === 'touch' && vocabularyAt(e.target)) return;
+            const host = e.target.closest?.('.custom-tip-wrap, .tooltip-wrap');
+            if (host && !isStatusIndicator(host)) suppressActionHost(host);
+        }, true);
+        document.addEventListener('pointerout', e => {
+            const host = e.target.closest?.('[data-tip-action-suppressed="true"]');
+            if (!host) return;
+            if (e.relatedTarget && host.contains(e.relatedTarget)) return;
+            setTimeout(() => maybeReleaseActionHost(host), 0);
+        }, true);
+        document.addEventListener('focusout', e => {
+            const host = e.target.closest?.('[data-tip-action-suppressed="true"]');
+            if (!host) return;
+            setTimeout(() => maybeReleaseActionHost(host), 0);
+        }, true);
+    }
+
     function reposition() {
         document.querySelectorAll(selector).forEach(anchor => {
             if (anchor.matches(':hover, :focus-visible, .tap-tip-open, .p82-autostop-open')) position(anchor);

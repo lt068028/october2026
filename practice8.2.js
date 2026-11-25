@@ -330,6 +330,10 @@ let stoppedDrillTime = 0;
 function restoreDrillButton(b) {
     if (!b) return;
     b.classList.remove('is-playing', 'p82-autoplay-stop');
+    if (b._hadCustomTipWrap === false) {
+        b.classList.remove('custom-tip-wrap');
+    }
+    delete b._hadCustomTipWrap;
     if (b._contents) {
         b.replaceChildren(...b._contents);
         delete b._contents;
@@ -456,6 +460,9 @@ function markRelayPlaying(key) {
     setDrillStopIcon(recPlay);
     for (const b of [v?.listen, recPlay]) {
         if (!b) continue;
+        if (b._hadCustomTipWrap === undefined) {
+            b._hadCustomTipWrap = b.classList.contains('custom-tip-wrap');
+        }
         b.classList.add('custom-tip-wrap', 'p82-autoplay-stop');
         b.append(node('span', 'custom-tip-box', 'Autoplay: ON'));
     }

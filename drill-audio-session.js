@@ -129,6 +129,7 @@ window.DrillAudio = (() => {
     }
 
     async function getUserMedia(options) {
+        window.DrillTooltips?.beginAudioAction?.();
         clearNotice();
         if (leaving) throw new DOMException('Page left', 'AbortError');
         const request = requestGeneration;
@@ -412,10 +413,12 @@ window.DrillAudio = (() => {
                 });
             }
             cancelSpeech();
+            window.DrillTooltips?.endAudioAction?.();
         },
         // Ordinary grammar rows: keep both labels throughout a single relay.
         // The toggle is sampled by the recorder, never by this running sequence.
         playRelay({ recordButton, result, speak, url, keepButtons = false }) {
+            const tipToken = window.DrillTooltips?.beginAudioAction?.();
             adapter.stop();
             let row = recordButton.parentElement;
             while (row && ![...row.querySelectorAll('button')].some(
@@ -435,7 +438,10 @@ window.DrillAudio = (() => {
                 button.textContent = 'Playing...';
                 button.disabled = true;
             });
-            const finish = () => { if (relay === current) adapter.stop(); };
+            const finish = () => {
+                window.DrillTooltips?.endAudioAction?.(tipToken);
+                if (relay === current) adapter.stop();
+            };
             try {
                 speak(() => {
                     if (relay !== current || adapter.busy()) return;
@@ -462,22 +468,30 @@ window.DrillAudio = (() => {
             }
         },
         speak(utterance) {
+            const tipToken = window.DrillTooltips?.beginAudioAction?.();
             if (activeAudio) {
                 stopAudio(activeAudio);
                 activeAudio = null;
             }
             cancelSpeech();
             this.guardUtterance(utterance);
+            const done = () => window.DrillTooltips?.endAudioAction?.(tipToken);
+            const origEnd = utterance.onend;
+            const origErr = utterance.onerror;
+            utterance.onend = e => { done(); origEnd?.(e); };
+            utterance.onerror = e => { done(); origErr?.(e); };
             try { window.speechSynthesis.speak(utterance); }
-            catch (error) { utterance.onerror?.(error); }
+            catch (error) { done(); utterance.onerror?.(error); }
         },
         play(audio, onError) {
+            const tipToken = window.DrillTooltips?.beginAudioAction?.();
             if (activeAudio && activeAudio !== audio) {
                 stopAudio(activeAudio);
             }
             activeAudio = audio;
             const started = performance.now();
             const cleanupAudio = () => {
+                window.DrillTooltips?.endAudioAction?.(tipToken);
                 audio.removeEventListener?.('loadedmetadata', update);
                 audio.removeEventListener?.('durationchange', update);
                 if (activeAudio === audio) activeAudio = null;

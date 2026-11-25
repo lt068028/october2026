@@ -6012,8 +6012,8 @@ body.site-scale.practice81-page.practice82-page #drill3 .answer-choice {
     margin-bottom: 0;
 }
 
-/* 先行実装ページ：Tab Focus時のTooltip表示 */
-:is(.practice82-page, .uebung11-page, .uebung-page) :is(.tooltip-wrap:is(:focus, :focus-visible) > :is(.tooltip-tip, .tooltip-box), .custom-tip-wrap:is(:focus, :focus-visible) > .custom-tip-box) {
+/* 先行実装ページ：Tab Focus時のTooltip表示（:focus-visible に一本化） */
+:is(.practice82-page, .uebung11-page, .uebung-page) :is(.tooltip-wrap:focus-visible > :is(.tooltip-tip, .tooltip-box), .custom-tip-wrap:focus-visible > .custom-tip-box) {
     visibility: visible;
     opacity: 1;
 }
@@ -6024,8 +6024,15 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
     opacity: 0 !important;
 }
 
-/* Escape抑止状態での強制非表示（先行実装ページに限定適用） */
-:is(.practice82-page, .uebung11-page, .uebung-page) [data-tip-suppressed="true"] > :is(.custom-tip-box, .tooltip-tip, .tooltip-box) {
+/* disabled / aria-disabled ボタンの説明Tooltipは非表示（.selection-help-wrap は除外） */
+:is(.practice82-page, .uebung11-page, .uebung-page) :is(.custom-tip-wrap, .tooltip-wrap):not(.selection-help-wrap):is(:disabled, [aria-disabled="true"], :has(> :is(button, [role="button"]):is(:disabled, [aria-disabled="true"]))) > :is(.custom-tip-box, .tooltip-tip, .tooltip-box) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Escape抑止・押下/音声操作抑止状態での強制非表示（先行実装ページに限定適用） */
+:is(.practice82-page, .uebung11-page, .uebung-page) :is([data-tip-suppressed="true"], [data-tip-action-suppressed="true"]) > :is(.custom-tip-box, .tooltip-tip, .tooltip-box) {
     visibility: hidden !important;
     opacity: 0 !important;
     pointer-events: none !important;
@@ -6055,9 +6062,6 @@ html[data-theme="dark"] .practice82-page {
     --p82-amber-border: rgba(251, 191, 36, 0.32);
     --p82-guide-system-bg: rgba(148, 163, 184, 0.15);
     --p82-guide-you-bg: rgba(96, 165, 250, 0.10);
-}
-.practice82-page .p82-stt-guide-dialog:not([open]) {
-    display: none !important;
 }
 .practice82-page #drill1 > .info-panel {
     display: grid;
@@ -6281,58 +6285,6 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-recognition-
         justify-content: flex-end;
         gap: 8px 14px;
     }
-}
-.practice82-page .p82-stt-guide-dialog[open] {
-    box-sizing: border-box;
-    width: min(740px, calc(100vw - 24px));
-    max-width: calc(100vw - 24px);
-    margin: auto;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid var(--border-color, #cbd5e1);
-    background: var(--card-bg, #ffffff);
-    color: var(--text-primary, #1e293b);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
-    overflow-x: hidden;
-}
-.practice82-page .p82-stt-guide-dialog::backdrop {
-    background: rgba(15, 23, 42, 0.48);
-}
-.practice82-page .p82-stt-guide-inner {
-    font-family: 'Lato', sans-serif;
-    box-sizing: border-box;
-    width: 100%;
-}
-.practice82-page .p82-stt-guide-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-.practice82-page .p82-stt-guide-title {
-    margin: 0;
-    font-size: 17.5px;
-    font-weight: 700;
-    line-height: 1.25;
-}
-.practice82-page .p82-stt-guide-close {
-    padding: 3px 9px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color, #cbd5e1);
-    background: transparent;
-    color: var(--text-primary, #1e293b);
-    font-family: 'Lato', sans-serif;
-    font-size: 13.5px;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.practice82-page .p82-stt-guide-lead {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: var(--text-secondary, #475569);
-    line-height: 1.3;
 }
 .practice82-page .p82-stt-guide-board {
     position: relative;
@@ -6692,44 +6644,6 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 .practice82-page #p82RecognitionTipInline {
     font-size: 17px;
     line-height: 1.55;
-}
-.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
-    width: min(360px, calc(100vw - 24px));
-    padding: 10px 13px;
-    background: #EFF7F1;
-    color: #30483A;
-    border: 1px solid rgba(86, 131, 101, 0.4);
-    border-radius: 8px;
-    font-size: 15.5px;
-    line-height: 1.45;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
-}
-.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 15.5px;
-    font-weight: 700;
-    color: #568365;
-    margin-bottom: 4px;
-}
-.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-tip-info-svg {
-    flex-shrink: 0;
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
-    background: #1a2e22;
-    color: #e2f0e6;
-    border: 1px solid #568365;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title {
-    color: #86efac;
-}
-.practice82-page .p82-guide-tip-wrap:not([data-guide-tip-suppressed="true"]):is(:hover, :focus, :focus-visible, .is-tip-open) > .p82-guide-tip-box {
-    visibility: visible;
-    opacity: 1;
 }
 .index-page .index-guide-section {
     margin-top: 28px;
