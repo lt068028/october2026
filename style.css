@@ -6642,8 +6642,17 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     font-weight: 700;
 }
 .practice82-page #p82RecognitionTipInline {
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.55;
+}
+.practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) {
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.55;
+    text-align: left;
+}
+.practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) strong {
+    font-weight: 700;
 }
 .index-page .index-guide-section {
     margin-top: 28px;
