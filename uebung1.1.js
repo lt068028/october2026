@@ -995,6 +995,9 @@ function initGermanDrill() {
                 btn.append(tip);
             } else {
                 tip.textContent = text;
+                delete tip.dataset.viewportTip;
+                tip.style.removeProperty("--tip-left");
+                tip.style.removeProperty("--tip-top");
             }
         } else if (tip) {
             tip.remove();
@@ -1018,7 +1021,7 @@ function initGermanDrill() {
         }
         [rv.listen, playBtn].forEach(b => {
             if (!b) return;
-            b.classList.remove("is-playing");
+            b.classList.remove("is-playing", "p82-autoplay-stop");
             delete b.dataset.keepPlayback;
             if (b._relayAriaLabel !== undefined) {
                 if (b._relayAriaLabel === null) b.removeAttribute("aria-label");
@@ -1028,6 +1031,9 @@ function initGermanDrill() {
             if (b._relayTipText !== undefined) {
                 applyRelayTip(b, b._relayTipText);
                 delete b._relayTipText;
+            }
+            if (b.matches(":hover") || document.activeElement === b || b.contains(document.activeElement)) {
+                b.setAttribute("data-tip-action-suppressed", "true");
             }
         });
     }
@@ -1084,6 +1090,13 @@ function initGermanDrill() {
                 delete playingButton._originalAriaLabel;
             }
             playingButton.classList.remove("is-playing");
+            if (playingButton._savedTipText !== undefined) {
+                applyRelayTip(playingButton, playingButton._savedTipText);
+                delete playingButton._savedTipText;
+            }
+            if (playingButton.matches(":hover") || document.activeElement === playingButton || playingButton.contains(document.activeElement)) {
+                playingButton.setAttribute("data-tip-action-suppressed", "true");
+            }
             playingButton = null;
         }
         sync();
@@ -1126,6 +1139,12 @@ function initGermanDrill() {
             return;
         }
         playingButton = b;
+        const existingTip = b.querySelector(".custom-tip-box");
+        if (existingTip) {
+            b._savedTipText = existingTip.textContent;
+            existingTip.remove();
+            b.classList.remove("custom-tip-wrap");
+        }
         b.classList.add("is-playing");
         b.dataset.keepPlayback = "true";
         b.disabled = false;
@@ -1723,7 +1742,8 @@ function initGermanDrill() {
                     b._relayAriaLabel = b.getAttribute("aria-label");
                     const existingTip = b.querySelector(".custom-tip-box");
                     b._relayTipText = existingTip ? existingTip.textContent : null;
-                    b.classList.add("is-playing");
+                    b.classList.add("is-playing", "p82-autoplay-stop");
+                    b.removeAttribute("data-tip-action-suppressed");
                     b.dataset.keepPlayback = "true";
                     b.disabled = false;
                     b.setAttribute("aria-label", "Wiedergabe stoppen");
