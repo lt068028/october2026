@@ -6234,13 +6234,20 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     top: 0;
     left: max(50px, calc(50% + 4px));
     transform: translate(-50%, -50%);
-    background: #059669;
-    color: #ffffff;
+    background: #f59e0b;
+    color: #451a03;
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-goal-badge,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-goal-badge {
-    background: #10b981;
-    color: #064e3b;
+    background: #fbbf24;
+    color: #0f172a;
+}
+.practice82-page .p82-stt-guide-inline .p82-guide-goal-half {
+    background: rgba(245, 158, 11, 0.10);
+}
+body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-goal-half,
+html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-goal-half {
+    background: var(--p82-amber-bg);
 }
 .practice82-page .p82-stt-guide-inline .p82-recognition-info-icon {
     width: 22px;
