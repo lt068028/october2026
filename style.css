@@ -6213,20 +6213,27 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     top: 0;
     left: max(50px, calc(50% + 4px));
     transform: translate(-50%, -50%);
-    background: #d97706;
+    background: var(--accent-color, #2563eb);
     color: #ffffff;
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-goal-badge,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-goal-badge {
-    background: #fbbf24;
-    color: #0f172a;
+    background: #3b82f6;
+    color: #ffffff;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-goal-half {
-    background: rgba(245, 158, 11, 0.10);
+    background: rgba(37, 99, 235, 0.14);
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-goal-half,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-goal-half {
-    background: var(--p82-amber-bg);
+    background: rgba(59, 130, 246, 0.22);
+}
+.practice82-page .p82-top-right-col .settings-onoff .mode-label {
+    color: #475569;
+}
+body.dark-mode.practice82-page .p82-top-right-col .settings-onoff .mode-label,
+html[data-theme="dark"] .practice82-page .p82-top-right-col .settings-onoff .mode-label {
+    color: #cbd5e1;
 }
 .practice82-page .p82-stt-guide-inline .p82-recognition-info-icon {
     width: 22px;
