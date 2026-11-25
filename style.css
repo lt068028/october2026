@@ -6147,17 +6147,17 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
 }
 .practice82-page .p82-guide-top-grid {
     max-width: 820px;
-    margin: 10px auto 28px;
+    margin: 4px auto 18px;
     padding: 0 16px;
     box-sizing: border-box;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 8px;
+    row-gap: 2px;
 }
 .practice82-page > .unlearned-lexicon-container {
     max-width: 100%;
     padding: 0;
-    margin: 0 auto 5px;
+    margin: 4px auto 12px;
 }
 .practice82-page .p82-stt-guide-inline {
     display: contents;
@@ -6220,32 +6220,15 @@ html[data-theme="dark"] .practice82-page .p82-top-right-col .compact-settings :i
     left: 12px;
     transform: translateY(-50%);
     z-index: 6;
-    width: 30px;
-    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #fffbeb;
-    border: 1px solid #f59e0b;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(217, 119, 6, 0.22);
-    transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    background: var(--card-bg, #ffffff);
+    border-radius: 999px;
+    transition: transform 0.18s ease;
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-wrap:is(:hover, :focus-visible) .p82-guide-mini-info {
-    background: #fef3c7;
-    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.34);
-    transform: translateY(calc(-50% - 1px));
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-mini-info,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-mini-info {
-    background: #451a03;
-    border-color: #f59e0b;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-wrap:is(:hover, :focus-visible) .p82-guide-mini-info,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-wrap:is(:hover, :focus-visible) .p82-guide-mini-info {
-    background: #78350f;
-    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+    transform: translateY(-50%) scale(1.08);
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-goal-badge {
     top: 0;
@@ -6253,14 +6236,14 @@ html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-wr
     transform: translate(-50%, -50%);
 }
 .practice82-page .p82-stt-guide-inline .p82-recognition-info-icon {
-    width: 21px;
-    height: 21px;
+    width: 22px;
+    height: 22px;
     overflow: visible;
-    color: #b45309;
+    color: #0284c7;
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-recognition-info-icon,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-recognition-info-icon {
-    color: #fbbf24;
+    color: #38bdf8;
 }
 .practice82-page .p82-top-right-col {
     grid-column: 1;
@@ -6706,8 +6689,8 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     50% { opacity: 0.45; }
 }
 @keyframes p82SparkleTwinkle {
-    0%, 100% { opacity: 0.35; transform: scale(0.82); fill: #f59e0b; }
-    50% { opacity: 1; transform: scale(1.15); fill: #fbbf24; }
+    0%, 100% { opacity: 0.12; transform: scale(0.45); fill: #d97706; }
+    50% { opacity: 1; transform: scale(1.28); fill: #fbbf24; }
 }
 .practice82-page .p82-wave-morph-svg .p82-wave-bars {
     animation: p82WavePulse 2.2s ease-in-out infinite;
@@ -6715,20 +6698,19 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 .practice82-page .p82-recognition-info-icon .p82-info-sparkle {
     transform-box: fill-box;
     transform-origin: center;
-    animation: p82SparkleTwinkle 2.4s ease-in-out infinite;
+    animation: p82SparkleTwinkle 1.8s ease-in-out infinite;
 }
 .practice82-page .p82-recognition-info-icon .p82-info-sparkle:nth-of-type(2) {
     animation-delay: 0s;
 }
 .practice82-page .p82-recognition-info-icon .p82-info-sparkle:nth-of-type(3) {
-    animation-delay: 0.75s;
+    animation-delay: 0.6s;
 }
 .practice82-page .p82-recognition-info-icon .p82-info-sparkle:nth-of-type(4) {
-    animation-delay: 1.5s;
+    animation-delay: 1.2s;
 }
 @media (prefers-reduced-motion: reduce) {
-    .practice82-page .p82-wave-morph-svg .p82-wave-bars,
-    .practice82-page .p82-recognition-info-icon .p82-info-sparkle {
+    .practice82-page .p82-wave-morph-svg .p82-wave-bars {
         animation: none !important;
     }
 }
