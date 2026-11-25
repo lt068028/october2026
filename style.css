@@ -6691,40 +6691,31 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
     width: min(390px, calc(100vw - 24px));
-    padding: 13px 16px;
-    background: #fff1f2;
-    color: #1e293b;
-    border: 1px solid #fecdd3;
-    border-left: 4px solid #e11d48;
-    font-size: 16.5px;
+    padding: 12px 15px;
+    background: #EFF7F1;
+    color: #30483A;
+    border: 1px solid #568365;
+    font-size: 16px;
     line-height: 1.5;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14);
 }
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title {
     display: block;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
-    color: #be123c;
-    margin-bottom: 5px;
-}
-.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-tip-positive {
-    color: #be123c;
+    color: #568365;
+    margin-bottom: 4px;
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
-    background: #2d161d;
-    color: #ffe4e6;
-    border: 1px solid #be123c;
-    border-left: 4px solid #fda4af;
+    background: #1a2e22;
+    color: #e2f0e6;
+    border: 1px solid #568365;
     box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title,
 html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-guide-tip-title {
-    color: #fda4af;
-}
-body.dark-mode.practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-tip-positive,
-html[data-theme="dark"] .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card .p82-tip-positive {
-    color: #fda4af;
+    color: #86efac;
 }
 .practice82-page .p82-guide-tip-wrap:not([data-guide-tip-suppressed="true"]):is(:hover, :focus, :focus-visible, .is-tip-open) > .p82-guide-tip-box {
     visibility: visible;
