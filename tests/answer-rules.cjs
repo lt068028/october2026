@@ -163,6 +163,16 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
   // Symbols are audited, not broadened in this change.
   if(name==='composition1')check(await p.evaluate(()=>compositionBestDiff('天気がいいです【】',['天気がいいです']).cost===0),false,'composition synthetic brackets unchanged');
   if(name==='pronunciation2')check(await p.evaluate(()=>p2BestDiff('天気がいいです【】',['天気がいいです']).correct),true,'p2 brackets already ignored');
+  if(name==='practice7.3'){
+   check(await p.evaluate(()=>DrillAnswer.collapseAdjacentRepeats('はいはい会っていました')),'はい会っていました','C4 adjacent yes repeat');
+   check(await p.evaluate(()=>DrillAnswer.collapseAdjacentRepeats('今日の午前中今日の午前中会っていました')),'今日の午前中会っていました','C4 adjacent time repeat');
+   check(await p.evaluate(()=>DrillAnswer.collapseAdjacentRepeats('今日友達と今日会いました')),'今日友達と今日会いました','C4 non-adjacent repeat not collapsed');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('はい')),true,'response word only: はい');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('はい、')),true,'response word only: はい、');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('えーと、いいえ。')),true,'response word only: えーと、いいえ。');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('はい、会っていました')),false,'response word with predicate is not response-word-only');
+   check(await p.evaluate(()=>DrillAnswer.expandYnAlternatives('今日の午前中友達と会っていました',['morning','meet_friend']).includes('今朝友達に会っていました')),true,'common Y/N alternatives expansion');
+  }
   assert.deepEqual(errors,[],name+' browser errors');await p.close();
  }
  await browser.close();console.log('PASS answer rules',count);

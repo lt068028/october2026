@@ -49,5 +49,50 @@ window.DrillAnswer = (() => {
             .replace(/[\p{P}\p{Z}\s]/gu, '').replace(/(?:よね|よ|ね)$/, '');
         return body.endsWith('か');
     }
-    return { numbers, kanjiNumbers, formAllowed };
+    function collapseAdjacentRepeats(text) {
+        let s = String(text ?? '').normalize('NFKC');
+        let prev;
+        do {
+            prev = s;
+            s = s.replace(/(はい|いいえ|うん|ううん)(?:[、,\s]*\1)+/g, '$1');
+            s = s.replace(/([^\s、,。.?？!！]{2,}?)(?:[、,\s]*\1)+/g, '$1');
+        } while (s !== prev);
+        return s;
+    }
+    function isResponseWordOnly(text) {
+        const cleaned = String(text ?? '').normalize('NFKC')
+            .replace(/[\p{P}\p{Z}\s]/gu, '')
+            .replace(/^(?:えーと|えっと|あの|あのう|まあ|うーん)+/, '');
+        return /^(?:はい|いいえ|うん|ううん)+$/.test(cleaned);
+    }
+    const COMMON_YN_ALTERNATIVES = {
+        morning: [['今日の午前中', '今朝'], ['きょうのごぜんちゅう', 'けさ']],
+        meet_friend: [['友達と', '友達に'], ['ともだちと', 'ともだちにあう'.slice(0, 5)]],
+    };
+    function expandYnAlternatives(text, keys = []) {
+        const base = String(text ?? '');
+        const results = new Set([base]);
+        for (const key of keys) {
+            const groups = COMMON_YN_ALTERNATIVES[key] || [];
+            for (const pair of groups) {
+                for (const src of pair) {
+                    for (const current of [...results]) {
+                        if (current.includes(src)) {
+                            for (const dst of pair) results.add(current.replace(src, dst));
+                        }
+                    }
+                }
+            }
+        }
+        return [...results];
+    }
+    return {
+        numbers,
+        kanjiNumbers,
+        formAllowed,
+        collapseAdjacentRepeats,
+        isResponseWordOnly,
+        COMMON_YN_ALTERNATIVES,
+        expandYnAlternatives,
+    };
 })();

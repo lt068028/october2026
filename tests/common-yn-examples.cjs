@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..');
 (async()=>{
  const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});let checks=0;
  const eq=(a,e,label)=>{assert.deepEqual(a,e,label);checks++;};
- for(const name of ['practice1.2','practice7.1','practice7.2','practice7.3','practice8.1']){
+ for(const name of ['practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2']){
   const p=await b.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
   await p.addInitScript(()=>{window.spoken=[];Object.defineProperty(window,'speechSynthesis',{value:{getVoices:()=>[],addEventListener(){},cancel(){},speak(u){spoken.push(u)}}});window.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};});
   await p.route('http://yn.test/**',r=>{const f=path.join(root,new URL(r.request().url()).pathname);if(!fs.existsSync(f))return r.fulfill({status:404,body:''});r.fulfill({body:fs.readFileSync(f),contentType:f.endsWith('.js')?'text/javascript':f.endsWith('.css')?'text/css':f.endsWith('.html')?'text/html':'image/png'});});
