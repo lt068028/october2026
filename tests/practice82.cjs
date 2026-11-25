@@ -782,7 +782,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       return {
         key: sp.key,
         hasSvg: info.hasSvg,
-        filled: info.filled === (sp.v === 'filled'),
+        filled: info.filled,
         vbMatch: info.viewBox === sp.vb,
         dMatch: Boolean(info.d && info.d === expectedD),
         wMatch: info.width === sp.w && info.height === sp.w,
