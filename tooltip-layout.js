@@ -293,8 +293,7 @@
     const maybeReleaseActionHost = host => {
         if (!host || activeAudioTokens.size > 0) return;
         if (host.matches(':hover')) return;
-        const active = document.activeElement;
-        if (active && (host === active || host.contains(active))) return;
+        if (host.matches(':focus-visible') || Boolean(host.querySelector(':focus-visible'))) return;
         host.removeAttribute('data-tip-action-suppressed');
     };
 

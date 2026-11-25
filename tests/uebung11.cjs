@@ -1384,6 +1384,11 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(50);
         assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .play-recording-btn')?.classList.contains('is-playing')), false, 'Recorded playback natural end must clear is-playing');
         assert.equal(await page.evaluate(() => document.getElementById('voiceSelect')?.disabled), false, 'Recorded playback natural end must release disabled lock');
+        await page.mouse.move(0, 0);
+        assert.equal(await page.evaluate(() => document.querySelector('#drill1 .drill-row .play-recording-btn')?.hasAttribute('data-tip-action-suppressed')), false, 'Pointer leave after recorded playback must release tooltip suppression without moving focus');
+        await page.locator('#drill1 .drill-row .play-recording-btn').hover();
+        assert.equal(await page.locator('#drill1 .drill-row .play-recording-btn .custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true, 'Re-hovering play-recording-btn after pointer leave must show tooltip again');
+        await page.mouse.move(0, 0);
 
         // Re-click the SAME playing button -> must ONLY stop, NOT restart
         await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
@@ -1926,15 +1931,16 @@ async function runRecordingLifecycleTests() {
                 'Uebung 1.1 vocabulary cue tooltip re-revealed when tabbed to again');
             await page.evaluate(() => document.body.focus());
 
-            // Action suppression: pointerdown/click suppresses tooltip even if focus remains, and releases after pointerleave + focusout
+            // Action suppression: pointerdown/click suppresses tooltip, and releases on pointerleave when focus is not :focus-visible
             await backLink.click();
-            await page.mouse.move(0, 0);
             assert.equal(await backLink.evaluate(e => e.getAttribute('data-tip-action-suppressed') === 'true' && getComputedStyle(e.querySelector('.custom-tip-box')).visibility === 'hidden'), true,
-                'Uebung 1.1 tooltip suppressed after click even on pointer leave');
-            await page.evaluate(() => document.body.focus());
+                'Uebung 1.1 tooltip suppressed immediately after click');
+            await page.mouse.move(0, 0);
+            assert.equal(await backLink.evaluate(e => !e.hasAttribute('data-tip-action-suppressed')), true,
+                'Uebung 1.1 tooltip suppression released on pointerleave without moving focus');
             await backLink.hover();
             assert.equal(await backLink.locator('.custom-tip-box').evaluate(e => getComputedStyle(e).visibility === 'visible'), true,
-                'Uebung 1.1 tooltip re-enabled on hover after pointerleave + focusout');
+                'Uebung 1.1 tooltip re-enabled on hover after pointerleave');
             await page.mouse.move(0, 0);
 
             // Touch behavior: vocabulary cue opens on tap, while control button tooltip stays hidden during touch input

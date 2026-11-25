@@ -1032,7 +1032,7 @@ function initGermanDrill() {
                 applyRelayTip(b, b._relayTipText);
                 delete b._relayTipText;
             }
-            if (b.matches(":hover") || document.activeElement === b || b.contains(document.activeElement)) {
+            if (b.matches(":hover") || b.matches(":focus-visible") || Boolean(b.querySelector(":focus-visible"))) {
                 b.setAttribute("data-tip-action-suppressed", "true");
             }
         });
@@ -1094,7 +1094,7 @@ function initGermanDrill() {
                 applyRelayTip(playingButton, playingButton._savedTipText);
                 delete playingButton._savedTipText;
             }
-            if (playingButton.matches(":hover") || document.activeElement === playingButton || playingButton.contains(document.activeElement)) {
+            if (playingButton.matches(":hover") || playingButton.matches(":focus-visible") || Boolean(playingButton.querySelector(":focus-visible"))) {
                 playingButton.setAttribute("data-tip-action-suppressed", "true");
             }
             playingButton = null;
