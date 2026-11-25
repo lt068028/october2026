@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+    <style>
+        .base-icon circle, .base-icon path { stroke: #d97706; }
+        .badge-frame { stroke: rgba(15, 23, 42, 0.45); }
+        @media (prefers-color-scheme: dark) {
+            .base-icon circle, .base-icon path { stroke: #fbbf24; }
+            .badge-frame { stroke: rgba(255, 255, 255, 0.55); }
+        }
+    </style>
+    <defs>
+        <clipPath id="de-badge-clip">
+            <rect x="11.5" y="14.5" width="11.5" height="8.5" rx="1.6"/>
+        </clipPath>
+    </defs>
+    <g class="base-icon">
+        <circle cx="9.5" cy="8.5" r="3.5" stroke-width="1.6"/>
+        <path d="M4 19.5c0-2.7 2.4-4.6 5.5-4.6s5.5 1.9 5.5 4.6" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M17.5 8.5a4.5 4.5 0 0 1 0 6M20.2 6.7a7 7 0 0 1 0 9.6" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <g clip-path="url(#de-badge-clip)">
+        <rect x="11.5" y="14.5" width="11.5" height="2.84" fill="#000000" stroke="none"/>
+        <rect x="11.5" y="17.33" width="11.5" height="2.84" fill="#DD0000" stroke="none"/>
+        <rect x="11.5" y="20.16" width="11.5" height="2.84" fill="#FFCE00" stroke="none"/>
+    </g>
+    <rect x="11.5" y="14.5" width="11.5" height="8.5" rx="1.6" fill="none" class="badge-frame" stroke-width="0.7"/>
+</svg>
