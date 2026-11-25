@@ -82,7 +82,8 @@
     }
     function isTipActive(anchor, tip) {
         if (!tip) return false;
-        if (anchor.matches('.tap-tip-open, :hover, :focus, :focus-within, .p82-autostop-open')) return true;
+        if (anchor.hasAttribute('data-tip-action-suppressed') || anchor.hasAttribute('data-tip-suppressed')) return false;
+        if (anchor.matches('.tap-tip-open, :hover, :focus-visible, .p82-autostop-open')) return true;
         return getComputedStyle(tip).visibility === 'visible';
     }
     function resetHiddenTip(tip) {
@@ -283,6 +284,8 @@
         if (!host || isStatusIndicator(host)) return;
         host.setAttribute('data-tip-action-suppressed', 'true');
         host.classList.remove('is-tip-open');
+        const tip = host.querySelector('.tooltip-tip, .custom-tip-box') || document.getElementById(host.dataset.portalTip || '');
+        resetHiddenTip(tip);
     };
 
     const maybeReleaseActionHost = host => {
