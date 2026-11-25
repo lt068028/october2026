@@ -6645,7 +6645,7 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
 }
 :is(.practice82-page, .uebung11-page) :is(#labelAutoRecord, #labelAutoPlay) > .custom-tip-box {
     width: max-content;
-    max-width: min(260px, 70vw);
+    max-width: min(420px, 85vw);
     white-space: normal;
 }
 .practice82-page :is(#p82RecognitionTipInline, #labelAutoRecord > .custom-tip-box, #labelAutoPlay > .custom-tip-box) strong {
