@@ -6689,6 +6689,10 @@ html[data-theme="dark"] .practice82-page .p82-guide-goal-badge {
     color: #fbbf24;
     font-weight: 700;
 }
+.practice82-page #p82RecognitionTipInline {
+    font-size: 17px;
+    line-height: 1.55;
+}
 .practice82-page .p82-stt-guide-inline .p82-guide-tip-box.p82-guide-info-card {
     width: min(360px, calc(100vw - 24px));
     padding: 10px 13px;
