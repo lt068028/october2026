@@ -6039,7 +6039,7 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
 }
 
 /* Practice 8.2 STT Learning Guide (integrated 4-step cards, .practice82-page scope only) */
-.practice82-page {
+:is(.practice82-page, .uebung11-page) {
     --p82-amber-accent: #b45309;
     --p82-amber-bg: rgba(180, 83, 9, 0.08);
     --p82-amber-border: rgba(180, 83, 9, 0.28);
@@ -6055,7 +6055,7 @@ html[data-tooltip-input="touch"] :is(.practice82-page, .uebung11-page, .uebung-p
         --p82-guide-you-bg: rgba(96, 165, 250, 0.10);
     }
 }
-body.dark-mode:is(:is(.practice82-page, .uebung11-page), .uebung11-page),
+body.dark-mode:is(.practice82-page, .uebung11-page),
 html[data-theme="dark"] :is(.practice82-page, .uebung11-page) {
     --p82-amber-accent: #fbbf24;
     --p82-amber-bg: rgba(251, 191, 36, 0.12);
@@ -6678,11 +6678,6 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .p82-guide-goal-ba
     color: var(--text-secondary);
 }
 .index-page .index-guide-item {
-
-.uebung11-page #d11SttGuide {
-    max-width: 720px;
-    margin: 0 auto 18px;
-}
     margin-bottom: 16px;
 }
 .index-page .index-guide-item:last-child {

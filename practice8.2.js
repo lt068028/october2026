@@ -1976,94 +1976,10 @@ showResult = function(...args) {
 window.practice82State = { saved, choices, rowsFor, keyFor, entriesFor82, sync, render };
 
 function initSttGuide82() {
-    const tipHosts = [...document.querySelectorAll('.practice82-page .p82-guide-tip-wrap')];
-    if (!tipHosts.length) return;
-    const positionGuideTip = host => {
-        const box = host?.querySelector('.p82-guide-tip-box');
-        if (!box) return;
-        const rect = host.getBoundingClientRect();
-        const margin = 12;
-        const gap = 8;
-        const bw = box.offsetWidth || 260;
-        const bh = box.offsetHeight || 96;
-        let left = rect.left + rect.width / 2 - bw / 2;
-        left = Math.max(margin, Math.min(left, window.innerWidth - margin - bw));
-        let top = rect.bottom + gap;
-        if (top + bh > window.innerHeight - margin && rect.top - gap - bh >= margin) {
-            top = rect.top - gap - bh;
-        }
-        top = Math.max(margin, Math.min(top, window.innerHeight - margin - bh));
-        box.style.left = Math.round(left) + 'px';
-        box.style.top = Math.round(top) + 'px';
-    };
-    const clearGuideTips = () => {
-        tipHosts.forEach(h => {
-            h.classList.remove('is-tip-open');
-            h.removeAttribute('data-guide-tip-suppressed');
-        });
-    };
-    const hasVisibleGuideTip = () => tipHosts.some(h => {
-        if (h.getAttribute('data-guide-tip-suppressed') === 'true') return false;
-        if (h.classList.contains('is-tip-open')) return true;
-        if (document.activeElement === h || h.matches(':hover')) return true;
-        const box = h.querySelector('.p82-guide-tip-box');
-        return Boolean(box && getComputedStyle(box).visibility === 'visible');
+    window.DrillTooltips?.initGuideTooltips({
+        selector: '.practice82-page .p82-guide-tip-wrap',
+        ignoreSelector: '#p82SttGuideBtn, #p82SttGuideClose',
     });
-    const suppressVisibleGuideTips = () => {
-        tipHosts.forEach(h => {
-            h.classList.remove('is-tip-open');
-            if (document.activeElement === h || h.matches(':hover')) {
-                h.setAttribute('data-guide-tip-suppressed', 'true');
-            }
-        });
-    };
-    tipHosts.forEach(h => {
-        h.addEventListener('pointerenter', e => {
-            if (e.pointerType === 'mouse') h.removeAttribute('data-guide-tip-suppressed');
-            positionGuideTip(h);
-        });
-        h.addEventListener('focusin', () => {
-            h.removeAttribute('data-guide-tip-suppressed');
-            positionGuideTip(h);
-        });
-        h.addEventListener('focusout', () => {
-            h.removeAttribute('data-guide-tip-suppressed');
-            h.classList.remove('is-tip-open');
-        });
-    });
-    document.addEventListener('click', e => {
-        if (e.target.closest?.('#p82SttGuideBtn') || e.target.closest?.('#p82SttGuideClose')) return;
-        const host = e.target.closest?.('.practice82-page .p82-guide-tip-wrap');
-        if (!host) {
-            tipHosts.forEach(h => h.classList.remove('is-tip-open'));
-            return;
-        }
-        const wasOpen = host.classList.contains('is-tip-open');
-        tipHosts.forEach(h => h.classList.remove('is-tip-open'));
-        host.removeAttribute('data-guide-tip-suppressed');
-        if (!wasOpen) {
-            host.classList.add('is-tip-open');
-            positionGuideTip(host);
-        } else {
-            host.setAttribute('data-guide-tip-suppressed', 'true');
-        }
-    });
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape' && hasVisibleGuideTip()) {
-            e.preventDefault();
-            e.stopPropagation();
-            suppressVisibleGuideTips();
-        }
-    });
-    const repositionGuideTips = () => {
-        tipHosts.forEach(h => {
-            if (h.classList.contains('is-tip-open') || document.activeElement === h || h.matches(':hover')) {
-                positionGuideTip(h);
-            }
-        });
-    };
-    window.addEventListener('resize', repositionGuideTips);
-    window.addEventListener('scroll', repositionGuideTips, true);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initSttGuide82);
 else initSttGuide82();
