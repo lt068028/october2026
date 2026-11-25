@@ -1214,7 +1214,9 @@ function sync() {
     const recBusy = Boolean(session || preparing);
     const exPlaying = Boolean(activeExButton);
     const drPlaying = Boolean(playButton || relayKey);
-    document.querySelectorAll('#drill1Container select,.compact-settings button,.compact-settings input,.drill-cue-button,#drill1Container .answer-choice').forEach(e => e.disabled = recBusy);
+    const settingsLocked = recBusy || exPlaying || drPlaying;
+    document.querySelectorAll('.compact-settings button,.compact-settings input,#voiceSelect').forEach(e => e.disabled = settingsLocked);
+    document.querySelectorAll('#drill1Container select,.drill-cue-button,#drill1Container .answer-choice').forEach(e => e.disabled = recBusy);
     document.querySelectorAll('.ex-audio-btn').forEach(b => {
         if (recBusy || drPlaying) {
             b.disabled = true;
