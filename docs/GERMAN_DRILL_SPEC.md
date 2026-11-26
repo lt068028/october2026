@@ -114,6 +114,7 @@
       - 録音後はAccepted／Incomplete／Mismatchの3状態で扱う。
         - Accepted：raw認識テキスト ＋ ✅（選択外地域の許容文発話時は補足バッジを付与）。
         - Incomplete：evaluateGermanAnswer()が、登録済み許容候補文の先頭から単語単位で完全一致する厳密なprefix（候補より短く、各単語が同じ順序で一致）と判定した場合に限る。単語の一部だけの一致や、単に意味上途中に見える発話はIncompleteとしない。視覚表示はUI_LAYOUT_SPEC.md §9の共通契約に従い、Mismatch差分・Keep going!は表示しない。
+        - **現行コードとの差**：現行のuebung1.1.jsは認識テキスト末尾へ常に「…」を付加しており、末尾に既存の「…」または「...」がある場合の重複抑止が未反映である。後続の最小コード修正でUI_LAYOUT_SPEC.md §9の共通条件へ合わせる。今回の文書改訂ではアプリコードを変更しない。
         - Mismatch：生テキストのうち不一致箇所のみを赤字（result-incorrect）で表示し、❌マークは付与しない。訂正ガイダンスは🔥 Keep going!とする。
       - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
     - 訂正ガイダンス（`.correction-box`、`mismatch` 時のみ表示）:

@@ -164,7 +164,9 @@
 
 - Acceptedのチェックは丸囲みなしとし、24×24のviewBoxを維持した元のFilled形状に同色の1.5pxストロークを追加して22×22pxで表示する。Checkmark Circleは使用しない。
 - Mismatchの案内文はKeep going!とし、Fire Regularを添える。アイコン・文言に背景、枠、影を付けない。
-- Incompleteは共通のFootprints SVGを用い、共通状態色 --status-incomplete-color、25×25px、translateY(-0.5px)で表示する。ページ固有の判定ロジックを、この視覚契約から推定・変更しない。
+- Mismatchのページ固有の並び順・長文時の配置はPRACTICE2_SPEC.mdを参照する。
+- Incompleteは共通のFootprints SVGを用い、共通状態色 --status-incomplete-color、25×25px、translateY(-0.5px)で表示する。SVGにはaria-hidden="true"を設定する。ページ固有の判定ロジックを、この視覚契約から推定・変更しない。
+- Incomplete表示は右寄せ配置とし、順序はFootprints SVG → 認識テキスト（表示専用「…」を含む）→ 録音再生ボタンとする。
 - Incompleteの表示テキストは、ページ固有の表示変換を適用した認識テキストとする。P8.2のScript Mode対応変換と、D1.1のraw STT表示の違いは各ページの表示処理として維持する。
 - Incompleteの認識テキスト末尾には、表示専用の「…」を付加する。ただし、末尾が既に「…」またはASCIIピリオド3個「...」で終わっている場合に限り、重複付加しない。それ以外の通常文末（句点「。」、ピリオド1個「.」、感嘆符、疑問符等）には、通常文末の後ろへ表示専用の「…」を付加する。
 - Tooltipは次の5種類からランダムに選択する：「Getting closer!」「Almost there!」「Keep it up!」「Nice flow!」「Great start!」。表示時に選び、Mouse HoverまたはKeyboard Focusで再抽選する。
@@ -174,7 +176,7 @@
 ## 10. Copy my sentencesボタン
 
 - 録音付きDrillのコピー操作領域は、左にMicrosoft Fluent `Clipboard 24 Regular` SVG（20×20px、`currentColor`）、右に`Copy my sentences`を並べる。絵文字📋は使用しない。
-- ボタン下の共通補助説明はCopy your drill results to review or share.とする。Copy範囲はPROJECT_SPEC.md §7.2に従い、各ボタンの押下対象Drillまでの累積範囲とする。補助説明で「当該Drillのみ」または「全Drill一括」と誤解させない。
+- ボタン下の共通補助説明は `Copy your drill results to review or share.` とする。Copy範囲はPROJECT_SPEC.md §7.2に従い、各ボタンの押下対象Drillまでの累積範囲とする。補助説明で「当該Drillのみ」または「全Drill一括」と誤解させない。
 - 操作領域は各録音付きDrillの最終問題カード直後・カード枠外、同じDrillセクション内に置く。次のDrillやExampleのコンテナへ含めない。
 - ボタン、補助説明、成功／失敗ステータスを一つの操作領域とし、Drill内の右端に揃える。1つのDrillに1つだけ置き、再描画や設定変更で重複生成しない。
 - 既存のボタン外観を維持し、正式サポート範囲（600px以上）でラベルの縦折れや横はみ出しを起こさない。375pxは参考診断に限る。
