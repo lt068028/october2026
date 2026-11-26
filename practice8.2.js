@@ -993,7 +993,6 @@ function exampleTranslation(text,className){
  wrap.append(node('span','p82-translation-text'+(className==='p82-model-translation'?' vocab-inline':''),text));return wrap;
 }
 window.__enableDrillTooltipEscapeDismiss=true;window.DrillTooltips?.enableEscapeDismiss();
-if(typeof ResizeObserver==='function'){let p82ResizeRaf=0;new ResizeObserver(()=>{if(p82ResizeRaf)return;p82ResizeRaf=requestAnimationFrame(()=>{p82ResizeRaf=0;window.DrillTooltips?.repositionAll?.();});}).observe(document.querySelector('main')||document.body);}
 
 function createExampleArrowSvg(){
  const NS='http://www.w3.org/2000/svg';

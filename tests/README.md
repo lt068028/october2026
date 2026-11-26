@@ -168,9 +168,9 @@ node tests/relay-zero-gap.cjs
     - `node tests/content-food-callout.cjs`: 2.2 Ex3の食品注釈・価格衝突検証。
     - `node tests/content-price-cues.cjs`: 2.2の価格語中改行防止検証。
 - **`node tests/tooltip-layout.cjs`**
-  - **対象**: 8練習ページ
-  - **検証内容**: 幅600/1440px、明暗テーマでの語彙ツールチップ（20px/18px）の画面内配置・はみ出し防止。
-  - **実行場面**: ツールチップ表示ロジックやCSS変更時。
+  - **対象**: 8 Practice ＋ Composition・Pronunciation・Practice 8.2・Übung 1.1
+  - **検証内容**: 幅600/1440px、明暗テーマでの語彙ツールチップ（20px/18px）の画面内配置・はみ出し防止、Mouse Hover / Tab Focus / Escape 閉鎖 / Voice Dropdown 優先 Escape / Touch、および共通 `ResizeObserver`（コンテンツ領域サイズ変化・非ループ収束）・スクロール・Viewport リサイズ時の通常／ガイド Tooltip 自動追従。
+  - **実行場面**: ツールチップ表示・再配置ロジックやCSS変更時。
 - **`node tests/display-cue-lines.cjs`**
   - **対象**: 1.1, 1.2, 7.1, 7.2, 7.3
   - **検証内容**: Vocab Display時の語句単位改行、語句とヒントの対応、はみ出し防止、英語キュー表示時の区切り維持。

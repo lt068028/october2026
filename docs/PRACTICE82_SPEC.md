@@ -87,5 +87,5 @@ Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では�
 
 ## 共通UI・音声操作に関する仕様参照（2026-11-19更新）
 
-Global Settings、Auto-Compare／Autostop、共通アイコン、音声再生・停止アイコン、再生中表示、ホバーガイド、disabled表示および Tooltip 配置・操作の共通仕様は `UI_LAYOUT_SPEC.md`（§11・§13.1〜§13.3）を正本とする。Practice 8.2 固有として、`practice8.2.js` 側の `ResizeObserver` による再配置追従および `DrillTooltips.enableEscapeDismiss()` を維持する。
+Global Settings、Auto-Compare／Autostop、共通アイコン、音声再生・停止アイコン、再生中表示、ホバーガイド、disabled表示および Tooltip 配置・操作（`tooltip-layout.js` の共通 `ResizeObserver` による再配置追従を含む）の共通仕様は `UI_LAYOUT_SPEC.md`（§11・§13.1〜§13.3）を正本とする。Practice 8.2 固有として、`DrillTooltips.enableEscapeDismiss()` を維持する。
 

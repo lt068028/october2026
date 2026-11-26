@@ -75,14 +75,26 @@
                 if (!overlaps(left, clampedFlipped)) top = clampedFlipped;
             }
         }
-        tip.style.setProperty('--tip-left', `${left}px`);
-        tip.style.setProperty('--tip-top', `${top}px`);
+        const nextLeft = `${left}px`;
+        const nextTop = `${top}px`;
+        if (tip.style.getPropertyValue('--tip-left') !== nextLeft) {
+            tip.style.setProperty('--tip-left', nextLeft);
+        }
+        if (tip.style.getPropertyValue('--tip-top') !== nextTop) {
+            tip.style.setProperty('--tip-top', nextTop);
+        }
         const actual = tip.getBoundingClientRect();
         const dx = actual.left - left;
         const dy = actual.top - top;
         if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
-            tip.style.setProperty('--tip-left', `${left - dx}px`);
-            tip.style.setProperty('--tip-top', `${top - dy}px`);
+            const adjLeft = `${left - dx}px`;
+            const adjTop = `${top - dy}px`;
+            if (tip.style.getPropertyValue('--tip-left') !== adjLeft) {
+                tip.style.setProperty('--tip-left', adjLeft);
+            }
+            if (tip.style.getPropertyValue('--tip-top') !== adjTop) {
+                tip.style.setProperty('--tip-top', adjTop);
+            }
         }
     }
     function isTipActive(anchor, tip) {
@@ -93,9 +105,21 @@
     }
     function resetHiddenTip(tip) {
         if (!tip) return;
-        delete tip.dataset.viewportTip;
-        tip.style.removeProperty('--tip-left');
-        tip.style.removeProperty('--tip-top');
+        if ('viewportTip' in tip.dataset) delete tip.dataset.viewportTip;
+        if (tip.style.getPropertyValue('--tip-left')) tip.style.removeProperty('--tip-left');
+        if (tip.style.getPropertyValue('--tip-top')) tip.style.removeProperty('--tip-top');
+    }
+    const guideRepositionCallbacks = new Set();
+    const guideActiveCallbacks = new Set();
+    function hasAnyActiveTip() {
+        for (const anchor of document.querySelectorAll(selector)) {
+            const tip = anchor.querySelector('.tooltip-tip, .custom-tip-box') || document.getElementById(anchor.dataset.portalTip || '');
+            if (isTipActive(anchor, tip) || tip?.dataset?.viewportTip) return true;
+        }
+        for (const checkGuide of guideActiveCallbacks) {
+            if (checkGuide()) return true;
+        }
+        return false;
     }
     function repositionAll() {
         document.querySelectorAll(selector).forEach(anchor => {
@@ -103,17 +127,47 @@
             if (isTipActive(anchor, tip)) position(anchor, tip);
             else resetHiddenTip(tip);
         });
+        guideRepositionCallbacks.forEach(fn => fn());
     }
     if (typeof ResizeObserver === 'function') {
         let resizeRaf = 0;
-        const ro = new ResizeObserver(() => {
-            if (resizeRaf) return;
+        let isRepositioning = false;
+        const observedSizes = new WeakMap();
+        const ro = new ResizeObserver(entries => {
+            if (isRepositioning) return;
+            let sizeChanged = false;
+            for (const entry of entries) {
+                const rect = entry.contentRect;
+                const w = Math.round(rect.width * 2) / 2;
+                const h = Math.round(rect.height * 2) / 2;
+                const prev = observedSizes.get(entry.target);
+                if (!prev || prev.w !== w || prev.h !== h) {
+                    observedSizes.set(entry.target, { w, h });
+                    sizeChanged = true;
+                }
+            }
+            if (!sizeChanged || resizeRaf) return;
             resizeRaf = requestAnimationFrame(() => {
                 resizeRaf = 0;
-                repositionAll();
+                if (!hasAnyActiveTip()) return;
+                isRepositioning = true;
+                try {
+                    repositionAll();
+                } finally {
+                    isRepositioning = false;
+                }
             });
         });
-        ro.observe(document.documentElement);
+        const attachResizeTargets = () => {
+            const rootEl = document.documentElement;
+            const contentEl = document.querySelector('main') || document.body;
+            if (rootEl) ro.observe(rootEl);
+            if (contentEl && contentEl !== rootEl) ro.observe(contentEl);
+        };
+        attachResizeTargets();
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachResizeTargets, { once: true });
+        }
     }
     const escapeTipSelector = '.custom-tip-wrap, .tooltip-wrap, .p82-incomplete-mark, .uebung-incomplete-wrap';
 
@@ -343,6 +397,7 @@
         document.querySelectorAll(selector).forEach(anchor => {
             if (anchor.matches(':hover, :focus-visible, .tap-tip-open, .p82-autostop-open')) position(anchor);
         });
+        guideRepositionCallbacks.forEach(fn => fn());
     }
     window.addEventListener('resize', reposition);
     document.addEventListener('scroll', reposition, true);
@@ -366,8 +421,10 @@
                 top = rect.top - gap - bh;
             }
             top = Math.max(margin, Math.min(top, window.innerHeight - margin - bh));
-            box.style.left = Math.round(left) + 'px';
-            box.style.top = Math.round(top) + 'px';
+            const nextLeft = Math.round(left) + 'px';
+            const nextTop = Math.round(top) + 'px';
+            if (box.style.left !== nextLeft) box.style.left = nextLeft;
+            if (box.style.top !== nextTop) box.style.top = nextTop;
         };
         const hasVisibleGuideTip = () => tipHosts.some(h => {
             if (h.getAttribute('data-guide-tip-suppressed') === 'true') return false;
@@ -429,7 +486,7 @@
                 }
             });
         };
-        window.addEventListener('resize', repositionGuideTips);
-        window.addEventListener('scroll', repositionGuideTips, true);
+        guideRepositionCallbacks.add(repositionGuideTips);
+        guideActiveCallbacks.add(hasVisibleGuideTip);
     };
 })();

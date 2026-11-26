@@ -209,8 +209,118 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  check(collisionResult.flippedBelow, true, 'Collision avoidance flips second tooltip below overlapping first tooltip');
  check(collisionResult.afterTop !== collisionResult.beforeTop && collisionResult.inViewport && collisionResult.noOverlap, true, `repositionAll updates tooltip coordinates within viewport without overlap (${JSON.stringify(collisionResult)})`);
 
+ // 7. Auto-tracking on content ResizeObserver (with non-loop convergence), scroll, viewport resize, and P8.2/D1.1 guide tooltips
+ // 7.1 Content area (main) size change auto-repositions without manual repositionAll() and converges without loop
+ check(await tabFocus(testPage, tipA), true, 'Focus Tip A for ResizeObserver tracking');
+ const roTracking = await testPage.evaluate(async () => {
+   const anchor = document.querySelector('#drill1 .drill-listen-btn.custom-tip-wrap');
+   const tip = anchor.querySelector('.custom-tip-box');
+   const mainEl = document.querySelector('main') || document.body;
+   const beforeTop = parseFloat(tip.style.getPropertyValue('--tip-top'));
+   let mutations = 0;
+   const mo = new MutationObserver(() => { mutations++; });
+   mo.observe(tip, { attributes: true, attributeFilter: ['style'] });
+   mainEl.style.paddingTop = '80px';
+   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+   const afterTop = parseFloat(tip.style.getPropertyValue('--tip-top'));
+   const mutationsAfterFirstPass = mutations;
+   await new Promise(r => setTimeout(r, 80));
+   const mutationsAfterSettle = mutations;
+   const r = tip.getBoundingClientRect();
+   const inViewport = r.left >= 0 && r.right <= window.innerWidth && r.top >= 0 && r.bottom <= window.innerHeight;
+   mo.disconnect();
+   mainEl.style.paddingTop = '';
+   await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+   return { beforeTop, afterTop, inViewport, mutationsAfterFirstPass, mutationsAfterSettle };
+ });
+ check(roTracking.afterTop > roTracking.beforeTop && roTracking.inViewport, true, `ResizeObserver on main auto-repositions tooltip without manual repositionAll (${JSON.stringify(roTracking)})`);
+ check(roTracking.mutationsAfterSettle === roTracking.mutationsAfterFirstPass && roTracking.mutationsAfterSettle <= 2, true, `ResizeObserver converges without re-trigger loop (${JSON.stringify(roTracking)})`);
+
+ // 7.2 Scroll tracking while tooltip is active
+ const scrollTracking = await testPage.evaluate(async () => {
+   const anchor = document.querySelector('#drill1 .drill-listen-btn.custom-tip-wrap');
+   const tip = anchor.querySelector('.custom-tip-box');
+   window.scrollTo(0, 0);
+   await new Promise(r => requestAnimationFrame(r));
+   const beforeTop = parseFloat(tip.style.getPropertyValue('--tip-top'));
+   window.scrollTo(0, 60);
+   document.dispatchEvent(new Event('scroll'));
+   await new Promise(r => requestAnimationFrame(r));
+   const afterTop = parseFloat(tip.style.getPropertyValue('--tip-top'));
+   window.scrollTo(0, 0);
+   document.dispatchEvent(new Event('scroll'));
+   await new Promise(r => requestAnimationFrame(r));
+   return { beforeTop, afterTop };
+ });
+ check(scrollTracking.afterTop < scrollTracking.beforeTop, true, `Scroll repositions active tooltip to follow anchor (${JSON.stringify(scrollTracking)})`);
+
+ // 7.3 Viewport resize tracking while tooltip is active
+ const beforeResizeRect = await testPage.evaluate(() => {
+   const tip = document.querySelector('#drill1 .drill-listen-btn.custom-tip-wrap .custom-tip-box');
+   const r = tip.getBoundingClientRect();
+   return { left: r.left, top: r.top };
+ });
+ await testPage.setViewportSize({ width: 700, height: 800 });
+ const afterResizeCheck = await testPage.evaluate(() => {
+   const tip = document.querySelector('#drill1 .drill-listen-btn.custom-tip-wrap .custom-tip-box');
+   const r = tip.getBoundingClientRect();
+   return { left: r.left, inViewport: r.left >= 0 && r.right <= window.innerWidth && r.top >= 0 && r.bottom <= window.innerHeight };
+ });
+ check(afterResizeCheck.left !== beforeResizeRect.left && afterResizeCheck.inViewport, true, 'Viewport resize repositions active tooltip within viewport');
+ await testPage.setViewportSize({ width: 900, height: 1100 });
+ await testPage.evaluate(() => document.activeElement?.blur());
+
+ // 7.4 Guide tooltip tracking on P8.2 and D1.1 (scroll, viewport resize, and content area ResizeObserver)
+ const p82GuideHost = testPage.locator('.practice82-page .p82-guide-tip-wrap').first();
+ await p82GuideHost.click();
+ const p82GuideTracking = await testPage.evaluate(async () => {
+   const box = document.getElementById('p82RecognitionTipInline');
+   const gridEl = document.querySelector('.p82-guide-top-grid');
+   const mainEl = document.querySelector('main') || document.body;
+   const top0 = parseFloat(box.style.top);
+   window.scrollTo(0, 50);
+   document.dispatchEvent(new Event('scroll'));
+   await new Promise(r => requestAnimationFrame(r));
+   const topScrolled = parseFloat(box.style.top);
+   window.scrollTo(0, 0);
+   document.dispatchEvent(new Event('scroll'));
+   await new Promise(r => requestAnimationFrame(r));
+   gridEl.style.marginTop = '50px';
+   mainEl.style.paddingBottom = '60px';
+   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+   const topAfterRo = parseFloat(box.style.top);
+   const r = box.getBoundingClientRect();
+   gridEl.style.marginTop = '';
+   mainEl.style.paddingBottom = '';
+   await new Promise(res => requestAnimationFrame(() => requestAnimationFrame(res)));
+   return { visible: getComputedStyle(box).visibility === 'visible', top0, topScrolled, topAfterRo, inViewport: r.left >= 0 && r.right <= window.innerWidth };
+ });
+ check(p82GuideTracking.visible && p82GuideTracking.topScrolled < p82GuideTracking.top0 && p82GuideTracking.topAfterRo > p82GuideTracking.top0 && p82GuideTracking.inViewport, true, `P8.2 guide tooltip tracks scroll and ResizeObserver (${JSON.stringify(p82GuideTracking)})`);
+
  check(testPage.errors, [], 'practice8.2 tooltip escape tests no runtime errors');
  await testPage.close();
+
+ const d11Page = await open(context, 'uebung1.1');
+ await d11Page.setViewportSize({ width: 900, height: 900 });
+ await d11Page.locator('#d11RecognitionTipTrigger').click();
+ const d11GuideBefore = await d11Page.evaluate(() => {
+   const box = document.getElementById('d11RecognitionTip');
+   return { left: parseFloat(box.style.left), top: parseFloat(box.style.top), visible: getComputedStyle(box).visibility === 'visible' };
+ });
+ await d11Page.setViewportSize({ width: 680, height: 800 });
+ const d11GuideAfter = await d11Page.evaluate(async () => {
+   const box = document.getElementById('d11RecognitionTip');
+   const leftResized = parseFloat(box.style.left);
+   window.scrollTo(0, 40);
+   document.dispatchEvent(new Event('scroll'));
+   await new Promise(r => requestAnimationFrame(r));
+   const topScrolled = parseFloat(box.style.top);
+   const r = box.getBoundingClientRect();
+   return { leftResized, topScrolled, inViewport: r.left >= 0 && r.right <= window.innerWidth };
+ });
+ check(d11GuideBefore.visible && d11GuideAfter.leftResized !== d11GuideBefore.left && d11GuideAfter.topScrolled < d11GuideBefore.top && d11GuideAfter.inViewport, true, 'D1.1 guide tooltip tracks viewport resize and scroll');
+ check(d11Page.errors, [], 'uebung1.1 guide tooltip tracking no runtime errors');
+ await d11Page.close();
 
  await browser.close();console.log('PASS tooltip layout',checks);
 })().catch(e=>{console.error(e);process.exit(1)});
