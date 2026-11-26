@@ -298,9 +298,9 @@ node tests/relay-zero-gap.cjs
 - **`node tests/practice81-timing.cjs`**: 仮想時計による録音タイミング・エラーリカバリ検証（※録音タイムアウト時間に関する詳細は第4節を参照）。
 - **`node tests/practice81-activity-select.cjs`**: 8.1 ピッカー操作と録音・選択解除の検証。
 - **`node tests/copy81.cjs`**: 8.1 Drill 1〜5のCopyボタン配置・有効化、コピー本文、Copied表示・復帰、クリップボード失敗時の動作。
-- **`node tests/practice82.cjs`**: 8.2 全モデル、3文体/2表記/3ヒント、否定形、短答、0秒リレー、録音保持の検証。
+- **`node tests/practice82.cjs`**: 8.2 全モデル、3文体/2表記/3ヒント、否定形、短答、Incomplete表示・5秒STT保護・フィラー、0秒リレー、録音保持の検証。
 - **`node tests/practice82-example-layout.cjs`**: 8.2 Ex1〜Ex4の配置、英語右端整列、非クリップ検証（`P82_LAYOUT_BASELINE` で比較可能）。
-- **`node tests/copy82.cjs` / `node tests/copy83.cjs`**: 8.2 / 8.3 のCopy機能の検証。
+- **`node tests/copy82.cjs` / `node tests/copy83.cjs`**: 8.2 / 8.3 のCopyボタン・出力内容・状態保持の検証。現行copy82.cjsには、Drill 1回答後もDrill 2ボタンを無効とする累積Copy仕様以前の期待値が残っており、後続のテスト改修対象。
 - **`node tests/practice83-speech-style.cjs`**: 8.3 スピーチスタイル（文体）、TTS入力文、保存状態維持の検証。
 
 #### 共通Beyond（未習語彙・漢字アコーディオン）
@@ -312,7 +312,8 @@ node tests/relay-zero-gap.cjs
 
 - **`node tests/uebung11.cjs`**
   - **対象**: Deutsche Übung 1.1（`uebung1.1.html`）
-  - **検証内容**: 静的構造、Global Settings 24px / Drill 20px Fluent SVG・`Auto-Compare` 表記・左詰め標準英文ツールチップ、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital` 3モード対語直下表示）・DE/AT/CH ベクターSVG国旗・右端シンプル地域補足、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints 25×25px+`…` 描画、`Playing...` 廃止・`Auto-Compare` ON リレー再生制御（`keepButtons: true`・全終了経路復元・二重イベント/旧イベント防止）・1行目限定ホバー、`drill-audio-session.js` のボタン限定 `cursor: default`、回答済み全Drill一括Copy（ボタンラベル `Copied` 2秒自動復帰・`✅`/`👣`/`🔥`マーカー・raw STTのみ・再生維持）、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は共通仕様・コード・テストへの移行と廃止可否の確認中。現在の規則の正本として恒久維持する前提ではない）
+  - **検証内容**: 静的構造、Global Settings 24px / Drill 20px Fluent SVG・`Auto-Compare` 表記・左詰め標準英文ツールチップ、4 Drills（各Ex 1問＋練習3問・全16問動詞重複なし、SVO発話順キュー・主語明示 `Ich`/`Du`/`Er`/`Ihr`）、German variety設定（DE / AT / CH）および地域別名詞交代（`Krankenhaus`/`Spital` 3モード対語直下表示）・DE/AT/CH ベクターSVG国旗・右端シンプル地域補足、`zum`/`zur` に対する非縮約形（`zu dem`/`zu der`）の厳格許容、3状態判定（`Accepted` / `Incomplete` / `Mismatch`）、空STT時の録音データ破棄、単語単位差分・赤字（`.result-incorrect`）・細字欠落 `＿`（`.result-missing`）・Footprints 25×25px+`…` 描画、`Playing...` 廃止・`Auto-Compare` ON リレー再生制御（`keepButtons: true`・全終了経路復元・二重イベント/旧イベント防止）・1行目限定ホバー、`drill-audio-session.js` のボタン限定 `cursor: default`、各Drillの既存CopyボタンからDrill 1〜押下対象Drillまでをページ順・回答済みDrillのみ累積コピー（ボタンラベル `Copied` 2秒自動復帰・`✅`/`👣`/`🔥`マーカー・raw STTのみ・再生維持）、HTML/JS/CSS設計契約の検証。（※`docs/GERMAN_DRILL_SPEC.md` は共通仕様・コード・テストへの移行と廃止可否の確認中。現在の規則の正本として恒久維持する前提ではない）
+  - **既知の未整合**：現行tests/uebung11.cjsには、Drill単位だけをコピーするScenario 20Bの旧期待値と、累積Copy方式の検証が併存している。累積Copy契約へ統一するテスト改修は後続作業で行う。また、Germanフィラーohが除去されないことを直接確認する否定テストは未追加であり、後続テスト改修の対象とする。
   - **実行場面**: ドイツ語ドリルページの新規作成・修正時。
 
 ---

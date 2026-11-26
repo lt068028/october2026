@@ -46,23 +46,19 @@ Ex1の何でもは「Anything / Whatever」、Beyond Wordsは「anything / whate
 
 録音中のリサイズでもExample表示だけは再計算し、Drillの録音状態・識別キー・表示処理を変更しない。この配置条件はPractice 8.2のExample 1／2だけに適用し、Practice 8.1／8.3へ自動拡張しない。
 
-## 採点結果アイコンとIncomplete視覚仕様（Practice 8.2固有）
+## 判定結果アイコンのページ固有調整
 
-Practice 8.2の3段階判定表示（Accepted / Incomplete / Mismatch）では、共通仕様（UI_LAYOUT_SPEC §9の22px/20px基準）を一部最適化したページ固有の視覚パラメータを適用する。
+Incompleteの共通視覚契約（Footprints SVG、サイズ・色・位置、Tooltip、末尾「…」の表示条件、保存値との分離）はUI_LAYOUT_SPEC.md §9を正本とする。Practice 8.2固有の判定条件は本書の各Drill規定とpractice8.2.jsの登録データを参照し、共通の表示契約から判定ロジックを推定しない。
 
-- **3アイコン共通寸法と個別視覚補正**：
-  - Accepted：Microsoft Fluent `Checkmark 24 Filled`（Light: `#16A34A` / Dark: `#4ADE80`、`24px × 24px`、`transform: translateY(-2px)`）
-  - Incomplete：Lucide `Footprints` 原本アウトラインSVG（Light: `#8064B0` / Dark: `#B9A2E5`、`aria-hidden="true"`、`25px × 25px`、`transform: translateY(-0.5px)`）
-  - Mismatch：Microsoft Fluent `Fire 24 Regular`（Light: `#B47732` / Dark: `#E4AD69`、`24px × 24px`、`transform: translateY(-2px)`）
-  - Mismatch 時の `Keep going!` ラベル（`.feedback-retry-label`）には、日本語テキストとのベースライン視覚整列のため `transform: translateY(-1px)` を適用する。
-- **配置間隔（Gap）**：
-  - 各アイコンと直後の認識テキスト（または差分テキスト）との間隔（`icon-gap`）は **`2px`**（`margin-right: 2px` または `gap: 2px`）。
-  - Mismatchにおける差分テキストと `Keep going!` ラベル（`.feedback-retry-label`）の間隔（`keep-gap`）は **`8px`**（`margin-left: 8px`）。
-- **Incomplete（未完了）判定のテキスト仕様**：
-  - 判定が `incomplete` の場合、表示上の認識テキスト末尾に `…`（三点リーダー）を付加する。
-  - 元テキスト末尾に既に終端記号（`…`, `...`, `。`, `.`, `！`, `？`, `!`, `?` 等）が存在する場合は重複付与を行わず、末尾に不自然な空白が生じないようにする。
-  - `…` は画面表示のみに付与し、保存用 raw STT 文字列、`Copy my sentences` 出力、および採点処理（`r.refs` 照合）には混入させない。
-  - Incomplete 判定時は `Keep going!` を表示せず、`[Footprints SVG] → [認識テキスト]… → [再生ボタン]` の順序で右寄せ配置する。
+Practice 8.2では、Accepted／Mismatchのアイコン寸法に限り、共通標準（Accepted 22px／Mismatch 20px）に対するページ固有の視覚調整を維持する。
+
+- **Accepted**：Microsoft Fluent Checkmark 24 Filled（Light: #16A34A / Dark: #4ADE80、24px × 24px、transform: translateY(-2px)）。
+- **Mismatch**：Microsoft Fluent Fire 24 Regular（Light: #B47732 / Dark: #E4AD69、24px × 24px、transform: translateY(-2px)）。
+- Mismatch時のKeep going!ラベル（.feedback-retry-label）には、日本語テキストとのベースライン視覚整列のためtransform: translateY(-1px)を適用する。
+- Accepted／Mismatchのアイコンと直後の認識テキストまたは差分テキストとの間隔（icon-gap）は **2px**。Mismatchの差分テキストとKeep going!ラベルとの間隔（keep-gap）は **8px**。
+- Incompleteの認識テキストは、Practice 8.2のScript Modeに応じたSTTDisplay.format()の表示変換後の文字列を使用する。表示変換および共通の末尾「…」付加は表示層に限定し、保存用raw STT、Copy出力、判定処理（r.refs照合）を変更しない。
+
+**現行コードとの差（文書改訂時点）**：最新mainのpractice8.2.jsは、末尾「…」・ピリオド・句点・感嘆符・疑問符等をまとめて重複抑止の対象にしている。共通仕様で定める抑止条件（既存の「…」または「...」のみ）より広いため、後続の実装修正で共通契約に合わせる。今回の仕様書改訂ではアプリコードを変更しない。
 
 ## 録音停止条件および Copy my sentences 出力仕様（2026-11-18）
 

@@ -1,6 +1,6 @@
 # German Drills（Deutsche Übung）暫定参照メモ
 
-**文書状態：暫定（2026-11-19更新）**<br>
+**文書状態：暫定（2026-11-26更新）**<br>
 **用途：共通仕様・現行コード・テストへ移行するまでの確認用。恒久的な独立正本として維持する前提ではない。**<br>
 **現行実装の参照先：`uebung1.1.html` / `uebung1.1.js` および対応テスト**
 
@@ -54,7 +54,7 @@
     - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
       - `ON:` Recording stops automatically.
       - `OFF:` Stop recording manually.
-  - **Autoplay Switch**（`#togglePlaybackMode`, `#labelAutoPlay`）：モデル・録音リレー再生（既定: ON）
+  - **Auto-Compare Switch**（#togglePlaybackMode, #labelAutoPlay）：モデル・録音の比較リレー再生（既定: ON）。利用者向け名称をAuto-Compareとし、既存の内部IDは維持できる。
     - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
       - `ON:` After recording, the model audio and your recording play automatically.
       - `OFF:` Choose what and when to play.
@@ -111,9 +111,10 @@
           - Autostop OFF (Manual Stop): `Stop recording.`
     - 結果表示（`.recording-result`）:
       - 未録音時：`span.result-text.not-recorded-yet` ("… Not yet")
-      - 録音後はAccepted／Mismatchの2種類で扱う。
-        - Accepted: 生テキスト ＋ ` ✅`（選択外地域の許容文発話時は補足バッジを付与）
-        - Mismatch: 生テキストのうち不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示（❌マークは付与しない）
+      - 録音後はAccepted／Incomplete／Mismatchの3状態で扱う。
+        - Accepted：raw認識テキスト ＋ ✅（選択外地域の許容文発話時は補足バッジを付与）。
+        - Incomplete：evaluateGermanAnswer()が、登録済み許容候補文の先頭から単語単位で完全一致する厳密なprefix（候補より短く、各単語が同じ順序で一致）と判定した場合に限る。単語の一部だけの一致や、単に意味上途中に見える発話はIncompleteとしない。視覚表示はUI_LAYOUT_SPEC.md §9の共通契約に従い、Mismatch差分・Keep going!は表示しない。
+        - Mismatch：生テキストのうち不一致箇所のみを赤字（result-incorrect）で表示し、❌マークは付与しない。訂正ガイダンスは🔥 Keep going!とする。
       - 録音再生ボタン `▶️`：音声データが存在する場合に結果行へ表示
     - 訂正ガイダンス（`.correction-box`、`mismatch` 時のみ表示）:
       - 文言：`🔥 Keep going!` のみを表示する（重複する `🔊 Anhören` ボタン、`Try once more!`、モデル文の自動開示 `→ [モデル文]` は表示しない。モデル音声の確認は操作ボタン群の `🔊 Anhören` を使用する）。
@@ -165,7 +166,7 @@
 - **停止処理の階層分離**:
   - `stopPlayback()`：ローカルの音声・発話のみを停止し、ボタン表示を復元する（`invalidatePlayback` は呼ばない）。
   - `stopAllPlayback()`：外部クリックや中断時に呼ばれ、`DrillAudio.invalidatePlayback()` と `stopPlayback()` の両方を実行する。
-  - Autoplayリレー中（`isRelay === true`）は `stopAllPlayback()` をスキップし、リレーの破壊を防止する。
+  - Auto-Compareリレー中（内部状態isRelay === true）はstopAllPlayback()をスキップし、リレーの破壊を防止する。
 
 ### 4.4 ドイツ語TTS診断・再生失敗通知・専用バナー 【実装済み】
 - **専用通知バナー（`#germanTtsNotice`）**:
@@ -189,47 +190,34 @@
 ## 5. 学習者の録音・再生・音声認識（STT）
 
 ### 5.1 録音処理・監視・停止条件 【実装済み】
-- **マイクストリーム取得**: `DrillAudio.getUserMedia({ audio: true })` によりマイクストリームを取得。
-- **録音と状態保持**: `MediaRecorder`（mimeType: `audio/webm;codecs=opus` 等を自動選択）で学習者の音声を録音・Blob化。録音中は `document.body.classList.add('drill-recording-locked')` が付与され、他操作が排他ロックされる。
-- **マイク音量監視（`AudioContext` / `AnalyserNode`）**:
-  - マイク入力音量を監視して発話開始（`speechStarted = true`）および無音タイマー起算点（`lastSoundAt`）を更新する（SpeechRecognition の `onspeechstart` や `onresult` は使用しない）。初期化・音量監視失敗時は `Recording error.` として安全に停止・リソース解放する。
-- **3つの正式な録音停止条件（`PROJECT_SPEC.md` §5.2 対象外の German 固有仕様）**:
-  1. **発話開始前の上限：5秒（Autostop ON時のみ）**:
-     - Autostop ON 時、録音開始から5秒以内にマイク入力による発話（`speechStarted`）も有効なSTT認識テキスト（`raw` / `interim`）も検出できない場合、録音を自動停止し、`No speech detected within 5 seconds.` を表示する（音声保存なし）。Manual（Autostop OFF）時は5秒未発話で自動停止しない。
-     - 5秒未満で手動停止された場合は、未発話タイムアウトメッセージを表示せず初期状態（`… Not yet`）とする。
-  2. **発話後の無音停止：連続2.0秒（Autostop ON時のみ）**:
-     - SpeechRecognitionの文字起こしイベントではなく、マイク入力音量の監視により無音を判定。
-     - 発話検出後、連続2.0秒間音声入力がなければ自動停止。
-     - 途中で音声入力が再開した場合は、無音時間の計測をリセット。
-     - Autostop OFF（Manual）では2秒無音による自動停止を行わず、手動停止ボタン（⏹️）または20秒上限で停止。
-  3. **絶対上限：20秒（Autostop ON/OFF共通）**:
-     - 録音開始から20秒で必ず自動停止。停止メッセージは `Auto-stopped after 20 seconds.`。
-- **重複停止防止とリソース解放**:
-  - `stopping` フラグにより重複停止処理を抑止。
-  - 停止・破棄時にはマイクトラック、`AudioContext`、監視タイマー群を確実に解放。
+- **マイクストリーム取得**：DrillAudio.getUserMedia({ audio: true })によりマイクストリームを取得する。
+- **録音と状態保持**：MediaRecorder（audio/webm;codecs=opus等を環境に応じて選択）で学習者の音声を録音・Blob化する。録音中はdocument.body.classList.add('drill-recording-locked')を付与し、競合する操作を排他制御する。
+- **マイク音量監視（AudioContext / AnalyserNode）**：マイク入力音量を監視し、音響入力による発話開始（speechStarted = true）と最終音響検知時刻（lastSoundAt）を更新する。SpeechRecognitionのonspeechstartやonresultを音響検知の代替にしない。初期化・音量監視に失敗した場合はRecording error.として安全に停止し、リソースを解放する。
+- **録音停止条件の正本**：発話開始前5秒（Autostop ON時のみ）、発話後の連続2.0秒無音（Autostop ON時のみ）、20秒絶対上限、および録音開始後5秒以内の有効STTによるタイムアウト保護は、共通仕様PROJECT_SPEC.md §5.2に従う。STT保護は5秒タイムアウトを抑止するだけで、マイク音響入力による発話開始検知や2秒無音計測を置き換えない。German固有のロケール・録音音声保存条件・エラー表示は本書§5.2に従う。
+- **停止処理とリソース解放**：stoppingフラグで重複停止を抑止する。停止・破棄時にはマイクトラック、AudioContext、監視タイマー群を確実に解放する。
 
 ### 5.2 音声認識（STT）と音声検出の分離・メッセージ仕様 【実装済み】
-- **STTエンジン**: `webkitSpeechRecognition` または `SpeechRecognition` を利用。
-- **言語設定**: `recognition.lang` には選択中の地域ロケール（`de-DE`, `de-AT`, `de-CH`）を明示設定。
-- **音声検出と文字起こしの分離管理**:
-  - 音声検出フラグ（`speechStarted`）と認識テキスト（`raw`）を独立して管理する。
-  - **録音音声の保存条件**：発話検出または有効なSTT認識テキストがあり、有効なマイク録音データ（非空 `chunks`）と空白だけではないSTT原文の両方が取得できた場合に限り、録音音声Blob／再生URLを保存する（有効なSTTが存在しても録音データが欠損している場合は再生URLを生成しない）。判定・Copy用のraw STTは認識原文として保持し、画面表示用の加工を保存値へ書き戻さない。
-  - **STTが空の場合**：発話が検知されてもSTT原文が空なら録音音声は保存せず、録音再生ボタンも表示しない。`No transcription available.` を表示する。
-  - **STT認識エラーまたは開始例外**：`recognition.onerror` または `recognition.start()` の例外では `Recognition error.` を表示し、空STTのため録音音声・再生URLを保存しない。再生ボタンも表示しない。
-  - **録音処理自体の失敗**：有効な録音データを取得できない場合は `Recording error.` として区別する。
-- **統一された状態・エラーメッセージ体系**:
-  - 準備中：`Preparing microphone...`
-  - 録音中：`Recording...`
-  - 5秒未発話タイムアウト：`No speech detected within 5 seconds.`（音声保存なし）
-  - 20秒絶対上限停止：`Auto-stopped after 20 seconds.`
-  - 発話検知あり・STT空：`No transcription available.`（録音音声保存なし、再生ボタンなし）
+- **STTエンジン**：webkitSpeechRecognitionまたはSpeechRecognitionを利用する。
+- **言語設定**：recognition.langには選択中の地域ロケール（de-DE、de-AT、de-CH）を明示設定する。
+- **音響検出と文字起こしの分離管理**：音響検出フラグ（speechStarted）と認識テキスト（raw / interim）を独立して管理する。認識イベントだけでマイク音響の発話検知済み状態にしない。5秒タイムアウト保護の条件はPROJECT_SPEC.md §5.2.2を参照する。
+- **録音音声の保存条件**：発話検出または有効なSTT認識テキストがあり、有効なマイク録音データ（非空chunks）と空白だけではないSTT原文の両方が得られた場合に限り、録音音声Blob／再生URLを保存する。STTが有効でも録音データが欠損している場合は再生URLを生成しない。判定・Copy用raw STTは認識原文のまま保持し、画面表示用の加工を保存値へ書き戻さない。
+- **STTが空の場合**：発話が検知されてもSTT原文が空なら録音音声は保存せず、録音再生ボタンも表示しない。No transcription available.を表示する。
+- **フィラー正規化**：判定用のフィラー除去はPROJECT_SPEC.md §6.4.3に従う。Germanの登録語、単語境界、非登録語（ohを含む）の扱いを本書で別定義しない。
+- **STT認識エラーまたは開始例外**：recognition.onerrorまたはrecognition.start()の例外ではRecognition error.を表示し、空STTのため録音音声・再生URLを保存しない。再生ボタンも表示しない。
+- **録音処理自体の失敗**：有効な録音データを取得できない場合はRecording error.として区別する。
+- **メッセージ体系**：
+  - 準備中：Preparing microphone...
+  - 録音中：Recording...
+  - 発話開始前5秒タイムアウト：No speech detected within 5 seconds.（条件とSTT保護はPROJECT_SPEC.md §5.2を参照。音声保存なし）
+  - 20秒絶対上限停止：Auto-stopped after 20 seconds.（共通条件はPROJECT_SPEC.md §5.2を参照）
+  - 発話検知あり・STT空：No transcription available.（録音音声保存なし、再生ボタンなし）
   - 非対応ブラウザ案内：
-    - STT非対応：`Speech recognition is not supported in this browser.`
-    - 録音非対応：`Recording is not supported in this browser.`
-    - 両方非対応：`Speech recognition and recording are not supported in this browser.`
+    - STT非対応：Speech recognition is not supported in this browser.
+    - 録音非対応：Recording is not supported in this browser.
+    - 両方非対応：Speech recognition and recording are not supported in this browser.
   - エラー案内：
-    - 録音エラー：`Recording error.` / `Could not start recording.`
-    - 認識エラー：`Recognition error.`（空STTとなるため録音音声保存・再生ボタンなし）
+    - 録音エラー：Recording error. / Could not start recording.
+    - 認識エラー：Recognition error.（空STTとなるため録音音声保存・再生ボタンなし）
 
 ### 5.3 回答判定エンジン（`evaluateGermanAnswer`）とフィードバック契約 【現行仕様】
 - **正規化関数**:
@@ -248,7 +236,8 @@
      - モデル文との完全一致、地域変種・別解リスト（`allowedAnswers`）との一致、およびキューの学習目標（動詞・目的地・対応する前置詞）を満たし、主語・語順（SVO、倒置OVS `Nach Graz fahre ich.` 等）・時制（現在形、現在完了形Perfekt `Ich bin nach Graz gefahren.`、過去形Präteritum `Ich fuhr nach Graz.`）が文法的に正しく一致している発話。
      - UI表示：生認識テキスト ＋ ` ✅`（選択外地域文の場合は推奨モデル補足バッジを表示）。訂正ボックスは非表示。
   2. **`incomplete`（途中・不足）**:
-     - 発話が途中で切れている、または必要な要素が不足しているが明確な誤りではない発話。
+     - 正規化後の認識文が、登録済み許容候補文のいずれかに対する**単語単位の厳密なprefix**である場合に限る。認識文の単語数は候補文より少なく、先頭から各単語が順序どおり完全一致していなければならない。単語途中までの一致や、任意の不足文を意味だけでIncompleteに分類しない。
+     - UI表示（Footprints、末尾「…」、Tooltip、差分・励まし文の非表示）はUI_LAYOUT_SPEC.md §9に従う。
   3. **`mismatch`（明示的不一致）**:
      - 主語と動詞の人称変化の不一致（例: `Er fahren nach Graz.` → `fahren` が不一致）、目的地に対する前置詞の誤り（例: `Ich fahre zu Graz.` → `zu` が不一致）、キューと異なる目的地・名詞の発話（例: `Ich fahre nach Berlin.` → `berlin` が不一致）、キューと異なる移動動詞語幹の使用（例: `Ich gehe nach Graz.` → `gehe` が不一致）。
      - UI表示：生認識テキストのうち特定された不一致箇所のみを赤字（`<span class="result-incorrect">`）で表示。訂正ボックスには `🔥 Keep going!` のみを表示する。
@@ -347,7 +336,7 @@
 
 各ドイツ語ドリルページは、専用のテストファイル（例: `tests/uebung11.cjs`）を保持し、以下の項目を機械的に検証します。
 1. ファイル存在および `index.html` からのリンク確認。
-2. グローバル設定（地域変種、Autostop、Autoplay、Voice）のDOM存在確認。
+2. グローバル設定（地域変種、Autostop、Auto-Compare、Voice）のDOM存在確認。内部ID等にAutoplayが残っていても、利用者向け名称の契約とは区別する。
 3. 全ドリルのタイトル・設問数・地域モデル設定の整合性確認。
 4. `DrillAudio.configure`, `getUserMedia`, `playRelay`, `speak` の連携契約確認。
 5. コールバック登録順序（`u.onend` / `u.onerror` が `DrillAudio.speak(u)` より前に設定されていること）の確認。
