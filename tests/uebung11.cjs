@@ -2038,6 +2038,62 @@ async function runRecordingLifecycleTests() {
         ], 'Drill 4 Ex and 3 items all use You all for Ihr');
 
         assert.equal(errors.length, 0, 'No uncaught page errors during tests');
+        // ON/OFF text button contract check for Autostop (#toggleRecordMode) and Auto-Compare (#togglePlaybackMode)
+        await page.evaluate(() => {
+            const rec = document.getElementById('toggleRecordMode');
+            const pb = document.getElementById('togglePlaybackMode');
+            if (rec) rec.disabled = false;
+            if (pb) pb.disabled = false;
+        });
+        const onOffCheck = await page.evaluate(() => {
+            const items = ['#toggleRecordMode', '#togglePlaybackMode'].map(sel => {
+                const input = document.querySelector(sel);
+                const slider = input && input.nextElementSibling;
+                const rect = slider ? slider.getBoundingClientRect() : null;
+                const beforeContent = slider ? getComputedStyle(slider, '::before').content : '';
+                return {
+                    sel,
+                    checked: input ? input.checked : null,
+                    width: rect ? Math.round(rect.width) : null,
+                    height: rect ? Math.round(rect.height) : null,
+                    beforeContent
+                };
+            });
+            return items;
+        });
+        for (const item of onOffCheck) {
+            assert.strictEqual(item.width, 36, `${item.sel} slider width should be 36px`);
+            assert.strictEqual(item.height, 20, `${item.sel} slider height should be 20px`);
+            const expectedText = item.checked ? '"ON"' : '"OFF"';
+            assert.strictEqual(item.beforeContent, expectedText, `${item.sel} ::before content should be ${expectedText}`);
+        }
+        // Space key toggle check on #toggleRecordMode
+        const initialRecChecked = await page.evaluate(() => document.getElementById('toggleRecordMode').checked);
+        await page.focus('#toggleRecordMode');
+        await page.keyboard.press('Space');
+        const toggledRecState = await page.evaluate(() => {
+            const input = document.getElementById('toggleRecordMode');
+            const slider = input.nextElementSibling;
+            return {
+                checked: input.checked,
+                beforeContent: getComputedStyle(slider, '::before').content
+            };
+        });
+        assert.strictEqual(toggledRecState.checked, !initialRecChecked, '#toggleRecordMode should toggle via Space key');
+        assert.strictEqual(toggledRecState.beforeContent, toggledRecState.checked ? '"ON"' : '"OFF"', '#toggleRecordMode ::before should update on Space toggle');
+        // Disabled state check (cursor: default, opacity < 0.7)
+        const disabledStyle = await page.evaluate(() => {
+            const input = document.getElementById('toggleRecordMode');
+            input.disabled = true;
+            const slider = input.nextElementSibling;
+            const cs = getComputedStyle(slider);
+            const res = { cursor: cs.cursor, opacity: parseFloat(cs.opacity) };
+            input.disabled = false;
+            return res;
+        });
+        assert.strictEqual(disabledStyle.cursor, 'default', 'Disabled slider should have cursor: default');
+        assert.ok(disabledStyle.opacity < 0.7, 'Disabled slider should have opacity < 0.7');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

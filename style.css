@@ -6094,15 +6094,39 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) {
 :is(.practice82-page, .uebung11-page) .settings-onoff .switch {
     width: 36px;
     height: 20px;
+    cursor: pointer;
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff .switch:has(input:disabled) {
+    cursor: default;
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff .slider {
+    border-radius: 6px;
+    box-sizing: border-box;
+    background-color: #e2e8f0;
+    border: 1px solid #94a3b8;
+    color: #334155;
+    transition: background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
 }
 :is(.practice82-page, .uebung11-page) .settings-onoff .slider::before {
-    width: 14px;
-    height: 14px;
-    left: 3px;
-    bottom: 3px;
-}
-:is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider::before {
-    transform: translateX(16px);
+    content: "OFF";
+    position: absolute;
+    inset: 0;
+    width: auto;
+    height: auto;
+    left: 0;
+    bottom: 0;
+    background: transparent;
+    border-radius: inherit;
+    box-shadow: none;
+    transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    color: inherit;
 }
 :is(.practice82-page, .uebung11-page) .settings-onoff .slider::after {
     content: none;
@@ -6110,6 +6134,66 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) {
 }
 :is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider {
     background-color: #3b4d63;
+    border-color: #2b3a4d;
+    color: #ffffff;
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider::before {
+    content: "ON";
+    transform: none;
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider {
+    filter: brightness(0.95);
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff .switch:active input:not(:disabled) + .slider {
+    transform: translateY(0.5px);
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff input:focus-visible + .slider {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+:is(.practice82-page, .uebung11-page) .settings-onoff input:disabled + .slider {
+    opacity: 0.55;
+    cursor: default;
+    filter: none;
+    transform: none;
+}
+@media (prefers-color-scheme: dark) {
+    :is(.practice82-page, .uebung11-page) .settings-onoff .slider {
+        background-color: #1e293b;
+        border-color: #475569;
+        color: #94a3b8;
+    }
+    :is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider {
+        background-color: var(--accent-color, #38bdf8);
+        border-color: #7dd3fc;
+        color: #0f172a;
+    }
+    :is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider {
+        filter: brightness(1.12);
+    }
+    :is(.practice82-page, .uebung11-page) .settings-onoff input:focus-visible + .slider {
+        outline-color: #60a5fa;
+    }
+}
+body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff .slider,
+html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff .slider {
+    background-color: #1e293b;
+    border-color: #475569;
+    color: #94a3b8;
+}
+body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider,
+html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider {
+    background-color: var(--accent-color, #38bdf8);
+    border-color: #7dd3fc;
+    color: #0f172a;
+}
+body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider,
+html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider {
+    filter: brightness(1.12);
+}
+body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff input:focus-visible + .slider,
+html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff input:focus-visible + .slider {
+    outline-color: #60a5fa;
 }
 :is(.practice82-page, .uebung11-page) .p82-top-right-col .compact-settings :is(#labelAutoRecord, #labelAutoPlay) .p82-setting-icon {
     color: #475569;

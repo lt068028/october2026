@@ -1569,5 +1569,41 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await ynRow.locator('button.answer-choice[data-answer="yes"]').click();
   eq(await ynRow.locator('.result-text').textContent(), 'はい、します', 'Switching back to Yes restores saved Yes result');
 
+  // Verify Autostop / Auto-Compare ON/OFF text button contract (36x20px fixed, Tab/Space, disabled cursor: default)
+  const btnAudit = await p.evaluate(() => {
+    const sw = document.querySelector('#toggleRecordMode').closest('label.switch');
+    const input = document.getElementById('toggleRecordMode');
+    const slider = sw.querySelector('.slider');
+    const onText = getComputedStyle(slider, '::before').content;
+    const onRect = slider.getBoundingClientRect();
+    sw.click();
+    const offText = getComputedStyle(slider, '::before').content;
+    const offRect = slider.getBoundingClientRect();
+    sw.click();
+    return {
+      onText, offText,
+      wOn: Math.round(onRect.width), hOn: Math.round(onRect.height),
+      wOff: Math.round(offRect.width), hOff: Math.round(offRect.height),
+      checkedAfterRestore: input.checked
+    };
+  });
+  eq(btnAudit, { onText: '"ON"', offText: '"OFF"', wOn: 36, hOn: 20, wOff: 36, hOff: 20, checkedAfterRestore: true }, 'P8.2 Autostop renders fixed 36x20px ON/OFF text button');
+  await p.locator('#toggleRecordMode').focus();
+  await p.keyboard.press('Space');
+  eq(await p.locator('#toggleRecordMode').isChecked(), false, 'P8.2 Space toggles ON/OFF checkbox');
+  await p.keyboard.press('Space');
+  eq(await p.locator('#toggleRecordMode').isChecked(), true, 'P8.2 Space restores ON');
+  await p.locator('#drill1 .drill-listen-btn').first().click();
+  const disabledAudit = await p.evaluate(() => {
+    const input = document.getElementById('toggleRecordMode');
+    const slider = input.closest('label.switch').querySelector('.slider');
+    const cs = getComputedStyle(slider);
+    return { disabled: input.disabled, cursor: cs.cursor, opacity: cs.opacity };
+  });
+  eq(disabledAudit.disabled, true, 'P8.2 Autostop disabled during playback');
+  eq(disabledAudit.cursor, 'default', 'P8.2 disabled ON/OFF button uses cursor: default');
+  eq(parseFloat(disabledAudit.opacity) < 0.7, true, 'P8.2 disabled ON/OFF button dims opacity');
+  await p.evaluate(() => { t.spoken.at(-1)?.onend?.(); });
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
