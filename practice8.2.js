@@ -103,6 +103,7 @@ const contrastPairs=[
  {verb:'read'},
  {verb:'write'},
  {verb:'takephoto'},
+ {verb:'discard'},
  {verb:'wash'}
 ];
 const conversations=[
@@ -1896,15 +1897,17 @@ function getCopy82Date() {
 }
 function entriesFor82(si) {
     const entries = [];
-    rowsFor(si).forEach((rows, index) => {
+    let rowNum = 0;
+    rowsFor(si).forEach(rows => {
         rows.forEach(r => {
+            rowNum += 1;
             if (r.pending) return;
             const entry = saved.get(keyFor(r));
             const raw = entry?.raw;
             if (typeof raw !== 'string' || !raw.trim()) return;
             const mark = (entry.status === 'accepted' ? '✅' : entry.status === 'incomplete' ? '👣' : entry.status === 'mismatch' ? '🔥' : FeedbackStatus.clipboardMarker(entry)) + ' ';
             const role = r.kind ? r.kind + ': ' : '';
-            entries.push((index + 1) + '. ' + role + mark + raw);
+            entries.push(rowNum + '. ' + role + mark + raw);
         });
     });
     return entries;

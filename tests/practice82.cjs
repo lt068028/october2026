@@ -17,7 +17,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.locator('#unlearnedCounts').textContent(),'ことば(1語) 漢字(3字)','Beyond L8 updated counts');
  eq(await p.locator('.optional-particle-label').textContent(),'を','optional particle is individually marked');
  eq(await p.locator('.optional-particle .tooltip-tip').textContent(),'The particle を is optional and usually omitted after 何か.','optional particle explanation');
- for(const [n,rows]of [[1,4],[2,8],[3,10],[4,6]])eq(await p.locator(`#drill${n} tr`).count(),rows,`Drill ${n} rows`);
+ for(const [n,rows]of [[1,4],[2,10],[3,10],[4,6]])eq(await p.locator(`#drill${n} tr`).count(),rows,`Drill ${n} rows`);
  eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
  eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');
  eq(await p.locator('#drill3 .info-panel-title').textContent(),'Drill 3: 何か／何も — Yes/No Questions','Drill 3 title');
@@ -90,7 +90,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  await p.locator('#speechStyleControl [data-value="formal"]').click();
  for(const mode of ['hiragana','kanji'])for(const hint of ['off','hover','paren']){
   await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();await p.locator(`#hintModeControl [data-value="${hint}"]`).click();
-  eq(await p.locator('tr').count(),28,`${mode}/${hint} all Drill rows retained`);
+  eq(await p.locator('tr').count(),30,`${mode}/${hint} all Drill rows retained`);
   if(mode==='hiragana')eq(await p.locator('.p81-model,.info-panel-desc').evaluateAll(es=>es.every(e=>!/\p{Script=Han}/u.test(e.textContent))),true,'Hiragana Only models and instructions');
  }
  await p.locator('#scriptModeControl [data-value="kanji"]').click();await p.locator('#hintModeControl [data-value="hover"]').click();
@@ -235,8 +235,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
 
   // 10. Drill 2 left question markers (8 rows), separation from Q/A roles, and removal of right .question-indicator
   eq(await p.locator('.question-indicator').count(), 0, 'Practice 8.2 has 0 .question-indicator elements');
-  eq(await p.locator('#drill2 .p81-card tr').count(), 8, 'Drill 2 has 8 rows');
-  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, 'Drill 2 has 8 left question markers total');
+  eq(await p.locator('#drill2 .p81-card tr').count(), 10, 'Drill 2 has 10 rows');
+  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 10, 'Drill 2 has 10 left question markers total');
   eq(await p.locator('#drill2 .p81-card tr').evaluateAll(rows => rows.every(r => r.querySelectorAll('.p82-question-marker').length === 1)), true, 'Each Drill 2 row has exactly 1 left question marker');
   eq(await p.locator('#drill1 .p82-question-marker, #drill3 .p82-question-marker, #drill4 .p82-question-marker').count(), 0, 'Drills 1, 3, 4 have 0 .p82-question-marker elements');
   eq(await p.locator('#drill1 .conversation-role-circle').count(), 0, 'Drill 1 has 0 Q/A role icons');
@@ -282,10 +282,10 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
 
   for (const mode of ['hiragana', 'kanji']) {
     await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();
-    eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, `Drill 2 retains 8 question markers in scriptMode=${mode}`);
+    eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 10, `Drill 2 retains 10 question markers in scriptMode=${mode}`);
   }
   await p.locator('.drill-cue-button').click();
-  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 8, 'Drill 2 retains 8 question markers in English cues mode');
+  eq(await p.locator('#drill2 .p81-card tr .p82-question-marker').count(), 10, 'Drill 2 retains 10 question markers in English cues mode');
   eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().textContent(), 'what / read', 'English cue text unaffected by question marker');
   await p.locator('.drill-cue-button').click();
   eq(await p.locator('#drill2 .p81-card .p81-cue-words').first().evaluate(el => {
@@ -1722,6 +1722,38 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   // Verify no stale content-layout.js?v=20261111-ms-fluent in practice8.2.html
   const p82Html = fs.readFileSync(path.join(__dirname, '..', 'practice8.2.html'), 'utf8');
   eq(p82Html.includes('content-layout.js?v=20261111-ms-fluent'), false, 'practice8.2.html has no stale content-layout.js query');
+
+  // Drill 2 5-item (Dr2-4 discard, Dr2-5 wash) evaluation & 1..10 Copy numbering
+  const d2FiveItems = await p.evaluate(() => {
+    const savedBackup = new Map(saved);
+    saved.clear();
+    const d2Pairs = rowsFor(1);
+    const d2Flat = d2Pairs.flat();
+    const r7 = d2Flat[6], r8 = d2Flat[7], r9 = d2Flat[8], r10 = d2Flat[9];
+    const evalChecks = {
+      d4WhatAcc: evaluateAnswer('何を、捨てますか。', r7) === 'accepted' && evaluateAnswer('なにをすてますか', r7) === 'accepted',
+      d4AnyAcc: evaluateAnswer('何か、捨てますか。', r8) === 'accepted' && evaluateAnswer('なにかすてますか', r8) === 'accepted',
+      d4WrongVerb: evaluateAnswer('何を、洗いますか。', r7) === 'mismatch',
+      d5WhatAcc: evaluateAnswer('何を、洗いますか。', r9) === 'accepted' && evaluateAnswer('なにをあらいますか', r9) === 'accepted',
+      d5AnyAcc: evaluateAnswer('何か、洗いますか。', r10) === 'accepted' && evaluateAnswer('なにかあらいますか', r10) === 'accepted',
+      d5WrongVerb: evaluateAnswer('何を、捨てますか。', r9) === 'mismatch',
+      d1To3Kept: d2Pairs.slice(0, 3).map(pair => pair[0].verb).join(',') === 'read,write,takephoto',
+    };
+    // Sparse Copy numbering check (rows 1, 7, 10 -> 1., 7., 10.)
+    saved.set(keyFor(d2Flat[0]), { raw: '何を読みますか', status: 'accepted' });
+    saved.set(keyFor(r7), { raw: '何を捨てますか', status: 'accepted' });
+    saved.set(keyFor(r10), { raw: '何か洗いますか', status: 'accepted' });
+    const entries = entriesFor82(1);
+    saved.clear();
+    savedBackup.forEach((v, k) => saved.set(k, v));
+    return { evalChecks, entries };
+  });
+  eq(d2FiveItems.evalChecks.d4WhatAcc && d2FiveItems.evalChecks.d4AnyAcc, true, 'Drill 2 Dr2-4 discard accepts kanji and kana');
+  eq(d2FiveItems.evalChecks.d4WrongVerb, true, 'Drill 2 Dr2-4 discard rejects unrelated verb');
+  eq(d2FiveItems.evalChecks.d5WhatAcc && d2FiveItems.evalChecks.d5AnyAcc, true, 'Drill 2 Dr2-5 wash accepts kanji and kana');
+  eq(d2FiveItems.evalChecks.d5WrongVerb, true, 'Drill 2 Dr2-5 wash rejects unrelated verb');
+  eq(d2FiveItems.evalChecks.d1To3Kept, true, 'Drill 2 Dr2-1..3 verbs unchanged');
+  eq(d2FiveItems.entries.map(e => e.split('.')[0]), ['1', '7', '10'], 'Drill 2 Copy preserves 1..10 original row numbers');
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
