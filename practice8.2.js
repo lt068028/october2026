@@ -85,7 +85,7 @@ const dictionary=[...formReadings,...Object.values(words).map(w=>[w.kanji,w.hira
 [['聴く','きく'],['訊く','きく'],['友達','ともだち'],['友だち','ともだち'],['付ける','つける'],['点ける','つける']].forEach(e=>STTDisplay.register(...e));
 function displayKana(text){let value=String(text);for(const [k,h]of dictionary)value=value.split(k).join(h);return value;}
 function hira(text){return displayKana(String(text).normalize('NFKC')).replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));}
-function normalizeToken(text){return hira(text).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ');}
+function normalizeToken(text){return hira(DrillAnswer.collapseAdjacentRepeats(text)).replace(/[\(（]を[\)）]/g,'').replace(/なにかを/g,'なにか').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^(?:えーと|えっと|あのう|あの|まあ|うーん)+/,'').replace(/^ううんん|^うんん/,'ううん').replace(/^いえ/,'いいえ');}
 function normalize(text){return normalizeToken(text).replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
  {title:'Drill 1: 何か — Affirmative Sentences',instruction:'Place 何か naturally before the verb.'},
@@ -246,7 +246,7 @@ function evaluateAnswer(raw, r) {
     if (r.pending || !DrillAnswer.formAllowed(raw, speechStyle)) return 'mismatch';
     const normVal = normalizeAnswerInput(raw, r);
     if (!normVal) return 'mismatch';
-    if (r.refs.some(t => normalize(t) === normVal)) return 'accepted';
+    if (!DrillAnswer.isResponseWordOnly(raw) && r.refs.some(t => normalize(t) === normVal)) return 'accepted';
     if (r.refs.some(t => normalize(t).startsWith(normVal))) return 'incomplete';
     return 'mismatch';
 }

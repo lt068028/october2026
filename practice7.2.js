@@ -136,16 +136,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 動詞の肯定・否定を必須とし、その他の指定語句は任意。
     practice7Normalize = text => {
-        const value = flat(String(text ?? '').replace(/私/g, 'わたし'));
+        if (DrillAnswer.isResponseWordOnly(text)) return '__incomplete_response_only__';
+        const collapsed = DrillAnswer.collapseAdjacentRepeats(text);
+        const value = flat(String(collapsed ?? '').replace(/私/g, 'わたし'));
 
         for (const item of targets) {
             const stem = flat(item.stem);
 
             const pattern = item.know
-                ? /(しって)(いません|います|いない|いる|ない|る)(?:よね|よ|ね)?|しりません(?:よね|よ|ね)?|しらない(?:よね|よ|ね)?/g
+                ? /(しって)(いません|います|いない|いる|ない|る|ません|ます)(?:よね|よ|ね)?|しりません(?:よね|よ|ね)?|しらない(?:よね|よ|ね)?/g
                 : new RegExp(
                     stem +
-                    '(いません|います|いない|いる|ない|る)' +
+                    '(いません|います|いない|いる|ない|る|ません|ます)' +
                     '(?:よね|よ|ね)?',
                     'g'
                 );
@@ -158,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const match = matches[0];
 
-            const core = match[0].replace(
+            const rawCore = match[0].replace(
                 /(?:よね|よ|ね)$/,
                 ''
             );
@@ -169,9 +171,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 [
                     'しっていません',
                     'しっていない',
-                    'しってない'
-                ].includes(core)
+                    'しってない',
+                    'しってません'
+                ].includes(rawCore)
             ) continue;
+
+            const core = rawCore
+                .replace(/てます$/, 'ています')
+                .replace(/てません$/, 'ていません')
+                .replace(/でます$/, 'でいます')
+                .replace(/でません$/, 'でいません');
 
             const negative =
                 /(?:いません|いない|てない|しらない|しりません)$/
@@ -239,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        return normalize(text);
+        return normalize(collapsed);
     };
 
     const speak = speakText;

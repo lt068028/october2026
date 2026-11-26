@@ -2208,7 +2208,8 @@ const qa73BaseNormalize = normalize;
 
 // Answer matching only: equivalent time expressions must not rewrite STT display.
 function qa73NormalizeTime(text) {
-    return qa73BaseNormalize(String(text ?? '')
+    const collapsed = DrillAnswer.collapseAdjacentRepeats(text);
+    return qa73BaseNormalize(String(collapsed ?? '')
         .replace(/今朝/g, 'けさ').replace(/昨夜/g, 'さくや')
         .replace(/昨晩/g, 'さくばん').replace(/昨日の晩/g, 'きのうのばん')
         .replace(/先ほど/g, 'さきほど').replace(/午前(?!中)/g, 'ごぜん'))
@@ -2222,14 +2223,16 @@ function qa73NormalizeTime(text) {
 }
 
 normalize = function (text) {
+    if (DrillAnswer.isResponseWordOnly(text)) return '__incomplete_response_only__';
     let value = qa73NormalizeTime(String(text ?? '').replace(/私/g, 'わたし'));
 
-    // 「会う」の相手を示す「友達に／友達と」を同じ判定にする。
+    // 「会う」の相手を示す「友達に／友達と」を同じ判定にする（共通代替表現ストア参照）。
     if (
-        /あって(?:いました|いませんでした|いた|いなかった|た|なかった)/
+        /あって(?:いました|いませんでした|いた|いなかった|た|なかった|ました|ませんでした)/
             .test(value)
     ) {
-        value = value.replace(/ともだちと/g, 'ともだちに');
+        const expanded = DrillAnswer.expandYnAlternatives(value, ['meet_friend']);
+        value = expanded.find(v => v.includes('ともだちに')) || value.replace(/ともだちと/g, 'ともだちに');
     }
 
     // 質問文は既存の判定を使用する。
@@ -2245,7 +2248,7 @@ normalize = function (text) {
         const matches = [...value.matchAll(
             new RegExp(
                 stem +
-                '(いませんでした|いました|いなかった|いた|なかった|た)',
+                '(いませんでした|いました|いなかった|いた|なかった|た|ませんでした|ました)',
                 'g'
             )
         )];
@@ -2253,8 +2256,10 @@ normalize = function (text) {
         if (matches.length !== 1) continue;
 
         const match = matches[0];
+        const rawEnding = match[1];
+        const normEnding = rawEnding === 'ました' ? 'いました' : rawEnding === 'ませんでした' ? 'いませんでした' : rawEnding;
         const negative =
-            /いませんでした|いなかった|なかった/.test(match[1]);
+            /いませんでした|いなかった|なかった/.test(normEnding);
 
         let rest =
             value.slice(0, match.index) +
@@ -2304,7 +2309,7 @@ normalize = function (text) {
         }
 
         if (valid) {
-            return 'p73-qa|' + verbKey + '|' + match[1];
+            return 'p73-qa|' + verbKey + '|' + normEnding;
         }
     }
 
@@ -2313,12 +2318,12 @@ normalize = function (text) {
 
 // Omitted time is allowed; an explicitly spoken time must match this question.
 function matchesAnswer(actual, target) {
-    if (!DrillAnswer.formAllowed(actual, speechStyle)) return false;
+    if (!DrillAnswer.formAllowed(actual, speechStyle) || DrillAnswer.isResponseWordOnly(actual)) return false;
     if (target.answerTime && target.answerKind !== 'q') {
         const data = qa73Verbs[target.cues[target.cues.length - 1]];
         // Remove the verb before looking for 今: いました contains いま.
         const spoken = qa73NormalizeTime(actual).replace(new RegExp(
-            qa73BaseNormalize(data[0]) + '(?:いませんでした|いました|いなかった|いた|なかった|た)', 'g'
+            qa73BaseNormalize(data[0]) + '(?:いませんでした|いました|いなかった|いた|なかった|た|ませんでした|ました)', 'g'
         ), '');
         const times = spoken.match(/きょうの(?:ごぜんちゅう|ごご)|きのうの(?:よる|ひる)|さっき|いま/g) || [];
         if (times.some(time => time !== qa73NormalizeTime(target.answerTime))) return false;

@@ -3,7 +3,7 @@ function joinDisplayCues(parts, separator) {
     return parts.join(parts.some(part => String(part).includes('display-cue-unit')) ? '' : separator);
 }
 
-// Drill 2：動詞の活用を必須とし、応答語・今・目的語は任意にする。
+// Drill 2：動詞の活用を必須とし、応答語・今・目的語は任意にする（C2重複整理・§6.4.2準拠）。
 document.addEventListener('DOMContentLoaded', () => {
     const originalNormalize = practice71Normalize;
 
@@ -16,15 +16,17 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     practice71Normalize = function(text) {
+        if (DrillAnswer.isResponseWordOnly(text)) return '__incomplete_response_only__';
+        const collapsed = DrillAnswer.collapseAdjacentRepeats(text);
         const value = practice71ToHiragana(
-            String(text ?? '').normalize('NFKC').replace(/私/g, 'わたし')
+            String(collapsed ?? '').normalize('NFKC').replace(/私/g, 'わたし')
         )
             .replace(/[\s、。．,.!?！？「」『』]/g, '')
             .replace(/(?:よね|よ|ね)$/, '');
 
         for (const [object, verb] of targets) {
             const pattern = new RegExp(
-                verb + '(いません|います|いない|いる|ない|る)'
+                verb + '(いません|います|いない|いる|ない|る|ません|ます)'
                     + '(?:よね|よ|ね)?',
                 'g'
             );
@@ -37,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (matches.length !== 1) continue;
 
             const match = matches[0];
-            const ending = match[1];
+            const rawEnding = match[1];
+            const ending = rawEnding === 'ます' ? 'います' : rawEnding === 'ません' ? 'いません' : rawEnding;
 
             const negative = [
                 'いません',
@@ -95,88 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        return originalNormalize(text);
-    };
-});
-// Drill 2：回答の「はい／いいえ」と目的語の省略を許容する。
-document.addEventListener('DOMContentLoaded', () => {
-    const originalNormalize = practice71Normalize;
-
-    const answers = [
-        ['ほん', 'よんで'],
-        ['あさごはん', 'たべて'],
-        ['おんがく', 'きいて'],
-        ['しゃしん', 'とって'],
-        ['おべんとう', 'かって']
-    ];
-
-    practice71Normalize = function(text) {
-        let value = practice71ToHiragana(
-            String(text ?? '').normalize('NFKC')
-        )
-            .replace(/[\s、。．,.!?！？「」『』]/g, '')
-            .replace(/(?:よね|よ|ね)$/, '');
-
-        const prefix = value.match(
-            /^(いいえ|はい|うんんー?|ううん|うん)/
-        );
-
-        let polarity = null;
-
-        if (prefix) {
-            polarity = /^(?:いいえ|うんん|ううん)/.test(
-                prefix[0]
-            )
-                ? 'no'
-                : 'yes';
-
-            value = value.slice(prefix[0].length);
-        }
-
-        const casual = document.querySelector(
-            '#speechStyleControl button[aria-pressed="true"]'
-        )?.dataset.value === 'casual';
-
-        for (const [object, verb] of answers) {
-            let body = value;
-
-            if (body.startsWith(object + 'を')) {
-                body = body.slice(object.length + 1);
-            } else if (
-                casual &&
-                body.startsWith(object)
-            ) {
-                body = body.slice(object.length);
-            }
-
-            if (!body.startsWith(verb)) continue;
-
-            const ending = body.slice(verb.length);
-
-            const yes = [
-                'います',
-                'いる',
-                'る'
-            ].includes(ending);
-
-            const no = [
-                'いません',
-                'いない',
-                'ない'
-            ].includes(ending);
-
-            if (!yes && !no) continue;
-
-            // 「はい＋否定」「いいえ＋肯定」は許容しない。
-            if (
-                polarity &&
-                polarity !== (yes ? 'yes' : 'no')
-            ) continue;
-
-            return `p71-answer|${verb}|${ending}`;
-        }
-
-        return originalNormalize(text);
+        return originalNormalize(collapsed);
     };
 });
 // Practice 7.1：Example 2・Drill 2（質問とYes／No回答）

@@ -69,9 +69,9 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     check(await p.evaluate(a=>qaMatch(a,2),'今朝出かけて'+ending),false,'p73 morning is not night');
    }
    await p.locator('#speechStyleControl [data-value="formal"]').click();
-   for(const a of ['会っていました','はい会っていました','今日の午前中会っていました','今日の午前中今日の午前中会っていました','友達に友達に会っていました','はいはい会っていました'])check(await p.evaluate(a=>qaMatch(a),a),true,'p73 allowed '+a);
-   for(const a of ['今日の午後会っていました','昨日の夜会っていました','今日の午前中昨日の夜会っていました','会っていました？','会っていましたか','はい'])check(await p.evaluate(a=>qaMatch(a),a),false,'p73 reject '+a);
-   for(const [a,expected] of [['会っていませんでした',true],['今日の午前中会っていませんでした',true],['昨日の夜会っていませんでした',false],['はい会っていませんでした',false],['いいえ会っていました',false]])check(await p.evaluate(a=>qaMatch(a,0,'no'),a),expected,'p73 negative '+a);
+   for(const a of ['会っていました','はい会っていました','会ってました','今日の午前中会っていました','今日の午前中今日の午前中会っていました','友達に友達に会っていました','はいはい会っていました'])check(await p.evaluate(a=>qaMatch(a),a),true,'p73 allowed '+a);
+   for(const a of ['今日の午後会っていました','昨日の夜会っていました','今日の午前中昨日の夜会っていました','会っていました？','会っていましたか','はい','えーと、はい、'])check(await p.evaluate(a=>qaMatch(a),a),false,'p73 reject '+a);
+   for(const [a,expected] of [['会っていませんでした',true],['会ってませんでした',true],['今日の午前中会っていませんでした',true],['昨日の夜会っていませんでした',false],['はい会っていませんでした',false],['いいえ会っていました',false]])check(await p.evaluate(a=>qaMatch(a,0,'no'),a),expected,'p73 negative '+a);
    for(const [i,time,verb] of [[1,'今日の午後','乗っていました'],[2,'昨日の夜','出かけていました'],[3,'昨日の昼','お風呂に入っていました'],[4,'さっき','電話をかけていました']]){
     check(await p.evaluate(({i,verb})=>qaMatch(verb,i),{i,verb}),true,'p73 row '+i+' omitted time');
     check(await p.evaluate(({i,time,verb})=>qaMatch(time+verb,i),{i,time,verb}),true,'p73 row '+i+' matching time');
@@ -93,9 +93,20 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     check(await p.evaluate(a=>qaMatch(a),'昨日の夜会って'+ending),false,'p73 '+style+' wrong time');
    }
   }
-  if(name==='practice7.1')check(await p.evaluate(()=>practice71Normalize('はい私は今本を読んでいます')===practice71Normalize('はい読んでいます')),true,'p71 full first-person response');
+  if(name==='practice7.1'){
+   check(await p.evaluate(()=>practice71Normalize('はい私は今本を読んでいます')===practice71Normalize('はい読んでいます')),true,'p71 full first-person response');
+   check(await p.evaluate(()=>practice71Normalize('はいはい本を読んでいます')===practice71Normalize('はい読んでいます')),true,'p71 C4 adjacent response repeat');
+   check(await p.evaluate(()=>practice71Normalize('はい読んでます')===practice71Normalize('はい読んでいます')),true,'p71 てます omission accepted');
+   check(await p.evaluate(()=>practice71Normalize('いいえ読んでません')===practice71Normalize('いいえ読んでいません')),true,'p71 てません omission accepted');
+   check(await p.evaluate(()=>practice71Normalize('えーと、はい、')===practice71Normalize('はい読んでいます')),false,'p71 filler + response word only rejected');
+   check(await p.evaluate(()=>practice71Normalize('はい読んでいません')===practice71Normalize('はい読んでいます')),false,'p71 polarity contradiction rejected');
+  }
   if(name==='practice7.2'){
    check(await p.evaluate(()=>practice7Normalize('はい私は家の電話番号を覚えています')===practice7Normalize('はい覚えています')),true,'p72 full first-person response');
+   check(await p.evaluate(()=>practice7Normalize('はいはい太っています')===practice7Normalize('はいお父さんは太っています')),true,'p72 C4 adjacent response repeat');
+   check(await p.evaluate(()=>practice7Normalize('はい太ってます')===practice7Normalize('はいお父さんは太っています')),true,'p72 てます omission accepted');
+   check(await p.evaluate(()=>practice7Normalize('いいえ太ってません')===practice7Normalize('いいえお父さんは太っていません')),true,'p72 てません omission accepted');
+   check(await p.evaluate(()=>practice7Normalize('えーと、はい、')===practice7Normalize('はいお父さんは太っています')),false,'p72 filler + response word only rejected');
    check(await p.evaluate(()=>practice7Normalize('私を家の電話番号を覚えています')===practice7Normalize('はい覚えています')),false,'p72 self subject を rejected');
    check(await p.evaluate(()=>practice7Normalize('私は太っています')===practice7Normalize('はい太っています')),false,'p72 cannot replace father subject with self');
   }

@@ -132,7 +132,7 @@ function hira(text) {
     return value.replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-96));
 }
 function normalize(text) {
-    return hira(text).replace(/(?:ではありません|じゃありません|ではないです)/g,'じゃないです').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^(?:ううんん|うんん)/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');
+    return hira(DrillAnswer.collapseAdjacentRepeats(text)).replace(/(?:ではありません|じゃありません|ではないです)/g,'じゃないです').replace(/[\p{P}\p{Z}\s]/gu,'').replace(/^(?:ううんん|うんん)/,'ううん').replace(/^いえ/,'いいえ').replace(/(?:よね|よ|ね)$/,'');
 }
 const action=(object,verb,particle=verb==='do'?'':'を')=>({object,verb,particle});
 const compareActions=[action('book','read'),action('music','listen'),action('cycling','ride','に')];
@@ -272,7 +272,7 @@ function rowsFor(si) {
     return comparisonOrder.map(i=>{const spec=comparisons[i],abilityGroup=i>=1&&i<=3?'Own ability':"Others' ability";return spec.options.map(adjective=>{const id=`comparison-${i}-${adjective}`,choice=choices.get(id);return makeRow(id,{...spec,adjective},{comparison:true,comparisonBase:`comparison-${i}`,kind:spec.impressionWords[adjective],abilityGroup,selectKind:'comparison',pending:choice!==adjective,quizChoice:choice});});});
 }
 function matchesAnswer(raw,r) {
-    if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return false;
+    if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle)||DrillAnswer.isResponseWordOnly(raw))return false;
     const n=normalize(raw);
     return Boolean(n)&&r.refs.some(ref=>normalize(ref)===n);
 }

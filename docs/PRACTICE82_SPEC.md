@@ -17,7 +17,7 @@ Practice 8.2の確定構成はExample 4件・Drill 4件とする。旧版の3 Ex
 
 - **Example 1／Drill 1 — 何かの平叙文**：Example 1 は `Unspecified`／`None`／`All-inclusive`（`— I drink something.` 等、丸括弧なし・em dash 開始）を対比。Drill 1（`Drill 1: 何か — Affirmative Sentences`）は平叙文 4 問とし、疑問文マーカー・Q/A 役割・`QuestionIndicator` を表示せず、動詞前の自然な複数語順を許容する。
 - **Example 2／Drill 2 — 何を vs 何か**：Drill 2（4 問×2 行）は回答なしの質問比較のため Q/A 役割と `QuestionIndicator` を出さず、キュー左側に `.p82-question-marker`（`aria-hidden="true"`）を表示する。設問にない主語補完を許容し、誤った疑問詞・動詞は許容しない。
-- **Example 3／Drill 3 — 何か／何も Yes/No**：質問・回答を別々に録音し、Y/N 選択まで回答側の再生・録音をロックする（選択操作だけではモデル再生しない）。Drill 3 最初の回答行の Y/N ボタンは Tooltip・アクセシブル名とも `Yes`／`No`、選択前案内は `Choose Yes/No first.`、Ex3 モデル音声 Tooltip は `Listen to the affirmative model.`／`Listen to the negative model.` とする。
+- **Example 3／Drill 3 — 何か／何も Yes/No**：質問・回答を別々に録音し、Y/N 選択まで回答側の再生・録音をロックする（選択操作だけではモデル再生しない）。Drill 3 最初の回答行の Y/N ボタンは Tooltip・アクセシブル名とも `Yes`／`No`、選択前案内は `Choose Yes/No first.`、Ex3 モデル音声 Tooltip は `Listen to the affirmative model.`／`Listen to the negative model.` とする。回答判定は `PROJECT_SPEC.md` §6.4.2 に従い、全要素・モデル・省略回答と代替表現を分離し、応答語のみ（句読点・フィラー付きを含む）や述部（動詞）欠落は `incomplete`、極性矛盾は `mismatch`、連続する隣接重複（C4）は正規化畳み込みで許容する。
 - **Example 4／Drill 4 — 何でも（先取り）**：Drill 4（`Drill 4: [Sneak Peek] 何でも — Unlimited Choice`、課番号付き Sneak Peek や Advanced は不使用）は「何でも＋動詞」と自然な「何でも」短答を許容し、「何でもを＋動詞」「何でもいいです」・動詞だけの返答・たい形・可能形は許容しない。
 
 ## 固有表示・表記と Beyond L8 Words

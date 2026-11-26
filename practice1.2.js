@@ -1189,7 +1189,7 @@ function practice2ShowNotice(resultSpan, message) {
 
     // 比較専用。表示文・録音データは変更しない。
     const normalize = text =>
-        practice2Normalize(text)
+        practice2Normalize(DrillAnswer.collapseAdjacentRepeats(text))
             .replace(/なん(?=ですか$|$)/, "なに");
 
     function references(text, style) {
@@ -1251,6 +1251,7 @@ function practice2ShowNotice(resultSpan, message) {
     }
 
     const matches = (actual, expected, style) => {
+        if (DrillAnswer.isResponseWordOnly(actual)) return false;
         const value = normalize(actual);
 
         return DrillAnswer.formAllowed(actual, style) && value.length > 0
