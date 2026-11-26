@@ -1650,5 +1650,23 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(offColorAudit.recBg, offColorAudit.stopBg, 'P8.2 Autostop OFF matches stop button background');
   eq(offColorAudit.pbBg !== offColorAudit.stopBg, true, 'P8.2 Auto-Compare OFF keeps neutral background');
 
+  // Cue .target-word white-space: nowrap on P8.2 (Drill 2-4) & takephoto homophone (撮る/取る)
+  const cueAndHomophoneAudit = await p.evaluate(() => {
+    const cues = [...document.querySelectorAll('#drill2 .drill-cue-cell .target-word, #drill3 .drill-cue-cell .target-word, #drill4 .drill-cue-cell .target-word')];
+    const allNowrap = cues.length > 0 && cues.every(el => getComputedStyle(el).whiteSpace === 'nowrap');
+    const takephotoRow = drills.flatMap(d => d.rows).find(r => r.verb === 'takephoto');
+    const otherRow = drills.flatMap(d => d.rows).find(r => r.verb && r.verb !== 'takephoto');
+    return {
+      allNowrap,
+      toruCanonical: evaluateAnswer('何を取りますか', takephotoRow) === 'accepted' && evaluateAnswer('何か撮りますか', takephotoRow) === 'accepted',
+      toruHomophone: evaluateAnswer('あの 何を取りますか', takephotoRow) === 'accepted' && evaluateAnswer('あの 何か取りますか', takephotoRow) === 'accepted',
+      otherRowRejectsToru: evaluateAnswer('何を取りますか', otherRow) === 'mismatch',
+    };
+  });
+  eq(cueAndHomophoneAudit.allNowrap, true, 'P8.2 Drill 2-4 cue .target-word has white-space: nowrap');
+  eq(cueAndHomophoneAudit.toruCanonical, true, 'P8.2 takephoto accepts canonical 撮る');
+  eq(cueAndHomophoneAudit.toruHomophone, true, 'P8.2 takephoto accepts homophone 取る');
+  eq(cueAndHomophoneAudit.otherRowRejectsToru, true, 'P8.2 non-takephoto row rejects 取る');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

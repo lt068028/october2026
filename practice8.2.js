@@ -234,6 +234,7 @@ function normalizeAnswerInput(raw, r) {
         : r.verb === 'wearshoes' ? String(raw).replace(/[履穿]/g, 'は')
         : r.verb === 'cap' ? String(raw).replace(/被/g, 'かぶ')
         : r.verb === 'attach' ? String(raw).replace(/^[付点]け/, 'つけ')
+        : r.verb === 'takephoto' ? String(raw).replace(/取(ります|りました|りません|りませんでした|った|らない|らなかった|る)/g, '撮$1')
         : raw;
     return normalize(value);
 }

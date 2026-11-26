@@ -2519,7 +2519,7 @@ body.site-scale {
     overflow-wrap: anywhere;
     word-break: keep-all;
 }
-.site-scale:not(.practice81-page) .recording-table :is(.prompt-label, .drill-cue-cell) .target-word {
+.site-scale:is(.practice82-page, :not(.practice81-page)) .recording-table :is(.prompt-label, .drill-cue-cell) .target-word {
     white-space: nowrap;
 }
 .site-scale:not(.practice12-page):not(.practice73-page) .recording-table td[rowspan="2"] { grid-row: span 2; }
