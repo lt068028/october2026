@@ -103,8 +103,7 @@ const contrastPairs=[
  {verb:'read'},
  {verb:'write'},
  {verb:'takephoto'},
- {verb:'cut'},
- {verb:'wash'}
+ {verb:'cut'}
 ];
 const conversations=[
  {time:'birthday',timeParticle:'に、',verb:'do'},
