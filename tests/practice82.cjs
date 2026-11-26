@@ -1071,7 +1071,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     eq(await rows.nth(1).getByRole('button', { name: /^(Yes|No|Affirmative response|Negative response)$/ }).count(), expectYnOnRow2 ? 2 : 0, `${drillSel} Row 2 Yes/No button count`);
   }
 
-  // Drill 2 longest cue "何か／あらう" must remain on a single line at 600px and 1280px
+  // Drill 2 longest cue "何か／きる" must remain on a single line at 600px and 1280px
   for (const vpWidth of [600, 1280]) {
     await p.setViewportSize({ width: vpWidth, height: 1000 });
     await p.waitForTimeout(120);
@@ -1081,7 +1081,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
         c.querySelectorAll('.tooltip-tip, .custom-tip-box').forEach(x => x.remove());
         return c.textContent.replace(/\s+/g, '');
       };
-      const target = [...document.querySelectorAll('#drill2 .p81-card .p81-cue-words')].find(el => strip(el) === '何か/あらう');
+      const target = [...document.querySelectorAll('#drill2 .p81-card .p81-cue-words')].find(el => strip(el) === '何か/きる');
       if (!target) return { found: false };
       const walker = document.createTreeWalker(target, NodeFilter.SHOW_TEXT, {
         acceptNode: n => (n.parentElement?.closest('.tooltip-tip, .custom-tip-box') || !n.textContent.trim())
@@ -1101,7 +1101,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       return { found: true, lineCount: yLines.size, singleLineHeight: box.height <= lh * 1.5 };
     });
     eq(cueLineCheck, { found: true, lineCount: 1, singleLineHeight: true },
-      `Drill 2 longest cue "何か／あらう" renders on a single line at ${vpWidth}px`);
+      `Drill 2 longest cue "何か／きる" renders on a single line at ${vpWidth}px`);
   }
   await p.setViewportSize({ width: 1440, height: 1000 });
   await p.waitForTimeout(100);
