@@ -1901,7 +1901,7 @@ function initGermanDrill() {
 
             const source = context.createMediaStreamSource(stream);
             const analyser = context.createAnalyser();
-            analyser.fftSize = 2048;
+            analyser.fftSize = 1024;
             source.connect(analyser);
 
             const resumePromise = context.resume?.();
@@ -2268,12 +2268,19 @@ function initGermanDrill() {
             // Info Panel
             const panel = node("div", "info-panel info-panel-task1");
             const desc = node("span", "info-panel-desc instruction-steps");
-            if (window.FluentIcons) {
-                const bulb = window.FluentIcons.create("lightbulbFilled", 20, "uebung-instruction-bulb", "filled");
-                desc.append(bulb, document.createTextNode(drill.instruction));
-            } else {
-                desc.textContent = drill.instruction;
-            }
+            const bulb = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            bulb.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+            bulb.setAttribute("width", "20");
+            bulb.setAttribute("height", "20");
+            bulb.setAttribute("viewBox", "0 0 24 24");
+            bulb.setAttribute("fill", "none");
+            bulb.setAttribute("aria-hidden", "true");
+            bulb.setAttribute("class", "p82-lightbulb-icon uebung-instruction-bulb fluent-icon fluent-icon-lightbulb");
+            const bulbPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            bulbPath.setAttribute("d", "M12 2a7.25 7.25 0 0 1 4.48 12.94c-.28.22-.48.54-.55.89l-.45 2.17H8.52l-.45-2.17a1.75 1.75 0 0 0-.55-.89A7.25 7.25 0 0 1 12 2Zm0 1.5a5.75 5.75 0 0 0-3.55 10.27c.59.46 1 1.12 1.15 1.85l.15.73h4.5l.15-.73c.15-.73.56-1.39 1.15-1.85A5.75 5.75 0 0 0 12 3.5ZM8.76 19h6.48l-.24 1.15A2.25 2.25 0 0 1 12.8 22h-1.6a2.25 2.25 0 0 1-2.2-1.85L8.76 19Zm1.83 1.5c.14.3.44.5.81.5h1.2c.37 0 .67-.2.81-.5h-2.82Z");
+            bulbPath.setAttribute("fill", "currentColor");
+            bulb.append(bulbPath);
+            desc.append(bulb, document.createTextNode(drill.instruction));
             panel.append(
                 node("span", "info-panel-title", drill.title),
                 desc

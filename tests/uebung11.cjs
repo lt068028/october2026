@@ -418,15 +418,15 @@ assert.ok(js.includes('entry.judgment === "accepted" ? "✅" : (entry.judgment =
 console.log('Testing Deutsche Übung 1.1 hover and tooltip contracts...');
 
 // 8.1 Autostop & Auto-Compare multi-line setting tooltips in HTML + Fluent SVG icons
-assert.ok(html.includes('ON: Stops automatically after 2s of silence.<br>OFF: Uses the stop button.'), 'Autostop must have standard multi-line tooltip');
-assert.ok(html.includes('ON: Auto-plays the model audio and your recording in sequence after recording.<br>OFF: Uses the Play buttons separately.'), 'Auto-Compare must have standard multi-line tooltip');
+assert.ok(html.includes('<strong>ON:</strong> Stops automatically after 2s of silence.<br><strong>OFF:</strong> Uses the stop button.'), 'Autostop must have standard multi-line tooltip');
+assert.ok(html.includes('<strong>ON:</strong> Auto-plays the model audio and your recording in sequence after recording.<br><strong>OFF:</strong> Uses the Play buttons separately.'), 'Auto-Compare must have standard multi-line tooltip');
 assert.ok(html.includes('fluent-icon-arrowHookDownLeft'), 'Back link must use Arrow Hook Down Left Fluent SVG');
 assert.ok(html.includes('fluent-icon-speaker'), 'Voice label must use Speaker 2 Fluent SVG');
 assert.ok(html.includes('fluent-icon-playCircle'), 'Auto-Compare must use Play Circle 24 Regular Fluent SVG');
 assert.ok(html.includes('fluent-icon-micFilled'), 'Autostop must use Mic 24 Filled Fluent SVG');
 assert.ok(html.includes('fluent-icon-chatHintHalfFilled'), 'Hover must use Chat Hint Half 24 Filled Fluent SVG');
 assert.ok(html.includes('fluent-icon-editLineHorizontal3Filled'), 'Display must use Edit Line Horizontal 3 24 Filled Fluent SVG');
-assert.ok(js.includes('lightbulbFilled'), 'Instruction panel must use Lightbulb 20 Filled Fluent SVG');
+assert.ok(js.includes('fluent-icon-lightbulb'), 'Instruction panel must use outline Lightbulb Fluent SVG');
 assert.ok(!js.includes('b.textContent = "Playing..."'), 'Must abolish Playing... text during Drill model playback');
 assert.ok(js.includes('key === "d1_1" ? "Play your recorded voice." : ""'), 'Recorded play hover must be restricted to Drill 1 Item 1 only');
 assert.ok(js.includes('createFlagSvgMarkup'), 'Must render DE/AT/CH vector SVG flags');
