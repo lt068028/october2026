@@ -1605,5 +1605,29 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(parseFloat(disabledAudit.opacity) < 0.7, true, 'P8.2 disabled ON/OFF button dims opacity');
   await p.evaluate(() => { t.spoken.at(-1)?.onend?.(); });
 
+  // Speech filler tolerance (ja 8 words) & transcript preservation
+  const jaFillerAudit = await p.evaluate(() => {
+    const r = { id: 'q_filler', refs: ['はい、好きです'], yn: true, answer: 'yes', pending: false };
+    const rNo = { id: 'q_filler_no', refs: ['いいえ、好きじゃないです'], yn: true, answer: 'no', pending: false };
+    return {
+      acceptedSingle: evaluateAnswer('えーと、はい、好きです', r),
+      acceptedMulti: evaluateAnswer('えーと、あのー、うーん、はい、好きです', r),
+      acceptedAll8: ['えーと','えっと','あのう','あのー','うーん','えー','あの','まあ'].every(f => evaluateAnswer(f + '、はい、好きです', r) === 'accepted'),
+      eeNotStripped: evaluateAnswer('ええ、好きです', r),
+      unPolarityMismatch: evaluateAnswer('うん、好きじゃないです', r),
+      unNoPolarityMismatch: evaluateAnswer('うん、好きです', rNo),
+      fillerPlusRespIncomplete: evaluateAnswer('あのー、はい', r),
+      fillerPlusPartialIncomplete: evaluateAnswer('えーと、はい、好き', r),
+    };
+  });
+  eq(jaFillerAudit.acceptedSingle, 'accepted', 'P8.2 ja filler single accepted');
+  eq(jaFillerAudit.acceptedMulti, 'accepted', 'P8.2 ja filler multi accepted');
+  eq(jaFillerAudit.acceptedAll8, true, 'P8.2 ja all 8 fillers accepted');
+  eq(jaFillerAudit.eeNotStripped, 'mismatch', 'P8.2 ええ is not stripped as えー');
+  eq(jaFillerAudit.unPolarityMismatch, 'mismatch', 'P8.2 うん polarity mismatch rejected');
+  eq(jaFillerAudit.unNoPolarityMismatch, 'mismatch', 'P8.2 うん on No answer rejected');
+  eq(jaFillerAudit.fillerPlusRespIncomplete, 'incomplete', 'P8.2 filler + response word only is incomplete');
+  eq(jaFillerAudit.fillerPlusPartialIncomplete, 'incomplete', 'P8.2 filler + partial predicate is incomplete');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

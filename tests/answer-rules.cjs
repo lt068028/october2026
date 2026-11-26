@@ -258,6 +258,15 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('えーと、いいえ。')),true,'response word only: えーと、いいえ。');
    check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('はい、会っていました')),false,'response word with predicate is not response-word-only');
    check(await p.evaluate(()=>DrillAnswer.expandYnAlternatives('今日の午前中友達と会っていました',['morning','meet_friend']).includes('今朝友達に会っていました')),true,'common Y/N alternatives expansion');
+   // Speech filler stripping (ja / de) & isResponseWordOnly unification
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('えーと、あのー、はい、好きです','ja')),'はい、好きです','ja filler strip: multiple leading with punctuation');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('えー、うーん、うん、食べました','ja')),'うん、食べました','ja filler strip: keeps うん');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('ええ、そうです','ja')),'ええ、そうです','ja filler strip: keeps ええ');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Ähm, ich bin öh nach Hause gegangen.','de')),'ich bin nach Hause gegangen.','de filler strip: leading and mid-sentence');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Wir wählen, zählen und nähen.','de')),'Wir wählen, zählen und nähen.','de filler strip: does not break wählen/zählen/nähen');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Hm, also ja genau okay.','de')),'Hm, also ja genau okay.','de filler strip: keeps hm/also/ja/genau/okay');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('あのー、はい')),true,'response word only with あのー');
+   check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('えー、はい')),true,'response word only with えー');
   }
   assert.deepEqual(errors,[],name+' browser errors');await p.close();
  }

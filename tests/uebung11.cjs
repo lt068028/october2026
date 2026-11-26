@@ -2094,6 +2094,36 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(disabledStyle.cursor, 'default', 'Disabled slider should have cursor: default');
         assert.ok(disabledStyle.opacity < 0.7, 'Disabled slider should have opacity < 0.7');
 
+        // German speech filler tolerance (4 words) & computeTokenDiff alignment preservation
+        const deFillerAudit = await page.evaluate(() => {
+            const target = 'Ich bin nach Hause gegangen.';
+            const normTarget = normalizeGerman(target);
+            const diffResult = computeTokenDiff('Ähm, ich bin öh nach Berlin gegangen.', normTarget);
+            return {
+                acceptedAll4: ['äh', 'ähm', 'öh', 'öhm'].every(f => normalizeGerman(`${f}, ich bin nach Hause gegangen.`) === normTarget),
+                acceptedMultiMid: normalizeGerman('Ähm, ich bin öh öhm nach Hause gegangen.') === normTarget,
+                nonDestructiveWords: normalizeGerman('Wir wählen, zählen und nähen.') === 'wir wählen zählen und nähen',
+                nonFillerKept: normalizeGerman('Hm, also ja genau okay.') === 'hm also ja genau okay',
+                fillerOnlyInvalid: normalizeGerman('Ähm, öh!').replace(/[\p{P}\p{S}\s]/gu, '') === '',
+                diffAligned: diffResult.aligned.map(a => ({ text: a.text, status: a.status })),
+            };
+        });
+        assert.strictEqual(deFillerAudit.acceptedAll4, true, 'D1.1 all 4 German fillers accepted');
+        assert.strictEqual(deFillerAudit.acceptedMultiMid, true, 'D1.1 multi/mid-sentence German fillers accepted');
+        assert.strictEqual(deFillerAudit.nonDestructiveWords, true, 'D1.1 wählen/zählen/nähen not broken');
+        assert.strictEqual(deFillerAudit.nonFillerKept, true, 'D1.1 hm/also/ja/genau/okay not stripped');
+        assert.strictEqual(deFillerAudit.fillerOnlyInvalid, true, 'D1.1 filler-only speech is invalid for 5s protection');
+        assert.deepStrictEqual(
+            deFillerAudit.diffAligned.filter(a => a.status === 'incorrect').map(a => a.text),
+            ['Berlin'],
+            'D1.1 computeTokenDiff marks only mismatched word without index shift'
+        );
+        assert.strictEqual(
+            deFillerAudit.diffAligned.some(a => a.text === 'Ähm,' && a.status === 'correct'),
+            true,
+            'D1.1 computeTokenDiff preserves original filler token in display'
+        );
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

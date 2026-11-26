@@ -445,7 +445,10 @@ const KNOWN_SUBJECTS = new Set(["ich", "du", "er", "sie", "es", "man", "wir", "i
 
 function normalizeGerman(text) {
     if (!text) return "";
-    return text
+    const stripped = typeof DrillAnswer !== "undefined" && typeof DrillAnswer.stripSpeechFillers === "function"
+        ? DrillAnswer.stripSpeechFillers(text, "de")
+        : String(text);
+    return stripped
         .toLowerCase()
         .replace(/[.,/#!$%^&*;:{}=\-_`~()?"'„“…]/g, "")
         .replace(/\s+/g, " ")
@@ -583,10 +586,19 @@ function getAllowedCandidateSentences(item, variety = "DE") {
 
 function computeTokenDiff(rawText, targetNorm) {
     const rawDisplayTokens = rawText.trim().split(/\s+/).filter(Boolean);
-    const rawNormTokens = rawDisplayTokens.map(t => normalizeGerman(t)).filter(Boolean);
+    const evalTokens = [];
+    const fillerTokens = [];
+    rawDisplayTokens.forEach((t, origIdx) => {
+        const norm = normalizeGerman(t);
+        if (norm) {
+            evalTokens.push({ display: t, norm, origIdx });
+        } else {
+            fillerTokens.push({ text: t, status: "correct", origIdx });
+        }
+    });
     const targetTokens = targetNorm.split(" ").filter(Boolean);
 
-    const m = rawNormTokens.length;
+    const m = evalTokens.length;
     const n = targetTokens.length;
     const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
 
@@ -595,7 +607,7 @@ function computeTokenDiff(rawText, targetNorm) {
 
     for (let i = 1; i <= m; i++) {
         for (let j = 1; j <= n; j++) {
-            const cost = rawNormTokens[i - 1] === targetTokens[j - 1] ? 0 : 1;
+            const cost = evalTokens[i - 1].norm === targetTokens[j - 1] ? 0 : 1;
             dp[i][j] = Math.min(
                 dp[i - 1][j - 1] + cost,
                 dp[i - 1][j] + 1,
@@ -606,31 +618,45 @@ function computeTokenDiff(rawText, targetNorm) {
 
     // Backtrack with deterministic tie-breaking:
     // 1. Match -> 2. Substitution -> 3. Insertion in STT (extra learner word) -> 4. Deletion in STT (missing word ＿)
-    const aligned = [];
+    const alignedCore = [];
     let i = m;
     let j = n;
     let matchedCount = 0;
 
     while (i > 0 || j > 0) {
-        if (i > 0 && j > 0 && rawNormTokens[i - 1] === targetTokens[j - 1] && dp[i][j] === dp[i - 1][j - 1]) {
-            aligned.push({ text: rawDisplayTokens[i - 1], status: "correct" });
+        if (i > 0 && j > 0 && evalTokens[i - 1].norm === targetTokens[j - 1] && dp[i][j] === dp[i - 1][j - 1]) {
+            alignedCore.push({ text: evalTokens[i - 1].display, status: "correct", origIdx: evalTokens[i - 1].origIdx });
             matchedCount++;
             i--;
             j--;
         } else if (i > 0 && j > 0 && dp[i][j] === dp[i - 1][j - 1] + 1) {
-            aligned.push({ text: rawDisplayTokens[i - 1], status: "incorrect" });
+            alignedCore.push({ text: evalTokens[i - 1].display, status: "incorrect", origIdx: evalTokens[i - 1].origIdx });
             i--;
             j--;
         } else if (i > 0 && dp[i][j] === dp[i - 1][j] + 1) {
-            aligned.push({ text: rawDisplayTokens[i - 1], status: "incorrect" });
+            alignedCore.push({ text: evalTokens[i - 1].display, status: "incorrect", origIdx: evalTokens[i - 1].origIdx });
             i--;
         } else {
-            aligned.push({ text: "＿", status: "missing" });
+            alignedCore.push({ text: "＿", status: "missing", origIdx: null });
             j--;
         }
     }
 
-    aligned.reverse();
+    alignedCore.reverse();
+
+    const aligned = [];
+    let fIdx = 0;
+    for (const item of alignedCore) {
+        while (fIdx < fillerTokens.length && (item.origIdx === null ? false : fillerTokens[fIdx].origIdx < item.origIdx)) {
+            aligned.push({ text: fillerTokens[fIdx].text, status: "correct" });
+            fIdx++;
+        }
+        aligned.push({ text: item.text, status: item.status });
+    }
+    while (fIdx < fillerTokens.length) {
+        aligned.push({ text: fillerTokens[fIdx].text, status: "correct" });
+        fIdx++;
+    }
 
     const maxLen = Math.max(m, n);
     const matchRatio = maxLen > 0 ? matchedCount / maxLen : 0;

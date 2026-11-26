@@ -59,10 +59,30 @@ window.DrillAnswer = (() => {
         } while (s !== prev);
         return s;
     }
+    const SPEECH_FILLERS = {
+        ja: ['えーと', 'えっと', 'あのう', 'あのー', 'うーん', 'えー', 'あの', 'まあ'],
+        de: ['ähm', 'öhm', 'äh', 'öh'],
+    };
+    const JA_FILLER_RE = new RegExp('^(?:(?:' + SPEECH_FILLERS.ja.join('|') + ')[、,。.?？!！\\s]*)+');
+    const DE_FILLER_RE = new RegExp('(?<![\\p{L}\\p{N}])(?:' + SPEECH_FILLERS.de.join('|') + ')(?![\\p{L}\\p{N}])', 'giu');
+    function stripSpeechFillers(text, lang) {
+        const s = String(text ?? '').normalize('NFKC');
+        if (lang === 'ja') {
+            return s.replace(JA_FILLER_RE, '').trim();
+        }
+        if (lang === 'de') {
+            return s
+                .replace(DE_FILLER_RE, ' ')
+                .replace(/\s+([,.;:!?])/g, '$1')
+                .replace(/^[\s,.;:!?]+/, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+        }
+        return String(text ?? '');
+    }
     function isResponseWordOnly(text) {
-        const cleaned = String(text ?? '').normalize('NFKC')
-            .replace(/[\p{P}\p{Z}\s]/gu, '')
-            .replace(/^(?:えーと|えっと|あの|あのう|まあ|うーん)+/, '');
+        const cleaned = stripSpeechFillers(text, 'ja')
+            .replace(/[\p{P}\p{Z}\s]/gu, '');
         return /^(?:はい|いいえ|うん|ううん)+$/.test(cleaned);
     }
     const COMMON_YN_ALTERNATIVES = {
@@ -91,6 +111,8 @@ window.DrillAnswer = (() => {
         kanjiNumbers,
         formAllowed,
         collapseAdjacentRepeats,
+        SPEECH_FILLERS,
+        stripSpeechFillers,
         isResponseWordOnly,
         COMMON_YN_ALTERNATIVES,
         expandYnAlternatives,
