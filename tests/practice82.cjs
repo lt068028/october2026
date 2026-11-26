@@ -1629,5 +1629,26 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(jaFillerAudit.fillerPlusRespIncomplete, 'incomplete', 'P8.2 filler + response word only is incomplete');
   eq(jaFillerAudit.fillerPlusPartialIncomplete, 'incomplete', 'P8.2 filler + partial predicate is incomplete');
 
+  // Autostop OFF matches stop button color; Auto-Compare OFF keeps neutral color
+  const offColorAudit = await p.evaluate(() => {
+    const rec = document.getElementById('toggleRecordMode');
+    const pb = document.getElementById('togglePlaybackMode');
+    const wasRec = rec.checked;
+    const wasPb = pb.checked;
+    rec.checked = false;
+    pb.checked = false;
+    const recBg = getComputedStyle(rec.nextElementSibling).backgroundColor;
+    const pbBg = getComputedStyle(pb.nextElementSibling).backgroundColor;
+    const stopBtn = document.querySelector('.drill-record-btn');
+    stopBtn.classList.add('stop-btn-active');
+    const stopBg = getComputedStyle(stopBtn).backgroundColor;
+    stopBtn.classList.remove('stop-btn-active');
+    rec.checked = wasRec;
+    pb.checked = wasPb;
+    return { recBg, pbBg, stopBg };
+  });
+  eq(offColorAudit.recBg, offColorAudit.stopBg, 'P8.2 Autostop OFF matches stop button background');
+  eq(offColorAudit.pbBg !== offColorAudit.stopBg, true, 'P8.2 Auto-Compare OFF keeps neutral background');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

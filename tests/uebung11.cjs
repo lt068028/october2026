@@ -2124,6 +2124,30 @@ async function runRecordingLifecycleTests() {
             'D1.1 computeTokenDiff preserves original filler token in display'
         );
 
+        // Autostop OFF matches stop button color; Auto-Compare OFF keeps neutral color
+        const offColorAudit = await page.evaluate(() => {
+            const rec = document.getElementById('toggleRecordMode');
+            const pb = document.getElementById('togglePlaybackMode');
+            const wasRec = rec.checked;
+            const wasPb = pb.checked;
+            rec.checked = false;
+            pb.checked = false;
+            const recBg = getComputedStyle(rec.nextElementSibling).backgroundColor;
+            const pbBg = getComputedStyle(pb.nextElementSibling).backgroundColor;
+            const stopBtn = document.querySelector('.record-btn, .uebung-record-btn, button.stop-btn-active') || document.createElement('button');
+            const appended = !stopBtn.parentElement;
+            if (appended) document.body.appendChild(stopBtn);
+            stopBtn.classList.add('stop-btn-active');
+            const stopBg = getComputedStyle(stopBtn).backgroundColor;
+            stopBtn.classList.remove('stop-btn-active');
+            if (appended) stopBtn.remove();
+            rec.checked = wasRec;
+            pb.checked = wasPb;
+            return { recBg, pbBg, stopBg };
+        });
+        assert.strictEqual(offColorAudit.recBg, offColorAudit.stopBg, 'D1.1 Autostop OFF matches stop button background');
+        assert.notStrictEqual(offColorAudit.pbBg, offColorAudit.stopBg, 'D1.1 Auto-Compare OFF keeps neutral background');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

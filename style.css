@@ -6137,6 +6137,11 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) {
     border-color: #2b3a4d;
     color: #ffffff;
 }
+:is(.practice82-page, .uebung11-page) .settings-onoff #toggleRecordMode:not(:checked) + .slider {
+    background-color: #d93025;
+    border-color: #d93025;
+    color: var(--rec-active-text, #ffffff);
+}
 :is(.practice82-page, .uebung11-page) .settings-onoff input:checked + .slider::before {
     content: "ON";
     transform: none;
@@ -6168,6 +6173,11 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) {
         border-color: #7dd3fc;
         color: #0f172a;
     }
+    :is(.practice82-page, .uebung11-page) .settings-onoff #toggleRecordMode:not(:checked) + .slider {
+        background-color: #d93025;
+        border-color: #d93025;
+        color: var(--rec-active-text, #ffffff);
+    }
     :is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider {
         filter: brightness(1.12);
     }
@@ -6186,6 +6196,12 @@ html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff in
     background-color: var(--accent-color, #38bdf8);
     border-color: #7dd3fc;
     color: #0f172a;
+}
+body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff #toggleRecordMode:not(:checked) + .slider,
+html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff #toggleRecordMode:not(:checked) + .slider {
+    background-color: #d93025;
+    border-color: #d93025;
+    color: var(--rec-active-text, #ffffff);
 }
 body.dark-mode:is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider,
 html[data-theme="dark"] :is(.practice82-page, .uebung11-page) .settings-onoff .switch:hover input:not(:disabled) + .slider {
