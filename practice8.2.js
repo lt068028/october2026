@@ -1909,31 +1909,25 @@ function entriesFor82(si) {
     });
     return entries;
 }
-function buildAllDrillsCopyText82() {
+function buildCumulativeCopyText82(targetSi) {
     const dateStr = getCopy82Date();
     const blocks = [];
-    for (let si = 0; si < 4; si += 1) {
-        const entries = entriesFor82(si);
+    for (let i = 0; i <= targetSi; i += 1) {
+        const entries = entriesFor82(i);
         if (!entries.length) continue;
-        blocks.push(COPY82_HEADERS[si] + ' — ' + dateStr + '\n' + entries.join('\n'));
+        blocks.push(COPY82_HEADERS[i] + ' — ' + dateStr + '\n' + entries.join('\n'));
     }
     return blocks.join('\n\n');
 }
 function updateCopyButtons82() {
-    let hasAny = false;
-    document.querySelectorAll('.p82-copy-area').forEach(area => {
-        const button = area.querySelector('.p82-copy-button');
-        if (!button) return;
-        const si = Number(area.dataset.drillIndex);
-        const count = entriesFor82(si).length;
-        if (count > 0) hasAny = true;
-        button.disabled = Boolean(session || preparing) || count === 0;
+    let hasAnyUpTo = false;
+    for (let si = 0; si < 4; si += 1) {
+        if (entriesFor82(si).length > 0) hasAnyUpTo = true;
+        const area = document.querySelector('.p82-copy-area[data-drill-index="' + si + '"]');
+        const button = area?.querySelector('.p82-copy-button');
+        if (!button) continue;
+        button.disabled = Boolean(session || preparing) || !hasAnyUpTo;
         button.style.setProperty('cursor', button.disabled ? 'default' : 'pointer', 'important');
-    });
-    const copyAllBtn = document.getElementById('copyAllBtn');
-    if (copyAllBtn) {
-        copyAllBtn.disabled = Boolean(session || preparing) || !hasAny;
-        copyAllBtn.style.setProperty('cursor', copyAllBtn.disabled ? 'default' : 'pointer', 'important');
     }
 }
 function mountCopyAreas82() {
@@ -1966,11 +1960,11 @@ function mountCopyAreas82() {
             let timer = null;
             button.addEventListener('click', async () => {
                 if (session || preparing) return;
-                const entries = entriesFor82(si);
-                if (!entries.length) return;
+                const text = buildCumulativeCopyText82(si);
+                if (!text) return;
                 const labelSpan = button.querySelector('span');
                 try {
-                    await navigator.clipboard.writeText(COPY82_HEADERS[si] + ' — ' + getCopy82Date() + '\n' + entries.join('\n'));
+                    await navigator.clipboard.writeText(text);
                     if (labelSpan) labelSpan.textContent = 'Copied';
                     clearTimeout(timer);
                     timer = setTimeout(() => {
@@ -1986,50 +1980,6 @@ function mountCopyAreas82() {
             if (other !== area) other.remove();
         });
         if (lastCard.nextElementSibling !== area) lastCard.after(area);
-    }
-    const drill5 = document.getElementById('drill5Container');
-    if (drill5) {
-        let allArea = document.querySelector('.p82-copy-all-area');
-        if (!allArea) {
-            allArea = document.createElement('div');
-            allArea.className = 'p82-copy-all-area';
-            allArea.style.display = 'flex';
-            allArea.style.flexDirection = 'column';
-            allArea.style.alignItems = 'flex-end';
-            allArea.style.textAlign = 'right';
-            allArea.style.marginTop = '16px';
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.id = 'copyAllBtn';
-            button.className = 'example-button p82-copy-button';
-            button.dataset.keepPlayback = 'true';
-            if (window.FluentIcons) {
-                button.append(window.FluentIcons.create('clipboard', 20, 'p82-copy-icon'));
-            }
-            button.append(node('span', '', 'Copy all my sentences'));
-            const help = document.createElement('span');
-            help.className = 'p82-copy-help';
-            help.textContent = 'Copy all your recorded answers to review or share.';
-            let timer = null;
-            button.addEventListener('click', async () => {
-                if (session || preparing) return;
-                const text = buildAllDrillsCopyText82();
-                if (!text) return;
-                const labelSpan = button.querySelector('span');
-                try {
-                    await navigator.clipboard.writeText(text);
-                    if (labelSpan) labelSpan.textContent = 'Copied';
-                    clearTimeout(timer);
-                    timer = setTimeout(() => {
-                        if (labelSpan) labelSpan.textContent = 'Copy all my sentences';
-                    }, 2000);
-                } catch (error) {
-                    // Do not change label on failure
-                }
-            });
-            allArea.append(button, help);
-        }
-        if (drill5.nextElementSibling !== allArea) drill5.after(allArea);
     }
     updateCopyButtons82();
 }

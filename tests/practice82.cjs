@@ -1668,110 +1668,60 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(cueAndHomophoneAudit.toruHomophone, true, 'P8.2 takephoto accepts homophone 取る');
   eq(cueAndHomophoneAudit.otherRowRejectsToru, true, 'P8.2 non-takephoto row rejects 取る');
 
-  // All-Drill Copy (#copyAllBtn) existence, help text, and layout check
-  const copyAllP82 = await p.evaluate(() => {
-    const btn = document.getElementById('copyAllBtn');
-    const help = btn?.parentElement?.querySelector('.p82-copy-help')?.textContent || '';
-    const rect = btn?.getBoundingClientRect();
-    return {
-      exists: Boolean(btn),
-      label: btn?.querySelector('span')?.textContent || '',
-      help,
-      perDrillCount: document.querySelectorAll('.p82-copy-area .p82-copy-button').length,
-      noOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-      widthOk: rect ? rect.width > 0 : false,
-    };
-  });
-  eq(copyAllP82.exists, true, 'P8.2 #copyAllBtn exists');
-  eq(copyAllP82.label, 'Copy all my sentences', 'P8.2 #copyAllBtn label');
-  eq(copyAllP82.help, 'Copy all your recorded answers to review or share.', 'P8.2 #copyAllBtn help text');
-  eq(copyAllP82.perDrillCount, 4, 'P8.2 keeps all 4 per-Drill Copy buttons');
-  eq(copyAllP82.noOverflow, true, 'P8.2 #copyAllBtn causes no horizontal overflow');
-
-  const copyAllOutputP82 = await p.evaluate(async () => {
+  // Cumulative Copy (Drill 1..targetIdx) & #copyAllBtn removal
+  const cumulativeCopyP82 = await p.evaluate(async () => {
     const savedBackup = new Map(saved);
     saved.clear();
     updateCopyButtons82();
-    const disabledWhenEmpty = document.getElementById('copyAllBtn').disabled;
+    const copyBtns = [0, 1, 2, 3].map(si => document.querySelector(`.p82-copy-area[data-drill-index="${si}"] .p82-copy-button`));
+    const allDisabledWhenEmpty = copyBtns.every(b => b && b.disabled);
 
-    const r1 = drills[0].rows[0];
-    const r2 = drills[1].rows[0];
+    // Populate Drill 1 and Drill 3 only (Drill 2 & 4 empty)
+    const r1 = rowsFor(0)[0][0];
+    const r3 = rowsFor(2).flat().find(r => !r.pending) || rowsFor(2)[0][0];
+    if (r3.pending) { r3.pending = false; r3.answer = 'yes'; }
     saved.set(keyFor(r1), { raw: 'えーと、何か買います。', status: 'accepted' });
-    saved.set(keyFor(r2), { raw: 'あの 何を取りますか', status: 'incomplete' });
+    saved.set(keyFor(r3), { raw: 'はい、何か食べます。', status: 'accepted' });
     updateCopyButtons82();
-    const enabledWithData = !document.getElementById('copyAllBtn').disabled;
 
-    let copiedText = '';
+    const d1Enabled = !copyBtns[0].disabled;
+    const d2EnabledViaD1 = !copyBtns[1].disabled;
+    const d4EnabledViaD1D3 = !copyBtns[3].disabled;
+
     const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
-    navigator.clipboard.writeText = async t => { copiedText = t; };
-    document.getElementById('copyAllBtn').click();
-    await new Promise(r => setTimeout(r, 20));
+    const copied = [];
+    navigator.clipboard.writeText = async t => { copied.push(t); };
+    for (const btn of copyBtns) {
+      btn.click();
+      await new Promise(r => setTimeout(r, 10));
+    }
     navigator.clipboard.writeText = origWrite;
 
     saved.clear();
     savedBackup.forEach((v, k) => saved.set(k, v));
     updateCopyButtons82();
-    return { disabledWhenEmpty, enabledWithData, copiedText };
+    return {
+      noCopyAllBtn: !document.getElementById('copyAllBtn') && !document.querySelector('.p82-copy-all-area'),
+      perDrillCount: copyBtns.filter(Boolean).length,
+      allDisabledWhenEmpty,
+      d1Enabled,
+      d2EnabledViaD1,
+      d4EnabledViaD1D3,
+      copied,
+    };
   });
-  eq(copyAllOutputP82.disabledWhenEmpty, true, 'P8.2 #copyAllBtn disabled when 0 recordings');
-  eq(copyAllOutputP82.enabledWithData, true, 'P8.2 #copyAllBtn enabled when recordings exist');
-  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 1:'), true, 'P8.2 #copyAllBtn includes Drill 1 heading');
-  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 2:'), true, 'P8.2 #copyAllBtn includes Drill 2 heading');
-  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 3:'), false, 'P8.2 #copyAllBtn excludes empty Drill 3');
-  eq(copyAllOutputP82.copiedText.includes('\n\n'), true, 'P8.2 #copyAllBtn separates Drills with blank line');
-  eq(copyAllOutputP82.copiedText.includes('✅ えーと、何か買います。'), true, 'P8.2 #copyAllBtn preserves raw STT filler and ✅');
-  eq(copyAllOutputP82.copiedText.includes('👣 あの 何を取りますか'), true, 'P8.2 #copyAllBtn preserves raw STT filler and 👣');
+  eq(cumulativeCopyP82.noCopyAllBtn, true, 'P8.2 removes #copyAllBtn and .p82-copy-all-area');
+  eq(cumulativeCopyP82.perDrillCount, 4, 'P8.2 keeps all 4 per-Drill Copy buttons');
+  eq(cumulativeCopyP82.allDisabledWhenEmpty, true, 'P8.2 all Copy buttons disabled when 0 recordings');
+  eq(cumulativeCopyP82.d1Enabled && cumulativeCopyP82.d2EnabledViaD1 && cumulativeCopyP82.d4EnabledViaD1D3, true, 'P8.2 Copy buttons enable cumulatively');
+  eq(cumulativeCopyP82.copied[0].includes('Practice 8.2 — Drill 1:') && !cumulativeCopyP82.copied[0].includes('Drill 3:'), true, 'P8.2 Drill 1 Copy outputs Drill 1 only');
+  eq(cumulativeCopyP82.copied[1].includes('Practice 8.2 — Drill 1:') && !cumulativeCopyP82.copied[1].includes('Drill 2:'), true, 'P8.2 Drill 2 Copy outputs Drill 1 only (skips empty Drill 2)');
+  eq(cumulativeCopyP82.copied[2].includes('Practice 8.2 — Drill 1:') && cumulativeCopyP82.copied[2].includes('Practice 8.2 — Drill 3:') && !cumulativeCopyP82.copied[2].includes('Drill 2:'), true, 'P8.2 Drill 3 Copy outputs Drill 1 + Drill 3');
+  eq(cumulativeCopyP82.copied[3] === cumulativeCopyP82.copied[2], true, 'P8.2 Drill 4 Copy outputs Drill 1 + Drill 3 (skips empty Drill 2 & 4)');
 
   // Verify no stale content-layout.js?v=20261111-ms-fluent in practice8.2.html
   const p82Html = fs.readFileSync(path.join(__dirname, '..', 'practice8.2.html'), 'utf8');
   eq(p82Html.includes('content-layout.js?v=20261111-ms-fluent'), false, 'practice8.2.html has no stale content-layout.js query');
-
-  // All 4 Drills output + 3 clipboard paths (success / undefined / reject) on #copyAllBtn
-  const copyAll3PathsP82 = await p.evaluate(async () => {
-    const savedBackup = new Map(saved);
-    saved.clear();
-    drills.slice(0, 4).forEach((d, i) => {
-      const r = d.rows.find(row => !row.pending) || d.rows[0];
-      if (r.pending) { r.pending = false; r.answer = 'yes'; }
-      saved.set(keyFor(r), { raw: 'えーと、回答' + (i + 1), status: 'accepted' });
-    });
-    updateCopyButtons82();
-    const btn = document.getElementById('copyAllBtn');
-    const origClip = navigator.clipboard;
-
-    // 1. Success path
-    let copied4 = '';
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async t => { copied4 = t; } } });
-    btn.click();
-    await new Promise(r => setTimeout(r, 20));
-    const labelSuccess = btn.querySelector('span')?.textContent || '';
-
-    // Reset label for next path
-    const span = btn.querySelector('span');
-    if (span) span.textContent = 'Copy all my sentences';
-
-    // 2. Reject path
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied'); } } });
-    btn.click();
-    await new Promise(r => setTimeout(r, 20));
-    const labelReject = btn.querySelector('span')?.textContent || '';
-
-    // 3. Undefined API path
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
-    btn.click();
-    await new Promise(r => setTimeout(r, 20));
-    const labelUndefined = btn.querySelector('span')?.textContent || '';
-
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: origClip });
-    saved.clear();
-    savedBackup.forEach((v, k) => saved.set(k, v));
-    updateCopyButtons82();
-    return { copied4, labelSuccess, labelReject, labelUndefined };
-  });
-  eq([1, 2, 3, 4].every(n => copyAll3PathsP82.copied4.includes(`Practice 8.2 — Drill ${n}:`)), true, 'P8.2 #copyAllBtn outputs all 4 Drills');
-  eq(copyAll3PathsP82.labelSuccess, 'Copied', 'P8.2 #copyAllBtn shows Copied on success');
-  eq(copyAll3PathsP82.labelReject, 'Copy all my sentences', 'P8.2 #copyAllBtn does not show Copied on reject');
-  eq(copyAll3PathsP82.labelUndefined, 'Copy all my sentences', 'P8.2 #copyAllBtn does not show Copied when clipboard undefined');
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

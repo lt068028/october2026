@@ -2163,27 +2163,22 @@ function initGermanDrill() {
     }
 
     function updateCopyButtons() {
-        let hasAny = false;
+        let hasAnyUpTo = false;
         drillsData.forEach(drill => {
+            const hasDrillRecordings = drill.items.some(item => {
+                const s = saved.get(item.id);
+                return Boolean(s?.raw && s.judgment !== "empty");
+            });
+            if (hasDrillRecordings) hasAnyUpTo = true;
+
             const area = document.querySelector(`.uebung-copy-area[data-drill="${drill.number}"]`);
             if (!area) return;
             const btn = area.querySelector(".uebung-copy-button");
             if (!btn) return;
 
-            const hasDrillRecordings = drill.items.some(item => {
-                const s = saved.get(item.id);
-                return Boolean(s?.raw && s.judgment !== "empty");
-            });
-            if (hasDrillRecordings) hasAny = true;
-
-            btn.disabled = Boolean(session || preparing || !hasDrillRecordings);
+            btn.disabled = Boolean(session || preparing || !hasAnyUpTo);
             btn.style.setProperty("cursor", btn.disabled ? "default" : "pointer", "important");
         });
-        const copyAllBtn = document.getElementById("copyAllBtn");
-        if (copyAllBtn) {
-            copyAllBtn.disabled = Boolean(session || preparing || !hasAny);
-            copyAllBtn.style.setProperty("cursor", copyAllBtn.disabled ? "default" : "pointer", "important");
-        }
     }
 
     function setupCopyArea(drill, container) {
@@ -2206,8 +2201,13 @@ function initGermanDrill() {
             if (session || preparing) return;
             const now = new Date();
             const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-            const fullText = buildDrillCopyBlock(drill, dateStr);
-            if (!fullText) return;
+            const targetIdx = drillsData.indexOf(drill);
+            const blocks = drillsData
+                .slice(0, targetIdx >= 0 ? targetIdx + 1 : drillsData.length)
+                .map(d => buildDrillCopyBlock(d, dateStr))
+                .filter(Boolean);
+            if (!blocks.length) return;
+            const fullText = blocks.join("\n\n");
 
             try {
                 await navigator.clipboard.writeText(fullText);
@@ -2226,43 +2226,6 @@ function initGermanDrill() {
         area.append(btn, help);
         container.append(area);
     }
-
-    function setupCopyAllArea() {
-        const drillsContainer = document.getElementById("drillsContainer");
-        if (!drillsContainer || document.getElementById("copyAllBtn")) return;
-        const area = node("div", "uebung-copy-area uebung-copy-all-area");
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.id = "copyAllBtn";
-        btn.className = "example-button uebung-copy-button";
-        btn.dataset.keepPlayback = "true";
-        btn.disabled = true;
-        btn.innerHTML = window.FluentIcons.markup('clipboard', 20, 'uebung-copy-icon') + '<span class="uebung-copy-label">Copy all my sentences</span>';
-        const help = node("span", "uebung-copy-help", "Copy all your recorded answers to review or share.");
-        let copyTimer = null;
-        btn.onclick = async () => {
-            if (session || preparing) return;
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-            const blocks = drillsData.map(d => buildDrillCopyBlock(d, dateStr)).filter(Boolean);
-            if (!blocks.length) return;
-            try {
-                await navigator.clipboard.writeText(blocks.join("\n\n"));
-                const labelEl = btn.querySelector(".uebung-copy-label");
-                if (labelEl) labelEl.textContent = "Copied";
-                if (copyTimer) clearTimeout(copyTimer);
-                copyTimer = setTimeout(() => {
-                    if (labelEl) labelEl.textContent = "Copy all my sentences";
-                    copyTimer = null;
-                }, 2000);
-            } catch (_) {
-                // Keep label unchanged on failure
-            }
-        };
-        area.append(btn, help);
-        drillsContainer.after(area);
-    }
-    setupCopyAllArea();
 
     const lastRowWidths = new WeakMap();
 

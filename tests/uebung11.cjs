@@ -87,8 +87,7 @@ assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.oner
 // 5.4 Check Copy my sentences: raw STT only, no cue text
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must use UI_LAYOUT_SPEC Copy help text');
-assert.ok(js.includes('Copy all my sentences'), 'JS must implement Copy all my sentences');
-assert.ok(js.includes('Copy all your recorded answers to review or share.'), 'JS must include all-Drill Copy help text');
+assert.ok(!js.includes('Copy all my sentences'), 'JS must not contain standalone Copy all my sentences');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && !js.includes('const hasAnyRecordings = drillsData.some'), 'Copy button enabling must be scoped per individual drill');
 assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
@@ -2149,109 +2148,48 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(offColorAudit.recBg, offColorAudit.stopBg, 'D1.1 Autostop OFF matches stop button background');
         assert.notStrictEqual(offColorAudit.pbBg, offColorAudit.stopBg, 'D1.1 Auto-Compare OFF keeps neutral background');
 
-        // All-Drill Copy (#copyAllBtn) verification
-        const copyAllD11 = await page.evaluate(async () => {
-            const btn = document.getElementById('copyAllBtn');
-            const help = btn?.parentElement?.querySelector('.uebung-copy-help')?.textContent || '';
-            const label = btn?.querySelector('.uebung-copy-label')?.textContent || '';
-            let copiedText = '';
+        // Cumulative Copy (Drill 1..targetIdx) & #copyAllBtn removal
+        const cumulativeCopyD11 = await page.evaluate(async () => {
+            const savedBackup = new Map(saved);
+            saved.clear();
+            updateCopyButtons();
+            const copyBtns = drillsData.map(d => document.querySelector(`.uebung-copy-area[data-drill="${d.number}"] .uebung-copy-button`));
+            const allDisabledWhenEmpty = copyBtns.every(b => b && b.disabled);
+
+            saved.set(drillsData[0].items[0].id, { raw: 'Ähm, ich bin nach Hause gegangen.', judgment: 'accepted' });
+            saved.set(drillsData[2].items[0].id, { raw: 'Öhm, ich bin nach Berlin...', judgment: 'mismatch' });
+            updateCopyButtons();
+
             const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
-            navigator.clipboard.writeText = async t => { copiedText = t; };
-            btn.click();
-            await new Promise(r => setTimeout(r, 20));
+            const copied = [];
+            navigator.clipboard.writeText = async t => { copied.push(t); };
+            for (const btn of copyBtns) {
+                btn.click();
+                await new Promise(r => setTimeout(r, 10));
+            }
             navigator.clipboard.writeText = origWrite;
+
+            saved.clear();
+            savedBackup.forEach((v, k) => saved.set(k, v));
+            updateCopyButtons();
             return {
-                exists: Boolean(btn),
-                label,
-                help,
-                disabled: btn?.disabled,
-                cursor: btn ? getComputedStyle(btn).cursor : '',
-                copiedText,
-                perDrillCount: document.querySelectorAll('#drillsContainer .uebung-copy-button').length,
+                noCopyAllBtn: !document.getElementById('copyAllBtn') && !document.querySelector('.uebung-copy-all-area'),
+                perDrillCount: copyBtns.filter(Boolean).length,
+                allDisabledWhenEmpty,
+                d1Enabled: !copyBtns[0].disabled,
+                d2EnabledViaD1: !copyBtns[1].disabled,
+                d4EnabledViaD1D3: !copyBtns[3].disabled,
+                copied,
             };
         });
-        assert.strictEqual(copyAllD11.exists, true, 'D1.1 #copyAllBtn exists');
-        assert.strictEqual(copyAllD11.label === 'Copy all my sentences' || copyAllD11.label === 'Copied', true, 'D1.1 #copyAllBtn has expected label');
-        assert.strictEqual(copyAllD11.help, 'Copy all your recorded answers to review or share.', 'D1.1 #copyAllBtn has expected help text');
-        assert.strictEqual(copyAllD11.perDrillCount, 4, 'D1.1 keeps all 4 per-Drill Copy buttons');
-
-        const copyAllOutputD11 = await page.evaluate(async () => {
-            const savedBackup = new Map(saved);
-            saved.clear();
-            updateCopyButtons();
-            const disabledWhenEmpty = document.getElementById('copyAllBtn').disabled;
-
-            const d1Item = drillsData[0].items[0];
-            const d2Item = drillsData[1].items[0];
-            saved.set(d1Item.id, { raw: 'Ähm, ich bin nach Hause gegangen.', judgment: 'accepted' });
-            saved.set(d2Item.id, { raw: 'Öhm, ich bin nach Berlin...', judgment: 'mismatch' });
-            updateCopyButtons();
-            const enabledWithData = !document.getElementById('copyAllBtn').disabled;
-
-            let copiedText = '';
-            const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
-            navigator.clipboard.writeText = async t => { copiedText = t; };
-            document.getElementById('copyAllBtn').click();
-            await new Promise(r => setTimeout(r, 20));
-            navigator.clipboard.writeText = origWrite;
-
-            saved.clear();
-            savedBackup.forEach((v, k) => saved.set(k, v));
-            updateCopyButtons();
-            return { disabledWhenEmpty, enabledWithData, copiedText };
-        });
-        assert.strictEqual(copyAllOutputD11.disabledWhenEmpty, true, 'D1.1 #copyAllBtn disabled when 0 recordings');
-        assert.strictEqual(copyAllOutputD11.enabledWithData, true, 'D1.1 #copyAllBtn enabled when recordings exist');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 1:'), true, 'D1.1 #copyAllBtn includes Drill 1 heading');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 2:'), true, 'D1.1 #copyAllBtn includes Drill 2 heading');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 3:'), false, 'D1.1 #copyAllBtn excludes empty Drill 3');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('\n\n'), true, 'D1.1 #copyAllBtn separates Drills with blank line');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('✅ Ähm, ich bin nach Hause gegangen.'), true, 'D1.1 #copyAllBtn preserves raw STT filler and ✅');
-        assert.strictEqual(copyAllOutputD11.copiedText.includes('🔥 Öhm, ich bin nach Berlin...'), true, 'D1.1 #copyAllBtn preserves raw STT filler and 🔥');
-
-        // All 4 Drills output + 3 clipboard paths (success / undefined / reject) on #copyAllBtn
-        const copyAll3PathsD11 = await page.evaluate(async () => {
-            const savedBackup = new Map(saved);
-            saved.clear();
-            drillsData.forEach((d, i) => {
-                saved.set(d.items[0].id, { raw: 'Ähm, Antwort ' + (i + 1), judgment: 'accepted' });
-            });
-            updateCopyButtons();
-            const btn = document.getElementById('copyAllBtn');
-            const origClip = navigator.clipboard;
-
-            // 1. Success path
-            let copied4 = '';
-            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async t => { copied4 = t; } } });
-            btn.click();
-            await new Promise(r => setTimeout(r, 20));
-            const labelSuccess = btn.querySelector('.uebung-copy-label')?.textContent || '';
-
-            const labelEl = btn.querySelector('.uebung-copy-label');
-            if (labelEl) labelEl.textContent = 'Copy all my sentences';
-
-            // 2. Reject path
-            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied'); } } });
-            btn.click();
-            await new Promise(r => setTimeout(r, 20));
-            const labelReject = btn.querySelector('.uebung-copy-label')?.textContent || '';
-
-            // 3. Undefined API path
-            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
-            btn.click();
-            await new Promise(r => setTimeout(r, 20));
-            const labelUndefined = btn.querySelector('.uebung-copy-label')?.textContent || '';
-
-            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: origClip });
-            saved.clear();
-            savedBackup.forEach((v, k) => saved.set(k, v));
-            updateCopyButtons();
-            return { copied4, labelSuccess, labelReject, labelUndefined };
-        });
-        assert.strictEqual([1, 2, 3, 4].every(n => copyAll3PathsD11.copied4.includes(`Deutsche Übung 1.1 — Drill ${n}:`)), true, 'D1.1 #copyAllBtn outputs all 4 Drills');
-        assert.strictEqual(copyAll3PathsD11.labelSuccess, 'Copied', 'D1.1 #copyAllBtn shows Copied on success');
-        assert.strictEqual(copyAll3PathsD11.labelReject, 'Copy all my sentences', 'D1.1 #copyAllBtn does not show Copied on reject');
-        assert.strictEqual(copyAll3PathsD11.labelUndefined, 'Copy all my sentences', 'D1.1 #copyAllBtn does not show Copied when clipboard undefined');
+        assert.strictEqual(cumulativeCopyD11.noCopyAllBtn, true, 'D1.1 removes #copyAllBtn and .uebung-copy-all-area');
+        assert.strictEqual(cumulativeCopyD11.perDrillCount, 4, 'D1.1 keeps all 4 per-Drill Copy buttons');
+        assert.strictEqual(cumulativeCopyD11.allDisabledWhenEmpty, true, 'D1.1 all Copy buttons disabled when 0 recordings');
+        assert.strictEqual(cumulativeCopyD11.d1Enabled && cumulativeCopyD11.d2EnabledViaD1 && cumulativeCopyD11.d4EnabledViaD1D3, true, 'D1.1 Copy buttons enable cumulatively');
+        assert.strictEqual(cumulativeCopyD11.copied[0].includes('Deutsche Übung 1.1 — Drill 1:') && !cumulativeCopyD11.copied[0].includes('Drill 3:'), true, 'D1.1 Drill 1 Copy outputs Drill 1 only');
+        assert.strictEqual(cumulativeCopyD11.copied[1].includes('Deutsche Übung 1.1 — Drill 1:') && !cumulativeCopyD11.copied[1].includes('Drill 2:'), true, 'D1.1 Drill 2 Copy outputs Drill 1 only (skips empty Drill 2)');
+        assert.strictEqual(cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 1:') && cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 3:') && !cumulativeCopyD11.copied[2].includes('Drill 2:'), true, 'D1.1 Drill 3 Copy outputs Drill 1 + Drill 3');
+        assert.strictEqual(cumulativeCopyD11.copied[3] === cumulativeCopyD11.copied[2], true, 'D1.1 Drill 4 Copy outputs Drill 1 + Drill 3 (skips empty Drill 2 & 4)');
 
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
