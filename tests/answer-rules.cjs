@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const fs=require('fs'),path=require('path'),assert=require('assert/strict');
 const root=path.resolve(__dirname,'..');
-const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','composition1','pronunciation2'];
+const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.3','practice8.1','practice8.2','composition1','pronunciation2'];
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
  let count=0;const check=(actual,expected,label)=>{assert.equal(actual,expected,label);count++};
@@ -18,6 +18,8 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    let s=fs.readFileSync(file,'utf8');
    if(file.endsWith('practice1.2.js'))s=s.replace('    // 保存時だけ判定する。','    window.answerMatch=(a,b)=>matches(a,b,speechStyle);\n    // 保存時だけ判定する。');
    if(file.endsWith('practice7.3.js')){const i=s.lastIndexOf('})();');s=s.slice(0,i)+`window.answerMatch=(a,b)=>matchesAnswer(a,{hira:hira(b)});window.qaMatch=(a,i=0,kind='yes')=>matchesAnswer(a,qa73Model(qa73.items[i],kind));window.answerRows=()=>[...views.values()].map(v=>v.r);window.answerReading=hira;window.answerExamples=()=>sections.flatMap(s=>s.example||[]).map(r=>model(r));window.conversationMatch=(a,s,i)=>matchesAnswer(a,model(sections[s].items[i][1]));window.conversationModel=(s,i)=>model(sections[s].items[i][1]).hira;`+s.slice(i);}
+   if(file.endsWith('practice8.1.js')){const i=s.lastIndexOf('})();');s=s.slice(0,i)+`window.p81Test={matchesAnswer,rowsFor,choices};`+s.slice(i);}
+   if(file.endsWith('practice8.2.js')){const i=s.lastIndexOf('})();');s=s.slice(0,i)+`window.p82Test={evaluateAnswer,matchesAnswer,rowsFor,choices};`+s.slice(i);}
    return r.fulfill({body:s,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html'});
   });
   await p.goto('http://answers.test/'+name+'.html');
@@ -30,6 +32,8 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     if(name==='practice7.1'){model=practice71Data[0].pastSentence;judge=(a,m)=>DrillAnswer.formAllowed(a)&&practice71Normalize(a)===practice71Normalize(m);}
     if(name==='practice7.2'){model=practice7Data[0].pastSentence;judge=(a,m)=>DrillAnswer.formAllowed(a)&&practice7Normalize(a)===practice7Normalize(m);}
     if(name==='practice7.3'){model=answerRows()[0].text;judge=answerMatch;}
+    if(name==='practice8.1'){const r=p81Test.rowsFor(0)[0][0];model=r.text;judge=a=>p81Test.matchesAnswer(a,r);}
+    if(name==='practice8.2'){const r=p82Test.rowsFor(0)[0][0];model=r.text;judge=a=>p82Test.matchesAnswer(a,r);}
     if(name==='composition1'){model=compositionState.views[0].item.jaKanji;judge=(a,m)=>compositionBestDiff(a,[m]).cost===0;}
     if(name==='pronunciation2'){model=p2.views[0].item.kanji;judge=(a,m)=>p2BestDiff(a,[m]).correct;}
     const base=model.replace(/[。？?]+$/,'').replace(/(?:よね|よ|ね)$/,'');
@@ -69,7 +73,7 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     check(await p.evaluate(a=>qaMatch(a,2),'今朝出かけて'+ending),false,'p73 morning is not night');
    }
    await p.locator('#speechStyleControl [data-value="formal"]').click();
-   for(const a of ['会っていました','はい会っていました','会ってました','今日の午前中会っていました','今日の午前中今日の午前中会っていました','友達に友達に会っていました','はいはい会っていました'])check(await p.evaluate(a=>qaMatch(a),a),true,'p73 allowed '+a);
+   for(const a of ['会っていました','はい会っていました','会ってました','友達と会っていました','今日の午前中友達と会っていました','今日の午前中会っていました','今日の午前中今日の午前中会っていました','友達に友達に会っていました','はいはい会っていました'])check(await p.evaluate(a=>qaMatch(a),a),true,'p73 allowed '+a);
    for(const a of ['今日の午後会っていました','昨日の夜会っていました','今日の午前中昨日の夜会っていました','会っていました？','会っていましたか','はい','えーと、はい、'])check(await p.evaluate(a=>qaMatch(a),a),false,'p73 reject '+a);
    for(const [a,expected] of [['会っていませんでした',true],['会ってませんでした',true],['今日の午前中会っていませんでした',true],['昨日の夜会っていませんでした',false],['はい会っていませんでした',false],['いいえ会っていました',false]])check(await p.evaluate(a=>qaMatch(a,0,'no'),a),expected,'p73 negative '+a);
    for(const [i,time,verb] of [[1,'今日の午後','乗っていました'],[2,'昨日の夜','出かけていました'],[3,'昨日の昼','お風呂に入っていました'],[4,'さっき','電話をかけていました']]){
@@ -120,12 +124,13 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     isAutoPlay=false;
     const key='p2_drill1_a_0',v=practice2State.views[key];
     const refs=practice2State.replyReferences[key](),full=refs[0],short=refs[1];
-    return [short,full,full.replace('はい','いいえ')].map(text=>{
+    const repeated='はいはい、'+short;
+    return [short,full,repeated,full.replace('はい','いいえ'),'はい','えーと、はい、'].map(text=>{
      processResult(text,short,()=>short,v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
      return [text,practice2State.savedResults[key].isCorrect];
     });
    });
-   check(JSON.stringify(out),JSON.stringify(out.map((v,i)=>[v[0],i<2])),'p12 short/full/polarity');
+   check(JSON.stringify(out),JSON.stringify(out.map((v,i)=>[v[0],i<3])),'p12 short/full/C4 repeat/polarity/response-word-only');
    const select=p.locator('#drill2Container select').first();
    await select.selectOption({index:1});
    const majors=await p.evaluate(()=>{
@@ -143,6 +148,76 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
     processResult(refs[3],refs[1],()=>refs[1],v.resultSpan,v.correctionBox,v.corrListenBtn,v.corrTextSpan,()=>null,.75,key);
     return practice2State.savedResults[key].isCorrect;
    }),true,'p12 casual topic particle optional in full response');
+  }
+  if(name==='practice8.1'){
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
+   const p81Results=await p.evaluate(()=>{
+    p81Test.choices.delete('self-0-response');
+    const unselectedRow=p81Test.rowsFor(1)[0][1];
+    const unselected=p81Test.matchesAnswer('はい、好きです',unselectedRow);
+    p81Test.choices.set('self-0-response','yes');
+    const yesRow=p81Test.rowsFor(1)[0][1];
+    const yesShort=p81Test.matchesAnswer('はい、好きです',yesRow);
+    const yesFull=p81Test.matchesAnswer('はい、コーヒーを飲むのが、好きです',yesRow);
+    const yesOmitResp=p81Test.matchesAnswer('好きです',yesRow);
+    const yesC4=p81Test.matchesAnswer('はいはい、好きです',yesRow);
+    const yesPolarityMismatch=p81Test.matchesAnswer('いいえ、好きじゃないです',yesRow);
+    const yesEuphemism=p81Test.matchesAnswer('はい、きらいじゃないです',yesRow)||p81Test.matchesAnswer('きらいじゃないです',yesRow);
+    const yesRespOnly=p81Test.matchesAnswer('はい',yesRow)||p81Test.matchesAnswer('はい、',yesRow)||p81Test.matchesAnswer('えーと、はい',yesRow);
+    p81Test.choices.set('self-0-response','no');
+    const noRow=p81Test.rowsFor(1)[0][1];
+    const noShort=p81Test.matchesAnswer('いいえ、好きじゃないです',noRow);
+    return {unselected,yesShort,yesFull,yesOmitResp,yesC4,yesPolarityMismatch,yesEuphemism,yesRespOnly,noShort};
+   });
+   check(p81Results.unselected,false,'p81 unselected rejected');
+   check(p81Results.yesShort,true,'p81 affirmative model accepted');
+   check(p81Results.yesFull,true,'p81 affirmative full-element accepted');
+   check(p81Results.yesOmitResp,true,'p81 affirmative omission accepted');
+   check(p81Results.yesC4,true,'p81 C4 adjacent repeat accepted');
+   check(p81Results.yesPolarityMismatch,false,'p81 polarity contradiction rejected');
+   check(p81Results.yesEuphemism,false,'p81 euphemistic double negative きらいじゃないです rejected');
+   check(p81Results.yesRespOnly,false,'p81 response word only (with punctuation/filler) rejected');
+   check(p81Results.noShort,true,'p81 negative model accepted');
+  }
+  if(name==='practice8.2'){
+   await p.locator('#speechStyleControl [data-value="formal"]').click();
+   const p82Results=await p.evaluate(()=>{
+    p82Test.choices.delete('yn-0-a');
+    const unselectedRow=p82Test.rowsFor(2)[0][1];
+    const unselected=p82Test.evaluateAnswer('はい、します',unselectedRow);
+    p82Test.choices.set('yn-0-a','yes');
+    const yesRow=p82Test.rowsFor(2)[0][1];
+    const yesAccepted=p82Test.evaluateAnswer('はい、します',yesRow);
+    const yesFull=p82Test.evaluateAnswer('はい、誕生日に、何か、します',yesRow);
+    const yesPolarityMismatch=p82Test.evaluateAnswer('いいえ、何も、しません',yesRow);
+    const yesRespOnly=p82Test.evaluateAnswer('はい',yesRow);
+    const yesFillerRespOnly=p82Test.evaluateAnswer('えーと、はい、',yesRow);
+    const yesMissingPred=p82Test.evaluateAnswer('はい、誕生日に何か',yesRow);
+    const yesC4=p82Test.evaluateAnswer('はいはい、誕生日に誕生日にします',yesRow);
+    p82Test.choices.set('yn-0-a','no');
+    const noRow=p82Test.rowsFor(2)[0][1];
+    const noAccepted=p82Test.evaluateAnswer('いいえ、何も、しません',noRow);
+    const noPolarityMismatch=p82Test.evaluateAnswer('はい、します',noRow);
+    const noRespOnly=p82Test.evaluateAnswer('いいえ',noRow);
+    const noFillerRespOnly=p82Test.evaluateAnswer('あの、いいえ。',noRow);
+    const noMissingPred=p82Test.evaluateAnswer('いいえ、誕生日に何も',noRow);
+    const noC4=p82Test.evaluateAnswer('いいえいいえ、何もしません',noRow);
+    return {unselected,yesAccepted,yesFull,yesPolarityMismatch,yesRespOnly,yesFillerRespOnly,yesMissingPred,yesC4,noAccepted,noPolarityMismatch,noRespOnly,noFillerRespOnly,noMissingPred,noC4};
+   });
+   check(p82Results.unselected,'mismatch','p82 unselected state');
+   check(p82Results.yesAccepted,'accepted','p82 affirmative accepted');
+   check(p82Results.yesFull,'accepted','p82 affirmative full accepted');
+   check(p82Results.yesPolarityMismatch,'mismatch','p82 affirmative polarity contradiction');
+   check(p82Results.yesRespOnly,'incomplete','p82 affirmative response word only -> incomplete');
+   check(p82Results.yesFillerRespOnly,'incomplete','p82 affirmative filler + punctuation response word only -> incomplete');
+   check(p82Results.yesMissingPred,'incomplete','p82 affirmative missing predicate -> incomplete');
+   check(p82Results.yesC4,'accepted','p82 affirmative C4 adjacent repeat -> accepted');
+   check(p82Results.noAccepted,'accepted','p82 negative accepted');
+   check(p82Results.noPolarityMismatch,'mismatch','p82 negative polarity contradiction');
+   check(p82Results.noRespOnly,'incomplete','p82 negative response word only -> incomplete');
+   check(p82Results.noFillerRespOnly,'incomplete','p82 negative filler + punctuation response word only -> incomplete');
+   check(p82Results.noMissingPred,'incomplete','p82 negative missing predicate -> incomplete');
+   check(p82Results.noC4,'accepted','p82 negative C4 adjacent repeat -> accepted');
   }
   if(name==='practice7.3'){
    for(const style of ['formal','informal','casual']){

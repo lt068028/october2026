@@ -2209,11 +2209,13 @@ const qa73BaseNormalize = normalize;
 // Answer matching only: equivalent time expressions must not rewrite STT display.
 function qa73NormalizeTime(text) {
     const collapsed = DrillAnswer.collapseAdjacentRepeats(text);
-    return qa73BaseNormalize(String(collapsed ?? '')
-        .replace(/今朝/g, 'けさ').replace(/昨夜/g, 'さくや')
+    const morningExpanded = DrillAnswer.expandYnAlternatives(collapsed, ['morning']);
+    const canonicalMorning = morningExpanded.find(v => v.includes('今日の午前中') || v.includes('きょうのごぜんちゅう')) || collapsed;
+    return qa73BaseNormalize(String(canonicalMorning ?? '')
+        .replace(/昨夜/g, 'さくや')
         .replace(/昨晩/g, 'さくばん').replace(/昨日の晩/g, 'きのうのばん')
         .replace(/先ほど/g, 'さきほど').replace(/午前(?!中)/g, 'ごぜん'))
-        .replace(/けさ|きょうのあさ(?![0-9])/g, 'きょうのごぜんちゅう')
+        .replace(/きょうのあさ(?![0-9])/g, 'きょうのごぜんちゅう')
         .replace(/きのうのあさ(?![0-9])/g, 'きのうのごぜんちゅう')
         .replace(/さくや|さくばん|きのうのばん/g, 'きのうのよる')
         .replace(/さきほど/g, 'さっき')
