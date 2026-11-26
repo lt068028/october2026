@@ -276,6 +276,14 @@ function matchesAnswer(raw,r) {
     const n=normalize(raw);
     return Boolean(n)&&r.refs.some(ref=>normalize(ref)===n);
 }
+function evaluateDrill2YnAnswer(raw,r) {
+    if(r.pending||!DrillAnswer.formAllowed(raw,speechStyle))return 'mismatch';
+    if(matchesAnswer(raw,r))return 'accepted';
+    if(DrillAnswer.isResponseWordOnly(raw))return 'incomplete';
+    const n=normalize(raw);
+    if(n&&r.refs.some(ref=>normalize(ref).startsWith(n)))return 'incomplete';
+    return 'mismatch';
+}
 function recordedAdjective(raw) {
     const n=normalize(raw);
     return adjectives.find(key=>n.endsWith(words[key].hira+'です')||n.endsWith(words[key].hira+'だ')||n.endsWith(words[key].hira));
@@ -815,6 +823,10 @@ function showResult(key,notice='') {
     if(value?.raw) {
         const displayed=STTDisplay.format(value.raw,{mode:scriptMode,anchor:v.result,context:value.modelText||v.r.text,page:'8.1'});
         if(value.correct)FeedbackStatus.appendAccepted(v.result,displayed);
+        else if(value.status==='incomplete'){
+            FeedbackStatus.appendIncomplete(v.result,displayed);
+            v.correction.hidden=true;
+        }
         else {
             let best=value.refs.map(ref=>findDiff(displayed,ref)).sort((a,b)=>a.cost-b.cost)[0];
             best=STTDisplay.projectDiff(best,displayed);
@@ -1430,14 +1442,17 @@ async function record(key, r) {
                 URL.revokeObjectURL(previous.url);
             }
 
+            const d2Status = r.qa === "response" && s.raw.trim() ? evaluateDrill2YnAnswer(s.raw, r) : null;
             saved.set(key, {
                 url,
                 raw: s.raw,
                 modelText:r.text, modelHira:r.hira, refs:[...r.refs],
                 feedback:r.comparison&&matchesAnswer(s.raw,r)?feedback(r,s.raw):null,
-                correct:
+                status: d2Status,
+                correct: d2Status ? d2Status === "accepted" : (
                     Boolean(s.raw.trim()) &&
                     matchesAnswer(s.raw, r)
+                )
             });
         }
 
@@ -1677,17 +1692,19 @@ async function record(key, r) {
             }, 100)
         );
 
-        // 発話開始前の無音5秒：新しい録音を保存しない
-        s.timers.push(
-            setTimeout(() => {
-                if (!s.heard) {
-                    s.stop(
-                        "No speech detected within 5 seconds.",
-                        true
-                    );
-                }
-            }, 5000)
-        );
+        // 発話開始前の無音5秒：Autostop ON 時のみ適用（Manual時は20秒上限のみ）
+        if (!s.manual) {
+            s.timers.push(
+                setTimeout(() => {
+                    if (!s.heard) {
+                        s.stop(
+                            "No speech detected within 5 seconds.",
+                            true
+                        );
+                    }
+                }, 5000)
+            );
+        }
 
         // Autostop・手動停止の共通上限
         s.timers.push(
@@ -1854,7 +1871,9 @@ function entriesFor81(si) {
             const text = entry?.raw;
             if (typeof text !== 'string' || !text.trim()) return;
             const isCorrect = entry?.correct === true;
-            const mark = isCorrect ? '✅ ' : '— ';
+            const mark = (si === 1 && entry?.status)
+                ? (entry.status === 'accepted' ? '✅ ' : entry.status === 'incomplete' ? '👣 ' : '🔥 ')
+                : (isCorrect ? '✅ ' : '— ');
             const prefix = r.kind ? `${r.kind}: ` : '';
             entries.push(`${index + 1}. ${prefix}${mark}${text}`);
         });
@@ -1870,7 +1889,7 @@ function updateCopyButtons81() {
         const count = entriesFor81(si).length;
         const busy = Boolean(session || preparing);
         button.disabled = busy || count === 0;
-        button.style.setProperty('cursor', button.disabled ? 'not-allowed' : 'pointer', 'important');
+        button.style.setProperty('cursor', button.disabled ? 'default' : 'pointer', 'important');
     });
 }
 

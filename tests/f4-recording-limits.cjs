@@ -399,7 +399,7 @@ async function runTestsForPage(browser, pageName) {
 
         await advanceToElapsed(page, 5100);
         await page.clock.runFor(100);
-        if (pageName === 'practice8.2.html') {
+        if (pageName === 'practice8.2.html' || pageName === 'practice8.1.html') {
             check(await isRecordingActive(page), `${pageName}: Scenario 8&11 - Manual mode continues past 5.0s without speech`);
             check(!(await hasStopMessage(page, 'No speech detected within 5 seconds.')), `${pageName}: Scenario 8&11 - No 5s stop-reason message in Manual mode`);
             const stopBtn = page.locator('button.stop-btn-active').first();
@@ -547,7 +547,7 @@ async function runRecognitionSeparationTests(browser) {
         await triggerRecognitionOnly(page, 'テスト発話');
         await page.waitForTimeout(4500);
         const bodyText5s = await page.locator('body').textContent();
-        if (urlPath === '/practice8.2.html') {
+        if (urlPath === '/practice8.2.html' || urlPath === '/practice8.1.html') {
             const activeAfterLowVol5s = await page.evaluate(() => window.t.recorders.filter(r => r.state === 'recording').length);
             check(!bodyText5s.includes('No speech detected within 5 seconds.'), `${urlPath}: low-volume STT within 5s bypasses 5s no-speech timeout`);
             check(activeAfterLowVol5s === 1, `${urlPath}: low-volume STT keeps recording active past 5s`);

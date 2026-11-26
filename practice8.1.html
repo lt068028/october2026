@@ -101,8 +101,8 @@
                         id="labelAutoRecord"
                         class="mode-label active-mode custom-tip-wrap"
                     >
-                        <span class="icon-emoji">⏹️</span>Autostop
-                        <span class="custom-tip-box">ON: Stops after 2 seconds of silence following speech. OFF: Use the stop button. Recording stops if no speech starts within 5 seconds. All recordings stop after 20 seconds.</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="color: #fbbf24; flex-shrink: 0;"><path d="M12 2a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4m-6.5 9.75a.75.75 0 0 1 1.5 0v.25a5 5 0 0 0 10 0v-.25a.75.75 0 0 1 1.5 0v.25a6.5 6.5 0 0 1-5.75 6.456V21.25a.75.75 0 0 1-1.5 0v-2.794A6.5 6.5 0 0 1 5.5 12z" fill="currentColor"/></svg>Autostop
+                        <span class="custom-tip-box">ON: Stops automatically after 2s of silence.&#10;OFF: Uses the stop button.</span>
                     </span>
 
                     <label class="switch">
@@ -121,15 +121,15 @@
                         id="labelAutoPlay"
                         class="mode-label active-mode custom-tip-wrap"
                     >
-                        <span class="icon-emoji">▶️</span>Autoplay
-                        <span class="custom-tip-box">Plays the model and then your recording.</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="color: #fbbf24; flex-shrink: 0;"><path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2m0 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17m-1.75 4.89c0-.598.645-.97 1.16-.67l6.25 3.61a.773.773 0 0 1 0 1.34l-6.25 3.61a.773.773 0 0 1-1.16-.67z" fill="currentColor"/></svg>Auto-Compare
+                        <span class="custom-tip-box">ON: Auto-plays the model audio and your recording in sequence after recording.&#10;OFF: Uses the Play buttons separately.</span>
                     </span>
 
                     <label class="switch">
                         <input
                             type="checkbox"
                             id="togglePlaybackMode"
-                            aria-label="Autoplay"
+                            aria-label="Auto-Compare"
                             checked
                         >
                         <span class="slider"></span>

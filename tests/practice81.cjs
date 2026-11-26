@@ -237,6 +237,35 @@ const mock=audioSource.slice(audioSource.indexOf('function mock()'),audioSource.
  }
  const wrong=await page.evaluate(()=>{const a=audit81,r=a.rowsFor(0)[0][1],key=a.keyFor(r),raw='Ａ　３，０００？\n  なにですか';a.saved.set(key,{raw,modelText:r.text,refs:r.refs,correct:false});a.showResult(key);const v=a.views.get(key);return {raw:a.saved.get(key).raw,text:v.result.textContent.replaceAll('＿',''),shown:!v.correction.hidden&&getComputedStyle(v.correction).display!=='none',feedback:!v.feedback.hidden};});
  check(wrong.text,wrong.raw,'actual wrong-answer display preserves original characters');check(wrong.shown,true,'retry message visible');check(wrong.feedback,false,'unrecognized speech receives no social judgment');
+
+ const p81Conformance=await page.evaluate(()=>{
+  const autoSvg=document.querySelector('#labelAutoRecord svg');
+  const compSvg=document.querySelector('#labelAutoPlay svg');
+  const copyBtns=[...document.querySelectorAll('.p81-copy-button')];
+  const allCopyDefault=copyBtns.length===5&&copyBtns.every(b=>b.disabled&&getComputedStyle(b).cursor==='default');
+  const r2=audit81.rowsFor(1)[0].find(r=>r.qa==='response'&&!r.pending)||audit81.rowsFor(1)[0].find(r=>r.qa==='response');
+  if(r2&&r2.pending){r2.pending=false;r2.answer='yes';}
+  const incResp=r2?evaluateDrill2YnAnswer('えーと、はい、',r2):'';
+  const incPred=r2?evaluateDrill2YnAnswer('はい、コーヒーを飲むのが',r2):'';
+  const acc=r2?evaluateDrill2YnAnswer('はい、好きです',r2):'';
+  return {
+   autoPlayText:document.getElementById('labelAutoPlay')?.textContent?.trim()||'',
+   autoAria:document.getElementById('togglePlaybackMode')?.getAttribute('aria-label')||'',
+   svgsOk:Boolean(autoSvg&&compSvg&&autoSvg.getAttribute('width')==='24'&&autoSvg.getAttribute('aria-hidden')==='true'&&compSvg.getAttribute('width')==='24'&&compSvg.getAttribute('aria-hidden')==='true'),
+   allCopyDefault,
+   incResp,
+   incPred,
+   acc,
+  };
+ });
+ check(p81Conformance.autoPlayText.includes('Auto-Compare'),true,'P8.1 Global Settings uses Auto-Compare');
+ check(p81Conformance.autoAria,'Auto-Compare','P8.1 togglePlaybackMode aria-label is Auto-Compare');
+ check(p81Conformance.svgsOk,true,'P8.1 Global Settings uses 24x24 aria-hidden Fluent SVGs');
+ check(p81Conformance.allCopyDefault,true,'P8.1 all 5 Copy buttons use cursor: default when disabled');
+ check(p81Conformance.incResp,'incomplete','P8.1 Drill 2 response-word-only is incomplete');
+ check(p81Conformance.incPred,'incomplete','P8.1 Drill 2 missing-predicate is incomplete');
+ check(p81Conformance.acc,'accepted','P8.1 Drill 2 valid answer is accepted');
+
  check(errors,[],'no runtime errors');
  await browser.close();console.log('PASS Practice 8.1',checks);
 })().catch(e=>{console.error(e.message.slice(0,3500));process.exit(1)});
