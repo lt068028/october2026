@@ -1688,5 +1688,39 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(copyAllP82.perDrillCount, 4, 'P8.2 keeps all 4 per-Drill Copy buttons');
   eq(copyAllP82.noOverflow, true, 'P8.2 #copyAllBtn causes no horizontal overflow');
 
+  const copyAllOutputP82 = await p.evaluate(async () => {
+    const savedBackup = new Map(saved);
+    saved.clear();
+    updateCopyButtons82();
+    const disabledWhenEmpty = document.getElementById('copyAllBtn').disabled;
+
+    const r1 = drills[0].rows[0];
+    const r2 = drills[1].rows[0];
+    saved.set(keyFor(r1), { raw: 'えーと、何か買います。', status: 'accepted' });
+    saved.set(keyFor(r2), { raw: 'あの 何を取りますか', status: 'incomplete' });
+    updateCopyButtons82();
+    const enabledWithData = !document.getElementById('copyAllBtn').disabled;
+
+    let copiedText = '';
+    const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
+    navigator.clipboard.writeText = async t => { copiedText = t; };
+    document.getElementById('copyAllBtn').click();
+    await new Promise(r => setTimeout(r, 20));
+    navigator.clipboard.writeText = origWrite;
+
+    saved.clear();
+    savedBackup.forEach((v, k) => saved.set(k, v));
+    updateCopyButtons82();
+    return { disabledWhenEmpty, enabledWithData, copiedText };
+  });
+  eq(copyAllOutputP82.disabledWhenEmpty, true, 'P8.2 #copyAllBtn disabled when 0 recordings');
+  eq(copyAllOutputP82.enabledWithData, true, 'P8.2 #copyAllBtn enabled when recordings exist');
+  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 1:'), true, 'P8.2 #copyAllBtn includes Drill 1 heading');
+  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 2:'), true, 'P8.2 #copyAllBtn includes Drill 2 heading');
+  eq(copyAllOutputP82.copiedText.includes('Practice 8.2 — Drill 3:'), false, 'P8.2 #copyAllBtn excludes empty Drill 3');
+  eq(copyAllOutputP82.copiedText.includes('\n\n'), true, 'P8.2 #copyAllBtn separates Drills with blank line');
+  eq(copyAllOutputP82.copiedText.includes('✅ えーと、何か買います。'), true, 'P8.2 #copyAllBtn preserves raw STT filler and ✅');
+  eq(copyAllOutputP82.copiedText.includes('👣 あの 何を取りますか'), true, 'P8.2 #copyAllBtn preserves raw STT filler and 👣');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

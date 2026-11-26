@@ -2175,6 +2175,40 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(copyAllD11.help, 'Copy all your recorded answers to review or share.', 'D1.1 #copyAllBtn has expected help text');
         assert.strictEqual(copyAllD11.perDrillCount, 4, 'D1.1 keeps all 4 per-Drill Copy buttons');
 
+        const copyAllOutputD11 = await page.evaluate(async () => {
+            const savedBackup = new Map(saved);
+            saved.clear();
+            updateCopyButtons();
+            const disabledWhenEmpty = document.getElementById('copyAllBtn').disabled;
+
+            const d1Item = drillsData[0].items[0];
+            const d2Item = drillsData[1].items[0];
+            saved.set(d1Item.id, { raw: 'Ähm, ich bin nach Hause gegangen.', judgment: 'accepted' });
+            saved.set(d2Item.id, { raw: 'Öhm, ich bin nach Berlin...', judgment: 'mismatch' });
+            updateCopyButtons();
+            const enabledWithData = !document.getElementById('copyAllBtn').disabled;
+
+            let copiedText = '';
+            const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
+            navigator.clipboard.writeText = async t => { copiedText = t; };
+            document.getElementById('copyAllBtn').click();
+            await new Promise(r => setTimeout(r, 20));
+            navigator.clipboard.writeText = origWrite;
+
+            saved.clear();
+            savedBackup.forEach((v, k) => saved.set(k, v));
+            updateCopyButtons();
+            return { disabledWhenEmpty, enabledWithData, copiedText };
+        });
+        assert.strictEqual(copyAllOutputD11.disabledWhenEmpty, true, 'D1.1 #copyAllBtn disabled when 0 recordings');
+        assert.strictEqual(copyAllOutputD11.enabledWithData, true, 'D1.1 #copyAllBtn enabled when recordings exist');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 1:'), true, 'D1.1 #copyAllBtn includes Drill 1 heading');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 2:'), true, 'D1.1 #copyAllBtn includes Drill 2 heading');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('Deutsche Übung 1.1 — Drill 3:'), false, 'D1.1 #copyAllBtn excludes empty Drill 3');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('\n\n'), true, 'D1.1 #copyAllBtn separates Drills with blank line');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('✅ Ähm, ich bin nach Hause gegangen.'), true, 'D1.1 #copyAllBtn preserves raw STT filler and ✅');
+        assert.strictEqual(copyAllOutputD11.copiedText.includes('🔥 Öhm, ich bin nach Berlin...'), true, 'D1.1 #copyAllBtn preserves raw STT filler and 🔥');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();
