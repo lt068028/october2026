@@ -87,7 +87,8 @@ assert.ok(js.indexOf('u.onerror =') < js.indexOf('DrillAudio.speak(u)'), 'u.oner
 // 5.4 Check Copy my sentences: raw STT only, no cue text
 assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences');
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must use UI_LAYOUT_SPEC Copy help text');
-assert.ok(!js.includes('Copy all your recorded answers to review or share.'), 'JS must remove legacy all-Drill Copy help text');
+assert.ok(js.includes('Copy all my sentences'), 'JS must implement Copy all my sentences');
+assert.ok(js.includes('Copy all your recorded answers to review or share.'), 'JS must include all-Drill Copy help text');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && !js.includes('const hasAnyRecordings = drillsData.some'), 'Copy button enabling must be scoped per individual drill');
 assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
@@ -2147,6 +2148,32 @@ async function runRecordingLifecycleTests() {
         });
         assert.strictEqual(offColorAudit.recBg, offColorAudit.stopBg, 'D1.1 Autostop OFF matches stop button background');
         assert.notStrictEqual(offColorAudit.pbBg, offColorAudit.stopBg, 'D1.1 Auto-Compare OFF keeps neutral background');
+
+        // All-Drill Copy (#copyAllBtn) verification
+        const copyAllD11 = await page.evaluate(async () => {
+            const btn = document.getElementById('copyAllBtn');
+            const help = btn?.parentElement?.querySelector('.uebung-copy-help')?.textContent || '';
+            const label = btn?.querySelector('.uebung-copy-label')?.textContent || '';
+            let copiedText = '';
+            const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
+            navigator.clipboard.writeText = async t => { copiedText = t; };
+            btn.click();
+            await new Promise(r => setTimeout(r, 20));
+            navigator.clipboard.writeText = origWrite;
+            return {
+                exists: Boolean(btn),
+                label,
+                help,
+                disabled: btn?.disabled,
+                cursor: btn ? getComputedStyle(btn).cursor : '',
+                copiedText,
+                perDrillCount: document.querySelectorAll('#drillsContainer .uebung-copy-button').length,
+            };
+        });
+        assert.strictEqual(copyAllD11.exists, true, 'D1.1 #copyAllBtn exists');
+        assert.strictEqual(copyAllD11.label === 'Copy all my sentences' || copyAllD11.label === 'Copied', true, 'D1.1 #copyAllBtn has expected label');
+        assert.strictEqual(copyAllD11.help, 'Copy all your recorded answers to review or share.', 'D1.1 #copyAllBtn has expected help text');
+        assert.strictEqual(copyAllD11.perDrillCount, 4, 'D1.1 keeps all 4 per-Drill Copy buttons');
 
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {

@@ -1668,5 +1668,25 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(cueAndHomophoneAudit.toruHomophone, true, 'P8.2 takephoto accepts homophone 取る');
   eq(cueAndHomophoneAudit.otherRowRejectsToru, true, 'P8.2 non-takephoto row rejects 取る');
 
+  // All-Drill Copy (#copyAllBtn) existence, help text, and layout check
+  const copyAllP82 = await p.evaluate(() => {
+    const btn = document.getElementById('copyAllBtn');
+    const help = btn?.parentElement?.querySelector('.p82-copy-help')?.textContent || '';
+    const rect = btn?.getBoundingClientRect();
+    return {
+      exists: Boolean(btn),
+      label: btn?.querySelector('span')?.textContent || '',
+      help,
+      perDrillCount: document.querySelectorAll('.p82-copy-area .p82-copy-button').length,
+      noOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      widthOk: rect ? rect.width > 0 : false,
+    };
+  });
+  eq(copyAllP82.exists, true, 'P8.2 #copyAllBtn exists');
+  eq(copyAllP82.label, 'Copy all my sentences', 'P8.2 #copyAllBtn label');
+  eq(copyAllP82.help, 'Copy all your recorded answers to review or share.', 'P8.2 #copyAllBtn help text');
+  eq(copyAllP82.perDrillCount, 4, 'P8.2 keeps all 4 per-Drill Copy buttons');
+  eq(copyAllP82.noOverflow, true, 'P8.2 #copyAllBtn causes no horizontal overflow');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
