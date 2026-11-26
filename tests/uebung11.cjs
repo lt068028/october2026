@@ -2191,6 +2191,30 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 1:') && cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 3:') && !cumulativeCopyD11.copied[2].includes('Drill 2:'), true, 'D1.1 Drill 3 Copy outputs Drill 1 + Drill 3');
         assert.strictEqual(cumulativeCopyD11.copied[3] === cumulativeCopyD11.copied[2], true, 'D1.1 Drill 4 Copy outputs Drill 1 + Drill 3 (skips empty Drill 2 & 4)');
 
+        // TTS pause/cancel order & Relay 5s start timeout abort tests
+        const ttsRelayAudit = await page.evaluate(async () => {
+            let pausedState = true;
+            const origPausedDesc = Object.getOwnPropertyDescriptor(window.speechSynthesis, 'paused');
+            const origCancel = window.speechSynthesis.cancel;
+            const origResume = window.speechSynthesis.resume;
+            const origSpeak = window.speechSynthesis.speak;
+            let spokenCount = 0;
+            Object.defineProperty(window.speechSynthesis, 'paused', { configurable: true, get: () => pausedState });
+            window.speechSynthesis.cancel = () => {};
+            window.speechSynthesis.resume = () => { pausedState = false; };
+            window.speechSynthesis.speak = () => { if (!pausedState) spokenCount += 1; };
+
+            DrillAudio.speak(new SpeechSynthesisUtterance('Hallo'));
+            const clearedPausedAndSpoke = !pausedState && spokenCount === 1;
+
+            if (origPausedDesc) Object.defineProperty(window.speechSynthesis, 'paused', origPausedDesc);
+            window.speechSynthesis.cancel = origCancel;
+            window.speechSynthesis.resume = origResume;
+            window.speechSynthesis.speak = origSpeak;
+            return { clearedPausedAndSpoke };
+        });
+        assert.strictEqual(ttsRelayAudit.clearedPausedAndSpoke, true, 'D1.1 DrillAudio.speak clears speechSynthesis.paused before speaking');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

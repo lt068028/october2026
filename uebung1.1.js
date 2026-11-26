@@ -1500,11 +1500,7 @@ function initGermanDrill() {
                 token.userCancelled = true;
                 if (currentUtterance === u) currentUtterance = null;
                 activePlaybackToken = null;
-                if (!isRelay) {
-                    stopPlayback(true);
-                } else {
-                    onDone?.();
-                }
+                stopPlayback(true);
                 showGermanTtsNotice({
                     type: "error",
                     title: "German audio did not start",

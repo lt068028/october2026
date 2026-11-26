@@ -33,6 +33,9 @@ window.DrillAudio = (() => {
         try {
             window.speechSynthesis.pause();
             window.speechSynthesis.cancel();
+            if (window.speechSynthesis.paused && typeof window.speechSynthesis.resume === 'function') {
+                window.speechSynthesis.resume();
+            }
         } catch (_) {}
     }
 
