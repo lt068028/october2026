@@ -47,5 +47,11 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
  await p.locator('#practice7EnglishCueButton').click();
  check(await p.locator('#drill1List .practice7-category').count()>0,true,'category alignment survives English cue change');
  check(p.errors,[],'7.2 no runtime errors after cue changes');
+ const materialPages=['composition1.html','practice1.1.html','practice1.2.html','practice2.1.html','practice2.2.html','practice2.3.html','practice7.1.html','practice7.2.html','practice7.3.html','practice8.1.html','practice8.2.html','practice8.3.html','pronunciation1.html','pronunciation2.html','uebung1.1.html'];
+ for(const file of materialPages){
+  const src=fs.readFileSync(path.join(root,file),'utf8');
+  const tag=src.match(/<a\b[^>]*\bclass="[^"]*\bback-link\b[^"]*"[^>]*>/i)?.[0]||'';
+  check(tag.includes('href="index.html"')&&!/history\.back/i.test(tag),true,`${file} .back-link uses href="index.html" without history.back`);
+ }
  await browser.close();console.log('PASS layout rules',checks);
 })().catch(e=>{console.error(e);process.exit(1)});

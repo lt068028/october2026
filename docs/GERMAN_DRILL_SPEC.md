@@ -40,7 +40,7 @@
 - **ページ固有スコープ**: `body` 要素にページ固有クラス（例: `.uebung11-page`, `.uebung12-page`）を付与し、スタイル干渉を防止する。
 
 ### 2.2 ナビゲーションとメインヘッダー 【実装済み】
-- **戻るリンク**: `<a href="index.html" class="back-link custom-tip-wrap">↩️ Zurück<span class="custom-tip-box">Return to Practice Menu.</span></a>`
+- **戻るリンク**: `UI_LAYOUT_SPEC.md` §13.1（`href="index.html"` 固定・履歴戻り非使用）に従い、`<a href="index.html" class="back-link custom-tip-wrap">↩️ Zurück<span class="custom-tip-box">Return to Practice Menu.</span></a>` とする。
 - **大見出し**: `<h1>Deutsche Übung X.X: [トピック名]</h1>`
 - **副見出し**: `<p class="page-subtitle">[学習目標の説明文（英語）]</p>`
 

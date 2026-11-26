@@ -241,6 +241,8 @@
 | 領域・項目 | 公式 Fluent Icon 名 | `fluent-icons.js` キー（variant） | viewBox | 実描画高さ（in vb） | 表示サイズ / 光学補正（Practice 8.2基準） |
 | --- | --- | --- | :---: | :---: | --- |
 | ① もどるボタン（`.back-link`） | `Arrow Hook Down Left 24 Regular` | `arrowHookDownLeft` (`regular`) | `0 0 24 24` | 16.77 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 14.0px） |
+
+- **もどるボタン（`.back-link`）の遷移先契約**：全教材ページの `.back-link` は `href="index.html"` 固定とし、`window.history.back()` 等の履歴戻り用インライン `onclick` を使用しない（外部リンクや直接 URL からの遷移でも確実に Index へ戻るため）。
 | ② Drill説明文先頭（`.info-panel-desc`、Practice 8.2の5箇所） | `Lightbulb 24 Filled` | `lightbulbFilled` (`filled`) | `0 0 24 24` | 20.00 | `20×20px`、`vertical-align: -3.5px`（Optical Height ≈ 16.7px） |
 | ③ 左下Voiceラベル（`.voice-select-label`） | `Speaker 2 24 Regular` | `speaker` / `speaker2` (`regular`) | `0 0 24 24` | 17.99 | `20×20px`（モデル音声ボタンと同一パスを共有、Optical Height ≈ 15.0px） |
 | ④ Script Mode — Hiragana Only | `Translate 24 Regular` | `translate` (`regular`) | `0 0 24 24` | 14.73 | `20×20px`、`translateY(-0.5px)`（Optical Height ≈ 12.3px） |

@@ -82,7 +82,7 @@ for(const name of pages){
   const p=await open(name);console.log('LEAVE',name,pending);
   await p.evaluate(pending=>{testAudio.defer=pending;const rec=[...document.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.startsWith('🎙️とる'));rec.click()},pending);await p.waitForTimeout(30);
   // Capture handler must run while allowing native link navigation.
-  await p.evaluate(()=>{history.back=()=>{};document.querySelector('.back-link').addEventListener('click',e=>e.preventDefault());document.querySelector('.back-link').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))});
+  await p.evaluate(()=>{document.querySelector('.back-link').addEventListener('click',e=>e.preventDefault());document.querySelector('.back-link').dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true}))});
   if(pending)await p.evaluate(()=>testAudio.requests.at(-1)());
   await p.waitForTimeout(30);
   assert.equal(await p.evaluate(()=>testAudio.tracks.every(t=>t.readyState==='ended')),true,name+' leave cleanup pending='+pending);checks++;
