@@ -1723,7 +1723,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   const p82Html = fs.readFileSync(path.join(__dirname, '..', 'practice8.2.html'), 'utf8');
   eq(p82Html.includes('content-layout.js?v=20261111-ms-fluent'), false, 'practice8.2.html has no stale content-layout.js query');
 
-  // Drill 2 5-item (Dr2-4 discard, Dr2-5 wash) evaluation & 1..10 Copy numbering
+  // Drill 2 5-item (Dr2-4 cut, Dr2-5 wash) evaluation & 1..10 Copy numbering
   const d2FiveItems = await p.evaluate(() => {
     const savedBackup = new Map(saved);
     saved.clear();
@@ -1731,25 +1731,25 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     const d2Flat = d2Pairs.flat();
     const r7 = d2Flat[6], r8 = d2Flat[7], r9 = d2Flat[8], r10 = d2Flat[9];
     const evalChecks = {
-      d4WhatAcc: evaluateAnswer('何を、捨てますか。', r7) === 'accepted' && evaluateAnswer('なにをすてますか', r7) === 'accepted',
-      d4AnyAcc: evaluateAnswer('何か、捨てますか。', r8) === 'accepted' && evaluateAnswer('なにかすてますか', r8) === 'accepted',
+      d4WhatAcc: evaluateAnswer('何を、切りますか。', r7) === 'accepted' && evaluateAnswer('なにをきりますか', r7) === 'accepted',
+      d4AnyAcc: evaluateAnswer('何か、切りますか。', r8) === 'accepted' && evaluateAnswer('なにかきりますか', r8) === 'accepted',
       d4WrongVerb: evaluateAnswer('何を、洗いますか。', r7) === 'mismatch',
       d5WhatAcc: evaluateAnswer('何を、洗いますか。', r9) === 'accepted' && evaluateAnswer('なにをあらいますか', r9) === 'accepted',
       d5AnyAcc: evaluateAnswer('何か、洗いますか。', r10) === 'accepted' && evaluateAnswer('なにかあらいますか', r10) === 'accepted',
-      d5WrongVerb: evaluateAnswer('何を、捨てますか。', r9) === 'mismatch',
+      d5WrongVerb: evaluateAnswer('何を、切りますか。', r9) === 'mismatch',
       d1To3Kept: d2Pairs.slice(0, 3).map(pair => pair[0].verb).join(',') === 'read,write,takephoto',
     };
     // Sparse Copy numbering check (rows 1, 7, 10 -> 1., 7., 10.)
     saved.set(keyFor(d2Flat[0]), { raw: '何を読みますか', status: 'accepted' });
-    saved.set(keyFor(r7), { raw: '何を捨てますか', status: 'accepted' });
+    saved.set(keyFor(r7), { raw: '何を切りますか', status: 'accepted' });
     saved.set(keyFor(r10), { raw: '何か洗いますか', status: 'accepted' });
     const entries = entriesFor82(1);
     saved.clear();
     savedBackup.forEach((v, k) => saved.set(k, v));
     return { evalChecks, entries };
   });
-  eq(d2FiveItems.evalChecks.d4WhatAcc && d2FiveItems.evalChecks.d4AnyAcc, true, 'Drill 2 Dr2-4 discard accepts kanji and kana');
-  eq(d2FiveItems.evalChecks.d4WrongVerb, true, 'Drill 2 Dr2-4 discard rejects unrelated verb');
+  eq(d2FiveItems.evalChecks.d4WhatAcc && d2FiveItems.evalChecks.d4AnyAcc, true, 'Drill 2 Dr2-4 cut accepts kanji and kana');
+  eq(d2FiveItems.evalChecks.d4WrongVerb, true, 'Drill 2 Dr2-4 cut rejects unrelated verb');
   eq(d2FiveItems.evalChecks.d5WhatAcc && d2FiveItems.evalChecks.d5AnyAcc, true, 'Drill 2 Dr2-5 wash accepts kanji and kana');
   eq(d2FiveItems.evalChecks.d5WrongVerb, true, 'Drill 2 Dr2-5 wash rejects unrelated verb');
   eq(d2FiveItems.evalChecks.d1To3Kept, true, 'Drill 2 Dr2-1..3 verbs unchanged');

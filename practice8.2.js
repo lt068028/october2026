@@ -103,7 +103,7 @@ const contrastPairs=[
  {verb:'read'},
  {verb:'write'},
  {verb:'takephoto'},
- {verb:'discard'},
+ {verb:'cut'},
  {verb:'wash'}
 ];
 const conversations=[
