@@ -2209,6 +2209,50 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(copyAllOutputD11.copiedText.includes('✅ Ähm, ich bin nach Hause gegangen.'), true, 'D1.1 #copyAllBtn preserves raw STT filler and ✅');
         assert.strictEqual(copyAllOutputD11.copiedText.includes('🔥 Öhm, ich bin nach Berlin...'), true, 'D1.1 #copyAllBtn preserves raw STT filler and 🔥');
 
+        // All 4 Drills output + 3 clipboard paths (success / undefined / reject) on #copyAllBtn
+        const copyAll3PathsD11 = await page.evaluate(async () => {
+            const savedBackup = new Map(saved);
+            saved.clear();
+            drillsData.forEach((d, i) => {
+                saved.set(d.items[0].id, { raw: 'Ähm, Antwort ' + (i + 1), judgment: 'accepted' });
+            });
+            updateCopyButtons();
+            const btn = document.getElementById('copyAllBtn');
+            const origClip = navigator.clipboard;
+
+            // 1. Success path
+            let copied4 = '';
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async t => { copied4 = t; } } });
+            btn.click();
+            await new Promise(r => setTimeout(r, 20));
+            const labelSuccess = btn.querySelector('.uebung-copy-label')?.textContent || '';
+
+            const labelEl = btn.querySelector('.uebung-copy-label');
+            if (labelEl) labelEl.textContent = 'Copy all my sentences';
+
+            // 2. Reject path
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied'); } } });
+            btn.click();
+            await new Promise(r => setTimeout(r, 20));
+            const labelReject = btn.querySelector('.uebung-copy-label')?.textContent || '';
+
+            // 3. Undefined API path
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+            btn.click();
+            await new Promise(r => setTimeout(r, 20));
+            const labelUndefined = btn.querySelector('.uebung-copy-label')?.textContent || '';
+
+            Object.defineProperty(navigator, 'clipboard', { configurable: true, value: origClip });
+            saved.clear();
+            savedBackup.forEach((v, k) => saved.set(k, v));
+            updateCopyButtons();
+            return { copied4, labelSuccess, labelReject, labelUndefined };
+        });
+        assert.strictEqual([1, 2, 3, 4].every(n => copyAll3PathsD11.copied4.includes(`Deutsche Übung 1.1 — Drill ${n}:`)), true, 'D1.1 #copyAllBtn outputs all 4 Drills');
+        assert.strictEqual(copyAll3PathsD11.labelSuccess, 'Copied', 'D1.1 #copyAllBtn shows Copied on success');
+        assert.strictEqual(copyAll3PathsD11.labelReject, 'Copy all my sentences', 'D1.1 #copyAllBtn does not show Copied on reject');
+        assert.strictEqual(copyAll3PathsD11.labelUndefined, 'Copy all my sentences', 'D1.1 #copyAllBtn does not show Copied when clipboard undefined');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

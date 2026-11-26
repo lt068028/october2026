@@ -1722,5 +1722,56 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(copyAllOutputP82.copiedText.includes('✅ えーと、何か買います。'), true, 'P8.2 #copyAllBtn preserves raw STT filler and ✅');
   eq(copyAllOutputP82.copiedText.includes('👣 あの 何を取りますか'), true, 'P8.2 #copyAllBtn preserves raw STT filler and 👣');
 
+  // Verify no stale content-layout.js?v=20261111-ms-fluent in practice8.2.html
+  const p82Html = fs.readFileSync(path.join(__dirname, '..', 'practice8.2.html'), 'utf8');
+  eq(p82Html.includes('content-layout.js?v=20261111-ms-fluent'), false, 'practice8.2.html has no stale content-layout.js query');
+
+  // All 4 Drills output + 3 clipboard paths (success / undefined / reject) on #copyAllBtn
+  const copyAll3PathsP82 = await p.evaluate(async () => {
+    const savedBackup = new Map(saved);
+    saved.clear();
+    drills.slice(0, 4).forEach((d, i) => {
+      const r = d.rows.find(row => !row.pending) || d.rows[0];
+      if (r.pending) { r.pending = false; r.answer = 'yes'; }
+      saved.set(keyFor(r), { raw: 'えーと、回答' + (i + 1), status: 'accepted' });
+    });
+    updateCopyButtons82();
+    const btn = document.getElementById('copyAllBtn');
+    const origClip = navigator.clipboard;
+
+    // 1. Success path
+    let copied4 = '';
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async t => { copied4 = t; } } });
+    btn.click();
+    await new Promise(r => setTimeout(r, 20));
+    const labelSuccess = btn.querySelector('span')?.textContent || '';
+
+    // Reset label for next path
+    const span = btn.querySelector('span');
+    if (span) span.textContent = 'Copy all my sentences';
+
+    // 2. Reject path
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('denied'); } } });
+    btn.click();
+    await new Promise(r => setTimeout(r, 20));
+    const labelReject = btn.querySelector('span')?.textContent || '';
+
+    // 3. Undefined API path
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+    btn.click();
+    await new Promise(r => setTimeout(r, 20));
+    const labelUndefined = btn.querySelector('span')?.textContent || '';
+
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: origClip });
+    saved.clear();
+    savedBackup.forEach((v, k) => saved.set(k, v));
+    updateCopyButtons82();
+    return { copied4, labelSuccess, labelReject, labelUndefined };
+  });
+  eq([1, 2, 3, 4].every(n => copyAll3PathsP82.copied4.includes(`Practice 8.2 — Drill ${n}:`)), true, 'P8.2 #copyAllBtn outputs all 4 Drills');
+  eq(copyAll3PathsP82.labelSuccess, 'Copied', 'P8.2 #copyAllBtn shows Copied on success');
+  eq(copyAll3PathsP82.labelReject, 'Copy all my sentences', 'P8.2 #copyAllBtn does not show Copied on reject');
+  eq(copyAll3PathsP82.labelUndefined, 'Copy all my sentences', 'P8.2 #copyAllBtn does not show Copied when clipboard undefined');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
