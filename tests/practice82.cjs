@@ -1532,5 +1532,42 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     document.querySelectorAll('[data-tip-suppressed]').forEach(e => e.removeAttribute('data-tip-suppressed'));
   });
 
+  // Verify Drill 3 Y/N click performs local update without rebuilding other drills/examples and clears/switches row state cleanly
+  await p.evaluate(() => {
+    audit82.choices.delete('yn-0-a');
+    audit82.saved.delete('yn-0-a:yes');
+    audit82.saved.delete('yn-0-a:no');
+    audit82.render();
+    window.__ynRefNodes = {
+      ex1: document.querySelector('#drill1 .example-box'),
+      d1Row: document.querySelector('#drill1 .drill-row'),
+      d5Panel: document.querySelector('#drill5Container .drill-cue-panel')
+    };
+  });
+  const ynRow = p.locator('tr[data-row="yn-0-a"]');
+  eq(await ynRow.locator('.drill-listen-btn').isDisabled(), true, 'Unselected Y/N row disables listen button');
+  await ynRow.locator('button.answer-choice[data-answer="yes"]').click();
+  eq(await p.evaluate(() => {
+    const r = window.__ynRefNodes;
+    return r.ex1 === document.querySelector('#drill1 .example-box')
+      && r.d1Row === document.querySelector('#drill1 .drill-row')
+      && r.d5Panel === document.querySelector('#drill5Container .drill-cue-panel');
+  }), true, 'Y/N click preserves Example, Drill 1, and Drill 5 DOM nodes without full render()');
+  await p.evaluate(() => {
+    audit82.saved.set('yn-0-a:yes', { raw: 'はい、します', status: 'accepted', correct: true });
+    audit82.render();
+  });
+  eq(await ynRow.locator('.result-text').textContent(), 'はい、します', 'Yes side shows saved STT result');
+  await ynRow.locator('button.answer-choice[data-answer="no"]').click();
+  eq(await ynRow.locator('button.answer-choice[data-answer="no"]').getAttribute('aria-pressed'), 'true', 'No button becomes pressed');
+  eq(await ynRow.locator('.result-text').textContent(), '', 'Switching to unrecorded No clears previous Yes result');
+  const noSpokenBefore = await p.evaluate(() => t.spoken.length);
+  await ynRow.locator('.drill-listen-btn').click();
+  await p.waitForFunction((n) => t.spoken.length > n, noSpokenBefore);
+  eq(await p.evaluate(() => t.spoken.at(-1)?.text?.includes('いいえ')), true, 'No side listen button plays No model after local update');
+  await p.evaluate(() => { t.spoken.at(-1)?.onend?.(); });
+  await ynRow.locator('button.answer-choice[data-answer="yes"]').click();
+  eq(await ynRow.locator('.result-text').textContent(), 'はい、します', 'Switching back to Yes restores saved Yes result');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

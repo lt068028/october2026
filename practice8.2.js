@@ -345,7 +345,7 @@ function restoreDrillButton(b) {
     }
 }
 
-function stopPlayback(isNaturalFinish = false) {
+function stopPlayback(isNaturalFinish = false, skipSync = false) {
     playbackGen++;
     DrillAudio.invalidatePlayback();
     // Detach callbacks before cancel: browsers may deliver an error synchronously.
@@ -437,7 +437,7 @@ function markExPlaying(b) {
         b.setAttribute('aria-label', '再生を停止');
     }
     b.disabled = false;
-    sync();
+    if (!skipSync) sync();
 }
 
 function setDrillStopIcon(b) {
@@ -1138,14 +1138,29 @@ function createLightbulbIcon(){
  svg.append(path);
  return svg;
 }
+function updateYnChoice(rowId, value) {
+ const entry=[...views.entries()].find(([,v])=>v.r.id===rowId);
+ if(!entry)return;
+ const [oldKey,v]=entry;
+ const spec=conversations.find((c,i)=>'yn-'+i+'-a'===rowId);
+ if(!spec)return;
+ choices.set(rowId,value);
+ const nextRow=makeRow(rowId,{...spec,mode:'reply',answer:value},{kind:'A',qa:'response',yn:true,pending:false});
+ const newKey=keyFor(nextRow);
+ v.r=nextRow;
+ if(oldKey!==newKey){views.delete(oldKey);views.set(newKey,v);}
+ v.cue?.querySelectorAll('.answer-choice').forEach(btn=>btn.setAttribute('aria-pressed',String(btn.dataset.answer===value)));
+ showResult(newKey);
+ sync();
+}
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
  sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
- if(r.yn)for(const value of ['yes','no']){const ynLabel=(si===2&&index===0)?(value==='yes'?'Yes':'No'):(value==='yes'?'Affirmative response':'Negative response');const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback();choices.set(r.id,value);render();},(si===2&&index===0)?ynLabel:'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',ynLabel);choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
- const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const isFirstRow=(si===0&&index===0&&ri===0);const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(r.text,listen);},isFirstRow?'Listen to the model answer.':'');listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{if(session?.key===key){session.stop();return;}record(key,r);},isFirstRow?'Record your answer.':'');if(isFirstRow)rec.dataset.introTip='Record your answer.';rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),mainRow=node('div','result-main-row'),result=node('span','result-text'),subRow=node('div','result-sub-row'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');subRow.hidden=true;correction.hidden=true;feeling.hidden=true;mainRow.append(result);wrap.append(mainRow,subRow,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);views.set(key,{r,si,isFirstRow,rec,listen,mainRow,result,subRow,correction,feedback:feeling,autostopHost,autostopTip});showResult(key);
+ if(r.yn)for(const value of ['yes','no']){const ynLabel=(si===2&&index===0)?(value==='yes'?'Yes':'No'):(value==='yes'?'Affirmative response':'Negative response');const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback(false,true);updateYnChoice(r.id,value);},(si===2&&index===0)?ynLabel:'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',ynLabel);choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}
+ const cell=node('td','p81-controls'),line=node('div','recording-controls'),actions=node('div','recording-actions');const isFirstRow=(si===0&&index===0&&ri===0);const listenIcon=window.FluentIcons?window.FluentIcons.create('speaker2',20):document.createTextNode('🔊');const recIcon=window.FluentIcons?window.FluentIcons.create('mic',23):document.createTextNode('🎙️');const viewRef={r,si,isFirstRow,cue};const listen=button(listenIcon,()=>{if(session||preparing)return;if(playButton===listen){stopPlayback();return;}speak(viewRef.r.text,listen);},isFirstRow?'Listen to the model answer.':'');listen.classList.add('drill-listen-btn');listen.dataset.audioRole='listen';listen.setAttribute('aria-label','モデル音声を聞く');const rec=button(recIcon,()=>{const curKey=keyFor(viewRef.r);if(session?.key===curKey){session.stop();return;}record(curKey,viewRef.r);},isFirstRow?'Record your answer.':'');if(isFirstRow)rec.dataset.introTip='Record your answer.';rec.classList.add('drill-record-btn');rec.dataset.audioRole='record';rec.setAttribute('aria-label','音声を録音する');actions.append(listen,rec);const autostopHost=node('span','p82-autostop-tip-host');const stopUnit=rec.closest('.stop-indicator-wrap')||rec;stopUnit.replaceWith(autostopHost);autostopHost.append(stopUnit);const autostopTip=node('span','custom-tip-box','Autostop: ON');autostopTip.setAttribute('role','tooltip');autostopHost.append(autostopTip);const wrap=node('span','recording-result'),mainRow=node('div','result-main-row'),result=node('span','result-text'),subRow=node('div','result-sub-row'),correction=node('div','correction-box'),feeling=node('div','p81-feedback');subRow.hidden=true;correction.hidden=true;feeling.hidden=true;mainRow.append(result);wrap.append(mainRow,subRow,correction);line.append(actions,wrap);cell.append(line,feeling);tr.append(cue,cell);body.append(tr);Object.assign(viewRef,{rec,listen,mainRow,result,subRow,correction,feedback:feeling,autostopHost,autostopTip});views.set(key,viewRef);showResult(key);
  });card.append(table);group.append(card);});root.append(group);});ConversationDisplay.format();measureCues();renderEnglishCuePanel();sync();
 }
 function renderEnglishCuePanel(){
