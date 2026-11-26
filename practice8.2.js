@@ -1363,6 +1363,7 @@ async function record(key, r) {
         firstRecognizedAt !== null &&
         (firstRecognizedAt - recordingStartedAt) <= 5000 &&
         hasRecognizedText();
+    const hasProtectedStt = () => s.manual ? hasRecognizedText() : hasProtected5sStt();
 
     const clear = () => {
         s.timers.forEach(id => {
@@ -1475,7 +1476,7 @@ async function record(key, r) {
 
         s.stopping = true;
         s.notice = notice;
-        s.discard = discard ? true : (!s.heard && !hasProtected5sStt());
+        s.discard = discard ? true : (!s.heard && !hasProtectedStt());
 
         clear();
         sync();

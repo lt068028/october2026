@@ -1311,6 +1311,38 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(await s4Row.locator('.stop-btn-active').count(), 1, 'Manual mode does NOT auto-stop at 5s even without STT or mic volume');
   await s4Row.locator('.stop-btn-active').click();
   await p.waitForTimeout(150);
+
+  // Scenario 6b: Manual mode saves valid Final STT arrived after 5s
+  const s6bRecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s6bRecCount);
+  await p.waitForTimeout(5200);
+  await p.evaluate(() => {
+    const res = [{ transcript: '先生に何か聞きます' }];
+    res.isFinal = true;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForFunction(() => audit82.saved.get('any-3-a:fixed')?.raw === '先生に何か聞きます');
+  eq(await p.evaluate(() => ({
+    raw: audit82.saved.get('any-3-a:fixed')?.raw,
+    status: audit82.saved.get('any-3-a:fixed')?.status
+  })), { raw: '先生に何か聞きます', status: 'accepted' }, 'Manual mode >5s low-vol Final STT saved and graded');
+
+  // Scenario 6c: Manual mode saves valid Interim-only STT arrived after 5s
+  const s6cRecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s6cRecCount);
+  await p.waitForTimeout(5200);
+  await p.evaluate(() => {
+    const res = [{ transcript: '先生に聞きます' }];
+    res.isFinal = false;
+    t.recognitions.at(-1).onresult({ resultIndex: 0, results: [res] });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForFunction(() => audit82.saved.get('any-3-a:fixed')?.raw === '先生に聞きます');
+  eq(await p.evaluate(() => audit82.saved.get('any-3-a:fixed')?.raw), '先生に聞きます', 'Manual mode >5s low-vol Interim-only STT saved on manual stop');
+
   await p.evaluate(() => {
     const autoRecord = document.getElementById('toggleRecordMode');
     if (autoRecord && !autoRecord.checked) autoRecord.click(); // restore Autostop ON

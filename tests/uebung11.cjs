@@ -859,6 +859,18 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'S4b: Whitespace-only onresult still stops at 5.0s timeout');
         assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S4b: Shows 5s timeout message');
 
+        // Symbol-only onresult also times out at 5.0s and late onresult after discard is ignored
+        await clickRecord(false);
+        await page.clock.runFor(200);
+        await triggerRecognition('♪');
+        await advanceToElapsed(5100);
+        await page.clock.runFor(100);
+        assert.ok(!(await isRecording()), 'S4c: Symbol-only onresult stops at 5.0s timeout');
+        assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S4c: Shows 5s timeout message');
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await page.clock.runFor(50);
+        assert.ok((await getResult().textContent()).includes('No speech detected within 5 seconds.'), 'S4c: Late onresult after 5s discard is ignored');
+
         // --- Scenario 5: Autostop ONで発話後2秒無音停止 ---
         await clickRecord(false);
         await advanceToElapsed(1000);
@@ -1391,7 +1403,7 @@ async function runRecordingLifecycleTests() {
         await page.mouse.move(0, 0);
 
         // Re-click the SAME playing button -> must ONLY stop, NOT restart
-        await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
+        await page.locator('#drill1 .drill-row .drill-listen-btn').click();
         await page.clock.runFor(50);
         await page.locator('#drill1 .drill-row .drill-listen-btn.is-playing').click();
         await page.clock.runFor(50);
@@ -1728,6 +1740,30 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(100);
         assert.equal(await getResult().locator('.play-recording-btn').count(), 0, 'Empty chunks must NOT render [▶] play button even if STT recognized');
         await page.evaluate(() => { window.t.emptyChunks = false; });
+
+        // Manual mode: Final STT and Interim-only STT arriving after 5s are both saved on manual stop
+        await clickRecord(true);
+        await page.clock.runFor(5200);
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        assert.ok((await getResult().textContent()).includes('Ich fliege nach Berlin.'), 'Manual mode >5s Final STT saved');
+
+        await clickRecord(true);
+        await page.clock.runFor(5200);
+        await page.evaluate(() => {
+            const rec = window.t.recognitions.at(-1);
+            const res = [{ transcript: 'Ich fliege nach Berlin.' }];
+            res.isFinal = false;
+            rec?.onresult?.({ resultIndex: 0, results: [res] });
+        });
+        await page.evaluate(() => {
+            document.querySelector('#drillsContainer .recording-actions .drill-record-btn.stop-btn-active')?.click();
+        });
+        await page.clock.runFor(100);
+        assert.ok((await getResult().textContent()).includes('Ich fliege nach Berlin.'), 'Manual mode >5s Interim-only STT saved');
 
         // Verify pagehide cleanup listener
         await page.evaluate(() => { window.dispatchEvent(new Event('pagehide')); });

@@ -1635,6 +1635,19 @@ function initGermanDrill() {
         };
         session = s;
 
+        const recordingStartedAt = Date.now();
+        let firstRecognizedAt = null;
+        const hasValidSttText = text => {
+            const cleaned = normalizeGerman(text || "").replace(/[\p{P}\p{S}\s]/gu, "");
+            return Boolean(cleaned);
+        };
+        const hasRecognizedText = () => hasValidSttText(s.raw) || hasValidSttText(s.interim);
+        const hasProtected5sStt = () =>
+            firstRecognizedAt !== null &&
+            (firstRecognizedAt - recordingStartedAt) <= 5000 &&
+            hasRecognizedText();
+        const hasProtectedStt = () => s.manual ? hasRecognizedText() : hasProtected5sStt();
+
         const clear = () => {
             s.timers.forEach(id => {
                 clearTimeout(id);
@@ -1665,11 +1678,12 @@ function initGermanDrill() {
 
             session = null;
 
-            if (s.interim?.trim()) {
+            if (!s.discard && s.interim?.trim()) {
                 s.raw += s.interim;
             }
+            s.interim = "";
 
-            const raw = s.raw.trim();
+            const raw = s.discard ? "" : s.raw.trim();
             const recModel = getModel(item, currentVariety);
 
             const previous = saved.get(key) || {};
@@ -1687,7 +1701,7 @@ function initGermanDrill() {
                 }
             }
 
-            if (raw && normRaw) {
+            if (!s.discard && raw && normRaw) {
                 if (previous.url) {
                     try { URL.revokeObjectURL(previous.url); } catch (_) {}
                 }
@@ -1776,15 +1790,13 @@ function initGermanDrill() {
             }
         };
 
-        const hasRecognizedText = () => Boolean(normalizeGerman(`${s.raw || ""} ${s.interim || ""}`));
-
         s.stop = (notice = "", discard = false, reason = "") => {
             if (s.stopping || s.finished) return;
             s.stopping = true;
             if (reason) s.stopReason = reason;
             else if (!s.stopReason) s.stopReason = notice ? "error" : "manual";
             if (notice) s.notice = notice;
-            s.discard = discard || (!s.speechStarted && !hasRecognizedText());
+            s.discard = discard || (!s.speechStarted && !hasProtectedStt());
 
             clear();
             sync();
@@ -1833,15 +1845,24 @@ function initGermanDrill() {
             // strictly governed by microphone audio volume monitoring via AudioContext.
 
             s.recognition.onresult = event => {
+                if (s.finished || s.discard) return;
                 let finalStr = "";
                 let interimStr = "";
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const trans = event.results[i][0].transcript;
                     if (event.results[i].isFinal) finalStr += trans;
-                    else interimStr += trans;
+                    else if (!s.stopping) interimStr += trans;
                 }
-                if (finalStr) s.raw += finalStr;
-                s.interim = interimStr;
+                if (finalStr) {
+                    s.raw += finalStr;
+                    if (s.stopping) s.interim = "";
+                }
+                if (!s.stopping) {
+                    s.interim = interimStr;
+                }
+                if (firstRecognizedAt === null && hasRecognizedText()) {
+                    firstRecognizedAt = Date.now();
+                }
             };
 
             s.recognition.onerror = event => {
@@ -1955,7 +1976,7 @@ function initGermanDrill() {
         // 1. 5s limit before speech starts (Autostop ON only)
         if (!s.manual) {
             s.timers.push(setTimeout(() => {
-                if (!s.speechStarted && !hasRecognizedText()) {
+                if (!s.speechStarted && !hasProtected5sStt()) {
                     s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
                 }
             }, 5000));
