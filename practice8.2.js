@@ -1458,7 +1458,7 @@ async function record(key, r) {
 
         if (
             !s.discard &&
-            (s.heard || hasNormRaw) &&
+            hasNormRaw &&
             s.chunks.length
         ) {
             const url = URL.createObjectURL(
@@ -1489,7 +1489,7 @@ async function record(key, r) {
         showResult(
             key,
             s.notice ||
-            (!s.raw.trim() && !saved.get(key)?.url ? "No speech recognized." : "")
+            (!s.discard && s.heard && !hasNormRaw ? "No transcription available." : (!s.raw.trim() && !saved.get(key)?.url ? "No speech recognized." : ""))
         );
 
         sync();

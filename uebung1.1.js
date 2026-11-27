@@ -1742,15 +1742,9 @@ function initGermanDrill() {
                     variety: currentVariety
                 });
             } else if (hasValidAudio) {
-                if (previous.url) {
-                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
-                }
-                saved.delete(key);
+                // Keep existing saved entry and audio URL when STT is empty
             } else if (s.speechStarted && !hasValidAudio) {
-                if (previous.url) {
-                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
-                }
-                saved.delete(key);
+                // Keep existing saved entry and audio URL when STT is empty
             }
 
             s.chunks = [];

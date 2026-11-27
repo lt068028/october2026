@@ -1289,7 +1289,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.waitForTimeout(180);
   eq(await p.evaluate(() => audit82.saved.get('any-3-a:fixed')?.raw), '先生に何か聞きます', 'Trailing isFinal during stopping replaces interim without duplication');
 
-  // Scenario 5: s.heard === true with empty STT still saves as mismatch
+  // Scenario 5: s.heard === true with empty STT preserves prior saved entry and shows No transcription available.
   await p.evaluate(() => { t.speaking = true; });
   const s5RecCount = await p.evaluate(() => t.recognitions.length);
   await s4Row.locator('.drill-record-btn').click();
@@ -1299,8 +1299,9 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.waitForTimeout(150);
   eq(await p.evaluate(() => ({
     raw: audit82.saved.get('any-3-a:fixed')?.raw,
-    status: audit82.saved.get('any-3-a:fixed')?.status
-  })), { raw: '', status: 'mismatch' }, 'Empty STT with s.heard === true saves as mismatch');
+    hasUrl: Boolean(audit82.saved.get('any-3-a:fixed')?.url),
+    notice: document.querySelector('tr[data-row="any-3-a"] .p82-notice, tr[data-row="any-3-a"] .result-text')?.textContent || ''
+  })).then(r => ({ raw: r.raw, hasUrl: r.hasUrl, hasNotice: r.notice.includes('No transcription available.') })), { raw: '先生に何か聞きます', hasUrl: true, hasNotice: true }, 'Empty STT with s.heard === true preserves prior saved entry and shows No transcription available.');
 
   // Scenario 6: Manual mode has NO 5s timeout even with speaking: false and no STT
   await p.evaluate(() => { t.speaking = false; });
