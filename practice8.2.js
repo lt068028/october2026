@@ -1458,14 +1458,13 @@ async function record(key, r) {
 
         if (
             !s.discard &&
-            hasNormRaw &&
-            s.chunks.length
+            hasNormRaw
         ) {
-            const url = URL.createObjectURL(
+            const url = s.chunks.length ? URL.createObjectURL(
                 new Blob(s.chunks, {
-                    type: s.recorder.mimeType || "audio/webm"
+                    type: s.recorder?.mimeType || "audio/webm"
                 })
-            );
+            ) : null;
 
             if (previous.url) {
                 URL.revokeObjectURL(previous.url);

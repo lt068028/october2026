@@ -1812,5 +1812,33 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(ex1Playback.isPlaying, true, 'P8.2 Ex1 enters is-playing state');
   eq(ex1Playback.stoppedAfterEnd, true, 'P8.2 Ex1 restores stop SVG on end');
 
+  // Valid STT with empty audio chunks (url: null, 0 play buttons, Copy enabled)
+  const chunklessValidStt = await p.evaluate(() => {
+    const savedBackup = new Map(saved);
+    saved.clear();
+    const r = rowsFor(0)[0][0];
+    const k = keyFor(r);
+    saved.set(k, { url: null, raw: '何か食べます', refs: r.refs, status: 'accepted', correct: true });
+    showResult(k);
+    updateCopyButtons82();
+    const playBtns = document.querySelectorAll(`tr[data-row="${r.id}"] .play-recording-btn`).length;
+    const copyBtn = document.querySelector('.p82-copy-area[data-drill-index="0"] .p82-copy-button');
+    const entries = entriesFor82(0);
+    const res = {
+      raw: saved.get(k)?.raw,
+      url: saved.get(k)?.url,
+      status: saved.get(k)?.status,
+      playBtns,
+      copyEnabled: copyBtn ? !copyBtn.disabled : false,
+      inCopy: entries.some(e => e.includes('何か食べます')),
+    };
+    saved.clear();
+    savedBackup.forEach((v, kv) => saved.set(kv, v));
+    showResult(k);
+    updateCopyButtons82();
+    return res;
+  });
+  eq(chunklessValidStt, { raw: '何か食べます', url: null, status: 'accepted', playBtns: 0, copyEnabled: true, inCopy: true }, 'P8.2 valid STT without audio chunks saves with url: null, 0 play buttons, and enables Copy');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
