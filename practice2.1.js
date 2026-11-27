@@ -3186,9 +3186,3 @@ if (document.readyState === 'loading') {
 } else {
     mountCopyAreas21();
 }
-
-if (document.querySelector('.practice21-page .p82-guide-tip-wrap')) {
-    window.DrillTooltips?.initGuideTooltips({
-        selector: '.practice21-page .p82-guide-tip-wrap',
-    });
-}
