@@ -50,19 +50,40 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  for(const style of ['formal','informal','casual']){
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   for(let i=0;i<5;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="${i%2?'yes':'no'}"]`).click();
-  const labelText=await p.evaluate(()=>({ex1:document.querySelectorAll('#drill1 .p82-concept-japanese')[1]?.textContent,guide:document.querySelector('#drill3 .info-panel-desc')?.textContent}));
+  const labelInfo=await p.evaluate(()=>{
+   const ja=document.querySelectorAll('#drill1 .p82-concept-japanese')[1];
+   const neg=ja?.querySelector('.degree-negative');
+   const mo=ja?.querySelector('.p82-indefinite-nothing');
+   const negStyle=neg?getComputedStyle(neg):null;
+   const moStyle=mo?getComputedStyle(mo):null;
+   return {
+    ex1:ja?.textContent,
+    guide:document.querySelector('#drill3 .info-panel-desc')?.textContent,
+    negText:neg?.textContent||'',
+    negColor:negStyle?.color||'',
+    moColor:moStyle?.color||'',
+    negWeight:negStyle?.fontWeight||''
+   };
+  });
   const expectedNegative=style==='formal'?'何も〜ません':'何も〜ない';
-  eq(labelText.ex1,expectedNegative,style+' Ex1 negative label');
-  eq(labelText.guide.includes(expectedNegative),true,style+' Drill 3 negative guide');
+  const expectedEnding=style==='formal'?'〜ません':'〜ない';
+  eq(labelInfo.ex1,expectedNegative,style+' Ex1 negative label');
+  eq(labelInfo.guide.includes(expectedNegative),true,style+' Drill 3 negative guide');
+  eq(labelInfo.negText,expectedEnding,style+' Ex1 negative ending wrapped in .degree-negative');
+  eq(labelInfo.negColor,'rgb(225, 29, 72)',style+' Ex1 negative ending has semantic negative color');
+  eq(labelInfo.negColor,labelInfo.moColor,style+' Ex1 negative ending matches も negative color');
+  eq(labelInfo.negWeight,'700',style+' Ex1 negative ending is bold 700');
   const result=await p.evaluate(()=>[0,1,2,3].flatMap(si=>window.audit82.rowsFor(si).flat()).map(r=>[
    window.audit82.matchesAnswer(r.text,r),window.audit82.matchesAnswer(r.hira,r),window.audit82.matchesAnswer(r.text+'猫',r)
   ]));
   for(const [i,checks]of result.entries())eq(checks,[true,true,false],`${style} model/readings/rejection ${i}`);
  }
 
- // Hiragana display follows the selected Speech Style for both explanatory labels.
+ // Hiragana display follows the selected Speech Style for both explanatory labels and negative ending color.
  await p.locator('#scriptModeControl [data-value="hiragana"]').click();
  eq(await p.locator('#drill1 .p82-concept-japanese').nth(1).textContent(),'なにも〜ない','Hiragana Ex1 informal/casual negative label');
+ eq(await p.locator('#drill1 .p82-concept-japanese').nth(1).locator('.degree-negative').textContent(),'〜ない','Hiragana Ex1 informal/casual .degree-negative text');
+ eq(await p.locator('#drill1 .p82-concept-japanese').nth(1).locator('.degree-negative').evaluate(e=>getComputedStyle(e).color),'rgb(225, 29, 72)','Hiragana Ex1 informal/casual .degree-negative color');
  eq((await p.locator('#drill3 .info-panel-desc').textContent()).includes('なにも〜ない'),true,'Hiragana Drill 3 informal/casual negative guide');
  await p.locator('#scriptModeControl [data-value="kanji"]').click();
 
@@ -148,6 +169,48 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false,`page fits ${width}px ${theme}`);
  }
  await p.emulateMedia({colorScheme:'light'});
+ for(const mode of ['kanji','hiragana']){
+  await p.locator(`#scriptModeControl [data-value="${mode}"]`).click();
+  for(const width of [600,900,1440]){
+   await p.setViewportSize({width,height:1000});
+   await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+   const ex2Audit=await p.evaluate(()=>{
+    const labels=[...document.querySelectorAll('#drill2 .p82-concept-label')];
+    const ja0=labels[0]?.querySelector('.p82-concept-japanese');
+    const en0=labels[0]?.querySelector('.p82-concept-english');
+    const txt0=en0?.querySelector('.p82-translation-text');
+    const ja1=labels[1]?.querySelector('.p82-concept-japanese');
+    const en1=labels[1]?.querySelector('.p82-concept-english');
+    const txt1=en1?.querySelector('.p82-translation-text');
+    if(!ja0||!en0||!txt0||!ja1||!en1||!txt1)return null;
+    const ja0Rect=ja0.getBoundingClientRect(),en0Rect=en0.getBoundingClientRect();
+    const ja1Rect=ja1.getBoundingClientRect(),en1Rect=en1.getBoundingClientRect();
+    return {
+     jaTexts:[ja0.textContent,ja1.textContent],
+     enTexts:[txt0.textContent,txt1.textContent],
+     unspecUncropped:txt0.scrollWidth<=txt0.clientWidth+1,
+     specUncropped:txt1.scrollWidth<=txt1.clientWidth+1,
+     unspecWiderThanSpec:en0Rect.width>en1Rect.width+10,
+     anchorGap12:Math.abs((en0Rect.left-ja0Rect.right)-12)<1,
+     secondGapAtLeast12:(en1Rect.left-ja1Rect.right)>=11.5,
+     rightAligned:Math.abs(en0Rect.right-en1Rect.right)<1
+    };
+   });
+   eq(ex2Audit,{
+    jaTexts:mode==='kanji'?['何か','何を']:['なにか','なにを'],
+    enTexts:['Unspecified','Specific'],
+    unspecUncropped:true,
+    specUncropped:true,
+    unspecWiderThanSpec:true,
+    anchorGap12:true,
+    secondGapAtLeast12:true,
+    rightAligned:true
+   },`Ex2 Unspecified uncropped and 12px anchor aligned at ${mode}/${width}px`);
+  }
+ }
+ await p.locator('#scriptModeControl [data-value="kanji"]').click();
+ await p.setViewportSize({width:1440,height:1000});
+ await p.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
   // Typography & Computed Font Size Verification (18.2px / 20.8px / 15.6px)
   // 1. Normal STT extracted text: 20.8px
   eq(await p.locator('[data-row="any-0-a"] .result-text').evaluate(el=>getComputedStyle(el).fontSize),'20.8px','Practice 8.2 normal STT text font size is 20.8px');

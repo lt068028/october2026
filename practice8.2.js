@@ -279,7 +279,7 @@ function indefiniteHTML(text,withHint=false,withWhatHint=false){
 function conceptHTML(text){
  const mark=Object.keys(indefiniteParts).find(t=>text.startsWith(t));
  const rest=mark?text.slice(mark.length):text;
- return (mark?indefiniteHTML(mark):'')+escape(rest).replace(/〜ません/,'<span class="degree-negative">〜ません</span>').replace(' — ','<span class="p82-concept-separator"> — </span>');
+ return (mark?indefiniteHTML(mark):'')+escape(rest).replace(/〜(?:ません|ない)/,'<span class="degree-negative">$&</span>').replace(' — ','<span class="p82-concept-separator"> — </span>');
 }
 function modelHTML(r,{withWordTooltips=true}={}){
  const text=scriptMode==='kanji'?r.text:r.hira;
@@ -1219,11 +1219,11 @@ function renderEnglishCuePanel(){
 function measureExampleColumns(){
  // Measure uncropped content, not the result of the previous layout pass.
  function intrinsic(element){const copy=element.cloneNode(true);copy.querySelectorAll('.tooltip-tip,.custom-tip-box').forEach(t=>t.remove());const isButton=element.matches('button'),comp=getComputedStyle(element);Object.assign(copy.style,{position:'absolute',visibility:'hidden',display:isButton&&comp.display.includes('flex')?'inline-flex':'inline-block',alignItems:comp.alignItems,justifyContent:comp.justifyContent,padding:comp.padding,border:comp.border,boxSizing:comp.boxSizing,width:'max-content',minWidth:isButton?(comp.minWidth!=='0px'&&comp.minWidth!=='auto'?comp.minWidth:'46.8px'):'0',maxWidth:'none',whiteSpace:'nowrap',transform:'none'});element.parentElement.append(copy);let width=copy.getBoundingClientRect().width;if(isButton)width=Math.max(width,46.8);copy.remove();return width;}
- for(const [drillId,widthVar] of [['drill1','--p82-ex1-concept-width'],['drill2','--p82-ex2-concept-width']]){
+ for(const [drillId,widthVar,anchorIndex] of [['drill1','--p82-ex1-concept-width',1],['drill2','--p82-ex2-concept-width',0]]){
   const intro=document.querySelector('#'+drillId+' .example-box');if(!intro)continue;
   const labels=[...intro.querySelectorAll('.p82-concept-label')];
-  // The second comparison row is the Japanese/English 12px anchor in each Ex.
-  const anchor=labels[1];if(!anchor)continue;
+  // Ex1 uses row 2 (〜ません/〜ない + None) and Ex2 uses row 1 (何か + Unspecified) as the 12px anchor.
+  const anchor=labels[anchorIndex];if(!anchor)continue;
   let japaneseWidth=0;
   for(const label of labels){const width=intrinsic(label.querySelector('.p82-concept-japanese'));label.style.setProperty('--p82-japanese-width',width+'px');japaneseWidth=Math.max(japaneseWidth,width);}
   const natural=intrinsic(anchor.querySelector('.p82-concept-japanese'))+intrinsic(anchor.querySelector('.p82-concept-english'))+12;
