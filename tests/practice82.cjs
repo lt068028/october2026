@@ -19,7 +19,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.locator('.optional-particle .tooltip-tip').textContent(),'The particle を is optional and usually omitted after 何か.','optional particle explanation');
  for(const [n,rows]of [[1,4],[2,8],[3,10],[4,6]])eq(await p.locator(`#drill${n} tr`).count(),rows,`Drill ${n} rows`);
  eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
- eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');
+ eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何か vs 何を — Questions','Drill 2 title');
+ eq(await p.locator('#drill2 .info-panel-desc').textContent(),'Use 何か to ask about an unspecified item, or 何を to ask what specifically.','Drill 2 instruction');
  eq(await p.locator('#drill3 .info-panel-title').textContent(),'Drill 3: 何か／何も — Yes/No Questions','Drill 3 title');
  eq(await p.locator('#drill2 .p82-concept-japanese').allTextContents(),['何か','何を'],'Ex2 label order');
  eq(await p.locator('#drill2 .p82-model-translation').allTextContents(),['— Do you watch anything?','— What do you watch?'],'Ex2 Watch translations');
