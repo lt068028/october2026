@@ -402,7 +402,7 @@ const escape = s => String(s).replace(
 
 // 確定済みの教材内容
 words.car = W('車', 'くるま', 'kuruma', 'car');
-words.hold = W('持つ', 'もつ', 'motsu', 'to have / own');
+words.hold = W('持つ', 'もつ', 'motsu', 'to have');
 words.do = W(
     '何をする',
     'なにをする',
