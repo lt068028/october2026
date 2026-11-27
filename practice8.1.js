@@ -1849,6 +1849,9 @@ function init() {
     setupUnlearnedAccordion();
 
     render();
+    if (document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap')) {
+        window.DrillTooltips?.initGuideTooltips({ selector: '.stt-guide-standalone .p82-guide-tip-wrap' });
+    }
 }
 
 // Practice 8.1 Copy: page-owned recording keys and results.
