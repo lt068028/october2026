@@ -1864,5 +1864,52 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     playBtns: document.querySelectorAll('tr[data-row="any-3-a"] .play-recording-btn').length,
   })), { raw: '先生に何か聞きます', url: null, playBtns: 0 }, 'P8.2 real finish() with empty chunks saves valid STT with url: null and 0 play buttons');
 
+  // C1 regression: URL.createObjectURL / URL.revokeObjectURL throwing exceptions still saves valid STT
+  await p.evaluate(() => {
+    window.__origCreateObjUrl = URL.createObjectURL;
+    window.__origRevokeObjUrl = URL.revokeObjectURL;
+    URL.createObjectURL = () => { throw new Error('createObjectURL failed'); };
+    audit82.saved.delete('any-3-a:fixed');
+    t.speaking = true;
+  });
+  const c1CreateCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, c1CreateCount);
+  await p.evaluate(() => {
+    const r = t.recognitions.at(-1);
+    r?.onresult?.({ results: [[{ transcript: '先生に何か聞きます' }]], resultIndex: 0 });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  eq(await p.evaluate(() => ({
+    raw: audit82.saved.get('any-3-a:fixed')?.raw,
+    url: audit82.saved.get('any-3-a:fixed')?.url,
+  })), { raw: '先生に何か聞きます', url: null }, 'P8.2 finish() saves valid STT with url: null even when URL.createObjectURL throws');
+
+  await p.evaluate(() => {
+    URL.createObjectURL = window.__origCreateObjUrl;
+    URL.revokeObjectURL = () => { throw new Error('revokeObjectURL failed'); };
+    audit82.saved.set('any-3-a:fixed', { raw: '先生に何か聞きます', url: 'blob:prev-c1', refs: ['先生に何か聞きます'], status: 'accepted', correct: true });
+    t.speaking = true;
+  });
+  const c1RevokeCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, c1RevokeCount);
+  await p.evaluate(() => {
+    const r = t.recognitions.at(-1);
+    r?.onresult?.({ results: [[{ transcript: '先生に何か聞きます' }]], resultIndex: 0 });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  eq(await p.evaluate(() => {
+    const res = {
+      raw: audit82.saved.get('any-3-a:fixed')?.raw,
+      hasNewUrl: Boolean(audit82.saved.get('any-3-a:fixed')?.url) && audit82.saved.get('any-3-a:fixed')?.url !== 'blob:prev-c1',
+    };
+    URL.createObjectURL = window.__origCreateObjUrl;
+    URL.revokeObjectURL = window.__origRevokeObjUrl;
+    return res;
+  }), { raw: '先生に何か聞きます', hasNewUrl: true }, 'P8.2 finish() saves new valid STT even when URL.revokeObjectURL throws');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
