@@ -300,7 +300,7 @@ node tests/relay-zero-gap.cjs
 - **`node tests/copy81.cjs`**: 8.1 Drill 1〜5のCopyボタン配置・有効化、コピー本文、Copied表示・復帰、クリップボード失敗時の動作。
 - **`node tests/practice82.cjs`**: 8.2 全モデル、3文体/2表記/3ヒント、否定形、短答、Incomplete表示・5秒STT保護・フィラー、0秒リレー、録音保持の検証。
 - **`node tests/practice82-example-layout.cjs`**: 8.2 Ex1〜Ex4の配置、英語右端整列、非クリップ検証（`P82_LAYOUT_BASELINE` で比較可能）。
-- **`node tests/copy82.cjs` / `node tests/copy83.cjs`**: 8.2 / 8.3 のCopyボタン・出力内容・状態保持の検証。現行copy82.cjsには、Drill 1回答後もDrill 2ボタンを無効とする累積Copy仕様以前の期待値が残っており、後続のテスト改修対象。
+- **`node tests/copy82.cjs` / `node tests/copy83.cjs`**: 8.2 / 8.3 のCopyボタン・出力内容・状態保持の検証。Practice 8.2では、各DrillのCopyボタンはそのDrill自身に有効な保存済みSTTがある場合に個別に有効化し、押下時のコピー本文は`PROJECT_SPEC.md` §7.2に従って同一学習単位内の先頭から押下対象Drillまで累積する。後続Drillや独立した学習単位は含めない。
 - **`node tests/practice83-speech-style.cjs`**: 8.3 スピーチスタイル（文体）、TTS入力文、保存状態維持の検証。
 
 #### 共通Beyond（未習語彙・漢字アコーディオン）

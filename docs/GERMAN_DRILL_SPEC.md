@@ -202,7 +202,10 @@
 - **言語設定**：recognition.langには選択中の地域ロケール（de-DE、de-AT、de-CH）を明示設定する。
 - **音響検出と文字起こしの分離管理**：音響検出フラグ（speechStarted）と認識テキスト（raw / interim）を独立して管理する。認識イベントだけでマイク音響の発話検知済み状態にしない。5秒タイムアウト保護の条件はPROJECT_SPEC.md §5.2.2を参照する。
 - **録音音声の保存条件**：発話検出または有効なSTT認識テキストがあり、有効なマイク録音データ（非空chunks）と空白だけではないSTT原文の両方が得られた場合に限り、録音音声Blob／再生URLを保存する。STTが有効でも録音データが欠損している場合は再生URLを生成しない。判定・Copy用raw STTは認識原文のまま保持し、画面表示用の加工を保存値へ書き戻さない。
-- **STTが空の場合**：発話が検知されてもSTT原文が空なら録音音声は保存せず、録音再生ボタンも表示しない。No transcription available.を表示する。
+- **発話検知あり・STT原文空の場合（有効な録音データあり）**：`speechStarted`で発話が検知され、非空の録音データ（`chunks`）が得られている一方、STT原文が空または空白のみの場合、新しい保存用録音Blob／ObjectURLを生成・保存せず、空の回答エントリも保存しない。Auto-Compareリレーも開始しない。
+- **同じ行に既存の有効回答がある場合**：既存のraw STT・判定結果・録音音声URL・Copy対象状態を上書き・削除せず保持し、既存URLをrevokeしない。以前の回答を結果欄に表示したまま、下段に`.result-notice`として`No transcription available.`を一時表示する。既存URLがある場合は、それに紐づく録音再生ボタンも引き続き利用可能とする。通知は保存回答・Copy本文には含めない。
+- **同じ行に既存回答がない場合**：空の回答エントリを作成せず、結果欄に`No transcription available.`を表示する。録音再生ボタンは表示せず、Copy対象にも含めない。
+- **録音データ欠損・別の停止理由との区別**：発話検知があっても録音データ（`chunks`）を取得できなかった場合は、`No transcription available.`ではなく`Recording error.`として扱う。発話開始前5秒タイムアウトは`No speech detected within 5 seconds.`を維持し、その他の録音／認識エラー表示も変更しない。
 - **フィラー正規化**：判定用のフィラー除去はPROJECT_SPEC.md §6.4.3に従う。Germanの登録語、単語境界、非登録語（ohを含む）の扱いを本書で別定義しない。
 - **STT認識エラーまたは開始例外**：recognition.onerrorまたはrecognition.start()の例外ではRecognition error.を表示し、空STTのため録音音声・再生URLを保存しない。再生ボタンも表示しない。
 - **録音処理自体の失敗**：有効な録音データを取得できない場合はRecording error.として区別する。
