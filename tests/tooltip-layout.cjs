@@ -1161,5 +1161,155 @@ const root=path.resolve(__dirname,'..'),key='october2026.practice12.displaySize'
    }
  }
 
+ // Composition 1 / Pronunciation 2 standalone 4-step STT learning guide verification
+ for (const pageFile of ['composition1.html', 'pronunciation2.html']) {
+   for (const scheme of ['light', 'dark']) {
+     for (const vpWidth of [600, 1440]) {
+       const cpCtx = await browser.newContext({ colorScheme: scheme, viewport: { width: vpWidth, height: 900 } });
+       const cp = await cpCtx.newPage();
+       const cpErrors = [];
+       cp.on('pageerror', e => cpErrors.push(e.message));
+       cp.on('console', msg => {
+         if (msg.type() === 'error') cpErrors.push(msg.text());
+       });
+       await cp.goto(base + '/' + pageFile, { waitUntil: 'load' });
+       await cp.waitForSelector('.stt-guide-standalone .p82-guide-step-card');
+
+       const guideAudit = await cp.evaluate(file => {
+         const wrap = document.querySelector('.stt-guide-standalone');
+         const nextSection = document.getElementById('drill1Container') || document.querySelector('section.practice-section');
+         const infoPanel = nextSection ? nextSection.querySelector('.info-panel') : null;
+         const cards = document.querySelectorAll('.stt-guide-standalone .p82-guide-step-card');
+         const step1Half = document.querySelector('.stt-guide-standalone .p82-guide-half-you');
+         const goalHalf = document.querySelector('.stt-guide-standalone .p82-guide-goal-half');
+         const miniBtn = document.querySelector('.stt-guide-standalone .p82-guide-mini-btn');
+         const step1Bg = step1Half ? getComputedStyle(step1Half).backgroundColor : 'rgba(0, 0, 0, 0)';
+         const goalBg = goalHalf ? getComputedStyle(goalHalf).backgroundColor : 'rgba(0, 0, 0, 0)';
+         const miniCs = miniBtn ? getComputedStyle(miniBtn) : null;
+         const recToggle = document.getElementById('toggleRecordMode');
+         const playToggle = document.getElementById('togglePlaybackMode');
+         const guideRect = wrap ? wrap.getBoundingClientRect() : null;
+         const secRect = nextSection ? nextSection.getBoundingClientRect() : null;
+         const panelRect = infoPanel ? infoPanel.getBoundingClientRect() : null;
+         const sectionGap = guideRect && secRect ? secRect.top - guideRect.bottom : -1;
+         const panelGap = guideRect && panelRect ? panelRect.top - guideRect.bottom : -1;
+         const expectedRecChecked = file === 'composition1.html';
+         return {
+           visible: Boolean(guideRect && guideRect.width > 0 && guideRect.height > 0),
+           stepCount: cards.length,
+           surfaceDrawn: step1Bg !== 'rgba(0, 0, 0, 0)' && goalBg !== 'rgba(0, 0, 0, 0)',
+           borderDrawn: Boolean(miniCs && miniCs.borderTopWidth === '1px' && miniCs.borderTopColor !== 'rgba(0, 0, 0, 0)'),
+           gapOk: sectionGap >= 28 && panelGap >= 28,
+           recordToggleCount: document.querySelectorAll('#toggleRecordMode').length,
+           playbackToggleCount: document.querySelectorAll('#togglePlaybackMode').length,
+           topRightColCount: document.querySelectorAll('.p82-top-right-col').length,
+           togglesInSettings: Boolean(
+             recToggle &&
+             playToggle &&
+             recToggle.checked === expectedRecChecked &&
+             playToggle.checked === true &&
+             recToggle.closest('.compact-settings') &&
+             recToggle.closest('.settings-auto-row') &&
+             !recToggle.closest('.stt-guide-standalone') &&
+             playToggle.closest('.compact-settings') &&
+             playToggle.closest('.settings-auto-row') &&
+             !playToggle.closest('.stt-guide-standalone')
+           ),
+           noOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+         };
+       }, pageFile);
+       check(guideAudit, {
+         visible: true,
+         stepCount: 4,
+         surfaceDrawn: true,
+         borderDrawn: true,
+         gapOk: true,
+         recordToggleCount: 1,
+         playbackToggleCount: 1,
+         topRightColCount: 0,
+         togglesInSettings: true,
+         noOverflow: true,
+       }, `${pageFile} (${scheme}/${vpWidth}px) standalone 4-step guide surface/border, >=28px section/panel gap, toggles in .compact-settings/.settings-auto-row, no overflow`);
+
+       if (scheme === 'light' && vpWidth === 1440) {
+         // 1. Independent Mouse Hover check
+         const tipBtn = cp.locator('.stt-guide-standalone .p82-guide-tip-wrap').first();
+         await tipBtn.hover();
+         await cp.waitForTimeout(80);
+         const hoverAudit = await cp.evaluate(() => {
+           const host = document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap');
+           const b = document.getElementById('p82RecognitionTipInline');
+           if (!host || !b) return null;
+           const hr = host.getBoundingClientRect();
+           const r = b.getBoundingClientRect();
+           const cs = getComputedStyle(b);
+           const dynamicCoords = /^\d+px$/.test(b.style.left) && /^\d+px$/.test(b.style.top);
+           const nearAnchor = Math.abs(r.top - hr.bottom - 8) <= 2 || Math.abs(hr.top - r.bottom - 8) <= 2;
+           const inVp = r.left >= 12 && r.right <= window.innerWidth - 12 && r.top >= 12 && r.bottom <= window.innerHeight - 12;
+           return { visible: cs.visibility === 'visible' && cs.opacity === '1' && r.width > 0, dynamicCoords, nearAnchor, inVp };
+         });
+         check(hoverAudit, { visible: true, dynamicCoords: true, nearAnchor: true, inVp: true }, `${pageFile} Step 3 tooltip opens on hover with dynamic coordinates near anchor within viewport`);
+         await cp.mouse.move(0, 0);
+         await cp.waitForTimeout(50);
+
+         // 2. Real Tab key focus -> Scroll & Viewport Resize tracking while focused -> Escape dismissal
+         await cp.keyboard.press('Tab');
+         let focusedGuide = false;
+         for (let k = 0; k < 25; k++) {
+           focusedGuide = await cp.evaluate(() => Boolean(document.activeElement?.matches?.('.stt-guide-standalone .p82-guide-tip-wrap')));
+           if (focusedGuide) break;
+           await cp.keyboard.press('Tab');
+         }
+         await cp.waitForTimeout(80);
+         const tabBefore = await cp.evaluate(() => {
+           const b = document.getElementById('p82RecognitionTipInline');
+           const r = b ? b.getBoundingClientRect() : null;
+           const cs = b ? getComputedStyle(b) : null;
+           return b && r && cs ? {
+             visible: cs.visibility === 'visible' && cs.opacity === '1' && r.width > 0,
+             dynamicCoords: /^\d+px$/.test(b.style.left) && /^\d+px$/.test(b.style.top),
+             left: parseFloat(b.style.left),
+             top: parseFloat(b.style.top),
+             inVp: r.left >= 12 && r.right <= window.innerWidth - 12 && r.top >= 12 && r.bottom <= window.innerHeight - 12,
+           } : null;
+         });
+         check(Boolean(focusedGuide && tabBefore?.visible && tabBefore?.dynamicCoords && tabBefore?.inVp), true, `${pageFile} Step 3 tooltip opens via real Tab focus with dynamic coordinates within viewport`);
+
+         // Scroll & Viewport Resize while holding Tab focus
+         await cp.evaluate(() => window.scrollBy(0, 40));
+         await cp.setViewportSize({ width: 600, height: 900 });
+         await cp.waitForTimeout(100);
+         const tabAfterMove = await cp.evaluate(() => {
+           const b = document.getElementById('p82RecognitionTipInline');
+           const r = b ? b.getBoundingClientRect() : null;
+           const cs = b ? getComputedStyle(b) : null;
+           return b && r && cs ? {
+             visible: cs.visibility === 'visible' && cs.opacity === '1',
+             left: parseFloat(b.style.left),
+             top: parseFloat(b.style.top),
+             inVp: r.left >= 12 && r.right <= window.innerWidth - 12 && r.top >= 12 && r.bottom <= window.innerHeight - 12,
+           } : null;
+         });
+         check(Boolean(tabAfterMove?.visible && tabAfterMove?.inVp && (tabAfterMove.left !== tabBefore.left || tabAfterMove.top !== tabBefore.top)), true, `${pageFile} Step 3 tooltip stays visible, updates coordinates, and stays within viewport on scroll/resize while Tab-focused`);
+
+         // Escape key dismissal while Tab-focused
+         await cp.keyboard.press('Escape');
+         await cp.waitForTimeout(60);
+         const afterEsc = await cp.evaluate(() => {
+           const host = document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap');
+           const b = document.getElementById('p82RecognitionTipInline');
+           return {
+             suppressed: host?.getAttribute('data-guide-tip-suppressed') === 'true',
+             hidden: b ? getComputedStyle(b).visibility === 'hidden' : false,
+           };
+         });
+         check(afterEsc, { suppressed: true, hidden: true }, `${pageFile} Step 3 tooltip closes on Escape while Tab-focused`);
+       }
+       check(cpErrors, [], `${pageFile} (${scheme}/${vpWidth}px) no pageerror or console.error`);
+       await cpCtx.close();
+     }
+   }
+ }
+
  await browser.close();console.log('PASS tooltip layout',checks);
 })().catch(e=>{console.error(e);process.exit(1)});
