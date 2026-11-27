@@ -2162,20 +2162,18 @@ function initGermanDrill() {
     }
 
     function updateCopyButtons() {
-        let hasAnyUpTo = false;
         drillsData.forEach(drill => {
             const hasDrillRecordings = drill.items.some(item => {
                 const s = saved.get(item.id);
                 return Boolean(s?.raw && s.judgment !== "empty");
             });
-            if (hasDrillRecordings) hasAnyUpTo = true;
 
             const area = document.querySelector(`.uebung-copy-area[data-drill="${drill.number}"]`);
             if (!area) return;
             const btn = area.querySelector(".uebung-copy-button");
             if (!btn) return;
 
-            btn.disabled = Boolean(session || preparing || !hasAnyUpTo);
+            btn.disabled = Boolean(session || preparing || !hasDrillRecordings);
             btn.style.setProperty("cursor", btn.disabled ? "default" : "pointer", "important");
         });
     }

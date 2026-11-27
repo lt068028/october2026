@@ -89,7 +89,7 @@ assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must use UI_LAYOUT_SPEC Copy help text');
 assert.ok(!js.includes('Copy all my sentences'), 'JS must not contain standalone Copy all my sentences');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
-assert.ok(js.includes('let hasAnyUpTo = false;') && js.includes('!hasAnyUpTo'), 'Copy button enabling must be cumulative (Drill 1..targetIdx)');
+assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && js.includes('!hasDrillRecordings'), 'Copy button enabling must be scoped per individual drill');
 assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
 assert.ok(js.includes('volume > 0.015') && !js.includes('volume > 0.025'), 'D1.1 speech volume threshold must unify to 0.015');
 assert.ok(js.includes('v.rec.classList.toggle("stop-btn-active", canManualStop);'), 'D1.1 must apply stop-btn-active to manual stop only');
@@ -1093,8 +1093,8 @@ async function runRecordingLifecycleTests() {
         );
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, false, false, false],
-            'Drill 1 answer must enable Drills 1-4 Copy buttons cumulatively'
+            [false, true, true, true],
+            'Drill 1 answer must enable only Drill 1 Copy button while Drills 2-4 remain disabled'
         );
 
         await clickRecordInDrill(2);
@@ -1112,8 +1112,8 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'D2 Copy setup: recording completed');
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, false, false, false],
-            'Drills 1 and 2 answers must enable Drills 1-4 Copy buttons cumulatively'
+            [false, false, true, true],
+            'Drills 1 and 2 answers must enable only Drills 1 and 2 Copy buttons while Drills 3-4 remain disabled'
         );
 
         // Pressing Drill 1's button copies only Drill 1 without Drill 2 contamination.
@@ -2163,7 +2163,7 @@ async function runRecordingLifecycleTests() {
             const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
             const copied = [];
             navigator.clipboard.writeText = async t => { copied.push(t); };
-            for (const btn of copyBtns) {
+            for (const btn of [copyBtns[0], copyBtns[2]]) {
                 btn.click();
                 await new Promise(r => setTimeout(r, 10));
             }
@@ -2177,19 +2177,18 @@ async function runRecordingLifecycleTests() {
                 perDrillCount: copyBtns.filter(Boolean).length,
                 allDisabledWhenEmpty,
                 d1Enabled: !copyBtns[0].disabled,
-                d2EnabledViaD1: !copyBtns[1].disabled,
-                d4EnabledViaD1D3: !copyBtns[3].disabled,
+                d2Disabled: copyBtns[1].disabled,
+                d3Enabled: !copyBtns[2].disabled,
+                d4Disabled: copyBtns[3].disabled,
                 copied,
             };
         });
         assert.strictEqual(cumulativeCopyD11.noCopyAllBtn, true, 'D1.1 removes #copyAllBtn and .uebung-copy-all-area');
         assert.strictEqual(cumulativeCopyD11.perDrillCount, 4, 'D1.1 keeps all 4 per-Drill Copy buttons');
         assert.strictEqual(cumulativeCopyD11.allDisabledWhenEmpty, true, 'D1.1 all Copy buttons disabled when 0 recordings');
-        assert.strictEqual(cumulativeCopyD11.d1Enabled && cumulativeCopyD11.d2EnabledViaD1 && cumulativeCopyD11.d4EnabledViaD1D3, true, 'D1.1 Copy buttons enable cumulatively');
+        assert.strictEqual(cumulativeCopyD11.d1Enabled && cumulativeCopyD11.d2Disabled && cumulativeCopyD11.d3Enabled && cumulativeCopyD11.d4Disabled, true, 'D1.1 Copy buttons enable per-Drill (D1 & D3 only)');
         assert.strictEqual(cumulativeCopyD11.copied[0].includes('Deutsche Übung 1.1 — Drill 1:') && !cumulativeCopyD11.copied[0].includes('Drill 3:'), true, 'D1.1 Drill 1 Copy outputs Drill 1 only');
-        assert.strictEqual(cumulativeCopyD11.copied[1].includes('Deutsche Übung 1.1 — Drill 1:') && !cumulativeCopyD11.copied[1].includes('Drill 2:'), true, 'D1.1 Drill 2 Copy outputs Drill 1 only (skips empty Drill 2)');
-        assert.strictEqual(cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 1:') && cumulativeCopyD11.copied[2].includes('Deutsche Übung 1.1 — Drill 3:') && !cumulativeCopyD11.copied[2].includes('Drill 2:'), true, 'D1.1 Drill 3 Copy outputs Drill 1 + Drill 3');
-        assert.strictEqual(cumulativeCopyD11.copied[3] === cumulativeCopyD11.copied[2], true, 'D1.1 Drill 4 Copy outputs Drill 1 + Drill 3 (skips empty Drill 2 & 4)');
+        assert.strictEqual(cumulativeCopyD11.copied[1].includes('Deutsche Übung 1.1 — Drill 1:') && cumulativeCopyD11.copied[1].includes('Deutsche Übung 1.1 — Drill 3:') && !cumulativeCopyD11.copied[1].includes('Drill 2:'), true, 'D1.1 Drill 3 Copy outputs Drill 1 + Drill 3');
 
         // TTS pause/cancel order & Relay 5s start timeout abort tests
         const ttsRelayAudit = await page.evaluate(async () => {

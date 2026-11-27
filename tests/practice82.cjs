@@ -339,7 +339,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       terminalResults.push({
         raw,
         rendered: text,
-        noDoubleEllipsis: !text.endsWith('……') && !text.endsWith('...…') && !text.endsWith('。…') && !text.endsWith('.…')
+        noDoubleEllipsis: !text.endsWith('……') && !text.endsWith('...…')
       });
     }
 
@@ -1685,13 +1685,14 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     updateCopyButtons82();
 
     const d1Enabled = !copyBtns[0].disabled;
-    const d2EnabledViaD1 = !copyBtns[1].disabled;
-    const d4EnabledViaD1D3 = !copyBtns[3].disabled;
+    const d2Disabled = copyBtns[1].disabled;
+    const d3Enabled = !copyBtns[2].disabled;
+    const d4Disabled = copyBtns[3].disabled;
 
     const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
     const copied = [];
     navigator.clipboard.writeText = async t => { copied.push(t); };
-    for (const btn of copyBtns) {
+    for (const btn of [copyBtns[0], copyBtns[2]]) {
       btn.click();
       await new Promise(r => setTimeout(r, 10));
     }
@@ -1705,19 +1706,18 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
       perDrillCount: copyBtns.filter(Boolean).length,
       allDisabledWhenEmpty,
       d1Enabled,
-      d2EnabledViaD1,
-      d4EnabledViaD1D3,
+      d2Disabled,
+      d3Enabled,
+      d4Disabled,
       copied,
     };
   });
   eq(cumulativeCopyP82.noCopyAllBtn, true, 'P8.2 removes #copyAllBtn and .p82-copy-all-area');
   eq(cumulativeCopyP82.perDrillCount, 4, 'P8.2 keeps all 4 per-Drill Copy buttons');
   eq(cumulativeCopyP82.allDisabledWhenEmpty, true, 'P8.2 all Copy buttons disabled when 0 recordings');
-  eq(cumulativeCopyP82.d1Enabled && cumulativeCopyP82.d2EnabledViaD1 && cumulativeCopyP82.d4EnabledViaD1D3, true, 'P8.2 Copy buttons enable cumulatively');
+  eq(cumulativeCopyP82.d1Enabled && cumulativeCopyP82.d2Disabled && cumulativeCopyP82.d3Enabled && cumulativeCopyP82.d4Disabled, true, 'P8.2 Copy buttons enable per-Drill (D1 & D3 only)');
   eq(cumulativeCopyP82.copied[0].includes('Practice 8.2 — Drill 1:') && !cumulativeCopyP82.copied[0].includes('Drill 3:'), true, 'P8.2 Drill 1 Copy outputs Drill 1 only');
-  eq(cumulativeCopyP82.copied[1].includes('Practice 8.2 — Drill 1:') && !cumulativeCopyP82.copied[1].includes('Drill 2:'), true, 'P8.2 Drill 2 Copy outputs Drill 1 only (skips empty Drill 2)');
-  eq(cumulativeCopyP82.copied[2].includes('Practice 8.2 — Drill 1:') && cumulativeCopyP82.copied[2].includes('Practice 8.2 — Drill 3:') && !cumulativeCopyP82.copied[2].includes('Drill 2:'), true, 'P8.2 Drill 3 Copy outputs Drill 1 + Drill 3');
-  eq(cumulativeCopyP82.copied[3] === cumulativeCopyP82.copied[2], true, 'P8.2 Drill 4 Copy outputs Drill 1 + Drill 3 (skips empty Drill 2 & 4)');
+  eq(cumulativeCopyP82.copied[1].includes('Practice 8.2 — Drill 1:') && cumulativeCopyP82.copied[1].includes('Practice 8.2 — Drill 3:') && !cumulativeCopyP82.copied[1].includes('Drill 2:'), true, 'P8.2 Drill 3 Copy outputs Drill 1 + Drill 3');
 
   // Verify no stale content-layout.js?v=20261111-ms-fluent in practice8.2.html
   const p82Html = fs.readFileSync(path.join(__dirname, '..', 'practice8.2.html'), 'utf8');

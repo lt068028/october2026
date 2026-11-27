@@ -736,14 +736,33 @@ function speak(text, b, done, relay = false) {
     const gen = playbackGen;
     if (!relay) markPlaying(b);
     utterance = u;
+    let started = false;
+    let startTimeoutTimer = setTimeout(() => {
+        if (gen !== playbackGen || utterance !== u || started) return;
+        DrillAudio.invalidatePlayback();
+        stopPlayback(true);
+    }, 5000);
 
     const finish = () => {
+        if (startTimeoutTimer) {
+            clearTimeout(startTimeoutTimer);
+            startTimeoutTimer = null;
+        }
         if (gen !== playbackGen || utterance !== u) return;
         if (relay) utterance = null;
         else stopPlayback(true);
         if (done) done();
     };
 
+    if (typeof u.addEventListener === 'function') {
+        u.addEventListener('start', () => {
+            started = true;
+            if (startTimeoutTimer) {
+                clearTimeout(startTimeoutTimer);
+                startTimeoutTimer = null;
+            }
+        });
+    }
     u.onend = finish;
     u.onerror = finish;
 
@@ -1922,13 +1941,12 @@ function buildCumulativeCopyText82(targetSi) {
     return blocks.join('\n\n');
 }
 function updateCopyButtons82() {
-    let hasAnyUpTo = false;
     for (let si = 0; si < 4; si += 1) {
-        if (entriesFor82(si).length > 0) hasAnyUpTo = true;
+        const hasOwn = entriesFor82(si).length > 0;
         const area = document.querySelector('.p82-copy-area[data-drill-index="' + si + '"]');
         const button = area?.querySelector('.p82-copy-button');
         if (!button) continue;
-        button.disabled = Boolean(session || preparing) || !hasAnyUpTo;
+        button.disabled = Boolean(session || preparing) || !hasOwn;
         button.style.setProperty('cursor', button.disabled ? 'default' : 'pointer', 'important');
     }
 }
