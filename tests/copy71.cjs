@@ -86,7 +86,10 @@ function ok(val, label) {
                 p7_drill_past_0: result('昨日本を読みました', true),
                 p7_drill_perf_0: result('今本を読んでいません', false),
                 p71_d2_0_q: result('何をしていますか', true),
-                p71_d2_0_yes: result('本を読んでいます', true)
+                p71_d2_0_yes: result('本を読んでいます', true),
+                p71_d2_0_no: result('いいえ、読んでいません', true),
+                p71_d2_1_yes: result('未選択の回答', true),
+                p7_drill_past_1: result('   ', true)
             });
             renderAll();
         });
@@ -141,14 +144,51 @@ function ok(val, label) {
         // Select Yes on Question 1
         await page.locator('#practice71QuestionSection .drill-row').first().locator('.answer-choice[data-answer="yes"]').click();
 
-        // Click button 1 (qa)
+        // Click button 1 (qa) -> cumulatively copies Drill 1 + Drill 2 in page order, excluding unselected/hidden answers and blank STT
         await copyButtons.nth(1).click();
         eq(await copyButtons.nth(1).locator('span').textContent(), 'Copied', 'qa button becomes Copied');
         eq(await copyButtons.nth(0).locator('span').textContent(), 'Copy my sentences', 'main button remains unaffected');
         const copiedQA = await page.evaluate(() => window.copied.at(-1));
-        eq(copiedQA, 'Practice 7.1 — Drill 2: Ask and answer — 今～ていますか — 2026-11-15\n1. Q: ✅ 何をしていますか\n1. A: ✅ 本を読んでいます', 'qa copied text format');
+        eq(
+            copiedQA,
+            'Practice 7.1 — Drill 1: Compare Habit & Ongoing — いつも～ています／今～ています — 2026-11-15\n1. Habit: ✅ 昨日本を読みました\n1. Ongoing: — 今本を読んでいません\n\nPractice 7.1 — Drill 2: Ask and answer — 今～ていますか — 2026-11-15\n1. Q: ✅ 何をしていますか\n1. A: ✅ 本を読んでいます',
+            'qa copied text format cumulatively includes Drill 1 and Drill 2'
+        );
         await page.clock.fastForward(2100);
         eq(await copyButtons.nth(1).locator('span').textContent(), 'Copy my sentences', 'qa button reverts');
+
+        // Verify per-Drill enablement and empty-Drill omission in cumulative output
+        await page.evaluate(() => {
+            delete practice71State.savedResults.p7_drill_past_0;
+            delete practice71State.savedResults.p7_drill_perf_0;
+            renderAll();
+        });
+        await page.waitForTimeout(50);
+        eq(await copyButtons.nth(0).isDisabled(), true, 'main button disabled when Drill 1 has no valid STT');
+        eq(await copyButtons.nth(1).isEnabled(), true, 'qa button remains enabled when Drill 2 has valid STT');
+        await copyButtons.nth(1).click();
+        const copiedQAOnly = await page.evaluate(() => window.copied.at(-1));
+        eq(
+            copiedQAOnly,
+            'Practice 7.1 — Drill 2: Ask and answer — 今～ていますか — 2026-11-15\n1. Q: ✅ 何をしていますか\n1. A: ✅ 本を読んでいます',
+            'qa copy omits Drill 1 header when Drill 1 has no saved STT'
+        );
+        await page.clock.fastForward(2100);
+        await page.evaluate(() => {
+            practice71State.savedResults.p7_drill_past_0 = { rawTranscript: '昨日本を読みました', modelText: 'モデル', expectedText: 'モデル', isCorrect: true };
+            delete practice71State.savedResults.p71_d2_0_q;
+            delete practice71State.savedResults.p71_d2_0_yes;
+            renderAll();
+        });
+        await page.waitForTimeout(50);
+        eq(await copyButtons.nth(0).isEnabled(), true, 'main button enabled when Drill 1 has valid STT');
+        eq(await copyButtons.nth(1).isDisabled(), true, 'qa button disabled when Drill 2 has no valid STT even if Drill 1 has STT');
+        await page.evaluate(() => {
+            practice71State.savedResults.p71_d2_0_q = { rawTranscript: '何をしていますか', modelText: 'モデル', expectedText: 'モデル', isCorrect: true };
+            practice71State.savedResults.p71_d2_0_yes = { rawTranscript: '本を読んでいます', modelText: 'モデル', expectedText: 'モデル', isCorrect: true };
+            renderAll();
+        });
+        await page.waitForTimeout(50);
 
         // 6. コピー失敗時には `Copied` にならない
         await page.evaluate(() => { window.denyCopy = true; });

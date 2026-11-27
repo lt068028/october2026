@@ -3628,6 +3628,16 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
 (() => {
     const explanation = 'Copy your drill results to review or share.';
     const CLIPBOARD_SVG = window.FluentIcons.markup('clipboard', 20, 'p71-copy-icon');
+    const COPY_DRILLS = [
+        {
+            kind: 'main',
+            header: 'Practice 7.1 — Drill 1: Compare Habit & Ongoing — いつも～ています／今～ています'
+        },
+        {
+            kind: 'qa',
+            header: 'Practice 7.1 — Drill 2: Ask and answer — 今～ていますか'
+        }
+    ];
 
     function getLocalDateString() {
         const d = new Date();
@@ -3675,6 +3685,22 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         return entries;
     }
 
+    function buildCumulativeCopyText(targetKind) {
+        const ownEntries = getDrillEntries(targetKind);
+        if (!ownEntries.length) return '';
+        const targetIndex = COPY_DRILLS.findIndex(d => d.kind === targetKind);
+        if (targetIndex < 0) return '';
+        const dateStr = getLocalDateString();
+        const blocks = [];
+        for (let i = 0; i <= targetIndex; i += 1) {
+            const drill = COPY_DRILLS[i];
+            const entries = drill.kind === targetKind ? ownEntries : getDrillEntries(drill.kind);
+            if (!entries.length) continue;
+            blocks.push(drill.header + ' — ' + dateStr + '\n' + entries.join('\n'));
+        }
+        return blocks.join('\n\n');
+    }
+
     function updateCopyButtons() {
         document.querySelectorAll('.p71-copy-area').forEach(area => {
             const kind = area.dataset.copyKind;
@@ -3685,7 +3711,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         });
     }
 
-    function installCopyArea(card, kind, header) {
+    function installCopyArea(card, kind) {
         if (!card) return;
         let area = document.querySelector(`.p71-copy-area[data-copy-kind="${kind}"]`);
         if (!area) {
@@ -3705,10 +3731,8 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
             let timer = null;
             button.addEventListener('click', async () => {
                 if (activeRecognitionSession || practice71State.startingRow) return;
-                const entries = getDrillEntries(kind);
-                if (!entries.length) return;
-                const content = header + ' — ' + getLocalDateString()
-                    + '\n' + entries.join('\n');
+                const content = buildCumulativeCopyText(kind);
+                if (!content) return;
                 const labelSpan = button.querySelector('span');
                 try {
                     await navigator.clipboard.writeText(content);
@@ -3741,8 +3765,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         if (mainCards.length) {
             installCopyArea(
                 mainCards[mainCards.length - 1],
-                'main',
-                'Practice 7.1 — Drill 1: Compare Habit & Ongoing — いつも～ています／今～ています'
+                'main'
             );
         }
         const qa = getQASection();
@@ -3750,8 +3773,7 @@ function appendPersistedPlayButton(resultSpan, rowKey, playRate) {
         if (qaCards?.length) {
             installCopyArea(
                 qaCards[qaCards.length - 1],
-                'qa',
-                'Practice 7.1 — Drill 2: Ask and answer — 今～ていますか'
+                'qa'
             );
         }
         updateCopyButtons();
