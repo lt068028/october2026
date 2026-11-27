@@ -287,7 +287,7 @@ node tests/relay-zero-gap.cjs
 
 #### Practice 7.1 / 7.2 / 7.3
 - **`node tests/practice71-answer-selection.cjs`**（`npm run test:p71`）: 7.1 Drill 2のYes/No回答選択における局所DOM更新（churnなし）、状態保持、With漢字／Hiragana切替時の維持を検証。
-- **`node tests/copy71.cjs`**: 7.1のMain Drill／Q&Aに配置されたCopyボタン2個の有効状態、保存STT出力・正誤マーカー、Copied表示・復帰、クリップボード失敗、録音中の無効化を検証する。なお、現行テストはQ&A側（Drill 2）の押下時にDrill 2のみを出力する旧期待値を含み、`PROJECT_SPEC.md` §7.2のDrill 1から押下対象までの累積規則への適合は検証していない。
+- **`node tests/copy71.cjs`**: 7.1のCopyボタン2個（Drill 1／Drill 2）の個別有効状態と、押下対象までのページ順累積出力を検証する。Drill 2のCopyではDrill 1＋Drill 2の保存済みSTTを累積し、空のDrill見出し・空白STT・未選択行・非選択側のQ/A回答を除外する。Q/A区分・正誤マーカー、Copied表示・復帰、クリップボード失敗、録音中の無効化も検証する。
 - **`node tests/copy72.cjs`**: 7.2のCopy機能・録音制御の検証。
 - **`node tests/preview73.cjs`**: 7.3の130%表示、文法強調（「の」「なんですか」）の検証。
 
