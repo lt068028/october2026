@@ -532,6 +532,11 @@ function speakText(text, rate = 0.75, onEndCallback) {
 function initPractice12() {
     initSettingsPanel();
     renderAll();
+    if (document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap')) {
+        window.DrillTooltips?.initGuideTooltips({
+            selector: '.stt-guide-standalone .p82-guide-tip-wrap',
+        });
+    }
     setupFooterGuide();
 }
 
