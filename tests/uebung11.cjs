@@ -971,7 +971,9 @@ async function runRecordingLifecycleTests() {
         const resText10 = await getResult().textContent();
         assert.ok(resText10.includes('Recognition error.'), 'S10: Shows Recognition error.');
         const playBtn10 = getResult().locator('.play-recording-btn');
-        assert.equal(await playBtn10.count(), 0, 'S10: Empty STT discards audio without play button');
+        assert.equal(await playBtn10.count(), 1, 'S10: Preserves existing valid answer play button on recognition error');
+        // Clear saved state to verify unrecorded row leaves 0 play buttons on empty STT
+        await page.evaluate(() => { saved.clear(); renderResult(drillsData[0].items[0].id); });
         // --- Scenario 12: STT空・録音音声ありの場合の表示（録音破棄・再生ボタンなし） ---
         await clickRecord(false);
         await advanceToElapsed(1000);
