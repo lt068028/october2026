@@ -2032,6 +2032,9 @@ function init() {
     setupPreferredVoice73();
 
     render();
+    if (document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap')) {
+        window.DrillTooltips?.initGuideTooltips({ selector: '.stt-guide-standalone .p82-guide-tip-wrap' });
+    }
 }
 
 // Example 2・Drill 2：過去進行の肯定／否定
