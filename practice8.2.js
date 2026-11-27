@@ -926,7 +926,7 @@ function showResult(key,notice='') {
             mark.addEventListener('mouseenter',reroll);
             mark.addEventListener('focus',reroll);
             const cleanText=displayed.trimEnd();
-            const trailingEllipsis=/[…\.。！？!\?]+$/.test(cleanText)?cleanText:cleanText+'…';
+            const trailingEllipsis=/(?:…|\.\.\.)$/.test(cleanText)?cleanText:cleanText+'…';
             v.result.append(mark,document.createTextNode(trailingEllipsis));
         }
         else {

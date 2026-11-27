@@ -89,7 +89,7 @@ assert.ok(js.includes('Copy my sentences'), 'JS must implement Copy my sentences
 assert.ok(js.includes('Copy your drill results to review or share.'), 'JS must use UI_LAYOUT_SPEC Copy help text');
 assert.ok(!js.includes('Copy all my sentences'), 'JS must not contain standalone Copy all my sentences');
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
-assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && !js.includes('const hasAnyRecordings = drillsData.some'), 'Copy button enabling must be scoped per individual drill');
+assert.ok(js.includes('let hasAnyUpTo = false;') && js.includes('!hasAnyUpTo'), 'Copy button enabling must be cumulative (Drill 1..targetIdx)');
 assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
 assert.ok(js.includes('volume > 0.015') && !js.includes('volume > 0.025'), 'D1.1 speech volume threshold must unify to 0.015');
 assert.ok(js.includes('v.rec.classList.toggle("stop-btn-active", canManualStop);'), 'D1.1 must apply stop-btn-active to manual stop only');
@@ -1093,8 +1093,8 @@ async function runRecordingLifecycleTests() {
         );
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, true, true, true],
-            'Drill 1 answer must enable only Drill 1 Copy button while Drills 2-4 remain disabled'
+            [false, false, false, false],
+            'Drill 1 answer must enable Drills 1-4 Copy buttons cumulatively'
         );
 
         await clickRecordInDrill(2);
@@ -1112,8 +1112,8 @@ async function runRecordingLifecycleTests() {
         assert.ok(!(await isRecording()), 'D2 Copy setup: recording completed');
         assert.deepEqual(
             await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, false, true, true],
-            'Drills 1 and 2 answers must enable only Drills 1 and 2 Copy buttons while Drills 3-4 remain disabled'
+            [false, false, false, false],
+            'Drills 1 and 2 answers must enable Drills 1-4 Copy buttons cumulatively'
         );
 
         // Pressing Drill 1's button copies only Drill 1 without Drill 2 contamination.
@@ -2222,6 +2222,25 @@ async function runRecordingLifecycleTests() {
             return genAfter !== genBefore;
         });
         assert.strictEqual(invalidateCheck, true, 'D1.1 DrillAudio.invalidatePlayback() advances playback generation');
+
+        // Incomplete trailing ellipsis & German 'oh' negative test
+        const d11EllipsisAndOh = await page.evaluate(() => {
+            const ohPreserved = DrillAnswer.stripSpeechFillers('Oh, ich bin oh nach Hause gegangen.', 'de') === 'Oh, ich bin oh nach Hause gegangen.';
+            const checkEllipsis = raw => {
+                const cleanText = raw.trimEnd();
+                return /(?:…|\.\.\.)$/.test(cleanText) ? cleanText : cleanText + '…';
+            };
+            return {
+                ohPreserved,
+                plainEllipsis: checkEllipsis('Ich fahre nach'),
+                periodEllipsis: checkEllipsis('Ich fahre nach.'),
+                alreadyEllipsis: checkEllipsis('Ich fahre nach…'),
+            };
+        });
+        assert.strictEqual(d11EllipsisAndOh.ohPreserved, true, 'D1.1 keeps Oh/oh unstripped');
+        assert.strictEqual(d11EllipsisAndOh.plainEllipsis, 'Ich fahre nach…', 'D1.1 appends … to plain incomplete');
+        assert.strictEqual(d11EllipsisAndOh.periodEllipsis, 'Ich fahre nach.…', 'D1.1 appends … after period');
+        assert.strictEqual(d11EllipsisAndOh.alreadyEllipsis, 'Ich fahre nach…', 'D1.1 does not duplicate …');
 
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {

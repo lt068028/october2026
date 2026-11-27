@@ -265,6 +265,7 @@ const pages=['practice1.1','practice1.2','practice7.1','practice7.2','practice7.
    check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Ähm, ich bin öh nach Hause gegangen.','de')),'ich bin nach Hause gegangen.','de filler strip: leading and mid-sentence');
    check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Wir wählen, zählen und nähen.','de')),'Wir wählen, zählen und nähen.','de filler strip: does not break wählen/zählen/nähen');
    check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Hm, also ja genau okay.','de')),'Hm, also ja genau okay.','de filler strip: keeps hm/also/ja/genau/okay');
+   check(await p.evaluate(()=>DrillAnswer.stripSpeechFillers('Oh, ich bin oh nach Hause gegangen.','de')),'Oh, ich bin oh nach Hause gegangen.','de filler strip: keeps Oh/oh');
    check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('あのー、はい')),true,'response word only with あのー');
    check(await p.evaluate(()=>DrillAnswer.isResponseWordOnly('えー、はい')),true,'response word only with えー');
   }

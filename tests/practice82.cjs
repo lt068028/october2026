@@ -1752,5 +1752,24 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(d2FourItems.evalChecks.d1To4Verbs, true, 'Drill 2 Dr2-1..4 verbs are read,write,takephoto,cut');
   eq(d2FourItems.entries.map(e => e.split('.')[0]), ['1', '7', '8'], 'Drill 2 Copy preserves 1..8 original row numbers');
 
+  // Incomplete trailing ellipsis exact-match (appends … after 。, skips duplicate …/...)
+  const p82Ellipsis = await p.evaluate(() => {
+    const savedBackup = new Map(saved);
+    const r = rowsFor(0)[0][0];
+    const k = keyFor(r);
+    saved.set(k, { raw: 'なにかのみます。', status: 'incomplete' });
+    showResult(k);
+    const withPeriod = views.get(k).result.textContent;
+    saved.set(k, { raw: 'なにかのみます…', status: 'incomplete' });
+    showResult(k);
+    const withEllipsis = views.get(k).result.textContent;
+    saved.clear();
+    savedBackup.forEach((v, kv) => saved.set(kv, v));
+    showResult(k);
+    return { withPeriod, withEllipsis };
+  });
+  eq(p82Ellipsis.withPeriod.endsWith('なにかのみます。…'), true, 'P8.2 Incomplete appends … after 。');
+  eq(p82Ellipsis.withEllipsis.endsWith('なにかのみます…') && !p82Ellipsis.withEllipsis.endsWith('……'), true, 'P8.2 Incomplete does not duplicate …');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

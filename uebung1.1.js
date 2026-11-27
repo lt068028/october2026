@@ -2076,7 +2076,9 @@ function initGermanDrill() {
                 };
                 tipWrap.addEventListener("mouseenter", reroll);
                 tipWrap.addEventListener("focus", reroll);
-                v.result.append(tipWrap, document.createTextNode(val.raw.trimEnd() + "…"));
+                const cleanText = val.raw.trimEnd();
+                const trailingEllipsis = /(?:…|\.\.\.)$/.test(cleanText) ? cleanText : cleanText + "…";
+                v.result.append(tipWrap, document.createTextNode(trailingEllipsis));
                 v.correction.hidden = true;
             } else if (judgment === "mismatch") {
                 FeedbackStatus.setMismatch(v.correction);
