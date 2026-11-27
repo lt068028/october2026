@@ -990,7 +990,7 @@ function showResult(key,notice='') {
         if(value.feedback&&!v.r.comparison) {
             v.feedback.textContent=value.feedback.label;v.feedback.dataset.tone=value.feedback.tone;v.feedback.hidden=false;
         }
-    }else if(value?.url) {
+    }else if(value?.url || notice === 'No transcription available.') {
         v.result.textContent='No transcription available.';
     }else {
         v.result.textContent='… Not yet';
@@ -1003,7 +1003,7 @@ function showResult(key,notice='') {
         play.dataset.audioRole = 'play';
         v.mainRow.append(play);
     }
-    if(notice){
+    if(notice && (value?.raw || value?.url || notice !== 'No transcription available.')){
         const note=document.createElement('span');
         note.className='p81-notice';
         note.textContent=notice;

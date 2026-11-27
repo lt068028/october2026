@@ -1289,8 +1289,30 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   await p.waitForTimeout(180);
   eq(await p.evaluate(() => audit82.saved.get('any-3-a:fixed')?.raw), '先生に何か聞きます', 'Trailing isFinal during stopping replaces interim without duplication');
 
-  // Scenario 5: s.heard === true with empty STT preserves prior saved entry and shows No transcription available.
-  await p.evaluate(() => { t.speaking = true; });
+  // Scenario 5: s.heard === true with empty STT (1) on unrecorded row -> .result-text shows notice & 0 play buttons, (2) on recorded row -> preserves prior saved & shows .p81-notice
+  await p.evaluate(() => {
+    audit82.saved.delete('any-3-a:fixed');
+    audit82.showResult('any-3-a:fixed');
+    t.speaking = true;
+  });
+  const s5UnrecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, s5UnrecCount);
+  await p.waitForTimeout(450);
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  eq(await p.evaluate(() => ({
+    hasSaved: audit82.saved.has('any-3-a:fixed'),
+    resultText: document.querySelector('tr[data-row="any-3-a"] .result-text')?.textContent || '',
+    playBtns: document.querySelectorAll('tr[data-row="any-3-a"] .play-recording-btn').length,
+  })), { hasSaved: false, resultText: 'No transcription available.', playBtns: 0 }, 'Empty STT on unrecorded row shows notice in .result-text with 0 play buttons');
+
+  // (2) Restore valid answer, then empty STT -> preserves prior saved entry & shows .p81-notice
+  await p.evaluate(() => {
+    audit82.saved.set('any-3-a:fixed', { raw: '先生に何か聞きます', url: 'blob:s5-valid', refs: ['先生に何か聞きます'], status: 'accepted', correct: true });
+    audit82.showResult('any-3-a:fixed');
+    t.speaking = true;
+  });
   const s5RecCount = await p.evaluate(() => t.recognitions.length);
   await s4Row.locator('.drill-record-btn').click();
   await p.waitForFunction((n) => t.recognitions.length > n, s5RecCount);
@@ -1300,8 +1322,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(await p.evaluate(() => ({
     raw: audit82.saved.get('any-3-a:fixed')?.raw,
     hasUrl: Boolean(audit82.saved.get('any-3-a:fixed')?.url),
-    notice: document.querySelector('tr[data-row="any-3-a"] .p82-notice, tr[data-row="any-3-a"] .result-text')?.textContent || ''
-  })).then(r => ({ raw: r.raw, hasUrl: r.hasUrl, hasNotice: r.notice.includes('No transcription available.') })), { raw: '先生に何か聞きます', hasUrl: true, hasNotice: true }, 'Empty STT with s.heard === true preserves prior saved entry and shows No transcription available.');
+    notice: document.querySelector('tr[data-row="any-3-a"] .p81-notice')?.textContent || ''
+  })), { raw: '先生に何か聞きます', hasUrl: true, notice: 'No transcription available.' }, 'Empty STT on recorded row preserves prior saved entry and shows .p81-notice');
 
   // Scenario 6: Manual mode has NO 5s timeout even with speaking: false and no STT
   await p.evaluate(() => { t.speaking = false; });
