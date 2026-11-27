@@ -2413,6 +2413,11 @@ if ("speechSynthesis" in window) {
 document.addEventListener("DOMContentLoaded", () => {
     initSettingsPanel();
     renderAll();
+    if (document.querySelector('.stt-guide-standalone .p82-guide-tip-wrap')) {
+        window.DrillTooltips?.initGuideTooltips({
+            selector: '.stt-guide-standalone .p82-guide-tip-wrap',
+        });
+    }
     setupFooterGuide();
 });
 
