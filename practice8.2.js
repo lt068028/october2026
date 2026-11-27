@@ -438,7 +438,7 @@ function markExPlaying(b) {
         b.setAttribute('aria-label', '再生を停止');
     }
     b.disabled = false;
-    if (!skipSync) sync();
+    sync();
 }
 
 function setDrillStopIcon(b) {
@@ -735,38 +735,43 @@ function speak(text, b, done, relay = false) {
 
     const gen = playbackGen;
     if (!relay) markPlaying(b);
-    utterance = u;
-    let started = false;
-    let startTimeoutTimer = setTimeout(() => {
-        if (gen !== playbackGen || utterance !== u || started) return;
-        DrillAudio.invalidatePlayback();
-        stopPlayback(true);
-    }, 5000);
+    try {
+        utterance = u;
+        let started = false;
+        let startTimeoutTimer = setTimeout(() => {
+            if (gen !== playbackGen || utterance !== u || started) return;
+            DrillAudio.invalidatePlayback();
+            stopPlayback(true);
+        }, 5000);
 
-    const finish = () => {
-        if (startTimeoutTimer) {
-            clearTimeout(startTimeoutTimer);
-            startTimeoutTimer = null;
-        }
-        if (gen !== playbackGen || utterance !== u) return;
-        if (relay) utterance = null;
-        else stopPlayback(true);
-        if (done) done();
-    };
-
-    if (typeof u.addEventListener === 'function') {
-        u.addEventListener('start', () => {
-            started = true;
+        const finish = () => {
             if (startTimeoutTimer) {
                 clearTimeout(startTimeoutTimer);
                 startTimeoutTimer = null;
             }
-        });
-    }
-    u.onend = finish;
-    u.onerror = finish;
+            if (gen !== playbackGen || utterance !== u) return;
+            if (relay) utterance = null;
+            else stopPlayback(true);
+            if (done) done();
+        };
 
-    DrillAudio.speak(u);
+        if (typeof u.addEventListener === 'function') {
+            u.addEventListener('start', () => {
+                started = true;
+                if (startTimeoutTimer) {
+                    clearTimeout(startTimeoutTimer);
+                    startTimeoutTimer = null;
+                }
+            });
+        }
+        u.onend = finish;
+        u.onerror = finish;
+
+        DrillAudio.speak(u);
+    } catch (err) {
+        stopPlayback(true);
+        throw err;
+    }
 }
 function playRecording(key, b) {
     const value = saved.get(key);

@@ -1771,5 +1771,23 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   eq(p82Ellipsis.withPeriod.endsWith('なにかのみます。…'), true, 'P8.2 Incomplete appends … after 。');
   eq(p82Ellipsis.withEllipsis.endsWith('なにかのみます…') && !p82Ellipsis.withEllipsis.endsWith('……'), true, 'P8.2 Incomplete does not duplicate …');
 
+  // Ex1 real playback: no ReferenceError, speechSynthesis.speak called, start/end restores stop SVG
+  const ex1Playback = await p.evaluate(() => {
+    const exBtn = document.querySelector('#drill1 .ex-audio-btn, .ex-audio-btn');
+    if (!exBtn) return { found: false };
+    const beforeCount = t.spoken.length;
+    exBtn.click();
+    const afterCount = t.spoken.length;
+    const isPlaying = exBtn.classList.contains('is-playing');
+    const u = t.spoken.at(-1);
+    u?.onend?.();
+    const stoppedAfterEnd = !exBtn.classList.contains('is-playing');
+    return { found: true, spoke: afterCount > beforeCount, isPlaying, stoppedAfterEnd };
+  });
+  eq(ex1Playback.found, true, 'P8.2 Ex1 audio button found');
+  eq(ex1Playback.spoke, true, 'P8.2 Ex1 click calls speechSynthesis.speak without ReferenceError');
+  eq(ex1Playback.isPlaying, true, 'P8.2 Ex1 enters is-playing state');
+  eq(ex1Playback.stoppedAfterEnd, true, 'P8.2 Ex1 restores stop SVG on end');
+
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});
