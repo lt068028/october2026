@@ -2215,6 +2215,14 @@ async function runRecordingLifecycleTests() {
         });
         assert.strictEqual(ttsRelayAudit.clearedPausedAndSpoke, true, 'D1.1 DrillAudio.speak clears speechSynthesis.paused before speaking');
 
+        // Verify DrillAudio.invalidatePlayback() invalidates active token so delayed events do not restore playing state
+        const invalidateCheck = await page.evaluate(() => {
+            const genBefore = DrillAudio.invalidatePlayback();
+            const genAfter = DrillAudio.invalidatePlayback();
+            return genAfter !== genBefore;
+        });
+        assert.strictEqual(invalidateCheck, true, 'D1.1 DrillAudio.invalidatePlayback() advances playback generation');
+
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
         await browser.close();

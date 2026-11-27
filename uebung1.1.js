@@ -1500,6 +1500,7 @@ function initGermanDrill() {
                 token.userCancelled = true;
                 if (currentUtterance === u) currentUtterance = null;
                 activePlaybackToken = null;
+                DrillAudio.invalidatePlayback();
                 stopPlayback(true);
                 showGermanTtsNotice({
                     type: "error",
