@@ -1305,7 +1305,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     hasSaved: audit82.saved.has('any-3-a:fixed'),
     resultText: document.querySelector('tr[data-row="any-3-a"] .result-text')?.textContent || '',
     playBtns: document.querySelectorAll('tr[data-row="any-3-a"] .play-recording-btn').length,
-  })), { hasSaved: false, resultText: 'No transcription available.', playBtns: 0 }, 'Empty STT on unrecorded row shows notice in .result-text with 0 play buttons');
+    noticeCount: document.querySelectorAll('tr[data-row="any-3-a"] .p81-notice').length,
+  })), { hasSaved: false, resultText: 'No transcription available.', playBtns: 0, noticeCount: 0 }, 'Empty STT on unrecorded row shows notice in .result-text with 0 play buttons and 0 .p81-notice');
 
   // (2) Restore valid answer, then empty STT -> preserves prior saved entry & shows .p81-notice
   await p.evaluate(() => {
@@ -1839,6 +1840,29 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
     return res;
   });
   eq(chunklessValidStt, { raw: '何か食べます', url: null, status: 'accepted', playBtns: 0, copyEnabled: true, inCopy: true }, 'P8.2 valid STT without audio chunks saves with url: null, 0 play buttons, and enables Copy');
+
+  // C2: Real finish() path with valid STT and empty audio chunks (chunks: [])
+  await p.evaluate(() => {
+    audit82.saved.delete('any-3-a:fixed');
+    audit82.showResult('any-3-a:fixed');
+    t.speaking = true;
+  });
+  const c2RecCount = await p.evaluate(() => t.recognitions.length);
+  await s4Row.locator('.drill-record-btn').click();
+  await p.waitForFunction((n) => t.recognitions.length > n, c2RecCount);
+  await p.evaluate(() => {
+    const rec = t.recorders.at(-1);
+    if (rec) rec.ondataavailable = null;
+    const r = t.recognitions.at(-1);
+    r?.onresult?.({ results: [[{ transcript: '先生に何か聞きます' }]], resultIndex: 0 });
+  });
+  await s4Row.locator('.stop-btn-active').click();
+  await p.waitForTimeout(150);
+  eq(await p.evaluate(() => ({
+    raw: audit82.saved.get('any-3-a:fixed')?.raw,
+    url: audit82.saved.get('any-3-a:fixed')?.url,
+    playBtns: document.querySelectorAll('tr[data-row="any-3-a"] .play-recording-btn').length,
+  })), { raw: '先生に何か聞きます', url: null, playBtns: 0 }, 'P8.2 real finish() with empty chunks saves valid STT with url: null and 0 play buttons');
 
  eq(errors,[],'no runtime errors');await browser.close();console.log('PASS Practice 8.2',count);
 })().catch(e=>{console.error(e);process.exit(1)});

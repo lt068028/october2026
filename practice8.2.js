@@ -1460,14 +1460,21 @@ async function record(key, r) {
             !s.discard &&
             hasNormRaw
         ) {
-            const url = s.chunks.length ? URL.createObjectURL(
-                new Blob(s.chunks, {
-                    type: s.recorder?.mimeType || "audio/webm"
-                })
-            ) : null;
+            let url = null;
+            if (s.chunks.length) {
+                try {
+                    url = URL.createObjectURL(
+                        new Blob(s.chunks, {
+                            type: s.recorder?.mimeType || "audio/webm"
+                        })
+                    );
+                } catch (_) {
+                    url = null;
+                }
+            }
 
             if (previous.url) {
-                URL.revokeObjectURL(previous.url);
+                try { URL.revokeObjectURL(previous.url); } catch (_) {}
             }
 
             const status = s.raw.trim() ? evaluateAnswer(s.raw, r) : 'mismatch';
