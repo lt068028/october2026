@@ -198,12 +198,7 @@
         const active = document.activeElement;
         if (active && active !== document.body && active !== document.documentElement) {
             const host = active.closest?.(escapeTipSelector);
-            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
-        }
-        const openHosts = Array.from(document.querySelectorAll('.tap-tip-open'));
-        for (let i = openHosts.length - 1; i >= 0; i--) {
-            const host = openHosts[i].closest?.(escapeTipSelector);
-            if (host && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
+            if (host && !host.classList.contains('tap-tip-open') && isOptInTarget(host) && !host.hasAttribute('data-tip-suppressed')) return host;
         }
         return null;
     }
@@ -211,12 +206,7 @@
     let otherUIWasOpenOnCapture = false;
 
     function dismissTarget(host) {
-        if (host.classList.contains('tap-tip-open')) {
-            host.classList.remove('tap-tip-open');
-        }
-        if (openVocabulary === host || (openVocabulary && !openVocabulary.classList.contains('tap-tip-open'))) {
-            openVocabulary = document.querySelector('.tooltip-wrap.tap-tip-open') || null;
-        }
+        if (!host || host.classList.contains('tap-tip-open')) return;
         host.setAttribute('data-tip-suppressed', 'true');
     }
 
@@ -244,13 +234,7 @@
             if (skipForOtherUI) return;
 
             const target = findPriorityTarget();
-            if (!target) {
-                const openDomVocab = document.querySelector('.tooltip-wrap.tap-tip-open');
-                if ((openVocabulary && !isOptInTarget(openVocabulary)) || (openDomVocab && !isOptInTarget(openDomVocab))) {
-                    closeVocabulary();
-                }
-                return;
-            }
+            if (!target) return;
             dismissTarget(target);
         });
 
@@ -324,7 +308,11 @@
     },{passive:true});
     document.addEventListener('pointercancel',()=>{touchStart=null;});
     document.addEventListener('keydown',e=>{
-        if(e.key==='Escape' && !DrillTooltips._escapeDismissInitialized)closeVocabulary();
+        if(e.key==='Escape' && !DrillTooltips._escapeDismissInitialized){
+            if(isOtherUIPrioritized(e))return;
+            const target=findPriorityTarget();
+            if(target)dismissTarget(target);
+        }
     });
 
     if (window.__enableDrillTooltipEscapeDismiss || document.querySelector('.practice82-page, .uebung11-page, .uebung-page')) {

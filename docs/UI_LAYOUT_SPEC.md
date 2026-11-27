@@ -1,8 +1,8 @@
 # October2026 共通UI・レイアウト仕様（UI_LAYOUT_SPEC）
 
-> **文書バージョン：V5（2026-11-19 Global Settings・音声再生共通仕様の追加）**
+> **文書バージョン：V5.1（2026-11-27 説明型TooltipのEscape閉鎖対象をTab Focusのみへ統一）**
 >
-> - 文書状態：既存のユーザー承認済み共通UI契約を維持し、2026-11-19にユーザーが確認したGlobal Settings・音声再生UIの共通規則を追加したもの。文書への掲載は、全ページの実装適合や実機確認を意味しない。
+> - 文書状態：既存のユーザー承認済み共通UI契約を維持し、2026-11-19のGlobal Settings・音声再生UIの共通規則および2026-11-27の説明型TooltipにおけるEscape閉鎖対象（Tab Focusのみ）改定を反映したもの。文書への掲載は、全ページの実装適合や実機確認を意味しない。
 > - Q/A Filled：ユーザー承認済み（2026-11-16確認）。
 > - この文書への掲載・承認は、すべての既存ページの実装適合やProductionでの実機確認を意味しない。
 
@@ -200,7 +200,7 @@
 - 説明型Tooltipは、語彙・キュー・ガイド等の説明を表示する `.tooltip-wrap` と、操作ボタンの説明を表示する `.custom-tip-wrap` 等を指す。状態を示すだけの表示は対象外とする。
 - 説明型Tooltipは、Mouse Hover およびキーボード Tab Focus で表示する。キーボード操作による表示は、実際のTab／Shift+Tabによるフォーカス移動を対象とし、プログラムからの `.focus()` だけをTab操作の検証根拠にしない。
 - `.custom-tip-wrap` の操作説明は、実Touchでは表示しない。PC・タブレット等でのMouse Hover／Tab Focus表示は維持する。
-- `.tooltip-wrap` の語彙説明はTouchに対応する。有効なタップで開き、同じホストへの有効な再タップで閉じる。別の `.tooltip-wrap` をタップした場合は前の表示を閉じて新しい対象を開き、Tooltip外をタップした場合は開いている表示を閉じる。Mouse Hover／Keyboard Focusへの移動だけではTouch表示を閉じない。Escapeでも閉じる。
+- `.tooltip-wrap` の語彙説明はTouchに対応する。有効なタップで開き、同じホストへの有効な再タップ、別の `.tooltip-wrap` のタップ（前の表示を閉じて新しい対象を開く）、またはTooltip外のタップのみで閉じる。Mouse Hover／Keyboard Focusへの移動やEscapeではTouch表示（`.tap-tip-open`）を閉じない。
 
 **Touchのタップ判定**
 
@@ -209,11 +209,11 @@
 
 **Escapeによる閉鎖**
 
-- Escapeで閉じる説明型Tooltipは、Tab Focusで表示されたもの、およびTouchで開いた `.tap-tip-open` とする。
-- Mouse Hoverだけで表示されているTooltipはEscapeで閉じない。ポインターが乗っていても、Mouse Hoverを理由に閉鎖対象へ選ばない。
+- Escapeで閉じる説明型Tooltipは、Tab Focus（キーボードフォーカス）で開いた説明型Tooltipのみとする。
+- Mouse Hoverで開いたTooltip、およびTouchで開いたTooltip（`.tap-tip-open`）はEscapeでは閉じない。ポインターが乗っていても、または `.tap-tip-open` が開いていても、Tab Focusによる表示でなければEscapeの閉鎖対象へ選ばない。Touchで開いたTooltipは、同一対象の再タップ・別対象のタップ・Tooltip外タップのみで閉じる。
 - Escape 1回につき最優先対象を1つだけ閉じる。Voice Dropdown、Drawer、Picker Panel、開いている `<dialog>`、フォーカス中の `<select>` 等、Tooltipより優先されるUIがある場合は、そちらの操作を優先する。
 - 状態表示型Tooltip（少なくとも `.p82-autostop-open`、`.p82-autoplay-stop`、`.p82-autostop-tip-host`、`[data-tip-status-only]`）は対象外とし、状態や操作に干渉しない。
-- Escapeで閉じたTab Focus対象は、フォーカスが別要素へ移るまで再表示を抑止する。Touch対象は閉じたホストに対する次の新しい有効なタップで抑止を解除し、そのタップで再表示できる。Mouse Hover対象にはEscapeによる閉鎖・再表示抑止を適用しない。
+- Escapeで閉じたTab Focus対象は、フォーカスが別要素へ移るまで再表示を抑止する（`data-tip-suppressed="true"`）。Mouse Hover対象およびTouch対象（`.tap-tip-open`）にはEscapeによる閉鎖・再表示抑止を適用しない。
 
 **適用範囲・実装管理**
 
