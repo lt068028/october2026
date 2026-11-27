@@ -56,7 +56,7 @@ V('make','作る','つくる','tsukuru','to make',{masu:'作ります',past:'作
 V('sing','歌う','うたう','utau','to sing',{masu:'歌います',past:'歌いました',neg:'歌いません',pastNeg:'歌いませんでした',plainPast:'歌った',plainNeg:'歌わない',plainPastNeg:'歌わなかった'},'うたう');
 V('cap','かぶる','かぶる','kaburu','to wear a hat',{masu:'かぶります',past:'かぶりました',neg:'かぶりません',pastNeg:'かぶりませんでした',plainPast:'かぶった',plainNeg:'かぶらない',plainPastNeg:'かぶらなかった'},null,'wear');
 V('wearshoes','はく','はく','haku','to wear footwear',{masu:'はきます',past:'はきました',neg:'はきません',pastNeg:'はきませんでした',plainPast:'はいた',plainNeg:'はかない',plainPastNeg:'はかなかった'});
-V('see','見る','みる','miru','to see; to watch',{masu:'見ます',past:'見ました',neg:'見ません',pastNeg:'見ませんでした',plainPast:'見た',plainNeg:'見ない',plainPastNeg:'見なかった'},'見る');
+V('see','見る','みる','miru','to watch',{masu:'見ます',past:'見ました',neg:'見ません',pastNeg:'見ませんでした',plainPast:'見た',plainNeg:'見ない',plainPastNeg:'見なかった'},'見る','watch');
 V('read','読む','よむ','yomu','to read',{masu:'読みます',past:'読みました',neg:'読みません',pastNeg:'読みませんでした',plainPast:'読んだ',plainNeg:'読まない',plainPastNeg:'読まなかった'},'読む');
 V('write','書く','かく','kaku','to write',{masu:'書きます',past:'書きました',neg:'書きません',pastNeg:'書きませんでした',plainPast:'書いた',plainNeg:'書かない',plainPastNeg:'書かなかった'},'かく');
 V('takephoto','撮る','とる','toru','to take a photo',{masu:'撮ります',past:'撮りました',neg:'撮りません',pastNeg:'撮りませんでした',plainPast:'撮った',plainNeg:'撮らない',plainPastNeg:'撮らなかった'},'とる');
@@ -193,8 +193,8 @@ function makeRow(id,spec,extra={}){
 function rowsFor(si){
  if(si===0)return statements.map((s,i)=>[makeRow('something-'+i,{...s,mode:'statement'})]);
  if(si===1)return contrastPairs.map((s,i)=>[
-  makeRow('contrast-'+i+'-what',{...s,pronoun:'what',mode:'contrast'}),
-  makeRow('contrast-'+i+'-something',{...s,pronoun:'something',mode:'contrast'})
+  makeRow('contrast-'+i+'-something',{...s,pronoun:'something',mode:'contrast'}),
+  makeRow('contrast-'+i+'-what',{...s,pronoun:'what',mode:'contrast'})
  ]);
  if(si===2)return conversations.map((s,i)=>{const id='yn-'+i+'-a',answer=choices.get(id);return [makeRow('yn-'+i+'-q',{...s,mode:'question'},{kind:'Q',qa:'question'}),makeRow(id,{...s,mode:'reply',answer:answer||'yes'},{kind:'A',qa:'response',yn:true,pending:!answer})];});
  return habits.map((s,i)=>[makeRow('any-'+i+'-q',{...s,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('any-'+i+'-a',{...s,mode:'any'},{kind:'A',qa:'response'})]);
@@ -1045,10 +1045,10 @@ function createExampleArrowSvg(){
 function addExample(root,si){
  const ex=node('div','example-box example-text-layout p81-example');
  let samples;
- if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か','何も〜ません','何でも'][i],englishLabel:['Unspecified','None','All-inclusive'][i],translation:['— I drink something.','— I drink nothing.','— I drink anything.'][i],intro:true}));
+ if(si===0)samples=['something','nothing','anything'].map((pronoun,i)=>makeRow('ex1-'+i,{verb:'drink',mode:pronoun==='anything'?'any':'statement',pronoun},{kind:['何か',speechStyle==='formal'?'何も〜ません':'何も〜ない','何でも'][i],englishLabel:['Unspecified','None','All-inclusive'][i],translation:['— I drink something.','— I drink nothing.','— I drink anything.'][i],intro:true}));
  else if(si===1)samples=[
-  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Specific',translation:'— What do you see?'}),
-  makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Unspecified',translation:'— Do you see anything?'})
+  makeRow('ex2-something',{verb:'see',pronoun:'something',mode:'contrast',withWo:true},{kind:'何か',englishLabel:'Unspecified',translation:'— Do you watch anything?'}),
+  makeRow('ex2-what',{verb:'see',pronoun:'what',mode:'contrast'},{kind:'何を',englishLabel:'Specific',translation:'— What do you watch?'})
  ];
  else if(si===2)samples=[makeRow('ex3-q',{object:'souvenir',objectParticle:'に、',verb:'buy',mode:'question'},{kind:'Q',qa:'question'}),makeRow('ex3-yes',{verb:'buy',mode:'reply',answer:'yes'},{kind:'A',qa:'response'}),makeRow('ex3-no',{verb:'buy',mode:'reply',answer:'no'},{qa:'response'})];
  else samples=[makeRow('ex4-q',{...habitExample,mode:'wh'},{kind:'Q',qa:'question'}),makeRow('ex4-a',{...habitExample,mode:'any'},{kind:'A',qa:'response'})];
@@ -1181,7 +1181,7 @@ function updateYnChoice(rowId, value) {
 function render(){
  updateUnlearnedLexicon();
  const root=$('drill1Container');root.replaceChildren();views.clear();
- sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?'何も〜ません':'なにも〜ません')+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
+ sections.forEach((section,si)=>{const group=node('section','p81-section');group.id='drill'+(si+1);addExample(group,si);const panel=node('div','info-panel info-panel-task1');const heading=node('span','info-panel-title');if(si===3){const title=scriptMode==='kanji'?section.title:displayKana(section.title);const parts=title.split('[Sneak Peek]');heading.append(document.createTextNode(parts[0]),node('span','p82-sneak-peek','SNEAK PEEK'),document.createTextNode(parts[1]||''));}else heading.textContent=scriptMode==='kanji'?section.title:displayKana(section.title);const desc=node('span','info-panel-desc');desc.append(createLightbulbIcon());if(si===2){desc.append(document.createTextNode('Ask with '+(scriptMode==='kanji'?'何か':'なにか')+' (unspecified item). For '),window.AnswerIcons.create('no',true),document.createTextNode(' (Negative), use '+(scriptMode==='kanji'?(speechStyle==='formal'?'何も〜ません':'何も〜ない'):(speechStyle==='formal'?'なにも〜ません':'なにも〜ない'))+' (none).'));}else desc.append(document.createTextNode(scriptMode==='kanji'?section.instruction:displayKana(section.instruction)));panel.append(heading,desc);group.append(panel);
  rowsFor(si).forEach((rows,index)=>{const card=node('div','drill-row p81-card'),table=node('table','recording-table p81-table'),body=node('tbody');table.append(body);
  rows.forEach((r,ri)=>{const key=keyFor(r),tr=node('tr');tr.dataset.row=r.id;if(!ri){const n=node('td','drill-number-cell',(index+1)+'.');n.rowSpan=rows.length;tr.append(n);}const cue=node('td','prompt-label drill-cue-cell');if(r.kind)cue.append(node('span','example-label-title p81-kind',r.kind));else if(r.mode==='contrast')cue.append(createQuestionMarker());const content=node('span','p81-cue-words');content.innerHTML=cues(r,true);cue.append(content);
  if(r.yn)for(const value of ['yes','no']){const ynLabel=(si===2&&index===0)?(value==='yes'?'Yes':'No'):(value==='yes'?'Affirmative response':'Negative response');const choose=button(window.AnswerIcons.create(value),()=>{if(session||preparing)return;stopPlayback(false,true);updateYnChoice(r.id,value);},(si===2&&index===0)?ynLabel:'');choose.classList.add('answer-choice');choose.dataset.answer=value;choose.dataset.response=r.id;choose.setAttribute('aria-label',ynLabel);choose.setAttribute('aria-pressed',String(!r.pending&&r.answer===value));cue.append(choose);}

@@ -21,6 +21,8 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  eq(await p.locator('#drill4 .p81-cue-words').allTextContents().then(a=>a.filter((_,i)=>i%2===0).map(s=>s.includes('どんな'))),[true,true,true],'Drill 4 questions use どんな');
  eq(await p.locator('#drill2 .info-panel-title').textContent(),'Drill 2: 何を vs 何か — Questions','Drill 2 title');
  eq(await p.locator('#drill3 .info-panel-title').textContent(),'Drill 3: 何か／何も — Yes/No Questions','Drill 3 title');
+ eq(await p.locator('#drill2 .p82-concept-japanese').allTextContents(),['何か','何を'],'Ex2 label order');
+ eq(await p.locator('#drill2 .p82-model-translation').allTextContents(),['— Do you watch anything?','— What do you watch?'],'Ex2 Watch translations');
  eq(await p.locator('#drill4 .info-panel-title').textContent().then(s=>s.includes('SNEAK PEEK')&&s.includes('何でも')),true,'Drill 4 advanced label');
  const yn=p.locator('[data-row="yn-0-a"]');
  eq(await yn.locator('.recording-actions button').nth(0).isDisabled(),true,'Y/N response listen locked');
@@ -34,7 +36,7 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
   d4: audit82.rowsFor(3).map(rs=>rs.map(r=>r.text))
  }));
  eq(models.d1,['授業で、何か、話します。','学校で、何か、習います。','大学で、何か、教えます。','先生に、何か、聞きます。'],'Drill 1 actual models');
- eq(models.d2.slice(0,4),['何を、読みますか。','何か、読みますか。','何を、書きますか。','何か、書きますか。'],'Drill 2 contrast models');
+ eq(models.d2.slice(0,4),['何か、読みますか。','何を、読みますか。','何か、書きますか。','何を、書きますか。'],'Drill 2 contrast models');
  eq(models.d3[0],['誕生日に、何か、しますか。','いいえ、何も、しません。'],'Drill 3 question and selected No models');
  eq(models.d4[0],['どんな料理を、作りますか。','何でも、作ります。'],'Drill 4 models');
  const answerChecks=await p.evaluate(()=>{const a=audit82,d1=a.rowsFor(0)[0][0],d2=a.rowsFor(1)[0][0],no=a.rowsFor(2)[0][1],any=a.rowsFor(3)[0][1];return [
@@ -47,11 +49,21 @@ const mock=audio.slice(audio.indexOf('function mock()'),audio.indexOf('(async()=
  for(const style of ['formal','informal','casual']){
   await p.locator(`#speechStyleControl [data-value="${style}"]`).click();
   for(let i=0;i<5;i++)await p.locator(`[data-response="yn-${i}-a"][data-answer="${i%2?'yes':'no'}"]`).click();
+  const labelText=await p.evaluate(()=>({ex1:document.querySelectorAll('#drill1 .p82-concept-japanese')[1]?.textContent,guide:document.querySelector('#drill3 .info-panel-desc')?.textContent}));
+  const expectedNegative=style==='formal'?'何も〜ません':'何も〜ない';
+  eq(labelText.ex1,expectedNegative,style+' Ex1 negative label');
+  eq(labelText.guide.includes(expectedNegative),true,style+' Drill 3 negative guide');
   const result=await p.evaluate(()=>[0,1,2,3].flatMap(si=>window.audit82.rowsFor(si).flat()).map(r=>[
    window.audit82.matchesAnswer(r.text,r),window.audit82.matchesAnswer(r.hira,r),window.audit82.matchesAnswer(r.text+'猫',r)
   ]));
   for(const [i,checks]of result.entries())eq(checks,[true,true,false],`${style} model/readings/rejection ${i}`);
  }
+
+ // Hiragana display follows the selected Speech Style for both explanatory labels.
+ await p.locator('#scriptModeControl [data-value="hiragana"]').click();
+ eq(await p.locator('#drill1 .p82-concept-japanese').nth(1).textContent(),'なにも〜ない','Hiragana Ex1 informal/casual negative label');
+ eq((await p.locator('#drill3 .info-panel-desc').textContent()).includes('なにも〜ない'),true,'Hiragana Drill 3 informal/casual negative guide');
+ await p.locator('#scriptModeControl [data-value="kanji"]').click();
 
  // Casual ending check: statements and replies end with 'よ。', questions end with '？' (never 'よ'), informal statements end with '。'
  await p.locator('#speechStyleControl [data-value="casual"]').click();
