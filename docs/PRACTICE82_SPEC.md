@@ -68,7 +68,7 @@ Practice 8.2では、Accepted／Mismatchのアイコン寸法に限り、共通�
 - **同じ行に既存の有効回答がある場合**：既存のraw STT・判定結果・録音音声URL・Copy対象状態を上書き・削除せず保持する。既存URLに紐づく再生ボタンも利用可能なまま維持し、従来の回答を結果欄に表示したまま、下段に`.p81-notice`として`No transcription available.`を一時表示する。通知は保存回答・Copy本文には含めない。
 - **同じ行に既存回答がない場合**：空の回答エントリを作成せず、結果欄（`.result-text`）に`No transcription available.`を表示する。`.play-recording-btn`は表示せず、Copy対象にも含めない。
 - **適用範囲と他の停止状態**：この空STT処理を適用するのはPractice 8.2の対象録音行に限る。発話開始前5秒タイムアウト、20秒上限、無発話時の破棄、録音／認識エラーの表示・動作は変更せず、他Practiceへ自動拡張しない。
-- **Practice 8.2 固有の Copy 出力仕様**：保存された `entry.status` を優先参照し、`accepted` は `✅`、`incomplete` は `👣`、`mismatch` は `🔥` を文頭に付与する（未設定時のみ `FeedbackStatus.clipboardMarker(entry)`）。Incomplete 判定の画面表示用末尾 `…` はコピー出力には混入させない。
+- **Copy my sentences の出力**：保存済み判定状態に基づく3状態マーカー、raw STTの使用、画面表示用記号をコピーに含めない条件は `PROJECT_SPEC.md` §7.2を正本とする。Practice 8.2固有のCopy出力例外は設けない。
 
 ## 採点正規化・Mismatch 理由と差分ハイライト仕様（2026-11-18）
 

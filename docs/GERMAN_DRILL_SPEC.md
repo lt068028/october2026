@@ -51,13 +51,9 @@
   - **Vocabulary Display**（`#hintModeControl`）：語彙ヒント切替（`off` / `hover` / `paren`）
 - **Row 2**（`.settings-auto-row`）：
   - **Autostop Switch**（`#toggleRecordMode`, `#labelAutoRecord`）：自動録音停止（既定: ON）
-    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
-      - `ON:` Recording stops automatically.
-      - `OFF:` Stop recording manually.
+    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）の標準文言は `UI_LAYOUT_SPEC.md` §13.1に従う。
   - **Auto-Compare Switch**（#togglePlaybackMode, #labelAutoPlay）：モデル・録音の比較リレー再生（既定: ON）。利用者向け名称をAuto-Compareとし、既存の内部IDは維持できる。
-    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）：
-      - `ON:` After recording, the model audio and your recording play automatically.
-      - `OFF:` Choose what and when to play.
+    - ホバー説明（`.custom-tip-box`、ON/OFF別行表示）の標準文言は `UI_LAYOUT_SPEC.md` §13.1に従う。
 
 ### 2.4 メインコンテナとフッター 【実装済み】
 - **メイン領域**: `<main id="drillsContainer"></main>`（JavaScriptにより動的レンダリング）
@@ -193,19 +189,20 @@
 ### 5.1 録音処理・監視・停止条件 【実装済み】
 - **マイクストリーム取得**：DrillAudio.getUserMedia({ audio: true })によりマイクストリームを取得する。
 - **録音と状態保持**：MediaRecorder（audio/webm;codecs=opus等を環境に応じて選択）で学習者の音声を録音・Blob化する。録音中はdocument.body.classList.add('drill-recording-locked')を付与し、競合する操作を排他制御する。
-- **マイク音量監視（AudioContext / AnalyserNode）**：マイク入力音量を監視し、音響入力による発話開始（speechStarted = true）と最終音響検知時刻（lastSoundAt）を更新する。SpeechRecognitionのonspeechstartやonresultを音響検知の代替にしない。初期化・音量監視に失敗した場合はRecording error.として安全に停止し、リソースを解放する。
-- **録音停止条件の正本**：発話開始前5秒（Autostop ON時のみ）、発話後の連続2.0秒無音（Autostop ON時のみ）、20秒絶対上限、および録音開始後5秒以内の有効STTによるタイムアウト保護は、共通仕様PROJECT_SPEC.md §5.2に従う。STT保護は5秒タイムアウトを抑止するだけで、マイク音響入力による発話開始検知や2秒無音計測を置き換えない。German固有のロケール・録音音声保存条件・エラー表示は本書§5.2に従う。
+- **マイク音量監視（AudioContext / AnalyserNode）**：マイク入力音量を監視し、音響入力による発話開始（`speechStarted = true`）と最終音響検知時刻（`lastSoundAt`）を更新する。発話開始検知・連続無音判定およびSTTイベントとの分離に関する共通条件は `PROJECT_SPEC.md` §5.2.2に従う。初期化・音量監視に失敗した場合は`Recording error.`として安全に停止し、リソースを解放する。
+- **録音停止条件の正本**：共通の停止時間・判定条件・STTによるタイムアウト保護は `PROJECT_SPEC.md` §5.2を正本とする。German固有のロケール・録音音声保存条件・エラー表示は本書§5.2に従う。
 - **停止処理とリソース解放**：stoppingフラグで重複停止を抑止する。停止・破棄時にはマイクトラック、AudioContext、監視タイマー群を確実に解放する。
 
 ### 5.2 音声認識（STT）と音声検出の分離・メッセージ仕様 【実装済み】
 - **STTエンジン**：webkitSpeechRecognitionまたはSpeechRecognitionを利用する。
 - **言語設定**：recognition.langには選択中の地域ロケール（de-DE、de-AT、de-CH）を明示設定する。
-- **音響検出と文字起こしの分離管理**：音響検出フラグ（speechStarted）と認識テキスト（raw / interim）を独立して管理する。認識イベントだけでマイク音響の発話検知済み状態にしない。5秒タイムアウト保護の条件はPROJECT_SPEC.md §5.2.2を参照する。
+- **音響検出と文字起こしの状態管理**：ページ固有の音響検出フラグ（`speechStarted`）と認識テキスト（`raw`／`interim`）を別々に保持する。両者の関係およびSTTイベントの扱いは `PROJECT_SPEC.md` §5.2.2に従う。
 - **録音音声の保存条件**：発話検出または有効なSTT認識テキストがあり、有効なマイク録音データ（非空chunks）と空白だけではないSTT原文の両方が得られた場合に限り、録音音声Blob／再生URLを保存する。STTが有効でも録音データが欠損している場合は再生URLを生成しない。判定・Copy用raw STTは認識原文のまま保持し、画面表示用の加工を保存値へ書き戻さない。
+- **有効STT・録音チャンクなしの場合**：空白だけではない有効なSTT原文が得られた場合は、録音データ（`chunks`）が0件でも回答・判定結果を保存し、通常どおりCopy対象に含める。保存は判定結果が`accepted`であることを条件としない。録音チャンクがない場合は音声Blob／再生URLを生成せず、保存エントリのURLは空文字列（`""`）とし、録音再生ボタンおよびAuto-Compareによる録音音声の再生は行わない。既存回答がある場合は新しい回答で置き換え、旧URLがあればrevokeする。回答・判定結果の保存と録音音声URLの生成は独立して扱う。
 - **発話検知あり・STT原文空の場合（有効な録音データあり）**：`speechStarted`で発話が検知され、非空の録音データ（`chunks`）が得られている一方、STT原文が空または空白のみの場合、新しい保存用録音Blob／ObjectURLを生成・保存せず、空の回答エントリも保存しない。Auto-Compareリレーも開始しない。
 - **同じ行に既存の有効回答がある場合**：既存のraw STT・判定結果・録音音声URL・Copy対象状態を上書き・削除せず保持し、既存URLをrevokeしない。以前の回答を結果欄に表示したまま、下段に`.result-notice`として`No transcription available.`を一時表示する。既存URLがある場合は、それに紐づく録音再生ボタンも引き続き利用可能とする。通知は保存回答・Copy本文には含めない。
 - **同じ行に既存回答がない場合**：空の回答エントリを作成せず、結果欄に`No transcription available.`を表示する。録音再生ボタンは表示せず、Copy対象にも含めない。
-- **録音データ欠損・別の停止理由との区別**：発話検知があっても録音データ（`chunks`）を取得できなかった場合は、`No transcription available.`ではなく`Recording error.`として扱う。発話開始前5秒タイムアウトは`No speech detected within 5 seconds.`を維持し、その他の録音／認識エラー表示も変更しない。
+- **録音データ欠損・別の停止理由との区別**：発話検知があり、録音データ（`chunks`）を取得できず、STT原文も空または空白のみの場合は`Recording error.`として扱う。有効STTが得られている場合は前項に従って回答・判定結果を保存し、録音再生用URLは生成しない。発話開始前5秒タイムアウトは`No speech detected within 5 seconds.`を維持し、その他の録音／認識エラー表示も変更しない。
 - **フィラー正規化**：判定用のフィラー除去はPROJECT_SPEC.md §6.4.3に従う。Germanの登録語、単語境界、非登録語（ohを含む）の扱いを本書で別定義しない。
 - **STT認識エラーまたは開始例外**：recognition.onerrorまたはrecognition.start()の例外ではRecognition error.を表示し、空STTのため録音音声・再生URLを保存しない。再生ボタンも表示しない。
 - **録音処理自体の失敗**：有効な録音データを取得できない場合はRecording error.として区別する。
