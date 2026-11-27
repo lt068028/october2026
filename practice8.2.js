@@ -89,7 +89,7 @@ function normalizeToken(text){return DrillAnswer.stripSpeechFillers(hira(DrillAn
 function normalize(text){return normalizeToken(text).replace(/(?:よね|よ|ね)$/,'');}
 const sections=[
  {title:'Drill 1: 何か — Affirmative Sentences',instruction:'Place 何か naturally before the verb.'},
- {title:'Drill 2: 何を vs 何か — Questions',instruction:'Use 何を to ask what specifically, or 何か to ask about an unspecified item.'},
+ {title:'Drill 2: 何か vs 何を — Questions',instruction:'Use 何か to ask about an unspecified item, or 何を to ask what specifically.'},
  {title:'Drill 3: 何か／何も — Yes/No Questions',instruction:'Ask with 何か (unspecified item). For negative answers, use 何も〜ません (none).'},
  {title:'Drill 4: [Sneak Peek] 何でも — Unlimited Choice',instruction:'何でも means any kind, without restriction (all-inclusive). Ask with どんな (what kind of) and answer with 何でも.'}
 ];
