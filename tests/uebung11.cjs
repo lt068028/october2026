@@ -1130,15 +1130,17 @@ async function runRecordingLifecycleTests() {
 
         await page.clock.runFor(2000);
 
-        // Pressing Drill 2's button copies only Drill 2 without Drill 1 contamination.
+        // Pressing Drill 2's button copies Drill 1 + Drill 2 cumulatively.
         await page.locator('#drill2 .uebung-copy-button').click();
         await page.waitForFunction(() => window.t.clipboardWrites.length === 2);
         const copiedD2 = await page.evaluate(() => window.t.clipboardWrites[1]);
         const d2Headers = copiedD2.match(/Deutsche Übung 1\.1 — Drill \d+: .* — \d{4}-\d{2}-\d{2}/g) || [];
-        assert.equal(d2Headers.length, 1, 'Drill 2 Copy must include only one dated heading');
+        assert.equal(d2Headers.length, 2, 'Drill 2 Copy must include both Drill 1 and Drill 2 dated headings');
+        assert.ok(copiedD2.includes('Deutsche Übung 1.1 — Drill 1: nach —'), 'Drill 2 Copy must contain Drill 1 heading');
+        assert.ok(copiedD2.includes('1. ✅ Ich fliege nach Berlin.'), 'Drill 2 Copy must contain Drill 1 raw STT and accepted marker');
         assert.ok(copiedD2.includes('Deutsche Übung 1.1 — Drill 2: in —'), 'Drill 2 Copy must contain Drill 2 heading');
         assert.ok(copiedD2.includes('1. ✅ Du fliegst in die Türkei.'), 'Drill 2 Copy must contain Drill 2 raw STT and accepted marker');
-        assert.ok(!copiedD2.includes('Drill 1:') && !copiedD2.includes('Ich fliege nach Berlin.'), 'Drill 2 Copy must not include Drill 1 answers');
+        assert.ok(copiedD2.includes('\n\n'), 'Drill 2 Copy must separate Drills with blank line');
         assert.ok(!copiedD2.includes('Cities & Countries'), 'Copy header must not include duplicate learning focus');
         assert.ok(!copiedD2.includes('Du / fliegen / die Türkei'), 'Copy must not contain Drill 2 cue text');
 

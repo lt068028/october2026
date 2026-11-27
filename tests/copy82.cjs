@@ -126,6 +126,30 @@ const mock = audio.slice(audio.indexOf('function mock()'), audio.indexOf('(async
         copied = await page.evaluate(() => window.copied.at(-1));
         ok(copied.includes('A: ✅ はい、します。') && !copied.includes('いいえ、何も、しません。'), 'Yes/No switching excludes stale response');
 
+        // Per-Drill enabling matrix + cumulative copy body (excluding empty Drills)
+        await page.evaluate(() => {
+            const s = window.practice82State;
+            s.saved.clear();
+            s.saved.set(s.keyFor(s.rowsFor(1)[0][0]), { raw: '何を読みますか', correct: true, url: 'blob:d2' });
+            s.sync();
+        });
+        eq(await page.evaluate(() => [0,1,2,3].map(i => !document.querySelectorAll('.p82-copy-button')[i].disabled)), [false, true, false, false], 'D2 only enables D2 Copy button');
+        await page.locator('#drill2 .p82-copy-button').click();
+        copied = await page.evaluate(() => window.copied.at(-1));
+        ok(copied.includes('Drill 2:') && !copied.includes('Drill 1:'), 'D2 only copies Drill 2');
+
+        await page.evaluate(() => {
+            const s = window.practice82State;
+            s.saved.clear();
+            s.saved.set(s.keyFor(s.rowsFor(0)[0][0]), { raw: '何か話しますか', correct: true, url: 'blob:d1' });
+            s.saved.set(s.keyFor(s.rowsFor(3)[0][0]), { raw: '何でも食べます', correct: true, url: 'blob:d4' });
+            s.sync();
+        });
+        eq(await page.evaluate(() => [0,1,2,3].map(i => !document.querySelectorAll('.p82-copy-button')[i].disabled)), [true, false, false, true], 'D1+D4 enables only D1 and D4 Copy buttons');
+        await page.locator('#drill4 .p82-copy-button').click();
+        copied = await page.evaluate(() => window.copied.at(-1));
+        ok(copied.includes('Drill 1:') && copied.includes('Drill 4:') && !copied.includes('Drill 2:') && !copied.includes('Drill 3:'), 'D4 click outputs D1+D4 and excludes empty D2/D3');
+
         for (const selector of [
             '#scriptModeControl [data-value="hiragana"]',
             '#speechStyleControl [data-value="casual"]',
