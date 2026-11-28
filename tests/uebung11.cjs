@@ -1219,24 +1219,6 @@ async function runRecordingLifecycleTests() {
             'S26b: A valid Drill 2 answer enables Drill 2 Copy while Drills 3-4 remain disabled'
         );
 
-        // --- Scenario 25: pagehide aborts the active session without saving or notifying ---
-        await clickRecordInDrill(3);
-        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
-        await page.clock.runFor(20);
-        const s25 = await page.evaluate(() => {
-            const row = document.querySelector('#drill3 .recording-result');
-            return {
-                tracksEnded: window.t.tracks.every(track => track.readyState === 'ended'),
-                text: row?.textContent || '',
-                playCount: row?.querySelectorAll('.play-recording-btn').length || 0,
-                noticeCount: row?.querySelectorAll('.result-notice').length || 0
-            };
-        });
-        assert.equal(s25.tracksEnded, true, 'S25: pagehide abort releases microphone tracks');
-        assert.ok(s25.text.includes('… Not yet'), 'S25: Abort restores the initial row display');
-        assert.equal(s25.playCount, 0, 'S25: Abort does not save a recording');
-        assert.equal(s25.noticeCount, 0, 'S25: Abort does not show a notice');
-
         // --- Scenario 20B (continued): Per-Drill Copy isolation, cumulative state, raw STT, and reset ---
 
         await clickRecordInDrill(2);
@@ -2384,6 +2366,25 @@ async function runRecordingLifecycleTests() {
         assert.strictEqual(d11EllipsisAndOh.plainEllipsis, 'Ich fahre nach…', 'D1.1 appends … to plain incomplete');
         assert.strictEqual(d11EllipsisAndOh.periodEllipsis, 'Ich fahre nach.…', 'D1.1 appends … after period');
         assert.strictEqual(d11EllipsisAndOh.alreadyEllipsis, 'Ich fahre nach…', 'D1.1 does not duplicate …');
+
+        // --- Scenario 25: pagehide aborts the active session without saving or notifying (after all recording scenarios) ---
+        await clickRecordInDrill(3);
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
+        await page.clock.runFor(20);
+        const s25 = await page.evaluate(() => {
+            const row = document.querySelector('#drill3 .recording-result');
+            return {
+                tracksEnded: window.t.tracks.every(track => track.readyState === 'ended'),
+                text: row?.textContent || '',
+                playCount: row?.querySelectorAll('.play-recording-btn').length || 0,
+                noticeCount: row?.querySelectorAll('.result-notice').length || 0
+            };
+        });
+        assert.equal(s25.tracksEnded, true, 'S25: pagehide abort releases microphone tracks');
+        assert.ok(s25.text.includes('… Not yet'), 'S25: Abort restores the initial row display');
+        assert.equal(s25.playCount, 0, 'S25: Abort does not save a recording');
+        assert.equal(s25.noticeCount, 0, 'S25: Abort does not show a notice');
+
 
         console.log('PASS: All recording lifecycle scenarios (1 to 20) and typography checks passed successfully.');
     } finally {
