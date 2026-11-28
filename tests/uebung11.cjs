@@ -1175,6 +1175,19 @@ async function runRecordingLifecycleTests() {
         assert.ok(s24Text.includes('Ich fliege nach Berlin.'), 'S24: Final STT arriving immediately after Manual stop is saved');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S24: Saved final STT has a playable recording');
 
+        // --- Scenario 20B (initial state): Drill 1-only Copy state before Scenario 26b ---
+        const copyHelpTexts = await page.locator('.uebung-copy-help').evaluateAll(els => els.map(el => el.textContent.trim()));
+        assert.deepEqual(
+            copyHelpTexts,
+            Array(4).fill('Copy your drill results to review or share.'),
+            'All 4 Copy areas must use standardized per-drill help copy'
+        );
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [false, true, true, true],
+            'Scenario 20B: Drill 1 answer enables only Drill 1 Copy before Drill 2 has a saved answer'
+        );
+
         // --- Scenario 26: German filler-only STT is invalid, while "ja" remains valid ---
         await page.evaluate(() => {
             const toggle = document.querySelector('#toggleRecordMode');
@@ -1200,6 +1213,11 @@ async function runRecordingLifecycleTests() {
         await page.clock.runFor(2200);
         assert.ok((await d2Result.textContent()).includes('ja'), 'S26b: "ja" is retained as valid STT');
         assert.equal(await d2Result.locator('.play-recording-btn').count(), 1, 'S26b: "ja" produces a saved playable answer');
+        assert.deepEqual(
+            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
+            [false, false, true, true],
+            'S26b: A valid Drill 2 answer enables Drill 2 Copy while Drills 3-4 remain disabled'
+        );
 
         // --- Scenario 25: pagehide aborts the active session without saving or notifying ---
         await clickRecordInDrill(3);
@@ -1219,18 +1237,7 @@ async function runRecordingLifecycleTests() {
         assert.equal(s25.playCount, 0, 'S25: Abort does not save a recording');
         assert.equal(s25.noticeCount, 0, 'S25: Abort does not show a notice');
 
-        // --- Scenario 20B: Per-Drill Copy isolation, state, help text, raw STT, and reset ---
-        const copyHelpTexts = await page.locator('.uebung-copy-help').evaluateAll(els => els.map(el => el.textContent.trim()));
-        assert.deepEqual(
-            copyHelpTexts,
-            Array(4).fill('Copy your drill results to review or share.'),
-            'All 4 Copy areas must use standardized per-drill help copy'
-        );
-        assert.deepEqual(
-            await copyButtons.evaluateAll(buttons => buttons.map(button => button.disabled)),
-            [false, true, true, true],
-            'Drill 1 answer must enable only Drill 1 Copy button while Drills 2-4 remain disabled'
-        );
+        // --- Scenario 20B (continued): Per-Drill Copy isolation, cumulative state, raw STT, and reset ---
 
         await clickRecordInDrill(2);
         assert.deepEqual(
