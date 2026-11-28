@@ -1327,7 +1327,7 @@ function sync() {
         }
     });
 }
-async function record(key, r) {
+function record(key, r) {
     if (session || preparing || r.pending) return;
 
     const Recognition =
@@ -1353,417 +1353,99 @@ async function record(key, r) {
         targetResult.textContent = "Preparing microphone...";
     }
 
-    let stream;
-
-    try {
-        stream = await DrillAudio.getUserMedia({
-            audio: true,
-            skipSpeechWait: true
-        });
-    } catch (e) {
-        preparing = false;
-        sync();
-        if (e.name === "AbortError") return;
-        showResult(key, DrillAudio.microphoneError(e));
-        sync();
-        return;
-    }
-
-    preparing = false;
-
-    const s = {
-        key,
-        manual,
-        recordingStarted: false,
-        stopping: false,
-        finished: false,
-        heard: false,
-        raw: "",
-        interim: "",
-        chunks: [],
-        timers: [],
-        recognitionDone: false,
-        recorderDone: false,
-        discard: false,
-        notice: "",
-        context: null
-    };
-
-    session = s;
-
-    const recordingStartedAt = Date.now();
-    let firstRecognizedAt = null;
     const hasValidSttText = text => {
         const raw = String(text || "").trim();
         if (!raw) return false;
         return Boolean(normalizeToken(raw).replace(/[\p{S}]/gu, ""));
     };
-    const hasRecognizedText = () => hasValidSttText(s.raw) || hasValidSttText(s.interim);
-    const hasProtected5sStt = () =>
-        firstRecognizedAt !== null &&
-        (firstRecognizedAt - recordingStartedAt) <= 5000 &&
-        hasRecognizedText();
-    const hasProtectedStt = () => s.manual ? hasRecognizedText() : hasProtected5sStt();
 
-    const clear = () => {
-        s.timers.forEach(id => {
-            clearTimeout(id);
-            clearInterval(id);
-        });
+    DrillAudio.startRecordingSession({
+        key,
+        manual,
+        lang: "ja-JP",
+        mediaConstraints: {
+            audio: true,
+            skipSpeechWait: true
+        },
+        isValidStt: hasValidSttText,
+        shouldCreateBlob: ({ hasValidStt }) => hasValidStt,
+        restartErrorNotice: "Could not restart recognition.",
+        onStart(handle) {
+            preparing = false;
+            session = handle;
+            showResult(key);
+            sync();
+        },
+        onStopRequested() {
+            sync();
+        },
+        onComplete(res) {
+            const wasPreparing = preparing;
+            preparing = false;
+            session = null;
 
-        s.timers = [];
-
-        if (s.context) {
-            s.context.close().catch(() => {});
-            s.context = null;
-        }
-    };
-
-    const finish = () => {
-        if (
-            s.finished ||
-            !s.recognitionDone ||
-            !s.recorderDone
-        ) {
-            return;
-        }
-
-        s.finished = true;
-        clear();
-
-        stream.getTracks().forEach(t => t.stop());
-
-        if (s.recognition) {
-            s.recognition.onend = null;
-            s.recognition.onresult = null;
-            s.recognition.onerror = null;
-
-            try {
-                s.recognition.abort();
-            } catch (e) {
-            s.stop("Recording error.", true);
-            return;
-        }
-        }
-
-        session = null;
-
-        if (s.interim?.trim()) {
-            s.raw += s.interim;
-        }
-        s.interim = "";
-
-        const previous = saved.get(key) || {};
-        const hasNormRaw = hasValidSttText(s.raw);
-
-        if (
-            !s.discard &&
-            hasNormRaw
-        ) {
-            let url = null;
-            if (s.chunks.length) {
-                try {
-                    url = URL.createObjectURL(
-                        new Blob(s.chunks, {
-                            type: s.recorder?.mimeType || "audio/webm"
-                        })
-                    );
-                } catch (_) {
-                    url = null;
-                }
+            if (res.stopReason === "aborted") {
+                sync();
+                return;
             }
 
-            if (previous.url) {
-                try { URL.revokeObjectURL(previous.url); } catch (_) {}
+            if (wasPreparing || !res.recordingStarted) {
+                showResult(key, res.notice);
+                sync();
+                return;
             }
 
-            const status = s.raw.trim() ? evaluateAnswer(s.raw, r) : 'mismatch';
-            const mismatchReason = status === 'mismatch' ? mismatchReasonFor(s.raw, r) : null;
-            saved.set(key, {
-                url,
-                raw: s.raw,
-                modelText:r.text, modelHira:r.hira, refs:[...r.refs],
-                feedback:r.comparison&&status==='accepted'?feedback(r,s.raw):null,
-                status,
-                mismatchReason,
-                correct: status === 'accepted'
-            });
-        }
+            const previous = saved.get(key) || {};
+            const hasNormRaw = res.hasValidStt;
 
-        s.chunks = [];
-
-        showResult(
-            key,
-            s.notice ||
-            (!s.discard && s.heard && !hasNormRaw ? "No transcription available." : (!s.raw.trim() && !saved.get(key)?.url ? "No speech recognized." : ""))
-        );
-
-        sync();
-
-        if (
-            autoplay &&
-            !s.discard &&
-            hasNormRaw
-        ) {
-            const view = views.get(key);
-            DrillAudio.playRelay({
-                recordButton: view.rec,
-                result: view.mainRow,
-                speak: done => speak(r.text, null, () => { if (relayKey === key) done(); }, true),
-                url: () => saved.get(key)?.url,
-                keepButtons: true
-            });
-            markRelayPlaying(key);
-        }
-    };
-
-    s.stop = (notice = "", discard = false) => {
-        if (s.stopping || s.finished) return;
-
-        s.stopping = true;
-        s.notice = notice;
-        s.discard = discard ? true : (!s.heard && !hasProtectedStt());
-
-        clear();
-        sync();
-
-        try {
-            s.recognition.stop();
-        } catch (e) {
-            s.recognitionDone = true;
-        }
-
-        if (
-            !s.recorder ||
-            s.recorder.state === "inactive"
-        ) {
-            s.recorderDone = true;
-        } else {
-            try {
-                s.recorder.stop();
-            } catch (e) {
-                s.recorderDone = true;
-                s.discard = true;
-            }
-        }
-
-        s.timers.push(
-            setTimeout(() => {
-                s.recognitionDone = true;
-
-                if (!s.recorderDone) {
-                    s.recorderDone = true;
-                    s.discard = true;
-                }
-
-                finish();
-            }, 2500)
-        );
-
-        finish();
-    };
-
-    try {
-        const recognition = new Recognition();
-        s.recognition = recognition;
-
-        recognition.lang = "ja-JP";
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        let interim = "";
-        let lastSound = Date.now();
-
-        const heard = () => {
-            s.heard = true;
-            lastSound = Date.now();
-        };
-
-        recognition.onresult = e => {
-            if (s.finished || s.discard) return;
-
-            if (!s.stopping) interim = "";
-            let sawFinal = false;
-
-            for (
-                let i = e.resultIndex;
-                i < e.results.length;
-                i++
-            ) {
-                const text = e.results[i][0].transcript;
-
-                if (e.results[i].isFinal) {
-                    s.raw += text;
-                    sawFinal = true;
-                } else if (!s.stopping) {
-                    interim += text;
-                }
-            }
-
-            if (!s.stopping) {
-                s.interim = interim;
-            } else if (sawFinal) {
-                s.interim = "";
-            }
-
-            if (firstRecognizedAt === null && hasRecognizedText()) {
-                firstRecognizedAt = Date.now();
-            }
-        };
-
-        recognition.onerror = e => {
             if (
-                s.stopping ||
-                e.error === "no-speech"
+                !res.discard &&
+                hasNormRaw
             ) {
-                return;
-            }
-
-            s.recognitionDone = true;
-            s.stop("Recognition error.", true);
-        };
-
-        recognition.onend = () => {
-            s.recognitionDone = true;
-
-            if (s.stopping) {
-                finish();
-                return;
-            }
-
-            try {
-                recognition.start();
-                s.recognitionDone = false;
-            } catch (e) {
-                s.stop(
-                    "Could not restart recognition.",
-                    true
-                );
-            }
-        };
-
-        const recorder = new MediaRecorder(stream);
-        s.recorder = recorder;
-
-        recorder.ondataavailable = e => {
-            if (!s.finished && e.data.size) {
-                s.chunks.push(e.data);
-            }
-        };
-
-        recorder.onstop = () => {
-            s.recorderDone = true;
-
-            if (!s.stopping) {
-                s.stop("Recording stopped.");
-            }
-
-            finish();
-        };
-
-        recorder.onerror = () => {
-            s.stop("Recording error.", true);
-        };
-
-        showResult(key);
-        sync();
-
-        recorder.start();
-        recognition.start();
-        s.recordingStarted = true;
-        sync();
-
-        try {
-            const Context =
-                window.AudioContext ||
-                window.webkitAudioContext;
-
-            const context = new Context();
-            s.context = context;
-
-            context.resume().catch(() => {
-                if (!s.finished && !s.stopping) s.stop("Recording error.", true);
-            });
-
-            const analyser = context.createAnalyser();
-            analyser.fftSize = 1024;
-
-            context
-                .createMediaStreamSource(stream)
-                .connect(analyser);
-
-            const samples = new Float32Array(
-                analyser.fftSize
-            );
-
-            let frames = 0;
-
-            s.timers.push(
-                setInterval(() => {
-                    if (s.stopping) return;
-
-                    analyser.getFloatTimeDomainData(samples);
-
-                    let sum = 0;
-
-                    for (const n of samples) {
-                        sum += n * n;
-                    }
-
-                    const sound =
-                        Math.sqrt(sum / samples.length) > 0.015;
-
-                    frames = sound ? frames + 1 : 0;
-
-                    if (sound && s.heard) {
-                        lastSound = Date.now();
-                    }
-
-                    if (frames >= 3) heard();
-                }, 100)
-            );
-        } catch (e) {
-            s.stop("Recording error.", true);
-            return;
-        }
-
-        // Autostop：発話後の無音2秒
-        s.timers.push(
-            setInterval(() => {
-                if (
-                    !s.manual &&
-                    s.heard &&
-                    Date.now() - lastSound >= 2000
-                ) {
-                    s.stop();
+                if (previous.url) {
+                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
                 }
-            }, 100)
-        );
 
-        // Autostop ON時のみ：発話開始前の無音5秒で停止（有効な低音量STTは保護し、未取得時のみ破棄）
-        if (!s.manual) {
-            s.timers.push(
-                setTimeout(() => {
-                    if (!s.heard && !hasProtected5sStt()) {
-                        s.stop(
-                            "No speech detected within 5 seconds.",
-                            true
-                        );
-                    }
-                }, 5000)
+                const status = res.raw.trim() ? evaluateAnswer(res.raw, r) : 'mismatch';
+                const mismatchReason = status === 'mismatch' ? mismatchReasonFor(res.raw, r) : null;
+                saved.set(key, {
+                    url: res.url,
+                    raw: res.raw,
+                    modelText: r.text,
+                    modelHira: r.hira,
+                    refs: [...r.refs],
+                    feedback: r.comparison && status === 'accepted' ? feedback(r, res.raw) : null,
+                    status,
+                    mismatchReason,
+                    correct: status === 'accepted'
+                });
+            }
+
+            showResult(
+                key,
+                res.notice ||
+                (!res.discard && res.speechStarted && !hasNormRaw ? "No transcription available." : (!res.raw.trim() && !saved.get(key)?.url ? "No speech recognized." : ""))
             );
-        }
 
-        // Autostop・手動停止の共通上限
-        s.timers.push(
-            setTimeout(() => {
-                s.stop("Auto-stopped after 20 seconds.");
-            }, 20000)
-        );
-    } catch (e) {
-        s.recognitionDone = true;
-        s.stop("Could not start recording.", true);
-    }
+            sync();
+
+            if (
+                autoplay &&
+                !res.discard &&
+                hasNormRaw
+            ) {
+                const view = views.get(key);
+                DrillAudio.playRelay({
+                    recordButton: view.rec,
+                    result: view.mainRow,
+                    speak: done => speak(r.text, null, () => { if (relayKey === key) done(); }, true),
+                    url: () => saved.get(key)?.url,
+                    keepButtons: true
+                });
+                markRelayPlaying(key);
+            }
+        }
+    });
 }
 
 // Settings and footer
@@ -2045,7 +1727,7 @@ else initSttGuide82();
 
 
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
-DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){session.discard=true;session.stop('',true);}}});
+DrillAudio.configure({busy:()=>Boolean(session||preparing),sync,stop:stopPlayback,cancel:()=>{preparing=false;if(session){const s=session;session=null;s.abort();}}});
 window.addEventListener('resize',()=>{if(!session&&!preparing)measureCues();else measureExampleColumns();});
 document.fonts.ready.then(measureCues);
 })();

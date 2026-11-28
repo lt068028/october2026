@@ -402,12 +402,14 @@ window.DrillAudio = (() => {
         const maxRestartAttempts = Number.isFinite(options.maxRestartAttempts)
             ? Math.max(0, options.maxRestartAttempts)
             : null;
+        const restartErrorNotice = String(options.restartErrorNotice || 'Recognition error.');
         const isValidStt = typeof options.isValidStt === 'function'
             ? options.isValidStt
             : (text => Boolean(String(text ?? '').trim()));
         const acousticConfig = Object.assign({}, RECORDING_DEFAULTS, options.acoustic || {});
 
         let phase = 'preparing';
+        let recordingStarted = false;
         let stopping = false;
         let finished = false;
         let aborted = false;
@@ -473,6 +475,7 @@ window.DrillAudio = (() => {
                 phase,
                 preparing: phase === 'preparing',
                 recording: phase === 'recording',
+                recordingStarted,
                 stopping,
                 finished,
                 aborted,
@@ -522,32 +525,28 @@ window.DrillAudio = (() => {
                 activeRecordingSession = null;
             }
 
-            if (!aborted && stopReason !== 'start-error' && interim.trim()) {
+            if (!aborted && !discardIntent && stopReason !== 'start-error' && interim.trim()) {
                 raw += interim;
             }
             interim = '';
 
-            const hasValidStt = (aborted || stopReason === 'start-error' || audioOnly)
+            const finalStopReason = stopReason || 'manual';
+            const finalRaw = (aborted || finalStopReason === 'start-error') ? '' : raw;
+            const hasValidStt = (aborted || discardIntent || finalStopReason === 'start-error' || audioOnly)
                 ? false
-                : checkValidStt(raw);
+                : checkValidStt(finalRaw);
 
             let finalDiscard = false;
-            if (aborted || stopReason === 'aborted' || stopReason === 'start-error') {
+            if (aborted || finalStopReason === 'aborted' || finalStopReason === 'start-error' || discardIntent) {
                 finalDiscard = true;
             } else if (hasValidStt) {
                 finalDiscard = false;
-                if (stopReason === 'timeout-5s') {
-                    protectedBy5sStt = true;
-                    if (notice === 'No speech detected within 5 seconds.') {
-                        notice = '';
-                    }
-                }
             } else if (!speechStarted) {
                 finalDiscard = true;
             } else if (recorderTimedOut || recorderFailedOnStop) {
                 finalDiscard = true;
             } else {
-                finalDiscard = Boolean(discardIntent);
+                finalDiscard = false;
             }
 
             let blob = null;
@@ -556,21 +555,42 @@ window.DrillAudio = (() => {
                 && !recorderFailedOnStop
                 && chunks.some(c => c && c.size > 0);
 
-            if (!finalDiscard && (speechStarted || hasValidStt) && hasNonEmptyChunks) {
-                try {
-                    const candidateBlob = new Blob(chunks, {
-                        type: recorder?.mimeType || 'audio/webm'
-                    });
-                    if (candidateBlob && candidateBlob.size > 0) {
-                        const candidateUrl = URL.createObjectURL(candidateBlob);
-                        if (candidateUrl) {
-                            blob = candidateBlob;
-                            url = candidateUrl;
-                        }
+            if (!finalDiscard && hasNonEmptyChunks) {
+                let allowBlob = false;
+                if (typeof options.shouldCreateBlob === 'function') {
+                    try {
+                        allowBlob = Boolean(options.shouldCreateBlob({
+                            hasValidStt,
+                            speechStarted,
+                            audioOnly,
+                            raw: finalRaw,
+                            stopReason: finalStopReason
+                        }));
+                    } catch (_) {
+                        allowBlob = false;
                     }
-                } catch (_) {
-                    blob = null;
-                    url = null;
+                } else if (typeof options.shouldCreateBlob === 'boolean') {
+                    allowBlob = options.shouldCreateBlob && (audioOnly ? speechStarted : (speechStarted || hasValidStt));
+                } else {
+                    allowBlob = audioOnly ? speechStarted : (speechStarted || hasValidStt);
+                }
+
+                if (allowBlob) {
+                    try {
+                        const candidateBlob = new Blob(chunks, {
+                            type: recorder?.mimeType || 'audio/webm'
+                        });
+                        if (candidateBlob && candidateBlob.size > 0) {
+                            const candidateUrl = URL.createObjectURL(candidateBlob);
+                            if (candidateUrl) {
+                                blob = candidateBlob;
+                                url = candidateUrl;
+                            }
+                        }
+                    } catch (_) {
+                        blob = null;
+                        url = null;
+                    }
                 }
             }
             chunks.length = 0;
@@ -580,7 +600,8 @@ window.DrillAudio = (() => {
                 key,
                 manual,
                 audioOnly,
-                raw: (aborted || stopReason === 'start-error') ? '' : raw,
+                recordingStarted,
+                raw: finalRaw,
                 hasValidStt,
                 speechStarted,
                 protectedBy5sStt,
@@ -588,18 +609,20 @@ window.DrillAudio = (() => {
                 url,
                 hasAudio,
                 discard: finalDiscard,
-                stopReason: stopReason || 'manual',
+                stopReason: finalStopReason,
                 notice
             };
 
             sync();
 
-            try {
-                options.onComplete?.(finalResult);
-                options.onFinish?.(finalResult);
-            } finally {
-                resolveResult(finalResult);
-            }
+            queueMicrotask(() => {
+                try {
+                    options.onComplete?.(finalResult);
+                    options.onFinish?.(finalResult);
+                } finally {
+                    resolveResult(finalResult);
+                }
+            });
         }
 
         function stop(noticeText = '', requestedDiscard = false, reason = '') {
@@ -729,6 +752,7 @@ window.DrillAudio = (() => {
             get phase() { return phase; },
             get preparing() { return phase === 'preparing'; },
             get recording() { return phase === 'recording'; },
+            get recordingStarted() { return recordingStarted; },
             get stopping() { return stopping; },
             get finished() { return finished; },
             get aborted() { return aborted; },
@@ -743,6 +767,8 @@ window.DrillAudio = (() => {
             get stopReason() { return stopReason; },
             get notice() { return notice; }
         };
+
+        activeRecordingSession = handle;
 
         (async () => {
             if (leaving) {
@@ -786,7 +812,6 @@ window.DrillAudio = (() => {
                 return;
             }
 
-            activeRecordingSession = handle;
             options.onPreparing?.(handle);
             sync();
 
@@ -832,7 +857,7 @@ window.DrillAudio = (() => {
                     recognition.maxAlternatives = maxAlternatives;
 
                     recognition.onresult = event => {
-                        if (finished || recognitionSettled || aborted) return;
+                        if (finished || recognitionSettled || aborted || discardIntent) return;
                         consecutiveRestarts = 0;
 
                         let sawFinal = false;
@@ -876,7 +901,7 @@ window.DrillAudio = (() => {
                         if (finished || recognitionSettled || aborted || stopping) return;
                         if (event?.error === 'no-speech') return;
                         recognitionSettled = true;
-                        stop('Recognition error.', false, 'stt-error');
+                        stop('Recognition error.', true, 'stt-error');
                     };
 
                     recognition.onend = () => {
@@ -900,7 +925,7 @@ window.DrillAudio = (() => {
 
                         if (maxRestartAttempts !== null && consecutiveRestarts >= maxRestartAttempts) {
                             recognitionSettled = true;
-                            stop('Recognition error.', false, 'stt-error');
+                            stop(restartErrorNotice, true, 'stt-error');
                             return;
                         }
 
@@ -910,7 +935,7 @@ window.DrillAudio = (() => {
                         } catch (_) {
                             recognitionSettled = true;
                             if (!stopping && !finished && !aborted) {
-                                stop('Recognition error.', false, 'stt-error');
+                                stop(restartErrorNotice, true, 'stt-error');
                             } else {
                                 finalize();
                             }
@@ -1059,6 +1084,7 @@ window.DrillAudio = (() => {
                 stop('Auto-stopped after 20 seconds.', false, 'limit-20s');
             }, acousticConfig.maxDurationMs));
 
+            recordingStarted = true;
             phase = 'recording';
             options.onStart?.(handle);
             sync();

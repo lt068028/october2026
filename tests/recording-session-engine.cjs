@@ -800,8 +800,153 @@ async function createTestPage(browser) {
             await page.close();
         }
 
+        // =====================================================================
+        // Scenario 7: Stage 4 Contracts (shouldCreateBlob, async onComplete,
+        //             restartErrorNotice, timeout-5s/stt-error late STT block,
+        //             recordingStarted unification)
+        // =====================================================================
+        console.log('=== Scenario 7: Stage 4 Engine Contracts ===');
+        {
+            const page = await createTestPage(browser);
+
+            // 7a. Synchronous start failure (MediaRecorder unsupported) still fires onComplete asynchronously AFTER handle assignment, with getActiveRecordingSession() === null
+            const asyncStartFail = await page.evaluate(async () => {
+                const savedRecorder = window.MediaRecorder;
+                window.MediaRecorder = undefined;
+                let assignedHandle = null;
+                let handleSeenInCallback = undefined;
+                let activeSeenInCallback = 'not-called';
+                let syncCalled = false;
+
+                assignedHandle = DrillAudio.startRecordingSession({
+                    key: 'sf1',
+                    onComplete: res => {
+                        syncCalled = true;
+                        handleSeenInCallback = assignedHandle;
+                        activeSeenInCallback = DrillAudio.getActiveRecordingSession();
+                        window.sfResult = res;
+                    }
+                });
+                const wasSync = syncCalled;
+                await Promise.resolve();
+                await Promise.resolve();
+                window.MediaRecorder = savedRecorder;
+                return {
+                    wasSync,
+                    handleAssignedBeforeCallback: Boolean(handleSeenInCallback && handleSeenInCallback === assignedHandle),
+                    activeIsNullInCallback: activeSeenInCallback === null,
+                    result: window.sfResult,
+                    handleRecordingStarted: assignedHandle.recordingStarted,
+                    stateRecordingStarted: assignedHandle.getState().recordingStarted
+                };
+            });
+            check(asyncStartFail.wasSync === false, '7a: onComplete is NOT called synchronously on early start failure');
+            check(asyncStartFail.handleAssignedBeforeCallback === true, '7a: Handle assignment completes before onComplete fires');
+            check(asyncStartFail.activeIsNullInCallback === true, '7a: getActiveRecordingSession() is already null when onComplete fires');
+            check(asyncStartFail.result.stopReason === 'start-error' && asyncStartFail.result.recordingStarted === false && asyncStartFail.handleRecordingStarted === false && asyncStartFail.stateRecordingStarted === false, '7a: recordingStarted is false across handle, getState(), and RecordingResult on start failure');
+
+            // 7b. shouldCreateBlob & BlobCreationContext (5 properties without discard; raw/hasValidStt match RecordingResult)
+            // Case 1: speechStarted: true, hasValidStt: false with shouldCreateBlob: ({ hasValidStt }) => hasValidStt -> no Blob/URL created
+            await page.evaluate(() => {
+                window.blobContexts = [];
+                window.lastResult = null;
+                window.t.speaking = true;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'scb1',
+                    manual: true,
+                    isValidStt: window.fillerExcludedValidStt,
+                    shouldCreateBlob: ctx => {
+                        window.blobContexts.push(ctx);
+                        return ctx.hasValidStt;
+                    },
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            check(await page.evaluate(() => window.session.recordingStarted === true && window.session.getState().recordingStarted === true), '7b: recordingStarted is true once recording phase starts');
+            await page.evaluate(() => window.session.stop());
+            await page.clock.runFor(50);
+            const scb1Check = await page.evaluate(() => ({
+                ctxCount: window.blobContexts.length,
+                ctx: window.blobContexts[0],
+                hasDiscardProp: window.blobContexts[0] ? ('discard' in window.blobContexts[0]) : true,
+                ctxKeys: window.blobContexts[0] ? Object.keys(window.blobContexts[0]).sort() : [],
+                result: window.lastResult
+            }));
+            check(scb1Check.ctxCount === 1, '7b: shouldCreateBlob called once when !finalDiscard && hasNonEmptyChunks');
+            check(scb1Check.hasDiscardProp === false, '7b: BlobCreationContext does not contain redundant discard property');
+            check(JSON.stringify(scb1Check.ctxKeys) === JSON.stringify(['audioOnly', 'hasValidStt', 'raw', 'speechStarted', 'stopReason']), '7b: BlobCreationContext has exact 5 properties');
+            check(scb1Check.ctx.raw === scb1Check.result.raw && scb1Check.ctx.hasValidStt === scb1Check.result.hasValidStt, '7b: BlobCreationContext.raw and hasValidStt match RecordingResult');
+            check(scb1Check.result.speechStarted === true && scb1Check.result.hasValidStt === false && scb1Check.result.discard === false, '7b: Speech without valid STT has speechStarted: true, hasValidStt: false, discard: false');
+            check(scb1Check.result.blob === null && scb1Check.result.url === null && scb1Check.result.hasAudio === false, '7b: shouldCreateBlob returning false suppresses Blob/ObjectURL creation (null unified)');
+            check(scb1Check.result.recordingStarted === true, '7b: RecordingResult.recordingStarted is true');
+
+            // 7c. timeout-5s blocks delayed onresult arriving after 5s timeout fires and keeps protectedBy5sStt: false
+            await page.evaluate(() => {
+                window.lastResult = null;
+                window.t.speaking = false;
+                window.t.recognitionStopDelayMs = 150;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'to5',
+                    manual: false,
+                    isValidStt: window.fillerExcludedValidStt,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(5050); // 5s timeout fires -> stopping = true, recognition stop delayed by 150ms
+            await page.evaluate(() => {
+                const rec = window.t.recognitions.at(-1);
+                const late = [{ transcript: '5秒超過後の遅延認識' }];
+                late.isFinal = true;
+                rec.onresult?.({ resultIndex: 0, results: [late] });
+            });
+            await page.clock.runFor(200);
+            const to5Res = await page.evaluate(() => {
+                window.t.recognitionStopDelayMs = 0;
+                return window.lastResult;
+            });
+            check(to5Res.stopReason === 'timeout-5s' && to5Res.protectedBy5sStt === false && to5Res.hasValidStt === false && to5Res.discard === true, '7c: Delayed onresult after timeout-5s is blocked and does not flip protectedBy5sStt or discard');
+            check(to5Res.raw === '' && to5Res.url === null, '7c: Delayed onresult after timeout-5s is excluded from raw');
+
+            // 7d. restartErrorNotice custom notice & stt-error blocks delayed onresult and discards
+            await page.evaluate(() => {
+                window.lastResult = null;
+                window.t.speaking = true;
+                window.t.failRecognitionRestart = true;
+                window.t.recorderStopDelayMs = 150;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 're1',
+                    manual: true,
+                    restartErrorNotice: 'Could not restart recognition.',
+                    isValidStt: window.fillerExcludedValidStt,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            await page.evaluate(() => {
+                const rec = window.t.recognitions.at(-1);
+                // Trigger onend while recording -> restart throws -> stt-error
+                rec.onend?.();
+                // Attempt delayed onresult after stt-error while recorder is still stopping
+                const late = [{ transcript: 'エラー後テキスト' }];
+                late.isFinal = true;
+                rec.onresult?.({ resultIndex: 0, results: [late] });
+            });
+            await page.clock.runFor(200);
+            const reRes = await page.evaluate(() => {
+                window.t.failRecognitionRestart = false;
+                window.t.recorderStopDelayMs = 0;
+                return window.lastResult;
+            });
+            check(reRes.stopReason === 'stt-error' && reRes.notice === 'Could not restart recognition.', '7d: Custom restartErrorNotice is used on recognition restart failure');
+            check(reRes.discard === true && reRes.hasValidStt === false && reRes.url === null, '7d: stt-error blocks late onresult and discards with null url');
+
+            check(page.errors.length === 0, 'Scenario 7: No page errors');
+            await page.close();
+        }
+
         console.log(`\n========================================`);
-        console.log(`ALL STAGE 3 RECORDING ENGINE TESTS PASSED! Total assertions checked: ${totalChecks}`);
+        console.log(`ALL STAGE 3-4 RECORDING ENGINE TESTS PASSED! Total assertions checked: ${totalChecks}`);
         console.log(`========================================\n`);
     } finally {
         await browser.close();
