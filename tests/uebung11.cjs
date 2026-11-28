@@ -405,7 +405,13 @@ const activeAudioPos = playRecordingBody.indexOf('activeAudio = audio;');
 assert.ok(markPlayingPos >= 0 && activeAudioPos > markPlayingPos, 'playRecording must call markPlaying before setting activeAudio');
 
 // D: Empty STT discards audio without saving
-assert.ok(js.includes('if (raw && normRaw && hasValidAudio)'), 'Empty STT must not create Blob URL');
+assert.ok(js.includes('shouldCreateBlob: ({ hasValidStt }) => hasValidStt'), 'D1.1 must create an audio Blob only when STT is valid');
+assert.ok(
+    engine.includes("if (typeof options.shouldCreateBlob === 'function')") &&
+    engine.includes('if (allowBlob) {') &&
+    engine.includes('const candidateBlob = new Blob(chunks'),
+    'Shared recording engine must gate Blob creation through the page-provided shouldCreateBlob condition'
+);
 assert.ok(!js.includes('unrecognized: true'), 'Empty STT must not save unrecognized audio entry');
 
 // E: Icons (playCircle normal, stop regular & currentColor)
