@@ -1587,27 +1587,16 @@ function initGermanDrill() {
     // -------------------------------------------------------------
     // 5. Recording & STT Evaluation
     // -------------------------------------------------------------
-    async function record(key, item) {
+    function record(key, item) {
         if (session || preparing) return;
-
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!Recognition && !window.MediaRecorder) {
-            showResult(key, "Speech recognition and recording are not supported in this browser.");
-            return;
-        }
-        if (!Recognition) {
-            showResult(key, "Speech recognition is not supported in this browser.");
-            return;
-        }
-        if (!window.MediaRecorder) {
-            showResult(key, "Recording is not supported in this browser.");
-            return;
-        }
+        if (!Recognition && !window.MediaRecorder) { showResult(key, "Speech recognition and recording are not supported in this browser."); return; }
+        if (!Recognition) { showResult(key, "Speech recognition is not supported in this browser."); return; }
+        if (!window.MediaRecorder) { showResult(key, "Recording is not supported in this browser."); return; }
 
         stopAllPlayback();
         preparing = true;
         sync();
-
         const v = views.get(key);
         if (v) {
             v.mainRow.replaceChildren(v.result);
@@ -1618,396 +1607,107 @@ function initGermanDrill() {
             v.result.textContent = "Preparing microphone...";
         }
 
-        let stream;
-        try {
-            stream = await DrillAudio.getUserMedia({ audio: true });
-        } catch (e) {
-            preparing = false;
-            sync();
-            if (e.name === "AbortError") return;
-            showResult(key, DrillAudio.microphoneError(e));
-            return;
-        }
-
-        preparing = false;
-
         const autoRecEl = document.getElementById("toggleRecordMode");
         const isManual = autoRecEl ? !autoRecEl.checked : manual;
         manual = isManual;
-
-        const s = {
-            key,
-            manual: isManual,
-            recordingStarted: false,
-            stopping: false,
-            finished: false,
-            speechStarted: false,
-            lastSoundAt: null,
-            stopReason: "",
-            raw: "",
-            interim: "",
-            chunks: [],
-            timers: [],
-            recognitionDone: false,
-            recorderDone: false,
-            discard: false,
-            notice: "",
-            context: null,
-            recorder: null,
-            recognition: null
-        };
-        session = s;
-
-        const recordingStartedAt = Date.now();
-        let firstRecognizedAt = null;
         const hasValidSttText = text => {
             const cleaned = normalizeGerman(text || "").replace(/[\p{P}\p{S}\s]/gu, "");
             return Boolean(cleaned);
         };
-        const hasRecognizedText = () => hasValidSttText(s.raw) || hasValidSttText(s.interim);
-        const hasProtected5sStt = () =>
-            firstRecognizedAt !== null &&
-            (firstRecognizedAt - recordingStartedAt) <= 5000 &&
-            hasRecognizedText();
-        const hasProtectedStt = () => s.manual ? hasRecognizedText() : hasProtected5sStt();
 
-        const clear = () => {
-            s.timers.forEach(id => {
-                clearTimeout(id);
-                clearInterval(id);
-            });
-            s.timers = [];
-        };
+        const handle = DrillAudio.startRecordingSession({
+            key,
+            manual: isManual,
+            lang: targetLocaleForVariety(currentVariety),
+            mediaConstraints: { audio: true },
+            restartRecognitionOnEnd: false,
+            isValidStt: hasValidSttText,
+            shouldCreateBlob: ({ hasValidStt }) => hasValidStt,
+            onPreparing: preparingHandle => { session = preparingHandle; preparing = true; sync(); },
+            onStart: recordingHandle => { session = recordingHandle; preparing = false; showResult(key); sync(); },
+            onStopRequested: () => { sync(); },
+            onComplete: res => {
+                const wasPreparing = preparing;
+                preparing = false;
+                session = null;
+                const recModel = getModel(item, currentVariety);
 
-        const finish = () => {
-            if (s.finished || !s.recognitionDone || !s.recorderDone) return;
-            s.finished = true;
-            clear();
-
-            stream.getTracks().forEach(t => t.stop());
-
-            if (s.context) {
-                try { s.context.close().catch(() => {}); } catch (_) {}
-                s.context = null;
-            }
-
-            if (s.recognition) {
-                s.recognition.onend = null;
-                s.recognition.onresult = null;
-                s.recognition.onerror = null;
-                s.recognition.onspeechstart = null;
-                try { s.recognition.abort(); } catch (_) {}
-            }
-
-            session = null;
-
-            if (!s.discard && s.interim?.trim()) {
-                s.raw += s.interim;
-            }
-            s.interim = "";
-
-            const raw = s.discard ? "" : s.raw.trim();
-            const recModel = getModel(item, currentVariety);
-
-            const previous = saved.get(key) || {};
-            const normRaw = normalizeGerman(raw);
-            let url = "";
-
-            const hasValidAudio = !s.discard && (s.speechStarted || Boolean(raw && normRaw)) && s.chunks.length > 0;
-            if (raw && normRaw && hasValidAudio) {
-                try {
-                    url = URL.createObjectURL(
-                        new Blob(s.chunks, { type: s.recorder?.mimeType || "audio/webm" })
-                    );
-                } catch (_) {
-                    url = "";
+                if (res.stopReason === "aborted") {
+                    showResult(key);
+                    sync();
+                    return;
                 }
-            }
-
-            if (!s.discard && raw && normRaw) {
-                if (previous.url) {
-                    try { URL.revokeObjectURL(previous.url); } catch (_) {}
+                if (wasPreparing || !res.recordingStarted) {
+                    showResult(key, res.notice);
+                    sync();
+                    return;
                 }
-                const evalResult = evaluateGermanAnswer(raw, item, currentVariety);
-                const isCorrect = evalResult.judgment === "accepted";
-                saved.set(key, {
-                    url,
-                    raw: s.raw,
-                    correct: isCorrect,
-                    judgment: evalResult.judgment,
-                    redPart: evalResult.redPart,
-                    diffTokens: evalResult.diffTokens,
-                    modelText: recModel,
-                    supplement: evalResult.supplement,
-                    variety: currentVariety
-                });
-            } else if (hasValidAudio) {
-                // Keep existing saved entry and audio URL when STT is empty
-            } else if (s.speechStarted && !hasValidAudio) {
-                // Keep existing saved entry and audio URL when STT is empty
-            }
-
-            s.chunks = [];
-
-            let noticeMessage = s.notice;
-            if (!noticeMessage) {
-                if (!raw) {
-                    if (hasValidAudio) {
-                        noticeMessage = "No transcription available.";
-                    } else if (s.speechStarted) {
-                        noticeMessage = "Recording error.";
-                    } else if (s.stopReason === "timeout-5s") {
-                        noticeMessage = "No speech detected within 5 seconds.";
-                    } else if (s.stopReason === "manual") {
-                        noticeMessage = "";
-                    }
+                if (res.discard) {
+                    showResult(key, res.notice);
+                    sync();
+                    return;
                 }
-            } else if (!raw && !hasValidAudio && s.notice === "No transcription available.") {
-                noticeMessage = "Recording error.";
-            }
 
-            showResult(key, noticeMessage);
-            sync();
-
-            if (autoplay && !s.discard && raw && url) {
-                stopAllPlayback();
-                const currentView = views.get(key);
-                const playBtn = currentView?.mainRow?.querySelector(".play-recording-btn");
-                const gen = ++playbackGeneration;
-                relayKey = key;
-                [currentView?.listen, playBtn].forEach(b => {
-                    if (!b) return;
-                    b._relayAriaLabel = b.getAttribute("aria-label");
-                    const existingTip = b.querySelector(".custom-tip-box");
-                    b._relayTipText = existingTip ? existingTip.textContent : null;
-                    b.classList.add("is-playing", "p82-autoplay-stop");
-                    b.removeAttribute("data-tip-action-suppressed");
-                    b.dataset.keepPlayback = "true";
-                    b.disabled = false;
-                    b.setAttribute("aria-label", "Wiedergabe stoppen");
-                    setButtonAudioIcon(b, "stop", "regular");
-                    applyRelayTip(b, "Auto-Compare: ON");
-                });
-                sync();
-                suppressRelayPreStop = true;
-                try {
-                    DrillAudio.playRelay({
-                        recordButton: currentView.rec,
-                        result: currentView.mainRow,
-                        keepButtons: true,
-                        speak: done => {
-                            suppressRelayPreStop = false;
-                            speakModel(recModel, null, done, true);
-                        },
-                        url: () => saved.get(key)?.url
+                if (res.hasValidStt) {
+                    const previous = saved.get(key) || {};
+                    if (previous.url) { try { URL.revokeObjectURL(previous.url); } catch (_) {} }
+                    const evalResult = evaluateGermanAnswer(res.raw.trim(), item, currentVariety);
+                    saved.set(key, {
+                        url: res.url || "",
+                        raw: res.raw,
+                        correct: evalResult.judgment === "accepted",
+                        judgment: evalResult.judgment,
+                        redPart: evalResult.redPart,
+                        diffTokens: evalResult.diffTokens,
+                        modelText: recModel,
+                        supplement: evalResult.supplement,
+                        variety: currentVariety
                     });
-                } finally {
-                    suppressRelayPreStop = false;
+                    showResult(key, res.notice);
+                    sync();
+
+                    if (autoplay && !res.discard && res.hasValidStt && res.url) {
+                        stopAllPlayback();
+                        const currentView = views.get(key);
+                        const playBtn = currentView?.mainRow?.querySelector(".play-recording-btn");
+                        relayKey = key;
+                        [currentView?.listen, playBtn].forEach(b => {
+                            if (!b) return;
+                            b._relayAriaLabel = b.getAttribute("aria-label");
+                            const existingTip = b.querySelector(".custom-tip-box");
+                            b._relayTipText = existingTip ? existingTip.textContent : null;
+                            b.classList.add("is-playing", "p82-autoplay-stop");
+                            b.removeAttribute("data-tip-action-suppressed");
+                            b.dataset.keepPlayback = "true";
+                            b.disabled = false;
+                            b.setAttribute("aria-label", "Wiedergabe stoppen");
+                            setButtonAudioIcon(b, "stop", "regular");
+                            applyRelayTip(b, "Auto-Compare: ON");
+                        });
+                        sync();
+                        suppressRelayPreStop = true;
+                        try {
+                            DrillAudio.playRelay({
+                                recordButton: currentView.rec,
+                                result: currentView.mainRow,
+                                keepButtons: true,
+                                speak: done => {
+                                    suppressRelayPreStop = false;
+                                    speakModel(recModel, null, done, true);
+                                },
+                                url: () => saved.get(key)?.url
+                            });
+                        } finally { suppressRelayPreStop = false; }
+                    }
+                    return;
                 }
+
+                showResult(key, res.notice || (res.hasNonEmptyChunks ? "No transcription available." : "Recording error."));
+                sync();
             }
-        };
-
-        s.stop = (notice = "", discard = false, reason = "") => {
-            if (s.stopping || s.finished) return;
-            s.stopping = true;
-            if (reason) s.stopReason = reason;
-            else if (!s.stopReason) s.stopReason = notice ? "error" : "manual";
-            if (notice) s.notice = notice;
-            s.discard = discard || (!s.speechStarted && !hasProtectedStt());
-
-            clear();
-            sync();
-
-            if (s.recognition && !s.recognitionDone) {
-                try {
-                    s.recognition.stop();
-                } catch (_) {
-                    s.recognitionDone = true;
-                }
-            }
-
-            if (!s.recorder || s.recorder.state === "inactive") {
-                s.recorderDone = true;
-            } else {
-                try {
-                    s.recorder.stop();
-                } catch (_) {
-                    s.recorderDone = true;
-                    s.discard = true;
-                }
-            }
-
-            s.timers.push(setTimeout(() => {
-                s.recognitionDone = true;
-                if (!s.recorderDone) {
-                    s.discard = true;
-                    s.recorderDone = true;
-                }
-                finish();
-            }, 2500));
-
-            finish();
-        };
-
-        // Initialize SpeechRecognition
-        try {
-            s.recognition = new Recognition();
-            s.recognition.lang = targetLocaleForVariety(currentVariety);
-            s.recognition.interimResults = true;
-            s.recognition.continuous = true;
-            s.recognition.maxAlternatives = 1;
-
-            // SpeechRecognition events (such as Chrome's premature onspeechstart) MUST NOT trigger
-            // speech detection or silence stopping. Speech detection and silence auto-stop are
-            // strictly governed by microphone audio volume monitoring via AudioContext.
-
-            s.recognition.onresult = event => {
-                if (s.finished || s.discard) return;
-                let finalStr = "";
-                let interimStr = "";
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const trans = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) finalStr += trans;
-                    else if (!s.stopping) interimStr += trans;
-                }
-                if (finalStr) {
-                    s.raw += finalStr;
-                    if (s.stopping) s.interim = "";
-                }
-                if (!s.stopping) {
-                    s.interim = interimStr;
-                }
-                if (firstRecognizedAt === null && hasRecognizedText()) {
-                    firstRecognizedAt = Date.now();
-                }
-            };
-
-            s.recognition.onerror = event => {
-                if (s.finished || s.stopping || event?.error === "no-speech") return;
-                s.recognitionDone = true;
-                s.stop("Recognition error.", false, "stt-error");
-            };
-
-            s.recognition.onend = () => {
-                s.recognitionDone = true;
-                finish();
-            };
-
-            try {
-                s.recognition.start();
-            } catch (_) {
-                s.recognitionDone = true;
-                s.stop("Recognition error.", false, "stt-error");
-                return;
-            }
-        } catch (_) {
-            s.recognitionDone = true;
-            s.stop("Recognition error.", false, "stt-error");
-            return;
-        }
-
-        // Initialize MediaRecorder
-        try {
-            s.recorder = new MediaRecorder(stream);
-            s.recorder.ondataavailable = e => {
-                if (e.data && e.data.size > 0) s.chunks.push(e.data);
-            };
-            s.recorder.onstop = () => {
-                s.recorderDone = true;
-                finish();
-            };
-            s.recorder.onerror = () => {
-                s.stop("Recording error.", true, "rec-error");
-            };
-            s.recorder.start();
-            s.recordingStarted = true;
-            sync();
-        } catch (_) {
-            s.recorderDone = true;
-            s.stop("Could not start recording.", true, "rec-error");
-            return;
-        }
-
-        // Audio monitoring via AudioContext
-        try {
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContextClass) {
-                throw new Error("AudioContext not supported");
-            }
-            const context = new AudioContextClass();
-            s.context = context;
-
-            const source = context.createMediaStreamSource(stream);
-            const analyser = context.createAnalyser();
-            analyser.fftSize = 1024;
-            source.connect(analyser);
-
-            const resumePromise = context.resume?.();
-            if (resumePromise && typeof resumePromise.catch === "function") {
-                resumePromise.catch(() => {
-                    s.stop("Recording error.", true, "audio-error");
-                });
-            }
-
-            const samples = new Float32Array(analyser.fftSize);
-            let soundFrames = 0;
-
-            s.timers.push(setInterval(() => {
-                if (s.stopping || s.finished) return;
-
-                analyser.getFloatTimeDomainData(samples);
-                let sum = 0;
-                for (const sample of samples) {
-                    sum += sample * sample;
-                }
-                const volume = Math.sqrt(sum / samples.length);
-
-                const sound = volume > 0.015;
-                soundFrames = sound ? soundFrames + 1 : 0;
-
-                if (sound && s.speechStarted) {
-                    s.lastSoundAt = Date.now();
-                }
-
-                if (soundFrames >= 3) {
-                    s.speechStarted = true;
-                    s.lastSoundAt = Date.now();
-                }
-
-                // Autostop: 2.0s continuous silence after speech
-                if (
-                    !s.manual &&
-                    s.speechStarted &&
-                    s.lastSoundAt &&
-                    Date.now() - s.lastSoundAt >= 2000
-                ) {
-                    s.stop("", false, "silence-2s");
-                }
-            }, 100));
-        } catch (_) {
-            s.stop("Recording error.", true, "audio-error");
-            return;
-        }
-
-        // Watchdog timers
-        // 1. 5s limit before speech starts (Autostop ON only)
-        if (!s.manual) {
-            s.timers.push(setTimeout(() => {
-                if (!s.speechStarted && !hasProtected5sStt()) {
-                    s.stop("No speech detected within 5 seconds.", true, "timeout-5s");
-                }
-            }, 5000));
-        }
-
-        // 2. 20s absolute upper limit (Autostop ON/OFF common)
-        s.timers.push(setTimeout(() => {
-            s.stop("Auto-stopped after 20 seconds.", false, "limit-20s");
-        }, 20000));
-
-        showResult(key);
-        sync();
+        });
+        session = handle;
     }
-
     function showResult(key, notice = "") {
         const v = views.get(key);
         if (!v) return;
@@ -2602,10 +2302,7 @@ function initGermanDrill() {
         stop: stopAllPlayback,
         cancel: () => {
             preparing = false;
-            if (session) {
-                session.discard = true;
-                session.stop("", true);
-            }
+            session?.abort();
         }
     });
 
@@ -2616,10 +2313,7 @@ function initGermanDrill() {
     const cleanupOnLeave = () => {
         stopAllPlayback();
         preparing = false;
-        if (session) {
-            session.discard = true;
-            session.stop("", true);
-        }
+        session?.abort();
     };
     window.addEventListener("pagehide", cleanupOnLeave);
     window.addEventListener("beforeunload", cleanupOnLeave);

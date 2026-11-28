@@ -6,6 +6,7 @@ const assert = require('assert/strict');
 const root = path.resolve(__dirname, '..');
 const htmlPath = path.join(root, 'uebung1.1.html');
 const jsPath = path.join(root, 'uebung1.1.js');
+const enginePath = path.join(root, 'drill-audio-session.js');
 const cssPath = path.join(root, 'style.css');
 const feedbackCssPath = path.join(root, 'feedback-status-icons.css');
 const feedbackJsPath = path.join(root, 'feedback-status-icons.js');
@@ -39,6 +40,7 @@ const css = fs.readFileSync(cssPath, 'utf8');
 const feedbackCss = fs.readFileSync(feedbackCssPath, 'utf8');
 const feedbackJs = fs.readFileSync(feedbackJsPath, 'utf8');
 const js = fs.readFileSync(jsPath, 'utf8');
+const engine = fs.readFileSync(enginePath, 'utf8');
 assert.ok(css.includes('.uebung11-page .uebung-copy-area'), 'style.css must have copy-area rules for uebung11');
 assert.ok(css.includes('.uebung11-page :is(.ex-audio-btn, .drill-listen-btn, .drill-record-btn, .play-recording-btn)'), 'CSS must center audio button SVG icons consistently');
 assert.ok(!js.includes('drill-stop-btn') && !js.includes('data-stop'), 'Must remove 3rd stop button completely in favor of 2-button layout');
@@ -78,7 +80,7 @@ assert.ok(js.includes('Ihr fahrt in die Schule.'), 'AT model must include Ihr fa
 
 // 5.3 Check DrillAudio configuration and speech ordering
 assert.ok(js.includes('DrillAudio.configure'), 'JS must configure DrillAudio');
-assert.ok(js.includes('DrillAudio.getUserMedia'), 'JS must use DrillAudio.getUserMedia');
+assert.ok(js.includes('DrillAudio.startRecordingSession') && !js.includes('new MediaRecorder(') && !js.includes('new Recognition('), 'D1.1 must use the shared recording session engine instead of page-owned recorder/recognition instances');
 assert.ok(js.includes('DrillAudio.playRelay'), 'JS must use DrillAudio.playRelay');
 assert.ok(js.includes('DrillAudio.speak'), 'JS must speak utterances through DrillAudio.speak');
 assert.ok(js.indexOf('u.onend =') < js.indexOf('DrillAudio.speak(u)'), 'u.onend must be assigned before DrillAudio.speak');
@@ -91,7 +93,8 @@ assert.ok(!js.includes('Copy all my sentences'), 'JS must not contain standalone
 assert.ok(js.includes('navigator.clipboard.writeText'), 'JS must use clipboard API');
 assert.ok(js.includes('const hasDrillRecordings = drill.items.some') && js.includes('!hasDrillRecordings'), 'Copy button enabling must be scoped per individual drill');
 assert.ok(js.includes('INCOMPLETE_TIPS = ["Getting closer!", "Almost there!", "Keep it up!", "Nice flow!", "Great start!"]'), 'D1.1 must share P8.2 random incomplete encouragement tips');
-assert.ok(js.includes('volume > 0.015') && !js.includes('volume > 0.025'), 'D1.1 speech volume threshold must unify to 0.015');
+assert.ok(js.includes('restartRecognitionOnEnd: false') && !js.includes('skipSpeechWait'), 'D1.1 must disable recognition restart and must not skip the speech wait');
+assert.ok(engine.includes('rmsThreshold: 0.015'), 'Shared recording engine must retain the approved 0.015 RMS threshold');
 assert.ok(js.includes('v.rec.classList.toggle("stop-btn-active", canManualStop);'), 'D1.1 must apply stop-btn-active to manual stop only');
 assert.ok(css.includes('.uebung11-page .recording-controls > .recording-result > .result-sub-row {\n    flex-direction: column;\n    align-items: flex-end;'), 'style.css must stack D1.1 row-2 items vertically');
 assert.ok(js.includes('btn.dataset.keepPlayback = "true";'), 'Copy must preserve audio playback');
@@ -504,7 +507,15 @@ async function runRecordingLifecycleTests() {
                 clipboardFailure: false,
                 speaking: false,
                 deny: false,
-                recordError: false
+                recordError: false,
+                emptyChunks: false,
+                failCreateObjectURL: false
+            };
+
+            const originalCreateObjectURL = URL.createObjectURL.bind(URL);
+            URL.createObjectURL = blob => {
+                if (window.t.failCreateObjectURL) throw new Error('createObjectURL failed');
+                return originalCreateObjectURL(blob);
             };
 
             const origSpeech = window.speechSynthesis;
@@ -973,7 +984,8 @@ async function runRecordingLifecycleTests() {
         const playBtn10 = getResult().locator('.play-recording-btn');
         assert.equal(await playBtn10.count(), 1, 'S10: Preserves existing valid answer play button on recognition error');
         // Clear saved state to verify unrecorded row leaves 0 play buttons on empty STT
-        await page.evaluate(() => { saved.clear(); renderResult(drillsData[0].items[0].id); });
+        await page.reload();
+        await page.waitForFunction(() => document.readyState === 'complete' && document.querySelectorAll('.uebung-copy-button').length === 4);
         // --- Scenario 12: STT空・録音音声ありの場合の表示（録音破棄・再生ボタンなし） ---
         await clickRecord(false);
         await advanceToElapsed(1000);
@@ -1085,6 +1097,121 @@ async function runRecordingLifecycleTests() {
         assert.ok(resText20.includes('Ich fliege nach Berlin.'), 'S20: Contains the current D1 Item 1 recognized sentence');
         assert.equal(await getResult().locator('.feedback-status-accepted').count(), 1, 'S20: Contains accepted status badge');
         assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S20: Play button exists for accepted answer');
+
+        // --- Scenario 23: Empty STT with chunks preserves the existing answer and recording URL ---
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        const s23Text = await getResult().textContent();
+        assert.ok(s23Text.includes('Ich fliege nach Berlin.'), 'S23: Preserves the previous valid STT');
+        assert.ok(s23Text.includes('No transcription available.'), 'S23: Shows No transcription available.');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S23: Preserves the previous recording URL and play button');
+
+        // --- Scenario 21: Valid STT survives URL.createObjectURL failure; Auto-Compare does not start ---
+        await page.evaluate(() => {
+            const toggle = document.querySelector('#togglePlaybackMode');
+            if (toggle && !toggle.checked) toggle.click();
+            window.t.failCreateObjectURL = true;
+            window.t.utterancesBeforeCreateFailure = window.t.utterances.length;
+        });
+        await clickRecord(false, true);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        const s21 = await page.evaluate(() => ({
+            text: document.querySelector('#drill1 .recording-result')?.textContent || '',
+            playCount: document.querySelectorAll('#drill1 .play-recording-btn').length,
+            utteranceCount: window.t.utterances.length,
+            utteranceCountBefore: window.t.utterancesBeforeCreateFailure
+        }));
+        assert.ok(s21.text.includes('Ich fliege nach Berlin.'), 'S21: Valid STT is saved when createObjectURL fails');
+        assert.equal(s21.playCount, 0, 'S21: No play button without a URL');
+        assert.equal(s21.utteranceCount, s21.utteranceCountBefore, 'S21: Auto-Compare does not start without a URL');
+        await page.evaluate(() => { window.t.failCreateObjectURL = false; });
+
+        // --- Scenario 22: Valid STT with zero non-empty chunks is saved without playback ---
+        await page.evaluate(() => { window.t.emptyChunks = true; });
+        await clickRecord(false);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('Ich fliege nach Berlin.');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        const s22 = await page.evaluate(() => ({
+            text: document.querySelector('#drill1 .recording-result')?.textContent || '',
+            playCount: document.querySelectorAll('#drill1 .play-recording-btn').length
+        }));
+        assert.ok(s22.text.includes('Ich fliege nach Berlin.'), 'S22: Valid STT is saved when no audio chunks exist');
+        assert.equal(s22.playCount, 0, 'S22: No play button when there is no URL');
+        await page.evaluate(() => { window.t.emptyChunks = false; });
+
+        // --- Scenario 24: Final STT delivered immediately after Manual stop is rescued ---
+        await clickRecord(true);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await page.evaluate(() => {
+            document.querySelector('#drill1 .drill-record-btn.stop-btn-active:not(:disabled)')?.click();
+            const rec = window.t.recognitions.at(-1);
+            const finalResult = [{ transcript: 'Ich fliege nach Berlin.' }];
+            finalResult.isFinal = true;
+            rec?.onresult?.({ resultIndex: 0, results: [finalResult] });
+        });
+        await page.clock.runFor(100);
+        const s24Text = await getResult().textContent();
+        assert.ok(s24Text.includes('Ich fliege nach Berlin.'), 'S24: Final STT arriving immediately after Manual stop is saved');
+        assert.equal(await getResult().locator('.play-recording-btn').count(), 1, 'S24: Saved final STT has a playable recording');
+
+        // --- Scenario 26: German filler-only STT is invalid, while "ja" remains valid ---
+        await page.evaluate(() => {
+            const toggle = document.querySelector('#toggleRecordMode');
+            if (toggle && !toggle.checked) toggle.click();
+        });
+        await clickRecordInDrill(2);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('ähm');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        const d2Result = page.locator('#drill2 .recording-result').first();
+        assert.ok((await d2Result.textContent()).includes('No transcription available.'), 'S26a: Filler-only STT is invalid');
+        assert.equal(await d2Result.locator('.play-recording-btn').count(), 0, 'S26a: Filler-only STT is not saved');
+
+        await clickRecordInDrill(2);
+        await advanceToElapsed(1000);
+        await setSpeaking(true);
+        await page.clock.runFor(400);
+        await triggerRecognition('ja');
+        await setSpeaking(false);
+        await page.clock.runFor(2200);
+        assert.ok((await d2Result.textContent()).includes('ja'), 'S26b: "ja" is retained as valid STT');
+        assert.equal(await d2Result.locator('.play-recording-btn').count(), 1, 'S26b: "ja" produces a saved playable answer');
+
+        // --- Scenario 25: pagehide aborts the active session without saving or notifying ---
+        await clickRecordInDrill(3);
+        await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide')));
+        await page.clock.runFor(20);
+        const s25 = await page.evaluate(() => {
+            const row = document.querySelector('#drill3 .recording-result');
+            return {
+                tracksEnded: window.t.tracks.every(track => track.readyState === 'ended'),
+                text: row?.textContent || '',
+                playCount: row?.querySelectorAll('.play-recording-btn').length || 0,
+                noticeCount: row?.querySelectorAll('.result-notice').length || 0
+            };
+        });
+        assert.equal(s25.tracksEnded, true, 'S25: pagehide abort releases microphone tracks');
+        assert.ok(s25.text.includes('… Not yet'), 'S25: Abort restores the initial row display');
+        assert.equal(s25.playCount, 0, 'S25: Abort does not save a recording');
+        assert.equal(s25.noticeCount, 0, 'S25: Abort does not show a notice');
 
         // --- Scenario 20B: Per-Drill Copy isolation, state, help text, raw STT, and reset ---
         const copyHelpTexts = await page.locator('.uebung-copy-help').evaluateAll(els => els.map(el => el.textContent.trim()));

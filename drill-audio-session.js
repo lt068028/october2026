@@ -608,6 +608,7 @@ window.DrillAudio = (() => {
                 blob,
                 url,
                 hasAudio,
+                hasNonEmptyChunks,
                 discard: finalDiscard,
                 stopReason: finalStopReason,
                 notice

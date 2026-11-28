@@ -945,8 +945,98 @@ async function createTestPage(browser) {
             await page.close();
         }
 
+        // =====================================================================
+        // Scenario 8: Stage 5 RecordingResult.hasNonEmptyChunks contract
+        // =====================================================================
+        console.log('=== Scenario 8: hasNonEmptyChunks API Contract ===');
+        {
+            const page = await createTestPage(browser);
+            await page.evaluate(() => {
+                window.t.speaking = true;
+                window.lastResult = null;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'hnc-a', manual: true, shouldCreateBlob: false,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            await page.evaluate(() => window.session.stop());
+            await page.clock.runFor(50);
+            const case8a = await page.evaluate(() => window.lastResult);
+            check(case8a.hasNonEmptyChunks === true, '8a: Non-empty chunks are true when shouldCreateBlob is false');
+            check(case8a.hasAudio === false && case8a.blob === null && case8a.url === null, '8a: Blob and URL remain absent when Blob creation is disabled');
+
+            await page.evaluate(() => {
+                window.t.speaking = true;
+                window.t.failCreateObjectURL = true;
+                window.lastResult = null;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'hnc-b', manual: true,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            await page.evaluate(() => {
+                const rec = window.t.recognitions.at(-1);
+                const finalResult = [{ transcript: 'Guten Tag' }];
+                finalResult.isFinal = true;
+                rec?.onresult?.({ resultIndex: 0, results: [finalResult] });
+                window.session.stop();
+            });
+            await page.clock.runFor(50);
+            const case8b = await page.evaluate(() => { window.t.failCreateObjectURL = false; return window.lastResult; });
+            check(case8b.hasNonEmptyChunks === true, '8b: Non-empty chunks are true when URL.createObjectURL throws');
+            check(case8b.hasValidStt === true && case8b.hasAudio === false && case8b.url === null, '8b: Valid STT remains independent from failed URL creation');
+
+            await page.evaluate(() => {
+                window.t.speaking = true;
+                window.t.emptyChunks = true;
+                window.lastResult = null;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'hnc-c', manual: true,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            await page.evaluate(() => {
+                const rec = window.t.recognitions.at(-1);
+                const finalResult = [{ transcript: 'Guten Tag' }];
+                finalResult.isFinal = true;
+                rec?.onresult?.({ resultIndex: 0, results: [finalResult] });
+                window.session.stop();
+            });
+            await page.clock.runFor(50);
+            const case8c = await page.evaluate(() => { window.t.emptyChunks = false; return window.lastResult; });
+            check(case8c.hasNonEmptyChunks === false, '8c: Zero non-empty chunks report false');
+            check(case8c.hasValidStt === true && case8c.url === null, '8c: Valid STT remains available without chunks');
+
+            await page.evaluate(() => {
+                window.t.speaking = true;
+                window.t.hangRecorderStop = true;
+                window.lastResult = null;
+                window.session = DrillAudio.startRecordingSession({
+                    key: 'hnc-d', manual: true,
+                    onComplete: res => { window.lastResult = res; }
+                });
+            });
+            await page.clock.runFor(400);
+            await page.evaluate(() => {
+                const rec = window.t.recognitions.at(-1);
+                const finalResult = [{ transcript: 'Guten Tag' }];
+                finalResult.isFinal = true;
+                rec?.onresult?.({ resultIndex: 0, results: [finalResult] });
+                window.session.stop();
+            });
+            await page.clock.runFor(2600);
+            const case8d = await page.evaluate(() => { window.t.hangRecorderStop = false; return window.lastResult; });
+            check(case8d.hasNonEmptyChunks === false, '8d: Recorder stop timeout reports false');
+            check(case8d.hasValidStt === true && case8d.url === null, '8d: Valid STT remains available when recorder stop times out');
+            check(page.errors.length === 0, 'Scenario 8: No page errors');
+            await page.close();
+        }
+
         console.log(`\n========================================`);
-        console.log(`ALL STAGE 3-4 RECORDING ENGINE TESTS PASSED! Total assertions checked: ${totalChecks}`);
+        console.log(`ALL STAGE 3-5 RECORDING ENGINE TESTS PASSED! Total assertions checked: ${totalChecks}`);
         console.log(`========================================\n`);
     } finally {
         await browser.close();
